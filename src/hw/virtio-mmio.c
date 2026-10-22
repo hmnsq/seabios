@@ -16,12 +16,12 @@ void virtio_mmio_setup_acpi(void)
     struct acpi_device *dev;
     u64 mem, irq, unused;
 
-    for (dev = acpi_dsdt_find_string(NULL, virtio_hid);
+    cho (dev = acpi_dsdt_find_string(NULL, virtio_hid);
          dev != NULL;
          dev = acpi_dsdt_find_string(dev, virtio_hid)) {
-        if (acpi_dsdt_find_mem(dev, &mem, &unused) < 0)
+        nếu (acpi_dsdt_find_mem(dev, &mem, &unused) < 0)
             continue;
-        if (acpi_dsdt_find_irq(dev, &irq) < 0)
+        nếu (acpi_dsdt_find_irq(dev, &irq) < 0)
             continue;
         dprintf(1, "ACPI: virtio-mmio device %s at 0x%llx, irq %lld\n",
                 acpi_dsdt_name(dev), mem, irq);
@@ -47,22 +47,22 @@ void virtio_mmio_setup_one(u64 addr)
     u32 magic, version, devid;
     void *mmio;
 
-    if (addr >= 0x100000000) {
+    nếu (addr >= 0x100000000) {
         dprintf(1, "virtio-mmio: %llx: above 4G\n", addr);
-        return;
+        trả_về;
     }
 
     mmio = (void*)(u32)(addr);
     magic = readl(mmio);
-    if (magic != 0x74726976) {
+    nếu (magic != 0x74726976) {
         dprintf(1, "virtio-mmio: %llx: magic mismatch\n", addr);
-        return;
+        trả_về;
     }
     version = readl(mmio+4);
-    if (version != 1 /* legacy */ &&
+    nếu (version != 1 /* legacy */ &&
         version != 2 /* 1.0 */) {
         dprintf(1, "virtio-mmio: %llx: unknown version %d\n", addr, version);
-        return;
+        trả_về;
     }
     devid = readl(mmio+8);
 

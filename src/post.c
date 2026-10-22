@@ -35,14 +35,14 @@ ivt_init(void)
     dprintf(3, "init ivt\n");
 
     // Initialize all vectors to the default handler.
-    int i;
-    for (i=0; i<256; i++)
+    số_nguyên i;
+    cho (i=0; i<256; i++)
         SET_IVT(i, FUNC16(entry_iret_official));
 
     // Initialize all hw vectors to a default hw handler.
-    for (i=BIOS_HWIRQ0_VECTOR; i<BIOS_HWIRQ0_VECTOR+8; i++)
+    cho (i=BIOS_HWIRQ0_VECTOR; i<BIOS_HWIRQ0_VECTOR+8; i++)
         SET_IVT(i, FUNC16(entry_hwpic1));
-    for (i=BIOS_HWIRQ8_VECTOR; i<BIOS_HWIRQ8_VECTOR+8; i++)
+    cho (i=BIOS_HWIRQ8_VECTOR; i<BIOS_HWIRQ8_VECTOR+8; i++)
         SET_IVT(i, FUNC16(entry_hwpic2));
 
     // Initialize software handlers.
@@ -62,7 +62,7 @@ ivt_init(void)
     SET_IVT(0x40, FUNC16(entry_40));
 
     // INT 60h-66h reserved for user interrupt
-    for (i=0x60; i<=0x66; i++)
+    cho (i=0x60; i<=0x66; i++)
         SET_IVT(i, SEGOFF(0, 0));
 
     // set vector 0x79 to zero
@@ -78,9 +78,9 @@ bda_init(void)
     struct bios_data_area_s *bda = MAKE_FLATPTR(SEG_BDA, 0);
     memset(bda, 0, sizeof(*bda));
 
-    int esize = EBDA_SIZE_START;
+    số_nguyên esize = EBDA_SIZE_START;
     u16 ebda_seg = EBDA_SEGMENT_START;
-    if (!CONFIG_MALLOC_UPPERMEMORY)
+    nếu (!CONFIG_MALLOC_UPPERMEMORY)
         ebda_seg = FLATPTR_TO_SEG(ALIGN_DOWN(SYMBOL(final_varlow_start), 1024)
                                   - EBDA_SIZE_START*1024);
     SET_BDA(ebda_seg, ebda_seg);
@@ -203,7 +203,7 @@ maininit(void)
     platform_hardware_setup();
 
     // Start hardware initialization (if threads allowed during optionroms)
-    if (threads_during_optionroms())
+    nếu (threads_during_optionroms())
         device_hardware_setup();
 
     // Run vga option rom
@@ -212,7 +212,7 @@ maininit(void)
     enable_vga_console();
 
     // Do hardware initialization (if running synchronously)
-    if (!threads_during_optionroms()) {
+    nếu (!threads_during_optionroms()) {
         device_hardware_setup();
         wait_threads();
     }
@@ -244,7 +244,7 @@ static void
 updateRelocs(void *dest, u32 *rstart, u32 *rend, u32 delta)
 {
     u32 *reloc;
-    for (reloc = rstart; reloc < rend; reloc++)
+    cho (reloc = rstart; reloc < rend; reloc++)
         *((u32*)(dest + *reloc)) += delta;
 }
 
@@ -255,7 +255,7 @@ void __noreturn
 reloc_preinit(void *f, void *arg)
 {
     void (*func)(void *) __noreturn = f;
-    if (!CONFIG_RELOCATE_INIT)
+    nếu (!CONFIG_RELOCATE_INIT)
         func(arg);
 
     // Allocate space for init code.
@@ -263,7 +263,7 @@ reloc_preinit(void *f, void *arg)
     u32 codealign = SYMBOL(_reloc_min_align);
     void *codedest = memalign_tmp(codealign, initsize);
     void *codesrc = VSYMBOL(code32init_start);
-    if (!codedest)
+    nếu (!codedest)
         panic("No space for init relocation.\n");
 
     // Copy code and update relocs (init absolute, init relative, and runtime)
@@ -277,7 +277,7 @@ reloc_preinit(void *f, void *arg)
                  , -delta);
     updateRelocs(VSYMBOL(code32flat_start), VSYMBOL(_reloc_init_start)
                  , VSYMBOL(_reloc_init_end), delta);
-    if (f >= codesrc && f < VSYMBOL(code32init_end))
+    nếu (f >= codesrc && f < VSYMBOL(code32init_end))
         func = f + delta;
 
     // Call function in relocated code.
@@ -289,9 +289,9 @@ reloc_preinit(void *f, void *arg)
 void
 code_mutable_preinit(void)
 {
-    if (HaveRunPost)
+    nếu (HaveRunPost)
         // Already run
-        return;
+        trả_về;
     // Setup reset-vector entry point (controls legacy reboots).
     rtc_write(CMOS_RESET_CODE, 0);
     barrier();
@@ -320,8 +320,8 @@ dopost(void)
 void VISIBLE32FLAT
 handle_post(void)
 {
-    if (!CONFIG_QEMU && !CONFIG_COREBOOT)
-        return;
+    nếu (!CONFIG_QEMU && !CONFIG_COREBOOT)
+        trả_về;
 
     serial_debug_preinit();
     debug_banner();

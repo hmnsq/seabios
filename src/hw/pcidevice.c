@@ -14,7 +14,7 @@
 #include "string.h" // memset
 
 struct hlist_head PCIDevices VARVERIFY32INIT;
-int MaxPCIBus VARFSEG;
+số_nguyên MaxPCIBus VARFSEG;
 
 // Find all PCI devices and populate PCIDevices linked list.
 void
@@ -24,17 +24,17 @@ pci_probe_devices(void)
     struct pci_device *busdevs[256];
     memset(busdevs, 0, sizeof(busdevs));
     struct hlist_node **pprev = &PCIDevices.first;
-    int extraroots = romfile_loadint("etc/extra-pci-roots", 0);
-    int bus = -1, lastbus = 0, rootbuses = 0, count=0;
-    while (bus < 0xff && (bus < MaxPCIBus || rootbuses < extraroots)) {
+    số_nguyên extraroots = romfile_loadint("etc/extra-pci-roots", 0);
+    số_nguyên bus = -1, lastbus = 0, rootbuses = 0, count=0;
+    trong_khi (bus < 0xff && (bus < MaxPCIBus || rootbuses < extraroots)) {
         bus++;
-        int bdf;
+        số_nguyên bdf;
         foreachbdf(bdf, bus) {
             // Create new pci_device struct and add to list.
             struct pci_device *dev = malloc_tmp(sizeof(*dev));
-            if (!dev) {
+            nếu (!dev) {
                 warn_noalloc();
-                return;
+                trả_về;
             }
             memset(dev, 0, sizeof(*dev));
             hlist_add(&dev->node, pprev);
@@ -42,16 +42,16 @@ pci_probe_devices(void)
             count++;
 
             // Find parent device.
-            int rootbus;
+            số_nguyên rootbus;
             struct pci_device *parent = busdevs[bus];
-            if (!parent) {
-                if (bus != lastbus)
+            nếu (!parent) {
+                nếu (bus != lastbus)
                     rootbuses++;
                 lastbus = bus;
                 rootbus = rootbuses;
-                if (bus > MaxPCIBus)
+                nếu (bus > MaxPCIBus)
                     MaxPCIBus = bus;
-            } else {
+            } không_thì {
                 rootbus = parent->rootbus;
             }
 
@@ -68,12 +68,12 @@ pci_probe_devices(void)
             dev->revision = classrev & 0xff;
             dev->header_type = pci_config_readb(bdf, PCI_HEADER_TYPE);
             u8 v = dev->header_type & 0x7f;
-            if (v == PCI_HEADER_TYPE_BRIDGE || v == PCI_HEADER_TYPE_CARDBUS) {
+            nếu (v == PCI_HEADER_TYPE_BRIDGE || v == PCI_HEADER_TYPE_CARDBUS) {
                 u8 secbus = pci_config_readb(bdf, PCI_SECONDARY_BUS);
                 dev->secondary_bus = secbus;
-                if (secbus > bus && !busdevs[secbus])
+                nếu (secbus > bus && !busdevs[secbus])
                     busdevs[secbus] = dev;
-                if (secbus > MaxPCIBus)
+                nếu (secbus > MaxPCIBus)
                     MaxPCIBus = secbus;
             }
             dprintf(4, "PCI device %pP (vd=%04x:%04x c=%04x)\n"
@@ -89,10 +89,10 @@ pci_find_device(u16 vendid, u16 devid)
 {
     struct pci_device *pci;
     foreachpci(pci) {
-        if (pci->vendor == vendid && pci->device == devid)
-            return pci;
+        nếu (pci->vendor == vendid && pci->device == devid)
+            trả_về pci;
     }
-    return NULL;
+    trả_về NULL;
 }
 
 // Search for a device with the specified class id.
@@ -101,26 +101,26 @@ pci_find_class(u16 classid)
 {
     struct pci_device *pci;
     foreachpci(pci) {
-        if (pci->class == classid)
-            return pci;
+        nếu (pci->class == classid)
+            trả_về pci;
     }
-    return NULL;
+    trả_về NULL;
 }
 
-int pci_init_device(const struct pci_device_id *ids
+số_nguyên pci_init_device(const struct pci_device_id *ids
                     , struct pci_device *pci, void *arg)
 {
-    while (ids->vendid || ids->class_mask) {
-        if ((ids->vendid == PCI_ANY_ID || ids->vendid == pci->vendor) &&
+    trong_khi (ids->vendid || ids->class_mask) {
+        nếu ((ids->vendid == PCI_ANY_ID || ids->vendid == pci->vendor) &&
             (ids->devid == PCI_ANY_ID || ids->devid == pci->device) &&
             !((ids->class ^ pci->class) & ids->class_mask)) {
-            if (ids->func)
+            nếu (ids->func)
                 ids->func(pci, arg);
-            return 0;
+            trả_về 0;
         }
         ids++;
     }
-    return -1;
+    trả_về -1;
 }
 
 struct pci_device *
@@ -128,10 +128,10 @@ pci_find_init_device(const struct pci_device_id *ids, void *arg)
 {
     struct pci_device *pci;
     foreachpci(pci) {
-        if (pci_init_device(ids, pci, arg) == 0)
-            return pci;
+        nếu (pci_init_device(ids, pci, arg) == 0)
+            trả_về pci;
     }
-    return NULL;
+    trả_về NULL;
 }
 
 // Enable PCI bus-mastering (ie, DMA) support on a pci device
@@ -149,18 +149,18 @@ pci_enable_iobar(struct pci_device *pci, u32 addr)
 {
     wait_preempt();
     u32 bar = pci_config_readl(pci->bdf, addr);
-    if (!(bar & PCI_BASE_ADDRESS_SPACE_IO)) {
+    nếu (!(bar & PCI_BASE_ADDRESS_SPACE_IO)) {
         warn_internalerror();
-        return 0;
+        trả_về 0;
     }
     bar &= PCI_BASE_ADDRESS_IO_MASK;
-    if (bar == 0 || bar > 0xffff) {
+    nếu (bar == 0 || bar > 0xffff) {
         warn_internalerror();
-        return 0;
+        trả_về 0;
     }
     pci_config_maskw(pci->bdf, PCI_COMMAND, 0, PCI_COMMAND_IO);
     pci->have_driver = 1;
-    return bar;
+    trả_về bar;
 }
 
 // Verify a memory bar and return it to the caller
@@ -169,24 +169,24 @@ pci_enable_membar(struct pci_device *pci, u32 addr)
 {
     wait_preempt();
     u32 bar = pci_config_readl(pci->bdf, addr);
-    if (bar & PCI_BASE_ADDRESS_SPACE_IO) {
+    nếu (bar & PCI_BASE_ADDRESS_SPACE_IO) {
         warn_internalerror();
-        return NULL;
+        trả_về NULL;
     }
-    if (bar & PCI_BASE_ADDRESS_MEM_TYPE_64) {
+    nếu (bar & PCI_BASE_ADDRESS_MEM_TYPE_64) {
         u32 high = pci_config_readl(pci->bdf, addr+4);
-        if (high) {
+        nếu (high) {
             dprintf(1, "Can not map memory bar over 4Gig\n");
-            return NULL;
+            trả_về NULL;
         }
     }
     bar &= PCI_BASE_ADDRESS_MEM_MASK;
-    if (bar + 4*1024*1024 < 20*1024*1024) {
+    nếu (bar + 4*1024*1024 < 20*1024*1024) {
         // Bar doesn't look valid (it is in last 4M or first 16M)
         warn_internalerror();
-        return NULL;
+        trả_về NULL;
     }
     pci_config_maskw(pci->bdf, PCI_COMMAND, 0, PCI_COMMAND_MEMORY);
     pci->have_driver = 1;
-    return (void*)bar;
+    trả_về (void*)bar;
 }

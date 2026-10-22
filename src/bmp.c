@@ -13,9 +13,9 @@
 struct bmp_decdata {
     struct tagRGBQUAD *quadp;
     unsigned char *datap;
-    int width;
-    int height;
-    int bpp;
+    số_nguyên width;
+    số_nguyên height;
+    số_nguyên bpp;
 };
 
 #define bmp_load4byte(addr) (*(u32 *)(addr))
@@ -56,11 +56,11 @@ typedef struct tagRGBQUAD {
 *   arrange horizontal pixel data, add extra space in the dest buffer
 *       for every line
 */
-static void raw_data_format_adjust(u8 *src, u8 *dest, int width,
-		int height, int bytes_per_line_src, int bytes_per_line_dest)
+static void raw_data_format_adjust(u8 *src, u8 *dest, số_nguyên width,
+		số_nguyên height, số_nguyên bytes_per_line_src, số_nguyên bytes_per_line_dest)
 {
-    int i;
-    for (i = 0 ; i < height ; i++) {
+    số_nguyên i;
+    cho (i = 0 ; i < height ; i++) {
         memcpy(dest + i * bytes_per_line_dest,
            src + (height - 1 - i) * bytes_per_line_src, bytes_per_line_src);
     }
@@ -70,31 +70,31 @@ static void raw_data_format_adjust(u8 *src, u8 *dest, int width,
 struct bmp_decdata *bmp_alloc(void)
 {
     struct bmp_decdata *bmp = malloc_tmphigh(sizeof(*bmp));
-    return bmp;
+    trả_về bmp;
 }
 
 /* extract information from bmp file data */
-int bmp_decode(struct bmp_decdata *bmp, unsigned char *data, int data_size)
+số_nguyên bmp_decode(struct bmp_decdata *bmp, unsigned char *data, số_nguyên data_size)
 {
-    if (data_size < 54)
-        return 1;
+    nếu (data_size < 54)
+        trả_về 1;
 
     u16 bmp_filehead = bmp_load2byte(data + 0);
-    if (bmp_filehead != 0x4d42)
-        return 2;
+    nếu (bmp_filehead != 0x4d42)
+        trả_về 2;
     u32 bmp_recordsize = bmp_load4byte(data + 2);
-    if (bmp_recordsize != data_size)
-        return 3;
+    nếu (bmp_recordsize != data_size)
+        trả_về 3;
     u32 bmp_dataoffset = bmp_load4byte(data + 10);
     bmp->datap = (unsigned char *)data + bmp_dataoffset;
     bmp->width = bmp_load4byte(data + 18);
     bmp->height = bmp_load4byte(data + 22);
     bmp->bpp = bmp_load2byte(data + 28);
-    return 0;
+    trả_về 0;
 }
 
 /* get bmp properties */
-void bmp_get_info(struct bmp_decdata *bmp, int *width, int *height, int *bpp)
+void bmp_get_info(struct bmp_decdata *bmp, số_nguyên *width, số_nguyên *height, số_nguyên *bpp)
 {
     *width = bmp->width;
     *height = bmp->height;
@@ -102,15 +102,15 @@ void bmp_get_info(struct bmp_decdata *bmp, int *width, int *height, int *bpp)
 }
 
 /* flush flat picture data to *pc */
-int bmp_show(struct bmp_decdata *bmp, unsigned char *pic, int width,
-             int height, int depth, int bytes_per_line_dest)
+số_nguyên bmp_show(struct bmp_decdata *bmp, unsigned char *pic, số_nguyên width,
+             số_nguyên height, số_nguyên depth, số_nguyên bytes_per_line_dest)
 {
-    if (bmp->datap == pic)
-        return 0;
-    if ((depth == bmp->bpp) && (bmp->bpp%8 == 0)) {
+    nếu (bmp->datap == pic)
+        trả_về 0;
+    nếu ((depth == bmp->bpp) && (bmp->bpp%8 == 0)) {
         raw_data_format_adjust(bmp->datap, pic, width, height,
 			(bmp->bpp/8)*width, bytes_per_line_dest);
-        return 0;
+        trả_về 0;
     }
-    return 1;
+    trả_về 1;
 }

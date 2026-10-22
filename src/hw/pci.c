@@ -18,12 +18,12 @@ static u32 mmconfig;
 
 static void *mmconfig_addr(u16 bdf, u32 addr)
 {
-    return (void*)(mmconfig + ((u32)bdf << 12) + addr);
+    trả_về (void*)(mmconfig + ((u32)bdf << 12) + addr);
 }
 
 static u32 ioconfig_cmd(u16 bdf, u32 addr)
 {
-    return 0x80000000 | (bdf << 8) | (addr & 0xfc);
+    trả_về 0x80000000 | (bdf << 8) | (addr & 0xfc);
 }
 
 void pci_ioconfig_writel(u16 bdf, u32 addr, u32 val)
@@ -34,9 +34,9 @@ void pci_ioconfig_writel(u16 bdf, u32 addr, u32 val)
 
 void pci_config_writel(u16 bdf, u32 addr, u32 val)
 {
-    if (!MODESEGMENT && mmconfig) {
+    nếu (!MODESEGMENT && mmconfig) {
         writel(mmconfig_addr(bdf, addr), val);
-    } else {
+    } không_thì {
         pci_ioconfig_writel(bdf, addr, val);
     }
 }
@@ -49,9 +49,9 @@ void pci_ioconfig_writew(u16 bdf, u32 addr, u16 val)
 
 void pci_config_writew(u16 bdf, u32 addr, u16 val)
 {
-    if (!MODESEGMENT && mmconfig) {
+    nếu (!MODESEGMENT && mmconfig) {
         writew(mmconfig_addr(bdf, addr), val);
-    } else {
+    } không_thì {
         pci_ioconfig_writew(bdf, addr, val);
     }
 }
@@ -64,9 +64,9 @@ void pci_ioconfig_writeb(u16 bdf, u32 addr, u8 val)
 
 void pci_config_writeb(u16 bdf, u32 addr, u8 val)
 {
-    if (!MODESEGMENT && mmconfig) {
+    nếu (!MODESEGMENT && mmconfig) {
         writeb(mmconfig_addr(bdf, addr), val);
-    } else {
+    } không_thì {
         pci_ioconfig_writeb(bdf, addr, val);
     }
 }
@@ -74,45 +74,45 @@ void pci_config_writeb(u16 bdf, u32 addr, u8 val)
 u32 pci_ioconfig_readl(u16 bdf, u32 addr)
 {
     outl(ioconfig_cmd(bdf, addr), PORT_PCI_CMD);
-    return inl(PORT_PCI_DATA);
+    trả_về inl(PORT_PCI_DATA);
 }
 
 u32 pci_config_readl(u16 bdf, u32 addr)
 {
-    if (!MODESEGMENT && mmconfig) {
-        return readl(mmconfig_addr(bdf, addr));
-    } else {
-        return pci_ioconfig_readl(bdf, addr);
+    nếu (!MODESEGMENT && mmconfig) {
+        trả_về readl(mmconfig_addr(bdf, addr));
+    } không_thì {
+        trả_về pci_ioconfig_readl(bdf, addr);
     }
 }
 
 u16 pci_ioconfig_readw(u16 bdf, u32 addr)
 {
     outl(ioconfig_cmd(bdf, addr), PORT_PCI_CMD);
-    return inw(PORT_PCI_DATA + (addr & 2));
+    trả_về inw(PORT_PCI_DATA + (addr & 2));
 }
 
 u16 pci_config_readw(u16 bdf, u32 addr)
 {
-    if (!MODESEGMENT && mmconfig) {
-        return readw(mmconfig_addr(bdf, addr));
-    } else {
-        return pci_ioconfig_readw(bdf, addr);
+    nếu (!MODESEGMENT && mmconfig) {
+        trả_về readw(mmconfig_addr(bdf, addr));
+    } không_thì {
+        trả_về pci_ioconfig_readw(bdf, addr);
     }
 }
 
 u8 pci_ioconfig_readb(u16 bdf, u32 addr)
 {
     outl(ioconfig_cmd(bdf, addr), PORT_PCI_CMD);
-    return inb(PORT_PCI_DATA + (addr & 3));
+    trả_về inb(PORT_PCI_DATA + (addr & 3));
 }
 
 u8 pci_config_readb(u16 bdf, u32 addr)
 {
-    if (!MODESEGMENT && mmconfig) {
-        return readb(mmconfig_addr(bdf, addr));
-    } else {
-        return pci_ioconfig_readb(bdf, addr);
+    nếu (!MODESEGMENT && mmconfig) {
+        trả_về readb(mmconfig_addr(bdf, addr));
+    } không_thì {
+        trả_về pci_ioconfig_readb(bdf, addr);
     }
 }
 
@@ -127,101 +127,101 @@ pci_config_maskw(u16 bdf, u32 addr, u16 off, u16 on)
 void
 pci_enable_mmconfig(u64 addr, const char *name)
 {
-    if (addr >= 0x100000000ll)
-        return;
+    nếu (addr >= 0x100000000ll)
+        trả_về;
     dprintf(1, "PCIe: using %s mmconfig at 0x%llx\n", name, addr);
     mmconfig = addr;
 }
 
 u8 pci_find_capability(u16 bdf, u8 cap_id, u8 cap)
 {
-    int i;
+    số_nguyên i;
     u16 status = pci_config_readw(bdf, PCI_STATUS);
 
-    if (!(status & PCI_STATUS_CAP_LIST))
-        return 0;
+    nếu (!(status & PCI_STATUS_CAP_LIST))
+        trả_về 0;
 
-    if (cap == 0) {
+    nếu (cap == 0) {
         /* find first */
         cap = pci_config_readb(bdf, PCI_CAPABILITY_LIST);
-    } else {
+    } không_thì {
         /* find next */
         cap = pci_config_readb(bdf, cap + PCI_CAP_LIST_NEXT);
     }
-    for (i = 0; cap && i <= 0xff; i++) {
-        if (pci_config_readb(bdf, cap + PCI_CAP_LIST_ID) == cap_id)
-            return cap;
+    cho (i = 0; cap && i <= 0xff; i++) {
+        nếu (pci_config_readb(bdf, cap + PCI_CAP_LIST_ID) == cap_id)
+            trả_về cap;
         cap = pci_config_readb(bdf, cap + PCI_CAP_LIST_NEXT);
     }
 
-    return 0;
+    trả_về 0;
 }
 
 // Helper function for pci_ioconfig_foreachbdf() macro - return next device
-int pci_ioconfig_next(int bdf, int bus)
+số_nguyên pci_ioconfig_next(số_nguyên bdf, số_nguyên bus)
 {
-    if (pci_bdf_to_fn(bdf) == 0
+    nếu (pci_bdf_to_fn(bdf) == 0
         && (pci_ioconfig_readb(bdf, PCI_HEADER_TYPE) & 0x80) == 0)
         // Last found device wasn't a multi-function device - skip to
         // the next device.
         bdf += 8;
-    else
+    không_thì
         bdf += 1;
 
-    for (;;) {
-        if (pci_bdf_to_bus(bdf) != bus)
-            return -1;
+    cho (;;) {
+        nếu (pci_bdf_to_bus(bdf) != bus)
+            trả_về -1;
 
         u16 v = pci_ioconfig_readw(bdf, PCI_VENDOR_ID);
-        if (v != 0x0000 && v != 0xffff)
+        nếu (v != 0x0000 && v != 0xffff)
             // Device is present.
-            return bdf;
+            trả_về bdf;
 
-        if (pci_bdf_to_fn(bdf) == 0)
+        nếu (pci_bdf_to_fn(bdf) == 0)
             bdf += 8;
-        else
+        không_thì
             bdf += 1;
     }
 }
 
 // Helper function for foreachbdf() macro - return next device
-int
-pci_next(int bdf, int bus)
+số_nguyên
+pci_next(số_nguyên bdf, số_nguyên bus)
 {
-    if (pci_bdf_to_fn(bdf) == 0
+    nếu (pci_bdf_to_fn(bdf) == 0
         && (pci_config_readb(bdf, PCI_HEADER_TYPE) & 0x80) == 0)
         // Last found device wasn't a multi-function device - skip to
         // the next device.
         bdf += 8;
-    else
+    không_thì
         bdf += 1;
 
-    for (;;) {
-        if (pci_bdf_to_bus(bdf) != bus)
-            return -1;
+    cho (;;) {
+        nếu (pci_bdf_to_bus(bdf) != bus)
+            trả_về -1;
 
         u16 v = pci_config_readw(bdf, PCI_VENDOR_ID);
-        if (v != 0x0000 && v != 0xffff)
+        nếu (v != 0x0000 && v != 0xffff)
             // Device is present.
-            return bdf;
+            trả_về bdf;
 
-        if (pci_bdf_to_fn(bdf) == 0)
+        nếu (pci_bdf_to_fn(bdf) == 0)
             bdf += 8;
-        else
+        không_thì
             bdf += 1;
     }
 }
 
 // Check if PCI is available at all
-int
+số_nguyên
 pci_probe_host(void)
 {
     outl(0x80000000, PORT_PCI_CMD);
-    if (inl(PORT_PCI_CMD) != 0x80000000) {
+    nếu (inl(PORT_PCI_CMD) != 0x80000000) {
         dprintf(1, "Detected non-PCI system\n");
-        return -1;
+        trả_về -1;
     }
-    return 0;
+    trả_về 0;
 }
 
 void

@@ -23,7 +23,7 @@ struct usb_ehci_s {
     struct ehci_caps *caps;
     struct ehci_regs *regs;
     struct ehci_qh *async_qh;
-    int checkports;
+    số_nguyên checkports;
 };
 
 struct ehci_pipe {
@@ -33,7 +33,7 @@ struct ehci_pipe {
     struct usb_pipe pipe;
 };
 
-static int PendingEHCI;
+static số_nguyên PendingEHCI;
 
 
 /****************************************************************
@@ -44,21 +44,21 @@ static int PendingEHCI;
 #define EHCI_TIME_POSTRESET 2
 
 // Check if device attached to port
-static int
+static số_nguyên
 ehci_hub_detect(struct usbhub_s *hub, u32 port)
 {
     struct usb_ehci_s *cntl = container_of(hub->cntl, struct usb_ehci_s, usb);
     u32 *portreg = &cntl->regs->portsc[port];
     u32 portsc = readl(portreg);
 
-    if (!(portsc & PORT_CONNECT))
+    nếu (!(portsc & PORT_CONNECT))
         // No device present
-        return 0;
+        trả_về 0;
 
-    if ((portsc & PORT_LINESTATUS_MASK) == PORT_LINESTATUS_KSTATE) {
+    nếu ((portsc & PORT_LINESTATUS_MASK) == PORT_LINESTATUS_KSTATE) {
         // low speed device
         writel(portreg, portsc | PORT_OWNER);
-        return -1;
+        trả_về -1;
     }
 
     // XXX - if just powered up, need to wait for USB_TIME_ATTDB?
@@ -67,11 +67,11 @@ ehci_hub_detect(struct usbhub_s *hub, u32 port)
     portsc = (portsc & ~PORT_PE) | PORT_RESET;
     writel(portreg, portsc);
     msleep(USB_TIME_DRSTR);
-    return 1;
+    trả_về 1;
 }
 
 // Reset device on port
-static int
+static số_nguyên
 ehci_hub_reset(struct usbhub_s *hub, u32 port)
 {
     struct usb_ehci_s *cntl = container_of(hub->cntl, struct usb_ehci_s, usb);
@@ -84,16 +84,16 @@ ehci_hub_reset(struct usbhub_s *hub, u32 port)
     msleep(EHCI_TIME_POSTRESET);
 
     portsc = readl(portreg);
-    if (!(portsc & PORT_CONNECT))
+    nếu (!(portsc & PORT_CONNECT))
         // No longer connected
-        return -1;
-    if (!(portsc & PORT_PE)) {
+        trả_về -1;
+    nếu (!(portsc & PORT_PE)) {
         // full speed device
         writel(portreg, portsc | PORT_OWNER);
-        return -1;
+        trả_về -1;
     }
 
-    return USB_HIGHSPEED;
+    trả_về USB_HIGHSPEED;
 }
 
 // Disable port
@@ -113,15 +113,15 @@ static struct usbhub_op_s ehci_HubOp = {
 };
 
 // Find any devices connected to the root hub.
-static int
+static số_nguyên
 check_ehci_ports(struct usb_ehci_s *cntl)
 {
     // Power up ports.
-    int i;
-    for (i=0; i<cntl->checkports; i++) {
+    số_nguyên i;
+    cho (i=0; i<cntl->checkports; i++) {
         u32 *portreg = &cntl->regs->portsc[i];
         u32 portsc = readl(portreg);
-        if (!(portsc & PORT_POWER)) {
+        nếu (!(portsc & PORT_POWER)) {
             portsc |= PORT_POWER;
             writel(portreg, portsc);
         }
@@ -134,7 +134,7 @@ check_ehci_ports(struct usb_ehci_s *cntl)
     hub.portcount = cntl->checkports;
     hub.op = &ehci_HubOp;
     usb_enumerate(&hub);
-    return hub.devcount;
+    trả_về hub.devcount;
 }
 
 
@@ -146,37 +146,37 @@ check_ehci_ports(struct usb_ehci_s *cntl)
 static void
 ehci_waittick(struct usb_ehci_s *cntl)
 {
-    if (MODE16) {
+    nếu (MODE16) {
         msleep(10);
-        return;
+        trả_về;
     }
     // Wait for access to "doorbell"
     barrier();
     u32 cmd, sts;
     u32 end = timer_calc(100);
-    for (;;) {
+    cho (;;) {
         sts = readl(&cntl->regs->usbsts);
-        if (!(sts & STS_IAA)) {
+        nếu (!(sts & STS_IAA)) {
             cmd = readl(&cntl->regs->usbcmd);
-            if (!(cmd & CMD_IAAD))
+            nếu (!(cmd & CMD_IAAD))
                 break;
         }
-        if (timer_check(end)) {
+        nếu (timer_check(end)) {
             warn_timeout();
-            return;
+            trả_về;
         }
         yield();
     }
     // Ring "doorbell"
     writel(&cntl->regs->usbcmd, cmd | CMD_IAAD);
     // Wait for completion
-    for (;;) {
+    cho (;;) {
         sts = readl(&cntl->regs->usbsts);
-        if (sts & STS_IAA)
+        nếu (sts & STS_IAA)
             break;
-        if (timer_check(end)) {
+        nếu (timer_check(end)) {
             warn_timeout();
-            return;
+            trả_về;
         }
         yield();
     }
@@ -191,20 +191,20 @@ ehci_free_pipes(struct usb_ehci_s *cntl)
 
     struct ehci_qh *start = cntl->async_qh;
     struct ehci_qh *pos = start;
-    for (;;) {
+    cho (;;) {
         struct ehci_qh *next = (void*)(pos->next & ~EHCI_PTR_BITS);
-        if (next == start)
+        nếu (next == start)
             break;
         struct ehci_pipe *pipe = container_of(next, struct ehci_pipe, qh);
-        if (usb_is_freelist(&cntl->usb, &pipe->pipe))
+        nếu (usb_is_freelist(&cntl->usb, &pipe->pipe))
             pos->next = next->next;
-        else
+        không_thì
             pos = next;
     }
     ehci_waittick(cntl);
-    for (;;) {
+    cho (;;) {
         struct usb_pipe *usbpipe = cntl->usb.freelist;
-        if (!usbpipe)
+        nếu (!usbpipe)
             break;
         cntl->usb.freelist = usbpipe->freenext;
         struct ehci_pipe *pipe = container_of(usbpipe, struct ehci_pipe, pipe);
@@ -221,7 +221,7 @@ configure_ehci(void *data)
     struct ehci_framelist *fl = memalign_high(sizeof(*fl), sizeof(*fl));
     struct ehci_qh *intr_qh = memalign_high(EHCI_QH_ALIGN, sizeof(*intr_qh));
     struct ehci_qh *async_qh = memalign_high(EHCI_QH_ALIGN, sizeof(*async_qh));
-    if (!fl || !intr_qh || !async_qh) {
+    nếu (!fl || !intr_qh || !async_qh) {
         warn_noalloc();
         PendingEHCI--;
         goto fail;
@@ -233,11 +233,11 @@ configure_ehci(void *data)
     u32 cmd = readl(&cntl->regs->usbcmd);
     writel(&cntl->regs->usbcmd, (cmd & ~(CMD_ASE | CMD_PSE)) | CMD_HCRESET);
     u32 end = timer_calc(250);
-    for (;;) {
+    cho (;;) {
         cmd = readl(&cntl->regs->usbcmd);
-        if (!(cmd & CMD_HCRESET))
+        nếu (!(cmd & CMD_HCRESET))
             break;
-        if (timer_check(end)) {
+        nếu (timer_check(end)) {
             warn_timeout();
             PendingEHCI--;
             goto fail;
@@ -254,8 +254,8 @@ configure_ehci(void *data)
     intr_qh->info2 = (0x01 << QH_SMASK_SHIFT);
     intr_qh->token = QTD_STS_HALT;
     intr_qh->qtd_next = intr_qh->alt_next = EHCI_PTR_TERM;
-    int i;
-    for (i=0; i<ARRAY_SIZE(fl->links); i++)
+    số_nguyên i;
+    cho (i=0; i<ARRAY_SIZE(fl->links); i++)
         fl->links[i] = (u32)intr_qh | EHCI_PTR_QH;
     writel(&cntl->regs->periodiclistbase, (u32)fl);
 
@@ -276,11 +276,11 @@ configure_ehci(void *data)
     PendingEHCI--;
 
     // Find devices
-    int count = check_ehci_ports(cntl);
+    số_nguyên count = check_ehci_ports(cntl);
     ehci_free_pipes(cntl);
-    if (count)
+    nếu (count)
         // Success
-        return;
+        trả_về;
 
     // No devices found - shutdown and free controller.
     writel(&cntl->regs->usbcmd, cmd & ~CMD_RUN);
@@ -296,14 +296,14 @@ static void
 ehci_controller_setup(struct pci_device *pci)
 {
     struct ehci_caps *caps = pci_enable_membar(pci, PCI_BASE_ADDRESS_0);
-    if (!caps)
-        return;
+    nếu (!caps)
+        trả_về;
     u32 hcc_params = readl(&caps->hccparams);
 
     struct usb_ehci_s *cntl = malloc_tmphigh(sizeof(*cntl));
-    if (!cntl) {
+    nếu (!cntl) {
         warn_noalloc();
-        return;
+        trả_về;
     }
     memset(cntl, 0, sizeof(*cntl));
     cntl->usb.pci = pci;
@@ -311,7 +311,7 @@ ehci_controller_setup(struct pci_device *pci)
     cntl->caps = caps;
     cntl->checkports = readl(&cntl->caps->hcsparams) & HCS_N_PORTS_MASK;
     cntl->regs = (void*)caps + readb(&caps->caplength);
-    if (hcc_params & HCC_64BIT_ADDR)
+    nếu (hcc_params & HCC_64BIT_ADDR)
         cntl->regs->ctrldssegment = 0;
     PendingEHCI++;
 
@@ -327,11 +327,11 @@ ehci_controller_setup(struct pci_device *pci)
 void
 ehci_setup(void)
 {
-    if (! CONFIG_USB_EHCI)
-        return;
+    nếu (! CONFIG_USB_EHCI)
+        trả_về;
     struct pci_device *pci;
     foreachpci(pci) {
-        if (pci_classprog(pci) == PCI_CLASS_SERIAL_USB_EHCI)
+        nếu (pci_classprog(pci) == PCI_CLASS_SERIAL_USB_EHCI)
             ehci_controller_setup(pci);
     }
 }
@@ -341,7 +341,7 @@ ehci_setup(void)
 void
 ehci_wait_controllers(void)
 {
-    while (CONFIG_USB_EHCI && CONFIG_THREADS && PendingEHCI)
+    trong_khi (CONFIG_USB_EHCI && CONFIG_THREADS && PendingEHCI)
         yield();
 }
 
@@ -364,21 +364,21 @@ ehci_desc2pipe(struct ehci_pipe *pipe, struct usbdevice_s *usbdev
 
     pipe->qh.info2 = (1 << QH_MULT_SHIFT);
     struct usbdevice_s *hubdev = usbdev->hub->usbdev;
-    if (hubdev) {
+    nếu (hubdev) {
         struct ehci_pipe *hpipe = container_of(
             hubdev->defpipe, struct ehci_pipe, pipe);
-        if (hpipe->pipe.speed == USB_HIGHSPEED)
+        nếu (hpipe->pipe.speed == USB_HIGHSPEED)
             pipe->qh.info2 |= (((usbdev->port+1) << QH_HUBPORT_SHIFT)
                                | (hpipe->pipe.devaddr << QH_HUBADDR_SHIFT));
-        else
+        không_thì
             pipe->qh.info2 = hpipe->qh.info2;
     }
 
     u8 eptype = epdesc->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK;
-    if (eptype == USB_ENDPOINT_XFER_CONTROL)
+    nếu (eptype == USB_ENDPOINT_XFER_CONTROL)
         pipe->qh.info1 |= ((pipe->pipe.speed != USB_HIGHSPEED ? QH_CONTROL : 0)
                            | QH_TOGGLECONTROL);
-    else if (eptype == USB_ENDPOINT_XFER_INT)
+    không_thì nếu (eptype == USB_ENDPOINT_XFER_INT)
         pipe->qh.info2 |= (0x01 << QH_SMASK_SHIFT) | (0x1c << QH_CMASK_SHIFT);
 }
 
@@ -388,19 +388,19 @@ ehci_alloc_intr_pipe(struct usbdevice_s *usbdev
 {
     struct usb_ehci_s *cntl = container_of(
         usbdev->hub->cntl, struct usb_ehci_s, usb);
-    int frameexp = usb_get_period(usbdev, epdesc);
+    số_nguyên frameexp = usb_get_period(usbdev, epdesc);
     dprintf(7, "ehci_alloc_intr_pipe %p %d\n", &cntl->usb, frameexp);
 
-    if (frameexp > 10)
+    nếu (frameexp > 10)
         frameexp = 10;
-    int maxpacket = epdesc->wMaxPacketSize;
+    số_nguyên maxpacket = epdesc->wMaxPacketSize;
     // Determine number of entries needed for 2 timer ticks.
-    int ms = 1<<frameexp;
-    int count = DIV_ROUND_UP(ticks_to_ms(2), ms);
+    số_nguyên ms = 1<<frameexp;
+    số_nguyên count = DIV_ROUND_UP(ticks_to_ms(2), ms);
     struct ehci_pipe *pipe = memalign_low(EHCI_QH_ALIGN, sizeof(*pipe));
     struct ehci_qtd *tds = memalign_low(EHCI_QTD_ALIGN, sizeof(*tds) * count);
     void *data = malloc_low(maxpacket * count);
-    if (!pipe || !tds || !data) {
+    nếu (!pipe || !tds || !data) {
         warn_noalloc();
         goto fail;
     }
@@ -412,8 +412,8 @@ ehci_alloc_intr_pipe(struct usbdevice_s *usbdev
     pipe->data = data;
     pipe->qh.qtd_next = (u32)tds;
 
-    int i;
-    for (i=0; i<count; i++) {
+    số_nguyên i;
+    cho (i=0; i<count; i++) {
         struct ehci_qtd *td = &tds[i];
         td->qtd_next = (i==count-1 ? (u32)tds : (u32)&td[1]);
         td->alt_next = EHCI_PTR_TERM;
@@ -424,62 +424,62 @@ ehci_alloc_intr_pipe(struct usbdevice_s *usbdev
 
     // Add to interrupt schedule.
     struct ehci_framelist *fl = (void*)readl(&cntl->regs->periodiclistbase);
-    if (frameexp == 0) {
+    nếu (frameexp == 0) {
         // Add to existing interrupt entry.
         struct ehci_qh *intr_qh = (void*)(fl->links[0] & ~EHCI_PTR_BITS);
         pipe->qh.next = intr_qh->next;
         barrier();
         intr_qh->next = (u32)&pipe->qh | EHCI_PTR_QH;
-    } else {
-        int startpos = 1<<(frameexp-1);
+    } không_thì {
+        số_nguyên startpos = 1<<(frameexp-1);
         pipe->qh.next = fl->links[startpos];
         barrier();
-        for (i=startpos; i<ARRAY_SIZE(fl->links); i+=ms)
+        cho (i=startpos; i<ARRAY_SIZE(fl->links); i+=ms)
             fl->links[i] = (u32)&pipe->qh | EHCI_PTR_QH;
     }
 
-    return &pipe->pipe;
+    trả_về &pipe->pipe;
 fail:
     free(pipe);
     free(tds);
     free(data);
-    return NULL;
+    trả_về NULL;
 }
 
 struct usb_pipe *
 ehci_realloc_pipe(struct usbdevice_s *usbdev, struct usb_pipe *upipe
                   , struct usb_endpoint_descriptor *epdesc)
 {
-    if (! CONFIG_USB_EHCI)
-        return NULL;
+    nếu (! CONFIG_USB_EHCI)
+        trả_về NULL;
     usb_add_freelist(upipe);
-    if (!epdesc)
-        return NULL;
+    nếu (!epdesc)
+        trả_về NULL;
     u8 eptype = epdesc->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK;
-    if (eptype == USB_ENDPOINT_XFER_INT)
-        return ehci_alloc_intr_pipe(usbdev, epdesc);
+    nếu (eptype == USB_ENDPOINT_XFER_INT)
+        trả_về ehci_alloc_intr_pipe(usbdev, epdesc);
     struct usb_ehci_s *cntl = container_of(
         usbdev->hub->cntl, struct usb_ehci_s, usb);
     dprintf(7, "ehci_alloc_async_pipe %p %d\n", &cntl->usb, eptype);
 
     struct usb_pipe *usbpipe = usb_get_freelist(&cntl->usb, eptype);
-    if (usbpipe) {
+    nếu (usbpipe) {
         // Use previously allocated pipe.
         struct ehci_pipe *pipe = container_of(usbpipe, struct ehci_pipe, pipe);
         ehci_desc2pipe(pipe, usbdev, epdesc);
         pipe->qh.token = 0;
-        return usbpipe;
+        trả_về usbpipe;
     }
 
     // Allocate a new queue head.
     struct ehci_pipe *pipe;
-    if (eptype == USB_ENDPOINT_XFER_CONTROL)
+    nếu (eptype == USB_ENDPOINT_XFER_CONTROL)
         pipe = memalign_tmphigh(EHCI_QH_ALIGN, sizeof(*pipe));
-    else
+    không_thì
         pipe = memalign_low(EHCI_QH_ALIGN, sizeof(*pipe));
-    if (!pipe) {
+    nếu (!pipe) {
         warn_noalloc();
-        return NULL;
+        trả_về NULL;
     }
     memset(pipe, 0, sizeof(*pipe));
     ehci_desc2pipe(pipe, usbdev, epdesc);
@@ -490,7 +490,7 @@ ehci_realloc_pipe(struct usbdevice_s *usbdev, struct usb_pipe *upipe
     pipe->qh.next = async_qh->next;
     barrier();
     async_qh->next = (u32)&pipe->qh | EHCI_PTR_QH;
-    return &pipe->pipe;
+    trả_về &pipe->pipe;
 }
 
 static void
@@ -502,15 +502,15 @@ ehci_reset_pipe(struct ehci_pipe *pipe)
     SET_LOWFLAT(pipe->qh.token, GET_LOWFLAT(pipe->qh.token) & QTD_TOGGLE);
 }
 
-static int
+static số_nguyên
 ehci_wait_td(struct ehci_pipe *pipe, struct ehci_qtd *td, u32 end)
 {
     u32 status;
-    for (;;) {
+    cho (;;) {
         status = td->token;
-        if (!(status & QTD_STS_ACTIVE))
+        nếu (!(status & QTD_STS_ACTIVE))
             break;
-        if (timer_check(end)) {
+        nếu (timer_check(end)) {
             u32 cur = GET_LOWFLAT(pipe->qh.current);
             u32 tok = GET_LOWFLAT(pipe->qh.token);
             u32 next = GET_LOWFLAT(pipe->qh.qtd_next);
@@ -521,34 +521,34 @@ ehci_wait_td(struct ehci_pipe *pipe, struct ehci_qtd *td, u32 end)
             struct usb_ehci_s *cntl = container_of(
                 GET_LOWFLAT(pipe->pipe.cntl), struct usb_ehci_s, usb);
             ehci_waittick(cntl);
-            return -1;
+            trả_về -1;
         }
         yield();
     }
-    if (status & QTD_STS_HALT) {
+    nếu (status & QTD_STS_HALT) {
         dprintf(1, "ehci_wait_td error - status=%x\n", status);
         ehci_reset_pipe(pipe);
-        return -2;
+        trả_về -2;
     }
-    return 0;
+    trả_về 0;
 }
 
 static void
-ehci_fill_tdbuf(struct ehci_qtd *td, u32 dest, int transfer)
+ehci_fill_tdbuf(struct ehci_qtd *td, u32 dest, số_nguyên transfer)
 {
     u32 *pos = td->buf, end = dest + transfer;
-    for (; dest < end; dest = ALIGN_DOWN(dest + PAGE_SIZE, PAGE_SIZE))
+    cho (; dest < end; dest = ALIGN_DOWN(dest + PAGE_SIZE, PAGE_SIZE))
         *pos++ = dest;
 }
 
 #define STACKQTDS 6
 
-int
-ehci_send_pipe(struct usb_pipe *p, int dir, const void *cmd
-               , void *data, int datasize)
+số_nguyên
+ehci_send_pipe(struct usb_pipe *p, số_nguyên dir, const void *cmd
+               , void *data, số_nguyên datasize)
 {
-    if (! CONFIG_USB_EHCI)
-        return -1;
+    nếu (! CONFIG_USB_EHCI)
+        trả_về -1;
     struct ehci_pipe *pipe = container_of(p, struct ehci_pipe, pipe);
     dprintf(7, "ehci_send_pipe qh=%p dir=%d data=%p size=%d\n"
             , &pipe->qh, dir, data, datasize);
@@ -561,7 +561,7 @@ ehci_send_pipe(struct usb_pipe *p, int dir, const void *cmd
     // Setup transfer descriptors
     u16 maxpacket = GET_LOWFLAT(pipe->pipe.maxpacket);
     u32 toggle = 0;
-    if (cmd) {
+    nếu (cmd) {
         // Send setup pid on control transfers
         td->qtd_next = (u32)MAKE_FLATPTR(GET_SEG(SS), td+1);
         td->alt_next = EHCI_PTR_TERM;
@@ -572,15 +572,15 @@ ehci_send_pipe(struct usb_pipe *p, int dir, const void *cmd
         toggle = QTD_TOGGLE;
     }
     u32 dest = (u32)data, dataend = dest + datasize;
-    while (dest < dataend) {
+    trong_khi (dest < dataend) {
         // Send data pids
-        if (td >= &tds[STACKQTDS]) {
+        nếu (td >= &tds[STACKQTDS]) {
             warn_noalloc();
-            return -1;
+            trả_về -1;
         }
-        int maxtransfer = 5*PAGE_SIZE - (dest & (PAGE_SIZE-1));
-        int transfer = dataend - dest;
-        if (transfer > maxtransfer)
+        số_nguyên maxtransfer = 5*PAGE_SIZE - (dest & (PAGE_SIZE-1));
+        số_nguyên transfer = dataend - dest;
+        nếu (transfer > maxtransfer)
             transfer = ALIGN_DOWN(maxtransfer, maxpacket);
         td->qtd_next = (u32)MAKE_FLATPTR(GET_SEG(SS), td+1);
         td->alt_next = EHCI_PTR_TERM;
@@ -590,11 +590,11 @@ ehci_send_pipe(struct usb_pipe *p, int dir, const void *cmd
         td++;
         dest += transfer;
     }
-    if (cmd) {
+    nếu (cmd) {
         // Send status pid on control transfers
-        if (td >= &tds[STACKQTDS]) {
+        nếu (td >= &tds[STACKQTDS]) {
             warn_noalloc();
-            return -1;
+            trả_về -1;
         }
         td->qtd_next = EHCI_PTR_TERM;
         td->alt_next = EHCI_PTR_TERM;
@@ -608,33 +608,33 @@ ehci_send_pipe(struct usb_pipe *p, int dir, const void *cmd
     barrier();
     SET_LOWFLAT(pipe->qh.qtd_next, (u32)MAKE_FLATPTR(GET_SEG(SS), tds));
     u32 end = timer_calc(usb_xfer_time(p, datasize));
-    int i;
-    for (i=0, td=tds; i<STACKQTDS; i++, td++) {
-        int ret = ehci_wait_td(pipe, td, end);
-        if (ret)
-            return -1;
+    số_nguyên i;
+    cho (i=0, td=tds; i<STACKQTDS; i++, td++) {
+        số_nguyên ret = ehci_wait_td(pipe, td, end);
+        nếu (ret)
+            trả_về -1;
     }
 
-    return 0;
+    trả_về 0;
 }
 
-int
+số_nguyên
 ehci_poll_intr(struct usb_pipe *p, void *data)
 {
     ASSERT16();
-    if (! CONFIG_USB_EHCI)
-        return -1;
+    nếu (! CONFIG_USB_EHCI)
+        trả_về -1;
     struct ehci_pipe *pipe = container_of(p, struct ehci_pipe, pipe);
     struct ehci_qtd *td = GET_LOWFLAT(pipe->next_td);
     u32 token = GET_LOWFLAT(td->token);
-    if (token & QTD_STS_ACTIVE)
+    nếu (token & QTD_STS_ACTIVE)
         // No intrs found.
-        return -1;
+        trả_về -1;
     // XXX - check for errors.
 
     // Copy data.
-    int maxpacket = GET_LOWFLAT(pipe->pipe.maxpacket);
-    int pos = td - GET_LOWFLAT(pipe->tds);
+    số_nguyên maxpacket = GET_LOWFLAT(pipe->pipe.maxpacket);
+    số_nguyên pos = td - GET_LOWFLAT(pipe->tds);
     void *tddata = GET_LOWFLAT(pipe->data) + maxpacket * pos;
     memcpy_far(GET_SEG(SS), data, SEG_LOW, LOWFLAT2LOW(tddata), maxpacket);
 
@@ -646,5 +646,5 @@ ehci_poll_intr(struct usb_pipe *p, void *data)
     SET_LOWFLAT(td->token, (ehci_explen(maxpacket) | QTD_STS_ACTIVE
                             | QTD_PID_IN | ehci_maxerr(3)));
 
-    return 0;
+    trả_về 0;
 }

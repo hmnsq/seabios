@@ -16,7 +16,7 @@
 
 extern struct pmmheader PMMHEADER;
 
-#if CONFIG_PMM
+#nếu CONFIG_PMM
 struct pmmheader PMMHEADER __aligned(16) VARFSEG = {
     .signature = PMM_SIGNATURE,
     .version = 0x01,
@@ -33,50 +33,50 @@ handle_pmm00(u16 *args)
     dprintf(3, "pmm00: length=%x handle=%x flags=%x\n"
             , length, handle, flags);
     struct zone_s *lowzone = &ZoneTmpLow, *highzone = &ZoneTmpHigh;
-    if (flags & 8) {
+    nếu (flags & 8) {
         // Permanent memory request.
         lowzone = &ZoneLow;
         highzone = &ZoneHigh;
     }
-    if (!length) {
+    nếu (!length) {
         // Memory size request
         switch (flags & 3) {
         default:
         case 0:
-            return 0;
+            trả_về 0;
         case 1:
-            return malloc_getspace(lowzone);
+            trả_về malloc_getspace(lowzone);
         case 2:
-            return malloc_getspace(highzone);
+            trả_về malloc_getspace(highzone);
         case 3: {
             u32 spacelow = malloc_getspace(lowzone);
             u32 spacehigh = malloc_getspace(highzone);
-            if (spacelow > spacehigh)
-                return spacelow;
-            return spacehigh;
+            nếu (spacelow > spacehigh)
+                trả_về spacelow;
+            trả_về spacehigh;
         }
         }
     }
     u32 size = length * 16;
-    if ((s32)size <= 0)
-        return 0;
+    nếu ((s32)size <= 0)
+        trả_về 0;
     u32 align = MALLOC_MIN_ALIGN;
-    if (flags & 4) {
+    nếu (flags & 4) {
         align = 1<<__ffs(size);
-        if (align < MALLOC_MIN_ALIGN)
+        nếu (align < MALLOC_MIN_ALIGN)
             align = MALLOC_MIN_ALIGN;
     }
     u32 data;
     switch (flags & 3) {
     default:
     case 0:
-        return 0;
+        trả_về 0;
     case 1:
         data = malloc_palloc(lowzone, size, align);
         break;
     case 2:
         data = malloc_palloc(highzone, size, align);
-        if (!data && (flags & 8)) {
+        nếu (!data && (flags & 8)) {
             /*
              * We are out of meory.  So go allocate from the (big)
              * ZoneTmpHigh instead and reserve the block in the e820
@@ -85,19 +85,19 @@ handle_pmm00(u16 *args)
              * ZoneHigh.
              */
             data = malloc_palloc(&ZoneTmpHigh, size, align);
-            if (data)
+            nếu (data)
                 e820_add(data, size, E820_RESERVED);
         }
         break;
     case 3: {
         data = malloc_palloc(lowzone, size, align);
-        if (!data)
+        nếu (!data)
             data = malloc_palloc(highzone, size, align);
     }
     }
-    if (data && handle != MALLOC_DEFAULT_HANDLE)
+    nếu (data && handle != MALLOC_DEFAULT_HANDLE)
         malloc_sethandle(data, handle);
-    return data;
+    trả_về data;
 }
 
 // PMM - find
@@ -106,9 +106,9 @@ handle_pmm01(u16 *args)
 {
     u32 handle = *(u32*)&args[1];
     dprintf(3, "pmm01: handle=%x\n", handle);
-    if (handle == MALLOC_DEFAULT_HANDLE)
-        return 0;
-    return malloc_findhandle(handle);
+    nếu (handle == MALLOC_DEFAULT_HANDLE)
+        trả_về 0;
+    trả_về malloc_findhandle(handle);
 }
 
 // PMM - deallocate
@@ -117,25 +117,25 @@ handle_pmm02(u16 *args)
 {
     u32 buffer = *(u32*)&args[1];
     dprintf(3, "pmm02: buffer=%x\n", buffer);
-    int ret = malloc_pfree(buffer);
-    if (ret)
+    số_nguyên ret = malloc_pfree(buffer);
+    nếu (ret)
         // Error
-        return 1;
-    return 0;
+        trả_về 1;
+    trả_về 0;
 }
 
 static u32
 handle_pmmXX(u16 *args)
 {
-    return PMM_FUNCTION_NOT_SUPPORTED;
+    trả_về PMM_FUNCTION_NOT_SUPPORTED;
 }
 
 u32 VISIBLE32INIT
 handle_pmm(u16 *args)
 {
     ASSERT32FLAT();
-    if (! CONFIG_PMM)
-        return PMM_FUNCTION_NOT_SUPPORTED;
+    nếu (! CONFIG_PMM)
+        trả_về PMM_FUNCTION_NOT_SUPPORTED;
 
     u16 arg1 = args[0];
     dprintf(DEBUG_HDL_pmm, "pmm call arg1=%x\n", arg1);
@@ -148,14 +148,14 @@ handle_pmm(u16 *args)
     default:   ret = handle_pmmXX(args); break;
     }
 
-    return ret;
+    trả_về ret;
 }
 
 void
 pmm_init(void)
 {
-    if (! CONFIG_PMM)
-        return;
+    nếu (! CONFIG_PMM)
+        trả_về;
 
     dprintf(3, "init PMM\n");
 
@@ -166,8 +166,8 @@ pmm_init(void)
 void
 pmm_prepboot(void)
 {
-    if (! CONFIG_PMM)
-        return;
+    nếu (! CONFIG_PMM)
+        trả_về;
 
     dprintf(3, "finalize PMM\n");
 

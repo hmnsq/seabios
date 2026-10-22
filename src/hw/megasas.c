@@ -117,60 +117,60 @@ struct megasas_lun_s {
     u8 lun;
 };
 
-static int megasas_fire_cmd(u16 pci_id, u32 ioaddr,
+static số_nguyên megasas_fire_cmd(u16 pci_id, u32 ioaddr,
                             struct megasas_cmd_frame *frame)
 {
     u32 frame_addr = (u32)frame;
-    int frame_count = 1;
+    số_nguyên frame_count = 1;
     u8 cmd_state;
 
     dprintf(2, "Frame 0x%x\n", frame_addr);
-    if (pci_id == PCI_DEVICE_ID_LSI_SAS2004 ||
+    nếu (pci_id == PCI_DEVICE_ID_LSI_SAS2004 ||
         pci_id == PCI_DEVICE_ID_LSI_SAS2008) {
         outl(0, ioaddr + MFI_IQPH);
         outl(frame_addr | frame_count << 1 | 1, ioaddr + MFI_IQPL);
-    } else if (pci_id == PCI_DEVICE_ID_DELL_PERC5 ||
+    } không_thì nếu (pci_id == PCI_DEVICE_ID_DELL_PERC5 ||
                pci_id == PCI_DEVICE_ID_LSI_SAS1064R ||
                pci_id == PCI_DEVICE_ID_LSI_VERDE_ZCR) {
         outl(frame_addr >> 3 | frame_count, ioaddr + MFI_IQP);
-    } else {
+    } không_thì {
         outl(frame_addr | frame_count << 1 | 1, ioaddr + MFI_IQP);
     }
 
     u32 end = timer_calc(MEGASAS_POLL_TIMEOUT);
     do {
-        for (;;) {
+        cho (;;) {
             cmd_state = GET_LOWFLAT(frame->cmd_status);
-            if (cmd_state != 0xff)
+            nếu (cmd_state != 0xff)
                 break;
-            if (timer_check(end)) {
+            nếu (timer_check(end)) {
                 warn_timeout();
-                return -1;
+                trả_về -1;
             }
             yield();
         }
-    } while (cmd_state == 0xff);
+    } trong_khi (cmd_state == 0xff);
 
-    if (cmd_state == 0 || cmd_state == 0x2d)
-        return 0;
+    nếu (cmd_state == 0 || cmd_state == 0x2d)
+        trả_về 0;
     dprintf(1, "ERROR: Frame 0x%x, status 0x%x\n", frame_addr, cmd_state);
-    return -1;
+    trả_về -1;
 }
 
-int
+số_nguyên
 megasas_process_op(struct disk_op_s *op)
 {
-    if (!CONFIG_MEGASAS)
-        return DISK_RET_EBADTRACK;
+    nếu (!CONFIG_MEGASAS)
+        trả_về DISK_RET_EBADTRACK;
     u8 cdb[16];
-    int blocksize = scsi_fill_cmd(op, cdb, sizeof(cdb));
-    if (blocksize < 0)
-        return default_process_op(op);
+    số_nguyên blocksize = scsi_fill_cmd(op, cdb, sizeof(cdb));
+    nếu (blocksize < 0)
+        trả_về default_process_op(op);
     struct megasas_lun_s *mlun_gf =
         container_of(op->drive_fl, struct megasas_lun_s, drive);
     struct megasas_cmd_frame *frame = GET_GLOBALFLAT(mlun_gf->frame);
     u16 pci_id = GET_GLOBALFLAT(mlun_gf->pci_id);
-    int i;
+    số_nguyên i;
 
     memset_fl(frame, 0, sizeof(*frame));
     SET_LOWFLAT(frame->cmd, MFI_CMD_LD_SCSI_IO);
@@ -181,36 +181,36 @@ megasas_process_op(struct disk_op_s *op)
     SET_LOWFLAT(frame->data_xfer_len, op->count * blocksize);
     SET_LOWFLAT(frame->cdb_len, 16);
 
-    for (i = 0; i < 16; i++) {
+    cho (i = 0; i < 16; i++) {
         SET_LOWFLAT(frame->pthru.cdb[i], cdb[i]);
     }
     dprintf(2, "pthru cmd 0x%x count %d bs %d\n",
             cdb[0], op->count, blocksize);
 
-    if (op->count) {
+    nếu (op->count) {
         SET_LOWFLAT(frame->pthru.sgl_addr, (u32)op->buf_fl);
         SET_LOWFLAT(frame->pthru.sgl_len, op->count * blocksize);
         SET_LOWFLAT(frame->sge_count, 1);
     }
     SET_LOWFLAT(frame->context, (u32)frame);
 
-    if (megasas_fire_cmd(pci_id, GET_GLOBALFLAT(mlun_gf->iobase), frame) == 0)
-        return DISK_RET_SUCCESS;
+    nếu (megasas_fire_cmd(pci_id, GET_GLOBALFLAT(mlun_gf->iobase), frame) == 0)
+        trả_về DISK_RET_SUCCESS;
 
     dprintf(2, "pthru cmd 0x%x failed\n", cdb[0]);
-    return DISK_RET_EBADTRACK;
+    trả_về DISK_RET_EBADTRACK;
 }
 
-static int
+static số_nguyên
 megasas_add_lun(struct pci_device *pci, u32 iobase, u8 target, u8 lun)
 {
     struct megasas_lun_s *mlun = malloc_fseg(sizeof(*mlun));
     char *name;
-    int prio, ret = 0;
+    số_nguyên prio, ret = 0;
 
-    if (!mlun) {
+    nếu (!mlun) {
         warn_noalloc();
-        return -1;
+        trả_về -1;
     }
     memset(mlun, 0, sizeof(*mlun));
     mlun->drive.type = DTYPE_MEGASAS;
@@ -220,10 +220,10 @@ megasas_add_lun(struct pci_device *pci, u32 iobase, u8 target, u8 lun)
     mlun->lun = lun;
     mlun->iobase = iobase;
     mlun->frame = memalign_low(256, sizeof(struct megasas_cmd_frame));
-    if (!mlun->frame) {
+    nếu (!mlun->frame) {
         warn_noalloc();
         free(mlun);
-        return -1;
+        trả_về -1;
     }
     boot_lchs_find_scsi_device(pci, target, lun, &(mlun->drive.lchs));
     name = znprintf(MAXDESCSIZE, "MegaRAID SAS (PCI %pP) LD %d:%d"
@@ -231,22 +231,22 @@ megasas_add_lun(struct pci_device *pci, u32 iobase, u8 target, u8 lun)
     prio = bootprio_find_scsi_device(pci, target, lun);
     ret = scsi_drive_setup(&mlun->drive, name, prio);
     free(name);
-    if (ret) {
+    nếu (ret) {
         free(mlun->frame);
         free(mlun);
         ret = -1;
     }
 
-    return ret;
+    trả_về ret;
 }
 
 static void megasas_scan_target(struct pci_device *pci, u32 iobase)
 {
     struct mfi_ld_list_s ld_list;
     struct megasas_cmd_frame *frame = memalign_tmp(256, sizeof(*frame));
-    if (!frame) {
+    nếu (!frame) {
         warn_noalloc();
-        return;
+        trả_về;
     }
 
     memset(&ld_list, 0, sizeof(ld_list));
@@ -262,14 +262,14 @@ static void megasas_scan_target(struct pci_device *pci, u32 iobase)
     frame->dcmd.sgl_len = sizeof(ld_list);
     frame->context = (u32)frame;
 
-    if (megasas_fire_cmd(pci->device, iobase, frame) == 0) {
+    nếu (megasas_fire_cmd(pci->device, iobase, frame) == 0) {
         dprintf(2, "%d LD found\n", ld_list.count);
-        int i;
-        for (i = 0; i < ld_list.count; i++) {
+        số_nguyên i;
+        cho (i = 0; i < ld_list.count; i++) {
             dprintf(2, "LD %d:%d state 0x%x\n",
                     ld_list.lds[i].target, ld_list.lds[i].lun,
                     ld_list.lds[i].state);
-            if (ld_list.lds[i].state != 0) {
+            nếu (ld_list.lds[i].state != 0) {
                 megasas_add_lun(pci, iobase,
                                 ld_list.lds[i].target, ld_list.lds[i].lun);
             }
@@ -277,84 +277,84 @@ static void megasas_scan_target(struct pci_device *pci, u32 iobase)
     }
 }
 
-static int megasas_transition_to_ready(struct pci_device *pci, u32 ioaddr)
+static số_nguyên megasas_transition_to_ready(struct pci_device *pci, u32 ioaddr)
 {
     u32 fw_state = 0, new_state, mfi_flags = 0;
 
-    if (pci->device == PCI_DEVICE_ID_LSI_SAS1064R ||
+    nếu (pci->device == PCI_DEVICE_ID_LSI_SAS1064R ||
         pci->device == PCI_DEVICE_ID_DELL_PERC5)
         new_state = inl(ioaddr + MFI_OMSG0) & MFI_STATE_MASK;
-    else
+    không_thì
         new_state = inl(ioaddr + MFI_OSP0) & MFI_STATE_MASK;
 
-    while (fw_state != new_state) {
+    trong_khi (fw_state != new_state) {
         switch (new_state) {
         case MFI_STATE_FAULT:
             dprintf(1, "ERROR: fw in fault state\n");
-            return -1;
+            trả_về -1;
             break;
         case MFI_STATE_WAIT_HANDSHAKE:
             mfi_flags = 0x08;
             /* fallthrough */
         case MFI_STATE_BOOT_MESSAGE_PENDING:
             mfi_flags |= 0x10;
-            if (pci->device == PCI_DEVICE_ID_LSI_SAS2004 ||
+            nếu (pci->device == PCI_DEVICE_ID_LSI_SAS2004 ||
                 pci->device == PCI_DEVICE_ID_LSI_SAS2008 ||
                 pci->device == PCI_DEVICE_ID_LSI_SAS2208 ||
                 pci->device == PCI_DEVICE_ID_LSI_SAS3108) {
                 outl(mfi_flags, ioaddr + MFI_DB);
-            } else {
+            } không_thì {
                 outl(mfi_flags, ioaddr + MFI_IDB);
             }
             break;
         case MFI_STATE_OPERATIONAL:
             mfi_flags = 0x07;
-            if (pci->device == PCI_DEVICE_ID_LSI_SAS2004 ||
+            nếu (pci->device == PCI_DEVICE_ID_LSI_SAS2004 ||
                 pci->device == PCI_DEVICE_ID_LSI_SAS2008 ||
                 pci->device == PCI_DEVICE_ID_LSI_SAS2208 ||
                 pci->device == PCI_DEVICE_ID_LSI_SAS3108) {
                 outl(mfi_flags, ioaddr + MFI_DB);
-                if (pci->device == PCI_DEVICE_ID_LSI_SAS2208 ||
+                nếu (pci->device == PCI_DEVICE_ID_LSI_SAS2208 ||
                     pci->device == PCI_DEVICE_ID_LSI_SAS3108) {
-                    int j = 0;
+                    số_nguyên j = 0;
                     u32 doorbell;
 
-                    while (j < MEGASAS_POLL_TIMEOUT) {
+                    trong_khi (j < MEGASAS_POLL_TIMEOUT) {
                         doorbell = inl(ioaddr + MFI_DB) & 1;
-                        if (!doorbell)
+                        nếu (!doorbell)
                             break;
                         msleep(20);
                         j++;
                     }
                 }
-            } else {
+            } không_thì {
                 outl(mfi_flags, ioaddr + MFI_IDB);
             }
             break;
         case MFI_STATE_READY:
             dprintf(2, "MegaRAID SAS fw ready\n");
-            return 0;
+            trả_về 0;
         }
         // The current state should not last longer than poll timeout
         u32 end = timer_calc(MEGASAS_POLL_TIMEOUT);
-        for (;;) {
-            if (timer_check(end)) {
+        cho (;;) {
+            nếu (timer_check(end)) {
                 break;
             }
             yield();
             fw_state = new_state;
-            if (pci->device == PCI_DEVICE_ID_LSI_SAS1064R ||
+            nếu (pci->device == PCI_DEVICE_ID_LSI_SAS1064R ||
                 pci->device == PCI_DEVICE_ID_DELL_PERC5)
                 new_state = inl(ioaddr + MFI_OMSG0) & MFI_STATE_MASK;
-            else
+            không_thì
                 new_state = inl(ioaddr + MFI_OSP0) & MFI_STATE_MASK;
-            if (new_state != fw_state) {
+            nếu (new_state != fw_state) {
                 break;
             }
         }
     }
     dprintf(1, "ERROR: fw in state %x\n", new_state & MFI_STATE_MASK);
-    return -1;
+    trả_về -1;
 }
 
 static void
@@ -362,17 +362,17 @@ init_megasas(void *data)
 {
     struct pci_device *pci = data;
     u32 bar = PCI_BASE_ADDRESS_2;
-    if (!(pci_config_readl(pci->bdf, bar) & PCI_BASE_ADDRESS_IO_MASK))
+    nếu (!(pci_config_readl(pci->bdf, bar) & PCI_BASE_ADDRESS_IO_MASK))
         bar = PCI_BASE_ADDRESS_0;
     u32 iobase = pci_enable_iobar(pci, bar);
-    if (!iobase)
-        return;
+    nếu (!iobase)
+        trả_về;
     pci_enable_busmaster(pci);
 
     dprintf(1, "found MegaRAID SAS at %pP, io @ %x\n", pci, iobase);
 
     // reset
-    if (megasas_transition_to_ready(pci, iobase) == 0)
+    nếu (megasas_transition_to_ready(pci, iobase) == 0)
         megasas_scan_target(pci, iobase);
 }
 
@@ -380,17 +380,17 @@ void
 megasas_setup(void)
 {
     ASSERT32FLAT();
-    if (!CONFIG_MEGASAS)
-        return;
+    nếu (!CONFIG_MEGASAS)
+        trả_về;
 
     dprintf(3, "init megasas\n");
 
     struct pci_device *pci;
     foreachpci(pci) {
-        if (pci->vendor != PCI_VENDOR_ID_LSI_LOGIC &&
+        nếu (pci->vendor != PCI_VENDOR_ID_LSI_LOGIC &&
             pci->vendor != PCI_VENDOR_ID_DELL)
             continue;
-        if (pci->device == PCI_DEVICE_ID_LSI_SAS1064R ||
+        nếu (pci->device == PCI_DEVICE_ID_LSI_SAS1064R ||
             pci->device == PCI_DEVICE_ID_LSI_SAS1078 ||
             pci->device == PCI_DEVICE_ID_LSI_SAS1078DE ||
             pci->device == PCI_DEVICE_ID_LSI_SAS2108 ||

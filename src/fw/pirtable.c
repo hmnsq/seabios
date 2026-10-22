@@ -92,8 +92,8 @@ static struct pir_table PIR_TABLE = {
 void
 pirtable_setup(void)
 {
-    if (! CONFIG_PIRTABLE)
-        return;
+    nếu (! CONFIG_PIRTABLE)
+        trả_về;
 
     dprintf(3, "init PIR table\n");
 

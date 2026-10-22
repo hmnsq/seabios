@@ -35,59 +35,59 @@ usb_realloc_pipe(struct usbdevice_s *usbdev, struct usb_pipe *pipe
     switch (usbdev->hub->cntl->type) {
     default:
     case USB_TYPE_UHCI:
-        return uhci_realloc_pipe(usbdev, pipe, epdesc);
+        trả_về uhci_realloc_pipe(usbdev, pipe, epdesc);
     case USB_TYPE_OHCI:
-        return ohci_realloc_pipe(usbdev, pipe, epdesc);
+        trả_về ohci_realloc_pipe(usbdev, pipe, epdesc);
     case USB_TYPE_EHCI:
-        return ehci_realloc_pipe(usbdev, pipe, epdesc);
+        trả_về ehci_realloc_pipe(usbdev, pipe, epdesc);
     case USB_TYPE_XHCI:
-        return xhci_realloc_pipe(usbdev, pipe, epdesc);
+        trả_về xhci_realloc_pipe(usbdev, pipe, epdesc);
     }
 }
 
 // Send a message on a control pipe using the default control descriptor.
-static int
-usb_send_pipe(struct usb_pipe *pipe_fl, int dir, const void *cmd
-              , void *data, int datasize)
+static số_nguyên
+usb_send_pipe(struct usb_pipe *pipe_fl, số_nguyên dir, const void *cmd
+              , void *data, số_nguyên datasize)
 {
     switch (GET_LOWFLAT(pipe_fl->type)) {
     default:
     case USB_TYPE_UHCI:
-        return uhci_send_pipe(pipe_fl, dir, cmd, data, datasize);
+        trả_về uhci_send_pipe(pipe_fl, dir, cmd, data, datasize);
     case USB_TYPE_OHCI:
-        if (MODESEGMENT)
-            return -1;
-        return ohci_send_pipe(pipe_fl, dir, cmd, data, datasize);
+        nếu (MODESEGMENT)
+            trả_về -1;
+        trả_về ohci_send_pipe(pipe_fl, dir, cmd, data, datasize);
     case USB_TYPE_EHCI:
-        return ehci_send_pipe(pipe_fl, dir, cmd, data, datasize);
+        trả_về ehci_send_pipe(pipe_fl, dir, cmd, data, datasize);
     case USB_TYPE_XHCI:
-        if (MODESEGMENT)
-            return -1;
-        return xhci_send_pipe(pipe_fl, dir, cmd, data, datasize);
+        nếu (MODESEGMENT)
+            trả_về -1;
+        trả_về xhci_send_pipe(pipe_fl, dir, cmd, data, datasize);
     }
 }
 
-int
+số_nguyên
 usb_poll_intr(struct usb_pipe *pipe_fl, void *data)
 {
     ASSERT16();
     switch (GET_LOWFLAT(pipe_fl->type)) {
     default:
     case USB_TYPE_UHCI:
-        return uhci_poll_intr(pipe_fl, data);
+        trả_về uhci_poll_intr(pipe_fl, data);
     case USB_TYPE_OHCI:
-        return ohci_poll_intr(pipe_fl, data);
+        trả_về ohci_poll_intr(pipe_fl, data);
     case USB_TYPE_EHCI:
-        return ehci_poll_intr(pipe_fl, data);
+        trả_về ehci_poll_intr(pipe_fl, data);
     case USB_TYPE_XHCI: ;
-        return call32_params(xhci_poll_intr, pipe_fl
+        trả_về call32_params(xhci_poll_intr, pipe_fl
                              , MAKE_FLATPTR(GET_SEG(SS), data), 0, -1);
     }
 }
 
-int usb_32bit_pipe(struct usb_pipe *pipe_fl)
+số_nguyên usb_32bit_pipe(struct usb_pipe *pipe_fl)
 {
-    return (CONFIG_USB_XHCI && GET_LOWFLAT(pipe_fl->type) == USB_TYPE_XHCI)
+    trả_về (CONFIG_USB_XHCI && GET_LOWFLAT(pipe_fl->type) == USB_TYPE_XHCI)
         || (CONFIG_USB_OHCI && GET_LOWFLAT(pipe_fl->type) == USB_TYPE_OHCI);
 }
 
@@ -101,47 +101,47 @@ struct usb_pipe *
 usb_alloc_pipe(struct usbdevice_s *usbdev
                , struct usb_endpoint_descriptor *epdesc)
 {
-    return usb_realloc_pipe(usbdev, NULL, epdesc);
+    trả_về usb_realloc_pipe(usbdev, NULL, epdesc);
 }
 
 // Free an allocated control or bulk pipe.
 void
 usb_free_pipe(struct usbdevice_s *usbdev, struct usb_pipe *pipe)
 {
-    if (!pipe)
-        return;
+    nếu (!pipe)
+        trả_về;
     usb_realloc_pipe(usbdev, pipe, NULL);
 }
 
 // Send a message to the default control pipe of a device.
-int
+số_nguyên
 usb_send_default_control(struct usb_pipe *pipe, const struct usb_ctrlrequest *req
                          , void *data)
 {
-    return usb_send_pipe(pipe, req->bRequestType & USB_DIR_IN, req
+    trả_về usb_send_pipe(pipe, req->bRequestType & USB_DIR_IN, req
                          , data, req->wLength);
 }
 
 // Send a message to a bulk endpoint
-int
-usb_send_bulk(struct usb_pipe *pipe_fl, int dir, void *data, int datasize)
+số_nguyên
+usb_send_bulk(struct usb_pipe *pipe_fl, số_nguyên dir, void *data, số_nguyên datasize)
 {
-    return usb_send_pipe(pipe_fl, dir, NULL, data, datasize);
+    trả_về usb_send_pipe(pipe_fl, dir, NULL, data, datasize);
 }
 
 // Check if a pipe for a given controller is on the freelist
-int
+số_nguyên
 usb_is_freelist(struct usb_s *cntl, struct usb_pipe *pipe)
 {
-    return pipe->cntl != cntl;
+    trả_về pipe->cntl != cntl;
 }
 
 // Add a pipe to the controller's freelist
 void
 usb_add_freelist(struct usb_pipe *pipe)
 {
-    if (!pipe)
-        return;
+    nếu (!pipe)
+        trả_về;
     struct usb_s *cntl = pipe->cntl;
     pipe->freenext = cntl->freelist;
     cntl->freelist = pipe;
@@ -152,13 +152,13 @@ struct usb_pipe *
 usb_get_freelist(struct usb_s *cntl, u8 eptype)
 {
     struct usb_pipe **pfree = &cntl->freelist;
-    for (;;) {
+    cho (;;) {
         struct usb_pipe *pipe = *pfree;
-        if (!pipe)
-            return NULL;
-        if (pipe->eptype == eptype) {
+        nếu (!pipe)
+            trả_về NULL;
+        nếu (pipe->eptype == eptype) {
             *pfree = pipe->freenext;
-            return pipe;
+            trả_về pipe;
         }
         pfree = &pipe->freenext;
     }
@@ -179,49 +179,49 @@ usb_desc2pipe(struct usb_pipe *pipe, struct usbdevice_s *usbdev
 }
 
 // Find the exponential period of the requested interrupt end point.
-int
+số_nguyên
 usb_get_period(struct usbdevice_s *usbdev
                , struct usb_endpoint_descriptor *epdesc)
 {
-    int period = epdesc->bInterval;
-    if (usbdev->speed != USB_HIGHSPEED)
-        return (period <= 0) ? 0 : __fls(period);
-    return (period <= 4) ? 0 : period - 4;
+    số_nguyên period = epdesc->bInterval;
+    nếu (usbdev->speed != USB_HIGHSPEED)
+        trả_về (period <= 0) ? 0 : __fls(period);
+    trả_về (period <= 4) ? 0 : period - 4;
 }
 
 // Maximum time (in ms) a data transfer should take
-int
-usb_xfer_time(struct usb_pipe *pipe, int datalen)
+số_nguyên
+usb_xfer_time(struct usb_pipe *pipe, số_nguyên datalen)
 {
     // Use the maximum command time (5 seconds), except for
     // set_address commands where we don't want to stall the boot if
     // the device doesn't actually exist.  Add 100ms to account for
     // any controller delays.
-    if (!GET_LOWFLAT(pipe->devaddr))
-        return USB_TIME_STATUS + 100;
-    return USB_TIME_COMMAND + 100;
+    nếu (!GET_LOWFLAT(pipe->devaddr))
+        trả_về USB_TIME_STATUS + 100;
+    trả_về USB_TIME_COMMAND + 100;
 }
 
 // Find the first endpoint of a given type in an interface description.
 struct usb_endpoint_descriptor *
-usb_find_desc(struct usbdevice_s *usbdev, int type, int dir)
+usb_find_desc(struct usbdevice_s *usbdev, số_nguyên type, số_nguyên dir)
 {
     struct usb_endpoint_descriptor *epdesc = (void*)&usbdev->iface[1];
-    for (;;) {
-        if ((void*)epdesc >= (void*)usbdev->iface + usbdev->imax
+    cho (;;) {
+        nếu ((void*)epdesc >= (void*)usbdev->iface + usbdev->imax
             || epdesc->bDescriptorType == USB_DT_INTERFACE) {
-            return NULL;
+            trả_về NULL;
         }
-        if (epdesc->bDescriptorType == USB_DT_ENDPOINT
+        nếu (epdesc->bDescriptorType == USB_DT_ENDPOINT
             && (epdesc->bEndpointAddress & USB_ENDPOINT_DIR_MASK) == dir
             && (epdesc->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK) == type)
-            return epdesc;
+            trả_về epdesc;
         epdesc = (void*)epdesc + epdesc->bLength;
     }
 }
 
 // Get the first 8 bytes of the device descriptor.
-static int
+static số_nguyên
 get_device_info8(struct usb_pipe *pipe, struct usb_device_descriptor *dinfo)
 {
     struct usb_ctrlrequest req;
@@ -230,7 +230,7 @@ get_device_info8(struct usb_pipe *pipe, struct usb_device_descriptor *dinfo)
     req.wValue = USB_DT_DEVICE<<8;
     req.wIndex = 0;
     req.wLength = 8;
-    return usb_send_default_control(pipe, &req, dinfo);
+    trả_về usb_send_default_control(pipe, &req, dinfo);
 }
 
 static struct usb_config_descriptor *
@@ -244,26 +244,26 @@ get_device_config(struct usb_pipe *pipe)
     req.wValue = USB_DT_CONFIG<<8;
     req.wIndex = 0;
     req.wLength = sizeof(cfg);
-    int ret = usb_send_default_control(pipe, &req, &cfg);
-    if (ret)
-        return NULL;
+    số_nguyên ret = usb_send_default_control(pipe, &req, &cfg);
+    nếu (ret)
+        trả_về NULL;
 
     struct usb_config_descriptor *config = malloc_tmphigh(cfg.wTotalLength);
-    if (!config) {
+    nếu (!config) {
         warn_noalloc();
-        return NULL;
+        trả_về NULL;
     }
     req.wLength = cfg.wTotalLength;
     ret = usb_send_default_control(pipe, &req, config);
-    if (ret || config->wTotalLength != cfg.wTotalLength) {
+    nếu (ret || config->wTotalLength != cfg.wTotalLength) {
         free(config);
-        return NULL;
+        trả_về NULL;
     }
     //hexdump(config, cfg.wTotalLength);
-    return config;
+    trả_về config;
 }
 
-static int
+static số_nguyên
 set_configuration(struct usb_pipe *pipe, u16 val)
 {
     struct usb_ctrlrequest req;
@@ -272,7 +272,7 @@ set_configuration(struct usb_pipe *pipe, u16 val)
     req.wValue = val;
     req.wIndex = 0;
     req.wLength = 0;
-    return usb_send_default_control(pipe, &req, NULL);
+    trả_về usb_send_default_control(pipe, &req, NULL);
 }
 
 
@@ -280,7 +280,7 @@ set_configuration(struct usb_pipe *pipe, u16 val)
  * Initialization and enumeration
  ****************************************************************/
 
-static const int speed_to_ctlsize[] = {
+static const số_nguyên speed_to_ctlsize[] = {
     [ USB_FULLSPEED  ] = 8,
     [ USB_LOWSPEED   ] = 8,
     [ USB_HIGHSPEED  ] = 64,
@@ -289,14 +289,14 @@ static const int speed_to_ctlsize[] = {
 
 // Assign an address to a device in the default state on the given
 // controller.
-static int
+static số_nguyên
 usb_set_address(struct usbdevice_s *usbdev)
 {
     ASSERT32FLAT();
     struct usb_s *cntl = usbdev->hub->cntl;
     dprintf(3, "set_address %p\n", cntl);
-    if (cntl->maxaddr >= USB_MAXADDR)
-        return -1;
+    nếu (cntl->maxaddr >= USB_MAXADDR)
+        trả_về -1;
 
     msleep(USB_TIME_RSTRCY);
 
@@ -306,8 +306,8 @@ usb_set_address(struct usbdevice_s *usbdev)
         .bmAttributes = USB_ENDPOINT_XFER_CONTROL,
     };
     usbdev->defpipe = usb_alloc_pipe(usbdev, &epdesc);
-    if (!usbdev->defpipe)
-        return -1;
+    nếu (!usbdev->defpipe)
+        trả_về -1;
 
     // Send set_address command.
     struct usb_ctrlrequest req;
@@ -316,10 +316,10 @@ usb_set_address(struct usbdevice_s *usbdev)
     req.wValue = cntl->maxaddr + 1;
     req.wIndex = 0;
     req.wLength = 0;
-    int ret = usb_send_default_control(usbdev->defpipe, &req, NULL);
-    if (ret) {
+    số_nguyên ret = usb_send_default_control(usbdev->defpipe, &req, NULL);
+    nếu (ret) {
         usb_free_pipe(usbdev, usbdev->defpipe);
-        return -1;
+        trả_về -1;
     }
 
     msleep(USB_TIME_SETADDR_RECOVERY);
@@ -327,14 +327,14 @@ usb_set_address(struct usbdevice_s *usbdev)
     cntl->maxaddr++;
     usbdev->devaddr = cntl->maxaddr;
     usbdev->defpipe = usb_realloc_pipe(usbdev, usbdev->defpipe, &epdesc);
-    if (!usbdev->defpipe)
-        return -1;
-    return 0;
+    nếu (!usbdev->defpipe)
+        trả_về -1;
+    trả_về 0;
 }
 
 // Called for every found device - see if a driver is available for
 // this device and do setup if so.
-static int
+static số_nguyên
 configure_usb_device(struct usbdevice_s *usbdev)
 {
     ASSERT32FLAT();
@@ -342,42 +342,42 @@ configure_usb_device(struct usbdevice_s *usbdev)
 
     // Set the max packet size for endpoint 0 of this device.
     struct usb_device_descriptor dinfo;
-    int ret = get_device_info8(usbdev->defpipe, &dinfo);
-    if (ret)
-        return 0;
+    số_nguyên ret = get_device_info8(usbdev->defpipe, &dinfo);
+    nếu (ret)
+        trả_về 0;
     u16 maxpacket = dinfo.bMaxPacketSize0;
-    if (dinfo.bcdUSB >= 0x0300)
+    nếu (dinfo.bcdUSB >= 0x0300)
         maxpacket = 1 << dinfo.bMaxPacketSize0;
     dprintf(3, "device rev=%04x cls=%02x sub=%02x proto=%02x size=%d\n"
             , dinfo.bcdUSB, dinfo.bDeviceClass, dinfo.bDeviceSubClass
             , dinfo.bDeviceProtocol, maxpacket);
-    if (maxpacket < 8)
-        return 0;
+    nếu (maxpacket < 8)
+        trả_về 0;
     struct usb_endpoint_descriptor epdesc = {
         .wMaxPacketSize = maxpacket,
         .bmAttributes = USB_ENDPOINT_XFER_CONTROL,
     };
     usbdev->defpipe = usb_realloc_pipe(usbdev, usbdev->defpipe, &epdesc);
-    if (!usbdev->defpipe)
-        return -1;
+    nếu (!usbdev->defpipe)
+        trả_về -1;
 
     // Get configuration
     struct usb_config_descriptor *config = get_device_config(usbdev->defpipe);
-    if (!config)
-        return 0;
+    nếu (!config)
+        trả_về 0;
 
     // Determine if a driver exists for this device - only look at the
     // interfaces of the first configuration.
-    int num_iface = config->bNumInterfaces;
+    số_nguyên num_iface = config->bNumInterfaces;
     void *config_end = (void*)config + config->wTotalLength;
     struct usb_interface_descriptor *iface = (void*)(&config[1]);
-    for (;;) {
-        if (!num_iface || (void*)iface + iface->bLength > config_end)
+    cho (;;) {
+        nếu (!num_iface || (void*)iface + iface->bLength > config_end)
             // Not a supported device.
             goto fail;
-        if (iface->bDescriptorType == USB_DT_INTERFACE) {
+        nếu (iface->bDescriptorType == USB_DT_INTERFACE) {
             num_iface--;
-            if (iface->bInterfaceClass == USB_CLASS_HUB
+            nếu (iface->bInterfaceClass == USB_CLASS_HUB
                 || (iface->bInterfaceClass == USB_CLASS_MASS_STORAGE
                     && (iface->bInterfaceProtocol == US_PR_BULK
                         || iface->bInterfaceProtocol == US_PR_UAS))
@@ -390,30 +390,30 @@ configure_usb_device(struct usbdevice_s *usbdev)
 
     // Set the configuration.
     ret = set_configuration(usbdev->defpipe, config->bConfigurationValue);
-    if (ret)
+    nếu (ret)
         goto fail;
 
     // Configure driver.
     usbdev->config = config;
     usbdev->iface = iface;
     usbdev->imax = (void*)config + config->wTotalLength - (void*)iface;
-    if (iface->bInterfaceClass == USB_CLASS_HUB)
+    nếu (iface->bInterfaceClass == USB_CLASS_HUB)
         ret = usb_hub_setup(usbdev);
-    else if (iface->bInterfaceClass == USB_CLASS_MASS_STORAGE) {
-        if (iface->bInterfaceProtocol == US_PR_BULK)
+    không_thì nếu (iface->bInterfaceClass == USB_CLASS_MASS_STORAGE) {
+        nếu (iface->bInterfaceProtocol == US_PR_BULK)
             ret = usb_msc_setup(usbdev);
-        if (iface->bInterfaceProtocol == US_PR_UAS)
+        nếu (iface->bInterfaceProtocol == US_PR_UAS)
             ret = usb_uas_setup(usbdev);
-    } else
+    } không_thì
         ret = usb_hid_setup(usbdev);
-    if (ret)
+    nếu (ret)
         goto fail;
 
     free(config);
-    return 1;
+    trả_về 1;
 fail:
     free(config);
-    return 0;
+    trả_về 0;
 }
 
 static void
@@ -423,13 +423,13 @@ usb_hub_port_setup(void *data)
     struct usbhub_s *hub = usbdev->hub;
     u32 port = usbdev->port;
 
-    for (;;) {
+    cho (;;) {
         // Detect if device present (and possibly start reset)
-        int ret = hub->op->detect(hub, port);
-        if (ret > 0)
+        số_nguyên ret = hub->op->detect(hub, port);
+        nếu (ret > 0)
             // Device connected.
             break;
-        if (ret < 0 || timer_check(hub->detectend))
+        nếu (ret < 0 || timer_check(hub->detectend))
             // No device found.
             goto done;
         msleep(5);
@@ -439,30 +439,30 @@ usb_hub_port_setup(void *data)
 
     // Reset port and determine device speed
     mutex_lock(&hub->cntl->resetlock);
-    int ret = hub->op->reset(hub, port);
-    if (ret < 0)
+    số_nguyên ret = hub->op->reset(hub, port);
+    nếu (ret < 0)
         // Reset failed
         goto resetfail;
     usbdev->speed = ret;
 
     // Set address of port
     ret = usb_set_address(usbdev);
-    if (ret) {
+    nếu (ret) {
         hub->op->disconnect(hub, port);
         goto resetfail;
     }
     mutex_unlock(&hub->cntl->resetlock);
 
     // Configure the device
-    int count = configure_usb_device(usbdev);
+    số_nguyên count = configure_usb_device(usbdev);
     usb_free_pipe(usbdev, usbdev->defpipe);
-    if (!count)
+    nếu (!count)
         hub->op->disconnect(hub, port);
     hub->devcount += count;
 done:
     hub->threads--;
     free(usbdev);
-    return;
+    trả_về;
 
 resetfail:
     mutex_unlock(&hub->cntl->resetlock);
@@ -479,10 +479,10 @@ usb_enumerate(struct usbhub_s *hub)
     hub->detectend = timer_calc(usb_time_sigatt);
 
     // Launch a thread for every port.
-    int i;
-    for (i=0; i<portcount; i++) {
+    số_nguyên i;
+    cho (i=0; i<portcount; i++) {
         struct usbdevice_s *usbdev = malloc_tmphigh(sizeof(*usbdev));
-        if (!usbdev) {
+        nếu (!usbdev) {
             warn_noalloc();
             continue;
         }
@@ -493,7 +493,7 @@ usb_enumerate(struct usbhub_s *hub)
     }
 
     // Wait for threads to complete.
-    while (hub->threads)
+    trong_khi (hub->threads)
         yield();
 }
 
@@ -501,8 +501,8 @@ void
 usb_setup(void)
 {
     ASSERT32FLAT();
-    if (! CONFIG_USB)
-        return;
+    nếu (! CONFIG_USB)
+        trả_về;
     dprintf(3, "init usb\n");
     usb_time_sigatt = romfile_loadint("etc/usb-time-sigatt", USB_TIME_SIGATT);
     xhci_setup();

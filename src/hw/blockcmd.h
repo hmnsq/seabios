@@ -128,14 +128,14 @@ struct cdbres_mode_sense_geom {
 
 // blockcmd.c
 struct disk_op_s;
-int scsi_fill_cmd(struct disk_op_s *op, void *cdbcmd, int maxcdb);
-int scsi_is_read(struct disk_op_s *op);
-int scsi_is_ready(struct disk_op_s *op);
+số_nguyên scsi_fill_cmd(struct disk_op_s *op, void *cdbcmd, số_nguyên maxcdb);
+số_nguyên scsi_is_read(struct disk_op_s *op);
+số_nguyên scsi_is_ready(struct disk_op_s *op);
 struct drive_s;
-int scsi_drive_setup(struct drive_s *drive, const char *s, int prio);
-typedef int (*scsi_add_lun)(u32 lun, struct drive_s *tmpl_drv);
-int scsi_rep_luns_scan(struct drive_s *tmp_drive, scsi_add_lun add_lun);
-int scsi_sequential_scan(struct drive_s *tmp_drive, u32 maxluns,
+số_nguyên scsi_drive_setup(struct drive_s *drive, const char *s, số_nguyên prio);
+typedef số_nguyên (*scsi_add_lun)(u32 lun, struct drive_s *tmpl_drv);
+số_nguyên scsi_rep_luns_scan(struct drive_s *tmp_drive, scsi_add_lun add_lun);
+số_nguyên scsi_sequential_scan(struct drive_s *tmp_drive, u32 maxluns,
                          scsi_add_lun add_lun);
 
 #endif // blockcmd.h

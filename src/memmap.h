@@ -8,10 +8,10 @@
 #define PAGE_SHIFT 12
 
 static inline u32 virt_to_phys(void *v) {
-    return (u32)v;
+    trả_về (u32)v;
 }
 static inline void *memremap(u32 addr, u32 len) {
-    return (void*)addr;
+    trả_về (void*)addr;
 }
 
 // Return the value of a linker script symbol (see scripts/layoutrom.py)

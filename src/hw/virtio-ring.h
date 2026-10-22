@@ -58,7 +58,7 @@ struct vring_used
 };
 
 struct vring {
-   unsigned int num;
+   unsigned số_nguyên num;
    struct vring_desc *desc;
    struct vring_avail *avail;
    struct vring_used *used;
@@ -78,17 +78,17 @@ struct vring_virtqueue {
    u16 last_used_idx;
    u16 vdata[MAX_QUEUE_NUM];
    /* PCI */
-   int queue_index;
-   int queue_notify_off;
+   số_nguyên queue_index;
+   số_nguyên queue_notify_off;
 };
 
 struct vring_list {
   char *addr;
-  unsigned int length;
+  unsigned số_nguyên length;
 };
 
 static inline void
-vring_init(struct vring *vr, unsigned int num, unsigned char *queue)
+vring_init(struct vring *vr, unsigned số_nguyên num, unsigned char *queue)
 {
    ASSERT32FLAT();
    vr->num = num;
@@ -103,19 +103,19 @@ vring_init(struct vring *vr, unsigned int num, unsigned char *queue)
    /* physical address of used must be page aligned */
    vr->used = (void*)ALIGN((u32)&vr->avail->ring[num], PAGE_SIZE);
 
-   int i;
-   for (i = 0; i < num - 1; i++)
+   số_nguyên i;
+   cho (i = 0; i < num - 1; i++)
        vr->desc[i].next = i + 1;
    vr->desc[i].next = 0;
 }
 
 struct vp_device;
-int vring_more_used(struct vring_virtqueue *vq);
-void vring_detach(struct vring_virtqueue *vq, unsigned int head);
-int vring_get_buf(struct vring_virtqueue *vq, unsigned int *len);
+số_nguyên vring_more_used(struct vring_virtqueue *vq);
+void vring_detach(struct vring_virtqueue *vq, unsigned số_nguyên head);
+số_nguyên vring_get_buf(struct vring_virtqueue *vq, unsigned số_nguyên *len);
 void vring_add_buf(struct vring_virtqueue *vq, struct vring_list list[],
-                   unsigned int out, unsigned int in,
-                   int index, int num_added);
-void vring_kick(struct vp_device *vp, struct vring_virtqueue *vq, int num_added);
+                   unsigned số_nguyên out, unsigned số_nguyên in,
+                   số_nguyên index, số_nguyên num_added);
+void vring_kick(struct vp_device *vp, struct vring_virtqueue *vq, số_nguyên num_added);
 
 #endif /* _VIRTIO_RING_H_ */

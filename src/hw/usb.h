@@ -25,7 +25,7 @@ struct usbdevice_s {
     u32 port;
     struct usb_config_descriptor *config;
     struct usb_interface_descriptor *iface;
-    int imax;
+    số_nguyên imax;
     u8 speed;
     u8 devaddr;
 };
@@ -55,9 +55,9 @@ struct usbhub_s {
 
 // Hub callback (32bit) info
 struct usbhub_op_s {
-    int (*detect)(struct usbhub_s *hub, u32 port);
-    int (*reset)(struct usbhub_s *hub, u32 port);
-    int (*portmap)(struct usbhub_s *hub, u32 port);
+    số_nguyên (*detect)(struct usbhub_s *hub, u32 port);
+    số_nguyên (*reset)(struct usbhub_s *hub, u32 port);
+    số_nguyên (*portmap)(struct usbhub_s *hub, u32 port);
     void (*disconnect)(struct usbhub_s *hub, u32 port);
 };
 
@@ -231,24 +231,24 @@ struct usb_endpoint_descriptor {
  ****************************************************************/
 
 // usb.c
-int usb_send_bulk(struct usb_pipe *pipe, int dir, void *data, int datasize);
-int usb_poll_intr(struct usb_pipe *pipe, void *data);
-int usb_32bit_pipe(struct usb_pipe *pipe_fl);
+số_nguyên usb_send_bulk(struct usb_pipe *pipe, số_nguyên dir, void *data, số_nguyên datasize);
+số_nguyên usb_poll_intr(struct usb_pipe *pipe, void *data);
+số_nguyên usb_32bit_pipe(struct usb_pipe *pipe_fl);
 struct usb_pipe *usb_alloc_pipe(struct usbdevice_s *usbdev
                                 , struct usb_endpoint_descriptor *epdesc);
 void usb_free_pipe(struct usbdevice_s *usbdev, struct usb_pipe *pipe);
-int usb_send_default_control(struct usb_pipe *pipe
+số_nguyên usb_send_default_control(struct usb_pipe *pipe
                              , const struct usb_ctrlrequest *req, void *data);
-int usb_is_freelist(struct usb_s *cntl, struct usb_pipe *pipe);
+số_nguyên usb_is_freelist(struct usb_s *cntl, struct usb_pipe *pipe);
 void usb_add_freelist(struct usb_pipe *pipe);
 struct usb_pipe *usb_get_freelist(struct usb_s *cntl, u8 eptype);
 void usb_desc2pipe(struct usb_pipe *pipe, struct usbdevice_s *usbdev
                    , struct usb_endpoint_descriptor *epdesc);
-int usb_get_period(struct usbdevice_s *usbdev
+số_nguyên usb_get_period(struct usbdevice_s *usbdev
                    , struct usb_endpoint_descriptor *epdesc);
-int usb_xfer_time(struct usb_pipe *pipe, int datalen);
+số_nguyên usb_xfer_time(struct usb_pipe *pipe, số_nguyên datalen);
 struct usb_endpoint_descriptor *usb_find_desc(struct usbdevice_s *usbdev
-                                              , int type, int dir);
+                                              , số_nguyên type, số_nguyên dir);
 void usb_enumerate(struct usbhub_s *hub);
 void usb_setup(void);
 

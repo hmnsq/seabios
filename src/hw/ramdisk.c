@@ -20,47 +20,47 @@
 void
 ramdisk_setup(void)
 {
-    if (!CONFIG_FLASH_FLOPPY)
-        return;
+    nếu (!CONFIG_FLASH_FLOPPY)
+        trả_về;
 
     // Find image.
     struct romfile_s *file = romfile_findprefix("floppyimg/", NULL);
-    if (!file)
-        return;
+    nếu (!file)
+        trả_về;
     const char *filename = file->name;
     u32 size = file->size;
     dprintf(3, "Found floppy file %s of size %d\n", filename, size);
-    int ftype = find_floppy_type(size);
-    if (ftype < 0) {
+    số_nguyên ftype = find_floppy_type(size);
+    nếu (ftype < 0) {
         dprintf(3, "No floppy type found for ramdisk size\n");
-        return;
+        trả_về;
     }
 
     // Allocate ram for image.
     void *pos = memalign_tmphigh(PAGE_SIZE, size);
-    if (!pos) {
+    nếu (!pos) {
         warn_noalloc();
-        return;
+        trả_về;
     }
     e820_add((u32)pos, size, E820_RESERVED);
 
     // Copy image into ram.
-    int ret = file->copy(file, pos, size);
-    if (ret < 0)
-        return;
+    số_nguyên ret = file->copy(file, pos, size);
+    nếu (ret < 0)
+        trả_về;
 
     // Setup driver.
     struct drive_s *drive = init_floppy((u32)pos, ftype);
-    if (!drive)
-        return;
+    nếu (!drive)
+        trả_về;
     drive->type = DTYPE_RAMDISK;
     dprintf(1, "Mapping floppy %s to addr %p\n", filename, pos);
     char *desc = znprintf(MAXDESCSIZE, "Ramdisk [%s]", &filename[10]);
     boot_add_floppy(drive, desc, bootprio_find_named_rom(filename, 0));
 }
 
-static int
-ramdisk_copy(struct disk_op_s *op, int iswrite)
+static số_nguyên
+ramdisk_copy(struct disk_op_s *op, số_nguyên iswrite)
 {
     u32 offset = GET_GLOBALFLAT(op->drive_fl->cntl_id);
     offset += (u32)op->lba * DISK_SECTOR_SIZE;
@@ -68,10 +68,10 @@ ramdisk_copy(struct disk_op_s *op, int iswrite)
     u64 ramd = GDT_DATA | GDT_LIMIT(0xfffff) | GDT_BASE(offset);
 
     u64 gdt[6];
-    if (iswrite) {
+    nếu (iswrite) {
         gdt[2] = opd;
         gdt[3] = ramd;
-    } else {
+    } không_thì {
         gdt[2] = ramd;
         gdt[3] = opd;
     }
@@ -86,23 +86,23 @@ ramdisk_copy(struct disk_op_s *op, int iswrite)
     br.cx = op->count * DISK_SECTOR_SIZE / 2;
     call16_int(0x15, &br);
 
-    if (br.flags & F_CF)
-        return DISK_RET_EBADTRACK;
-    return DISK_RET_SUCCESS;
+    nếu (br.flags & F_CF)
+        trả_về DISK_RET_EBADTRACK;
+    trả_về DISK_RET_SUCCESS;
 }
 
-int
+số_nguyên
 ramdisk_process_op(struct disk_op_s *op)
 {
-    if (!CONFIG_FLASH_FLOPPY)
-        return 0;
+    nếu (!CONFIG_FLASH_FLOPPY)
+        trả_về 0;
 
     switch (op->command) {
     case CMD_READ:
-        return ramdisk_copy(op, 0);
+        trả_về ramdisk_copy(op, 0);
     case CMD_WRITE:
-        return ramdisk_copy(op, 1);
+        trả_về ramdisk_copy(op, 1);
     default:
-        return default_process_op(op);
+        trả_về default_process_op(op);
     }
 }
