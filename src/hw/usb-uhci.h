@@ -1,17 +1,17 @@
-#ifndef __USB_UHCI_H
-#define __USB_UHCI_H
+#यदि_अपरिभाषितम् __USB_UHCI_H
+#परिभाषय __USB_UHCI_H
 
 // usb-uhci.c
-void uhci_setup(void);
-struct usbdevice_s;
-struct usb_endpoint_descriptor;
-struct usb_pipe;
-struct usb_pipe *uhci_realloc_pipe(struct usbdevice_s *usbdev
-                                   , struct usb_pipe *upipe
-                                   , struct usb_endpoint_descriptor *epdesc);
-int uhci_send_pipe(struct usb_pipe *p, int dir, const void *cmd
-                   , void *data, int datasize);
-int uhci_poll_intr(struct usb_pipe *p, void *data);
+शून्य uhci_सज्जता(शून्य);
+संरचना usbdevice_s;
+संरचना usb_endpoint_descriptor;
+संरचना usb_pipe;
+संरचना usb_pipe *uhci_realloc_pipe(संरचना usbdevice_s *usbdev
+                                   , संरचना usb_pipe *upipe
+                                   , संरचना usb_endpoint_descriptor *epdesc);
+पूर्णाङ्क uhci_send_pipe(संरचना usb_pipe *p, पूर्णाङ्क dir, ध्रुव शून्य *cmd
+                   , शून्य *दत्त, पूर्णाङ्क datasize);
+पूर्णाङ्क uhci_poll_intr(संरचना usb_pipe *p, शून्य *दत्त);
 
 
 /****************************************************************
@@ -19,110 +19,110 @@ int uhci_poll_intr(struct usb_pipe *p, void *data);
  ****************************************************************/
 
 /* USB port status and control registers */
-#define USBPORTSC1      16
-#define USBPORTSC2      18
-#define   USBPORTSC_CCS         0x0001  /* Current Connect Status
+#परिभाषय USBPORTSC1      16
+#परिभाषय USBPORTSC2      18
+#परिभाषय   USBPORTSC_CCS         0x0001  /* Current Connect Status
                                          * ("device present") */
-#define   USBPORTSC_CSC         0x0002  /* Connect Status Change */
-#define   USBPORTSC_PE          0x0004  /* Port Enable */
-#define   USBPORTSC_PEC         0x0008  /* Port Enable Change */
-#define   USBPORTSC_DPLUS       0x0010  /* D+ high (line status) */
-#define   USBPORTSC_DMINUS      0x0020  /* D- high (line status) */
-#define   USBPORTSC_RD          0x0040  /* Resume Detect */
-#define   USBPORTSC_RES1        0x0080  /* reserved, always 1 */
-#define   USBPORTSC_LSDA        0x0100  /* Low Speed Device Attached */
-#define   USBPORTSC_PR          0x0200  /* Port Reset */
+#परिभाषय   USBPORTSC_CSC         0x0002  /* Connect Status Change */
+#परिभाषय   USBPORTSC_PE          0x0004  /* Port Enable */
+#परिभाषय   USBPORTSC_PEC         0x0008  /* Port Enable Change */
+#परिभाषय   USBPORTSC_DPLUS       0x0010  /* D+ high (line status) */
+#परिभाषय   USBPORTSC_DMINUS      0x0020  /* D- high (line status) */
+#परिभाषय   USBPORTSC_RD          0x0040  /* Resume Detect */
+#परिभाषय   USBPORTSC_RES1        0x0080  /* reserved, always 1 */
+#परिभाषय   USBPORTSC_LSDA        0x0100  /* Low Speed Device Attached */
+#परिभाषय   USBPORTSC_PR          0x0200  /* Port Reset */
 
 /* Legacy support register */
-#define USBLEGSUP               0xc0
-#define   USBLEGSUP_RWC         0x8f00  /* the R/WC bits */
+#परिभाषय USBLEGSUP               0xc0
+#परिभाषय   USBLEGSUP_RWC         0x8f00  /* the R/WC bits */
 
 /* Command register */
-#define USBCMD          0
-#define   USBCMD_RS             0x0001  /* Run/Stop */
-#define   USBCMD_HCRESET        0x0002  /* Host reset */
-#define   USBCMD_GRESET         0x0004  /* Global reset */
-#define   USBCMD_EGSM           0x0008  /* Global Suspend Mode */
-#define   USBCMD_FGR            0x0010  /* Force Global Resume */
-#define   USBCMD_SWDBG          0x0020  /* SW Debug mode */
-#define   USBCMD_CF             0x0040  /* Config Flag (sw only) */
-#define   USBCMD_MAXP           0x0080  /* Max Packet (0 = 32, 1 = 64) */
+#परिभाषय USBCMD          0
+#परिभाषय   USBCMD_RS             0x0001  /* Run/Stop */
+#परिभाषय   USBCMD_HCRESET        0x0002  /* Host reset */
+#परिभाषय   USBCMD_GRESET         0x0004  /* Global reset */
+#परिभाषय   USBCMD_EGSM           0x0008  /* Global Suspend Mode */
+#परिभाषय   USBCMD_FGR            0x0010  /* Force Global Resume */
+#परिभाषय   USBCMD_SWDBG          0x0020  /* SW Debug mode */
+#परिभाषय   USBCMD_CF             0x0040  /* Config Flag (sw only) */
+#परिभाषय   USBCMD_MAXP           0x0080  /* Max Packet (0 = 32, 1 = 64) */
 
 /* Status register */
-#define USBSTS          2
-#define   USBSTS_USBINT         0x0001  /* Interrupt due to IOC */
-#define   USBSTS_ERROR          0x0002  /* Interrupt due to error */
-#define   USBSTS_RD             0x0004  /* Resume Detect */
-#define   USBSTS_HSE            0x0008  /* Host System Error: PCI problems */
-#define   USBSTS_HCPE           0x0010  /* Host Controller Process Error:
+#परिभाषय USBSTS          2
+#परिभाषय   USBSTS_USBINT         0x0001  /* Interrupt due to IOC */
+#परिभाषय   USBSTS_ERROR          0x0002  /* Interrupt due to error */
+#परिभाषय   USBSTS_RD             0x0004  /* Resume Detect */
+#परिभाषय   USBSTS_HSE            0x0008  /* Host System Error: PCI problems */
+#परिभाषय   USBSTS_HCPE           0x0010  /* Host Controller Process Error:
                                          * the schedule is buggy */
-#define   USBSTS_HCH            0x0020  /* HC Halted */
+#परिभाषय   USBSTS_HCH            0x0020  /* HC Halted */
 
 /* Interrupt enable register */
-#define USBINTR         4
-#define   USBINTR_TIMEOUT       0x0001  /* Timeout/CRC error enable */
-#define   USBINTR_RESUME        0x0002  /* Resume interrupt enable */
-#define   USBINTR_IOC           0x0004  /* Interrupt On Complete enable */
-#define   USBINTR_SP            0x0008  /* Short packet interrupt enable */
+#परिभाषय USBINTR         4
+#परिभाषय   USBINTR_TIMEOUT       0x0001  /* Timeout/CRC error enable */
+#परिभाषय   USBINTR_RESUME        0x0002  /* Resume interrupt enable */
+#परिभाषय   USBINTR_IOC           0x0004  /* Interrupt On Complete enable */
+#परिभाषय   USBINTR_SP            0x0008  /* Short packet interrupt enable */
 
-#define USBFRNUM        6
-#define USBFLBASEADD    8
-#define USBSOF          12
-#define   USBSOF_DEFAULT        64      /* Frame length is exactly 1 ms */
+#परिभाषय USBFRNUM        6
+#परिभाषय USBFLBASEADD    8
+#परिभाषय USBSOF          12
+#परिभाषय   USBSOF_DEFAULT        64      /* Frame length is exactly 1 ms */
 
-struct uhci_framelist {
+संरचना uhci_framelist {
     u32 links[1024];
 } PACKED;
 
-#define TD_CTRL_SPD             (1 << 29)       /* Short Packet Detect */
-#define TD_CTRL_C_ERR_MASK      (3 << 27)       /* Error Counter bits */
-#define TD_CTRL_C_ERR_SHIFT     27
-#define TD_CTRL_LS              (1 << 26)       /* Low Speed Device */
-#define TD_CTRL_IOS             (1 << 25)       /* Isochronous Select */
-#define TD_CTRL_IOC             (1 << 24)       /* Interrupt on Complete */
-#define TD_CTRL_ACTIVE          (1 << 23)       /* TD Active */
-#define TD_CTRL_STALLED         (1 << 22)       /* TD Stalled */
-#define TD_CTRL_DBUFERR         (1 << 21)       /* Data Buffer Error */
-#define TD_CTRL_BABBLE          (1 << 20)       /* Babble Detected */
-#define TD_CTRL_NAK             (1 << 19)       /* NAK Received */
-#define TD_CTRL_CRCTIMEO        (1 << 18)       /* CRC/Time Out Error */
-#define TD_CTRL_BITSTUFF        (1 << 17)       /* Bit Stuff Error */
-#define TD_CTRL_ACTLEN_MASK     0x7FF   /* actual length, encoded as n - 1 */
+#परिभाषय TD_CTRL_SPD             (1 << 29)       /* Short Packet Detect */
+#परिभाषय TD_CTRL_C_ERR_आवरणम्      (3 << 27)       /* Error Counter bits */
+#परिभाषय TD_CTRL_C_ERR_सरणम्     27
+#परिभाषय TD_CTRL_LS              (1 << 26)       /* Low Speed Device */
+#परिभाषय TD_CTRL_IOS             (1 << 25)       /* Isochronous Select */
+#परिभाषय TD_CTRL_IOC             (1 << 24)       /* Interrupt on Complete */
+#परिभाषय TD_CTRL_सक्रिय          (1 << 23)       /* TD Active */
+#परिभाषय TD_CTRL_STALLED         (1 << 22)       /* TD Stalled */
+#परिभाषय TD_CTRL_DBUFERR         (1 << 21)       /* Data Buffer Error */
+#परिभाषय TD_CTRL_BABBLE          (1 << 20)       /* Babble Detected */
+#परिभाषय TD_CTRL_NAK             (1 << 19)       /* NAK Received */
+#परिभाषय TD_CTRL_CRCTIMEO        (1 << 18)       /* CRC/Time Out Error */
+#परिभाषय TD_CTRL_BITSTUFF        (1 << 17)       /* Bit Stuff Error */
+#परिभाषय TD_CTRL_ACTLEN_आवरणम्     0x7FF   /* actual length, encoded as n - 1 */
 
-#define TD_CTRL_ANY_ERROR       (TD_CTRL_STALLED | TD_CTRL_DBUFERR | \
+#परिभाषय TD_CTRL_ANY_ERROR       (TD_CTRL_STALLED | TD_CTRL_DBUFERR | \
                                  TD_CTRL_BABBLE | TD_CTRL_CRCTIMEO | \
                                  TD_CTRL_BITSTUFF)
-#define uhci_maxerr(err)                ((err) << TD_CTRL_C_ERR_SHIFT)
+#परिभाषय uhci_maxerr(err)                ((err) << TD_CTRL_C_ERR_सरणम्)
 
-#define TD_TOKEN_DEVADDR_SHIFT  8
-#define TD_TOKEN_TOGGLE_SHIFT   19
-#define TD_TOKEN_TOGGLE         (1 << 19)
-#define TD_TOKEN_EXPLEN_SHIFT   21
-#define TD_TOKEN_EXPLEN_MASK    0x7FF   /* expected length, encoded as n-1 */
-#define TD_TOKEN_PID_MASK       0xFF
+#परिभाषय TD_TOKEN_DEVADDR_सरणम्  8
+#परिभाषय TD_TOKEN_TOGGLE_सरणम्   19
+#परिभाषय TD_TOKEN_TOGGLE         (1 << 19)
+#परिभाषय TD_TOKEN_EXPLEN_सरणम्   21
+#परिभाषय TD_TOKEN_EXPLEN_आवरणम्    0x7FF   /* expected length, encoded as n-1 */
+#परिभाषय TD_TOKEN_PID_आवरणम्       0xFF
 
-#define uhci_explen(len)        ((((len) - 1) & TD_TOKEN_EXPLEN_MASK) << \
-                                        TD_TOKEN_EXPLEN_SHIFT)
+#परिभाषय uhci_explen(len)        ((((len) - 1) & TD_TOKEN_EXPLEN_आवरणम्) << \
+                                        TD_TOKEN_EXPLEN_सरणम्)
 
-#define uhci_expected_length(token) ((((token) >> TD_TOKEN_EXPLEN_SHIFT) + \
-                                        1) & TD_TOKEN_EXPLEN_MASK)
+#परिभाषय uhci_expected_दीर्घता(token) ((((token) >> TD_TOKEN_EXPLEN_सरणम्) + \
+                                        1) & TD_TOKEN_EXPLEN_आवरणम्)
 
-struct uhci_td {
+संरचना uhci_td {
     u32 link;
-    u32 status;
+    u32 स्थितिः;
     u32 token;
-    void *buffer;
+    शून्य *बफर;
 } PACKED;
 
-struct uhci_qh {
+संरचना uhci_qh {
     u32 link;
     u32 element;
 } PACKED;
 
-#define UHCI_PTR_BITS           0x000F
-#define UHCI_PTR_TERM           0x0001
-#define UHCI_PTR_QH             0x0002
-#define UHCI_PTR_DEPTH          0x0004
-#define UHCI_PTR_BREADTH        0x0000
+#परिभाषय UHCI_PTR_द्वयङ्काः           0x000F
+#परिभाषय UHCI_PTR_पदांशः           0x0001
+#परिभाषय UHCI_PTR_QH             0x0002
+#परिभाषय UHCI_PTR_गभीरता          0x0004
+#परिभाषय UHCI_PTR_BREADTH        0x0000
 
-#endif // usb-uhci.h
+#यदि_अन्तः // usb-uhci.h

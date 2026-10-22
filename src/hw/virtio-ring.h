@@ -1,121 +1,121 @@
-#ifndef _VIRTIO_RING_H
-#define _VIRTIO_RING_H
+#यदि_अपरिभाषितम् _VIRTIO_RING_H
+#परिभाषय _VIRTIO_RING_H
 
-#include "types.h" // u64
-#include "memmap.h" // PAGE_SIZE
+#अन्तर्भाव "types.h" // u64
+#अन्तर्भाव "memmap.h" // PAGE_SIZE
 
 /* Status byte for guest to report progress, and synchronize features. */
 /* We have seen device and processed generic fields (VIRTIO_CONFIG_F_VIRTIO) */
-#define VIRTIO_CONFIG_S_ACKNOWLEDGE     1
+#परिभाषय VIRTIO_CONFIG_S_ACKNOWLEDGE     1
 /* We have found a driver for the device. */
-#define VIRTIO_CONFIG_S_DRIVER          2
+#परिभाषय VIRTIO_CONFIG_S_DRIVER          2
 /* Driver has used its parts of the config, and is happy */
-#define VIRTIO_CONFIG_S_DRIVER_OK       4
+#परिभाषय VIRTIO_CONFIG_S_DRIVER_OK       4
 /* Driver has finished configuring features */
-#define VIRTIO_CONFIG_S_FEATURES_OK     8
+#परिभाषय VIRTIO_CONFIG_S_FEATURES_OK     8
 /* We've given up on this device. */
-#define VIRTIO_CONFIG_S_FAILED          0x80
+#परिभाषय VIRTIO_CONFIG_S_FAILED          0x80
 
 /* v1.0 compliant. */
-#define VIRTIO_F_VERSION_1              32
-#define VIRTIO_F_IOMMU_PLATFORM         33
+#परिभाषय VIRTIO_F_संस्करणम्_1              32
+#परिभाषय VIRTIO_F_IOMMU_PLATFORM         33
 
-#define MAX_QUEUE_NUM      (256)
+#परिभाषय MAX_QUEUE_अङ्कः      (256)
 
-#define VRING_DESC_F_NEXT  1
-#define VRING_DESC_F_WRITE 2
+#परिभाषय VRING_DESC_F_अग्र  1
+#परिभाषय VRING_DESC_F_WRITE 2
 
-#define VRING_AVAIL_F_NO_INTERRUPT 1
+#परिभाषय VRING_AVAIL_F_NO_व्यवधानम् 1
 
-#define VRING_USED_F_NO_NOTIFY     1
+#परिभाषय VRING_प्रयुक्तम्_F_NO_NOTIFY     1
 
-struct vring_desc
+संरचना vring_desc
 {
    u64 addr;
    u32 len;
    u16 flags;
-   u16 next;
+   u16 अग्र;
 };
 
-struct vring_avail
+संरचना vring_avail
 {
    u16 flags;
    u16 idx;
    u16 ring[0];
 };
 
-struct vring_used_elem
+संरचना vring_प्रयुक्तम्_elem
 {
    u32 id;
    u32 len;
 };
 
-struct vring_used
+संरचना vring_प्रयुक्तम्
 {
    u16 flags;
    u16 idx;
-   struct vring_used_elem ring[];
+   संरचना vring_प्रयुक्तम्_elem ring[];
 };
 
-struct vring {
-   unsigned int num;
-   struct vring_desc *desc;
-   struct vring_avail *avail;
-   struct vring_used *used;
+संरचना vring {
+   अचिह्नित पूर्णाङ्क अङ्कः;
+   संरचना vring_desc *desc;
+   संरचना vring_avail *avail;
+   संरचना vring_प्रयुक्तम् *प्रयुक्तम्;
 };
 
-#define vring_size(num) \
-    (ALIGN(sizeof(struct vring_desc) * num + sizeof(struct vring_avail) \
-           + sizeof(u16) * num, PAGE_SIZE)                              \
-     + sizeof(struct vring_used) + sizeof(struct vring_used_elem) * num)
+#परिभाषय vring_आकार(अङ्कः) \
+    (ALIGN(परिमाण(संरचना vring_desc) * अङ्कः + परिमाण(संरचना vring_avail) \
+           + परिमाण(u16) * अङ्कः, PAGE_आकार)                              \
+     + परिमाण(संरचना vring_प्रयुक्तम्) + परिमाण(संरचना vring_प्रयुक्तम्_elem) * अङ्कः)
 
-typedef unsigned char virtio_queue_t[vring_size(MAX_QUEUE_NUM)];
+प्रकारनिर्देश अचिह्नित वर्ण virtio_queue_t[vring_आकार(MAX_QUEUE_अङ्कः)];
 
-struct vring_virtqueue {
+संरचना vring_virtqueue {
    virtio_queue_t queue;
-   struct vring vring;
-   u16 free_head;
-   u16 last_used_idx;
-   u16 vdata[MAX_QUEUE_NUM];
+   संरचना vring vring;
+   u16 free_शीर्ष;
+   u16 चरमः_प्रयुक्तम्_idx;
+   u16 vdata[MAX_QUEUE_अङ्कः];
    /* PCI */
-   int queue_index;
-   int queue_notify_off;
+   पूर्णाङ्क queue_सूचकांक;
+   पूर्णाङ्क queue_notify_off;
 };
 
-struct vring_list {
-  char *addr;
-  unsigned int length;
+संरचना vring_list {
+  वर्ण *addr;
+  अचिह्नित पूर्णाङ्क दीर्घता;
 };
 
-static inline void
-vring_init(struct vring *vr, unsigned int num, unsigned char *queue)
+स्थिर अन्तःस्थ शून्य
+vring_init(संरचना vring *vr, अचिह्नित पूर्णाङ्क अङ्कः, अचिह्नित वर्ण *queue)
 {
    ASSERT32FLAT();
-   vr->num = num;
+   vr->अङ्कः = अङ्कः;
 
    /* physical address of desc must be page aligned */
-   vr->desc = (void*)ALIGN((u32)queue, PAGE_SIZE);
+   vr->desc = (शून्य*)ALIGN((u32)queue, PAGE_आकार);
 
-   vr->avail = (struct vring_avail *)&vr->desc[num];
+   vr->avail = (संरचना vring_avail *)&vr->desc[अङ्कः];
    /* disable interrupts */
-   vr->avail->flags |= VRING_AVAIL_F_NO_INTERRUPT;
+   vr->avail->flags |= VRING_AVAIL_F_NO_व्यवधानम्;
 
    /* physical address of used must be page aligned */
-   vr->used = (void*)ALIGN((u32)&vr->avail->ring[num], PAGE_SIZE);
+   vr->प्रयुक्तम् = (शून्य*)ALIGN((u32)&vr->avail->ring[अङ्कः], PAGE_आकार);
 
-   int i;
-   for (i = 0; i < num - 1; i++)
-       vr->desc[i].next = i + 1;
-   vr->desc[i].next = 0;
+   पूर्णाङ्क i;
+   प्रति (i = 0; i < अङ्कः - 1; i++)
+       vr->desc[i].अग्र = i + 1;
+   vr->desc[i].अग्र = 0;
 }
 
-struct vp_device;
-int vring_more_used(struct vring_virtqueue *vq);
-void vring_detach(struct vring_virtqueue *vq, unsigned int head);
-int vring_get_buf(struct vring_virtqueue *vq, unsigned int *len);
-void vring_add_buf(struct vring_virtqueue *vq, struct vring_list list[],
-                   unsigned int out, unsigned int in,
-                   int index, int num_added);
-void vring_kick(struct vp_device *vp, struct vring_virtqueue *vq, int num_added);
+संरचना vp_device;
+पूर्णाङ्क vring_अधिकम्_प्रयुक्तम्(संरचना vring_virtqueue *vq);
+शून्य vring_detach(संरचना vring_virtqueue *vq, अचिह्नित पूर्णाङ्क शीर्ष);
+पूर्णाङ्क vring_get_buf(संरचना vring_virtqueue *vq, अचिह्नित पूर्णाङ्क *len);
+शून्य vring_सङ्कलय_buf(संरचना vring_virtqueue *vq, संरचना vring_list list[],
+                   अचिह्नित पूर्णाङ्क बहिर्गमनम्, अचिह्नित पूर्णाङ्क अन्तर्,
+                   पूर्णाङ्क सूचकांक, पूर्णाङ्क अङ्कः_added);
+शून्य vring_kick(संरचना vp_device *vp, संरचना vring_virtqueue *vq, पूर्णाङ्क अङ्कः_added);
 
-#endif /* _VIRTIO_RING_H_ */
+#यदि_अन्तः /* _VIRTIO_RING_H_ */

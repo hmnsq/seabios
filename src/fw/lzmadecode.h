@@ -19,39 +19,39 @@
   to this file, however, are subject to the LGPL or CPL terms.
 */
 
-#ifndef __LZMADECODE_H
-#define __LZMADECODE_H
+#यदि_अपरिभाषितम् __LZMADECODE_H
+#परिभाषय __LZMADECODE_H
 
-typedef unsigned char Byte;
-typedef unsigned short UInt16;
-typedef unsigned int UInt32;
-typedef UInt32 SizeT;
+प्रकारनिर्देश अचिह्नित वर्ण Byte;
+प्रकारनिर्देश अचिह्नित ह्रस्व UInt16;
+प्रकारनिर्देश अचिह्नित पूर्णाङ्क UInt32;
+प्रकारनिर्देश UInt32 आकार_T;
 
-#define CProb UInt16
+#परिभाषय CProb UInt16
 
-#define LZMA_RESULT_OK 0
-#define LZMA_RESULT_DATA_ERROR 1
+#परिभाषय LZMA_परिणाम_OK 0
+#परिभाषय LZMA_परिणाम_दत्त_ERROR 1
 
 
-#define LZMA_BASE_SIZE 1846
-#define LZMA_LIT_SIZE 768
+#परिभाषय LZMA_आधारः_आकार 1846
+#परिभाषय LZMA_LIT_आकार 768
 
-#define LZMA_PROPERTIES_SIZE 5
+#परिभाषय LZMA_PROPERTIES_आकार 5
 
-typedef struct _CLzmaProperties
+प्रकारनिर्देश संरचना _CLzmaProperties
 {
-  int lc;
-  int lp;
-  int pb;
+  पूर्णाङ्क lc;
+  पूर्णाङ्क lp;
+  पूर्णाङ्क pb;
 }CLzmaProperties;
 
-int LzmaDecodeProperties(CLzmaProperties *propsRes, const unsigned char *propsData, int size);
+पूर्णाङ्क LzmaDecodeProperties(CLzmaProperties *propsRes, ध्रुव अचिह्नित वर्ण *props_दत्त, पूर्णाङ्क आकार);
 
-#define LzmaGetNumProbs(Properties) (LZMA_BASE_SIZE + (LZMA_LIT_SIZE << ((Properties)->lc + (Properties)->lp)))
+#परिभाषय Lzma_Get_अङ्कः_Probs(Properties) (LZMA_आधारः_आकार + (LZMA_LIT_आकार << ((Properties)->lc + (Properties)->lp)))
 
-#define kLzmaNeedInitId (-2)
+#परिभाषय kLzmaNeedInitId (-2)
 
-typedef struct _CLzmaDecoderState
+प्रकारनिर्देश संरचना _CLzmaDecoderState
 {
   CLzmaProperties Properties;
   CProb *Probs;
@@ -60,8 +60,8 @@ typedef struct _CLzmaDecoderState
 } CLzmaDecoderState;
 
 
-int LzmaDecode(CLzmaDecoderState *vs,
-    const unsigned char *inStream, SizeT inSize, SizeT *inSizeProcessed,
-    unsigned char *outStream, SizeT outSize, SizeT *outSizeProcessed);
+पूर्णाङ्क LzmaDecode(CLzmaDecoderState *vs,
+    ध्रुव अचिह्नित वर्ण *अन्तर्_प्रवाहः, आकार_T अन्तर्_आकार, आकार_T *अन्तर्_आकार_Processed,
+    अचिह्नित वर्ण *बहिर्गमनम्_प्रवाहः, आकार_T बहिर्गमनम्_आकार, आकार_T *बहिर्गमनम्_आकार_Processed);
 
-#endif
+#यदि_अन्तः

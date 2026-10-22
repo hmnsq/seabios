@@ -39,7 +39,7 @@
 
         // Save registers to struct bregs at %ds:%eax.  The caller
         // should "pushw %ds ; pushl %eax" prior to calling - this macro
-        // will pop them off.
+        // will उद्धर them off.
         .macro SAVEBREGS_POP_DSEAX
         popl BREGS_eax(%eax)
         popw BREGS_ds(%eax)
@@ -72,8 +72,8 @@
  ****************************************************************/
 
         // Call a C function - this does the minimal work necessary to
-        // call into C.  It sets up %ds, backs up %es, and backs up
-        // those registers that are call clobbered by the C compiler.
+        // आह्वान into C.  It sets up %ds, backs up %es, and backs up
+        // those registers that are आह्वान clobbered by the C compiler.
         .macro ENTRY cfunc
         cli         // In case something far-calls instead of using "int"
         cld
@@ -149,17 +149,17 @@
         POPBREGS
         .endm
 
-        // Reset stack, transition to 32bit mode, and call a C function.
+        // Reset stack, transition to 32bit mode, and आह्वान a C function.
         .macro ENTRY_INTO32 cfunc
         xorw %dx, %dx
         movw %dx, %ss
         movl $ BUILD_STACK_ADDR , %esp
         movl $ \cfunc , %edx
-        jmp transition32
+        कूर्द transition32
         .endm
 
         // Declare a function
         .macro DECLFUNC func
-        .section .text.asm.\func
-        .global \func
+        .खण्डः .text.asm.\func
+        .वैश्विक \func
         .endm

@@ -1,1 +1,1 @@
-u16 cp437_to_unicode(u8 cp437);
+u16 cp437_गन्तव्यम्_unicode(u8 cp437);

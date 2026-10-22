@@ -4,194 +4,194 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_USB_HUB
-#include "output.h" // dprintf
-#include "string.h" // memset
-#include "usb.h" // struct usb_s
-#include "usb-hub.h" // struct usb_hub_descriptor
-#include "util.h" // timer_calc
+#अन्तर्भाव "config.h" // CONFIG_USB_HUB
+#अन्तर्भाव "output.h" // dprintf
+#अन्तर्भाव "string.h" // memset
+#अन्तर्भाव "usb.h" // struct usb_s
+#अन्तर्भाव "usb-hub.h" // struct usb_hub_descriptor
+#अन्तर्भाव "util.h" // timer_calc
 
-static int
-get_hub_desc(struct usb_pipe *pipe, struct usb_hub_descriptor *desc)
+स्थिर पूर्णाङ्क
+get_hub_desc(संरचना usb_pipe *pipe, संरचना usb_hub_descriptor *desc)
 {
-    struct usb_ctrlrequest req;
-    req.bRequestType = USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_DEVICE;
+    संरचना usb_ctrlrequest req;
+    req.bRequestType = USB_DIR_अन्तर् | USB_TYPE_CLASS | USB_RECIP_DEVICE;
     req.bRequest = USB_REQ_GET_DESCRIPTOR;
-    if (pipe->speed == USB_SUPERSPEED)
-        req.wValue = USB_DT_HUB3<<8;
-    else
-        req.wValue = USB_DT_HUB<<8;
-    req.wIndex = 0;
-    req.wLength = sizeof(*desc);
-    return usb_send_default_control(pipe, &req, desc);
+    यदि (pipe->जवः == USB_SUPERSPEED)
+        req.w_मानम् = USB_DT_HUB3<<8;
+    अन्यथा
+        req.w_मानम् = USB_DT_HUB<<8;
+    req.w_सूचकांक = 0;
+    req.w_दीर्घता = परिमाण(*desc);
+    प्रत्यागम usb_send_default_control(pipe, &req, desc);
 }
 
-static int
-set_hub_depth(struct usb_pipe *pipe, u16 depth)
+स्थिर पूर्णाङ्क
+समुच्चयः_hub_गभीरता(संरचना usb_pipe *pipe, u16 गभीरता)
 {
-    struct usb_ctrlrequest req;
-    req.bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_DEVICE;
-    req.bRequest = HUB_REQ_SET_HUB_DEPTH;
-    req.wValue = depth;
-    req.wIndex = 0;
-    req.wLength = 0;
-    return usb_send_default_control(pipe, &req, NULL);
+    संरचना usb_ctrlrequest req;
+    req.bRequestType = USB_DIR_बहिर्गमनम् | USB_TYPE_CLASS | USB_RECIP_DEVICE;
+    req.bRequest = HUB_REQ_समुच्चयः_HUB_गभीरता;
+    req.w_मानम् = गभीरता;
+    req.w_सूचकांक = 0;
+    req.w_दीर्घता = 0;
+    प्रत्यागम usb_send_default_control(pipe, &req, रिक्त);
 }
 
-static int
-set_port_feature(struct usbhub_s *hub, int port, int feature)
+स्थिर पूर्णाङ्क
+समुच्चयः_पत्तनम्_feature(संरचना usbhub_s *hub, पूर्णाङ्क पत्तनम्, पूर्णाङ्क feature)
 {
-    struct usb_ctrlrequest req;
-    req.bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_OTHER;
-    req.bRequest = USB_REQ_SET_FEATURE;
-    req.wValue = feature;
-    req.wIndex = port + 1;
-    req.wLength = 0;
-    mutex_lock(&hub->lock);
-    int ret = usb_send_default_control(hub->usbdev->defpipe, &req, NULL);
-    mutex_unlock(&hub->lock);
-    return ret;
+    संरचना usb_ctrlrequest req;
+    req.bRequestType = USB_DIR_बहिर्गमनम् | USB_TYPE_CLASS | USB_RECIP_OTHER;
+    req.bRequest = USB_REQ_समुच्चयः_FEATURE;
+    req.w_मानम् = feature;
+    req.w_सूचकांक = पत्तनम् + 1;
+    req.w_दीर्घता = 0;
+    mutex_तालकम्(&hub->तालकम्);
+    पूर्णाङ्क ret = usb_send_default_control(hub->usbdev->defpipe, &req, रिक्त);
+    mutex_unlock(&hub->तालकम्);
+    प्रत्यागम ret;
 }
 
-static int
-clear_port_feature(struct usbhub_s *hub, int port, int feature)
+स्थिर पूर्णाङ्क
+clear_पत्तनम्_feature(संरचना usbhub_s *hub, पूर्णाङ्क पत्तनम्, पूर्णाङ्क feature)
 {
-    struct usb_ctrlrequest req;
-    req.bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_OTHER;
+    संरचना usb_ctrlrequest req;
+    req.bRequestType = USB_DIR_बहिर्गमनम् | USB_TYPE_CLASS | USB_RECIP_OTHER;
     req.bRequest = USB_REQ_CLEAR_FEATURE;
-    req.wValue = feature;
-    req.wIndex = port + 1;
-    req.wLength = 0;
-    mutex_lock(&hub->lock);
-    int ret = usb_send_default_control(hub->usbdev->defpipe, &req, NULL);
-    mutex_unlock(&hub->lock);
-    return ret;
+    req.w_मानम् = feature;
+    req.w_सूचकांक = पत्तनम् + 1;
+    req.w_दीर्घता = 0;
+    mutex_तालकम्(&hub->तालकम्);
+    पूर्णाङ्क ret = usb_send_default_control(hub->usbdev->defpipe, &req, रिक्त);
+    mutex_unlock(&hub->तालकम्);
+    प्रत्यागम ret;
 }
 
-static int
-get_port_status(struct usbhub_s *hub, int port, struct usb_port_status *sts)
+स्थिर पूर्णाङ्क
+get_पत्तनम्_स्थितिः(संरचना usbhub_s *hub, पूर्णाङ्क पत्तनम्, संरचना usb_पत्तनम्_स्थितिः *sts)
 {
-    struct usb_ctrlrequest req;
-    req.bRequestType = USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_OTHER;
-    req.bRequest = USB_REQ_GET_STATUS;
-    req.wValue = 0;
-    req.wIndex = port + 1;
-    req.wLength = sizeof(*sts);
-    mutex_lock(&hub->lock);
-    int ret = usb_send_default_control(hub->usbdev->defpipe, &req, sts);
-    mutex_unlock(&hub->lock);
-    return ret;
+    संरचना usb_ctrlrequest req;
+    req.bRequestType = USB_DIR_अन्तर् | USB_TYPE_CLASS | USB_RECIP_OTHER;
+    req.bRequest = USB_REQ_GET_स्थितिः;
+    req.w_मानम् = 0;
+    req.w_सूचकांक = पत्तनम् + 1;
+    req.w_दीर्घता = परिमाण(*sts);
+    mutex_तालकम्(&hub->तालकम्);
+    पूर्णाङ्क ret = usb_send_default_control(hub->usbdev->defpipe, &req, sts);
+    mutex_unlock(&hub->तालकम्);
+    प्रत्यागम ret;
 }
 
 // Check if device attached to port
-static int
-usb_hub_detect(struct usbhub_s *hub, u32 port)
+स्थिर पूर्णाङ्क
+usb_hub_detect(संरचना usbhub_s *hub, u32 पत्तनम्)
 {
-    struct usb_port_status sts;
-    int ret = get_port_status(hub, port, &sts);
-    if (ret) {
-        dprintf(1, "Failure on hub port %d detect\n", port);
-        return -1;
+    संरचना usb_पत्तनम्_स्थितिः sts;
+    पूर्णाङ्क ret = get_पत्तनम्_स्थितिः(hub, पत्तनम्, &sts);
+    यदि (ret) {
+        dprintf(1, "Failure on hub port %d detect\n", पत्तनम्);
+        प्रत्यागम -1;
     }
-    return (sts.wPortStatus & USB_PORT_STAT_CONNECTION) ? 1 : 0;
+    प्रत्यागम (sts.w_पत्तनम्_स्थितिः & USB_पत्तनम्_STAT_CONNECTION) ? 1 : 0;
 }
 
 // Disable port
-static void
-usb_hub_disconnect(struct usbhub_s *hub, u32 port)
+स्थिर शून्य
+usb_hub_disconnect(संरचना usbhub_s *hub, u32 पत्तनम्)
 {
-    int ret = clear_port_feature(hub, port, USB_PORT_FEAT_ENABLE);
-    if (ret)
-        dprintf(1, "Failure on hub port %d disconnect\n", port);
+    पूर्णाङ्क ret = clear_पत्तनम्_feature(hub, पत्तनम्, USB_पत्तनम्_FEAT_ENABLE);
+    यदि (ret)
+        dprintf(1, "Failure on hub port %d disconnect\n", पत्तनम्);
 }
 
 // Reset device on port
-static int
-usb_hub_reset(struct usbhub_s *hub, u32 port)
+स्थिर पूर्णाङ्क
+usb_hub_reset(संरचना usbhub_s *hub, u32 पत्तनम्)
 {
-    int ret = set_port_feature(hub, port, USB_PORT_FEAT_RESET);
-    if (ret)
-        goto fail;
+    पूर्णाङ्क ret = समुच्चयः_पत्तनम्_feature(hub, पत्तनम्, USB_पत्तनम्_FEAT_RESET);
+    यदि (ret)
+        गच्छ fail;
 
     // Wait for reset to complete.
-    struct usb_port_status sts;
-    u32 end = timer_calc(USB_TIME_DRST * 2);
-    for (;;) {
-        ret = get_port_status(hub, port, &sts);
-        if (ret)
-            goto fail;
-        if (!(sts.wPortStatus & USB_PORT_STAT_RESET)
-            && (hub->usbdev->speed != USB_SUPERSPEED
-                || !(sts.wPortStatus & USB_PORT_STAT_LINK_MASK)))
-            break;
-        if (timer_check(end)) {
+    संरचना usb_पत्तनम्_स्थितिः sts;
+    u32 अन्तः = timer_calc(USB_TIME_DRST * 2);
+    प्रति (;;) {
+        ret = get_पत्तनम्_स्थितिः(hub, पत्तनम्, &sts);
+        यदि (ret)
+            गच्छ fail;
+        यदि (!(sts.w_पत्तनम्_स्थितिः & USB_पत्तनम्_STAT_RESET)
+            && (hub->usbdev->जवः != USB_SUPERSPEED
+                || !(sts.w_पत्तनम्_स्थितिः & USB_पत्तनम्_STAT_LINK_आवरणम्)))
+            भङ्ग;
+        यदि (timer_check(अन्तः)) {
             warn_timeout();
-            goto fail;
+            गच्छ fail;
         }
         msleep(5);
     }
 
     // Reset complete.
-    if (!(sts.wPortStatus & USB_PORT_STAT_CONNECTION))
+    यदि (!(sts.w_पत्तनम्_स्थितिः & USB_पत्तनम्_STAT_CONNECTION))
         // Device no longer present
-        return -1;
+        प्रत्यागम -1;
 
-    if (hub->usbdev->speed == USB_SUPERSPEED)
-        return USB_SUPERSPEED;
-    return ((sts.wPortStatus & USB_PORT_STAT_SPEED_MASK)
-            >> USB_PORT_STAT_SPEED_SHIFT);
+    यदि (hub->usbdev->जवः == USB_SUPERSPEED)
+        प्रत्यागम USB_SUPERSPEED;
+    प्रत्यागम ((sts.w_पत्तनम्_स्थितिः & USB_पत्तनम्_STAT_जवः_आवरणम्)
+            >> USB_पत्तनम्_STAT_जवः_सरणम्);
 
 fail:
-    dprintf(1, "Failure on hub port %d reset\n", port);
-    usb_hub_disconnect(hub, port);
-    return -1;
+    dprintf(1, "Failure on hub port %d reset\n", पत्तनम्);
+    usb_hub_disconnect(hub, पत्तनम्);
+    प्रत्यागम -1;
 }
 
-static struct usbhub_op_s HubOp = {
+स्थिर संरचना usbhub_op_s HubOp = {
     .detect = usb_hub_detect,
     .reset = usb_hub_reset,
     .disconnect = usb_hub_disconnect,
 };
 
 // Configure a usb hub and then find devices connected to it.
-int
-usb_hub_setup(struct usbdevice_s *usbdev)
+पूर्णाङ्क
+usb_hub_सज्जता(संरचना usbdevice_s *usbdev)
 {
     ASSERT32FLAT();
-    if (!CONFIG_USB_HUB)
-        return -1;
+    यदि (!CONFIG_USB_HUB)
+        प्रत्यागम -1;
 
-    struct usb_hub_descriptor desc;
-    int ret = get_hub_desc(usbdev->defpipe, &desc);
-    if (ret)
-        return ret;
+    संरचना usb_hub_descriptor desc;
+    पूर्णाङ्क ret = get_hub_desc(usbdev->defpipe, &desc);
+    यदि (ret)
+        प्रत्यागम ret;
 
-    struct usbhub_s hub;
-    memset(&hub, 0, sizeof(hub));
+    संरचना usbhub_s hub;
+    स्मृतिं_पूरय(&hub, 0, परिमाण(hub));
     hub.usbdev = usbdev;
     hub.cntl = usbdev->defpipe->cntl;
     hub.portcount = desc.bNbrPorts;
     hub.op = &HubOp;
 
-    if (usbdev->speed == USB_SUPERSPEED) {
-        int depth = 0;
-        struct usbdevice_s *parent = usbdev->hub->usbdev;
-        while (parent) {
-            depth++;
+    यदि (usbdev->जवः == USB_SUPERSPEED) {
+        पूर्णाङ्क गभीरता = 0;
+        संरचना usbdevice_s *parent = usbdev->hub->usbdev;
+        यावत् (parent) {
+            गभीरता++;
             parent = parent->hub->usbdev;
         }
 
-        ret = set_hub_depth(usbdev->defpipe, depth);
-        if (ret)
-            return ret;
+        ret = समुच्चयः_hub_गभीरता(usbdev->defpipe, गभीरता);
+        यदि (ret)
+            प्रत्यागम ret;
     }
 
     // Turn on power to ports.
-    int port;
-    for (port=0; port<desc.bNbrPorts; port++) {
-        ret = set_port_feature(&hub, port, USB_PORT_FEAT_POWER);
-        if (ret)
-            return ret;
+    पूर्णाङ्क पत्तनम्;
+    प्रति (पत्तनम्=0; पत्तनम्<desc.bNbrPorts; पत्तनम्++) {
+        ret = समुच्चयः_पत्तनम्_feature(&hub, पत्तनम्, USB_पत्तनम्_FEAT_POWER);
+        यदि (ret)
+            प्रत्यागम ret;
     }
     // Wait for port power to stabilize.
     msleep(desc.bPwrOn2PwrGood * 2);
@@ -199,7 +199,7 @@ usb_hub_setup(struct usbdevice_s *usbdev)
     usb_enumerate(&hub);
 
     dprintf(1, "Initialized USB HUB (%d ports used)\n", hub.devcount);
-    if (hub.devcount)
-        return 0;
-    return -1;
+    यदि (hub.devcount)
+        प्रत्यागम 0;
+    प्रत्यागम -1;
 }

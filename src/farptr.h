@@ -3,92 +3,92 @@
 // Copyright (C) 2008,2009  Kevin O'Connor <kevin@koconnor.net>
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
-#ifndef __FARPTR_H
-#define __FARPTR_H
+#यदि_अपरिभाषितम् __FARPTR_H
+#परिभाषय __FARPTR_H
 
-#include "x86.h" // insb
+#अन्तर्भाव "x86.h" // insb
 
 // Dummy definitions used to make sure gcc understands dependencies
 // between SET_SEG and GET/READ/WRITE_SEG macros.
-extern u16 __segment_ES, __segment_CS, __segment_DS, __segment_SS;
-extern u16 __segment_FS, __segment_GS;
+बाह्य u16 __segment_ES, __segment_CS, __segment_DS, __segment_SS;
+बाह्य u16 __segment_FS, __segment_GS;
 
 // Low level macros for reading/writing memory via a segment selector.
-#define READ8_SEG(prefix, SEG, value, var)                      \
-    __asm__(prefix "movb %%" #SEG ":%1, %b0" : "=Qi"(value)     \
+#परिभाषय READ8_SEG(उपसर्गः, SEG, मानम्, var)                      \
+    __asm__(उपसर्गः "movb %%" #SEG ":%1, %b0" : "=Qi"(मानम्)     \
             : "m"(var), "m"(__segment_ ## SEG))
-#define READ16_SEG(prefix, SEG, value, var)                     \
-    __asm__(prefix "movw %%" #SEG ":%1, %w0" : "=ri"(value)     \
+#परिभाषय READ16_SEG(उपसर्गः, SEG, मानम्, var)                     \
+    __asm__(उपसर्गः "movw %%" #SEG ":%1, %w0" : "=ri"(मानम्)     \
             : "m"(var), "m"(__segment_ ## SEG))
-#define READ32_SEG(prefix, SEG, value, var)                     \
-    __asm__(prefix "movl %%" #SEG ":%1, %0" : "=ri"(value)      \
+#परिभाषय READ32_SEG(उपसर्गः, SEG, मानम्, var)                     \
+    __asm__(उपसर्गः "movl %%" #SEG ":%1, %0" : "=ri"(मानम्)      \
             : "m"(var), "m"(__segment_ ## SEG))
-#define READ64_SEG(prefix, SEG, value, var) do {                \
-        union u64_u32_u __value;                                \
-        union u64_u32_u *__r64_ptr = (union u64_u32_u *)&(var); \
-        READ32_SEG(prefix, SEG, __value.lo, __r64_ptr->lo);     \
-        READ32_SEG(prefix, SEG, __value.hi, __r64_ptr->hi);     \
-        *(u64*)&(value) = __value.val;                          \
-    } while (0)
-#define WRITE8_SEG(prefix, SEG, var, value)                     \
-    __asm__(prefix "movb %b1, %%" #SEG ":%0" : "=m"(var)        \
-            : "Q"(value), "m"(__segment_ ## SEG))
-#define WRITE16_SEG(prefix, SEG, var, value)                    \
-    __asm__(prefix "movw %w1, %%" #SEG ":%0" : "=m"(var)        \
-            : "r"(value), "m"(__segment_ ## SEG))
-#define WRITE32_SEG(prefix, SEG, var, value)                    \
-    __asm__(prefix "movl %1, %%" #SEG ":%0" : "=m"(var)         \
-            : "r"(value), "m"(__segment_ ## SEG))
-#define WRITE64_SEG(prefix, SEG, var, value) do {               \
-        union u64_u32_u __value;                                \
-        union u64_u32_u *__w64_ptr = (union u64_u32_u *)&(var); \
-        typeof(var) __value_tmp = (value);                      \
+#परिभाषय READ64_SEG(उपसर्गः, SEG, मानम्, var) कुरु {                \
+        सङ्घ u64_u32_u __value;                                \
+        सङ्घ u64_u32_u *__r64_ptr = (सङ्घ u64_u32_u *)&(var); \
+        READ32_SEG(उपसर्गः, SEG, __value.lo, __r64_ptr->lo);     \
+        READ32_SEG(उपसर्गः, SEG, __value.hi, __r64_ptr->hi);     \
+        *(u64*)&(मानम्) = __value.val;                          \
+    } यावत् (0)
+#परिभाषय WRITE8_SEG(उपसर्गः, SEG, var, मानम्)                     \
+    __asm__(उपसर्गः "movb %b1, %%" #SEG ":%0" : "=m"(var)        \
+            : "Q"(मानम्), "m"(__segment_ ## SEG))
+#परिभाषय WRITE16_SEG(उपसर्गः, SEG, var, मानम्)                    \
+    __asm__(उपसर्गः "movw %w1, %%" #SEG ":%0" : "=m"(var)        \
+            : "r"(मानम्), "m"(__segment_ ## SEG))
+#परिभाषय WRITE32_SEG(उपसर्गः, SEG, var, मानम्)                    \
+    __asm__(उपसर्गः "movl %1, %%" #SEG ":%0" : "=m"(var)         \
+            : "r"(मानम्), "m"(__segment_ ## SEG))
+#परिभाषय WRITE64_SEG(उपसर्गः, SEG, var, मानम्) कुरु {               \
+        सङ्घ u64_u32_u __value;                                \
+        सङ्घ u64_u32_u *__w64_ptr = (सङ्घ u64_u32_u *)&(var); \
+        typeof(var) __value_tmp = (मानम्);                      \
         __value.val = *(u64*)&__value_tmp;                      \
-        WRITE32_SEG(prefix, SEG, __w64_ptr->lo, __value.lo);    \
-        WRITE32_SEG(prefix, SEG, __w64_ptr->hi, __value.hi);    \
-    } while (0)
+        WRITE32_SEG(उपसर्गः, SEG, __w64_ptr->lo, __value.lo);    \
+        WRITE32_SEG(उपसर्गः, SEG, __w64_ptr->hi, __value.hi);    \
+    } यावत् (0)
 
 // Macros for automatically choosing the appropriate memory size
 // access method.
-extern void __force_link_error__unknown_type(void);
+बाह्य शून्य __force_link_error__unknown_type(शून्य);
 
-#define __GET_VAR(prefix, seg, var) ({          \
+#परिभाषय __GET_VAR(उपसर्गः, seg, var) ({          \
     typeof(var) __val;                          \
-    if (sizeof(__val) == 1)                     \
-        READ8_SEG(prefix, seg, __val, var);     \
-    else if (sizeof(__val) == 2)                \
-        READ16_SEG(prefix, seg, __val, var);    \
-    else if (sizeof(__val) == 4)                \
-        READ32_SEG(prefix, seg, __val, var);    \
-    else if (sizeof(__val) == 8)                \
-        READ64_SEG(prefix, seg, __val, var);    \
-    else                                        \
+    यदि (परिमाण(__val) == 1)                     \
+        READ8_SEG(उपसर्गः, seg, __val, var);     \
+    अन्यथा यदि (परिमाण(__val) == 2)                \
+        READ16_SEG(उपसर्गः, seg, __val, var);    \
+    अन्यथा यदि (परिमाण(__val) == 4)                \
+        READ32_SEG(उपसर्गः, seg, __val, var);    \
+    अन्यथा यदि (परिमाण(__val) == 8)                \
+        READ64_SEG(उपसर्गः, seg, __val, var);    \
+    अन्यथा                                        \
         __force_link_error__unknown_type();     \
     __val; })
 
-#define __SET_VAR(prefix, seg, var, val) do {           \
-        if (sizeof(var) == 1)                           \
-            WRITE8_SEG(prefix, seg, var, (val));        \
-        else if (sizeof(var) == 2)                      \
-            WRITE16_SEG(prefix, seg, var, (val));       \
-        else if (sizeof(var) == 4)                      \
-            WRITE32_SEG(prefix, seg, var, (val));       \
-        else if (sizeof(var) == 8)                      \
-            WRITE64_SEG(prefix, seg, var, (val));       \
-        else                                            \
+#परिभाषय __SET_VAR(उपसर्गः, seg, var, val) कुरु {           \
+        यदि (परिमाण(var) == 1)                           \
+            WRITE8_SEG(उपसर्गः, seg, var, (val));        \
+        अन्यथा यदि (परिमाण(var) == 2)                      \
+            WRITE16_SEG(उपसर्गः, seg, var, (val));       \
+        अन्यथा यदि (परिमाण(var) == 4)                      \
+            WRITE32_SEG(उपसर्गः, seg, var, (val));       \
+        अन्यथा यदि (परिमाण(var) == 8)                      \
+            WRITE64_SEG(उपसर्गः, seg, var, (val));       \
+        अन्यथा                                            \
             __force_link_error__unknown_type();         \
-    } while (0)
+    } यावत् (0)
 
-#define DECL_SEGFUNCS(SEG)                              \
-static inline void __set_seg_##SEG(u16 seg) {           \
+#परिभाषय DECL_SEGFUNCS(SEG)                              \
+स्थिर अन्तःस्थ शून्य __set_seg_##SEG(u16 seg) {           \
     __asm__("movw %w1, %%" #SEG : "=m"(__segment_##SEG) \
             : "rm"(seg));                               \
 }                                                       \
-static inline u16 __get_seg_##SEG(void) {               \
+स्थिर अन्तःस्थ u16 __get_seg_##SEG(शून्य) {               \
     u16 res;                                            \
     __asm__("movw %%" #SEG ", %w0" : "=rm"(res)         \
             : "m"(__segment_##SEG));                    \
-    return res;                                         \
+    प्रत्यागम res;                                         \
 }
 DECL_SEGFUNCS(CS)
 DECL_SEGFUNCS(DS)
@@ -98,111 +98,111 @@ DECL_SEGFUNCS(GS)
 DECL_SEGFUNCS(SS)
 
 // Low level macros for getting/setting a segment register.
-#define __SET_SEG(SEG, value)                   \
-    __set_seg_##SEG(value)
-#define __GET_SEG(SEG)                          \
+#परिभाषय __SET_SEG(SEG, मानम्)                   \
+    __set_seg_##SEG(मानम्)
+#परिभाषय __GET_SEG(SEG)                          \
     __get_seg_##SEG()
 
 // Macros for accessing a variable in another segment.  (They
 // automatically update the %es segment and then make the appropriate
 // access.)
-#define __GET_FARVAR(seg, var) ({               \
-    SET_SEG(ES, (seg));                         \
+#परिभाषय __GET_FARVAR(seg, var) ({               \
+    समुच्चयः_SEG(ES, (seg));                         \
     GET_VAR(ES, (var)); })
-#define __SET_FARVAR(seg, var, val) do {        \
+#परिभाषय __SET_FARVAR(seg, var, val) कुरु {        \
         typeof(var) __sfv_val = (val);          \
-        SET_SEG(ES, (seg));                     \
-        SET_VAR(ES, (var), __sfv_val);          \
-    } while (0)
+        समुच्चयः_SEG(ES, (seg));                     \
+        समुच्चयः_VAR(ES, (var), __sfv_val);          \
+    } यावत् (0)
 
 // Macros for accesssing a 32bit flat mode pointer from 16bit real
 // mode.  (They automatically update the %es segment, break the
 // pointer into segment/offset, and then make the access.)
-#define __GET_FLATPTR(ptr) ({                                   \
+#परिभाषय __GET_FLATPTR(ptr) ({                                   \
     typeof(&(ptr)) __ptr = &(ptr);                              \
-    GET_FARVAR(FLATPTR_TO_SEG(__ptr)                            \
-               , *(typeof(__ptr))FLATPTR_TO_OFFSET(__ptr)); })
-#define __SET_FLATPTR(ptr, val) do {                            \
+    GET_FARVAR(FLATPTR_गन्तव्यम्_SEG(__ptr)                            \
+               , *(typeof(__ptr))FLATPTR_गन्तव्यम्_विस्थापनम्(__ptr)); })
+#परिभाषय __SET_FLATPTR(ptr, val) कुरु {                            \
         typeof (&(ptr)) __ptr = &(ptr);                         \
-        SET_FARVAR(FLATPTR_TO_SEG(__ptr)                        \
-                   , *(typeof(__ptr))FLATPTR_TO_OFFSET(__ptr)   \
+        समुच्चयः_FARVAR(FLATPTR_गन्तव्यम्_SEG(__ptr)                        \
+                   , *(typeof(__ptr))FLATPTR_गन्तव्यम्_विस्थापनम्(__ptr)   \
                    , (val));                                    \
-    } while (0)
+    } यावत् (0)
 
 // Macros for converting to/from 32bit flat mode pointers to their
 // equivalent 16bit segment/offset values.
-#define FLATPTR_TO_SEG(p) (((u32)(p)) >> 4)
-#define FLATPTR_TO_OFFSET(p) (((u32)(p)) & 0xf)
-#define MAKE_FLATPTR(seg,off) ((void*)(((u32)(seg)<<4)+(u32)(off)))
+#परिभाषय FLATPTR_गन्तव्यम्_SEG(p) (((u32)(p)) >> 4)
+#परिभाषय FLATPTR_गन्तव्यम्_विस्थापनम्(p) (((u32)(p)) & 0xf)
+#परिभाषय MAKE_FLATPTR(seg,off) ((शून्य*)(((u32)(seg)<<4)+(u32)(off)))
 
 
-#if MODESEGMENT == 1
+#यदि MODESEGMENT == 1
 
 // Definitions when using segmented mode.
-#define GET_FARVAR(seg, var) __GET_FARVAR((seg), (var))
-#define SET_FARVAR(seg, var, val) __SET_FARVAR((seg), (var), (val))
-#define GET_VAR(seg, var) __GET_VAR("", seg, (var))
-#define SET_VAR(seg, var, val) __SET_VAR("", seg, (var), (val))
-#define SET_SEG(SEG, value) __SET_SEG(SEG, (value))
-#define GET_SEG(SEG) __GET_SEG(SEG)
-#define GET_FLATPTR(ptr) __GET_FLATPTR(ptr)
-#define SET_FLATPTR(ptr, val) __SET_FLATPTR((ptr), (val))
+#परिभाषय GET_FARVAR(seg, var) __GET_FARVAR((seg), (var))
+#परिभाषय समुच्चयः_FARVAR(seg, var, val) __SET_FARVAR((seg), (var), (val))
+#परिभाषय GET_VAR(seg, var) __GET_VAR("", seg, (var))
+#परिभाषय समुच्चयः_VAR(seg, var, val) __SET_VAR("", seg, (var), (val))
+#परिभाषय समुच्चयः_SEG(SEG, मानम्) __SET_SEG(SEG, (मानम्))
+#परिभाषय GET_SEG(SEG) __GET_SEG(SEG)
+#परिभाषय GET_FLATPTR(ptr) __GET_FLATPTR(ptr)
+#परिभाषय समुच्चयः_FLATPTR(ptr, val) __SET_FLATPTR((ptr), (val))
 
-static inline void insb_fl(u16 port, void *ptr_fl, u16 count) {
-    SET_SEG(ES, FLATPTR_TO_SEG(ptr_fl));
-    insb(port, (u8*)FLATPTR_TO_OFFSET(ptr_fl), count);
+स्थिर अन्तःस्थ शून्य insb_fl(u16 पत्तनम्, शून्य *ptr_fl, u16 गणनम्) {
+    समुच्चयः_SEG(ES, FLATPTR_गन्तव्यम्_SEG(ptr_fl));
+    insb(पत्तनम्, (u8*)FLATPTR_गन्तव्यम्_विस्थापनम्(ptr_fl), गणनम्);
 }
-static inline void insw_fl(u16 port, void *ptr_fl, u16 count) {
-    SET_SEG(ES, FLATPTR_TO_SEG(ptr_fl));
-    insw(port, (u16*)FLATPTR_TO_OFFSET(ptr_fl), count);
+स्थिर अन्तःस्थ शून्य insw_fl(u16 पत्तनम्, शून्य *ptr_fl, u16 गणनम्) {
+    समुच्चयः_SEG(ES, FLATPTR_गन्तव्यम्_SEG(ptr_fl));
+    insw(पत्तनम्, (u16*)FLATPTR_गन्तव्यम्_विस्थापनम्(ptr_fl), गणनम्);
 }
-static inline void insl_fl(u16 port, void *ptr_fl, u16 count) {
-    SET_SEG(ES, FLATPTR_TO_SEG(ptr_fl));
-    insl(port, (u32*)FLATPTR_TO_OFFSET(ptr_fl), count);
+स्थिर अन्तःस्थ शून्य insl_fl(u16 पत्तनम्, शून्य *ptr_fl, u16 गणनम्) {
+    समुच्चयः_SEG(ES, FLATPTR_गन्तव्यम्_SEG(ptr_fl));
+    insl(पत्तनम्, (u32*)FLATPTR_गन्तव्यम्_विस्थापनम्(ptr_fl), गणनम्);
 }
-static inline void outsb_fl(u16 port, void *ptr_fl, u16 count) {
-    SET_SEG(ES, FLATPTR_TO_SEG(ptr_fl));
-    outsb(port, (u8*)FLATPTR_TO_OFFSET(ptr_fl), count);
+स्थिर अन्तःस्थ शून्य outsb_fl(u16 पत्तनम्, शून्य *ptr_fl, u16 गणनम्) {
+    समुच्चयः_SEG(ES, FLATPTR_गन्तव्यम्_SEG(ptr_fl));
+    outsb(पत्तनम्, (u8*)FLATPTR_गन्तव्यम्_विस्थापनम्(ptr_fl), गणनम्);
 }
-static inline void outsw_fl(u16 port, void *ptr_fl, u16 count) {
-    SET_SEG(ES, FLATPTR_TO_SEG(ptr_fl));
-    outsw(port, (u16*)FLATPTR_TO_OFFSET(ptr_fl), count);
+स्थिर अन्तःस्थ शून्य outsw_fl(u16 पत्तनम्, शून्य *ptr_fl, u16 गणनम्) {
+    समुच्चयः_SEG(ES, FLATPTR_गन्तव्यम्_SEG(ptr_fl));
+    outsw(पत्तनम्, (u16*)FLATPTR_गन्तव्यम्_विस्थापनम्(ptr_fl), गणनम्);
 }
-static inline void outsl_fl(u16 port, void *ptr_fl, u16 count) {
-    SET_SEG(ES, FLATPTR_TO_SEG(ptr_fl));
-    outsl(port, (u32*)FLATPTR_TO_OFFSET(ptr_fl), count);
+स्थिर अन्तःस्थ शून्य outsl_fl(u16 पत्तनम्, शून्य *ptr_fl, u16 गणनम्) {
+    समुच्चयः_SEG(ES, FLATPTR_गन्तव्यम्_SEG(ptr_fl));
+    outsl(पत्तनम्, (u32*)FLATPTR_गन्तव्यम्_विस्थापनम्(ptr_fl), गणनम्);
 }
 
-#else
+#अन्यथा
 
 // In 32-bit flat mode there is no need to mess with the segments.
-#define GET_FARVAR(seg, var) \
+#परिभाषय GET_FARVAR(seg, var) \
     (*((typeof(&(var)))MAKE_FLATPTR((seg), &(var))))
-#define SET_FARVAR(seg, var, val) \
-    do { GET_FARVAR((seg), (var)) = (val); } while (0)
-#define GET_VAR(seg, var) (var)
-#define SET_VAR(seg, var, val) do { (var) = (val); } while (0)
-#define SET_SEG(SEG, value) ((void)(value))
-#define GET_SEG(SEG) 0
-#define GET_FLATPTR(ptr) (ptr)
-#define SET_FLATPTR(ptr, val) do { (ptr) = (val); } while (0)
+#परिभाषय समुच्चयः_FARVAR(seg, var, val) \
+    कुरु { GET_FARVAR((seg), (var)) = (val); } यावत् (0)
+#परिभाषय GET_VAR(seg, var) (var)
+#परिभाषय समुच्चयः_VAR(seg, var, val) कुरु { (var) = (val); } यावत् (0)
+#परिभाषय समुच्चयः_SEG(SEG, मानम्) ((शून्य)(मानम्))
+#परिभाषय GET_SEG(SEG) 0
+#परिभाषय GET_FLATPTR(ptr) (ptr)
+#परिभाषय समुच्चयः_FLATPTR(ptr, val) कुरु { (ptr) = (val); } यावत् (0)
 
-#define insb_fl(port, ptr_fl, count) insb(port, ptr_fl, count)
-#define insw_fl(port, ptr_fl, count) insw(port, ptr_fl, count)
-#define insl_fl(port, ptr_fl, count) insl(port, ptr_fl, count)
-#define outsb_fl(port, ptr_fl, count) outsb(port, ptr_fl, count)
-#define outsw_fl(port, ptr_fl, count) outsw(port, ptr_fl, count)
-#define outsl_fl(port, ptr_fl, count) outsl(port, ptr_fl, count)
+#परिभाषय insb_fl(पत्तनम्, ptr_fl, गणनम्) insb(पत्तनम्, ptr_fl, गणनम्)
+#परिभाषय insw_fl(पत्तनम्, ptr_fl, गणनम्) insw(पत्तनम्, ptr_fl, गणनम्)
+#परिभाषय insl_fl(पत्तनम्, ptr_fl, गणनम्) insl(पत्तनम्, ptr_fl, गणनम्)
+#परिभाषय outsb_fl(पत्तनम्, ptr_fl, गणनम्) outsb(पत्तनम्, ptr_fl, गणनम्)
+#परिभाषय outsw_fl(पत्तनम्, ptr_fl, गणनम्) outsw(पत्तनम्, ptr_fl, गणनम्)
+#परिभाषय outsl_fl(पत्तनम्, ptr_fl, गणनम्) outsl(पत्तनम्, ptr_fl, गणनम्)
 
-#endif
+#यदि_अन्तः
 
-#define SEGOFF(s,o) ({struct segoff_s __so; __so.offset=(o); __so.seg=(s); __so;})
+#परिभाषय SEGOFF(s,o) ({संरचना segoff_s __so; __so.विस्थापनम्_2=(o); __so.seg=(s); __so;})
 
-static inline struct segoff_s FLATPTR_TO_SEGOFF(void *p) {
-    return SEGOFF(FLATPTR_TO_SEG(p), FLATPTR_TO_OFFSET(p));
+स्थिर अन्तःस्थ संरचना segoff_s FLATPTR_गन्तव्यम्_SEGOFF(शून्य *p) {
+    प्रत्यागम SEGOFF(FLATPTR_गन्तव्यम्_SEG(p), FLATPTR_गन्तव्यम्_विस्थापनम्(p));
 }
-static inline void *SEGOFF_TO_FLATPTR(struct segoff_s so) {
-    return MAKE_FLATPTR(so.seg, so.offset);
+स्थिर अन्तःस्थ शून्य *SEGOFF_गन्तव्यम्_FLATPTR(संरचना segoff_s so) {
+    प्रत्यागम MAKE_FLATPTR(so.seg, so.विस्थापनम्_2);
 }
 
-#endif // farptr.h
+#यदि_अन्तः // farptr.h

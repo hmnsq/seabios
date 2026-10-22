@@ -5,25 +5,25 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "ata.h" // ATA_CB_STAT
-#include "biosvar.h" // GET_GLOBALFLAT
-#include "block.h" // struct drive_s
-#include "blockcmd.h" // CDB_CMD_READ_10
-#include "byteorder.h" // be16_to_cpu
-#include "malloc.h" // malloc_fseg
-#include "output.h" // dprintf
-#include "pci.h" // pci_config_readb
-#include "pcidevice.h" // foreachpci
-#include "pci_ids.h" // PCI_CLASS_STORAGE_OTHER
-#include "pci_regs.h" // PCI_INTERRUPT_LINE
-#include "pic.h" // enable_hwirq
-#include "stacks.h" // yield
-#include "std/disk.h" // DISK_RET_SUCCESS
-#include "string.h" // memset
-#include "util.h" // timer_calc
-#include "x86.h" // inb
+#अन्तर्भाव "ata.h" // ATA_CB_STAT
+#अन्तर्भाव "biosvar.h" // GET_GLOBALFLAT
+#अन्तर्भाव "block.h" // struct drive_s
+#अन्तर्भाव "blockcmd.h" // CDB_CMD_READ_10
+#अन्तर्भाव "byteorder.h" // be16_to_cpu
+#अन्तर्भाव "malloc.h" // malloc_fseg
+#अन्तर्भाव "output.h" // dprintf
+#अन्तर्भाव "pci.h" // pci_config_readb
+#अन्तर्भाव "pcidevice.h" // foreachpci
+#अन्तर्भाव "pci_ids.h" // PCI_CLASS_STORAGE_OTHER
+#अन्तर्भाव "pci_regs.h" // PCI_INTERRUPT_LINE
+#अन्तर्भाव "pic.h" // enable_hwirq
+#अन्तर्भाव "stacks.h" // yield
+#अन्तर्भाव "std/disk.h" // DISK_RET_SUCCESS
+#अन्तर्भाव "string.h" // memset
+#अन्तर्भाव "util.h" // timer_calc
+#अन्तर्भाव "x86.h" // inb
 
-#define IDE_TIMEOUT 32000 //32 seconds max for IDE ops
+#परिभाषय IDE_TIMEOUT 32000 //32 seconds max for IDE ops
 
 
 /****************************************************************
@@ -31,59 +31,59 @@
  ****************************************************************/
 
 // Wait for the specified ide state
-static inline int
-await_ide(u8 mask, u8 flags, u16 base, u16 timeout)
+स्थिर अन्तःस्थ पूर्णाङ्क
+await_ide(u8 आवरणम्, u8 flags, u16 आधारः, u16 timeout)
 {
-    u32 end = timer_calc(timeout);
-    for (;;) {
-        u8 status = inb(base+ATA_CB_STAT);
-        if ((status & mask) == flags)
-            return status;
-        if (timer_check(end)) {
+    u32 अन्तः = timer_calc(timeout);
+    प्रति (;;) {
+        u8 स्थितिः = inb(आधारः+ATA_CB_STAT);
+        यदि ((स्थितिः & आवरणम्) == flags)
+            प्रत्यागम स्थितिः;
+        यदि (timer_check(अन्तः)) {
             warn_timeout();
-            return -1;
+            प्रत्यागम -1;
         }
         yield();
     }
 }
 
 // Wait for the device to be not-busy.
-static int
-await_not_bsy(u16 base)
+स्थिर पूर्णाङ्क
+await_not_bsy(u16 आधारः)
 {
-    return await_ide(ATA_CB_STAT_BSY, 0, base, IDE_TIMEOUT);
+    प्रत्यागम await_ide(ATA_CB_STAT_BSY, 0, आधारः, IDE_TIMEOUT);
 }
 
 // Wait for the device to be ready.
-static int
-await_rdy(u16 base)
+स्थिर पूर्णाङ्क
+await_rdy(u16 आधारः)
 {
-    return await_ide(ATA_CB_STAT_RDY, ATA_CB_STAT_RDY, base, IDE_TIMEOUT);
+    प्रत्यागम await_ide(ATA_CB_STAT_RDY, ATA_CB_STAT_RDY, आधारः, IDE_TIMEOUT);
 }
 
 // Wait for ide state - pauses for one ata cycle first.
-static inline int
+स्थिर अन्तःस्थ पूर्णाङ्क
 pause_await_not_bsy(u16 iobase1, u16 iobase2)
 {
     // Wait one PIO transfer cycle.
     inb(iobase2 + ATA_CB_ASTAT);
 
-    return await_not_bsy(iobase1);
+    प्रत्यागम await_not_bsy(iobase1);
 }
 
 // Wait for ide state - pause for 400ns first.
-static inline int
+स्थिर अन्तःस्थ पूर्णाङ्क
 ndelay_await_not_bsy(u16 iobase1)
 {
     ndelay(400);
-    return await_not_bsy(iobase1);
+    प्रत्यागम await_not_bsy(iobase1);
 }
 
 // Reset a drive
-static void
-ata_reset(struct atadrive_s *adrive_gf)
+स्थिर शून्य
+ata_reset(संरचना atadrive_s *adrive_gf)
 {
-    struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
+    संरचना ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
     u8 slave = GET_GLOBALFLAT(adrive_gf->slave);
     u16 iobase1 = GET_GLOBALFLAT(chan_gf->iobase1);
     u16 iobase2 = GET_GLOBALFLAT(chan_gf->iobase2);
@@ -96,53 +96,53 @@ ata_reset(struct atadrive_s *adrive_gf)
     msleep(2);
 
     // wait for device to become not busy.
-    int status = await_not_bsy(iobase1);
-    if (status < 0)
-        goto done;
-    if (slave) {
+    पूर्णाङ्क स्थितिः = await_not_bsy(iobase1);
+    यदि (स्थितिः < 0)
+        गच्छ समाप्तम्;
+    यदि (slave) {
         // Change device.
-        u32 end = timer_calc(IDE_TIMEOUT);
-        for (;;) {
+        u32 अन्तः = timer_calc(IDE_TIMEOUT);
+        प्रति (;;) {
             outb(ATA_CB_DH_DEV1, iobase1 + ATA_CB_DH);
-            status = ndelay_await_not_bsy(iobase1);
-            if (status < 0)
-                goto done;
-            if (inb(iobase1 + ATA_CB_DH) == ATA_CB_DH_DEV1)
-                break;
+            स्थितिः = ndelay_await_not_bsy(iobase1);
+            यदि (स्थितिः < 0)
+                गच्छ समाप्तम्;
+            यदि (inb(iobase1 + ATA_CB_DH) == ATA_CB_DH_DEV1)
+                भङ्ग;
             // Change drive request failed to take effect - retry.
-            if (timer_check(end)) {
+            यदि (timer_check(अन्तः)) {
                 warn_timeout();
-                goto done;
+                गच्छ समाप्तम्;
             }
         }
-    } else {
+    } अन्यथा {
         // QEMU doesn't reset dh on reset, so set it explicitly.
         outb(ATA_CB_DH_DEV0, iobase1 + ATA_CB_DH);
     }
 
     // On a user-reset request, wait for RDY if it is an ATA device.
     u8 type=GET_GLOBALFLAT(adrive_gf->drive.type);
-    if (type == DTYPE_ATA)
-        status = await_rdy(iobase1);
+    यदि (type == DTYPE_ATA)
+        स्थितिः = await_rdy(iobase1);
 
-done:
+समाप्तम्:
     // Enable interrupts
     outb(ATA_CB_DC_HD15, iobase2+ATA_CB_DC);
 
-    dprintf(6, "ata_reset exit status=%x\n", status);
+    dprintf(6, "ata_reset exit status=%x\n", स्थितिः);
 }
 
 // Check for drive RDY for 16bit interface command.
-static int
-isready(struct atadrive_s *adrive_gf)
+स्थिर पूर्णाङ्क
+isready(संरचना atadrive_s *adrive_gf)
 {
     // Read the status from controller
-    struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
+    संरचना ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
     u16 iobase1 = GET_GLOBALFLAT(chan_gf->iobase1);
-    u8 status = inb(iobase1 + ATA_CB_STAT);
-    if ((status & (ATA_CB_STAT_BSY|ATA_CB_STAT_RDY)) == ATA_CB_STAT_RDY)
-        return DISK_RET_SUCCESS;
-    return DISK_RET_ENOTREADY;
+    u8 स्थितिः = inb(iobase1 + ATA_CB_STAT);
+    यदि ((स्थितिः & (ATA_CB_STAT_BSY|ATA_CB_STAT_RDY)) == ATA_CB_STAT_RDY)
+        प्रत्यागम DISK_RET_SUCCESS;
+    प्रत्यागम DISK_RET_ENOTREADY;
 }
 
 
@@ -150,12 +150,12 @@ isready(struct atadrive_s *adrive_gf)
  * ATA send command
  ****************************************************************/
 
-struct ata_pio_command {
+संरचना ata_pio_command {
     u8 feature;
-    u8 sector_count;
-    u8 lba_low;
+    u8 sector_गणनम्;
+    u8 lba_नीचः;
     u8 lba_mid;
-    u8 lba_high;
+    u8 lba_उच्चः;
     u8 device;
     u8 command;
 
@@ -167,30 +167,30 @@ struct ata_pio_command {
 };
 
 // Send an ata command to the drive.
-static int
-send_cmd(struct atadrive_s *adrive_gf, struct ata_pio_command *cmd)
+स्थिर पूर्णाङ्क
+send_cmd(संरचना atadrive_s *adrive_gf, संरचना ata_pio_command *cmd)
 {
-    struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
+    संरचना ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
     u8 slave = GET_GLOBALFLAT(adrive_gf->slave);
     u16 iobase1 = GET_GLOBALFLAT(chan_gf->iobase1);
 
     // Select device
-    int status = await_not_bsy(iobase1);
-    if (status < 0)
-        return status;
+    पूर्णाङ्क स्थितिः = await_not_bsy(iobase1);
+    यदि (स्थितिः < 0)
+        प्रत्यागम स्थितिः;
     u8 newdh = ((cmd->device & ~ATA_CB_DH_DEV1)
                 | (slave ? ATA_CB_DH_DEV1 : ATA_CB_DH_DEV0));
     u8 olddh = inb(iobase1 + ATA_CB_DH);
     outb(newdh, iobase1 + ATA_CB_DH);
-    if ((olddh ^ newdh) & (1<<4)) {
+    यदि ((olddh ^ newdh) & (1<<4)) {
         // Was a device change - wait for device to become not busy.
-        status = ndelay_await_not_bsy(iobase1);
-        if (status < 0)
-            return status;
+        स्थितिः = ndelay_await_not_bsy(iobase1);
+        यदि (स्थितिः < 0)
+            प्रत्यागम स्थितिः;
     }
 
     // Check for ATA_CMD_(READ|WRITE)_(SECTORS|DMA)_EXT commands.
-    if ((cmd->command & ~0x11) == ATA_CMD_READ_SECTORS_EXT) {
+    यदि ((cmd->command & ~0x11) == ATA_CMD_READ_SECTORS_EXT) {
         outb(cmd->feature2, iobase1 + ATA_CB_FR);
         outb(cmd->sector_count2, iobase1 + ATA_CB_SC);
         outb(cmd->lba_low2, iobase1 + ATA_CB_SN);
@@ -198,71 +198,71 @@ send_cmd(struct atadrive_s *adrive_gf, struct ata_pio_command *cmd)
         outb(cmd->lba_high2, iobase1 + ATA_CB_CH);
     }
     outb(cmd->feature, iobase1 + ATA_CB_FR);
-    outb(cmd->sector_count, iobase1 + ATA_CB_SC);
-    outb(cmd->lba_low, iobase1 + ATA_CB_SN);
+    outb(cmd->sector_गणनम्, iobase1 + ATA_CB_SC);
+    outb(cmd->lba_नीचः, iobase1 + ATA_CB_SN);
     outb(cmd->lba_mid, iobase1 + ATA_CB_CL);
-    outb(cmd->lba_high, iobase1 + ATA_CB_CH);
+    outb(cmd->lba_उच्चः, iobase1 + ATA_CB_CH);
     outb(cmd->command, iobase1 + ATA_CB_CMD);
 
-    return 0;
+    प्रत्यागम 0;
 }
 
 // Wait for data after calling 'send_cmd'.
-static int
-ata_wait_data(u16 iobase1)
+स्थिर पूर्णाङ्क
+ata_wait_दत्त(u16 iobase1)
 {
-    int status = ndelay_await_not_bsy(iobase1);
-    if (status < 0)
-        return status;
+    पूर्णाङ्क स्थितिः = ndelay_await_not_bsy(iobase1);
+    यदि (स्थितिः < 0)
+        प्रत्यागम स्थितिः;
 
-    if (status & ATA_CB_STAT_ERR) {
+    यदि (स्थितिः & ATA_CB_STAT_ERR) {
         dprintf(6, "send_cmd : read error (status=%02x err=%02x)\n"
-                , status, inb(iobase1 + ATA_CB_ERR));
-        return -4;
+                , स्थितिः, inb(iobase1 + ATA_CB_ERR));
+        प्रत्यागम -4;
     }
-    if (!(status & ATA_CB_STAT_DRQ)) {
-        dprintf(6, "send_cmd : DRQ not set (status %02x)\n", status);
-        return -5;
+    यदि (!(स्थितिः & ATA_CB_STAT_DRQ)) {
+        dprintf(6, "send_cmd : DRQ not set (status %02x)\n", स्थितिः);
+        प्रत्यागम -5;
     }
 
-    return 0;
+    प्रत्यागम 0;
 }
 
 // Send an ata command that does not transfer any further data.
-int
-ata_cmd_nondata(struct atadrive_s *adrive_gf, struct ata_pio_command *cmd)
+पूर्णाङ्क
+ata_cmd_nondata(संरचना atadrive_s *adrive_gf, संरचना ata_pio_command *cmd)
 {
-    struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
+    संरचना ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
     u16 iobase1 = GET_GLOBALFLAT(chan_gf->iobase1);
     u16 iobase2 = GET_GLOBALFLAT(chan_gf->iobase2);
 
     // Disable interrupts
     outb(ATA_CB_DC_HD15 | ATA_CB_DC_NIEN, iobase2 + ATA_CB_DC);
 
-    int ret = send_cmd(adrive_gf, cmd);
-    if (ret)
-        goto fail;
+    पूर्णाङ्क ret = send_cmd(adrive_gf, cmd);
+    यदि (ret)
+        गच्छ fail;
     ret = ndelay_await_not_bsy(iobase1);
-    if (ret < 0)
-        goto fail;
+    यदि (ret < 0)
+        गच्छ fail;
 
-    if (ret & ATA_CB_STAT_ERR) {
+    यदि (ret & ATA_CB_STAT_ERR) {
         dprintf(6, "nondata cmd : read error (status=%02x err=%02x)\n"
                 , ret, inb(iobase1 + ATA_CB_ERR));
         ret = -4;
-        goto fail;
+        गच्छ fail;
     }
-    if (ret & ATA_CB_STAT_DRQ) {
+    यदि (ret & ATA_CB_STAT_DRQ) {
         dprintf(6, "nondata cmd : DRQ set (status %02x)\n", ret);
         ret = -5;
-        goto fail;
+        गच्छ fail;
     }
 
 fail:
     // Enable interrupts
     outb(ATA_CB_DC_HD15, iobase2+ATA_CB_DC);
 
-    return ret;
+    प्रत्यागम ret;
 }
 
 
@@ -272,67 +272,67 @@ fail:
 
 // Transfer 'op->count' blocks (of 'blocksize' bytes) to/from drive
 // 'op->drive_fl'.
-static int
-ata_pio_transfer(struct disk_op_s *op, int iswrite, int blocksize)
+स्थिर पूर्णाङ्क
+ata_pio_transfer(संरचना disk_op_s *op, पूर्णाङ्क iswrite, पूर्णाङ्क blocksize)
 {
     dprintf(16, "ata_pio_transfer id=%p write=%d count=%d bs=%d buf=%p\n"
-            , op->drive_fl, iswrite, op->count, blocksize, op->buf_fl);
+            , op->drive_fl, iswrite, op->गणनम्, blocksize, op->buf_fl);
 
-    struct atadrive_s *adrive_gf = container_of(
-        op->drive_fl, struct atadrive_s, drive);
-    struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
+    संरचना atadrive_s *adrive_gf = container_सम्बन्धि(
+        op->drive_fl, संरचना atadrive_s, drive);
+    संरचना ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
     u16 iobase1 = GET_GLOBALFLAT(chan_gf->iobase1);
     u16 iobase2 = GET_GLOBALFLAT(chan_gf->iobase2);
-    int count = op->count;
-    void *buf_fl = op->buf_fl;
-    int status;
-    for (;;) {
-        if (iswrite) {
+    पूर्णाङ्क गणनम् = op->गणनम्;
+    शून्य *buf_fl = op->buf_fl;
+    पूर्णाङ्क स्थितिः;
+    प्रति (;;) {
+        यदि (iswrite) {
             // Write data to controller
             dprintf(16, "Write sector id=%p dest=%p\n", op->drive_fl, buf_fl);
-            if (CONFIG_ATA_PIO32)
+            यदि (CONFIG_ATA_PIO32)
                 outsl_fl(iobase1, buf_fl, blocksize / 4);
-            else
+            अन्यथा
                 outsw_fl(iobase1, buf_fl, blocksize / 2);
-        } else {
+        } अन्यथा {
             // Read data from controller
             dprintf(16, "Read sector id=%p dest=%p\n", op->drive_fl, buf_fl);
-            if (CONFIG_ATA_PIO32)
+            यदि (CONFIG_ATA_PIO32)
                 insl_fl(iobase1, buf_fl, blocksize / 4);
-            else
+            अन्यथा
                 insw_fl(iobase1, buf_fl, blocksize / 2);
         }
         buf_fl += blocksize;
 
-        status = pause_await_not_bsy(iobase1, iobase2);
-        if (status < 0) {
+        स्थितिः = pause_await_not_bsy(iobase1, iobase2);
+        यदि (स्थितिः < 0) {
             // Error
-            op->count -= count;
-            return status;
+            op->गणनम् -= गणनम्;
+            प्रत्यागम स्थितिः;
         }
 
-        count--;
-        if (!count)
-            break;
-        status &= (ATA_CB_STAT_BSY | ATA_CB_STAT_DRQ | ATA_CB_STAT_ERR);
-        if (status != ATA_CB_STAT_DRQ) {
+        गणनम्--;
+        यदि (!गणनम्)
+            भङ्ग;
+        स्थितिः &= (ATA_CB_STAT_BSY | ATA_CB_STAT_DRQ | ATA_CB_STAT_ERR);
+        यदि (स्थितिः != ATA_CB_STAT_DRQ) {
             dprintf(6, "ata_pio_transfer : more sectors left (status %02x)\n"
-                    , status);
-            op->count -= count;
-            return -6;
+                    , स्थितिः);
+            op->गणनम् -= गणनम्;
+            प्रत्यागम -6;
         }
     }
 
-    status &= (ATA_CB_STAT_BSY | ATA_CB_STAT_DF | ATA_CB_STAT_DRQ
+    स्थितिः &= (ATA_CB_STAT_BSY | ATA_CB_STAT_DF | ATA_CB_STAT_DRQ
                | ATA_CB_STAT_ERR);
-    if (!iswrite)
-        status &= ~ATA_CB_STAT_DF;
-    if (status != 0) {
-        dprintf(6, "ata_pio_transfer : no sectors left (status %02x)\n", status);
-        return -7;
+    यदि (!iswrite)
+        स्थितिः &= ~ATA_CB_STAT_DF;
+    यदि (स्थितिः != 0) {
+        dprintf(6, "ata_pio_transfer : no sectors left (status %02x)\n", स्थितिः);
+        प्रत्यागम -7;
     }
 
-    return 0;
+    प्रत्यागम 0;
 }
 
 
@@ -340,101 +340,101 @@ ata_pio_transfer(struct disk_op_s *op, int iswrite, int blocksize)
  * ATA DMA transfers
  ****************************************************************/
 
-#define BM_CMD    0
-#define  BM_CMD_MEMWRITE  0x08
-#define  BM_CMD_START     0x01
-#define BM_STATUS 2
-#define  BM_STATUS_IRQ    0x04
-#define  BM_STATUS_ERROR  0x02
-#define  BM_STATUS_ACTIVE 0x01
-#define BM_TABLE  4
+#परिभाषय BM_CMD    0
+#परिभाषय  BM_CMD_MEMWRITE  0x08
+#परिभाषय  BM_CMD_START     0x01
+#परिभाषय BM_स्थितिः 2
+#परिभाषय  BM_स्थितिः_IRQ    0x04
+#परिभाषय  BM_स्थितिः_ERROR  0x02
+#परिभाषय  BM_स्थितिः_सक्रिय 0x01
+#परिभाषय BM_सारणी  4
 
-struct sff_dma_prd {
+संरचना sff_dma_prd {
     u32 buf_fl;
-    u32 count;
+    u32 गणनम्;
 };
 
 // Check if DMA available and setup transfer if so.
-static int
-ata_try_dma(struct disk_op_s *op, int iswrite, int blocksize)
+स्थिर पूर्णाङ्क
+ata_try_dma(संरचना disk_op_s *op, पूर्णाङ्क iswrite, पूर्णाङ्क blocksize)
 {
     ASSERT16();
-    if (! CONFIG_ATA_DMA)
-        return -1;
+    यदि (! CONFIG_ATA_DMA)
+        प्रत्यागम -1;
     u32 dest = (u32)op->buf_fl;
-    if (dest & 1)
+    यदि (dest & 1)
         // Need minimum alignment of 1.
-        return -1;
-    struct atadrive_s *adrive_gf = container_of(
-        op->drive_fl, struct atadrive_s, drive);
-    struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
+        प्रत्यागम -1;
+    संरचना atadrive_s *adrive_gf = container_सम्बन्धि(
+        op->drive_fl, संरचना atadrive_s, drive);
+    संरचना ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
     u16 iomaster = GET_GLOBALFLAT(chan_gf->iomaster);
-    if (! iomaster)
-        return -1;
-    u32 bytes = op->count * blocksize;
-    if (! bytes)
-        return -1;
+    यदि (! iomaster)
+        प्रत्यागम -1;
+    u32 अष्टकानि = op->गणनम् * blocksize;
+    यदि (! अष्टकानि)
+        प्रत्यागम -1;
 
     // Build PRD dma structure.
-    struct sff_dma_prd *dma = MAKE_FLATPTR(SEG_LOW, ExtraStack);
-    struct sff_dma_prd *origdma = dma;
-    while (bytes) {
-        if (dma >= &origdma[16])
+    संरचना sff_dma_prd *dma = MAKE_FLATPTR(SEG_नीचः, Extra_राशिः);
+    संरचना sff_dma_prd *origdma = dma;
+    यावत् (अष्टकानि) {
+        यदि (dma >= &origdma[16])
             // Too many descriptors..
-            return -1;
-        u32 count = bytes;
+            प्रत्यागम -1;
+        u32 गणनम् = अष्टकानि;
         u32 max = 0x10000 - (dest & 0xffff);
-        if (count > max)
-            count = max;
+        यदि (गणनम् > max)
+            गणनम् = max;
 
-        SET_LOWFLAT(dma->buf_fl, dest);
-        bytes -= count;
-        if (!bytes)
+        समुच्चयः_LOWFLAT(dma->buf_fl, dest);
+        अष्टकानि -= गणनम्;
+        यदि (!अष्टकानि)
             // Last descriptor.
-            count |= 1<<31;
-        dprintf(16, "dma@%p: %08x %08x\n", dma, dest, count);
-        dest += count;
-        SET_LOWFLAT(dma->count, count);
+            गणनम् |= 1<<31;
+        dprintf(16, "dma@%p: %08x %08x\n", dma, dest, गणनम्);
+        dest += गणनम्;
+        समुच्चयः_LOWFLAT(dma->गणनम्, गणनम्);
         dma++;
     }
 
     // Program bus-master controller.
-    outl((u32)origdma, iomaster + BM_TABLE);
+    outl((u32)origdma, iomaster + BM_सारणी);
     u8 oldcmd = inb(iomaster + BM_CMD) & ~(BM_CMD_MEMWRITE|BM_CMD_START);
     outb(oldcmd | (iswrite ? 0x00 : BM_CMD_MEMWRITE), iomaster + BM_CMD);
-    outb(BM_STATUS_ERROR|BM_STATUS_IRQ, iomaster + BM_STATUS);
+    outb(BM_स्थितिः_ERROR|BM_स्थितिः_IRQ, iomaster + BM_स्थितिः);
 
-    return 0;
+    प्रत्यागम 0;
 }
 
 // Transfer data using DMA.
-static int
-ata_dma_transfer(struct disk_op_s *op)
+स्थिर पूर्णाङ्क
+ata_dma_transfer(संरचना disk_op_s *op)
 {
-    if (! CONFIG_ATA_DMA)
-        return -1;
+    यदि (! CONFIG_ATA_DMA)
+        प्रत्यागम -1;
     dprintf(16, "ata_dma_transfer id=%p buf=%p\n", op->drive_fl, op->buf_fl);
 
-    struct atadrive_s *adrive_gf = container_of(
-        op->drive_fl, struct atadrive_s, drive);
-    struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
+    संरचना atadrive_s *adrive_gf = container_सम्बन्धि(
+        op->drive_fl, संरचना atadrive_s, drive);
+    संरचना ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
     u16 iomaster = GET_GLOBALFLAT(chan_gf->iomaster);
 
     // Start bus-master controller.
     u8 oldcmd = inb(iomaster + BM_CMD);
     outb(oldcmd | BM_CMD_START, iomaster + BM_CMD);
 
-    u32 end = timer_calc(IDE_TIMEOUT);
-    u8 status;
-    for (;;) {
-        status = inb(iomaster + BM_STATUS);
-        if (status & BM_STATUS_IRQ)
-            break;
+    u32 अन्तः = timer_calc(IDE_TIMEOUT);
+    u8 स्थितिः;
+    प्रति (;;) {
+        स्थितिः = inb(iomaster + BM_स्थितिः);
+        यदि (स्थितिः & BM_स्थितिः_IRQ)
+            भङ्ग;
         // Transfer in progress
-        if (timer_check(end)) {
+        यदि (timer_check(अन्तः)) {
             // Timeout.
             warn_timeout();
-            break;
+            भङ्ग;
         }
         yield();
     }
@@ -442,18 +442,18 @@ ata_dma_transfer(struct disk_op_s *op)
 
     u16 iobase1 = GET_GLOBALFLAT(chan_gf->iobase1);
     u16 iobase2 = GET_GLOBALFLAT(chan_gf->iobase2);
-    int idestatus = pause_await_not_bsy(iobase1, iobase2);
+    पूर्णाङ्क idestatus = pause_await_not_bsy(iobase1, iobase2);
 
-    if ((status & (BM_STATUS_IRQ|BM_STATUS_ACTIVE)) == BM_STATUS_IRQ
+    यदि ((स्थितिः & (BM_स्थितिः_IRQ|BM_स्थितिः_सक्रिय)) == BM_स्थितिः_IRQ
         && idestatus >= 0x00
         && (idestatus & (ATA_CB_STAT_BSY | ATA_CB_STAT_DF | ATA_CB_STAT_DRQ
                          | ATA_CB_STAT_ERR)) == 0x00)
         // Success.
-        return 0;
+        प्रत्यागम 0;
 
-    dprintf(6, "IDE DMA error (dma=%x ide=%x/%x/%x)\n", status, idestatus
+    dprintf(6, "IDE DMA error (dma=%x ide=%x/%x/%x)\n", स्थितिः, idestatus
             , inb(iobase2 + ATA_CB_ASTAT), inb(iobase1 + ATA_CB_ERR));
-    return -1;
+    प्रत्यागम -1;
 }
 
 
@@ -462,116 +462,116 @@ ata_dma_transfer(struct disk_op_s *op)
  ****************************************************************/
 
 // Transfer data to harddrive using PIO protocol.
-static int
-ata_pio_cmd_data(struct disk_op_s *op, int iswrite, struct ata_pio_command *cmd)
+स्थिर पूर्णाङ्क
+ata_pio_cmd_दत्त(संरचना disk_op_s *op, पूर्णाङ्क iswrite, संरचना ata_pio_command *cmd)
 {
-    struct atadrive_s *adrive_gf = container_of(
-        op->drive_fl, struct atadrive_s, drive);
-    struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
+    संरचना atadrive_s *adrive_gf = container_सम्बन्धि(
+        op->drive_fl, संरचना atadrive_s, drive);
+    संरचना ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
     u16 iobase1 = GET_GLOBALFLAT(chan_gf->iobase1);
     u16 iobase2 = GET_GLOBALFLAT(chan_gf->iobase2);
 
     // Disable interrupts
     outb(ATA_CB_DC_HD15 | ATA_CB_DC_NIEN, iobase2 + ATA_CB_DC);
 
-    int ret = send_cmd(adrive_gf, cmd);
-    if (ret)
-        goto fail;
-    ret = ata_wait_data(iobase1);
-    if (ret)
-        goto fail;
-    ret = ata_pio_transfer(op, iswrite, DISK_SECTOR_SIZE);
+    पूर्णाङ्क ret = send_cmd(adrive_gf, cmd);
+    यदि (ret)
+        गच्छ fail;
+    ret = ata_wait_दत्त(iobase1);
+    यदि (ret)
+        गच्छ fail;
+    ret = ata_pio_transfer(op, iswrite, DISK_SECTOR_आकार);
 
 fail:
     // Enable interrupts
     outb(ATA_CB_DC_HD15, iobase2+ATA_CB_DC);
-    return ret;
+    प्रत्यागम ret;
 }
 
 // Transfer data to harddrive using DMA protocol.
-static int
-ata_dma_cmd_data(struct disk_op_s *op, struct ata_pio_command *cmd)
+स्थिर पूर्णाङ्क
+ata_dma_cmd_दत्त(संरचना disk_op_s *op, संरचना ata_pio_command *cmd)
 {
-    if (! CONFIG_ATA_DMA)
-        return -1;
-    struct atadrive_s *adrive_gf = container_of(
-        op->drive_fl, struct atadrive_s, drive);
-    int ret = send_cmd(adrive_gf, cmd);
-    if (ret)
-        return ret;
-    return ata_dma_transfer(op);
+    यदि (! CONFIG_ATA_DMA)
+        प्रत्यागम -1;
+    संरचना atadrive_s *adrive_gf = container_सम्बन्धि(
+        op->drive_fl, संरचना atadrive_s, drive);
+    पूर्णाङ्क ret = send_cmd(adrive_gf, cmd);
+    यदि (ret)
+        प्रत्यागम ret;
+    प्रत्यागम ata_dma_transfer(op);
 }
 
 // Read/write count blocks from a harddrive.
-static int
-ata_readwrite(struct disk_op_s *op, int iswrite)
+स्थिर पूर्णाङ्क
+ata_readwrite(संरचना disk_op_s *op, पूर्णाङ्क iswrite)
 {
     u64 lba = op->lba;
 
-    int usepio = ata_try_dma(op, iswrite, DISK_SECTOR_SIZE);
+    पूर्णाङ्क usepio = ata_try_dma(op, iswrite, DISK_SECTOR_आकार);
 
-    struct ata_pio_command cmd;
-    memset(&cmd, 0, sizeof(cmd));
+    संरचना ata_pio_command cmd;
+    स्मृतिं_पूरय(&cmd, 0, परिमाण(cmd));
 
-    if (op->count >= (1<<8) || lba + op->count >= (1<<28)) {
-        cmd.sector_count2 = op->count >> 8;
+    यदि (op->गणनम् >= (1<<8) || lba + op->गणनम् >= (1<<28)) {
+        cmd.sector_count2 = op->गणनम् >> 8;
         cmd.lba_low2 = lba >> 24;
         cmd.lba_mid2 = lba >> 32;
         cmd.lba_high2 = lba >> 40;
         lba &= 0xffffff;
 
-        if (usepio)
+        यदि (usepio)
             cmd.command = (iswrite ? ATA_CMD_WRITE_SECTORS_EXT
                            : ATA_CMD_READ_SECTORS_EXT);
-        else
+        अन्यथा
             cmd.command = (iswrite ? ATA_CMD_WRITE_DMA_EXT
                            : ATA_CMD_READ_DMA_EXT);
-    } else {
-        if (usepio)
+    } अन्यथा {
+        यदि (usepio)
             cmd.command = (iswrite ? ATA_CMD_WRITE_SECTORS
                            : ATA_CMD_READ_SECTORS);
-        else
+        अन्यथा
             cmd.command = (iswrite ? ATA_CMD_WRITE_DMA
                            : ATA_CMD_READ_DMA);
     }
 
-    cmd.sector_count = op->count;
-    cmd.lba_low = lba;
+    cmd.sector_गणनम् = op->गणनम्;
+    cmd.lba_नीचः = lba;
     cmd.lba_mid = lba >> 8;
-    cmd.lba_high = lba >> 16;
+    cmd.lba_उच्चः = lba >> 16;
     cmd.device = ((lba >> 24) & 0xf) | ATA_CB_DH_LBA;
 
-    int ret;
-    if (usepio)
-        ret = ata_pio_cmd_data(op, iswrite, &cmd);
-    else
-        ret = ata_dma_cmd_data(op, &cmd);
-    if (ret)
-        return DISK_RET_EBADTRACK;
-    return DISK_RET_SUCCESS;
+    पूर्णाङ्क ret;
+    यदि (usepio)
+        ret = ata_pio_cmd_दत्त(op, iswrite, &cmd);
+    अन्यथा
+        ret = ata_dma_cmd_दत्त(op, &cmd);
+    यदि (ret)
+        प्रत्यागम DISK_RET_EBADTRACK;
+    प्रत्यागम DISK_RET_SUCCESS;
 }
 
 // 16bit command demuxer for ATA harddrives.
-int
-ata_process_op(struct disk_op_s *op)
+पूर्णाङ्क
+ata_process_op(संरचना disk_op_s *op)
 {
-    if (!CONFIG_ATA)
-        return 0;
+    यदि (!CONFIG_ATA)
+        प्रत्यागम 0;
 
-    struct atadrive_s *adrive_gf = container_of(
-        op->drive_fl, struct atadrive_s, drive);
-    switch (op->command) {
-    case CMD_READ:
-        return ata_readwrite(op, 0);
-    case CMD_WRITE:
-        return ata_readwrite(op, 1);
-    case CMD_RESET:
+    संरचना atadrive_s *adrive_gf = container_सम्बन्धि(
+        op->drive_fl, संरचना atadrive_s, drive);
+    विकल्प (op->command) {
+    पक्ष CMD_READ:
+        प्रत्यागम ata_readwrite(op, 0);
+    पक्ष CMD_WRITE:
+        प्रत्यागम ata_readwrite(op, 1);
+    पक्ष CMD_RESET:
         ata_reset(adrive_gf);
-        return DISK_RET_SUCCESS;
-    case CMD_ISREADY:
-        return isready(adrive_gf);
-    default:
-        return default_process_op(op);
+        प्रत्यागम DISK_RET_SUCCESS;
+    पक्ष CMD_ISREADY:
+        प्रत्यागम isready(adrive_gf);
+    स्वभाव:
+        प्रत्यागम default_process_op(op);
     }
 }
 
@@ -580,67 +580,67 @@ ata_process_op(struct disk_op_s *op)
  * ATAPI functions
  ****************************************************************/
 
-#define CDROM_CDB_SIZE 12
+#परिभाषय CDROM_CDB_आकार 12
 
 // Low-level atapi command transmit function.
-int
-ata_atapi_process_op(struct disk_op_s *op)
+पूर्णाङ्क
+ata_atapi_process_op(संरचना disk_op_s *op)
 {
-    if (! CONFIG_ATA)
-        return 0;
+    यदि (! CONFIG_ATA)
+        प्रत्यागम 0;
 
-    if (op->command == CMD_WRITE || op->command == CMD_FORMAT)
-        return DISK_RET_EWRITEPROTECT;
-    u8 cdbcmd[CDROM_CDB_SIZE];
-    int blocksize = scsi_fill_cmd(op, cdbcmd, sizeof(cdbcmd));
-    if (blocksize < 0)
-        return default_process_op(op);
+    यदि (op->command == CMD_WRITE || op->command == CMD_FORMAT)
+        प्रत्यागम DISK_RET_EWRITEPROTECT;
+    u8 cdbcmd[CDROM_CDB_आकार];
+    पूर्णाङ्क blocksize = scsi_fill_cmd(op, cdbcmd, परिमाण(cdbcmd));
+    यदि (blocksize < 0)
+        प्रत्यागम default_process_op(op);
 
-    struct atadrive_s *adrive_gf = container_of(
-        op->drive_fl, struct atadrive_s, drive);
-    struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
+    संरचना atadrive_s *adrive_gf = container_सम्बन्धि(
+        op->drive_fl, संरचना atadrive_s, drive);
+    संरचना ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
     u16 iobase1 = GET_GLOBALFLAT(chan_gf->iobase1);
     u16 iobase2 = GET_GLOBALFLAT(chan_gf->iobase2);
 
-    struct ata_pio_command cmd;
-    memset(&cmd, 0, sizeof(cmd));
+    संरचना ata_pio_command cmd;
+    स्मृतिं_पूरय(&cmd, 0, परिमाण(cmd));
     cmd.lba_mid = blocksize;
-    cmd.lba_high = blocksize >> 8;
+    cmd.lba_उच्चः = blocksize >> 8;
     cmd.command = ATA_CMD_PACKET;
 
     // Disable interrupts
     outb(ATA_CB_DC_HD15 | ATA_CB_DC_NIEN, iobase2 + ATA_CB_DC);
 
-    int ret = send_cmd(adrive_gf, &cmd);
-    if (ret)
-        goto fail;
-    ret = ata_wait_data(iobase1);
-    if (ret)
-        goto fail;
+    पूर्णाङ्क ret = send_cmd(adrive_gf, &cmd);
+    यदि (ret)
+        गच्छ fail;
+    ret = ata_wait_दत्त(iobase1);
+    यदि (ret)
+        गच्छ fail;
 
     // Send command to device
-    outsw_fl(iobase1, MAKE_FLATPTR(GET_SEG(SS), cdbcmd), CDROM_CDB_SIZE / 2);
+    outsw_fl(iobase1, MAKE_FLATPTR(GET_SEG(SS), cdbcmd), CDROM_CDB_आकार / 2);
 
-    int status = pause_await_not_bsy(iobase1, iobase2);
-    if (status < 0) {
-        ret = status;
-        goto fail;
+    पूर्णाङ्क स्थितिः = pause_await_not_bsy(iobase1, iobase2);
+    यदि (स्थितिः < 0) {
+        ret = स्थितिः;
+        गच्छ fail;
     }
 
-    if (status & ATA_CB_STAT_ERR) {
+    यदि (स्थितिः & ATA_CB_STAT_ERR) {
         u8 err = inb(iobase1 + ATA_CB_ERR);
         // skip "Not Ready"
-        if (err != 0x20)
+        यदि (err != 0x20)
             dprintf(6, "send_atapi_cmd : read error (status=%02x err=%02x)\n"
-                    , status, err);
+                    , स्थितिः, err);
         ret = -2;
-        goto fail;
+        गच्छ fail;
     }
-    if (blocksize) {
-        if (!(status & ATA_CB_STAT_DRQ)) {
-            dprintf(6, "send_atapi_cmd : DRQ not set (status %02x)\n", status);
+    यदि (blocksize) {
+        यदि (!(स्थितिः & ATA_CB_STAT_DRQ)) {
+            dprintf(6, "send_atapi_cmd : DRQ not set (status %02x)\n", स्थितिः);
             ret = -3;
-            goto fail;
+            गच्छ fail;
         }
 
         ret = ata_pio_transfer(op, 0, blocksize);
@@ -649,9 +649,9 @@ ata_atapi_process_op(struct disk_op_s *op)
 fail:
     // Enable interrupts
     outb(ATA_CB_DC_HD15, iobase2+ATA_CB_DC);
-    if (ret)
-        return DISK_RET_EBADTRACK;
-    return DISK_RET_SUCCESS;
+    यदि (ret)
+        प्रत्यागम DISK_RET_EBADTRACK;
+    प्रत्यागम DISK_RET_SUCCESS;
 }
 
 
@@ -660,153 +660,153 @@ fail:
  ****************************************************************/
 
 // Send an identify device or identify device packet command.
-static int
-send_ata_identity(struct atadrive_s *adrive, u16 *buffer, int command)
+स्थिर पूर्णाङ्क
+send_ata_तटस्थः(संरचना atadrive_s *adrive, u16 *बफर, पूर्णाङ्क command)
 {
-    memset(buffer, 0, DISK_SECTOR_SIZE);
+    स्मृतिं_पूरय(बफर, 0, DISK_SECTOR_आकार);
 
-    struct disk_op_s dop;
-    memset(&dop, 0, sizeof(dop));
+    संरचना disk_op_s dop;
+    स्मृतिं_पूरय(&dop, 0, परिमाण(dop));
     dop.drive_fl = &adrive->drive;
-    dop.count = 1;
+    dop.गणनम् = 1;
     dop.lba = 1;
-    dop.buf_fl = MAKE_FLATPTR(GET_SEG(SS), buffer);
+    dop.buf_fl = MAKE_FLATPTR(GET_SEG(SS), बफर);
 
-    struct ata_pio_command cmd;
-    memset(&cmd, 0, sizeof(cmd));
+    संरचना ata_pio_command cmd;
+    स्मृतिं_पूरय(&cmd, 0, परिमाण(cmd));
     cmd.command = command;
 
-    return ata_pio_cmd_data(&dop, 0, &cmd);
+    प्रत्यागम ata_pio_cmd_दत्त(&dop, 0, &cmd);
 }
 
 // Extract the ATA/ATAPI version info.
-int
-ata_extract_version(u16 *buffer)
+पूर्णाङ्क
+ata_extract_संस्करणम्(u16 *बफर)
 {
     // Extract ATA/ATAPI version.
-    u16 ataversion = buffer[80];
-    u8 version;
-    for (version=15; version>0; version--)
-        if (ataversion & (1<<version))
-            break;
-    return version;
+    u16 ataversion = बफर[80];
+    u8 संस्करणम्_2;
+    प्रति (संस्करणम्_2=15; संस्करणम्_2>0; संस्करणम्_2--)
+        यदि (ataversion & (1<<संस्करणम्_2))
+            भङ्ग;
+    प्रत्यागम संस्करणम्_2;
 }
 
-#define MAXMODEL 40
+#परिभाषय MAXMODEL 40
 
 // Extract the ATA/ATAPI model info.
-char *
-ata_extract_model(char *model, u32 size, u16 *buffer)
+वर्ण *
+ata_extract_model(वर्ण *model, u32 आकार, u16 *बफर)
 {
     // Read model name
-    int i;
-    for (i=0; i<size/2; i++)
-        *(u16*)&model[i*2] = be16_to_cpu(buffer[27+i]);
-    model[size] = 0x00;
+    पूर्णाङ्क i;
+    प्रति (i=0; i<आकार/2; i++)
+        *(u16*)&model[i*2] = be16_गन्तव्यम्_cpu(बफर[27+i]);
+    model[आकार] = 0x00;
     nullTrailingSpace(model);
-    return model;
+    प्रत्यागम model;
 }
 
 // Common init code between ata and atapi
-static struct atadrive_s *
-init_atadrive(struct atadrive_s *dummy, u16 *buffer)
+स्थिर संरचना atadrive_s *
+init_atadrive(संरचना atadrive_s *dummy, u16 *बफर)
 {
-    struct atadrive_s *adrive = malloc_fseg(sizeof(*adrive));
-    if (!adrive) {
+    संरचना atadrive_s *adrive = malloc_fseg(परिमाण(*adrive));
+    यदि (!adrive) {
         warn_noalloc();
-        return NULL;
+        प्रत्यागम रिक्त;
     }
-    memset(adrive, 0, sizeof(*adrive));
+    स्मृतिं_पूरय(adrive, 0, परिमाण(*adrive));
     adrive->chan_gf = dummy->chan_gf;
     adrive->slave = dummy->slave;
     adrive->drive.cntl_id = adrive->chan_gf->ataid * 2 + dummy->slave;
-    adrive->drive.removable = (buffer[0] & 0x80) ? 1 : 0;
-    return adrive;
+    adrive->drive.removable = (बफर[0] & 0x80) ? 1 : 0;
+    प्रत्यागम adrive;
 }
 
 // Detect if the given drive is an atapi - initialize it if so.
-static struct atadrive_s *
-init_drive_atapi(struct atadrive_s *dummy, u16 *buffer)
+स्थिर संरचना atadrive_s *
+init_drive_atapi(संरचना atadrive_s *dummy, u16 *बफर)
 {
     // Send an IDENTIFY_DEVICE_PACKET command to device
-    int ret = send_ata_identity(dummy, buffer, ATA_CMD_IDENTIFY_PACKET_DEVICE);
-    if (ret)
-        return NULL;
+    पूर्णाङ्क ret = send_ata_तटस्थः(dummy, बफर, ATA_CMD_IDENTIFY_PACKET_DEVICE);
+    यदि (ret)
+        प्रत्यागम रिक्त;
 
     // Success - setup as ATAPI.
-    struct atadrive_s *adrive = init_atadrive(dummy, buffer);
-    if (!adrive)
-        return NULL;
+    संरचना atadrive_s *adrive = init_atadrive(dummy, बफर);
+    यदि (!adrive)
+        प्रत्यागम रिक्त;
     adrive->drive.type = DTYPE_ATA_ATAPI;
-    adrive->drive.blksize = CDROM_SECTOR_SIZE;
+    adrive->drive.blksize = CDROM_SECTOR_आकार;
     adrive->drive.sectors = (u64)-1;
-    u8 iscd = ((buffer[0] >> 8) & 0x1f) == 0x05;
-    char model[MAXMODEL+1];
-    char *desc = znprintf(MAXDESCSIZE
+    u8 iscd = ((बफर[0] >> 8) & 0x1f) == 0x05;
+    वर्ण model[MAXMODEL+1];
+    वर्ण *desc = znprintf(MAXDESCSIZE
                           , "DVD/CD [ata%d-%d: %s ATAPI-%d %s]"
                           , adrive->chan_gf->ataid, adrive->slave
-                          , ata_extract_model(model, MAXMODEL, buffer)
-                          , ata_extract_version(buffer)
+                          , ata_extract_model(model, MAXMODEL, बफर)
+                          , ata_extract_संस्करणम्(बफर)
                           , (iscd ? "DVD/CD" : "Device"));
     dprintf(1, "%s\n", desc);
 
     // fill cdidmap
-    if (iscd) {
-        int prio = bootprio_find_ata_device(adrive->chan_gf->pci_tmp,
+    यदि (iscd) {
+        पूर्णाङ्क prio = bootprio_find_ata_device(adrive->chan_gf->pci_tmp,
                                             adrive->chan_gf->chanid,
                                             adrive->slave);
         boot_lchs_find_ata_device(adrive->chan_gf->pci_tmp,
                                   adrive->chan_gf->chanid,
                                   adrive->slave,
                                   &(adrive->drive.lchs));
-        boot_add_cd(&adrive->drive, desc, prio);
+        boot_सङ्कलय_cd(&adrive->drive, desc, prio);
     }
 
-    return adrive;
+    प्रत्यागम adrive;
 }
 
 // Detect if the given drive is a regular ata drive - initialize it if so.
-static struct atadrive_s *
-init_drive_ata(struct atadrive_s *dummy, u16 *buffer)
+स्थिर संरचना atadrive_s *
+init_drive_ata(संरचना atadrive_s *dummy, u16 *बफर)
 {
     // Send an IDENTIFY_DEVICE command to device
-    int ret = send_ata_identity(dummy, buffer, ATA_CMD_IDENTIFY_DEVICE);
-    if (ret)
-        return NULL;
+    पूर्णाङ्क ret = send_ata_तटस्थः(dummy, बफर, ATA_CMD_IDENTIFY_DEVICE);
+    यदि (ret)
+        प्रत्यागम रिक्त;
 
     // Success - setup as ATA.
-    struct atadrive_s *adrive = init_atadrive(dummy, buffer);
-    if (!adrive)
-        return NULL;
+    संरचना atadrive_s *adrive = init_atadrive(dummy, बफर);
+    यदि (!adrive)
+        प्रत्यागम रिक्त;
     adrive->drive.type = DTYPE_ATA;
-    adrive->drive.blksize = DISK_SECTOR_SIZE;
+    adrive->drive.blksize = DISK_SECTOR_आकार;
 
-    adrive->drive.pchs.cylinder = buffer[1];
-    adrive->drive.pchs.head = buffer[3];
-    adrive->drive.pchs.sector = buffer[6];
+    adrive->drive.pchs.cylinder = बफर[1];
+    adrive->drive.pchs.शीर्ष = बफर[3];
+    adrive->drive.pchs.sector = बफर[6];
 
     u64 sectors;
-    if (buffer[83] & (1 << 10)) // word 83 - lba48 support
-        sectors = *(u64*)&buffer[100]; // word 100-103
-    else
-        sectors = *(u32*)&buffer[60]; // word 60 and word 61
+    यदि (बफर[83] & (1 << 10)) // word 83 - lba48 support
+        sectors = *(u64*)&बफर[100]; // word 100-103
+    अन्यथा
+        sectors = *(u32*)&बफर[60]; // word 60 and word 61
     adrive->drive.sectors = sectors;
     u64 adjsize = sectors >> 11;
-    char adjprefix = 'M';
-    if (adjsize >= (1 << 16)) {
+    वर्ण adjprefix = 'M';
+    यदि (adjsize >= (1 << 16)) {
         adjsize >>= 10;
         adjprefix = 'G';
     }
-    char model[MAXMODEL+1];
-    char *desc = znprintf(MAXDESCSIZE
+    वर्ण model[MAXMODEL+1];
+    वर्ण *desc = znprintf(MAXDESCSIZE
                           , "ata%d-%d: %s ATA-%d Hard-Disk (%u %ciBytes)"
                           , adrive->chan_gf->ataid, adrive->slave
-                          , ata_extract_model(model, MAXMODEL, buffer)
-                          , ata_extract_version(buffer)
+                          , ata_extract_model(model, MAXMODEL, बफर)
+                          , ata_extract_संस्करणम्(बफर)
                           , (u32)adjsize, adjprefix);
     dprintf(1, "%s\n", desc);
 
-    int prio = bootprio_find_ata_device(adrive->chan_gf->pci_tmp,
+    पूर्णाङ्क prio = bootprio_find_ata_device(adrive->chan_gf->pci_tmp,
                                         adrive->chan_gf->chanid,
                                         adrive->slave);
     boot_lchs_find_ata_device(adrive->chan_gf->pci_tmp,
@@ -814,61 +814,61 @@ init_drive_ata(struct atadrive_s *dummy, u16 *buffer)
                               adrive->slave,
                               &(adrive->drive.lchs));
     // Register with bcv system.
-    boot_add_hd(&adrive->drive, desc, prio);
+    boot_सङ्कलय_hd(&adrive->drive, desc, prio);
 
-    return adrive;
+    प्रत्यागम adrive;
 }
 
-static u32 SpinupEnd;
+स्थिर u32 Spinup_अन्तः;
 
 // Wait for non-busy status and check for "floating bus" condition.
-static int
-powerup_await_non_bsy(u16 base)
+स्थिर पूर्णाङ्क
+powerup_await_non_bsy(u16 आधारः)
 {
     u8 orstatus = 0;
-    u8 status;
-    for (;;) {
-        status = inb(base+ATA_CB_STAT);
-        if (!(status & ATA_CB_STAT_BSY))
-            break;
-        orstatus |= status;
-        if (orstatus == 0xff) {
+    u8 स्थितिः;
+    प्रति (;;) {
+        स्थितिः = inb(आधारः+ATA_CB_STAT);
+        यदि (!(स्थितिः & ATA_CB_STAT_BSY))
+            भङ्ग;
+        orstatus |= स्थितिः;
+        यदि (orstatus == 0xff) {
             dprintf(4, "powerup IDE floating\n");
-            return orstatus;
+            प्रत्यागम orstatus;
         }
-        if (timer_check(SpinupEnd)) {
+        यदि (timer_check(Spinup_अन्तः)) {
             warn_timeout();
-            return -1;
+            प्रत्यागम -1;
         }
         yield();
     }
-    dprintf(6, "powerup iobase=%x st=%x\n", base, status);
-    return status;
+    dprintf(6, "powerup iobase=%x st=%x\n", आधारः, स्थितिः);
+    प्रत्यागम स्थितिः;
 }
 
 // Detect any drives attached to a given controller.
-static void
-ata_detect(void *data)
+स्थिर शून्य
+ata_detect(शून्य *दत्त)
 {
-    struct ata_channel_s *chan_gf = data;
-    struct atadrive_s dummy;
-    memset(&dummy, 0, sizeof(dummy));
+    संरचना ata_channel_s *chan_gf = दत्त;
+    संरचना atadrive_s dummy;
+    स्मृतिं_पूरय(&dummy, 0, परिमाण(dummy));
     dummy.chan_gf = chan_gf;
     // Device detection
-    int didreset = 0;
+    पूर्णाङ्क didreset = 0;
     u8 slave;
-    for (slave=0; slave<=1; slave++) {
+    प्रति (slave=0; slave<=1; slave++) {
         // Wait for not-bsy.
         u16 iobase1 = chan_gf->iobase1;
-        int status = powerup_await_non_bsy(iobase1);
-        if (status < 0)
-            continue;
+        पूर्णाङ्क स्थितिः = powerup_await_non_bsy(iobase1);
+        यदि (स्थितिः < 0)
+            अनुवर्त;
         u8 newdh = slave ? ATA_CB_DH_DEV1 : ATA_CB_DH_DEV0;
         outb(newdh, iobase1+ATA_CB_DH);
         ndelay(400);
-        status = powerup_await_non_bsy(iobase1);
-        if (status < 0)
-            continue;
+        स्थितिः = powerup_await_non_bsy(iobase1);
+        यदि (स्थितिः < 0)
+            अनुवर्त;
 
         // Check if ioport registers look valid.
         outb(newdh, iobase1+ATA_CB_DH);
@@ -879,60 +879,60 @@ ata_detect(void *data)
         u8 sn = inb(iobase1+ATA_CB_SN);
         dprintf(6, "ata_detect ata%d-%d: sc=%x sn=%x dh=%x\n"
                 , chan_gf->ataid, slave, sc, sn, dh);
-        if (sc != 0x55 || sn != 0xaa || dh != newdh)
-            continue;
+        यदि (sc != 0x55 || sn != 0xaa || dh != newdh)
+            अनुवर्त;
 
         // Prepare new drive.
         dummy.slave = slave;
 
         // reset the channel
-        if (!didreset) {
+        यदि (!didreset) {
             ata_reset(&dummy);
             didreset = 1;
         }
 
         // check for ATAPI
-        u16 buffer[256];
-        struct atadrive_s *adrive = init_drive_atapi(&dummy, buffer);
-        if (!adrive) {
+        u16 बफर[256];
+        संरचना atadrive_s *adrive = init_drive_atapi(&dummy, बफर);
+        यदि (!adrive) {
             // Didn't find an ATAPI drive - look for ATA drive.
             u8 st = inb(iobase1+ATA_CB_STAT);
-            if (!st)
+            यदि (!st)
                 // Status not set - can't be a valid drive.
-                continue;
+                अनुवर्त;
 
             // Wait for RDY.
-            int ret = await_rdy(iobase1);
-            if (ret < 0)
-                continue;
+            पूर्णाङ्क ret = await_rdy(iobase1);
+            यदि (ret < 0)
+                अनुवर्त;
 
             // check for ATA.
-            adrive = init_drive_ata(&dummy, buffer);
-            if (!adrive)
+            adrive = init_drive_ata(&dummy, बफर);
+            यदि (!adrive)
                 // No ATA drive found
-                continue;
+                अनुवर्त;
         }
 
-        u16 resetresult = buffer[93];
+        u16 resetresult = बफर[93];
         dprintf(6, "ata_detect resetresult=%04x\n", resetresult);
-        if (!slave && (resetresult & 0xdf61) == 0x4041)
+        यदि (!slave && (resetresult & 0xdf61) == 0x4041)
             // resetresult looks valid and device 0 is responding to
             // device 1 requests - device 1 must not be present - skip
             // detection.
-            break;
+            भङ्ग;
     }
 }
 
 // Initialize an ata controller and detect its drives.
-static void
-init_controller(struct pci_device *pci, int chanid, int irq
+स्थिर शून्य
+init_controller(संरचना pci_device *pci, पूर्णाङ्क chanid, पूर्णाङ्क irq
                 , u32 port1, u32 port2, u32 master)
 {
-    static int ataid = 0;
-    struct ata_channel_s *chan_gf = malloc_fseg(sizeof(*chan_gf));
-    if (!chan_gf) {
+    स्थिर पूर्णाङ्क ataid = 0;
+    संरचना ata_channel_s *chan_gf = malloc_fseg(परिमाण(*chan_gf));
+    यदि (!chan_gf) {
         warn_noalloc();
-        return;
+        प्रत्यागम;
     }
     chan_gf->ataid = ataid++;
     chan_gf->chanid = chanid;
@@ -944,111 +944,111 @@ init_controller(struct pci_device *pci, int chanid, int irq
     chan_gf->iomaster = master;
     dprintf(1, "ATA controller %d at %x/%x/%x (irq %d dev %x)\n"
             , ataid, port1, port2, master, irq, chan_gf->pci_bdf);
-    run_thread(ata_detect, chan_gf);
+    सततम्_thread(ata_detect, chan_gf);
 }
 
-#define IRQ_ATA1 14
-#define IRQ_ATA2 15
+#परिभाषय IRQ_ATA1 14
+#परिभाषय IRQ_ATA2 15
 
 // Handle controllers on an ATA PCI device.
-static void
-init_pciata(struct pci_device *pci, u8 prog_if)
+स्थिर शून्य
+init_pciata(संरचना pci_device *pci, u8 prog_if)
 {
-    u8 pciirq = pci_config_readb(pci->bdf, PCI_INTERRUPT_LINE);
-    int master = 0;
-    if (CONFIG_ATA_DMA && prog_if & 0x80) {
+    u8 pciirq = pci_config_readb(pci->bdf, PCI_व्यवधानम्_पङ्क्तिः);
+    पूर्णाङ्क master = 0;
+    यदि (CONFIG_ATA_DMA && prog_if & 0x80) {
         // Check for bus-mastering.
-        u32 bar = pci_config_readl(pci->bdf, PCI_BASE_ADDRESS_4);
-        if (bar & PCI_BASE_ADDRESS_SPACE_IO) {
-            master = pci_enable_iobar(pci, PCI_BASE_ADDRESS_4);
+        u32 bar = pci_config_readl(pci->bdf, PCI_आधारः_स्थानाङ्कः_4);
+        यदि (bar & PCI_आधारः_स्थानाङ्कः_SPACE_IO) {
+            master = pci_enable_iobar(pci, PCI_आधारः_स्थानाङ्कः_4);
             pci_enable_busmaster(pci);
         }
     }
 
     u32 port1, port2, irq;
-    if (prog_if & 1) {
-        port1 = pci_enable_iobar(pci, PCI_BASE_ADDRESS_0);
-        port2 = pci_enable_iobar(pci, PCI_BASE_ADDRESS_1);
-        if (!port1 || !port2)
-            return;
+    यदि (prog_if & 1) {
+        port1 = pci_enable_iobar(pci, PCI_आधारः_स्थानाङ्कः_0);
+        port2 = pci_enable_iobar(pci, PCI_आधारः_स्थानाङ्कः_1);
+        यदि (!port1 || !port2)
+            प्रत्यागम;
         irq = pciirq;
-    } else {
-        port1 = PORT_ATA1_CMD_BASE;
-        port2 = PORT_ATA1_CTRL_BASE;
+    } अन्यथा {
+        port1 = पत्तनम्_ATA1_CMD_आधारः;
+        port2 = पत्तनम्_ATA1_CTRL_आधारः;
         irq = IRQ_ATA1;
     }
     init_controller(pci, 0, irq, port1, port2, master);
 
-    if (prog_if & 4) {
-        port1 = pci_enable_iobar(pci, PCI_BASE_ADDRESS_2);
-        port2 = pci_enable_iobar(pci, PCI_BASE_ADDRESS_3);
-        if (!port1 || !port2)
-            return;
+    यदि (prog_if & 4) {
+        port1 = pci_enable_iobar(pci, PCI_आधारः_स्थानाङ्कः_2);
+        port2 = pci_enable_iobar(pci, PCI_आधारः_स्थानाङ्कः_3);
+        यदि (!port1 || !port2)
+            प्रत्यागम;
         irq = pciirq;
-    } else {
-        port1 = PORT_ATA2_CMD_BASE;
-        port2 = PORT_ATA2_CTRL_BASE;
+    } अन्यथा {
+        port1 = पत्तनम्_ATA2_CMD_आधारः;
+        port2 = पत्तनम्_ATA2_CTRL_आधारः;
         irq = IRQ_ATA2;
     }
     init_controller(pci, 1, irq, port1, port2, master ? master + 8 : 0);
 }
 
-static void
-found_genericata(struct pci_device *pci, void *arg)
+स्थिर शून्य
+प्राप्तम्_genericata(संरचना pci_device *pci, शून्य *arg)
 {
     init_pciata(pci, pci->prog_if);
 }
 
-static void
-found_compatibleahci(struct pci_device *pci, void *arg)
+स्थिर शून्य
+प्राप्तम्_compatibleahci(संरचना pci_device *pci, शून्य *arg)
 {
-    if (CONFIG_AHCI)
+    यदि (CONFIG_AHCI)
         // Already handled directly via native ahci interface.
-        return;
+        प्रत्यागम;
     init_pciata(pci, 0x8f);
 }
 
-static const struct pci_device_id pci_ata_tbl[] = {
+स्थिर ध्रुव संरचना pci_device_id pci_ata_tbl[] = {
     PCI_DEVICE_CLASS(PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_STORAGE_IDE
-                     , found_genericata),
-    PCI_DEVICE(PCI_VENDOR_ID_ATI, 0x4391, found_compatibleahci),
-    PCI_DEVICE_END,
+                     , प्राप्तम्_genericata),
+    PCI_DEVICE(PCI_VENDOR_ID_ATI, 0x4391, प्राप्तम्_compatibleahci),
+    PCI_DEVICE_अन्तः,
 };
 
 // Locate and init ata controllers.
-static void
-ata_scan(void)
+स्थिर शून्य
+ata_अवलोकनम्(शून्य)
 {
-    if (CONFIG_QEMU && hlist_empty(&PCIDevices)) {
+    यदि (CONFIG_QEMU && hlist_रिक्तानि(&PCIDevices)) {
         // No PCI devices found - probably a QEMU "-M isapc" machine.
         // Try using ISA ports for ATA controllers.
-        init_controller(NULL, 0, IRQ_ATA1
-                        , PORT_ATA1_CMD_BASE, PORT_ATA1_CTRL_BASE, 0);
-        init_controller(NULL, 1, IRQ_ATA2
-                        , PORT_ATA2_CMD_BASE, PORT_ATA2_CTRL_BASE, 0);
-        return;
+        init_controller(रिक्त, 0, IRQ_ATA1
+                        , पत्तनम्_ATA1_CMD_आधारः, पत्तनम्_ATA1_CTRL_आधारः, 0);
+        init_controller(रिक्त, 1, IRQ_ATA2
+                        , पत्तनम्_ATA2_CMD_आधारः, पत्तनम्_ATA2_CTRL_आधारः, 0);
+        प्रत्यागम;
     }
 
     // Scan PCI bus for ATA adapters
-    struct pci_device *pci;
+    संरचना pci_device *pci;
     foreachpci(pci) {
-        pci_init_device(pci_ata_tbl, pci, NULL);
+        pci_init_device(pci_ata_tbl, pci, रिक्त);
     }
 }
 
-void
-ata_setup(void)
+शून्य
+ata_सज्जता(शून्य)
 {
     ASSERT32FLAT();
-    if (!CONFIG_ATA)
-        return;
+    यदि (!CONFIG_ATA)
+        प्रत्यागम;
 
     dprintf(3, "init hard drives\n");
 
-    SpinupEnd = timer_calc(IDE_TIMEOUT);
-    ata_scan();
+    Spinup_अन्तः = timer_calc(IDE_TIMEOUT);
+    ata_अवलोकनम्();
 
-    SET_BDA(disk_control_byte, 0xc0);
+    समुच्चयः_BDA(disk_control_byte, 0xc0);
 
-    enable_hwirq(14, FUNC16(entry_76));
+    enable_hwirq(14, FUNC16(प्रविष्टिः_76));
 }

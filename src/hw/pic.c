@@ -5,110 +5,110 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // SET_IVT
-#include "config.h" // CONFIG_*
-#include "output.h" // dprintf
-#include "pic.h" // pic_*
+#अन्तर्भाव "biosvar.h" // SET_IVT
+#अन्तर्भाव "config.h" // CONFIG_*
+#अन्तर्भाव "output.h" // dprintf
+#अन्तर्भाव "pic.h" // pic_*
 
 u16
-pic_irqmask_read(void)
+pic_irqmask_read(शून्य)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return 0;
-    return inb(PORT_PIC1_DATA) | (inb(PORT_PIC2_DATA) << 8);
+    यदि (!CONFIG_HARDWARE_IRQ)
+        प्रत्यागम 0;
+    प्रत्यागम inb(पत्तनम्_PIC1_दत्त) | (inb(पत्तनम्_PIC2_दत्त) << 8);
 }
 
-void
-pic_irqmask_write(u16 mask)
+शून्य
+pic_irqmask_write(u16 आवरणम्)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return;
-    outb(mask, PORT_PIC1_DATA);
-    outb(mask >> 8, PORT_PIC2_DATA);
+    यदि (!CONFIG_HARDWARE_IRQ)
+        प्रत्यागम;
+    outb(आवरणम्, पत्तनम्_PIC1_दत्त);
+    outb(आवरणम् >> 8, पत्तनम्_PIC2_दत्त);
 }
 
-void
-pic_irqmask_mask(u16 off, u16 on)
+शून्य
+pic_irqmask_आवरणम्(u16 off, u16 on)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return;
+    यदि (!CONFIG_HARDWARE_IRQ)
+        प्रत्यागम;
     u8 pic1off = off, pic1on = on, pic2off = off>>8, pic2on = on>>8;
-    outb((inb(PORT_PIC1_DATA) & ~pic1off) | pic1on, PORT_PIC1_DATA);
-    outb((inb(PORT_PIC2_DATA) & ~pic2off) | pic2on, PORT_PIC2_DATA);
+    outb((inb(पत्तनम्_PIC1_दत्त) & ~pic1off) | pic1on, पत्तनम्_PIC1_दत्त);
+    outb((inb(पत्तनम्_PIC2_दत्त) & ~pic2off) | pic2on, पत्तनम्_PIC2_दत्त);
 }
 
-void
+शून्य
 pic_reset(u8 irq0, u8 irq8)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return;
+    यदि (!CONFIG_HARDWARE_IRQ)
+        प्रत्यागम;
     // Send ICW1 (select OCW1 + will send ICW4)
-    outb(0x11, PORT_PIC1_CMD);
-    outb(0x11, PORT_PIC2_CMD);
+    outb(0x11, पत्तनम्_PIC1_CMD);
+    outb(0x11, पत्तनम्_PIC2_CMD);
     // Send ICW2 (base irqs: 0x08-0x0f for irq0-7, 0x70-0x77 for irq8-15)
-    outb(irq0, PORT_PIC1_DATA);
-    outb(irq8, PORT_PIC2_DATA);
+    outb(irq0, पत्तनम्_PIC1_दत्त);
+    outb(irq8, पत्तनम्_PIC2_दत्त);
     // Send ICW3 (cascaded pic ids)
-    outb(0x04, PORT_PIC1_DATA);
-    outb(0x02, PORT_PIC2_DATA);
+    outb(0x04, पत्तनम्_PIC1_दत्त);
+    outb(0x02, पत्तनम्_PIC2_दत्त);
     // Send ICW4 (enable 8086 mode)
-    outb(0x01, PORT_PIC1_DATA);
-    outb(0x01, PORT_PIC2_DATA);
+    outb(0x01, पत्तनम्_PIC1_दत्त);
+    outb(0x01, पत्तनम्_PIC2_दत्त);
     // Mask all irqs (except cascaded PIC2 irq)
     pic_irqmask_write(PIC_IRQMASK_DEFAULT);
 }
 
-void
-pic_setup(void)
+शून्य
+pic_सज्जता(शून्य)
 {
     dprintf(3, "init pic\n");
-    pic_reset(BIOS_HWIRQ0_VECTOR, BIOS_HWIRQ8_VECTOR);
+    pic_reset(BIOS_HWIRQ0_सदिशम्, BIOS_HWIRQ8_सदिशम्);
 }
 
-void
-enable_hwirq(int hwirq, struct segoff_s func)
+शून्य
+enable_hwirq(पूर्णाङ्क hwirq, संरचना segoff_s func)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return;
-    pic_irqmask_mask(1 << hwirq, 0);
-    int vector;
-    if (hwirq < 8)
-        vector = BIOS_HWIRQ0_VECTOR + hwirq;
-    else
-        vector = BIOS_HWIRQ8_VECTOR + hwirq - 8;
-    SET_IVT(vector, func);
+    यदि (!CONFIG_HARDWARE_IRQ)
+        प्रत्यागम;
+    pic_irqmask_आवरणम्(1 << hwirq, 0);
+    पूर्णाङ्क सदिशम्;
+    यदि (hwirq < 8)
+        सदिशम् = BIOS_HWIRQ0_सदिशम् + hwirq;
+    अन्यथा
+        सदिशम् = BIOS_HWIRQ8_सदिशम् + hwirq - 8;
+    समुच्चयः_IVT(सदिशम्, func);
 }
 
-static u8
-pic_isr1_read(void)
+स्थिर u8
+pic_isr1_read(शून्य)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return 0;
+    यदि (!CONFIG_HARDWARE_IRQ)
+        प्रत्यागम 0;
     // 0x0b == select OCW1 + read ISR
-    outb(0x0b, PORT_PIC1_CMD);
-    return inb(PORT_PIC1_CMD);
+    outb(0x0b, पत्तनम्_PIC1_CMD);
+    प्रत्यागम inb(पत्तनम्_PIC1_CMD);
 }
 
-static u8
-pic_isr2_read(void)
+स्थिर u8
+pic_isr2_read(शून्य)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return 0;
+    यदि (!CONFIG_HARDWARE_IRQ)
+        प्रत्यागम 0;
     // 0x0b == select OCW1 + read ISR
-    outb(0x0b, PORT_PIC2_CMD);
-    return inb(PORT_PIC2_CMD);
+    outb(0x0b, पत्तनम्_PIC2_CMD);
+    प्रत्यागम inb(पत्तनम्_PIC2_CMD);
 }
 
 // Handler for otherwise unused hardware irqs.
-void VISIBLE16
-handle_hwpic1(void)
+शून्य VISIBLE16
+handle_hwpic1(शून्य)
 {
     dprintf(DEBUG_ISR_hwpic1, "handle_hwpic1 irq=%x\n", pic_isr1_read());
     pic_eoi1();
 }
 
-void VISIBLE16
-handle_hwpic2(void)
+शून्य VISIBLE16
+handle_hwpic2(शून्य)
 {
     dprintf(DEBUG_ISR_hwpic2, "handle_hwpic2 irq=%x\n", pic_isr2_read());
     pic_eoi2();

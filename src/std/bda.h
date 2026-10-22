@@ -1,17 +1,17 @@
 // BIOS Data Area (and similar) definitions
-#ifndef __BDA_H
-#define __BDA_H
+#यदि_अपरिभाषितम् __BDA_H
+#परिभाषय __BDA_H
 
-#include "disk.h" // struct fdpt_s
-#include "types.h" // u8
+#अन्तर्भाव "disk.h" // struct fdpt_s
+#अन्तर्भाव "types.h" // u8
 
 
 /****************************************************************
  * Interrupt vector table
  ****************************************************************/
 
-struct rmode_IVT {
-    struct segoff_s ivec[256];
+संरचना rmode_IVT {
+    संरचना segoff_s ivec[256];
 };
 
 
@@ -19,31 +19,31 @@ struct rmode_IVT {
  * Bios Data Area (BDA)
  ****************************************************************/
 
-struct bios_data_area_s {
+संरचना bios_दत्त_area_s {
     // 40:00
-    u16 port_com[4];
-    u16 port_lpt[3];
+    u16 पत्तनम्_com[4];
+    u16 पत्तनम्_lpt[3];
     u16 ebda_seg;
     // 40:10
     u16 equipment_list_flags;
     u8 pad1;
-    u16 mem_size_kb;
+    u16 mem_आकार_kb;
     u8 pad2;
     u8 ps2_ctrl_flag;
     u16 kbd_flag0;
     u8 alt_keypad;
-    u16 kbd_buf_head;
-    u16 kbd_buf_tail;
+    u16 kbd_buf_शीर्ष;
+    u16 kbd_buf_पुच्छ;
     // 40:1e
     u8 kbd_buf[32];
-    u8 floppy_recalibration_status;
-    u8 floppy_motor_status;
+    u8 floppy_recalibration_स्थितिः;
+    u8 floppy_motor_स्थितिः;
     // 40:40
-    u8 floppy_motor_counter;
-    u8 floppy_last_status;
-    u8 floppy_return_status[7];
-    u8 video_mode;
-    u16 video_cols;
+    u8 floppy_motor_गणक;
+    u8 floppy_चरमः_स्थितिः;
+    u8 floppy_return_स्थितिः[7];
+    u8 video_बहुलकम्;
+    u16 video_स्तम्भसङ्ख्या;
     u16 video_pagesize;
     u16 video_pagestart;
     // 40:50
@@ -51,106 +51,106 @@ struct bios_data_area_s {
     // 40:60
     u16 cursor_type;
     u8 video_page;
-    u16 crtc_address;
+    u16 crtc_स्थानाङ्कः;
     u8 video_msr;
     u8 video_pal;
-    struct segoff_s jump;
+    संरचना segoff_s jump;
     u8 other_6b;
-    u32 timer_counter;
+    u32 timer_गणक;
     // 40:70
     u8 timer_rollover;
     u8 break_flag;
     u16 soft_reset_flag;
-    u8 disk_last_status;
+    u8 disk_चरमः_स्थितिः;
     u8 hdcount;
     u8 disk_control_byte;
-    u8 port_disk;
+    u8 पत्तनम्_disk;
     u8 lpt_timeout[4];
     u8 com_timeout[4];
     // 40:80
-    u16 kbd_buf_start_offset;
-    u16 kbd_buf_end_offset;
-    u8 video_rows;
+    u16 kbd_buf_start_विस्थापनम्;
+    u16 kbd_buf_अन्तः_विस्थापनम्;
+    u8 video_पङ्क्तिकाः;
     u16 char_height;
     u8 video_ctl;
     u8 video_switches;
     u8 modeset_ctl;
-    u8 dcc_index;
-    u8 floppy_last_data_rate;
-    u8 disk_status_controller;
+    u8 dcc_सूचकांक;
+    u8 floppy_चरमः_दत्त_दरः;
+    u8 disk_स्थितिः_controller;
     u8 disk_error_controller;
-    u8 disk_interrupt_flag;
+    u8 disk_व्यवधानम्_flag;
     u8 floppy_harddisk_info;
     // 40:90
     u8 floppy_media_state[4];
     u8 floppy_track[2];
     u8 kbd_flag1;
     u8 kbd_led;
-    struct segoff_s user_wait_complete_flag;
+    संरचना segoff_s user_wait_complete_flag;
     u32 user_wait_timeout;
     // 40:A0
     u8 rtc_wait_flag;
     u8 other_a1[7];
-    struct segoff_s video_savetable;
+    संरचना segoff_s video_savetable;
     u8 other_ac[4];
     // 40:B0
     u8 other_b0[5*16];
 } PACKED;
 
 // BDA floppy_recalibration_status bitdefs
-#define FRS_IRQ (1<<7)
+#परिभाषय FRS_IRQ (1<<7)
 
 // BDA rtc_wait_flag bitdefs
-#define RWS_WAIT_PENDING (1<<0)
-#define RWS_WAIT_ELAPSED (1<<7)
+#परिभाषय RWS_WAIT_PENDING (1<<0)
+#परिभाषय RWS_WAIT_ELAPSED (1<<7)
 
 // BDA floppy_media_state bitdefs
-#define FMS_DRIVE_STATE_MASK        (0x07)
-#define FMS_MEDIA_DRIVE_ESTABLISHED (1<<4)
-#define FMS_DOUBLE_STEPPING         (1<<5)
-#define FMS_DATA_RATE_MASK          (0xc0)
+#परिभाषय FMS_DRIVE_STATE_आवरणम्        (0x07)
+#परिभाषय FMS_MEDIA_DRIVE_ESTABLISHED (1<<4)
+#परिभाषय FMS_DOUBLE_STEPPING         (1<<5)
+#परिभाषय FMS_दत्त_दरः_आवरणम्          (0xc0)
 
 // BDA kbd_flag[01] bitdefs
-#define KF0_RSHIFT       (1<<0)
-#define KF0_LSHIFT       (1<<1)
-#define KF0_CTRLACTIVE   (1<<2)
-#define KF0_ALTACTIVE    (1<<3)
-#define KF0_SCROLLACTIVE (1<<4)
-#define KF0_NUMACTIVE    (1<<5)
-#define KF0_CAPSACTIVE   (1<<6)
-#define KF0_LCTRL        (1<<8)
-#define KF0_LALT         (1<<9)
-#define KF0_PAUSEACTIVE  (1<<11)
-#define KF0_SCROLL       (1<<12)
-#define KF0_NUM          (1<<13)
-#define KF0_CAPS         (1<<14)
+#परिभाषय KF0_RSHIFT       (1<<0)
+#परिभाषय KF0_LSHIFT       (1<<1)
+#परिभाषय KF0_CTRLACTIVE   (1<<2)
+#परिभाषय KF0_ALTACTIVE    (1<<3)
+#परिभाषय KF0_SCROLLACTIVE (1<<4)
+#परिभाषय KF0_NUMACTIVE    (1<<5)
+#परिभाषय KF0_CAPSACTIVE   (1<<6)
+#परिभाषय KF0_LCTRL        (1<<8)
+#परिभाषय KF0_LALT         (1<<9)
+#परिभाषय KF0_PAUSEACTIVE  (1<<11)
+#परिभाषय KF0_SCROLL       (1<<12)
+#परिभाषय KF0_अङ्कः          (1<<13)
+#परिभाषय KF0_CAPS         (1<<14)
 
-#define KF1_LAST_E1    (1<<0)
-#define KF1_LAST_E0    (1<<1)
-#define KF1_RCTRL      (1<<2)
-#define KF1_RALT       (1<<3)
-#define KF1_101KBD     (1<<4)
+#परिभाषय KF1_चरमः_E1    (1<<0)
+#परिभाषय KF1_चरमः_E0    (1<<1)
+#परिभाषय KF1_RCTRL      (1<<2)
+#परिभाषय KF1_RALT       (1<<3)
+#परिभाषय KF1_101KBD     (1<<4)
 
 // Limit of BDA timer_counter field
-#define TICKS_PER_DAY 1573040
+#परिभाषय TICKS_प्रत्येकम्_DAY 1573040
 
 
 /****************************************************************
  * Extended Bios Data Area (EBDA)
  ****************************************************************/
 
-struct extended_bios_data_area_s {
-    u8 size;
+संरचना extended_bios_दत्त_area_s {
+    u8 आकार;
     u8 reserved1[0x21];
-    struct segoff_s far_call_pointer;
+    संरचना segoff_s far_call_pointer;
     u8 mouse_flag1;
     u8 mouse_flag2;
-    u8 mouse_data[0x08];
+    u8 mouse_दत्त[0x08];
     // 0x30
     u8 other1[0x0d];
 
     // 0x3d
-    struct fdpt_s fdpt[2];
+    संरचना fdpt_s fdpt[2];
 
     // 0x5d
     u8 other2[0xC4];
@@ -163,12 +163,12 @@ struct extended_bios_data_area_s {
  * Bios Config Table
  ****************************************************************/
 
-struct bios_config_table_s {
-    u16 size;
+संरचना bios_config_सारणी_s {
+    u16 आकार;
     u8 model;
     u8 submodel;
     u8 biosrev;
     u8 feature1, feature2, feature3, feature4, feature5;
 } PACKED;
 
-#endif // bda.h
+#यदि_अन्तः // bda.h

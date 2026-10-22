@@ -1,8 +1,8 @@
-#ifndef __LSI_SCSI_H
-#define __LSI_SCSI_H
+#यदि_अपरिभाषितम् __LSI_SCSI_H
+#परिभाषय __LSI_SCSI_H
 
-struct disk_op_s;
-int lsi_scsi_process_op(struct disk_op_s *op);
-void lsi_scsi_setup(void);
+संरचना disk_op_s;
+पूर्णाङ्क lsi_scsi_process_op(संरचना disk_op_s *op);
+शून्य lsi_scsi_सज्जता(शून्य);
 
-#endif /* __LSI_SCSI_H */
+#यदि_अन्तः /* __LSI_SCSI_H */

@@ -24,18 +24,18 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
 **/
 
-#ifndef _EFI_LEGACY_BIOS_H_
-#define _EFI_LEGACY_BIOS_H_
+#यदि_अपरिभाषितम् _EFI_LEGACY_BIOS_H_
+#परिभाषय _EFI_LEGACY_BIOS_H_
 
 ///
 /// 
 ///
-#pragma pack(1)
+#निर्देशः pack(1)
 
-typedef UINT8                       SERIAL_MODE;
-typedef UINT8                       PARALLEL_MODE;
+प्रकारनिर्देश UINT8                       SERIAL_बहुलकम्;
+प्रकारनिर्देश UINT8                       PARALLEL_बहुलकम्;
 
-#define EFI_COMPATIBILITY16_TABLE_SIGNATURE SIGNATURE_32 ('I', 'F', 'E', '$')
+#परिभाषय EFI_COMPATIBILITY16_सारणी_SIGNATURE SIGNATURE_32 ('I', 'F', 'E', '$')
 
 ///
 /// There is a table located within the traditional BIOS in either the 0xF000:xxxx or 0xE000:xxxx
@@ -45,7 +45,7 @@ typedef UINT8                       PARALLEL_MODE;
 /// thunking by using EFI_LEGACY_BIOS_PROTOCOL.FarCall86() with the 32-bit physical
 /// entry point.
 ///
-typedef struct {
+प्रकारनिर्देश संरचना {
   ///
   /// The string "$EFI" denotes the start of the EfiCompatibility table. Byte 0 is "I," byte
   /// 1 is "F," byte 2 is "E," and byte 3 is "$" and is normally accessed as a DWORD or UINT32.
@@ -55,12 +55,12 @@ typedef struct {
   ///
   /// The value required such that byte checksum of TableLength equals zero.
   ///
-  UINT8                             TableChecksum;
+  UINT8                             सारणी_Checksum;
   
   ///
   /// The length of this table.
   ///
-  UINT8                             TableLength;
+  UINT8                             सारणी_दीर्घता;
   
   ///
   /// The major EFI revision for which this table was generated.
@@ -75,12 +75,12 @@ typedef struct {
   ///
   /// The major revision of this table.
   ///
-  UINT8                             TableMajorRevision;
+  UINT8                             सारणी_Major_Revision;
   
   ///
   /// The minor revision of this table.
   ///
-  UINT8                             TableMinorRevision;
+  UINT8                             सारणी_Minor_Revision;
   
   ///
   /// Reserved for future usage.
@@ -95,7 +95,7 @@ typedef struct {
   ///
   /// The offset of the entry point within the traditional BIOS for Compatibility16 functions.
   ///
-  UINT16                            Compatibility16CallOffset;
+  UINT16                            Compatibility16_Call_विस्थापनम्;
   
   ///
   /// The segment of the entry point within the traditional BIOS for EfiCompatibility 
@@ -107,13 +107,13 @@ typedef struct {
   /// The Offset of the entry point within the traditional BIOS for EfiCompatibility 
   /// to invoke the PnP installation check.
   ///
-  UINT16                            PnPInstallationCheckOffset;
+  UINT16                            Pn_PInstallation_Check_विस्थापनम्;
   
   ///
   /// EFI system resources table. Type EFI_SYSTEM_TABLE is defined in the IntelPlatform 
   ///Innovation Framework for EFI Driver Execution Environment Core Interface Specification (DXE CIS).
   ///
-  UINT32                            EfiSystemTable; 
+  UINT32                            Efi_System_सारणी; 
   
   ///
   /// The address of an OEM-provided identifier string. The string is null terminated.
@@ -143,31 +143,31 @@ typedef struct {
   ///
   /// The length of the E820 data and is filled in by the EfiCompatibility code.
   ///
-  UINT32                            E820Length;
+  UINT32                            E820_दीर्घता;
   
   ///
   /// The 32-bit physical address where the $PIR table is stored in the traditional BIOS.
   /// The EfiCompatibility code will fill in the IrqRoutingTablePointer value and
   /// copy the data to the indicated area.
   ///
-  UINT32                            IrqRoutingTablePointer;
+  UINT32                            Irq_Routing_सारणी_Pointer;
   
   ///
   /// The length of the $PIR table and is filled in by the EfiCompatibility code.
   ///
-  UINT32                            IrqRoutingTableLength;
+  UINT32                            Irq_Routing_सारणी_दीर्घता;
   
   ///
   /// The 32-bit physical address where the MP table is stored in the traditional BIOS.
   /// The EfiCompatibility code will fill in the MpTablePtr value and copy the data 
   /// to the indicated area.
   ///
-  UINT32                            MpTablePtr;
+  UINT32                            Mp_सारणी_Ptr;
   
   ///
   /// The length of the MP table and is filled in by the EfiCompatibility code.
   ///
-  UINT32                            MpTableLength;
+  UINT32                            Mp_सारणी_दीर्घता;
   
   ///
   /// The segment of the OEM-specific INT table/code.
@@ -177,7 +177,7 @@ typedef struct {
   ///
   /// The offset of the OEM-specific INT table/code.
   ///
-  UINT16                            OemIntOffset;
+  UINT16                            Oem_Int_विस्थापनम्;
   
   ///
   /// The segment of the OEM-specific 32-bit table/code.
@@ -187,7 +187,7 @@ typedef struct {
   ///
   /// The offset of the OEM-specific 32-bit table/code.
   ///
-  UINT16                            Oem32Offset;
+  UINT16                            Oem32_विस्थापनम्;
   
   ///
   /// The segment of the OEM-specific 16-bit table/code.
@@ -197,7 +197,7 @@ typedef struct {
   ///
   /// The offset of the OEM-specific 16-bit table/code.
   ///
-  UINT16                            Oem16Offset;
+  UINT16                            Oem16_विस्थापनम्;
   
   ///
   /// The segment of the TPM binary passed to 16-bit CSM.
@@ -207,7 +207,7 @@ typedef struct {
   ///
   /// The offset of the TPM binary passed to 16-bit CSM.
   ///
-  UINT16                            TpmOffset;
+  UINT16                            Tpm_विस्थापनम्;
   
   ///
   /// A pointer to a string identifying the independent BIOS vendor.
@@ -222,33 +222,33 @@ typedef struct {
   /// Compatibility16InitializeYourself() is defined in Compatability16
   /// Functions.
   ///
-  UINT32                            PciExpressBase;
+  UINT32                            Pci_Express_आधारः;
   
   ///
   /// Maximum PCI bus number assigned.
   ///
-  UINT8                             LastPciBus;
+  UINT8                             चरमः_Pci_Bus;
 
   ///
   /// Start address of UMB RAM
   ///
-  UINT32                            UmaAddress;
+  UINT32                            Uma_स्थानाङ्कः;
 
   ///
   /// Size of UMB RAM
   ///
-  UINT32                            UmaSize;
+  UINT32                            Uma_आकार;
 
   ///
   /// Start address of persistent allocation in high (>1MiB) memory
   ///
-  UINT32                            HiPermanentMemoryAddress;
+  UINT32                            Hi_Permanent_स्मृतिः_स्थानाङ्कः;
 
   ///
   /// Size of persistent allocation in high (>1MiB) memory
   ///
-  UINT32                            HiPermanentMemorySize;
-} EFI_COMPATIBILITY16_TABLE;
+  UINT32                            Hi_Permanent_स्मृतिः_आकार;
+} EFI_COMPATIBILITY16_सारणी;
 
 ///
 /// Functions provided by the CSM binary which communicate between the EfiCompatibility 
@@ -259,7 +259,7 @@ typedef struct {
 /// Compatibility Support Module Specification / 0.97 version] 
 /// has been changed to "Legacy16" since keeping backward compatible.
 ///
-typedef enum {
+प्रकारनिर्देश गणना {
   ///
   /// Causes the Compatibility16 code to do any internal initialization required.
   /// Input:
@@ -289,7 +289,7 @@ typedef enum {
   /// Return:
   ///   AX = Returned status codes
   ///
-  Legacy16PrepareToBoot         = 0x0002,
+  Legacy16_Prepare_गन्तव्यम्_Boot         = 0x0002,
   
   ///
   /// Causes the Compatibility16 BIOS to boot. The Compatibility16 code is Read/Only.
@@ -309,7 +309,7 @@ typedef enum {
   ///   AX = Returned status codes
   ///   BX = Priority number of the boot device.
   ///
-  Legacy16RetrieveLastBootDevice = 0x0004,
+  Legacy16_Retrieve_चरमः_Boot_Device = 0x0004,
   
   ///
   /// Allows the Compatibility16 code rehook INT13, INT18, and/or INT19 after dispatching a legacy OpROM.
@@ -337,7 +337,7 @@ typedef enum {
   ///   AX = Returned status codes
   ///   DS:BX = Address of the region
   ///
-  Legacy16GetTableAddress       = 0x0006,
+  Legacy16_Get_सारणी_स्थानाङ्कः       = 0x0006,
   
   ///
   /// Enables the EfiCompatibility module to do any nonstandard processing of keyboard LEDs or state.
@@ -350,7 +350,7 @@ typedef enum {
   /// Output:
   ///     AX = Returned status codes
   ///
-  Legacy16SetKeyboardLeds       = 0x0007,
+  Legacy16_समुच्चयः_Keyboard_Leds       = 0x0007,
   
   ///
   /// Enables the EfiCompatibility module to install an interrupt handler for PCI mass media devices that
@@ -368,28 +368,28 @@ typedef enum {
 ///
 /// EFI_DISPATCH_OPROM_TABLE
 ///
-typedef struct {
+प्रकारनिर्देश संरचना {
   UINT16  PnPInstallationCheckSegment;  ///< A pointer to the PnpInstallationCheck data structure.
-  UINT16  PnPInstallationCheckOffset;   ///< A pointer to the PnpInstallationCheck data structure.
+  UINT16  Pn_PInstallation_Check_विस्थापनम्;   ///< A pointer to the PnpInstallationCheck data structure.
   UINT16  OpromSegment;                 ///< The segment where the OpROM was placed. Offset is assumed to be 3.
   UINT8   PciBus;                       ///< The PCI bus.
   UINT8   PciDeviceFunction;            ///< The PCI device * 0x08 | PCI function.
-  UINT8   NumberBbsEntries;             ///< The number of valid BBS table entries upon entry and exit. The IBV code may
+  UINT8   सङ्ख्या_Bbs_Entries;             ///< The number of valid BBS table entries upon entry and exit. The IBV code may
                                         ///< increase this number, if BBS-compliant devices also hook INTs in order to force the
                                         ///< OpROM BIOS Setup to be executed.
-  UINT32  BbsTablePointer;              ///< A pointer to the BBS table.
+  UINT32  Bbs_सारणी_Pointer;              ///< A pointer to the BBS table.
   UINT16  RuntimeSegment;               ///< The segment where the OpROM can be relocated to. If this value is 0x0000, this
                                         ///< means that the relocation of this run time code is not supported.
                                         ///< Inconsistent with specification here: 
                                         ///< The member's name "OpromDestinationSegment" [defined in Intel Framework Compatibility Support Module Specification / 0.97 version] 
                                         ///< has been changed to "RuntimeSegment" since keeping backward compatible.
 
-} EFI_DISPATCH_OPROM_TABLE;
+} EFI_DISPATCH_OPROM_सारणी;
 
 ///
 /// EFI_TO_COMPATIBILITY16_INIT_TABLE
 ///
-typedef struct {
+प्रकारनिर्देश संरचना {
   ///
   /// Starting address of memory under 1 MB. The ending address is assumed to be 640 KB or 0x9FFFF.
   ///
@@ -398,12 +398,12 @@ typedef struct {
   ///
   /// The starting address of the high memory block.
   ///
-  UINT32                            HiPmmMemory;
+  UINT32                            Hi_Pmm_स्मृतिः;
   
   ///
   /// The length of high memory block.
   ///
-  UINT32                            HiPmmMemorySizeInBytes;
+  UINT32                            Hi_Pmm_स्मृतिः_आकार_अन्तर्_अष्टकानि;
   
   ///
   /// The segment of the reverse thunk call code.
@@ -413,17 +413,17 @@ typedef struct {
   ///
   /// The offset of the reverse thunk call code.
   ///
-  UINT16                            ReverseThunkCallOffset;
+  UINT16                            Reverse_Thunk_Call_विस्थापनम्;
   
   ///
   /// The number of E820 entries copied to the Compatibility16 BIOS.
   ///
-  UINT32                            NumberE820Entries;
+  UINT32                            सङ्ख्या_E820_Entries;
   
   ///
   /// The amount of usable memory above 1 MB, e.g., E820 type 1 memory.
   ///
-  UINT32                            OsMemoryAbove1Mb;
+  UINT32                            Os_स्मृतिः_Above1_Mb;
   
   ///
   /// The start of thunk code in main memory. Memory cannot be used by BIOS or PMM.
@@ -433,71 +433,71 @@ typedef struct {
   ///
   /// The size of the thunk code.
   ///
-  UINT32                            ThunkSizeInBytes;
+  UINT32                            Thunk_आकार_अन्तर्_अष्टकानि;
   
   ///
   /// Starting address of memory under 1 MB.
   ///
-  UINT32                            LowPmmMemory;
+  UINT32                            नीचः_Pmm_स्मृतिः;
   
   ///
   /// The length of low Memory block.
   ///
-  UINT32                            LowPmmMemorySizeInBytes;
-} EFI_TO_COMPATIBILITY16_INIT_TABLE;
+  UINT32                            नीचः_Pmm_स्मृतिः_आकार_अन्तर्_अष्टकानि;
+} EFI_गन्तव्यम्_COMPATIBILITY16_INIT_सारणी;
 
 ///
 /// DEVICE_PRODUCER_SERIAL.
 ///
-typedef struct {
-  UINT16                            Address;    ///< I/O address assigned to the serial port.
+प्रकारनिर्देश संरचना {
+  UINT16                            स्थानाङ्कः_2;    ///< I/O address assigned to the serial port.
   UINT8                             Irq;        ///< IRQ assigned to the serial port.
-  SERIAL_MODE                       Mode;       ///< Mode of serial port. Values are defined below.
-} DEVICE_PRODUCER_SERIAL;
+  SERIAL_बहुलकम्                       बहुलकम्_2;       ///< Mode of serial port. Values are defined below.
+} DEVICE_उत्पादकः_SERIAL;
 
 ///
 /// DEVICE_PRODUCER_SERIAL's modes.
 ///@{
-#define DEVICE_SERIAL_MODE_NORMAL               0x00
-#define DEVICE_SERIAL_MODE_IRDA                 0x01
-#define DEVICE_SERIAL_MODE_ASK_IR               0x02
-#define DEVICE_SERIAL_MODE_DUPLEX_HALF          0x00
-#define DEVICE_SERIAL_MODE_DUPLEX_FULL          0x10
+#परिभाषय DEVICE_SERIAL_बहुलकम्_प्रसामान्यम्               0x00
+#परिभाषय DEVICE_SERIAL_बहुलकम्_IRDA                 0x01
+#परिभाषय DEVICE_SERIAL_बहुलकम्_ASK_IR               0x02
+#परिभाषय DEVICE_SERIAL_बहुलकम्_DUPLEX_HALF          0x00
+#परिभाषय DEVICE_SERIAL_बहुलकम्_DUPLEX_पूर्णम्          0x10
 ///@)
 
 ///
 /// DEVICE_PRODUCER_PARALLEL.
 ///
-typedef struct {
-  UINT16                            Address;  ///< I/O address assigned to the parallel port.
+प्रकारनिर्देश संरचना {
+  UINT16                            स्थानाङ्कः_2;  ///< I/O address assigned to the parallel port.
   UINT8                             Irq;      ///< IRQ assigned to the parallel port.
   UINT8                             Dma;      ///< DMA assigned to the parallel port.
-  PARALLEL_MODE                     Mode;     ///< Mode of the parallel port. Values are defined below.
-} DEVICE_PRODUCER_PARALLEL;
+  PARALLEL_बहुलकम्                     बहुलकम्_2;     ///< Mode of the parallel port. Values are defined below.
+} DEVICE_उत्पादकः_PARALLEL;
 
 ///
 /// DEVICE_PRODUCER_PARALLEL's modes.
 ///@{
-#define DEVICE_PARALLEL_MODE_MODE_OUTPUT_ONLY   0x00
-#define DEVICE_PARALLEL_MODE_MODE_BIDIRECTIONAL 0x01
-#define DEVICE_PARALLEL_MODE_MODE_EPP           0x02
-#define DEVICE_PARALLEL_MODE_MODE_ECP           0x03
+#परिभाषय DEVICE_PARALLEL_बहुलकम्_बहुलकम्_OUTPUT_ONLY   0x00
+#परिभाषय DEVICE_PARALLEL_बहुलकम्_बहुलकम्_BIDIRECTIONAL 0x01
+#परिभाषय DEVICE_PARALLEL_बहुलकम्_बहुलकम्_EPP           0x02
+#परिभाषय DEVICE_PARALLEL_बहुलकम्_बहुलकम्_ECP           0x03
 ///@}
 
 ///
 /// DEVICE_PRODUCER_FLOPPY
 ///
-typedef struct {
-  UINT16                            Address;          ///< I/O address assigned to the floppy.
+प्रकारनिर्देश संरचना {
+  UINT16                            स्थानाङ्कः_2;          ///< I/O address assigned to the floppy.
   UINT8                             Irq;              ///< IRQ assigned to the floppy.
   UINT8                             Dma;              ///< DMA assigned to the floppy.
-  UINT8                             NumberOfFloppy;   ///< Number of floppies in the system.
-} DEVICE_PRODUCER_FLOPPY;
+  UINT8                             सङ्ख्या_सम्बन्धि_Floppy;   ///< Number of floppies in the system.
+} DEVICE_उत्पादकः_FLOPPY;
 
 ///
 /// LEGACY_DEVICE_FLAGS
 ///
-typedef struct {
+प्रकारनिर्देश संरचना {
   UINT32                            A20Kybd : 1;      ///< A20 controller by keyboard controller.
   UINT32                            A20Port90 : 1;    ///< A20 controlled by port 0x92.
   UINT32                            Reserved : 30;    ///< Reserved for future usage.
@@ -506,31 +506,31 @@ typedef struct {
 ///
 /// DEVICE_PRODUCER_DATA_HEADER
 ///
-typedef struct {
-  DEVICE_PRODUCER_SERIAL            Serial[4];      ///< Data for serial port x. Type DEVICE_PRODUCER_SERIAL is defined below.
-  DEVICE_PRODUCER_PARALLEL          Parallel[3];    ///< Data for parallel port x. Type DEVICE_PRODUCER_PARALLEL is defined below.
-  DEVICE_PRODUCER_FLOPPY            Floppy;         ///< Data for floppy. Type DEVICE_PRODUCER_FLOPPY is defined below.
+प्रकारनिर्देश संरचना {
+  DEVICE_उत्पादकः_SERIAL            Serial[4];      ///< Data for serial port x. Type DEVICE_PRODUCER_SERIAL is defined below.
+  DEVICE_उत्पादकः_PARALLEL          Parallel[3];    ///< Data for parallel port x. Type DEVICE_PRODUCER_PARALLEL is defined below.
+  DEVICE_उत्पादकः_FLOPPY            Floppy;         ///< Data for floppy. Type DEVICE_PRODUCER_FLOPPY is defined below.
   UINT8                             MousePresent;   ///< Flag to indicate if mouse is present.
   LEGACY_DEVICE_FLAGS               Flags;          ///< Miscellaneous Boolean state information passed to CSM.
-} DEVICE_PRODUCER_DATA_HEADER;
+} DEVICE_उत्पादकः_दत्त_शीर्षकम्;
 
 ///
 /// ATAPI_IDENTIFY
 ///
-typedef struct {
+प्रकारनिर्देश संरचना {
   UINT16                            Raw[256];     ///< Raw data from the IDE IdentifyDrive command.
 } ATAPI_IDENTIFY;
 
 ///
 /// HDD_INFO
 ///
-typedef struct {
+प्रकारनिर्देश संरचना {
   ///
   /// Status of IDE device. Values are defined below. There is one HDD_INFO structure
   /// per IDE controller. The IdentifyDrive is per drive. Index 0 is master and index
   /// 1 is slave.
   ///
-  UINT16                            Status;   
+  UINT16                            स्थितिः_2;   
   
   ///
   /// PCI bus of IDE controller.
@@ -550,17 +550,17 @@ typedef struct {
   ///
   /// Command ports base address.
   ///
-  UINT16                            CommandBaseAddress;
+  UINT16                            Command_आधारः_स्थानाङ्कः;
   
   ///
   /// Control ports base address.
   ///
-  UINT16                            ControlBaseAddress;
+  UINT16                            Control_आधारः_स्थानाङ्कः;
   
   ///
   /// Bus master address.
   ///
-  UINT16                            BusMasterAddress;
+  UINT16                            Bus_Master_स्थानाङ्कः;
   
   UINT8                             HddIrq;
   
@@ -573,19 +573,19 @@ typedef struct {
 ///
 /// HDD_INFO status bits
 ///
-#define HDD_PRIMARY               0x01
-#define HDD_SECONDARY             0x02
-#define HDD_MASTER_ATAPI_CDROM    0x04
-#define HDD_SLAVE_ATAPI_CDROM     0x08
-#define HDD_MASTER_IDE            0x20
-#define HDD_SLAVE_IDE             0x40
-#define HDD_MASTER_ATAPI_ZIPDISK  0x10
-#define HDD_SLAVE_ATAPI_ZIPDISK   0x80
+#परिभाषय HDD_PRIMARY               0x01
+#परिभाषय HDD_SECONDARY             0x02
+#परिभाषय HDD_MASTER_ATAPI_CDROM    0x04
+#परिभाषय HDD_SLAVE_ATAPI_CDROM     0x08
+#परिभाषय HDD_MASTER_IDE            0x20
+#परिभाषय HDD_SLAVE_IDE             0x40
+#परिभाषय HDD_MASTER_ATAPI_ZIPDISK  0x10
+#परिभाषय HDD_SLAVE_ATAPI_ZIPDISK   0x80
 
 ///
 /// BBS_STATUS_FLAGS;\.
 ///
-typedef struct {
+प्रकारनिर्देश संरचना {
   UINT16                            OldPosition : 4;    ///< Prior priority.
   UINT16                            Reserved1 : 4;      ///< Reserved for future use.
   UINT16                            Enabled : 1;        ///< If 0, ignore this entry.
@@ -601,16 +601,16 @@ typedef struct {
   ///
   UINT16                            MediaPresent : 2;
   UINT16                            Reserved2 : 4;      ///< Reserved for future use.
-} BBS_STATUS_FLAGS;
+} BBS_स्थितिः_FLAGS;
 
 ///
 /// BBS_TABLE, device type values & boot priority values.
 ///
-typedef struct {
+प्रकारनिर्देश संरचना {
   ///
   /// The boot priority for this boot device. Values are defined below.
   ///
-  UINT16                            BootPriority;
+  UINT16                            Boot_प्राथमिकता;
   
   ///
   /// The PCI bus for this boot device.
@@ -640,7 +640,7 @@ typedef struct {
   ///
   /// Segment:offset address of an ASCIIZ description string describing the manufacturer.
   ///
-  UINT16                            MfgStringOffset;
+  UINT16                            Mfg_String_विस्थापनम्;
   
   ///
   /// Segment:offset address of an ASCIIZ description string describing the manufacturer.
@@ -655,13 +655,13 @@ typedef struct {
   ///
   /// Status of this boot device. Type BBS_STATUS_FLAGS is defined below.
   ///
-  BBS_STATUS_FLAGS                  StatusFlags;
+  BBS_स्थितिः_FLAGS                  स्थितिः_Flags;
   
   ///
   /// Segment:Offset address of boot loader for IPL devices or install INT13 handler for
   /// BCV devices.
   ///
-  UINT16                            BootHandlerOffset;
+  UINT16                            Boot_Handler_विस्थापनम्;
   
   ///
   /// Segment:Offset address of boot loader for IPL devices or install INT13 handler for
@@ -672,7 +672,7 @@ typedef struct {
   ///
   /// Segment:offset address of an ASCIIZ description string describing this device.
   ///
-  UINT16                            DescStringOffset;
+  UINT16                            Desc_String_विस्थापनम्;
 
   ///
   /// Segment:offset address of an ASCIIZ description string describing this device.
@@ -682,7 +682,7 @@ typedef struct {
   ///
   /// Reserved.
   ///
-  UINT32                            InitPerReserved;
+  UINT32                            Init_प्रत्येकम्_Reserved;
   
   ///
   /// The use of these fields is IBV dependent. They can be used to flag that an OpROM
@@ -711,39 +711,39 @@ typedef struct {
   /// BBS-compliant OpROMs also hook IRQ vectors in order to run their BIOS Setup
   ///  
   UINT32                            AdditionalIrq40Handler;
-  UINT8                             AssignedDriveNumber;
+  UINT8                             Assigned_Drive_सङ्ख्या;
   UINT32                            AdditionalIrq41Handler;
   UINT32                            AdditionalIrq46Handler;
   UINT32                            IBV1;
   UINT32                            IBV2;
-} BBS_TABLE;
+} BBS_सारणी;
 
 ///
 /// BBS device type values
 ///@{
-#define BBS_FLOPPY              0x01
-#define BBS_HARDDISK            0x02
-#define BBS_CDROM               0x03
-#define BBS_PCMCIA              0x04
-#define BBS_USB                 0x05
-#define BBS_EMBED_NETWORK       0x06
-#define BBS_BEV_DEVICE          0x80
-#define BBS_UNKNOWN             0xff
+#परिभाषय BBS_FLOPPY              0x01
+#परिभाषय BBS_HARDDISK            0x02
+#परिभाषय BBS_CDROM               0x03
+#परिभाषय BBS_PCMCIA              0x04
+#परिभाषय BBS_USB                 0x05
+#परिभाषय BBS_EMBED_जालम्       0x06
+#परिभाषय BBS_BEV_DEVICE          0x80
+#परिभाषय BBS_UNKNOWN             0xff
 ///@}
 
 ///
 /// BBS boot priority values
 ///@{
-#define BBS_DO_NOT_BOOT_FROM    0xFFFC
-#define BBS_LOWEST_PRIORITY     0xFFFD
-#define BBS_UNPRIORITIZED_ENTRY 0xFFFE
-#define BBS_IGNORE_ENTRY        0xFFFF
+#परिभाषय BBS_DO_NOT_BOOT_FROM    0xFFFC
+#परिभाषय BBS_निम्नतमम्_प्राथमिकता     0xFFFD
+#परिभाषय BBS_UNPRIORITIZED_प्रविष्टिः 0xFFFE
+#परिभाषय BBS_IGNORE_प्रविष्टिः        0xFFFF
 ///@}
 
 ///
 /// SMM_ATTRIBUTES
 ///
-typedef struct {
+प्रकारनिर्देश संरचना {
   ///
   /// Access mechanism used to generate the soft SMI. Defined types are below. The other
   /// values are reserved for future usage.
@@ -753,48 +753,48 @@ typedef struct {
   ///
   /// The size of "port" in bits. Defined values are below.
   ///
-  UINT16                            PortGranularity : 3;
+  UINT16                            पत्तनम्_Granularity : 3;
   
   ///
   /// The size of data in bits. Defined values are below.
   ///
-  UINT16                            DataGranularity : 3;
+  UINT16                            दत्त_Granularity : 3;
   
   ///
   /// Reserved for future use.
   ///
   UINT16                            Reserved : 7;
-} SMM_ATTRIBUTES;
+} SMM_गुणाः;
 
 ///
 /// SMM_ATTRIBUTES type values.
 ///@{
-#define STANDARD_IO       0x00
-#define STANDARD_MEMORY   0x01
+#परिभाषय STANDARD_IO       0x00
+#परिभाषय STANDARD_स्मृतिः   0x01
 ///@}
 
 ///
 /// SMM_ATTRIBUTES port size constants.
 ///@{
-#define PORT_SIZE_8       0x00
-#define PORT_SIZE_16      0x01
-#define PORT_SIZE_32      0x02
-#define PORT_SIZE_64      0x03
+#परिभाषय पत्तनम्_आकार_8       0x00
+#परिभाषय पत्तनम्_आकार_16      0x01
+#परिभाषय पत्तनम्_आकार_32      0x02
+#परिभाषय पत्तनम्_आकार_64      0x03
 ///@}
 
 ///
 /// SMM_ATTRIBUTES data size constants.
 ///@{
-#define DATA_SIZE_8       0x00
-#define DATA_SIZE_16      0x01
-#define DATA_SIZE_32      0x02
-#define DATA_SIZE_64      0x03
+#परिभाषय दत्त_आकार_8       0x00
+#परिभाषय दत्त_आकार_16      0x01
+#परिभाषय दत्त_आकार_32      0x02
+#परिभाषय दत्त_आकार_64      0x03
 ///@}
 
 ///
 /// SMM_FUNCTION & relating constants.
 ///
-typedef struct {
+प्रकारनिर्देश संरचना {
   UINT16                            Function : 15;
   UINT16                            Owner : 1;
 } SMM_FUNCTION;
@@ -802,28 +802,28 @@ typedef struct {
 ///
 /// SMM_FUNCTION Function constants.
 ///@{
-#define INT15_D042        0x0000
-#define GET_USB_BOOT_INFO 0x0001
-#define DMI_PNP_50_57     0x0002
+#परिभाषय INT15_D042        0x0000
+#परिभाषय GET_USB_BOOT_INFO 0x0001
+#परिभाषय DMI_PNP_50_57     0x0002
 ///@}
 
 ///
 /// SMM_FUNCTION Owner constants.
 ///@{
-#define STANDARD_OWNER    0x0
-#define OEM_OWNER         0x1
+#परिभाषय STANDARD_OWNER    0x0
+#परिभाषय OEM_OWNER         0x1
 ///@}
 
 ///
 /// This structure assumes both port and data sizes are 1. SmmAttribute must be
 /// properly to reflect that assumption.
 ///
-typedef struct {
+प्रकारनिर्देश संरचना {
   ///
   /// Describes the access mechanism, SmmPort, and SmmData sizes. Type
   /// SMM_ATTRIBUTES is defined below.
   ///
-  SMM_ATTRIBUTES                    SmmAttributes;
+  SMM_गुणाः                    Smm_गुणाः;
   
   ///
   /// Function Soft SMI is to perform. Type SMM_FUNCTION is defined below.
@@ -833,26 +833,26 @@ typedef struct {
   ///
   /// SmmPort size depends upon SmmAttributes and ranges from2 bytes to 16 bytes.
   ///
-  UINT8                             SmmPort;
+  UINT8                             Smm_पत्तनम्;
   
   ///
   /// SmmData size depends upon SmmAttributes and ranges from2 bytes to 16 bytes.
   ///
-  UINT8                             SmmData;
-} SMM_ENTRY;
+  UINT8                             Smm_दत्त;
+} SMM_प्रविष्टिः;
 
 ///
 /// SMM_TABLE
 ///
-typedef struct {
-  UINT16                            NumSmmEntries;    ///< Number of entries represented by SmmEntry.
-  SMM_ENTRY                         SmmEntry;         ///< One entry per function. Type SMM_ENTRY is defined below.
-} SMM_TABLE;
+प्रकारनिर्देश संरचना {
+  UINT16                            अङ्कः_Smm_Entries;    ///< Number of entries represented by SmmEntry.
+  SMM_प्रविष्टिः                         Smm_प्रविष्टिः;         ///< One entry per function. Type SMM_ENTRY is defined below.
+} SMM_सारणी;
 
 ///
 /// UDC_ATTRIBUTES
 ///
-typedef struct {
+प्रकारनिर्देश संरचना {
   ///
   /// This bit set indicates that the ServiceAreaData is valid.
   ///
@@ -862,7 +862,7 @@ typedef struct {
   /// This bit set indicates to use the Reserve Area Boot Code Address (RACBA) only if
   /// DirectoryServiceValidity is 0.
   ///
-  UINT8                             RabcaUsedFlag : 1;
+  UINT8                             Rabca_प्रयुक्तम्_Flag : 1;
   
   ///
   /// This bit set indicates to execute hard disk diagnostics.
@@ -873,91 +873,91 @@ typedef struct {
   /// Reserved for future use. Set to 0.
   ///
   UINT8                             Reserved : 5;
-} UDC_ATTRIBUTES;
+} UDC_गुणाः;
 
 ///
 /// UD_TABLE
 ///
-typedef struct {
+प्रकारनिर्देश संरचना {
   ///
   /// This field contains the bit-mapped attributes of the PARTIES information. Type
   /// UDC_ATTRIBUTES is defined below.
   ///
-  UDC_ATTRIBUTES                    Attributes;
+  UDC_गुणाः                    गुणाः;
   
   ///
   /// This field contains the zero-based device on which the selected
   /// ServiceDataArea is present. It is 0 for master and 1 for the slave device.  
   ///
-  UINT8                             DeviceNumber;
+  UINT8                             Device_सङ्ख्या;
   
   ///
   /// This field contains the zero-based index into the BbsTable for the parent device.
   /// This index allows the user to reference the parent device information such as PCI
   /// bus, device function.
   ///
-  UINT8                             BbsTableEntryNumberForParentDevice;
+  UINT8                             Bbs_सारणी_प्रविष्टिः_सङ्ख्या_For_Parent_Device;
   
   ///
   /// This field contains the zero-based index into the BbsTable for the boot entry.
   ///
-  UINT8                             BbsTableEntryNumberForBoot;
+  UINT8                             Bbs_सारणी_प्रविष्टिः_सङ्ख्या_For_Boot;
   
   ///
   /// This field contains the zero-based index into the BbsTable for the HDD diagnostics entry.
   ///
-  UINT8                             BbsTableEntryNumberForHddDiag;
+  UINT8                             Bbs_सारणी_प्रविष्टिः_सङ्ख्या_For_Hdd_Diag;
   
   ///
   /// The raw Beer data.
   ///
-  UINT8                             BeerData[128];
+  UINT8                             Beer_दत्त[128];
   
   ///
   /// The raw data of selected service area.
   ///
-  UINT8                             ServiceAreaData[64];
-} UD_TABLE;
+  UINT8                             Service_Area_दत्त[64];
+} UD_सारणी;
 
-#define EFI_TO_LEGACY_MAJOR_VERSION 0x02
-#define EFI_TO_LEGACY_MINOR_VERSION 0x00
-#define MAX_IDE_CONTROLLER          8
+#परिभाषय EFI_गन्तव्यम्_LEGACY_MAJOR_संस्करणम् 0x02
+#परिभाषय EFI_गन्तव्यम्_LEGACY_MINOR_संस्करणम् 0x00
+#परिभाषय MAX_IDE_CONTROLLER          8
 
 ///
 /// EFI_TO_COMPATIBILITY16_BOOT_TABLE
 ///
-typedef struct {
-  UINT16                            MajorVersion;                 ///< The EfiCompatibility major version number.
-  UINT16                            MinorVersion;                 ///< The EfiCompatibility minor version number.
-  UINT32                            AcpiTable;                    ///< The location of the RSDT ACPI table. < 4G range.
-  UINT32                            SmbiosTable;                  ///< The location of the SMBIOS table in EFI memory. < 4G range.
-  UINT32                            SmbiosTableLength;
+प्रकारनिर्देश संरचना {
+  UINT16                            Major_संस्करणम्;                 ///< The EfiCompatibility major version number.
+  UINT16                            Minor_संस्करणम्;                 ///< The EfiCompatibility minor version number.
+  UINT32                            Acpi_सारणी;                    ///< The location of the RSDT ACPI table. < 4G range.
+  UINT32                            Smbios_सारणी;                  ///< The location of the SMBIOS table in EFI memory. < 4G range.
+  UINT32                            Smbios_सारणी_दीर्घता;
   //
   // Legacy SIO state
   //
-  DEVICE_PRODUCER_DATA_HEADER       SioData;                      ///< Standard traditional device information.
-  UINT16                            DevicePathType;               ///< The default boot type.
-  UINT16                            PciIrqMask;                   ///< Mask of which IRQs have been assigned to PCI.
-  UINT32                            NumberE820Entries;            ///< Number of E820 entries. The number can change from the
+  DEVICE_उत्पादकः_दत्त_शीर्षकम्       Sio_दत्त;                      ///< Standard traditional device information.
+  UINT16                            Device_मार्गः_Type;               ///< The default boot type.
+  UINT16                            Pci_Irq_आवरणम्;                   ///< Mask of which IRQs have been assigned to PCI.
+  UINT32                            सङ्ख्या_E820_Entries;            ///< Number of E820 entries. The number can change from the
                                                                   ///< Compatibility16InitializeYourself() function.
   //
   // Controller & Drive Identify[2] per controller information
   //
   HDD_INFO                          HddInfo[MAX_IDE_CONTROLLER];  ///< Hard disk drive information, including raw Identify Drive data.
-  UINT32                            NumberBbsEntries;             ///< Number of entries in the BBS table
-  UINT32                            BbsTable;                     ///< A pointer to the BBS table. Type BBS_TABLE is defined below.
-  UINT32                            SmmTable;                     ///< A pointer to the SMM table. Type SMM_TABLE is defined below.
-  UINT32                            OsMemoryAbove1Mb;             ///< The amount of usable memory above 1 MB, i.e. E820 type 1 memory. This value can
+  UINT32                            सङ्ख्या_Bbs_Entries;             ///< Number of entries in the BBS table
+  UINT32                            Bbs_सारणी;                     ///< A pointer to the BBS table. Type BBS_TABLE is defined below.
+  UINT32                            Smm_सारणी;                     ///< A pointer to the SMM table. Type SMM_TABLE is defined below.
+  UINT32                            Os_स्मृतिः_Above1_Mb;             ///< The amount of usable memory above 1 MB, i.e. E820 type 1 memory. This value can
                                                                   ///< differ from the value in EFI_TO_COMPATIBILITY16_INIT_TABLE as more
                                                                   ///< memory may have been discovered.
-  UINT32                            UnconventionalDeviceTable;    ///< Information to boot off an unconventional device like a PARTIES partition. Type
+  UINT32                            Unconventional_Device_सारणी;    ///< Information to boot off an unconventional device like a PARTIES partition. Type
                                                                   ///< UD_TABLE is defined below.
-} EFI_TO_COMPATIBILITY16_BOOT_TABLE;
+} EFI_गन्तव्यम्_COMPATIBILITY16_BOOT_सारणी;
 
 ///
 /// EFI_LEGACY_INSTALL_PCI_HANDLER
 ///
-typedef struct {
+प्रकारनिर्देश संरचना {
   UINT8                             PciBus;             ///< The PCI bus of the device.
   UINT8                             PciDeviceFun;       ///< The PCI device in bits 7:3 and function in bits 2:0.
   UINT8                             PciSegment;         ///< The PCI segment of the device.
@@ -970,7 +970,7 @@ typedef struct {
   UINT8                             PrimaryIrq;         ///< The primary device IRQ.
   UINT8                             PrimaryReserved;    ///< Reserved.
   UINT16                            PrimaryControl;     ///< The primary device control I/O base.
-  UINT16                            PrimaryBase;        ///< The primary device I/O base.
+  UINT16                            Primary_आधारः;        ///< The primary device I/O base.
   UINT16                            PrimaryBusMaster;   ///< The primary device bus master I/O base.
   //
   // Secondary Section
@@ -978,8 +978,8 @@ typedef struct {
   UINT8                             SecondaryIrq;       ///< The secondary device IRQ.
   UINT8                             SecondaryReserved;  ///< Reserved.
   UINT16                            SecondaryControl;   ///< The secondary device control I/O base.
-  UINT16                            SecondaryBase;      ///< The secondary device I/O base.
+  UINT16                            Secondary_आधारः;      ///< The secondary device I/O base.
   UINT16                            SecondaryBusMaster; ///< The secondary device bus master I/O base.
 } EFI_LEGACY_INSTALL_PCI_HANDLER;
 
-#endif
+#यदि_अन्तः
