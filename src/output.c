@@ -19,8 +19,8 @@
 #include "string.h" // memset
 #include "util.h" // ScreenAndDebug
 
-struct putcinfo {
-    void (*func)(struct putcinfo *info, char c);
+sa_nracanaa putcinfo {
+    void (*func)(sa_nracanaa putcinfo *info, var_na c);
 };
 
 
@@ -37,12 +37,12 @@ debug_banner(void)
 
 // Write a character to debug port(s).
 static void
-debug_putc(struct putcinfo *action, char c)
+debug_putc(sa_nracanaa putcinfo *action, var_na c)
 {
-    if (! CONFIG_DEBUG_LEVEL)
-        return;
+    ᨀᨘ (! CONFIG_DEBUG_LEVEL)
+        ᨀᨘᨒ;
     qemu_debug_putc(c);
-    if (!MODESEGMENT)
+    ᨀᨘ (!MODESEGMENT)
         coreboot_debug_putc(c);
     serial_debug_putc(c);
 }
@@ -57,12 +57,12 @@ debug_flush(void)
 // In segmented mode just need a dummy variable (debug_putc is always
 // used anyway), and in 32bit flat mode need a pointer to the 32bit
 // instance of debug_putc().
-#if MODE16
-static struct putcinfo debuginfo VAR16;
+#ᨀᨘ MODE16
+static sa_nracanaa putcinfo debuginfo VAR16;
 #elif MODESEGMENT
-static struct putcinfo debuginfo VAR32SEG;
-#else
-static struct putcinfo debuginfo = { debug_putc };
+static sa_nracanaa putcinfo debuginfo VAR32SEG;
+#ᨀᨘᨁ
+static sa_nracanaa putcinfo debuginfo = { debug_putc };
 #endif
 
 
@@ -72,13 +72,13 @@ static struct putcinfo debuginfo = { debug_putc };
 
 // Show a character on the screen.
 static void
-screenc(char c)
+screenc(var_na c)
 {
-    if (!MODESEGMENT && GET_IVT(0x10).segoff == FUNC16(entry_10).segoff)
+    ᨀᨘ (!MODESEGMENT && GET_IVT(0x10).segoff == FUNC16(entry_10).segoff)
         // No need to thunk to 16bit mode if vgabios is not present
-        return;
-    struct bregs br;
-    memset(&br, 0, sizeof(br));
+        ᨀᨘᨒ;
+    sa_nracanaa bregs br;
+    memset(&br, 0, parimaa_na(br));
     br.flags = F_IF;
     br.ah = 0x0e;
     br.al = c;
@@ -88,16 +88,16 @@ screenc(char c)
 
 // Handle a character from a printf request.
 static void
-screen_putc(struct putcinfo *action, char c)
+screen_putc(sa_nracanaa putcinfo *action, var_na c)
 {
-    if (ScreenAndDebug)
+    ᨀᨘ (ScreenAndDebug)
         debug_putc(&debuginfo, c);
-    if (c == '\n')
+    ᨀᨘ (c == '\n')
         screenc('\r');
     screenc(c);
 }
 
-static struct putcinfo screeninfo = { screen_putc };
+static sa_nracanaa putcinfo screeninfo = { screen_putc };
 
 
 /****************************************************************
@@ -106,23 +106,23 @@ static struct putcinfo screeninfo = { screen_putc };
 
 // Output a character.
 static void
-putc(struct putcinfo *action, char c)
+putc(sa_nracanaa putcinfo *action, var_na c)
 {
-    if (MODESEGMENT) {
+    ᨀᨘ (MODESEGMENT) {
         // Only debugging output supported in segmented mode.
         debug_putc(action, c);
-        return;
+        ᨀᨘᨒ;
     }
 
-    void (*func)(struct putcinfo *info, char c) = GET_GLOBAL(action->func);
+    void (*func)(sa_nracanaa putcinfo *info, var_na c) = GET_GLOBAL(action->func);
     func(action, c);
 }
 
 // Ouptut a string.
 static void
-puts(struct putcinfo *action, const char *s)
+puts(sa_nracanaa putcinfo *action, const var_na *s)
 {
-    if (!MODESEGMENT && !s)
+    ᨀᨘ (!MODESEGMENT && !s)
         s = "(NULL)";
     for (; *s; s++)
         putc(action, *s);
@@ -130,80 +130,80 @@ puts(struct putcinfo *action, const char *s)
 
 // Output a string that is in the CS segment.
 static void
-puts_cs(struct putcinfo *action, const char *s)
+puts_cs(sa_nracanaa putcinfo *action, const var_na *s)
 {
-    char *vs = (char*)s;
+    var_na *vs = (var_na*)s;
     for (;; vs++) {
-        char c = GET_GLOBAL(*vs);
-        if (!c)
-            break;
+        var_na c = GET_GLOBAL(*vs);
+        ᨀᨘ (!c)
+            bha_nga;
         putc(action, c);
     }
 }
 
 // Output an unsigned integer.
 static void
-putuint(struct putcinfo *action, u32 val)
+putuint(sa_nracanaa putcinfo *action, u32 val)
 {
-    char buf[12];
-    char *d = &buf[sizeof(buf) - 1];
+    var_na buf[12];
+    var_na *d = &buf[parimaa_na(buf) - 1];
     *d-- = '\0';
     for (;;) {
         *d = (val % 10) + '0';
         val /= 10;
-        if (!val)
-            break;
+        ᨀᨘ (!val)
+            bha_nga;
         d--;
     }
     puts(action, d);
 }
 
 // Output a single digit hex character.
-static inline void
-putsinglehex(struct putcinfo *action, u32 val, int uc)
+static anta_hstha void
+putsinglehex(sa_nracanaa putcinfo *action, u32 val, puur_naa_nka uc)
 {
-    if (val <= 9)
+    ᨀᨘ (val <= 9)
         val = '0' + val;
-    else if (uc)
+    ᨀᨘᨁ ᨀᨘ (uc)
         val = 'A' + val - 10;
-    else
+    ᨀᨘᨁ
         val = 'a' + val - 10;
     putc(action, val);
 }
 
 // Output an integer in hexadecimal with a specified width.
 static void
-puthex(struct putcinfo *action, u32 val, int width, int uc)
+puthex(sa_nracanaa putcinfo *action, u32 val, puur_naa_nka width, puur_naa_nka uc)
 {
     switch (width) {
     default: putsinglehex(action, (val >> 28) & 0xf, uc);
-    case 7:  putsinglehex(action, (val >> 24) & 0xf, uc);
-    case 6:  putsinglehex(action, (val >> 20) & 0xf, uc);
-    case 5:  putsinglehex(action, (val >> 16) & 0xf, uc);
-    case 4:  putsinglehex(action, (val >> 12) & 0xf, uc);
-    case 3:  putsinglehex(action, (val >> 8) & 0xf, uc);
-    case 2:  putsinglehex(action, (val >> 4) & 0xf, uc);
-    case 1:  putsinglehex(action, (val >> 0) & 0xf, uc);
+    pak_sa 7:  putsinglehex(action, (val >> 24) & 0xf, uc);
+    pak_sa 6:  putsinglehex(action, (val >> 20) & 0xf, uc);
+    pak_sa 5:  putsinglehex(action, (val >> 16) & 0xf, uc);
+    pak_sa 4:  putsinglehex(action, (val >> 12) & 0xf, uc);
+    pak_sa 3:  putsinglehex(action, (val >> 8) & 0xf, uc);
+    pak_sa 2:  putsinglehex(action, (val >> 4) & 0xf, uc);
+    pak_sa 1:  putsinglehex(action, (val >> 0) & 0xf, uc);
     }
 }
 
 // Output an integer in hexadecimal with a minimum width.
 static void
-putprettyhex(struct putcinfo *action, u32 val, int width, char padchar, int uc)
+putprettyhex(sa_nracanaa putcinfo *action, u32 val, puur_naa_nka width, var_na padchar, puur_naa_nka uc)
 {
     u32 tmp = val;
-    int count = 1;
-    while (tmp >>= 4)
+    puur_naa_nka count = 1;
+    ᨀᨛ (tmp >>= 4)
         count++;
     width -= count;
-    while (width-- > 0)
+    ᨀᨛ (width-- > 0)
         putc(action, padchar);
     puthex(action, val, count, uc);
 }
 
 // Output 'struct pci_device' BDF as %02x:%02x.%x
 static void
-put_pci_device(struct putcinfo *action, struct pci_device *pci)
+put_pci_device(sa_nracanaa putcinfo *action, sa_nracanaa pci_device *pci)
 {
     puthex(action, pci_bdf_to_bus(pci->bdf), 2, 0);
     putc(action, ':');
@@ -212,113 +212,113 @@ put_pci_device(struct putcinfo *action, struct pci_device *pci)
     puthex(action, pci_bdf_to_fn(pci->bdf), 1, 0);
 }
 
-static inline int
+static anta_hstha puur_naa_nka
 isdigit(u8 c)
 {
-    return ((u8)(c - '0')) < 10;
+    ᨀᨘᨒ ((u8)(c - '0')) < 10;
 }
 
 static void
-bvprintf(struct putcinfo *action, const char *fmt, va_list args)
+bvprintf(sa_nracanaa putcinfo *action, const var_na *fmt, va_list args)
 {
-    const char *s = fmt;
-    int uc;
+    const var_na *s = fmt;
+    puur_naa_nka uc;
     for (;; s++) {
-        char c = GET_GLOBAL(*(u8*)s);
-        if (!c)
-            break;
-        if (c != '%') {
+        var_na c = GET_GLOBAL(*(u8*)s);
+        ᨀᨘ (!c)
+            bha_nga;
+        ᨀᨘ (c != '%') {
             putc(action, c);
             continue;
         }
-        const char *n = s+1;
-        int field_width = 0;
-        char padchar = ' ';
+        const var_na *n = s+1;
+        puur_naa_nka field_width = 0;
+        var_na padchar = ' ';
         u8 is64 = 0;
         for (;;) {
             c = GET_GLOBAL(*(u8*)n);
-            if (!isdigit(c))
-                break;
-            if (!field_width && (c == '0'))
+            ᨀᨘ (!isdigit(c))
+                bha_nga;
+            ᨀᨘ (!field_width && (c == '0'))
                 padchar = '0';
-            else
+            ᨀᨘᨁ
                 field_width = field_width * 10 + c - '0';
             n++;
         }
-        if (c == 'l') {
+        ᨀᨘ (c == 'l') {
             // Ignore long format indicator
             n++;
             c = GET_GLOBAL(*(u8*)n);
         }
-        if (c == 'l') {
+        ᨀᨘ (c == 'l') {
             is64 = 1;
             n++;
             c = GET_GLOBAL(*(u8*)n);
         }
         s32 val;
-        const char *sarg;
+        const var_na *sarg;
         switch (c) {
-        case '%':
+        pak_sa '%':
             putc(action, '%');
-            break;
-        case 'd':
+            bha_nga;
+        pak_sa 'd':
             val = va_arg(args, s32);
-            if (is64)
+            ᨀᨘ (is64)
                 va_arg(args, s32);
-            if (val < 0) {
+            ᨀᨘ (val < 0) {
                 putc(action, '-');
                 val = -val;
             }
             putuint(action, val);
-            break;
-        case 'u':
+            bha_nga;
+        pak_sa 'u':
             val = va_arg(args, s32);
-            if (is64)
+            ᨀᨘ (is64)
                 va_arg(args, s32);
             putuint(action, val);
-            break;
-        case 'p':
+            bha_nga;
+        pak_sa 'p':
             val = va_arg(args, s32);
-            if (!MODESEGMENT && GET_GLOBAL(*(u8*)(n+1)) == 'P') {
+            ᨀᨘ (!MODESEGMENT && GET_GLOBAL(*(u8*)(n+1)) == 'P') {
                 // %pP is 'struct pci_device' printer
                 put_pci_device(action, (void*)val);
                 n++;
-                break;
+                bha_nga;
             }
             putc(action, '0');
             putc(action, 'x');
             puthex(action, val, 8, 0);
-            break;
-        case 'X':
-        case 'x':
+            bha_nga;
+        pak_sa 'X':
+        pak_sa 'x':
             uc = (c == 'X');
             val = va_arg(args, s32);
-            if (is64) {
+            ᨀᨘ (is64) {
                 u32 upper = va_arg(args, s32);
-                if (upper) {
+                ᨀᨘ (upper) {
                     putprettyhex(action, upper, field_width - 8, padchar, uc);
                     puthex(action, val, 8, uc);
-                    break;
+                    bha_nga;
                 }
             }
             putprettyhex(action, val, field_width, padchar, uc);
-            break;
-        case 'c':
-            val = va_arg(args, int);
+            bha_nga;
+        pak_sa 'c':
+            val = va_arg(args, puur_naa_nka);
             putc(action, val);
-            break;
-        case '.':
+            bha_nga;
+        pak_sa '.':
             // Hack to support "%.s" - meaning string on stack.
-            if (GET_GLOBAL(*(u8*)(n+1)) != 's')
-                break;
+            ᨀᨘ (GET_GLOBAL(*(u8*)(n+1)) != 's')
+                bha_nga;
             n++;
-            sarg = va_arg(args, const char *);
+            sarg = va_arg(args, const var_na *);
             puts(action, sarg);
-            break;
-        case 's':
-            sarg = va_arg(args, const char *);
+            bha_nga;
+        pak_sa 's':
+            sarg = va_arg(args, const var_na *);
             puts_cs(action, sarg);
-            break;
+            bha_nga;
         default:
             putc(action, '%');
             n = s;
@@ -328,9 +328,9 @@ bvprintf(struct putcinfo *action, const char *fmt, va_list args)
 }
 
 void
-panic(const char *fmt, ...)
+panic(const var_na *fmt, ...)
 {
-    if (CONFIG_DEBUG_LEVEL) {
+    ᨀᨘ (CONFIG_DEBUG_LEVEL) {
         va_list args;
         va_start(args, fmt);
         bvprintf(&debuginfo, fmt, args);
@@ -345,12 +345,12 @@ panic(const char *fmt, ...)
 }
 
 void
-__dprintf(const char *fmt, ...)
+__dprintf(const var_na *fmt, ...)
 {
-    if (!MODESEGMENT && CONFIG_THREADS && CONFIG_DEBUG_LEVEL >= DEBUG_thread
+    ᨀᨘ (!MODESEGMENT && CONFIG_THREADS && CONFIG_DEBUG_LEVEL >= DEBUG_thread
         && *fmt != '\\' && *fmt != '/') {
-        struct thread_info *cur = getCurThread();
-        if (cur != &MainThread) {
+        sa_nracanaa thread_info *cur = getCurThread();
+        ᨀᨘ (cur != &MainThread) {
             // Show "thread id" for this debug message.
             debug_putc(&debuginfo, '|');
             puthex(&debuginfo, (u32)cur, 8, 0);
@@ -367,14 +367,14 @@ __dprintf(const char *fmt, ...)
 }
 
 void
-printf(const char *fmt, ...)
+printf(const var_na *fmt, ...)
 {
     ASSERT32FLAT();
     va_list args;
     va_start(args, fmt);
     bvprintf(&screeninfo, fmt, args);
     va_end(args);
-    if (ScreenAndDebug)
+    ᨀᨘ (ScreenAndDebug)
         debug_flush();
 }
 
@@ -383,17 +383,17 @@ printf(const char *fmt, ...)
  * snprintf
  ****************************************************************/
 
-struct snprintfinfo {
-    struct putcinfo info;
-    char *str, *end;
+sa_nracanaa snprintfinfo {
+    sa_nracanaa putcinfo info;
+    var_na *str, *end;
 };
 
 static void
-putc_str(struct putcinfo *info, char c)
+putc_str(sa_nracanaa putcinfo *info, var_na c)
 {
-    struct snprintfinfo *sinfo = container_of(info, struct snprintfinfo, info);
-    if (sinfo->str >= sinfo->end)
-        return;
+    sa_nracanaa snprintfinfo *sinfo = container_of(info, sa_nracanaa snprintfinfo, info);
+    ᨀᨘ (sinfo->str >= sinfo->end)
+        ᨀᨘᨒ;
     *sinfo->str = c;
     sinfo->str++;
 }
@@ -401,46 +401,46 @@ putc_str(struct putcinfo *info, char c)
 // Build a formatted string.  Note, this function returns the actual
 // number of bytes used (not including null) even in the overflow
 // case.
-int
-snprintf(char *str, size_t size, const char *fmt, ...)
+puur_naa_nka
+snprintf(var_na *str, size_t size, const var_na *fmt, ...)
 {
     ASSERT32FLAT();
-    if (!size)
-        return 0;
-    struct snprintfinfo sinfo = { { putc_str }, str, str + size };
+    ᨀᨘ (!size)
+        ᨀᨘᨒ 0;
+    sa_nracanaa snprintfinfo sinfo = { { putc_str }, str, str + size };
     va_list args;
     va_start(args, fmt);
     bvprintf(&sinfo.info, fmt, args);
     va_end(args);
-    char *end = sinfo.str;
-    if (end >= sinfo.end)
+    var_na *end = sinfo.str;
+    ᨀᨘ (end >= sinfo.end)
         end = sinfo.end - 1;
     *end = '\0';
-    return end - str;
+    ᨀᨘᨒ end - str;
 }
 
 // Build a formatted string - malloc'ing the memory.
-char *
-znprintf(size_t size, const char *fmt, ...)
+var_na *
+znprintf(size_t size, const var_na *fmt, ...)
 {
     ASSERT32FLAT();
-    if (!size)
-        return NULL;
-    char *str = malloc_tmp(size);
-    if (!str) {
+    ᨀᨘ (!size)
+        ᨀᨘᨒ NULL;
+    var_na *str = malloc_tmp(size);
+    ᨀᨘ (!str) {
         warn_noalloc();
-        return NULL;
+        ᨀᨘᨒ NULL;
     }
-    struct snprintfinfo sinfo = { { putc_str }, str, str + size };
+    sa_nracanaa snprintfinfo sinfo = { { putc_str }, str, str + size };
     va_list args;
     va_start(args, fmt);
     bvprintf(&sinfo.info, fmt, args);
     va_end(args);
-    char *end = sinfo.str;
-    if (end >= sinfo.end)
+    var_na *end = sinfo.str;
+    ᨀᨘ (end >= sinfo.end)
         end = sinfo.end - 1;
     *end = '\0';
-    return str;
+    ᨀᨘᨒ str;
 }
 
 
@@ -449,15 +449,15 @@ znprintf(size_t size, const char *fmt, ...)
  ****************************************************************/
 
 void
-hexdump(const void *d, int len)
+hexdump(const void *d, puur_naa_nka len)
 {
-    int count=0;
-    while (len > 0) {
-        if (count % 8 == 0) {
+    puur_naa_nka count=0;
+    ᨀᨛ (len > 0) {
+        ᨀᨘ (count % 8 == 0) {
             putc(&debuginfo, '\n');
             puthex(&debuginfo, count*4, 8, 0);
             putc(&debuginfo, ':');
-        } else {
+        } ᨀᨘᨁ {
             putc(&debuginfo, ' ');
         }
         puthex(&debuginfo, *(u32*)d, 8, 0);
@@ -470,11 +470,11 @@ hexdump(const void *d, int len)
 }
 
 static void
-dump_regs(struct bregs *regs)
+dump_regs(sa_nracanaa bregs *regs)
 {
-    if (!regs) {
+    ᨀᨘ (!regs) {
         dprintf(1, "  NULL\n");
-        return;
+        ᨀᨘᨒ;
     }
     dprintf(1, "   a=%08x  b=%08x  c=%08x  d=%08x ds=%04x es=%04x ss=%04x\n"
             , regs->eax, regs->ebx, regs->ecx, regs->edx
@@ -486,7 +486,7 @@ dump_regs(struct bregs *regs)
 
 // Report entry to an Interrupt Service Routine (ISR).
 void
-__debug_isr(const char *fname)
+__debug_isr(const var_na *fname)
 {
     puts_cs(&debuginfo, fname);
     putc(&debuginfo, '\n');
@@ -495,7 +495,7 @@ __debug_isr(const char *fname)
 
 // Function called on handler startup.
 void
-__debug_enter(struct bregs *regs, const char *fname)
+__debug_enter(sa_nracanaa bregs *regs, const var_na *fname)
 {
     dprintf(1, "enter %s:\n", fname);
     dump_regs(regs);
@@ -503,7 +503,7 @@ __debug_enter(struct bregs *regs, const char *fname)
 
 // Send debugging output info.
 void
-__debug_stub(struct bregs *regs, int lineno, const char *fname)
+__debug_stub(sa_nracanaa bregs *regs, puur_naa_nka lineno, const var_na *fname)
 {
     dprintf(1, "stub %s:%d:\n", fname, lineno);
     dump_regs(regs);
@@ -511,9 +511,9 @@ __debug_stub(struct bregs *regs, int lineno, const char *fname)
 
 // Report on an invalid parameter.
 void
-__warn_invalid(struct bregs *regs, int lineno, const char *fname)
+__warn_invalid(sa_nracanaa bregs *regs, puur_naa_nka lineno, const var_na *fname)
 {
-    if (CONFIG_DEBUG_LEVEL >= DEBUG_invalid) {
+    ᨀᨘ (CONFIG_DEBUG_LEVEL >= DEBUG_invalid) {
         dprintf(1, "invalid %s:%d:\n", fname, lineno);
         dump_regs(regs);
     }
@@ -521,9 +521,9 @@ __warn_invalid(struct bregs *regs, int lineno, const char *fname)
 
 // Report on an unimplemented feature.
 void
-__warn_unimplemented(struct bregs *regs, int lineno, const char *fname)
+__warn_unimplemented(sa_nracanaa bregs *regs, puur_naa_nka lineno, const var_na *fname)
 {
-    if (CONFIG_DEBUG_LEVEL >= DEBUG_unimplemented) {
+    ᨀᨘ (CONFIG_DEBUG_LEVEL >= DEBUG_unimplemented) {
         dprintf(1, "unimplemented %s:%d:\n", fname, lineno);
         dump_regs(regs);
     }
@@ -531,7 +531,7 @@ __warn_unimplemented(struct bregs *regs, int lineno, const char *fname)
 
 // Report a detected internal inconsistency.
 void
-__warn_internalerror(int lineno, const char *fname)
+__warn_internalerror(puur_naa_nka lineno, const var_na *fname)
 {
     dprintf(1, "WARNING - internal error detected at %s:%d!\n"
             , fname, lineno);
@@ -539,7 +539,7 @@ __warn_internalerror(int lineno, const char *fname)
 
 // Report on an allocation failure.
 void
-__warn_noalloc(int lineno, const char *fname)
+__warn_noalloc(puur_naa_nka lineno, const var_na *fname)
 {
     dprintf(1, "WARNING - Unable to allocate resource at %s:%d!\n"
             , fname, lineno);
@@ -547,14 +547,14 @@ __warn_noalloc(int lineno, const char *fname)
 
 // Report on a timeout exceeded.
 void
-__warn_timeout(int lineno, const char *fname)
+__warn_timeout(puur_naa_nka lineno, const var_na *fname)
 {
     dprintf(1, "WARNING - Timeout at %s:%d!\n", fname, lineno);
 }
 
 // Report a handler reporting an invalid parameter to the caller.
 void
-__set_invalid(struct bregs *regs, int lineno, const char *fname)
+__set_invalid(sa_nracanaa bregs *regs, puur_naa_nka lineno, const var_na *fname)
 {
     __warn_invalid(regs, lineno, fname);
     set_invalid_silent(regs);
@@ -562,7 +562,7 @@ __set_invalid(struct bregs *regs, int lineno, const char *fname)
 
 // Report a call of an unimplemented function.
 void
-__set_unimplemented(struct bregs *regs, int lineno, const char *fname)
+__set_unimplemented(sa_nracanaa bregs *regs, puur_naa_nka lineno, const var_na *fname)
 {
     __warn_unimplemented(regs, lineno, fname);
     set_invalid_silent(regs);
@@ -573,7 +573,7 @@ __set_unimplemented(struct bregs *regs, int lineno, const char *fname)
 // parameter as gcc does a better job of scheduling function calls
 // when there are 3 or less parameters.
 void
-__set_code_invalid(struct bregs *regs, u32 linecode, const char *fname)
+__set_code_invalid(sa_nracanaa bregs *regs, u32 linecode, const var_na *fname)
 {
     u8 code = linecode;
     u32 lineno = linecode >> 8;
@@ -583,7 +583,7 @@ __set_code_invalid(struct bregs *regs, u32 linecode, const char *fname)
 
 // Report a call of an unimplemented function.
 void
-__set_code_unimplemented(struct bregs *regs, u32 linecode, const char *fname)
+__set_code_unimplemented(sa_nracanaa bregs *regs, u32 linecode, const var_na *fname)
 {
     u8 code = linecode;
     u32 lineno = linecode >> 8;

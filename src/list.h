@@ -8,64 +8,64 @@
  * hlist - Double linked lists with a single pointer list head
  ****************************************************************/
 
-struct hlist_node {
-    struct hlist_node *next, **pprev;
+sa_nracanaa hlist_node {
+    sa_nracanaa hlist_node *next, **pprev;
 };
 
-struct hlist_head {
-    struct hlist_node *first;
+sa_nracanaa hlist_head {
+    sa_nracanaa hlist_node *first;
 };
 
-static inline int
-hlist_empty(const struct hlist_head *h)
+static anta_hstha puur_naa_nka
+hlist_empty(const sa_nracanaa hlist_head *h)
 {
-    return !h->first;
+    ᨀᨘᨒ !h->first;
 }
 
-static inline void
-hlist_del(struct hlist_node *n)
+static anta_hstha void
+hlist_del(sa_nracanaa hlist_node *n)
 {
-    struct hlist_node *next = n->next;
-    struct hlist_node **pprev = n->pprev;
+    sa_nracanaa hlist_node *next = n->next;
+    sa_nracanaa hlist_node **pprev = n->pprev;
     *pprev = next;
-    if (next)
+    ᨀᨘ (next)
         next->pprev = pprev;
 }
 
-static inline void
-hlist_add(struct hlist_node *n, struct hlist_node **pprev)
+static anta_hstha void
+hlist_add(sa_nracanaa hlist_node *n, sa_nracanaa hlist_node **pprev)
 {
-    struct hlist_node *next = *pprev;
+    sa_nracanaa hlist_node *next = *pprev;
     n->pprev = pprev;
     n->next = next;
-    if (next)
+    ᨀᨘ (next)
         next->pprev = &n->next;
     *pprev = n;
 }
 
-static inline void
-hlist_add_head(struct hlist_node *n, struct hlist_head *h)
+static anta_hstha void
+hlist_add_head(sa_nracanaa hlist_node *n, sa_nracanaa hlist_head *h)
 {
     hlist_add(n, &h->first);
 }
 
-static inline void
-hlist_add_before(struct hlist_node *n, struct hlist_node *next)
+static anta_hstha void
+hlist_add_before(sa_nracanaa hlist_node *n, sa_nracanaa hlist_node *next)
 {
     hlist_add(n, next->pprev);
 }
 
-static inline void
-hlist_add_after(struct hlist_node *n, struct hlist_node *prev)
+static anta_hstha void
+hlist_add_after(sa_nracanaa hlist_node *n, sa_nracanaa hlist_node *prev)
 {
     hlist_add(n, &prev->next);
 }
 
-static inline void
-hlist_replace(struct hlist_node *old, struct hlist_node *new)
+static anta_hstha void
+hlist_replace(sa_nracanaa hlist_node *old, sa_nracanaa hlist_node *new)
 {
     new->next = old->next;
-    if (new->next)
+    ᨀᨘ (new->next)
         new->next->pprev = &new->next;
     new->pprev = old->pprev;
     *new->pprev = new;
