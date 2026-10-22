@@ -4,63 +4,63 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_GLOBALFLAT
-#include "block.h" // struct drive_s
-#include "bregs.h" // struct bregs
-#include "e820map.h" // e820_add
-#include "malloc.h" // memalign_tmphigh
-#include "memmap.h" // PAGE_SIZE
-#include "output.h" // dprintf
-#include "romfile.h" // romfile_findprefix
-#include "stacks.h" // call16_int
-#include "std/disk.h" // DISK_RET_SUCCESS
-#include "string.h" // memset
-#include "util.h" // process_ramdisk_op
+#अन्तर्भाव "biosvar.h" // GET_GLOBALFLAT
+#अन्तर्भाव "block.h" // struct drive_s
+#अन्तर्भाव "bregs.h" // struct bregs
+#अन्तर्भाव "e820map.h" // e820_add
+#अन्तर्भाव "malloc.h" // memalign_tmphigh
+#अन्तर्भाव "memmap.h" // PAGE_SIZE
+#अन्तर्भाव "output.h" // dprintf
+#अन्तर्भाव "romfile.h" // romfile_findprefix
+#अन्तर्भाव "stacks.h" // call16_int
+#अन्तर्भाव "std/disk.h" // DISK_RET_SUCCESS
+#अन्तर्भाव "string.h" // memset
+#अन्तर्भाव "util.h" // process_ramdisk_op
 
-void
-ramdisk_setup(void)
+शून्य
+ramdisk_setup(शून्य)
 {
-    if (!CONFIG_FLASH_FLOPPY)
-        return;
+    जइ (!CONFIG_FLASH_FLOPPY)
+        प्रत्यागम;
 
     // Find image.
-    struct romfile_s *file = romfile_findprefix("floppyimg/", NULL);
-    if (!file)
-        return;
-    const char *filename = file->name;
+    संरचना romfile_s *file = romfile_findprefix("floppyimg/", रिक्त);
+    जइ (!file)
+        प्रत्यागम;
+    ध्रुव वर्ण *filename = file->name;
     u32 size = file->size;
     dprintf(3, "Found floppy file %s of size %d\n", filename, size);
-    int ftype = find_floppy_type(size);
-    if (ftype < 0) {
+    पूर्णाङ्क ftype = find_floppy_type(size);
+    जइ (ftype < 0) {
         dprintf(3, "No floppy type found for ramdisk size\n");
-        return;
+        प्रत्यागम;
     }
 
     // Allocate ram for image.
-    void *pos = memalign_tmphigh(PAGE_SIZE, size);
-    if (!pos) {
+    शून्य *pos = memalign_tmphigh(PAGE_SIZE, size);
+    जइ (!pos) {
         warn_noalloc();
-        return;
+        प्रत्यागम;
     }
     e820_add((u32)pos, size, E820_RESERVED);
 
     // Copy image into ram.
-    int ret = file->copy(file, pos, size);
-    if (ret < 0)
-        return;
+    पूर्णाङ्क ret = file->copy(file, pos, size);
+    जइ (ret < 0)
+        प्रत्यागम;
 
     // Setup driver.
-    struct drive_s *drive = init_floppy((u32)pos, ftype);
-    if (!drive)
-        return;
+    संरचना drive_s *drive = init_floppy((u32)pos, ftype);
+    जइ (!drive)
+        प्रत्यागम;
     drive->type = DTYPE_RAMDISK;
     dprintf(1, "Mapping floppy %s to addr %p\n", filename, pos);
-    char *desc = znprintf(MAXDESCSIZE, "Ramdisk [%s]", &filename[10]);
+    वर्ण *desc = znprintf(MAXDESCSIZE, "Ramdisk [%s]", &filename[10]);
     boot_add_floppy(drive, desc, bootprio_find_named_rom(filename, 0));
 }
 
-static int
-ramdisk_copy(struct disk_op_s *op, int iswrite)
+स्थिर पूर्णाङ्क
+ramdisk_copy(संरचना disk_op_s *op, पूर्णाङ्क iswrite)
 {
     u32 offset = GET_GLOBALFLAT(op->drive_fl->cntl_id);
     offset += (u32)op->lba * DISK_SECTOR_SIZE;
@@ -68,41 +68,41 @@ ramdisk_copy(struct disk_op_s *op, int iswrite)
     u64 ramd = GDT_DATA | GDT_LIMIT(0xfffff) | GDT_BASE(offset);
 
     u64 gdt[6];
-    if (iswrite) {
+    जइ (iswrite) {
         gdt[2] = opd;
         gdt[3] = ramd;
-    } else {
+    } अण्णहा {
         gdt[2] = ramd;
         gdt[3] = opd;
     }
 
     // Call int 1587 to copy data.
-    struct bregs br;
-    memset(&br, 0, sizeof(br));
+    संरचना bregs br;
+    memset(&br, 0, परिमाण(br));
     br.flags = F_CF|F_IF;
     br.ah = 0x87;
     br.es = GET_SEG(SS);
     br.si = (u32)gdt;
-    br.cx = op->count * DISK_SECTOR_SIZE / 2;
+    br.cx = op->गणनम् * DISK_SECTOR_SIZE / 2;
     call16_int(0x15, &br);
 
-    if (br.flags & F_CF)
-        return DISK_RET_EBADTRACK;
-    return DISK_RET_SUCCESS;
+    जइ (br.flags & F_CF)
+        प्रत्यागम DISK_RET_EBADTRACK;
+    प्रत्यागम DISK_RET_SUCCESS;
 }
 
-int
-ramdisk_process_op(struct disk_op_s *op)
+पूर्णाङ्क
+ramdisk_process_op(संरचना disk_op_s *op)
 {
-    if (!CONFIG_FLASH_FLOPPY)
-        return 0;
+    जइ (!CONFIG_FLASH_FLOPPY)
+        प्रत्यागम 0;
 
-    switch (op->command) {
-    case CMD_READ:
-        return ramdisk_copy(op, 0);
-    case CMD_WRITE:
-        return ramdisk_copy(op, 1);
-    default:
-        return default_process_op(op);
+    विकल्प (op->command) {
+    पक्ष CMD_READ:
+        प्रत्यागम ramdisk_copy(op, 0);
+    पक्ष CMD_WRITE:
+        प्रत्यागम ramdisk_copy(op, 1);
+    स्वभाव:
+        प्रत्यागम default_process_op(op);
     }
 }

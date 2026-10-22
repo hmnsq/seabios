@@ -4,674 +4,674 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_*
-#include "list.h"   // hlist_*
-#include "malloc.h" // malloc_*
-#include "output.h" // dprintf
-#include "string.h" // memcpy
-#include "util.h"
-#include "std/acpi.h" // struct rsdp_descriptor
+#अन्तर्भाव "config.h" // CONFIG_*
+#अन्तर्भाव "list.h"   // hlist_*
+#अन्तर्भाव "malloc.h" // malloc_*
+#अन्तर्भाव "output.h" // dprintf
+#अन्तर्भाव "string.h" // memcpy
+#अन्तर्भाव "util.h"
+#अन्तर्भाव "std/acpi.h" // struct rsdp_descriptor
 
 /****************************************************************
  * DSDT parser
  ****************************************************************/
 
-struct acpi_device {
-    struct hlist_node node;
-    char name[16];
+संरचना acpi_device {
+    संरचना hlist_ग्रन्थिः ग्रन्थिः;
+    वर्ण name[16];
     u8 *hid_aml;
     u8 *sta_aml;
     u8 *crs_data;
-    int crs_size;
+    पूर्णाङ्क crs_size;
 };
-static struct hlist_head acpi_devices VARVERIFY32INIT;
-static const int parse_dumpdevs = 0;
+स्थिर संरचना hlist_head acpi_devices VARVERIFY32INIT;
+स्थिर ध्रुव पूर्णाङ्क parse_dumpdevs = 0;
 
-struct parse_state {
-    char name[32];
-    struct acpi_device *dev;
-    int error;
-    int depth;
+संरचना parse_state {
+    वर्ण name[32];
+    संरचना acpi_device *dev;
+    पूर्णाङ्क error;
+    पूर्णाङ्क depth;
 };
 
-static void parse_termlist(struct parse_state *s,
-                           u8 *ptr, int offset, int pkglength);
+स्थिर शून्य parse_termlist(संरचना parse_state *s,
+                           u8 *ptr, पूर्णाङ्क offset, पूर्णाङ्क pkglength);
 
-static void hex(const u8 *ptr, int count, int lvl, const char *item)
+स्थिर शून्य hex(ध्रुव u8 *ptr, पूर्णाङ्क गणनम्, पूर्णाङ्क lvl, ध्रुव वर्ण *item)
 {
-    int l = 0, i;
+    पूर्णाङ्क l = 0, i;
 
-    do {
+    करेहि {
         dprintf(lvl, "%s: %04x:  ", item, l);
-        for (i = l; i < l+16; i += 4)
+        प्रति (i = l; i < l+16; i += 4)
             dprintf(lvl, "%02x %02x %02x %02x  ",
                     ptr[i+0], ptr[i+1], ptr[i+2], ptr[i+3]);
-        for (i = l; i < l+16; i++)
+        प्रति (i = l; i < l+16; i++)
             dprintf(lvl, "%c", (ptr[i] > 0x20 && ptr[i] < 0x80)
                     ? ptr[i] : '.');
         dprintf(lvl, "\n");
         l += 16;
-    } while (l < count);
+    } जाव (l < गणनम्);
 }
 
-static u64 parse_resource_int(u8 *ptr, int count)
+स्थिर u64 parse_resource_int(u8 *ptr, पूर्णाङ्क गणनम्)
 {
-    u64 value = 0;
-    int index = 0;
+    u64 मानम् = 0;
+    पूर्णाङ्क index = 0;
 
-    for (index = 0; index < count; index++)
-        value |= (u64)ptr[index] << (index * 8);
-    return value;
+    प्रति (index = 0; index < गणनम्; index++)
+        मानम् |= (u64)ptr[index] << (index * 8);
+    प्रत्यागम मानम्;
 }
 
-static int parse_resource_bit(u8 *ptr, int count)
+स्थिर पूर्णाङ्क parse_resource_bit(u8 *ptr, पूर्णाङ्क गणनम्)
 {
-    int bit;
+    पूर्णाङ्क bit;
 
-    for (bit = 0; bit < count*8; bit++)
-        if (ptr[bit/8] & (1 << (bit%8)))
-            return bit;
-    return 0;
+    प्रति (bit = 0; bit < गणनम्*8; bit++)
+        जइ (ptr[bit/8] & (1 << (bit%8)))
+            प्रत्यागम bit;
+    प्रत्यागम 0;
 }
 
-static int parse_resource(u8 *ptr, int length, int *type, u64 *min, u64 *max)
+स्थिर पूर्णाङ्क parse_resource(u8 *ptr, पूर्णाङ्क length, पूर्णाङ्क *type, u64 *min, u64 *max)
 {
-    int rname, rsize;
+    पूर्णाङ्क rname, rsize;
     u64 len;
 
     *type = -1;
     *min = 0;
     *max = 0;
     len = 0;
-    if (!(ptr[0] & 0x80)) {
+    जइ (!(ptr[0] & 0x80)) {
         /* small resource */
         rname = (ptr[0] >> 3) & 0x0f;
         rsize = ptr[0] & 0x07;
         rsize++;
-        switch (rname) {
-        case 0x04: /* irq */
+        विकल्प (rname) {
+        पक्ष 0x04: /* irq */
             *min = parse_resource_bit(ptr + 1, rsize);
             *max = *min;
             *type = 3;
-            break;
-        case 0x0f: /* end marker */
-            return 0;
-        case 0x08: /* io */
+            भङ्ग;
+        पक्ष 0x0f: /* end marker */
+            प्रत्यागम 0;
+        पक्ष 0x08: /* io */
             *min = parse_resource_int(ptr + 2, 2);
             *max = parse_resource_int(ptr + 4, 2);
-            if (*min == *max) {
+            जइ (*min == *max) {
                 *max = *min + ptr[7] - 1;
                 *type = 1;
             }
-            break;
-        case 0x09: /* fixed io */
+            भङ्ग;
+        पक्ष 0x09: /* fixed io */
             *min = parse_resource_int(ptr + 2, 2);
             *max = *min + ptr[4] - 1;
             *type = 1;
-            break;
-        default:
+            भङ्ग;
+        स्वभाव:
             dprintf(3, "%s: small: 0x%x (len %d)\n",
                     __func__, rname, rsize);
-            break;
+            भङ्ग;
         }
-    } else {
+    } अण्णहा {
         /* large resource */
         rname = ptr[0] & 0x7f;
         rsize = ptr[2] << 8 | ptr[1];
         rsize += 3;
-        switch (rname) {
-        case 0x06: /* 32-bit Fixed Location Memory Range Descriptor */
+        विकल्प (rname) {
+        पक्ष 0x06: /* 32-bit Fixed Location Memory Range Descriptor */
             *min = parse_resource_int(ptr + 4, 4);
             len = parse_resource_int(ptr + 8, 4);
             *max = *min + len - 1;
             *type = 0;
-            break;
-        case 0x07: /* DWORD Address Space Descriptor */
+            भङ्ग;
+        पक्ष 0x07: /* DWORD Address Space Descriptor */
             *min = parse_resource_int(ptr + 10, 4);
             *max = parse_resource_int(ptr + 14, 4);
             *type = ptr[3];
-            break;
-        case 0x08: /* WORD Address Space Descriptor */
+            भङ्ग;
+        पक्ष 0x08: /* WORD Address Space Descriptor */
             *min = parse_resource_int(ptr +  8, 2);
             *max = parse_resource_int(ptr + 10, 2);
             *type = ptr[3];
-            break;
-        case 0x09: /* irq */
+            भङ्ग;
+        पक्ष 0x09: /* irq */
             *min = parse_resource_int(ptr +  5, 4);
             *max = *min;
             *type = 3;
-            break;
-        case 0x0a: /* QWORD Address Space Descriptor */
+            भङ्ग;
+        पक्ष 0x0a: /* QWORD Address Space Descriptor */
             *min = parse_resource_int(ptr + 14, 8);
             *max = parse_resource_int(ptr + 22, 8);
             *type = ptr[3];
-            break;
-        default:
+            भङ्ग;
+        स्वभाव:
             dprintf(3, "%s: large: 0x%x (len %d)\n", __func__, rname, rsize);
-            break;
+            भङ्ग;
         }
     }
-    return rsize;
+    प्रत्यागम rsize;
 }
 
-static int find_resource(u8 *ptr, int len, int kind, u64 *min, u64 *max)
+स्थिर पूर्णाङ्क find_resource(u8 *ptr, पूर्णाङ्क len, पूर्णाङ्क kind, u64 *min, u64 *max)
 {
-    int type, size, offset = 0;
+    पूर्णाङ्क type, size, offset = 0;
 
-    do {
+    करेहि {
         size = parse_resource(ptr + offset, len - offset,
                               &type, min, max);
-        if (kind == type)
-            return 0;
+        जइ (kind == type)
+            प्रत्यागम 0;
         offset += size;
-    } while (size > 0 && offset < len);
-    return -1;
+    } जाव (size > 0 && offset < len);
+    प्रत्यागम -1;
 }
 
-static int print_resources(const char *prefix, u8 *ptr, int len)
+स्थिर पूर्णाङ्क print_resources(ध्रुव वर्ण *prefix, u8 *ptr, पूर्णाङ्क len)
 {
-    static const char *typename[] = { "mem", "i/o", "bus" };
-    int type, size, offset = 0;
+    स्थिर ध्रुव वर्ण *typename[] = { "mem", "i/o", "bus" };
+    पूर्णाङ्क type, size, offset = 0;
     u64 min, max;
 
-    do {
+    करेहि {
         size = parse_resource(ptr + offset, len - offset,
                               &type, &min, &max);
-        switch (type) {
-        case 0:
-        case 1:
-        case 2:
+        विकल्प (type) {
+        पक्ष 0:
+        पक्ष 1:
+        पक्ष 2:
             dprintf(1, "%s%s 0x%llx -> 0x%llx\n",
                     prefix, typename[type], min, max);
-            break;
-        case 3:
+            भङ्ग;
+        पक्ष 3:
             dprintf(1, "%sirq %lld\n", prefix, min);
-            break;
+            भङ्ग;
         }
         offset += size;
-    } while (size > 0 && offset < len);
-    return -1;
+    } जाव (size > 0 && offset < len);
+    प्रत्यागम -1;
 }
 
-static int parse_nameseg(u8 *ptr, char **dst)
+स्थिर पूर्णाङ्क parse_nameseg(u8 *ptr, वर्ण **dst)
 {
-    if (dst && *dst) {
+    जइ (dst && *dst) {
         *(dst[0]++) = ptr[0];
-        if (ptr[1] != '_')
+        जइ (ptr[1] != '_')
             *(dst[0]++) = ptr[1];
-        if (ptr[2] != '_')
+        जइ (ptr[2] != '_')
             *(dst[0]++) = ptr[2];
-        if (ptr[3] != '_')
+        जइ (ptr[3] != '_')
             *(dst[0]++) = ptr[3];
         *(dst[0]) = 0;
     }
-    return 4;
+    प्रत्यागम 4;
 }
 
-static int parse_namestring(struct parse_state *s,
-                            u8 *ptr, const char *item)
+स्थिर पूर्णाङ्क parse_namestring(संरचना parse_state *s,
+                            u8 *ptr, ध्रुव वर्ण *item)
 {
-    char *dst = s->name;
-    int offset = 0;
-    int i, count;
+    वर्ण *dst = s->name;
+    पूर्णाङ्क offset = 0;
+    पूर्णाङ्क i, गणनम्;
 
-    for (;;) {
-        switch (ptr[offset]) {
-        case 0: /* null name */
+    प्रति (;;) {
+        विकल्प (ptr[offset]) {
+        पक्ष 0: /* null name */
             offset++;
             *(dst++) = 0;
-            break;
-        case 0x2e:
+            भङ्ग;
+        पक्ष 0x2e:
             offset++;
             offset += parse_nameseg(ptr + offset, &dst);
             *(dst++) = '.';
             offset += parse_nameseg(ptr + offset, &dst);
-            break;
-        case 0x2f:
+            भङ्ग;
+        पक्ष 0x2f:
             offset++;
-            count = ptr[offset];
+            गणनम् = ptr[offset];
             offset++;
-            for (i = 0; i < count; i++) {
-                if (i)
+            प्रति (i = 0; i < गणनम्; i++) {
+                जइ (i)
                     *(dst++) = '.';
                 offset += parse_nameseg(ptr + offset, &dst);
             }
-            break;
-        case '\\':
+            भङ्ग;
+        पक्ष '\\':
             *(dst++) = '\\';
             offset++;
-            continue;
-        case '^':
+            अनुवर्त;
+        पक्ष '^':
             *(dst++) = '^';
             offset++;
-            continue;
-        case 'A' ... 'Z':
-        case '_':
+            अनुवर्त;
+        पक्ष 'A' ... 'Z':
+        पक्ष '_':
             offset += parse_nameseg(ptr, &dst);
-            break;
-        default:
+            भङ्ग;
+        स्वभाव:
             hex(ptr, 16, 3, __func__);
             s->error = 1;
-            break;
+            भङ्ग;
         }
-        break;
+        भङ्ग;
     }
     dprintf(5, "%s: %d %s '%s'\n", __func__, s->depth,
             item, s->name);
-    return offset;
+    प्रत्यागम offset;
 }
 
-static int parse_termarg_int(u8 *ptr, int *error, u64 *dst)
+स्थिर पूर्णाङ्क parse_termarg_int(u8 *ptr, पूर्णाङ्क *error, u64 *dst)
 {
-    u64 value;
-    int offset = 1;
+    u64 मानम्;
+    पूर्णाङ्क offset = 1;
 
-    switch (ptr[0]) {
-    case 0x00: /* zero */
-        value = 0;
-        break;
-    case 0x01: /* one */
-        value = 1;
-        break;
-    case 0x0a: /* byte prefix */
-        value = ptr[1];
+    विकल्प (ptr[0]) {
+    पक्ष 0x00: /* zero */
+        मानम् = 0;
+        भङ्ग;
+    पक्ष 0x01: /* one */
+        मानम् = 1;
+        भङ्ग;
+    पक्ष 0x0a: /* byte prefix */
+        मानम् = ptr[1];
         offset++;
-        break;
-    case 0x0b: /* word prefix */
-        value = ptr[1] |
+        भङ्ग;
+    पक्ष 0x0b: /* word prefix */
+        मानम् = ptr[1] |
             ((unsigned long)ptr[2] << 8);
         offset += 2;
-        break;
-    case 0x0c: /* dword prefix */
-        value = ptr[1] |
+        भङ्ग;
+    पक्ष 0x0c: /* dword prefix */
+        मानम् = ptr[1] |
             ((unsigned long)ptr[2] << 8) |
             ((unsigned long)ptr[3] << 16) |
             ((unsigned long)ptr[4] << 24);
         offset += 4;
-        break;
-    default:
-        value = 0;
+        भङ्ग;
+    स्वभाव:
+        मानम् = 0;
         hex(ptr, 16, 3, __func__);
-        if (error)
+        जइ (error)
             *error = 1;
-        break;
+        भङ्ग;
     }
 
-    if (dst)
-        *dst = value;
-    dprintf(5, "%s: 0x%llx\n", __func__, value);
-    return offset;
+    जइ (dst)
+        *dst = मानम्;
+    dprintf(5, "%s: 0x%llx\n", __func__, मानम्);
+    प्रत्यागम offset;
 }
 
-static int parse_pkglength(u8 *ptr, int *pkglength)
+स्थिर पूर्णाङ्क parse_pkglength(u8 *ptr, पूर्णाङ्क *pkglength)
 {
-    int offset = 2;
+    पूर्णाङ्क offset = 2;
 
     *pkglength = 0;
-    switch (ptr[0] >> 6) {
-    case 3:
+    विकल्प (ptr[0] >> 6) {
+    पक्ष 3:
         *pkglength |= ptr[3] << 20;
         offset++;
-    case 2:
+    पक्ष 2:
         *pkglength |= ptr[2] << 12;
         offset++;
-    case 1:
+    पक्ष 1:
         *pkglength |= ptr[1] << 4;
         *pkglength |= ptr[0] & 0x0f;
-        return offset;
-    case 0:
-    default:
+        प्रत्यागम offset;
+    पक्ष 0:
+    स्वभाव:
         *pkglength |= ptr[0] & 0x3f;
-        return 1;
+        प्रत्यागम 1;
     }
 }
 
-static int parse_pkg_common(struct parse_state *s,
-                            u8 *ptr, const char *item, int *pkglength)
+स्थिर पूर्णाङ्क parse_pkg_common(संरचना parse_state *s,
+                            u8 *ptr, ध्रुव वर्ण *item, पूर्णाङ्क *pkglength)
 {
-    int offset;
+    पूर्णाङ्क offset;
 
     offset = parse_pkglength(ptr, pkglength);
     offset += parse_namestring(s, ptr + offset, item);
-    return offset;
+    प्रत्यागम offset;
 }
 
-static int parse_pkg_scope(struct parse_state *s,
+स्थिर पूर्णाङ्क parse_pkg_scope(संरचना parse_state *s,
                            u8 *ptr)
 {
-    int offset, pkglength;
+    पूर्णाङ्क offset, pkglength;
 
     offset = parse_pkg_common(s, ptr, "scope", &pkglength);
     parse_termlist(s, ptr, offset, pkglength);
-    return pkglength;
+    प्रत्यागम pkglength;
 }
 
-static int parse_pkg_device(struct parse_state *s,
+स्थिर पूर्णाङ्क parse_pkg_device(संरचना parse_state *s,
                             u8 *ptr)
 {
-    int offset, pkglength;
+    पूर्णाङ्क offset, pkglength;
 
     offset = parse_pkg_common(s, ptr, "device", &pkglength);
 
-    s->dev = malloc_tmp(sizeof(struct acpi_device));
-    if (!s->dev) {
+    s->dev = malloc_tmp(परिमाण(संरचना acpi_device));
+    जइ (!s->dev) {
         warn_noalloc();
         s->error = 1;
-        return pkglength;
+        प्रत्यागम pkglength;
     }
 
-    memset(s->dev, 0, sizeof(struct acpi_device));
-    hlist_add_head(&s->dev->node, &acpi_devices);
-    strtcpy(s->dev->name, s->name, sizeof(s->name));
+    memset(s->dev, 0, परिमाण(संरचना acpi_device));
+    hlist_add_head(&s->dev->ग्रन्थिः, &acpi_devices);
+    strtcpy(s->dev->name, s->name, परिमाण(s->name));
     parse_termlist(s, ptr, offset, pkglength);
-    s->dev = NULL;
+    s->dev = रिक्त;
 
-    return pkglength;
+    प्रत्यागम pkglength;
 }
 
-static int parse_pkg_buffer(struct parse_state *s,
+स्थिर पूर्णाङ्क parse_pkg_buffer(संरचना parse_state *s,
                             u8 *ptr)
 {
     u64 blen;
-    int pkglength, offset;
+    पूर्णाङ्क pkglength, offset;
 
     offset = parse_pkglength(ptr, &pkglength);
     offset += parse_termarg_int(ptr + offset, &s->error, &blen);
-    if (s->dev && strcmp(s->name, "_CRS") == 0) {
+    जइ (s->dev && strcmp(s->name, "_CRS") == 0) {
         s->dev->crs_data = ptr + offset;
         s->dev->crs_size = blen;
     }
-    return pkglength;
+    प्रत्यागम pkglength;
 }
 
-static int parse_pkg_skip(struct parse_state *s,
-                          u8 *ptr, int op, int name)
+स्थिर पूर्णाङ्क parse_pkg_skip(संरचना parse_state *s,
+                          u8 *ptr, पूर्णाङ्क op, पूर्णाङ्क name)
 {
-    int pkglength, offset;
-    char item[8];
+    पूर्णाङ्क pkglength, offset;
+    वर्ण item[8];
 
-    snprintf(item, sizeof(item), "op %x", op);
+    snprintf(item, परिमाण(item), "op %x", op);
     offset = parse_pkglength(ptr, &pkglength);
-    if (name) {
+    जइ (name) {
         parse_namestring(s, ptr + offset, item);
-    } else {
+    } अण्णहा {
         dprintf(5, "%s: %s (%d)\n", __func__, item, pkglength);
     }
-    return pkglength;
+    प्रत्यागम pkglength;
 }
 
-static int parse_termobj(struct parse_state *s,
+स्थिर पूर्णाङ्क parse_termobj(संरचना parse_state *s,
                          u8 *ptr)
 {
-    int offset = 1;
+    पूर्णाङ्क offset = 1;
 
-    if (s->depth == 16) {
+    जइ (s->depth == 16) {
         dprintf(1, "%s: deep recursion\n", __func__);
         s->error = 1;
-        return offset;
+        प्रत्यागम offset;
     }
 
     s->depth++;
-    switch (ptr[0]) {
-    case 0x00: /* zero */
-        break;
-    case 0x01: /* one */
-        break;
-    case 0x06: /* AliasOp */
+    विकल्प (ptr[0]) {
+    पक्ष 0x00: /* zero */
+        भङ्ग;
+    पक्ष 0x01: /* one */
+        भङ्ग;
+    पक्ष 0x06: /* AliasOp */
         offset += parse_namestring(s, ptr + offset, "SourceObject");
         offset += parse_namestring(s, ptr + offset, "AliasObject");
-        break;
-    case 0x08: /* name op */
+        भङ्ग;
+    पक्ष 0x08: /* name op */
         offset += parse_namestring(s, ptr + offset, "name");
         offset += parse_termobj(s, ptr + offset);
-        if (s->dev && strcmp(s->name, "_HID") == 0)
+        जइ (s->dev && strcmp(s->name, "_HID") == 0)
             s->dev->hid_aml = ptr;
-        if (s->dev && strcmp(s->name, "_STA") == 0)
+        जइ (s->dev && strcmp(s->name, "_STA") == 0)
             s->dev->sta_aml = ptr;
-        break;
-    case 0x0a: /* byte prefix */
+        भङ्ग;
+    पक्ष 0x0a: /* byte prefix */
         offset++;
-        break;
-    case 0x0b: /* word prefix */
+        भङ्ग;
+    पक्ष 0x0b: /* word prefix */
         offset += 2;
-        break;
-    case 0x0c: /* dword prefix */
+        भङ्ग;
+    पक्ष 0x0c: /* dword prefix */
         offset += 4;
-        break;
-    case 0x0d: /* string prefix */
-        while (ptr[offset])
+        भङ्ग;
+    पक्ष 0x0d: /* string prefix */
+        जाव (ptr[offset])
             offset++;
         offset++;
-        break;
-    case 0x10: /* scope op */
+        भङ्ग;
+    पक्ष 0x10: /* scope op */
         offset += parse_pkg_scope(s, ptr + offset);
-        break;
-    case 0x11: /* buffer op */
+        भङ्ग;
+    पक्ष 0x11: /* buffer op */
         offset += parse_pkg_buffer(s, ptr + offset);
-        break;
-    case 0x12: /* package op */
-    case 0x13: /* var package op */
+        भङ्ग;
+    पक्ष 0x12: /* package op */
+    पक्ष 0x13: /* var package op */
         offset += parse_pkg_skip(s, ptr + offset, ptr[0], 0);
-        break;
-    case 0x14: /* method op */
+        भङ्ग;
+    पक्ष 0x14: /* method op */
         offset += parse_pkg_skip(s, ptr + offset, ptr[0], 1);
-        if (s->dev && strcmp(s->name, "_STA") == 0)
+        जइ (s->dev && strcmp(s->name, "_STA") == 0)
             s->dev->sta_aml = ptr;
-        break;
-    case 0x5b: /* ext op prefix */
+        भङ्ग;
+    पक्ष 0x5b: /* ext op prefix */
         offset++;
-        switch (ptr[1]) {
-        case 0x01: /* mutex op */
+        विकल्प (ptr[1]) {
+        पक्ष 0x01: /* mutex op */
             offset += parse_namestring(s, ptr + offset, "mutex");
             offset++; /* sync flags */
-            break;
-        case 0x80: /* op region op */
+            भङ्ग;
+        पक्ष 0x80: /* op region op */
             offset += parse_namestring(s, ptr + offset, "op region");
             offset++; /* region space */
-            offset += parse_termarg_int(ptr + offset, &s->error, NULL);
-            offset += parse_termarg_int(ptr + offset, &s->error, NULL);
-            break;
-        case 0x81: /* field op */
-        case 0x83: /* processor op */
-        case 0x84: /* power resource op */
-        case 0x85: /* thermal zone op */
+            offset += parse_termarg_int(ptr + offset, &s->error, रिक्त);
+            offset += parse_termarg_int(ptr + offset, &s->error, रिक्त);
+            भङ्ग;
+        पक्ष 0x81: /* field op */
+        पक्ष 0x83: /* processor op */
+        पक्ष 0x84: /* power resource op */
+        पक्ष 0x85: /* thermal zone op */
             offset += parse_pkg_skip(s, ptr + offset, 0x5b00 | ptr[1], 1);
-            break;
-        case 0x82: /* device op */
+            भङ्ग;
+        पक्ष 0x82: /* device op */
             offset += parse_pkg_device(s, ptr + offset);
-            break;
-        default:
+            भङ्ग;
+        स्वभाव:
             hex(ptr, 16, 3, __func__);
             s->error = 1;
-            break;
+            भङ्ग;
         }
-        break;
-    default:
+        भङ्ग;
+    स्वभाव:
         hex(ptr, 16, 3, __func__);
         s->error = 1;
-        break;
+        भङ्ग;
     }
     s->depth--;
 
-    return offset;
+    प्रत्यागम offset;
 }
 
-static void parse_termlist(struct parse_state *s,
-                           u8 *ptr, int offset, int pkglength)
+स्थिर शून्य parse_termlist(संरचना parse_state *s,
+                           u8 *ptr, पूर्णाङ्क offset, पूर्णाङ्क pkglength)
 {
-    for (;;) {
+    प्रति (;;) {
         offset += parse_termobj(s, ptr + offset);
-        if (offset == pkglength)
-            return;
-        if (offset > pkglength) {
+        जइ (offset == pkglength)
+            प्रत्यागम;
+        जइ (offset > pkglength) {
             dprintf(1, "%s: overrun: %d/%d\n", __func__,
                     offset, pkglength);
             s->error = 1;
-            return;
+            प्रत्यागम;
         }
-        if (s->error) {
+        जइ (s->error) {
             dprintf(1, "%s: parse error, skip from %d/%d\n", __func__,
                     offset, pkglength);
             s->error = 0;
-            return;
+            प्रत्यागम;
         }
     }
 }
 
-static struct acpi_device *acpi_dsdt_find(struct acpi_device *prev,
-                                          const u8 *aml1, int size1,
-                                          const u8 *aml2, int size2)
+स्थिर संरचना acpi_device *acpi_dsdt_find(संरचना acpi_device *prev,
+                                          ध्रुव u8 *aml1, पूर्णाङ्क size1,
+                                          ध्रुव u8 *aml2, पूर्णाङ्क size2)
 {
-    struct acpi_device *dev;
-    struct hlist_node *node;
+    संरचना acpi_device *dev;
+    संरचना hlist_ग्रन्थिः *ग्रन्थिः;
 
-    if (!prev)
-        node = acpi_devices.first;
-    else
-        node = prev->node.next;
+    जइ (!prev)
+        ग्रन्थिः = acpi_devices.first;
+    अण्णहा
+        ग्रन्थिः = prev->ग्रन्थिः.next;
 
-    for (; node != NULL; node = dev->node.next) {
-        dev = container_of(node, struct acpi_device, node);
-        if (!aml1 && !aml2)
-            return dev;
-        if (!dev->hid_aml)
-            continue;
-        if (aml1 && memcmp(dev->hid_aml + 5, aml1, size1) == 0)
-            return dev;
-        if (aml2 && memcmp(dev->hid_aml + 5, aml2, size2) == 0)
-            return dev;
+    प्रति (; ग्रन्थिः != रिक्त; ग्रन्थिः = dev->ग्रन्थिः.next) {
+        dev = container_of(ग्रन्थिः, संरचना acpi_device, ग्रन्थिः);
+        जइ (!aml1 && !aml2)
+            प्रत्यागम dev;
+        जइ (!dev->hid_aml)
+            अनुवर्त;
+        जइ (aml1 && memcmp(dev->hid_aml + 5, aml1, size1) == 0)
+            प्रत्यागम dev;
+        जइ (aml2 && memcmp(dev->hid_aml + 5, aml2, size2) == 0)
+            प्रत्यागम dev;
     }
-    return NULL;
+    प्रत्यागम रिक्त;
 }
 
-static int acpi_dsdt_present(struct acpi_device *dev)
+स्थिर पूर्णाङ्क acpi_dsdt_present(संरचना acpi_device *dev)
 {
-    if (!dev)
-        return 0; /* no */
-    if (!dev->sta_aml)
-        return 1; /* yes */
-    if (dev->sta_aml[0] == 0x14)
-        return -1; /* unknown (can't evaluate method) */
-    if (dev->sta_aml[0] == 0x08) {
-        u64 value = 0;
-        parse_termarg_int(dev->sta_aml + 5, NULL, &value);
-        if (value == 0)
-            return 0; /* no */
-        else
-            return 1; /* yes */
+    जइ (!dev)
+        प्रत्यागम 0; /* no */
+    जइ (!dev->sta_aml)
+        प्रत्यागम 1; /* yes */
+    जइ (dev->sta_aml[0] == 0x14)
+        प्रत्यागम -1; /* unknown (can't evaluate method) */
+    जइ (dev->sta_aml[0] == 0x08) {
+        u64 मानम् = 0;
+        parse_termarg_int(dev->sta_aml + 5, रिक्त, &मानम्);
+        जइ (मानम् == 0)
+            प्रत्यागम 0; /* no */
+        अण्णहा
+            प्रत्यागम 1; /* yes */
     }
-    return -1; /* unknown (should not happen) */
+    प्रत्यागम -1; /* unknown (should not happen) */
 }
 
 /****************************************************************
  * DSDT parser, public interface
  ****************************************************************/
 
-struct acpi_device *acpi_dsdt_find_string(struct acpi_device *prev,
-                                          const char *hid)
+संरचना acpi_device *acpi_dsdt_find_string(संरचना acpi_device *prev,
+                                          ध्रुव वर्ण *hid)
 {
-    if (!CONFIG_ACPI_PARSE)
-        return NULL;
+    जइ (!CONFIG_ACPI_PARSE)
+        प्रत्यागम रिक्त;
 
     u8 aml[10];
-    int len = snprintf((char*)aml, sizeof(aml), "\x0d%s", hid);
-    return acpi_dsdt_find(prev, aml, len, NULL, 0);
+    पूर्णाङ्क len = snprintf((वर्ण*)aml, परिमाण(aml), "\x0d%s", hid);
+    प्रत्यागम acpi_dsdt_find(prev, aml, len, रिक्त, 0);
 }
 
-struct acpi_device *acpi_dsdt_find_eisaid(struct acpi_device *prev, u16 eisaid)
+संरचना acpi_device *acpi_dsdt_find_eisaid(संरचना acpi_device *prev, u16 eisaid)
 {
-    if (!CONFIG_ACPI_PARSE)
-        return NULL;
+    जइ (!CONFIG_ACPI_PARSE)
+        प्रत्यागम रिक्त;
     u8 aml1[] = {
         0x0c, 0x41, 0xd0,
         eisaid >> 8,
         eisaid & 0xff
     };
     u8 aml2[10];
-    int len2 = snprintf((char*)aml2, sizeof(aml2), "\x0dPNP%04X", eisaid);
-    return acpi_dsdt_find(prev, aml1, 5, aml2, len2);
+    पूर्णाङ्क len2 = snprintf((वर्ण*)aml2, परिमाण(aml2), "\x0dPNP%04X", eisaid);
+    प्रत्यागम acpi_dsdt_find(prev, aml1, 5, aml2, len2);
 }
 
-char *acpi_dsdt_name(struct acpi_device *dev)
+वर्ण *acpi_dsdt_name(संरचना acpi_device *dev)
 {
-    if (!CONFIG_ACPI_PARSE || !dev)
-        return NULL;
-    return dev->name;
+    जइ (!CONFIG_ACPI_PARSE || !dev)
+        प्रत्यागम रिक्त;
+    प्रत्यागम dev->name;
 }
 
-int acpi_dsdt_find_io(struct acpi_device *dev, u64 *min, u64 *max)
+पूर्णाङ्क acpi_dsdt_find_io(संरचना acpi_device *dev, u64 *min, u64 *max)
 {
-    if (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
-        return -1;
-    return find_resource(dev->crs_data, dev->crs_size,
+    जइ (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
+        प्रत्यागम -1;
+    प्रत्यागम find_resource(dev->crs_data, dev->crs_size,
                          1 /* I/O */, min, max);
 }
 
-int acpi_dsdt_find_mem(struct acpi_device *dev, u64 *min, u64 *max)
+पूर्णाङ्क acpi_dsdt_find_mem(संरचना acpi_device *dev, u64 *min, u64 *max)
 {
-    if (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
-        return -1;
-    return find_resource(dev->crs_data, dev->crs_size,
+    जइ (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
+        प्रत्यागम -1;
+    प्रत्यागम find_resource(dev->crs_data, dev->crs_size,
                          0 /* mem */, min, max);
 }
 
-int acpi_dsdt_find_irq(struct acpi_device *dev, u64 *irq)
+पूर्णाङ्क acpi_dsdt_find_irq(संरचना acpi_device *dev, u64 *irq)
 {
     u64 max;
-    if (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
-        return -1;
-    return find_resource(dev->crs_data, dev->crs_size,
+    जइ (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
+        प्रत्यागम -1;
+    प्रत्यागम find_resource(dev->crs_data, dev->crs_size,
                          3 /* irq */, irq, &max);
 }
 
-int acpi_dsdt_present_eisaid(u16 eisaid)
+पूर्णाङ्क acpi_dsdt_present_eisaid(u16 eisaid)
 {
-    if (!CONFIG_ACPI_PARSE)
-        return -1; /* unknown */
-    if (hlist_empty(&acpi_devices))
-        return -1; /* unknown (no dsdt table) */
+    जइ (!CONFIG_ACPI_PARSE)
+        प्रत्यागम -1; /* unknown */
+    जइ (hlist_empty(&acpi_devices))
+        प्रत्यागम -1; /* unknown (no dsdt table) */
 
-    struct acpi_device *dev = acpi_dsdt_find_eisaid(NULL, eisaid);
-    return acpi_dsdt_present(dev);
+    संरचना acpi_device *dev = acpi_dsdt_find_eisaid(रिक्त, eisaid);
+    प्रत्यागम acpi_dsdt_present(dev);
 }
 
-void acpi_dsdt_parse(void)
+शून्य acpi_dsdt_parse(शून्य)
 {
-    if (!CONFIG_ACPI_PARSE)
-        return;
+    जइ (!CONFIG_ACPI_PARSE)
+        प्रत्यागम;
 
-    struct fadt_descriptor_rev1 *fadt = find_acpi_table(FACP_SIGNATURE);
-    if (!fadt)
-        return;
-    u8 *dsdt = (void*)(fadt->dsdt);
-    if (!dsdt)
-        return;
+    संरचना fadt_descriptor_rev1 *fadt = find_acpi_table(FACP_SIGNATURE);
+    जइ (!fadt)
+        प्रत्यागम;
+    u8 *dsdt = (शून्य*)(fadt->dsdt);
+    जइ (!dsdt)
+        प्रत्यागम;
 
     u32 length = *(u32*)(dsdt + 4);
     u32 offset = 0x24;
     dprintf(1, "ACPI: parse DSDT at %p (len %d)\n", dsdt, length);
 
-    struct parse_state s;
-    memset(&s, 0, sizeof(s));
+    संरचना parse_state s;
+    memset(&s, 0, परिमाण(s));
     parse_termlist(&s, dsdt, offset, length);
 
-    if (!parse_dumpdevs)
-        return;
+    जइ (!parse_dumpdevs)
+        प्रत्यागम;
 
-    struct acpi_device *dev;
+    संरचना acpi_device *dev;
     dprintf(1, "ACPI: dumping dsdt devices\n");
-    for (dev = acpi_dsdt_find(NULL, NULL, 0, NULL, 0);
-         dev != NULL;
-         dev = acpi_dsdt_find(dev, NULL, 0, NULL, 0)) {
+    प्रति (dev = acpi_dsdt_find(रिक्त, रिक्त, 0, रिक्त, 0);
+         dev != रिक्त;
+         dev = acpi_dsdt_find(dev, रिक्त, 0, रिक्त, 0)) {
         dprintf(1, "    %s", acpi_dsdt_name(dev));
-        if (dev->hid_aml)
+        जइ (dev->hid_aml)
             dprintf(1, ", hid");
-        if (dev->sta_aml)
+        जइ (dev->sta_aml)
             dprintf(1, ", sta (0x%x)", dev->sta_aml[0]);
-        if (dev->crs_data)
+        जइ (dev->crs_data)
             dprintf(1, ", crs");
         dprintf(1, "\n");
-        if (dev->crs_data)
+        जइ (dev->crs_data)
             print_resources("        ", dev->crs_data, dev->crs_size);
     }
 }

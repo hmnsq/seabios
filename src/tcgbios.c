@@ -9,29 +9,29 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "bregs.h" // struct bregs
-#include "byteorder.h" // cpu_to_*
-#include "config.h" // CONFIG_TCGBIOS
-#include "farptr.h" // MAKE_FLATPTR
-#include "fw/paravirt.h" // runningOnXen
-#include "hw/tpm_drivers.h" // tpm_drivers[]
-#include "output.h" // dprintf
-#include "sha.h" // sha1, sha256, ...
-#include "std/acpi.h"  // RSDP_SIGNATURE, rsdt_descriptor
-#include "std/smbios.h" // struct smbios_21_entry_point
-#include "std/tcg.h" // TCG_PC_LOGOVERFLOW
-#include "string.h" // checksum
-#include "tcgbios.h"// tpm_*, prototypes
-#include "util.h" // printf, get_keystroke
-#include "stacks.h" // wait_threads, reset
-#include "malloc.h" // malloc_high
+#अन्तर्भाव "bregs.h" // struct bregs
+#अन्तर्भाव "byteorder.h" // cpu_to_*
+#अन्तर्भाव "config.h" // CONFIG_TCGBIOS
+#अन्तर्भाव "farptr.h" // MAKE_FLATPTR
+#अन्तर्भाव "fw/paravirt.h" // runningOnXen
+#अन्तर्भाव "hw/tpm_drivers.h" // tpm_drivers[]
+#अन्तर्भाव "output.h" // dprintf
+#अन्तर्भाव "sha.h" // sha1, sha256, ...
+#अन्तर्भाव "std/acpi.h"  // RSDP_SIGNATURE, rsdt_descriptor
+#अन्तर्भाव "std/smbios.h" // struct smbios_21_entry_point
+#अन्तर्भाव "std/tcg.h" // TCG_PC_LOGOVERFLOW
+#अन्तर्भाव "string.h" // checksum
+#अन्तर्भाव "tcgbios.h"// tpm_*, prototypes
+#अन्तर्भाव "util.h" // printf, get_keystroke
+#अन्तर्भाव "stacks.h" // wait_threads, reset
+#अन्तर्भाव "malloc.h" // malloc_high
 
 
 /****************************************************************
  * ACPI TCPA table interface
  ****************************************************************/
 
-struct {
+संरचना {
     /* length of the TCPA log buffer */
     u32           log_area_minimum_length;
 
@@ -39,7 +39,7 @@ struct {
     u8 *          log_area_start_address;
 
     /* number of log entries written */
-    u32           entry_count;
+    u32           entry_गणनम्;
 
     /* address to write next log entry to */
     u8 *          log_area_next_entry;
@@ -48,51 +48,51 @@ struct {
     u8 *          log_area_last_entry;
 } tpm_state VARLOW;
 
-static int tpm_set_log_area(u8 *log_area_start_address,
+स्थिर पूर्णाङ्क tpm_set_log_area(u8 *log_area_start_address,
                             u32 log_area_minimum_length)
 {
-    if (!log_area_start_address || !log_area_minimum_length)
-        return -1;
+    जइ (!log_area_start_address || !log_area_minimum_length)
+        प्रत्यागम -1;
 
     memset(log_area_start_address, 0, log_area_minimum_length);
     tpm_state.log_area_start_address = log_area_start_address;
     tpm_state.log_area_minimum_length = log_area_minimum_length;
     tpm_state.log_area_next_entry = log_area_start_address;
-    tpm_state.log_area_last_entry = NULL;
-    tpm_state.entry_count = 0;
-    return 0;
+    tpm_state.log_area_last_entry = रिक्त;
+    tpm_state.entry_गणनम् = 0;
+    प्रत्यागम 0;
 }
 
-static int
-tpm_tcpa_probe(void)
+स्थिर पूर्णाङ्क
+tpm_tcpa_probe(शून्य)
 {
-    struct tcpa_descriptor_rev2 *tcpa = find_acpi_table(TCPA_SIGNATURE);
-    if (!tcpa)
-        return -1;
+    संरचना tcpa_descriptor_rev2 *tcpa = find_acpi_table(TCPA_SIGNATURE);
+    जइ (!tcpa)
+        प्रत्यागम -1;
 
     dprintf(DEBUG_tcg, "TCGBIOS: TCPA: LASA = %p, LAML = %u\n",
             (u8 *)(long)tcpa->log_area_start_address,
             tcpa->log_area_minimum_length);
 
-    return tpm_set_log_area((u8*)(long)tcpa->log_area_start_address,
+    प्रत्यागम tpm_set_log_area((u8*)(long)tcpa->log_area_start_address,
                             tcpa->log_area_minimum_length);
 }
 
-static int
-tpm_tpm2_probe(void)
+स्थिर पूर्णाङ्क
+tpm_tpm2_probe(शून्य)
 {
-    struct tpm2_descriptor_rev2 *tpm2 = find_acpi_table(TPM2_SIGNATURE);
-    if (!tpm2)
-        return -1;
+    संरचना tpm2_descriptor_rev2 *tpm2 = find_acpi_table(TPM2_SIGNATURE);
+    जइ (!tpm2)
+        प्रत्यागम -1;
 
-    if (tpm2->length < 76)
-        return -1;
+    जइ (tpm2->length < 76)
+        प्रत्यागम -1;
 
     dprintf(DEBUG_tcg, "TCGBIOS: TPM2: LASA = %p, LAML = %u\n",
             (u8 *)(long)tpm2->log_area_start_address,
             tpm2->log_area_minimum_length);
 
-    return tpm_set_log_area((u8*)(long)tpm2->log_area_start_address,
+    प्रत्यागम tpm_set_log_area((u8*)(long)tpm2->log_area_start_address,
                             tpm2->log_area_minimum_length);
 }
 
@@ -108,36 +108,36 @@ tpm_tpm2_probe(void)
  * Output:
  *  Returns an error code in case of faiure, 0 in case of success
  */
-static int
-tpm_log_event(struct tpm_log_header *entry, int digest_len
-              , const void *event, int event_len)
+स्थिर पूर्णाङ्क
+tpm_log_event(संरचना tpm_log_header *entry, पूर्णाङ्क digest_len
+              , ध्रुव शून्य *event, पूर्णाङ्क event_len)
 {
     dprintf(DEBUG_tcg, "TCGBIOS: LASA = %p, next entry = %p\n",
             tpm_state.log_area_start_address, tpm_state.log_area_next_entry);
 
-    if (tpm_state.log_area_next_entry == NULL)
-        return -1;
+    जइ (tpm_state.log_area_next_entry == रिक्त)
+        प्रत्यागम -1;
 
-    u32 size = (sizeof(*entry) + digest_len
-                + sizeof(struct tpm_log_trailer) + event_len);
+    u32 size = (परिमाण(*entry) + digest_len
+                + परिमाण(संरचना tpm_log_trailer) + event_len);
     u32 logsize = (tpm_state.log_area_next_entry + size
                    - tpm_state.log_area_start_address);
-    if (logsize > tpm_state.log_area_minimum_length) {
+    जइ (logsize > tpm_state.log_area_minimum_length) {
         dprintf(DEBUG_tcg, "TCGBIOS: LOG OVERFLOW: size = %d\n", size);
-        return -1;
+        प्रत्यागम -1;
     }
 
-    void *dest = tpm_state.log_area_next_entry;
-    memcpy(dest, entry, sizeof(*entry) + digest_len);
-    struct tpm_log_trailer *t = dest + sizeof(*entry) + digest_len;
+    शून्य *dest = tpm_state.log_area_next_entry;
+    memcpy(dest, entry, परिमाण(*entry) + digest_len);
+    संरचना tpm_log_trailer *t = dest + परिमाण(*entry) + digest_len;
     t->eventdatasize = event_len;
     memcpy(t->event, event, event_len);
 
     tpm_state.log_area_last_entry = tpm_state.log_area_next_entry;
     tpm_state.log_area_next_entry += size;
-    tpm_state.entry_count++;
+    tpm_state.entry_गणनम्++;
 
-    return 0;
+    प्रत्यागम 0;
 }
 
 
@@ -145,29 +145,29 @@ tpm_log_event(struct tpm_log_header *entry, int digest_len
  * Digest formatting
  ****************************************************************/
 
-static TPMVersion TPM_version;
-static u32 tpm20_pcr_selection_size;
-static struct tpml_pcr_selection *tpm20_pcr_selection;
+स्थिर TPMVersion TPM_version;
+स्थिर u32 tpm20_pcr_selection_size;
+स्थिर संरचना tpml_pcr_selection *tpm20_pcr_selection;
 
 // A 'struct tpm_log_entry' is a local data structure containing a
 // 'tpm_log_header' followed by space for the maximum supported
 // digest.  (The digest is a sha1 hash on tpm1.2 or a series of
 // tpm2_digest_value structs on tpm2.0)
-struct tpm_log_entry {
-    struct tpm_log_header hdr;
-    u8 pad[sizeof(struct tpm2_digest_values)
-           + 8 * sizeof(struct tpm2_digest_value)
+संरचना tpm_log_entry {
+    संरचना tpm_log_header hdr;
+    u8 pad[परिमाण(संरचना tpm2_digest_मानानि)
+           + 8 * परिमाण(संरचना tpm2_digest_मानम्)
            + SHA1_BUFSIZE + SHA256_BUFSIZE + SHA384_BUFSIZE
            + SHA512_BUFSIZE + SM3_256_BUFSIZE + SHA3_256_BUFSIZE
            + SHA3_384_BUFSIZE + SHA3_512_BUFSIZE];
 } PACKED;
 
-static const struct hash_parameters {
+स्थिर ध्रुव संरचना hash_parameters {
     u16 hashalg;
     u8  hashalg_flag;
     u8  hash_buffersize;
-    const char *name;
-    void (*hashfunc)(const u8 *data, u32 length, u8 *hash);
+    ध्रुव वर्ण *name;
+    शून्य (*hashfunc)(ध्रुव u8 *data, u32 length, u8 *hash);
 } hash_parameters[] = {
     {
         .hashalg = TPM2_ALG_SHA1,
@@ -216,63 +216,63 @@ static const struct hash_parameters {
     }
 };
 
-static int
+स्थिर पूर्णाङ्क
 tpm20_get_hash_buffersize(u16 hashAlg)
 {
     unsigned i;
 
-    for (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
-        if (hash_parameters[i].hashalg == hashAlg)
-            return hash_parameters[i].hash_buffersize;
+    प्रति (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
+        जइ (hash_parameters[i].hashalg == hashAlg)
+            प्रत्यागम hash_parameters[i].hash_buffersize;
     }
-    return -1;
+    प्रत्यागम -1;
 }
 
-static u8
+स्थिर u8
 tpm20_hashalg_to_flag(u16 hashAlg)
 {
     unsigned i;
 
-    for (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
-        if (hash_parameters[i].hashalg == hashAlg)
-            return hash_parameters[i].hashalg_flag;
+    प्रति (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
+        जइ (hash_parameters[i].hashalg == hashAlg)
+            प्रत्यागम hash_parameters[i].hashalg_flag;
     }
-    return 0;
+    प्रत्यागम 0;
 }
 
-static u16
+स्थिर u16
 tpm20_hashalg_flag_to_hashalg(u8 hashalg_flag)
 {
     unsigned i;
 
-    for (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
-        if (hash_parameters[i].hashalg_flag == hashalg_flag)
-            return hash_parameters[i].hashalg;
+    प्रति (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
+        जइ (hash_parameters[i].hashalg_flag == hashalg_flag)
+            प्रत्यागम hash_parameters[i].hashalg;
     }
-    return 0;
+    प्रत्यागम 0;
 }
 
-static const char *
+स्थिर ध्रुव वर्ण *
 tpm20_hashalg_flag_to_name(u8 hashalg_flag)
 {
     unsigned i;
 
-    for (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
-        if (hash_parameters[i].hashalg_flag == hashalg_flag)
-            return hash_parameters[i].name;
+    प्रति (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
+        जइ (hash_parameters[i].hashalg_flag == hashalg_flag)
+            प्रत्यागम hash_parameters[i].name;
     }
-    return NULL;
+    प्रत्यागम रिक्त;
 }
 
-static void tpm2_hash_data(u16 hashAlg, const u8 *data, u32 data_len, u8 *hash)
+स्थिर शून्य tpm2_hash_data(u16 hashAlg, ध्रुव u8 *data, u32 data_len, u8 *hash)
 {
     unsigned i;
 
-    for (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
-        if (hash_parameters[i].hashalg == hashAlg) {
-            if (hash_parameters[i].hashfunc) {
+    प्रति (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
+        जइ (hash_parameters[i].hashalg == hashAlg) {
+            जइ (hash_parameters[i].hashfunc) {
                 hash_parameters[i].hashfunc(data, data_len, hash);
-            } else {
+            } अण्णहा {
                 memset(hash, 0xff, hash_parameters[i].hash_buffersize);
             }
         }
@@ -280,15 +280,15 @@ static void tpm2_hash_data(u16 hashAlg, const u8 *data, u32 data_len, u8 *hash)
 }
 
 // Add an entry at the start of the log describing digest formats
-static int
-tpm20_write_EfiSpecIdEventStruct(void)
+स्थिर पूर्णाङ्क
+tpm20_write_EfiSpecIdEventStruct(शून्य)
 {
-    if (!tpm20_pcr_selection)
-        return -1;
+    जइ (!tpm20_pcr_selection)
+        प्रत्यागम -1;
 
-    struct {
-        struct TCG_EfiSpecIdEventStruct hdr;
-        u8 pad[sizeof(struct tpm_log_entry) + sizeof(u8)];
+    संरचना {
+        संरचना TCG_EfiSpecIdEventStruct hdr;
+        u8 pad[परिमाण(संरचना tpm_log_entry) + परिमाण(u8)];
     } event = {
         .hdr.signature = "Spec ID Event03",
         .hdr.platformClass = TPM_TCPA_ACPI_CLASS_CLIENT,
@@ -298,59 +298,59 @@ tpm20_write_EfiSpecIdEventStruct(void)
         .hdr.uintnSize = 2,
     };
 
-    struct tpms_pcr_selection *sel = tpm20_pcr_selection->selections;
-    void *nsel, *end = (void*)tpm20_pcr_selection + tpm20_pcr_selection_size;
+    संरचना tpms_pcr_selection *sel = tpm20_pcr_selection->selections;
+    शून्य *nsel, *end = (शून्य*)tpm20_pcr_selection + tpm20_pcr_selection_size;
 
-    u32 count, numAlgs = 0;
-    for (count = 0; count < be32_to_cpu(tpm20_pcr_selection->count); count++) {
+    u32 गणनम्, अङ्कः_Algs = 0;
+    प्रति (गणनम् = 0; गणनम् < be32_to_cpu(tpm20_pcr_selection->गणनम्); गणनम्++) {
         u8 sizeOfSelect = sel->sizeOfSelect;
 
-        nsel = (void*)sel + sizeof(*sel) + sizeOfSelect;
-        if (nsel > end)
-            break;
+        nsel = (शून्य*)sel + परिमाण(*sel) + sizeOfSelect;
+        जइ (nsel > end)
+            भङ्ग;
 
-        if (!sizeOfSelect || sel->pcrSelect[0] == 0) {
+        जइ (!sizeOfSelect || sel->pcrSelect[0] == 0) {
             sel = nsel;
-            continue;
+            अनुवर्त;
         }
 
-        int hsize = tpm20_get_hash_buffersize(be16_to_cpu(sel->hashAlg));
-        if (hsize < 0) {
+        पूर्णाङ्क hsize = tpm20_get_hash_buffersize(be16_to_cpu(sel->hashAlg));
+        जइ (hsize < 0) {
             dprintf(DEBUG_tcg, "TPM is using an unsupported hash: %d\n",
                     be16_to_cpu(sel->hashAlg));
-            return -1;
+            प्रत्यागम -1;
         }
 
-        int event_size = offsetof(struct TCG_EfiSpecIdEventStruct
-                                  , digestSizes[count+1]);
-        if (event_size > sizeof(event) - sizeof(u8)) {
+        पूर्णाङ्क event_size = offsetof(संरचना TCG_EfiSpecIdEventStruct
+                                  , digestSizes[गणनम्+1]);
+        जइ (event_size > परिमाण(event) - परिमाण(u8)) {
             dprintf(DEBUG_tcg, "EfiSpecIdEventStruct pad too small\n");
-            return -1;
+            प्रत्यागम -1;
         }
 
-        event.hdr.digestSizes[numAlgs].algorithmId = be16_to_cpu(sel->hashAlg);
-        event.hdr.digestSizes[numAlgs].digestSize = hsize;
-        numAlgs++;
+        event.hdr.digestSizes[अङ्कः_Algs].algorithmId = be16_to_cpu(sel->hashAlg);
+        event.hdr.digestSizes[अङ्कः_Algs].digestSize = hsize;
+        अङ्कः_Algs++;
 
         sel = nsel;
     }
 
-    if (sel != end) {
+    जइ (sel != end) {
         dprintf(DEBUG_tcg, "Malformed pcr selection structure fron TPM\n");
-        return -1;
+        प्रत्यागम -1;
     }
 
-    event.hdr.numberOfAlgorithms = numAlgs;
-    int event_size = offsetof(struct TCG_EfiSpecIdEventStruct
-                              , digestSizes[numAlgs]);
-    u8 *vendorInfoSize = (void*)&event + event_size;
+    event.hdr.सङ्ख्या_Of_Algorithms = अङ्कः_Algs;
+    पूर्णाङ्क event_size = offsetof(संरचना TCG_EfiSpecIdEventStruct
+                              , digestSizes[अङ्कः_Algs]);
+    u8 *vendorInfoSize = (शून्य*)&event + event_size;
     *vendorInfoSize = 0;
-    event_size += sizeof(*vendorInfoSize);
+    event_size += परिमाण(*vendorInfoSize);
 
-    struct tpm_log_entry le = {
+    संरचना tpm_log_entry le = {
         .hdr.eventtype = EV_NO_ACTION,
     };
-    return tpm_log_event(&le.hdr, SHA1_BUFSIZE, &event, event_size);
+    प्रत्यागम tpm_log_event(&le.hdr, SHA1_BUFSIZE, &event, event_size);
 }
 
 /*
@@ -369,100 +369,100 @@ tpm20_write_EfiSpecIdEventStruct(void)
  *
  * Returns the digest size; -1 on fatal error
  */
-static int
-tpm20_build_digest(struct tpm_log_entry *le,
-                   const u8 *hashdata, u32 hashdata_len, int bigEndian)
+स्थिर पूर्णाङ्क
+tpm20_build_digest(संरचना tpm_log_entry *le,
+                   ध्रुव u8 *hashdata, u32 hashdata_len, पूर्णाङ्क bigEndian)
 {
-    if (!tpm20_pcr_selection)
-        return -1;
+    जइ (!tpm20_pcr_selection)
+        प्रत्यागम -1;
 
-    struct tpms_pcr_selection *sel = tpm20_pcr_selection->selections;
-    void *nsel, *end = (void*)tpm20_pcr_selection + tpm20_pcr_selection_size;
-    void *dest = le->hdr.digest + sizeof(struct tpm2_digest_values);
+    संरचना tpms_pcr_selection *sel = tpm20_pcr_selection->selections;
+    शून्य *nsel, *end = (शून्य*)tpm20_pcr_selection + tpm20_pcr_selection_size;
+    शून्य *dest = le->hdr.digest + परिमाण(संरचना tpm2_digest_मानानि);
 
-    u32 count, numAlgs = 0;
-    for (count = 0; count < be32_to_cpu(tpm20_pcr_selection->count); count++) {
+    u32 गणनम्, अङ्कः_Algs = 0;
+    प्रति (गणनम् = 0; गणनम् < be32_to_cpu(tpm20_pcr_selection->गणनम्); गणनम्++) {
         u8 sizeOfSelect = sel->sizeOfSelect;
 
-        nsel = (void*)sel + sizeof(*sel) + sizeOfSelect;
-        if (nsel > end)
-            break;
+        nsel = (शून्य*)sel + परिमाण(*sel) + sizeOfSelect;
+        जइ (nsel > end)
+            भङ्ग;
 
         /* PCR 0-7 unused? -- skip */
-        if (!sizeOfSelect || sel->pcrSelect[0] == 0) {
+        जइ (!sizeOfSelect || sel->pcrSelect[0] == 0) {
             sel = nsel;
-            continue;
+            अनुवर्त;
         }
 
-        int hsize = tpm20_get_hash_buffersize(be16_to_cpu(sel->hashAlg));
-        if (hsize < 0) {
+        पूर्णाङ्क hsize = tpm20_get_hash_buffersize(be16_to_cpu(sel->hashAlg));
+        जइ (hsize < 0) {
             dprintf(DEBUG_tcg, "TPM is using an unsupported hash: %d\n",
                     be16_to_cpu(sel->hashAlg));
-            return -1;
+            प्रत्यागम -1;
         }
 
         /* buffer size sanity check before writing */
-        struct tpm2_digest_value *v = dest;
-        if (dest + sizeof(*v) + hsize > (void*)le + sizeof(*le)) {
+        संरचना tpm2_digest_मानम् *v = dest;
+        जइ (dest + परिमाण(*v) + hsize > (शून्य*)le + परिमाण(*le)) {
             dprintf(DEBUG_tcg, "tpm_log_entry is too small\n");
-            return -1;
+            प्रत्यागम -1;
         }
 
-        if (bigEndian)
+        जइ (bigEndian)
             v->hashAlg = sel->hashAlg;
-        else
+        अण्णहा
             v->hashAlg = be16_to_cpu(sel->hashAlg);
 
         tpm2_hash_data(be16_to_cpu(sel->hashAlg), hashdata, hashdata_len,
                        v->hash);
 
-        dest += sizeof(*v) + hsize;
+        dest += परिमाण(*v) + hsize;
         sel = nsel;
 
-        numAlgs++;
+        अङ्कः_Algs++;
     }
 
-    if (sel != end) {
+    जइ (sel != end) {
         dprintf(DEBUG_tcg, "Malformed pcr selection structure fron TPM\n");
-        return -1;
+        प्रत्यागम -1;
     }
 
-    struct tpm2_digest_values *v = (void*)le->hdr.digest;
-    if (bigEndian)
-        v->count = cpu_to_be32(numAlgs);
-    else
-        v->count = numAlgs;
+    संरचना tpm2_digest_मानानि *v = (शून्य*)le->hdr.digest;
+    जइ (bigEndian)
+        v->गणनम् = cpu_to_be32(अङ्कः_Algs);
+    अण्णहा
+        v->गणनम् = अङ्कः_Algs;
 
-    return dest - (void*)le->hdr.digest;
+    प्रत्यागम dest - (शून्य*)le->hdr.digest;
 }
 
-static int
-tpm12_build_digest(struct tpm_log_entry *le,
-                   const u8 *hashdata, u32 hashdata_len)
+स्थिर पूर्णाङ्क
+tpm12_build_digest(संरचना tpm_log_entry *le,
+                   ध्रुव u8 *hashdata, u32 hashdata_len)
 {
     sha1(hashdata, hashdata_len, le->hdr.digest);
-    return SHA1_BUFSIZE;
+    प्रत्यागम SHA1_BUFSIZE;
 }
 
-static int
-tpm12_build_digest_direct(struct tpm_log_entry *le, const u8 *sha1)
+स्थिर पूर्णाङ्क
+tpm12_build_digest_direct(संरचना tpm_log_entry *le, ध्रुव u8 *sha1)
 {
     // On TPM 1.2 the digest contains just the SHA1 hash
     memcpy(le->hdr.digest, sha1, SHA1_BUFSIZE);
-    return SHA1_BUFSIZE;
+    प्रत्यागम SHA1_BUFSIZE;
 }
 
-static int
-tpm_build_digest(struct tpm_log_entry *le, const u8 *hashdata, u32 hashdata_len
-                 , int bigEndian)
+स्थिर पूर्णाङ्क
+tpm_build_digest(संरचना tpm_log_entry *le, ध्रुव u8 *hashdata, u32 hashdata_len
+                 , पूर्णाङ्क bigEndian)
 {
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
-        return tpm12_build_digest(le, hashdata, hashdata_len);
-    case TPM_VERSION_2:
-        return tpm20_build_digest(le, hashdata, hashdata_len, bigEndian);
+    विकल्प (TPM_version) {
+    पक्ष TPM_VERSION_1_2:
+        प्रत्यागम tpm12_build_digest(le, hashdata, hashdata_len);
+    पक्ष TPM_VERSION_2:
+        प्रत्यागम tpm20_build_digest(le, hashdata, hashdata_len, bigEndian);
     }
-    return -1;
+    प्रत्यागम -1;
 }
 
 
@@ -472,54 +472,54 @@ tpm_build_digest(struct tpm_log_entry *le, const u8 *hashdata, u32 hashdata_len
 
 // Helper function for sending tpm commands that take a single
 // optional parameter (0, 1, or 2 bytes) and have no special response.
-static int
+स्थिर पूर्णाङ्क
 tpm_simple_cmd(u8 locty, u32 ordinal
-               , int param_size, u16 param, enum tpmDurationType to_t)
+               , पूर्णाङ्क param_size, u16 param, गणना tpmDurationType to_t)
 {
-    struct {
-        struct tpm_req_header trqh;
+    संरचना {
+        संरचना tpm_req_header trqh;
         u16 param;
     } PACKED req = {
-        .trqh.totlen = cpu_to_be32(sizeof(req.trqh) + param_size),
+        .trqh.totlen = cpu_to_be32(परिमाण(req.trqh) + param_size),
         .trqh.ordinal = cpu_to_be32(ordinal),
         .param = param_size == 2 ? cpu_to_be16(param) : param,
     };
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
+    विकल्प (TPM_version) {
+    पक्ष TPM_VERSION_1_2:
         req.trqh.tag = cpu_to_be16(TPM_TAG_RQU_CMD);
-        break;
-    case TPM_VERSION_2:
+        भङ्ग;
+    पक्ष TPM_VERSION_2:
         req.trqh.tag = cpu_to_be16(TPM2_ST_NO_SESSIONS);
-        break;
+        भङ्ग;
     }
 
     u8 obuffer[64];
-    struct tpm_rsp_header *trsh = (void*)obuffer;
-    u32 obuffer_len = sizeof(obuffer);
-    memset(obuffer, 0x0, sizeof(obuffer));
+    संरचना tpm_rsp_header *trsh = (शून्य*)obuffer;
+    u32 obuffer_len = परिमाण(obuffer);
+    memset(obuffer, 0x0, परिमाण(obuffer));
 
-    int ret = tpmhw_transmit(locty, &req.trqh, obuffer, &obuffer_len, to_t);
+    पूर्णाङ्क ret = tpmhw_transmit(locty, &req.trqh, obuffer, &obuffer_len, to_t);
     ret = ret ? -1 : be32_to_cpu(trsh->errcode);
     dprintf(DEBUG_tcg, "Return from tpm_simple_cmd(%x, %x) = %x\n",
             ordinal, param, ret);
-    return ret;
+    प्रत्यागम ret;
 }
 
-static int
-tpm20_getcapability(u32 capability, u32 property, u32 count,
-                    struct tpm_rsp_header *rsp, u32 rsize)
+स्थिर पूर्णाङ्क
+tpm20_getcapability(u32 capability, u32 property, u32 गणनम्,
+                    संरचना tpm_rsp_header *rsp, u32 rsize)
 {
-    struct tpm2_req_getcapability trg = {
+    संरचना tpm2_req_getcapability trg = {
         .hdr.tag = cpu_to_be16(TPM2_ST_NO_SESSIONS),
-        .hdr.totlen = cpu_to_be32(sizeof(trg)),
+        .hdr.totlen = cpu_to_be32(परिमाण(trg)),
         .hdr.ordinal = cpu_to_be32(TPM2_CC_GetCapability),
         .capability = cpu_to_be32(capability),
         .property = cpu_to_be32(property),
-        .propertycount = cpu_to_be32(count),
+        .propertycount = cpu_to_be32(गणनम्),
     };
 
     u32 resp_size = rsize;
-    int ret = tpmhw_transmit(0, &trg.hdr, rsp, &resp_size,
+    पूर्णाङ्क ret = tpmhw_transmit(0, &trg.hdr, rsp, &resp_size,
                              TPM_DURATION_TYPE_SHORT);
     ret = (ret ||
            rsize < be32_to_cpu(rsp->totlen)) ? -1 : be32_to_cpu(rsp->errcode);
@@ -527,61 +527,61 @@ tpm20_getcapability(u32 capability, u32 property, u32 count,
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_GetCapability = 0x%08x\n",
             ret);
 
-    return ret;
+    प्रत्यागम ret;
 }
 
-static int
-tpm20_get_pcrbanks(void)
+स्थिर पूर्णाङ्क
+tpm20_get_pcrbanks(शून्य)
 {
     u8 buffer[128];
-    struct tpm2_res_getcapability *trg =
-      (struct tpm2_res_getcapability *)&buffer;
+    संरचना tpm2_res_getcapability *trg =
+      (संरचना tpm2_res_getcapability *)&buffer;
 
-    int ret = tpm20_getcapability(TPM2_CAP_PCRS, 0, 8, &trg->hdr,
-                                  sizeof(buffer));
-    if (ret)
-        return ret;
+    पूर्णाङ्क ret = tpm20_getcapability(TPM2_CAP_PCRS, 0, 8, &trg->hdr,
+                                  परिमाण(buffer));
+    जइ (ret)
+        प्रत्यागम ret;
 
     /* defend against (broken) TPM sending packets that are too short */
     u32 resplen = be32_to_cpu(trg->hdr.totlen);
-    if (resplen <= offsetof(struct tpm2_res_getcapability, data))
-        return -1;
+    जइ (resplen <= offsetof(संरचना tpm2_res_getcapability, data))
+        प्रत्यागम -1;
 
-    u32 size = resplen - offsetof(struct tpm2_res_getcapability, data);
+    u32 size = resplen - offsetof(संरचना tpm2_res_getcapability, data);
     /* we need a valid tpml_pcr_selection up to and including sizeOfSelect */
-    if (size < offsetof(struct tpml_pcr_selection, selections) +
-               offsetof(struct tpms_pcr_selection, pcrSelect))
-        return -1;
+    जइ (size < offsetof(संरचना tpml_pcr_selection, selections) +
+               offsetof(संरचना tpms_pcr_selection, pcrSelect))
+        प्रत्यागम -1;
 
-    tpm20_pcr_selection = malloc_high(size);
-    if (tpm20_pcr_selection) {
+    tpm20_pcr_selection = malloc_उच्चः(size);
+    जइ (tpm20_pcr_selection) {
         memcpy(tpm20_pcr_selection, &trg->data, size);
         tpm20_pcr_selection_size = size;
-    } else {
+    } अण्णहा {
         warn_noalloc();
         ret = -1;
     }
 
-    return ret;
+    प्रत्यागम ret;
 }
 
-static int
+स्थिर पूर्णाङ्क
 tpm20_get_suppt_pcrbanks(u8 *suppt_pcrbanks, u8 *active_pcrbanks)
 {
     *suppt_pcrbanks = 0;
     *active_pcrbanks = 0;
 
-    if (!tpm20_pcr_selection)
-        return -1;
+    जइ (!tpm20_pcr_selection)
+        प्रत्यागम -1;
 
-    struct tpms_pcr_selection *sel = tpm20_pcr_selection->selections;
-    void *end = (void*)tpm20_pcr_selection + tpm20_pcr_selection_size;
+    संरचना tpms_pcr_selection *sel = tpm20_pcr_selection->selections;
+    शून्य *end = (शून्य*)tpm20_pcr_selection + tpm20_pcr_selection_size;
 
-    while (1) {
+    जाव (1) {
         u8 sizeOfSelect = sel->sizeOfSelect;
-        void *nsel = (void*)sel + sizeof(*sel) + sizeOfSelect;
-        if (nsel > end)
-            return 0;
+        शून्य *nsel = (शून्य*)sel + परिमाण(*sel) + sizeOfSelect;
+        जइ (nsel > end)
+            प्रत्यागम 0;
 
         u16 hashalg = be16_to_cpu(sel->hashAlg);
         u8 hashalg_flag = tpm20_hashalg_to_flag(hashalg);
@@ -589,10 +589,10 @@ tpm20_get_suppt_pcrbanks(u8 *suppt_pcrbanks, u8 *active_pcrbanks)
         *suppt_pcrbanks |= hashalg_flag;
 
         unsigned i;
-        for (i = 0; i < sizeOfSelect; i++) {
-            if (sel->pcrSelect[i]) {
+        प्रति (i = 0; i < sizeOfSelect; i++) {
+            जइ (sel->pcrSelect[i]) {
                 *active_pcrbanks |= hashalg_flag;
-                break;
+                भङ्ग;
             }
         }
 
@@ -600,14 +600,14 @@ tpm20_get_suppt_pcrbanks(u8 *suppt_pcrbanks, u8 *active_pcrbanks)
     }
 }
 
-static int
+स्थिर पूर्णाङ्क
 tpm20_set_pcrbanks(u32 active_banks)
 {
-    struct tpm2_req_pcr_allocate trpa = {
+    संरचना tpm2_req_pcr_allocate trpa = {
         .hdr.tag     = cpu_to_be16(TPM2_ST_SESSIONS),
         .hdr.ordinal = cpu_to_be32(TPM2_CC_PCR_Allocate),
         .authhandle = cpu_to_be32(TPM2_RH_PLATFORM),
-        .authblocksize = cpu_to_be32(sizeof(trpa.authblock)),
+        .authblocksize = cpu_to_be32(परिमाण(trpa.authblock)),
         .authblock = {
             .handle = cpu_to_be32(TPM2_RS_PW),
             .noncesize = cpu_to_be16(0),
@@ -615,27 +615,27 @@ tpm20_set_pcrbanks(u32 active_banks)
             .pwdsize = cpu_to_be16(0),
         },
     };
-    struct tpms_pcr_selection3 {
+    संरचना tpms_pcr_selection3 {
         u16 hashAlg;
         u8 sizeOfSelect;
         u8 pcrSelect[3];
     } tps[ARRAY_SIZE(trpa.tpms_pcr_selections)];
-    int i = 0;
+    पूर्णाङ्क i = 0;
     u8 hashalg_flag = TPM2_ALG_SHA1_FLAG;
     u8 dontcare, suppt_banks;
 
     tpm20_get_suppt_pcrbanks(&suppt_banks, &dontcare);
 
-    while (hashalg_flag) {
-        if ((hashalg_flag & suppt_banks)) {
+    जाव (hashalg_flag) {
+        जइ ((hashalg_flag & suppt_banks)) {
             u16 hashalg = tpm20_hashalg_flag_to_hashalg(hashalg_flag);
 
-            if (hashalg) {
+            जइ (hashalg) {
                 u8 mask = 0;
                 tps[i].hashAlg = cpu_to_be16(hashalg);
                 tps[i].sizeOfSelect = 3;
 
-                if (active_banks & hashalg_flag)
+                जइ (active_banks & hashalg_flag)
                     mask = 0xff;
 
                 tps[i].pcrSelect[0] = mask;
@@ -647,89 +647,89 @@ tpm20_set_pcrbanks(u32 active_banks)
         hashalg_flag <<= 1;
     }
 
-    trpa.count = cpu_to_be32(i);
-    memcpy(trpa.tpms_pcr_selections, tps, i * sizeof(tps[0]));
-    trpa.hdr.totlen = cpu_to_be32(offsetof(struct tpm2_req_pcr_allocate,
+    trpa.गणनम् = cpu_to_be32(i);
+    memcpy(trpa.tpms_pcr_selections, tps, i * परिमाण(tps[0]));
+    trpa.hdr.totlen = cpu_to_be32(offsetof(संरचना tpm2_req_pcr_allocate,
                                            tpms_pcr_selections) +
-                                  i * sizeof(tps[0]));
+                                  i * परिमाण(tps[0]));
 
-    struct tpm_rsp_header rsp;
-    u32 resp_length = sizeof(rsp);
+    संरचना tpm_rsp_header rsp;
+    u32 resp_length = परिमाण(rsp);
 
-    int ret = tpmhw_transmit(0, &trpa.hdr, &rsp, &resp_length,
+    पूर्णाङ्क ret = tpmhw_transmit(0, &trpa.hdr, &rsp, &resp_length,
                              TPM_DURATION_TYPE_SHORT);
     ret = ret ? -1 : be32_to_cpu(rsp.errcode);
 
-    return ret;
+    प्रत्यागम ret;
 }
 
-static int tpm20_activate_pcrbanks(u32 active_banks)
+स्थिर पूर्णाङ्क tpm20_activate_pcrbanks(u32 active_banks)
 {
-    int ret = tpm20_set_pcrbanks(active_banks);
-    if (!ret)
+    पूर्णाङ्क ret = tpm20_set_pcrbanks(active_banks);
+    जइ (!ret)
         ret = tpm_simple_cmd(0, TPM2_CC_Shutdown,
                              2, TPM2_SU_CLEAR, TPM_DURATION_TYPE_SHORT);
-    if (!ret)
+    जइ (!ret)
         reset();
-    return ret;
+    प्रत्यागम ret;
 }
 
-static int
-tpm12_get_capability(u32 cap, u32 subcap, struct tpm_rsp_header *rsp, u32 rsize)
+स्थिर पूर्णाङ्क
+tpm12_get_capability(u32 cap, u32 subcap, संरचना tpm_rsp_header *rsp, u32 rsize)
 {
-    struct tpm_req_getcap trgc = {
+    संरचना tpm_req_getcap trgc = {
         .hdr.tag = cpu_to_be16(TPM_TAG_RQU_CMD),
-        .hdr.totlen = cpu_to_be32(sizeof(trgc)),
+        .hdr.totlen = cpu_to_be32(परिमाण(trgc)),
         .hdr.ordinal = cpu_to_be32(TPM_ORD_GetCapability),
         .capArea = cpu_to_be32(cap),
-        .subCapSize = cpu_to_be32(sizeof(trgc.subCap)),
+        .subCapSize = cpu_to_be32(परिमाण(trgc.subCap)),
         .subCap = cpu_to_be32(subcap)
     };
     u32 resp_size = rsize;
-    int ret = tpmhw_transmit(0, &trgc.hdr, rsp, &resp_size,
+    पूर्णाङ्क ret = tpmhw_transmit(0, &trgc.hdr, rsp, &resp_size,
                              TPM_DURATION_TYPE_SHORT);
     ret = (ret || resp_size != rsize) ? -1 : be32_to_cpu(rsp->errcode);
     dprintf(DEBUG_tcg, "TCGBIOS: Return code from TPM_GetCapability(%d, %d)"
             " = %x\n", cap, subcap, ret);
-    return ret;
+    प्रत्यागम ret;
 }
 
-static int
-tpm12_read_permanent_flags(char *buf, int buf_len)
+स्थिर पूर्णाङ्क
+tpm12_read_permanent_flags(वर्ण *buf, पूर्णाङ्क buf_len)
 {
     memset(buf, 0, buf_len);
 
-    struct tpm_res_getcap_perm_flags pf;
-    int ret = tpm12_get_capability(TPM_CAP_FLAG, TPM_CAP_FLAG_PERMANENT
-                                   , &pf.hdr, sizeof(pf));
-    if (ret)
-        return -1;
+    संरचना tpm_res_getcap_perm_flags pf;
+    पूर्णाङ्क ret = tpm12_get_capability(TPM_CAP_FLAG, TPM_CAP_FLAG_PERMANENT
+                                   , &pf.hdr, परिमाण(pf));
+    जइ (ret)
+        प्रत्यागम -1;
 
     memcpy(buf, &pf.perm_flags, buf_len);
 
-    return 0;
+    प्रत्यागम 0;
 }
 
-static int
-tpm12_determine_timeouts(void)
+स्थिर पूर्णाङ्क
+tpm12_determine_timeouts(शून्य)
 {
-    struct tpm_res_getcap_timeouts timeouts;
-    int ret = tpm12_get_capability(TPM_CAP_PROPERTY, TPM_CAP_PROP_TIS_TIMEOUT
-                                   , &timeouts.hdr, sizeof(timeouts));
-    if (ret)
-        return ret;
+    संरचना tpm_res_getcap_timeouts timeouts;
+    पूर्णाङ्क ret = tpm12_get_capability(TPM_CAP_PROPERTY, TPM_CAP_PROP_TIS_TIMEOUT
+                                   , &timeouts.hdr, परिमाण(timeouts));
+    जइ (ret)
+        प्रत्यागम ret;
 
-    struct tpm_res_getcap_durations durations;
+    संरचना tpm_res_getcap_durations durations;
     ret = tpm12_get_capability(TPM_CAP_PROPERTY, TPM_CAP_PROP_DURATION
-                               , &durations.hdr, sizeof(durations));
-    if (ret)
-        return ret;
+                               , &durations.hdr, परिमाण(durations));
+    जइ (ret)
+        प्रत्यागम ret;
 
-    int i;
-    for (i = 0; i < 3; i++)
+    पूर्णाङ्क i;
+    प्रति (i = 0; i < 3; i++)
         durations.durations[i] = be32_to_cpu(durations.durations[i]);
 
-    for (i = 0; i < 4; i++)
+    प्रति (i = 0; i < 4; i++)
         timeouts.timeouts[i] = be32_to_cpu(timeouts.timeouts[i]);
 
     dprintf(DEBUG_tcg, "TCGBIOS: timeouts: %u %u %u %u\n",
@@ -745,11 +745,11 @@ tpm12_determine_timeouts(void)
 
     tpmhw_set_timeouts(timeouts.timeouts, durations.durations);
 
-    return 0;
+    प्रत्यागम 0;
 }
 
-static void
-tpm20_set_timeouts(void)
+स्थिर शून्य
+tpm20_set_timeouts(शून्य)
 {
     u32 durations[3] = {
         TPM2_DEFAULT_DURATION_SHORT,
@@ -766,35 +766,35 @@ tpm20_set_timeouts(void)
     tpmhw_set_timeouts(timeouts, durations);
 }
 
-static int
-tpm12_extend(struct tpm_log_entry *le, int digest_len)
+स्थिर पूर्णाङ्क
+tpm12_extend(संरचना tpm_log_entry *le, पूर्णाङ्क digest_len)
 {
-    struct tpm_req_extend tre = {
+    संरचना tpm_req_extend tre = {
         .hdr.tag     = cpu_to_be16(TPM_TAG_RQU_CMD),
-        .hdr.totlen  = cpu_to_be32(sizeof(tre)),
+        .hdr.totlen  = cpu_to_be32(परिमाण(tre)),
         .hdr.ordinal = cpu_to_be32(TPM_ORD_Extend),
         .pcrindex    = cpu_to_be32(le->hdr.pcrindex),
     };
-    memcpy(tre.digest, le->hdr.digest, sizeof(tre.digest));
+    memcpy(tre.digest, le->hdr.digest, परिमाण(tre.digest));
 
-    struct tpm_rsp_extend rsp;
-    u32 resp_length = sizeof(rsp);
-    int ret = tpmhw_transmit(0, &tre.hdr, &rsp, &resp_length,
+    संरचना tpm_rsp_extend rsp;
+    u32 resp_length = परिमाण(rsp);
+    पूर्णाङ्क ret = tpmhw_transmit(0, &tre.hdr, &rsp, &resp_length,
                              TPM_DURATION_TYPE_SHORT);
-    if (ret || resp_length != sizeof(rsp) || rsp.hdr.errcode)
-        return -1;
+    जइ (ret || resp_length != परिमाण(rsp) || rsp.hdr.errcode)
+        प्रत्यागम -1;
 
-    return 0;
+    प्रत्यागम 0;
 }
 
-static int tpm20_extend(struct tpm_log_entry *le, int digest_len)
+स्थिर पूर्णाङ्क tpm20_extend(संरचना tpm_log_entry *le, पूर्णाङ्क digest_len)
 {
-    struct tpm2_req_extend tmp_tre = {
+    संरचना tpm2_req_extend tmp_tre = {
         .hdr.tag     = cpu_to_be16(TPM2_ST_SESSIONS),
         .hdr.totlen  = cpu_to_be32(0),
         .hdr.ordinal = cpu_to_be32(TPM2_CC_PCR_Extend),
         .pcrindex    = cpu_to_be32(le->hdr.pcrindex),
-        .authblocksize = cpu_to_be32(sizeof(tmp_tre.authblock)),
+        .authblocksize = cpu_to_be32(परिमाण(tmp_tre.authblock)),
         .authblock = {
             .handle = cpu_to_be32(TPM2_RS_PW),
             .noncesize = cpu_to_be16(0),
@@ -802,101 +802,101 @@ static int tpm20_extend(struct tpm_log_entry *le, int digest_len)
             .pwdsize = cpu_to_be16(0),
         },
     };
-    u8 buffer[sizeof(tmp_tre) + sizeof(le->pad)];
-    struct tpm2_req_extend *tre = (struct tpm2_req_extend *)buffer;
+    u8 buffer[परिमाण(tmp_tre) + परिमाण(le->pad)];
+    संरचना tpm2_req_extend *tre = (संरचना tpm2_req_extend *)buffer;
 
-    memcpy(tre, &tmp_tre, sizeof(tmp_tre));
+    memcpy(tre, &tmp_tre, परिमाण(tmp_tre));
     memcpy(&tre->digest[0], le->hdr.digest, digest_len);
 
-    tre->hdr.totlen = cpu_to_be32(sizeof(tmp_tre) + digest_len);
+    tre->hdr.totlen = cpu_to_be32(परिमाण(tmp_tre) + digest_len);
 
-    struct tpm_rsp_header rsp;
-    u32 resp_length = sizeof(rsp);
-    int ret = tpmhw_transmit(0, &tre->hdr, &rsp, &resp_length,
+    संरचना tpm_rsp_header rsp;
+    u32 resp_length = परिमाण(rsp);
+    पूर्णाङ्क ret = tpmhw_transmit(0, &tre->hdr, &rsp, &resp_length,
                              TPM_DURATION_TYPE_SHORT);
-    if (ret || resp_length != sizeof(rsp) || rsp.errcode)
-        return -1;
+    जइ (ret || resp_length != परिमाण(rsp) || rsp.errcode)
+        प्रत्यागम -1;
 
-    return 0;
+    प्रत्यागम 0;
 }
 
-static int
-tpm_extend(struct tpm_log_entry *le, int digest_len)
+स्थिर पूर्णाङ्क
+tpm_extend(संरचना tpm_log_entry *le, पूर्णाङ्क digest_len)
 {
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
-        return tpm12_extend(le, digest_len);
-    case TPM_VERSION_2:
-        return tpm20_extend(le, digest_len);
+    विकल्प (TPM_version) {
+    पक्ष TPM_VERSION_1_2:
+        प्रत्यागम tpm12_extend(le, digest_len);
+    पक्ष TPM_VERSION_2:
+        प्रत्यागम tpm20_extend(le, digest_len);
     }
-    return -1;
+    प्रत्यागम -1;
 }
 
-static int
-tpm20_stirrandom(void)
+स्थिर पूर्णाङ्क
+tpm20_stirrandom(शून्य)
 {
-    struct tpm2_req_stirrandom stir = {
+    संरचना tpm2_req_stirrandom stir = {
         .hdr.tag = cpu_to_be16(TPM2_ST_NO_SESSIONS),
-        .hdr.totlen = cpu_to_be32(sizeof(stir)),
+        .hdr.totlen = cpu_to_be32(परिमाण(stir)),
         .hdr.ordinal = cpu_to_be32(TPM2_CC_StirRandom),
-        .size = cpu_to_be16(sizeof(stir.stir)),
+        .size = cpu_to_be16(परिमाण(stir.stir)),
         .stir = rdtscll(),
     };
     /* set more bits to stir with */
     stir.stir += swab64(rdtscll());
 
-    struct tpm_rsp_header rsp;
-    u32 resp_length = sizeof(rsp);
-    int ret = tpmhw_transmit(0, &stir.hdr, &rsp, &resp_length,
+    संरचना tpm_rsp_header rsp;
+    u32 resp_length = परिमाण(rsp);
+    पूर्णाङ्क ret = tpmhw_transmit(0, &stir.hdr, &rsp, &resp_length,
                              TPM_DURATION_TYPE_SHORT);
-    if (ret || resp_length != sizeof(rsp) || rsp.errcode)
+    जइ (ret || resp_length != परिमाण(rsp) || rsp.errcode)
         ret = -1;
 
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_StirRandom = 0x%08x\n",
             ret);
 
-    return ret;
+    प्रत्यागम ret;
 }
 
-static int
+स्थिर पूर्णाङ्क
 tpm20_getrandom(u8 *buf, u16 buf_len)
 {
-    struct tpm2_res_getrandom rsp;
+    संरचना tpm2_res_getrandom rsp;
 
-    if (buf_len > sizeof(rsp.rnd.buffer))
-        return -1;
+    जइ (buf_len > परिमाण(rsp.rnd.buffer))
+        प्रत्यागम -1;
 
-    struct tpm2_req_getrandom trgr = {
+    संरचना tpm2_req_getrandom trgr = {
         .hdr.tag = cpu_to_be16(TPM2_ST_NO_SESSIONS),
-        .hdr.totlen = cpu_to_be32(sizeof(trgr)),
+        .hdr.totlen = cpu_to_be32(परिमाण(trgr)),
         .hdr.ordinal = cpu_to_be32(TPM2_CC_GetRandom),
         .bytesRequested = cpu_to_be16(buf_len),
     };
-    u32 resp_length = sizeof(rsp);
+    u32 resp_length = परिमाण(rsp);
 
-    int ret = tpmhw_transmit(0, &trgr.hdr, &rsp, &resp_length,
+    पूर्णाङ्क ret = tpmhw_transmit(0, &trgr.hdr, &rsp, &resp_length,
                              TPM_DURATION_TYPE_MEDIUM);
-    if (ret || resp_length != sizeof(rsp) || rsp.hdr.errcode)
+    जइ (ret || resp_length != परिमाण(rsp) || rsp.hdr.errcode)
         ret = -1;
-    else
+    अण्णहा
         memcpy(buf, rsp.rnd.buffer, buf_len);
 
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_GetRandom = 0x%08x\n",
             ret);
 
-    return ret;
+    प्रत्यागम ret;
 }
 
-static int
+स्थिर पूर्णाङ्क
 tpm20_hierarchycontrol(u32 hierarchy, u8 state)
 {
     /* we will try to deactivate the TPM now - ignoring all errors */
-    struct tpm2_req_hierarchycontrol trh = {
+    संरचना tpm2_req_hierarchycontrol trh = {
         .hdr.tag = cpu_to_be16(TPM2_ST_SESSIONS),
-        .hdr.totlen = cpu_to_be32(sizeof(trh)),
+        .hdr.totlen = cpu_to_be32(परिमाण(trh)),
         .hdr.ordinal = cpu_to_be32(TPM2_CC_HierarchyControl),
         .authhandle = cpu_to_be32(TPM2_RH_PLATFORM),
-        .authblocksize = cpu_to_be32(sizeof(trh.authblock)),
+        .authblocksize = cpu_to_be32(परिमाण(trh.authblock)),
         .authblock = {
             .handle = cpu_to_be32(TPM2_RS_PW),
             .noncesize = cpu_to_be16(0),
@@ -906,28 +906,28 @@ tpm20_hierarchycontrol(u32 hierarchy, u8 state)
         .enable = cpu_to_be32(hierarchy),
         .state = state,
     };
-    struct tpm_rsp_header rsp;
-    u32 resp_length = sizeof(rsp);
-    int ret = tpmhw_transmit(0, &trh.hdr, &rsp, &resp_length,
+    संरचना tpm_rsp_header rsp;
+    u32 resp_length = परिमाण(rsp);
+    पूर्णाङ्क ret = tpmhw_transmit(0, &trh.hdr, &rsp, &resp_length,
                              TPM_DURATION_TYPE_MEDIUM);
-    if (ret || resp_length != sizeof(rsp) || rsp.errcode)
+    जइ (ret || resp_length != परिमाण(rsp) || rsp.errcode)
         ret = -1;
 
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_HierarchyControl = 0x%08x\n",
             ret);
 
-    return ret;
+    प्रत्यागम ret;
 }
 
-static int
+स्थिर पूर्णाङ्क
 tpm20_hierarchychangeauth(u8 auth[20])
 {
-    struct tpm2_req_hierarchychangeauth trhca = {
+    संरचना tpm2_req_hierarchychangeauth trhca = {
         .hdr.tag = cpu_to_be16(TPM2_ST_SESSIONS),
-        .hdr.totlen = cpu_to_be32(sizeof(trhca)),
+        .hdr.totlen = cpu_to_be32(परिमाण(trhca)),
         .hdr.ordinal = cpu_to_be32(TPM2_CC_HierarchyChangeAuth),
         .authhandle = cpu_to_be32(TPM2_RH_PLATFORM),
-        .authblocksize = cpu_to_be32(sizeof(trhca.authblock)),
+        .authblocksize = cpu_to_be32(परिमाण(trhca.authblock)),
         .authblock = {
             .handle = cpu_to_be32(TPM2_RS_PW),
             .noncesize = cpu_to_be16(0),
@@ -935,22 +935,22 @@ tpm20_hierarchychangeauth(u8 auth[20])
             .pwdsize = cpu_to_be16(0),
         },
         .newAuth = {
-            .size = cpu_to_be16(sizeof(trhca.newAuth.buffer)),
+            .size = cpu_to_be16(परिमाण(trhca.newAuth.buffer)),
         },
     };
-    memcpy(trhca.newAuth.buffer, auth, sizeof(trhca.newAuth.buffer));
+    memcpy(trhca.newAuth.buffer, auth, परिमाण(trhca.newAuth.buffer));
 
-    struct tpm_rsp_header rsp;
-    u32 resp_length = sizeof(rsp);
-    int ret = tpmhw_transmit(0, &trhca.hdr, &rsp, &resp_length,
+    संरचना tpm_rsp_header rsp;
+    u32 resp_length = परिमाण(rsp);
+    पूर्णाङ्क ret = tpmhw_transmit(0, &trhca.hdr, &rsp, &resp_length,
                              TPM_DURATION_TYPE_MEDIUM);
-    if (ret || resp_length != sizeof(rsp) || rsp.errcode)
+    जइ (ret || resp_length != परिमाण(rsp) || rsp.errcode)
         ret = -1;
 
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_HierarchyChangeAuth = 0x%08x\n",
             ret);
 
-    return ret;
+    प्रत्यागम ret;
 }
 
 
@@ -958,20 +958,20 @@ tpm20_hierarchychangeauth(u8 auth[20])
  * Setup and Measurements
  ****************************************************************/
 
-static int TPM_has_physical_presence;
+स्थिर पूर्णाङ्क TPM_has_physical_presence;
 u8 TPM_working VARLOW;
 
-static int
-tpm_is_working(void)
+स्थिर पूर्णाङ्क
+tpm_is_working(शून्य)
 {
-    return CONFIG_TCGBIOS && TPM_working;
+    प्रत्यागम CONFIG_TCGBIOS && TPM_working;
 }
 
-static void
-tpm_set_failure(void)
+स्थिर शून्य
+tpm_set_failure(शून्य)
 {
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
+    विकल्प (TPM_version) {
+    पक्ष TPM_VERSION_1_2:
         /*
          * We will try to deactivate the TPM now - ignoring all errors
          * Physical presence is asserted.
@@ -979,12 +979,12 @@ tpm_set_failure(void)
 
         tpm_simple_cmd(0, TPM_ORD_SetTempDeactivated,
                        0, 0, TPM_DURATION_TYPE_SHORT);
-        break;
-    case TPM_VERSION_2:
+        भङ्ग;
+    पक्ष TPM_VERSION_2:
         tpm20_hierarchycontrol(TPM2_RH_ENDORSEMENT, TPM2_NO);
         tpm20_hierarchycontrol(TPM2_RH_OWNER, TPM2_NO);
         tpm20_hierarchycontrol(TPM2_RH_PLATFORM, TPM2_NO);
-        break;
+        भङ्ग;
     }
 
     TPM_working = 0;
@@ -1002,33 +1002,33 @@ tpm_set_failure(void)
  *  hashdata    : pointer to the data to be hashed
  *  hashdata_length: length of the data to be hashed
  */
-static void
+स्थिर शून्य
 tpm_add_measurement_to_log(u32 pcrindex, u32 event_type,
-                           const char *event, u32 event_length,
-                           const u8 *hashdata, u32 hashdata_length)
+                           ध्रुव वर्ण *event, u32 event_length,
+                           ध्रुव u8 *hashdata, u32 hashdata_length)
 {
-    if (!tpm_is_working())
-        return;
+    जइ (!tpm_is_working())
+        प्रत्यागम;
 
-    struct tpm_log_entry le = {
+    संरचना tpm_log_entry le = {
         .hdr.pcrindex = pcrindex,
         .hdr.eventtype = event_type,
     };
-    int digest_len = tpm_build_digest(&le, hashdata, hashdata_length, 1);
-    if (digest_len < 0)
-        return;
-    int ret = tpm_extend(&le, digest_len);
-    if (ret) {
+    पूर्णाङ्क digest_len = tpm_build_digest(&le, hashdata, hashdata_length, 1);
+    जइ (digest_len < 0)
+        प्रत्यागम;
+    पूर्णाङ्क ret = tpm_extend(&le, digest_len);
+    जइ (ret) {
         tpm_set_failure();
-        return;
+        प्रत्यागम;
     }
     tpm_build_digest(&le, hashdata, hashdata_length, 0);
     tpm_log_event(&le.hdr, digest_len, event, event_length);
 }
 
 // Add an EV_ACTION measurement to the list of measurements
-static void
-tpm_add_action(u32 pcrIndex, const char *string)
+स्थिर शून्य
+tpm_add_action(u32 pcrIndex, ध्रुव वर्ण *string)
 {
     u32 len = strlen(string);
     tpm_add_measurement_to_log(pcrIndex, EV_ACTION,
@@ -1038,132 +1038,132 @@ tpm_add_action(u32 pcrIndex, const char *string)
 /*
  * Add event separators for PCRs 0 to 7; specs on 'Measuring Boot Events'
  */
-static void
-tpm_add_event_separators(void)
+स्थिर शून्य
+tpm_add_event_separators(शून्य)
 {
-    static const u8 evt_separator[] = {0xff,0xff,0xff,0xff};
+    स्थिर ध्रुव u8 evt_separator[] = {0xff,0xff,0xff,0xff};
     u32 pcrIndex;
-    for (pcrIndex = 0; pcrIndex <= 7; pcrIndex++)
+    प्रति (pcrIndex = 0; pcrIndex <= 7; pcrIndex++)
         tpm_add_measurement_to_log(pcrIndex, EV_SEPARATOR,
-                                   (const char *)evt_separator,
-                                   sizeof(evt_separator),
+                                   (ध्रुव वर्ण *)evt_separator,
+                                   परिमाण(evt_separator),
                                    evt_separator,
-                                   sizeof(evt_separator));
+                                   परिमाण(evt_separator));
 }
 
-static void
-tpm_smbios_measure(void)
+स्थिर शून्य
+tpm_smbios_measure(शून्य)
 {
-    struct pcctes pcctes = {
+    संरचना pcctes pcctes = {
         .eventid = 1,
         .eventdatasize = SHA1_BUFSIZE,
     };
     u32 smbios_len;
-    void *smbios_tables = smbios_get_tables(&smbios_len);
+    शून्य *smbios_tables = smbios_get_tables(&smbios_len);
 
     dprintf(DEBUG_tcg, "TCGBIOS: SMBIOS tables at %p\n", smbios_tables);
 
-    if (!smbios_tables)
-        return;
+    जइ (!smbios_tables)
+        प्रत्यागम;
 
-    sha1((const u8 *)smbios_tables, smbios_len, pcctes.digest);
+    sha1((ध्रुव u8 *)smbios_tables, smbios_len, pcctes.digest);
     tpm_add_measurement_to_log(1,
                                EV_EVENT_TAG,
-                               (const char *)&pcctes, sizeof(pcctes),
-                               (u8 *)&pcctes, sizeof(pcctes));
+                               (ध्रुव वर्ण *)&pcctes, परिमाण(pcctes),
+                               (u8 *)&pcctes, परिमाण(pcctes));
 }
 
-static int
-tpm12_assert_physical_presence(void)
+स्थिर पूर्णाङ्क
+tpm12_assert_physical_presence(शून्य)
 {
-    int ret = tpm_simple_cmd(0, TPM_ORD_PhysicalPresence,
+    पूर्णाङ्क ret = tpm_simple_cmd(0, TPM_ORD_PhysicalPresence,
                              2, TPM_PP_PRESENT, TPM_DURATION_TYPE_SHORT);
-    if (!ret)
-        return 0;
+    जइ (!ret)
+        प्रत्यागम 0;
 
-    struct tpm_permanent_flags pf;
-    ret = tpm12_read_permanent_flags((char *)&pf, sizeof(pf));
-    if (ret)
-        return -1;
+    संरचना tpm_permanent_flags pf;
+    ret = tpm12_read_permanent_flags((वर्ण *)&pf, परिमाण(pf));
+    जइ (ret)
+        प्रत्यागम -1;
 
     /* check if hardware physical presence is supported */
-    if (pf.flags[PERM_FLAG_IDX_PHYSICAL_PRESENCE_HW_ENABLE]) {
+    जइ (pf.flags[PERM_FLAG_IDX_PHYSICAL_PRESENCE_HW_ENABLE]) {
         /* HW phys. presence may not be asserted... */
-        return 0;
+        प्रत्यागम 0;
     }
 
-    if (!pf.flags[PERM_FLAG_IDX_PHYSICAL_PRESENCE_LIFETIME_LOCK]
+    जइ (!pf.flags[PERM_FLAG_IDX_PHYSICAL_PRESENCE_LIFETIME_LOCK]
         && !pf.flags[PERM_FLAG_IDX_PHYSICAL_PRESENCE_CMD_ENABLE]) {
         tpm_simple_cmd(0, TPM_ORD_PhysicalPresence,
                        2, TPM_PP_CMD_ENABLE, TPM_DURATION_TYPE_SHORT);
 
-        return tpm_simple_cmd(0, TPM_ORD_PhysicalPresence,
+        प्रत्यागम tpm_simple_cmd(0, TPM_ORD_PhysicalPresence,
                               2, TPM_PP_PRESENT, TPM_DURATION_TYPE_SHORT);
     }
-    return -1;
+    प्रत्यागम -1;
 }
 
-static int
-tpm12_startup(void)
+स्थिर पूर्णाङ्क
+tpm12_startup(शून्य)
 {
     dprintf(DEBUG_tcg, "TCGBIOS: Starting with TPM_Startup(ST_CLEAR)\n");
-    int ret = tpm_simple_cmd(0, TPM_ORD_Startup,
+    पूर्णाङ्क ret = tpm_simple_cmd(0, TPM_ORD_Startup,
                              2, TPM_ST_CLEAR, TPM_DURATION_TYPE_SHORT);
-    if (CONFIG_COREBOOT && ret == TPM_INVALID_POSTINIT)
+    जइ (CONFIG_COREBOOT && ret == TPM_INVALID_POSTINIT)
         /* with other firmware on the system the TPM may already have been
          * initialized
          */
         ret = 0;
-    if (ret)
-        goto err_exit;
+    जइ (ret)
+        गच्छ err_exit;
 
     /* assertion of physical presence is only possible after startup */
     ret = tpm12_assert_physical_presence();
-    if (!ret)
+    जइ (!ret)
         TPM_has_physical_presence = 1;
 
     ret = tpm12_determine_timeouts();
-    if (ret)
-        goto err_exit;
+    जइ (ret)
+        गच्छ err_exit;
 
     ret = tpm_simple_cmd(0, TPM_ORD_SelfTestFull,
                          0, 0, TPM_DURATION_TYPE_LONG);
-    if (ret)
-        goto err_exit;
+    जइ (ret)
+        गच्छ err_exit;
 
     ret = tpm_simple_cmd(3, TSC_ORD_ResetEstablishmentBit,
                          0, 0, TPM_DURATION_TYPE_SHORT);
-    if (ret && ret != TPM_BAD_LOCALITY)
-        goto err_exit;
+    जइ (ret && ret != TPM_BAD_LOCALITY)
+        गच्छ err_exit;
 
-    return 0;
+    प्रत्यागम 0;
 
 err_exit:
     dprintf(DEBUG_tcg, "TCGBIOS: TPM malfunctioning (line %d).\n", __LINE__);
 
     tpm_set_failure();
-    return -1;
+    प्रत्यागम -1;
 }
 
-static int
-tpm20_startup(void)
+स्थिर पूर्णाङ्क
+tpm20_startup(शून्य)
 {
     tpm20_set_timeouts();
 
-    int ret = tpm_simple_cmd(0, TPM2_CC_Startup,
+    पूर्णाङ्क ret = tpm_simple_cmd(0, TPM2_CC_Startup,
                              2, TPM2_SU_CLEAR, TPM_DURATION_TYPE_SHORT);
 
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_Startup(SU_CLEAR) = 0x%08x\n",
             ret);
 
-    if (CONFIG_COREBOOT && ret == TPM2_RC_INITIALIZE)
+    जइ (CONFIG_COREBOOT && ret == TPM2_RC_INITIALIZE)
         /* with other firmware on the system the TPM may already have been
          * initialized
          */
         ret = 0;
 
-    if (ret)
-        goto err_exit;
+    जइ (ret)
+        गच्छ err_exit;
 
     ret = tpm_simple_cmd(0, TPM2_CC_SelfTest,
                          1, TPM2_YES, TPM_DURATION_TYPE_LONG);
@@ -1171,54 +1171,54 @@ tpm20_startup(void)
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_SelfTest = 0x%08x\n",
             ret);
 
-    if (ret)
-        goto err_exit;
+    जइ (ret)
+        गच्छ err_exit;
 
     ret = tpm20_get_pcrbanks();
-    if (ret)
-        goto err_exit;
+    जइ (ret)
+        गच्छ err_exit;
 
     ret = tpm20_write_EfiSpecIdEventStruct();
-    if (ret)
-        goto err_exit;
+    जइ (ret)
+        गच्छ err_exit;
 
-    return 0;
+    प्रत्यागम 0;
 
 err_exit:
     dprintf(DEBUG_tcg, "TCGBIOS: TPM malfunctioning (line %d).\n", __LINE__);
 
     tpm_set_failure();
-    return -1;
+    प्रत्यागम -1;
 }
 
-static int
-tpm_startup(void)
+स्थिर पूर्णाङ्क
+tpm_startup(शून्य)
 {
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
-        return tpm12_startup();
-    case TPM_VERSION_2:
-        return tpm20_startup();
+    विकल्प (TPM_version) {
+    पक्ष TPM_VERSION_1_2:
+        प्रत्यागम tpm12_startup();
+    पक्ष TPM_VERSION_2:
+        प्रत्यागम tpm20_startup();
     }
-    return -1;
+    प्रत्यागम -1;
 }
 
-void
-tpm_setup(void)
+शून्य
+tpm_setup(शून्य)
 {
-    if (!CONFIG_TCGBIOS)
-        return;
+    जइ (!CONFIG_TCGBIOS)
+        प्रत्यागम;
 
-    int ret = tpm_tpm2_probe();
-    if (ret) {
+    पूर्णाङ्क ret = tpm_tpm2_probe();
+    जइ (ret) {
         ret = tpm_tcpa_probe();
-        if (ret)
-            return;
+        जइ (ret)
+            प्रत्यागम;
     }
 
     TPM_version = tpmhw_probe();
-    if (TPM_version == TPM_VERSION_NONE)
-        return;
+    जइ (TPM_version == TPM_VERSION_NONE)
+        प्रत्यागम;
 
     dprintf(DEBUG_tcg,
             "TCGBIOS: Detected a TPM %s.\n",
@@ -1226,34 +1226,34 @@ tpm_setup(void)
 
     TPM_working = 1;
 
-    if (runningOnXen())
-        return;
+    जइ (runningOnXen())
+        प्रत्यागम;
 
     ret = tpm_startup();
-    if (ret)
-        return;
+    जइ (ret)
+        प्रत्यागम;
 
     tpm_smbios_measure();
     tpm_add_action(2, "Start Option ROM Scan");
 }
 
-static void
-tpm20_prepboot(void)
+स्थिर शून्य
+tpm20_prepboot(शून्य)
 {
-    int ret = tpm20_stirrandom();
-    if (ret)
-         goto err_exit;
+    पूर्णाङ्क ret = tpm20_stirrandom();
+    जइ (ret)
+         गच्छ err_exit;
 
     u8 auth[20];
-    ret = tpm20_getrandom(&auth[0], sizeof(auth));
-    if (ret)
-        goto err_exit;
+    ret = tpm20_getrandom(&auth[0], परिमाण(auth));
+    जइ (ret)
+        गच्छ err_exit;
 
     ret = tpm20_hierarchychangeauth(auth);
-    if (ret)
-        goto err_exit;
+    जइ (ret)
+        गच्छ err_exit;
 
-    return;
+    प्रत्यागम;
 
 err_exit:
     dprintf(DEBUG_tcg, "TCGBIOS: TPM malfunctioning (line %d).\n", __LINE__);
@@ -1261,21 +1261,21 @@ err_exit:
     tpm_set_failure();
 }
 
-void
-tpm_prepboot(void)
+शून्य
+tpm_prepboot(शून्य)
 {
-    if (!CONFIG_TCGBIOS)
-        return;
+    जइ (!CONFIG_TCGBIOS)
+        प्रत्यागम;
 
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
-        if (TPM_has_physical_presence)
+    विकल्प (TPM_version) {
+    पक्ष TPM_VERSION_1_2:
+        जइ (TPM_has_physical_presence)
             tpm_simple_cmd(0, TPM_ORD_PhysicalPresence,
                            2, TPM_PP_NOT_PRESENT_LOCK, TPM_DURATION_TYPE_SHORT);
-        break;
-    case TPM_VERSION_2:
+        भङ्ग;
+    पक्ष TPM_VERSION_2:
         tpm20_prepboot();
-        break;
+        भङ्ग;
     }
 
     tpm_add_action(4, "Calling INT 19h");
@@ -1285,34 +1285,34 @@ tpm_prepboot(void)
 /*
  * Add measurement to the log about an option rom
  */
-void
-tpm_option_rom(const void *addr, u32 len)
+शून्य
+tpm_option_rom(ध्रुव शून्य *addr, u32 len)
 {
-    if (!tpm_is_working())
-        return;
+    जइ (!tpm_is_working())
+        प्रत्यागम;
 
-    struct pcctes_romex pcctes = {
+    संरचना pcctes_romex pcctes = {
         .eventid = 7,
-        .eventdatasize = sizeof(u16) + sizeof(u16) + SHA1_BUFSIZE,
+        .eventdatasize = परिमाण(u16) + परिमाण(u16) + SHA1_BUFSIZE,
     };
-    sha1((const u8 *)addr, len, pcctes.digest);
+    sha1((ध्रुव u8 *)addr, len, pcctes.digest);
     tpm_add_measurement_to_log(2,
                                EV_EVENT_TAG,
-                               (const char *)&pcctes, sizeof(pcctes),
-                               (u8 *)&pcctes, sizeof(pcctes));
+                               (ध्रुव वर्ण *)&pcctes, परिमाण(pcctes),
+                               (u8 *)&pcctes, परिमाण(pcctes));
 }
 
-void
-tpm_add_bcv(u32 bootdrv, const u8 *addr, u32 length)
+शून्य
+tpm_add_bcv(u32 bootdrv, ध्रुव u8 *addr, u32 length)
 {
-    if (!tpm_is_working())
-        return;
+    जइ (!tpm_is_working())
+        प्रत्यागम;
 
-    if (length < 0x200)
-        return;
+    जइ (length < 0x200)
+        प्रत्यागम;
 
-    const char *string = "Booting BCV device 00h (Floppy)";
-    if (bootdrv == 0x80)
+    ध्रुव वर्ण *string = "Booting BCV device 00h (Floppy)";
+    जइ (bootdrv == 0x80)
         string = "Booting BCV device 80h (HDD)";
     tpm_add_action(4, string);
 
@@ -1330,60 +1330,60 @@ tpm_add_bcv(u32 bootdrv, const u8 *addr, u32 length)
                                addr + 0x1b8, 0x48);
 }
 
-void
-tpm_add_cdrom(u32 bootdrv, const u8 *addr, u32 length)
+शून्य
+tpm_add_cdrom(u32 bootdrv, ध्रुव u8 *addr, u32 length)
 {
-    if (!tpm_is_working())
-        return;
+    जइ (!tpm_is_working())
+        प्रत्यागम;
 
     tpm_add_action(4, "Booting from CD ROM device");
 
     /* specs: see section 'El Torito' */
-    const char *string = "EL TORITO IPL";
+    ध्रुव वर्ण *string = "EL TORITO IPL";
     tpm_add_measurement_to_log(4, EV_IPL,
                                string, strlen(string),
                                addr, length);
 }
 
-void
-tpm_add_cdrom_catalog(const u8 *addr, u32 length)
+शून्य
+tpm_add_cdrom_catalog(ध्रुव u8 *addr, u32 length)
 {
-    if (!tpm_is_working())
-        return;
+    जइ (!tpm_is_working())
+        प्रत्यागम;
 
     tpm_add_action(4, "Booting from CD ROM device");
 
     /* specs: see section 'El Torito' */
-    const char *string = "BOOT CATALOG";
+    ध्रुव वर्ण *string = "BOOT CATALOG";
     tpm_add_measurement_to_log(5, EV_IPL_PARTITION_DATA,
                                string, strlen(string),
                                addr, length);
 }
 
-void
-tpm_s3_resume(void)
+शून्य
+tpm_s3_resume(शून्य)
 {
-    if (!tpm_is_working())
-        return;
+    जइ (!tpm_is_working())
+        प्रत्यागम;
 
     dprintf(DEBUG_tcg, "TCGBIOS: Resuming with TPM_Startup(ST_STATE)\n");
 
-    int ret = -1;
+    पूर्णाङ्क ret = -1;
 
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
+    विकल्प (TPM_version) {
+    पक्ष TPM_VERSION_1_2:
         ret = tpm_simple_cmd(0, TPM_ORD_Startup,
                              2, TPM_ST_STATE, TPM_DURATION_TYPE_SHORT);
-        break;
-    case TPM_VERSION_2:
+        भङ्ग;
+    पक्ष TPM_VERSION_2:
         ret = tpm_simple_cmd(0, TPM2_CC_Startup,
                              2, TPM2_SU_STATE, TPM_DURATION_TYPE_SHORT);
 
         dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_Startup(SU_STATE) = 0x%08x\n",
                 ret);
 
-        if (ret)
-            goto err_exit;
+        जइ (ret)
+            गच्छ err_exit;
 
 
         ret = tpm_simple_cmd(0, TPM2_CC_SelfTest,
@@ -1392,13 +1392,13 @@ tpm_s3_resume(void)
         dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_SelfTest() = 0x%08x\n",
                 ret);
 
-        break;
+        भङ्ग;
     }
 
-    if (ret)
-        goto err_exit;
+    जइ (ret)
+        गच्छ err_exit;
 
-    return;
+    प्रत्यागम;
 
 err_exit:
     dprintf(DEBUG_tcg, "TCGBIOS: TPM malfunctioning (line %d).\n", __LINE__);
@@ -1413,262 +1413,262 @@ err_exit:
 
 u8 TPM_interface_shutdown VARLOW;
 
-static inline void *input_buf32(struct bregs *regs)
+स्थिर अन्तःस्थ शून्य *निवेशः_buf32(संरचना bregs *regs)
 {
-    return MAKE_FLATPTR(regs->es, regs->di);
+    प्रत्यागम MAKE_FLATPTR(regs->es, regs->di);
 }
 
-static inline void *output_buf32(struct bregs *regs)
+स्थिर अन्तःस्थ शून्य *output_buf32(संरचना bregs *regs)
 {
-    return MAKE_FLATPTR(regs->ds, regs->si);
+    प्रत्यागम MAKE_FLATPTR(regs->ds, regs->si);
 }
 
-static u32
-hash_log_extend(struct pcpes *pcpes, const void *hashdata, u32 hashdata_length
-                , void *event, int extend)
+स्थिर u32
+hash_log_extend(संरचना pcpes *pcpes, ध्रुव शून्य *hashdata, u32 hashdata_length
+                , शून्य *event, पूर्णाङ्क extend)
 {
-    if (pcpes->pcrindex >= 24)
-        return TCG_INVALID_INPUT_PARA;
-    if (hashdata)
+    जइ (pcpes->pcrindex >= 24)
+        प्रत्यागम TCG_INVALID_निवेशः_PARA;
+    जइ (hashdata)
         sha1(hashdata, hashdata_length, pcpes->digest);
 
-    struct tpm_log_entry le = {
+    संरचना tpm_log_entry le = {
         .hdr.pcrindex = pcpes->pcrindex,
         .hdr.eventtype = pcpes->eventtype,
     };
-    int digest_len = tpm12_build_digest_direct(&le, pcpes->digest);
-    if (digest_len < 0)
-        return TCG_GENERAL_ERROR;
-    if (extend) {
-        int ret = tpm_extend(&le, digest_len);
-        if (ret)
-            return TCG_TCG_COMMAND_ERROR;
+    पूर्णाङ्क digest_len = tpm12_build_digest_direct(&le, pcpes->digest);
+    जइ (digest_len < 0)
+        प्रत्यागम TCG_GENERAL_ERROR;
+    जइ (extend) {
+        पूर्णाङ्क ret = tpm_extend(&le, digest_len);
+        जइ (ret)
+            प्रत्यागम TCG_TCG_COMMAND_ERROR;
     }
     tpm12_build_digest_direct(&le, pcpes->digest);
-    int ret = tpm_log_event(&le.hdr, digest_len
+    पूर्णाङ्क ret = tpm_log_event(&le.hdr, digest_len
                             , pcpes->event, pcpes->eventdatasize);
-    if (ret)
-        return TCG_PC_LOGOVERFLOW;
-    return 0;
+    जइ (ret)
+        प्रत्यागम TCG_PC_LOGOVERFLOW;
+    प्रत्यागम 0;
 }
 
-static u32
-hash_log_extend_event_int(const struct hleei_short *hleei_s,
-                          struct hleeo *hleeo)
+स्थिर u32
+hash_log_extend_event_int(ध्रुव संरचना hleei_short *hleei_s,
+                          संरचना hleeo *hleeo)
 {
     u32 rc = 0;
-    struct hleei_long *hleei_l = (struct hleei_long *)hleei_s;
-    const void *logdataptr;
+    संरचना hleei_long *hleei_l = (संरचना hleei_long *)hleei_s;
+    ध्रुव शून्य *logdataptr;
     u32 logdatalen;
-    struct pcpes *pcpes;
+    संरचना pcpes *pcpes;
     u32 pcrindex;
 
     /* short or long version? */
-    switch (hleei_s->ipblength) {
-    case sizeof(struct hleei_short):
+    विकल्प (hleei_s->ipblength) {
+    पक्ष परिमाण(संरचना hleei_short):
         /* short */
         logdataptr = hleei_s->logdataptr;
         logdatalen = hleei_s->logdatalen;
         pcrindex = hleei_s->pcrindex;
-    break;
+    भङ्ग;
 
-    case sizeof(struct hleei_long):
+    पक्ष परिमाण(संरचना hleei_long):
         /* long */
         logdataptr = hleei_l->logdataptr;
         logdatalen = hleei_l->logdatalen;
         pcrindex = hleei_l->pcrindex;
-    break;
+    भङ्ग;
 
-    default:
+    स्वभाव:
         /* bad input block */
-        rc = TCG_INVALID_INPUT_PARA;
-        goto err_exit;
+        rc = TCG_INVALID_निवेशः_PARA;
+        गच्छ err_exit;
     }
 
-    pcpes = (struct pcpes *)logdataptr;
+    pcpes = (संरचना pcpes *)logdataptr;
 
-    if (pcpes->pcrindex != pcrindex
-        || logdatalen != sizeof(*pcpes) + pcpes->eventdatasize) {
-        rc = TCG_INVALID_INPUT_PARA;
-        goto err_exit;
+    जइ (pcpes->pcrindex != pcrindex
+        || logdatalen != परिमाण(*pcpes) + pcpes->eventdatasize) {
+        rc = TCG_INVALID_निवेशः_PARA;
+        गच्छ err_exit;
     }
     rc = hash_log_extend(pcpes, hleei_s->hashdataptr, hleei_s->hashdatalen
                          , pcpes->event, 1);
-    if (rc)
-        goto err_exit;
+    जइ (rc)
+        गच्छ err_exit;
 
-    hleeo->opblength = sizeof(struct hleeo);
+    hleeo->opblength = परिमाण(संरचना hleeo);
     hleeo->reserved  = 0;
-    hleeo->eventnumber = tpm_state.entry_count;
-    memcpy(hleeo->digest, pcpes->digest, sizeof(hleeo->digest));
+    hleeo->eventnumber = tpm_state.entry_गणनम्;
+    memcpy(hleeo->digest, pcpes->digest, परिमाण(hleeo->digest));
 
 err_exit:
-    if (rc != 0) {
+    जइ (rc != 0) {
         hleeo->opblength = 4;
         hleeo->reserved  = 0;
     }
 
-    return rc;
+    प्रत्यागम rc;
 }
 
-static u32
-pass_through_to_tpm_int(struct pttti *pttti, struct pttto *pttto)
+स्थिर u32
+pass_through_to_tpm_int(संरचना pttti *pttti, संरचना pttto *pttto)
 {
     u32 rc = 0;
-    struct tpm_req_header *trh = (void*)pttti->tpmopin;
+    संरचना tpm_req_header *trh = (शून्य*)pttti->tpmopin;
 
-    if (pttti->ipblength < sizeof(struct pttti) + sizeof(*trh)
-        || pttti->ipblength != sizeof(struct pttti) + be32_to_cpu(trh->totlen)
-        || pttti->opblength < sizeof(struct pttto)) {
-        rc = TCG_INVALID_INPUT_PARA;
-        goto err_exit;
+    जइ (pttti->ipblength < परिमाण(संरचना pttti) + परिमाण(*trh)
+        || pttti->ipblength != परिमाण(संरचना pttti) + be32_to_cpu(trh->totlen)
+        || pttti->opblength < परिमाण(संरचना pttto)) {
+        rc = TCG_INVALID_निवेशः_PARA;
+        गच्छ err_exit;
     }
 
     u16 tag = be16_to_cpu(trh->tag);
 
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
-        if (tag != TPM_TAG_RQU_CMD && tag != TPM_TAG_RQU_AUTH1_CMD
+    विकल्प (TPM_version) {
+    पक्ष TPM_VERSION_1_2:
+        जइ (tag != TPM_TAG_RQU_CMD && tag != TPM_TAG_RQU_AUTH1_CMD
             && tag != TPM_TAG_RQU_AUTH2_CMD) {
-            rc = TCG_INVALID_INPUT_PARA;
-            goto err_exit;
+            rc = TCG_INVALID_निवेशः_PARA;
+            गच्छ err_exit;
         }
-        break;
-    case TPM_VERSION_2:
-        if (tag != TPM2_ST_NO_SESSIONS && tag != TPM2_ST_SESSIONS) {
-            rc = TCG_INVALID_INPUT_PARA;
-            goto err_exit;
+        भङ्ग;
+    पक्ष TPM_VERSION_2:
+        जइ (tag != TPM2_ST_NO_SESSIONS && tag != TPM2_ST_SESSIONS) {
+            rc = TCG_INVALID_निवेशः_PARA;
+            गच्छ err_exit;
         }
     }
 
-    u32 resbuflen = pttti->opblength - offsetof(struct pttto, tpmopout);
-    int ret = tpmhw_transmit(0, trh, pttto->tpmopout, &resbuflen,
+    u32 resbuflen = pttti->opblength - offsetof(संरचना pttto, tpmopout);
+    पूर्णाङ्क ret = tpmhw_transmit(0, trh, pttto->tpmopout, &resbuflen,
                              TPM_DURATION_TYPE_LONG /* worst case */);
-    if (ret) {
+    जइ (ret) {
         rc = TCG_FATAL_COM_ERROR;
-        goto err_exit;
+        गच्छ err_exit;
     }
 
-    pttto->opblength = offsetof(struct pttto, tpmopout) + resbuflen;
+    pttto->opblength = offsetof(संरचना pttto, tpmopout) + resbuflen;
     pttto->reserved  = 0;
 
 err_exit:
-    if (rc != 0) {
+    जइ (rc != 0) {
         pttto->opblength = 4;
         pttto->reserved = 0;
     }
 
-    return rc;
+    प्रत्यागम rc;
 }
 
-static u32
-shutdown_preboot_interface(void)
+स्थिर u32
+shutdown_preboot_interface(शून्य)
 {
     TPM_interface_shutdown = 1;
-    return 0;
+    प्रत्यागम 0;
 }
 
-static u32
-hash_log_event_int(const struct hlei *hlei, struct hleo *hleo)
+स्थिर u32
+hash_log_event_int(ध्रुव संरचना hlei *hlei, संरचना hleo *hleo)
 {
     u32 rc = 0;
     u16 size;
-    struct pcpes *pcpes;
+    संरचना pcpes *pcpes;
 
     size = hlei->ipblength;
-    if (size != sizeof(*hlei)) {
-        rc = TCG_INVALID_INPUT_PARA;
-        goto err_exit;
+    जइ (size != परिमाण(*hlei)) {
+        rc = TCG_INVALID_निवेशः_PARA;
+        गच्छ err_exit;
     }
 
-    pcpes = (struct pcpes *)hlei->logdataptr;
+    pcpes = (संरचना pcpes *)hlei->logdataptr;
 
-    if (pcpes->pcrindex != hlei->pcrindex
+    जइ (pcpes->pcrindex != hlei->pcrindex
         || pcpes->eventtype != hlei->logeventtype
-        || hlei->logdatalen != sizeof(*pcpes) + pcpes->eventdatasize) {
-        rc = TCG_INVALID_INPUT_PARA;
-        goto err_exit;
+        || hlei->logdatalen != परिमाण(*pcpes) + pcpes->eventdatasize) {
+        rc = TCG_INVALID_निवेशः_PARA;
+        गच्छ err_exit;
     }
     rc = hash_log_extend(pcpes, hlei->hashdataptr, hlei->hashdatalen
                          , pcpes->event, 0);
-    if (rc)
-        goto err_exit;
+    जइ (rc)
+        गच्छ err_exit;
 
     /* updating the log was fine */
-    hleo->opblength = sizeof(struct hleo);
+    hleo->opblength = परिमाण(संरचना hleo);
     hleo->reserved  = 0;
-    hleo->eventnumber = tpm_state.entry_count;
+    hleo->eventnumber = tpm_state.entry_गणनम्;
 
 err_exit:
-    if (rc != 0) {
+    जइ (rc != 0) {
         hleo->opblength = 2;
         hleo->reserved = 0;
     }
 
-    return rc;
+    प्रत्यागम rc;
 }
 
-static u32
-hash_all_int(const struct hai *hai, u8 *hash)
+स्थिर u32
+hash_all_int(ध्रुव संरचना hai *hai, u8 *hash)
 {
-    if (hai->ipblength != sizeof(struct hai) ||
+    जइ (hai->ipblength != परिमाण(संरचना hai) ||
         hai->hashdataptr == 0 ||
         hai->hashdatalen == 0 ||
         hai->algorithmid != TPM_ALG_SHA)
-        return TCG_INVALID_INPUT_PARA;
+        प्रत्यागम TCG_INVALID_निवेशः_PARA;
 
-    sha1((const u8 *)hai->hashdataptr, hai->hashdatalen, hash);
-    return 0;
+    sha1((ध्रुव u8 *)hai->hashdataptr, hai->hashdatalen, hash);
+    प्रत्यागम 0;
 }
 
-static u32
-tss_int(struct ti *ti, struct to *to)
+स्थिर u32
+tss_int(संरचना ti *ti, संरचना to *to)
 {
-    to->opblength = sizeof(struct to);
+    to->opblength = परिमाण(संरचना to);
     to->reserved  = 0;
 
-    return TCG_PC_UNSUPPORTED;
+    प्रत्यागम TCG_PC_UNSUPPORTED;
 }
 
-static u32
+स्थिर u32
 compact_hash_log_extend_event_int(u8 *buffer,
                                   u32 info,
                                   u32 length,
                                   u32 pcrindex,
                                   u32 *edx_ptr)
 {
-    struct pcpes pcpes = {
+    संरचना pcpes pcpes = {
         .pcrindex      = pcrindex,
         .eventtype     = EV_COMPACT_HASH,
-        .eventdatasize = sizeof(info),
+        .eventdatasize = परिमाण(info),
     };
     u32 rc = hash_log_extend(&pcpes, buffer, length, &info, 1);
-    if (rc)
-        return rc;
+    जइ (rc)
+        प्रत्यागम rc;
 
-    *edx_ptr = tpm_state.entry_count;
-    return 0;
+    *edx_ptr = tpm_state.entry_गणनम्;
+    प्रत्यागम 0;
 }
 
-void VISIBLE32FLAT
-tpm_interrupt_handler32(struct bregs *regs)
+शून्य VISIBLE32FLAT
+tpm_interrupt_handler32(संरचना bregs *regs)
 {
-    if (!CONFIG_TCGBIOS)
-        return;
+    जइ (!CONFIG_TCGBIOS)
+        प्रत्यागम;
 
     set_cf(regs, 0);
 
-    if (TPM_interface_shutdown && regs->al) {
+    जइ (TPM_interface_shutdown && regs->al) {
         regs->eax = TCG_INTERFACE_SHUTDOWN;
-        return;
+        प्रत्यागम;
     }
 
-    switch ((enum irq_ids)regs->al) {
-    case TCG_StatusCheck:
-        if (!tpmhw_is_present()) {
+    विकल्प ((गणना irq_ids)regs->al) {
+    पक्ष TCG_StatusCheck:
+        जइ (!tpmhw_is_present()) {
             /* no TPM available */
             regs->eax = TCG_PC_TPM_NOT_PRESENT;
-        } else {
+        } अण्णहा {
             regs->eax = 0;
             regs->ebx = TCG_MAGIC;
             regs->ch = TCG_VERSION_MAJOR;
@@ -1677,55 +1677,55 @@ tpm_interrupt_handler32(struct bregs *regs)
             regs->esi = (u32)tpm_state.log_area_start_address;
             regs->edi = (u32)tpm_state.log_area_last_entry;
         }
-        break;
+        भङ्ग;
 
-    case TCG_HashLogExtendEvent:
+    पक्ष TCG_HashLogExtendEvent:
         regs->eax =
             hash_log_extend_event_int(
-                  (struct hleei_short *)input_buf32(regs),
-                  (struct hleeo *)output_buf32(regs));
-        break;
+                  (संरचना hleei_short *)निवेशः_buf32(regs),
+                  (संरचना hleeo *)output_buf32(regs));
+        भङ्ग;
 
-    case TCG_PassThroughToTPM:
+    पक्ष TCG_PassThroughToTPM:
         regs->eax =
-            pass_through_to_tpm_int((struct pttti *)input_buf32(regs),
-                                    (struct pttto *)output_buf32(regs));
-        break;
+            pass_through_to_tpm_int((संरचना pttti *)निवेशः_buf32(regs),
+                                    (संरचना pttto *)output_buf32(regs));
+        भङ्ग;
 
-    case TCG_ShutdownPreBootInterface:
+    पक्ष TCG_ShutdownPreBootInterface:
         regs->eax = shutdown_preboot_interface();
-        break;
+        भङ्ग;
 
-    case TCG_HashLogEvent:
-        regs->eax = hash_log_event_int((struct hlei*)input_buf32(regs),
-                                       (struct hleo*)output_buf32(regs));
-        break;
+    पक्ष TCG_HashLogEvent:
+        regs->eax = hash_log_event_int((संरचना hlei*)निवेशः_buf32(regs),
+                                       (संरचना hleo*)output_buf32(regs));
+        भङ्ग;
 
-    case TCG_HashAll:
+    पक्ष TCG_HashAll:
         regs->eax =
-            hash_all_int((struct hai*)input_buf32(regs),
+            hash_all_int((संरचना hai*)निवेशः_buf32(regs),
                           (u8 *)output_buf32(regs));
-        break;
+        भङ्ग;
 
-    case TCG_TSS:
-        regs->eax = tss_int((struct ti*)input_buf32(regs),
-                            (struct to*)output_buf32(regs));
-        break;
+    पक्ष TCG_TSS:
+        regs->eax = tss_int((संरचना ti*)निवेशः_buf32(regs),
+                            (संरचना to*)output_buf32(regs));
+        भङ्ग;
 
-    case TCG_CompactHashLogExtendEvent:
+    पक्ष TCG_CompactHashLogExtendEvent:
         regs->eax =
-          compact_hash_log_extend_event_int((u8 *)input_buf32(regs),
+          compact_hash_log_extend_event_int((u8 *)निवेशः_buf32(regs),
                                             regs->esi,
                                             regs->ecx,
                                             regs->edx,
                                             &regs->edx);
-        break;
+        भङ्ग;
 
-    default:
+    स्वभाव:
         set_cf(regs, 1);
     }
 
-    return;
+    प्रत्यागम;
 }
 
 
@@ -1733,66 +1733,66 @@ tpm_interrupt_handler32(struct bregs *regs)
  * TPM Configuration Menu
  ****************************************************************/
 
-typedef u8 tpm_ppi_code;
+प्रकारनिर्देश u8 tpm_ppi_code;
 
-static int
-tpm12_read_has_owner(int *has_owner)
+स्थिर पूर्णाङ्क
+tpm12_read_has_owner(पूर्णाङ्क *has_owner)
 {
-    struct tpm_res_getcap_ownerauth oauth;
-    int ret = tpm12_get_capability(TPM_CAP_PROPERTY, TPM_CAP_PROP_OWNER
-                                   , &oauth.hdr, sizeof(oauth));
-    if (ret)
-        return -1;
+    संरचना tpm_res_getcap_ownerauth oauth;
+    पूर्णाङ्क ret = tpm12_get_capability(TPM_CAP_PROPERTY, TPM_CAP_PROP_OWNER
+                                   , &oauth.hdr, परिमाण(oauth));
+    जइ (ret)
+        प्रत्यागम -1;
 
     *has_owner = oauth.flag;
 
-    return 0;
+    प्रत्यागम 0;
 }
 
-static int
-tpm12_enable_tpm(int enable, int verbose)
+स्थिर पूर्णाङ्क
+tpm12_enable_tpm(पूर्णाङ्क enable, पूर्णाङ्क verbose)
 {
-    struct tpm_permanent_flags pf;
-    int ret = tpm12_read_permanent_flags((char *)&pf, sizeof(pf));
-    if (ret)
-        return -1;
+    संरचना tpm_permanent_flags pf;
+    पूर्णाङ्क ret = tpm12_read_permanent_flags((वर्ण *)&pf, परिमाण(pf));
+    जइ (ret)
+        प्रत्यागम -1;
 
-    if (pf.flags[PERM_FLAG_IDX_DISABLE] && !enable)
-        return 0;
+    जइ (pf.flags[PERM_FLAG_IDX_DISABLE] && !enable)
+        प्रत्यागम 0;
 
     ret = tpm_simple_cmd(0, enable ? TPM_ORD_PhysicalEnable
                                    : TPM_ORD_PhysicalDisable,
                          0, 0, TPM_DURATION_TYPE_SHORT);
-    if (ret) {
-        if (enable)
+    जइ (ret) {
+        जइ (enable)
             dprintf(DEBUG_tcg, "TCGBIOS: Enabling the TPM failed.\n");
-        else
+        अण्णहा
             dprintf(DEBUG_tcg, "TCGBIOS: Disabling the TPM failed.\n");
     }
-    return ret;
+    प्रत्यागम ret;
 }
 
-static int
-tpm12_activate_tpm(int activate, int allow_reset, int verbose)
+स्थिर पूर्णाङ्क
+tpm12_activate_tpm(पूर्णाङ्क activate, पूर्णाङ्क allow_reset, पूर्णाङ्क verbose)
 {
-    struct tpm_permanent_flags pf;
-    int ret = tpm12_read_permanent_flags((char *)&pf, sizeof(pf));
-    if (ret)
-        return -1;
+    संरचना tpm_permanent_flags pf;
+    पूर्णाङ्क ret = tpm12_read_permanent_flags((वर्ण *)&pf, परिमाण(pf));
+    जइ (ret)
+        प्रत्यागम -1;
 
-    if (pf.flags[PERM_FLAG_IDX_DEACTIVATED] && !activate)
-        return 0;
+    जइ (pf.flags[PERM_FLAG_IDX_DEACTIVATED] && !activate)
+        प्रत्यागम 0;
 
-    if (pf.flags[PERM_FLAG_IDX_DISABLE])
-        return 0;
+    जइ (pf.flags[PERM_FLAG_IDX_DISABLE])
+        प्रत्यागम 0;
 
     ret = tpm_simple_cmd(0, TPM_ORD_PhysicalSetDeactivated,
                          1, activate ? 0x00 : 0x01, TPM_DURATION_TYPE_SHORT);
-    if (ret)
-        return ret;
+    जइ (ret)
+        प्रत्यागम ret;
 
-    if (activate && allow_reset) {
-        if (verbose) {
+    जइ (activate && allow_reset) {
+        जइ (verbose) {
             printf("Requiring a reboot to activate the TPM.\n");
 
             msleep(2000);
@@ -1800,148 +1800,148 @@ tpm12_activate_tpm(int activate, int allow_reset, int verbose)
         reset();
     }
 
-    return 0;
+    प्रत्यागम 0;
 }
 
-static int
-tpm12_enable_activate(int allow_reset, int verbose)
+स्थिर पूर्णाङ्क
+tpm12_enable_activate(पूर्णाङ्क allow_reset, पूर्णाङ्क verbose)
 {
-    int ret = tpm12_enable_tpm(1, verbose);
-    if (ret)
-        return ret;
+    पूर्णाङ्क ret = tpm12_enable_tpm(1, verbose);
+    जइ (ret)
+        प्रत्यागम ret;
 
-    return tpm12_activate_tpm(1, allow_reset, verbose);
+    प्रत्यागम tpm12_activate_tpm(1, allow_reset, verbose);
 }
 
-static int
-tpm12_force_clear(int enable_activate_before, int enable_activate_after,
-                  int verbose)
+स्थिर पूर्णाङ्क
+tpm12_force_clear(पूर्णाङ्क enable_activate_before, पूर्णाङ्क enable_activate_after,
+                  पूर्णाङ्क verbose)
 {
-    int has_owner;
-    int ret = tpm12_read_has_owner(&has_owner);
-    if (ret)
-        return -1;
-    if (!has_owner) {
-        if (verbose)
+    पूर्णाङ्क has_owner;
+    पूर्णाङ्क ret = tpm12_read_has_owner(&has_owner);
+    जइ (ret)
+        प्रत्यागम -1;
+    जइ (!has_owner) {
+        जइ (verbose)
             printf("TPM does not have an owner.\n");
-        return 0;
+        प्रत्यागम 0;
     }
 
-    if (enable_activate_before) {
+    जइ (enable_activate_before) {
         ret = tpm12_enable_activate(0, verbose);
-        if (ret) {
+        जइ (ret) {
             dprintf(DEBUG_tcg,
                     "TCGBIOS: Enabling/activating the TPM failed.\n");
-            return ret;
+            प्रत्यागम ret;
         }
     }
 
     ret = tpm_simple_cmd(0, TPM_ORD_ForceClear,
                          0, 0, TPM_DURATION_TYPE_SHORT);
-    if (ret)
-        return ret;
+    जइ (ret)
+        प्रत्यागम ret;
 
-    if (!enable_activate_after) {
-        if (verbose)
+    जइ (!enable_activate_after) {
+        जइ (verbose)
             printf("Owner successfully cleared.\n"
                    "You will need to enable/activate the TPM again.\n\n");
-        return 0;
+        प्रत्यागम 0;
     }
 
-    return tpm12_enable_activate(1, verbose);
+    प्रत्यागम tpm12_enable_activate(1, verbose);
 }
 
-static int
-tpm12_set_owner_install(int allow, int verbose)
+स्थिर पूर्णाङ्क
+tpm12_set_owner_install(पूर्णाङ्क allow, पूर्णाङ्क verbose)
 {
-    int has_owner;
-    int ret = tpm12_read_has_owner(&has_owner);
-    if (ret)
-        return -1;
-    if (has_owner) {
-        if (verbose)
+    पूर्णाङ्क has_owner;
+    पूर्णाङ्क ret = tpm12_read_has_owner(&has_owner);
+    जइ (ret)
+        प्रत्यागम -1;
+    जइ (has_owner) {
+        जइ (verbose)
             printf("Must first remove owner.\n");
-        return 0;
+        प्रत्यागम 0;
     }
 
-    struct tpm_permanent_flags pf;
-    ret = tpm12_read_permanent_flags((char *)&pf, sizeof(pf));
-    if (ret)
-        return -1;
+    संरचना tpm_permanent_flags pf;
+    ret = tpm12_read_permanent_flags((वर्ण *)&pf, परिमाण(pf));
+    जइ (ret)
+        प्रत्यागम -1;
 
-    if (pf.flags[PERM_FLAG_IDX_DISABLE]) {
-        if (verbose)
+    जइ (pf.flags[PERM_FLAG_IDX_DISABLE]) {
+        जइ (verbose)
             printf("TPM must first be enable.\n");
-        return 0;
+        प्रत्यागम 0;
     }
 
     ret = tpm_simple_cmd(0, TPM_ORD_SetOwnerInstall,
                          1, allow ? 0x01 : 0x00, TPM_DURATION_TYPE_SHORT);
-    if (ret)
-        return ret;
+    जइ (ret)
+        प्रत्यागम ret;
 
-    if (verbose)
+    जइ (verbose)
         printf("Installation of owner %s.\n", allow ? "enabled" : "disabled");
 
-    return 0;
+    प्रत्यागम 0;
 }
 
-static int
-tpm12_process_cfg(tpm_ppi_code msgCode, int verbose)
+स्थिर पूर्णाङ्क
+tpm12_process_cfg(tpm_ppi_code सन्देशः_Code, पूर्णाङ्क verbose)
 {
-    int ret = 0;
+    पूर्णाङ्क ret = 0;
 
-    switch (msgCode) {
-        case TPM_PPI_OP_NOOP: /* no-op */
-            break;
+    विकल्प (सन्देशः_Code) {
+        पक्ष TPM_PPI_OP_NOOP: /* no-op */
+            भङ्ग;
 
-        case TPM_PPI_OP_ENABLE:
+        पक्ष TPM_PPI_OP_ENABLE:
             ret = tpm12_enable_tpm(1, verbose);
-            break;
+            भङ्ग;
 
-        case TPM_PPI_OP_DISABLE:
+        पक्ष TPM_PPI_OP_DISABLE:
             ret = tpm12_enable_tpm(0, verbose);
-            break;
+            भङ्ग;
 
-        case TPM_PPI_OP_ACTIVATE:
+        पक्ष TPM_PPI_OP_ACTIVATE:
             ret = tpm12_activate_tpm(1, 1, verbose);
-            break;
+            भङ्ग;
 
-        case TPM_PPI_OP_DEACTIVATE:
+        पक्ष TPM_PPI_OP_DEACTIVATE:
             ret = tpm12_activate_tpm(0, 1, verbose);
-            break;
+            भङ्ग;
 
-        case TPM_PPI_OP_CLEAR:
+        पक्ष TPM_PPI_OP_CLEAR:
             ret = tpm12_force_clear(1, 0, verbose);
-            break;
+            भङ्ग;
 
-        case TPM_PPI_OP_SET_OWNERINSTALL_TRUE:
+        पक्ष TPM_PPI_OP_SET_OWNERINSTALL_TRUE:
             ret = tpm12_set_owner_install(1, verbose);
-            break;
+            भङ्ग;
 
-        case TPM_PPI_OP_SET_OWNERINSTALL_FALSE:
+        पक्ष TPM_PPI_OP_SET_OWNERINSTALL_FALSE:
             ret = tpm12_set_owner_install(0, verbose);
-            break;
+            भङ्ग;
 
-        default:
-            break;
+        स्वभाव:
+            भङ्ग;
     }
 
-    if (ret)
-        printf("Op %d: An error occurred: 0x%x\n", msgCode, ret);
+    जइ (ret)
+        printf("Op %d: An error occurred: 0x%x\n", सन्देशः_Code, ret);
 
-    return ret;
+    प्रत्यागम ret;
 }
 
-static int
-tpm20_clearcontrol(u8 disable, int verbose)
+स्थिर पूर्णाङ्क
+tpm20_clearcontrol(u8 disable, पूर्णाङ्क verbose)
 {
-    struct tpm2_req_clearcontrol trc = {
+    संरचना tpm2_req_clearcontrol trc = {
         .hdr.tag     = cpu_to_be16(TPM2_ST_SESSIONS),
-        .hdr.totlen  = cpu_to_be32(sizeof(trc)),
+        .hdr.totlen  = cpu_to_be32(परिमाण(trc)),
         .hdr.ordinal = cpu_to_be32(TPM2_CC_ClearControl),
         .authhandle = cpu_to_be32(TPM2_RH_PLATFORM),
-        .authblocksize = cpu_to_be32(sizeof(trc.authblock)),
+        .authblocksize = cpu_to_be32(परिमाण(trc.authblock)),
         .authblock = {
             .handle = cpu_to_be32(TPM2_RS_PW),
             .noncesize = cpu_to_be16(0),
@@ -1950,28 +1950,28 @@ tpm20_clearcontrol(u8 disable, int verbose)
         },
         .disable = disable,
     };
-    struct tpm_rsp_header rsp;
-    u32 resp_length = sizeof(rsp);
-    int ret = tpmhw_transmit(0, &trc.hdr, &rsp, &resp_length,
+    संरचना tpm_rsp_header rsp;
+    u32 resp_length = परिमाण(rsp);
+    पूर्णाङ्क ret = tpmhw_transmit(0, &trc.hdr, &rsp, &resp_length,
                              TPM_DURATION_TYPE_SHORT);
-    if (ret || resp_length != sizeof(rsp) || rsp.errcode)
+    जइ (ret || resp_length != परिमाण(rsp) || rsp.errcode)
         ret = -1;
 
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_ClearControl = 0x%08x\n",
             ret);
 
-    return ret;
+    प्रत्यागम ret;
 }
 
-static int
-tpm20_clear(void)
+स्थिर पूर्णाङ्क
+tpm20_clear(शून्य)
 {
-    struct tpm2_req_clear trq = {
+    संरचना tpm2_req_clear trq = {
         .hdr.tag     = cpu_to_be16(TPM2_ST_SESSIONS),
-        .hdr.totlen  = cpu_to_be32(sizeof(trq)),
+        .hdr.totlen  = cpu_to_be32(परिमाण(trq)),
         .hdr.ordinal = cpu_to_be32(TPM2_CC_Clear),
         .authhandle = cpu_to_be32(TPM2_RH_PLATFORM),
-        .authblocksize = cpu_to_be32(sizeof(trq.authblock)),
+        .authblocksize = cpu_to_be32(परिमाण(trq.authblock)),
         .authblock = {
             .handle = cpu_to_be32(TPM2_RS_PW),
             .noncesize = cpu_to_be16(0),
@@ -1979,128 +1979,128 @@ tpm20_clear(void)
             .pwdsize = cpu_to_be16(0),
         },
     };
-    struct tpm_rsp_header rsp;
-    u32 resp_length = sizeof(rsp);
-    int ret = tpmhw_transmit(0, &trq.hdr, &rsp, &resp_length,
+    संरचना tpm_rsp_header rsp;
+    u32 resp_length = परिमाण(rsp);
+    पूर्णाङ्क ret = tpmhw_transmit(0, &trq.hdr, &rsp, &resp_length,
                              TPM_DURATION_TYPE_MEDIUM);
-    if (ret || resp_length != sizeof(rsp) || rsp.errcode)
+    जइ (ret || resp_length != परिमाण(rsp) || rsp.errcode)
         ret = -1;
 
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_Clear = 0x%08x\n",
             ret);
 
-    return ret;
+    प्रत्यागम ret;
 }
 
-static int
-tpm20_process_cfg(tpm_ppi_code msgCode, int verbose)
+स्थिर पूर्णाङ्क
+tpm20_process_cfg(tpm_ppi_code सन्देशः_Code, पूर्णाङ्क verbose)
 {
-    int ret = 0;
+    पूर्णाङ्क ret = 0;
 
-    switch (msgCode) {
-        case TPM_PPI_OP_NOOP: /* no-op */
-            break;
+    विकल्प (सन्देशः_Code) {
+        पक्ष TPM_PPI_OP_NOOP: /* no-op */
+            भङ्ग;
 
-        case TPM_PPI_OP_CLEAR:
+        पक्ष TPM_PPI_OP_CLEAR:
             ret = tpm20_clearcontrol(0, verbose);
-            if (!ret)
+            जइ (!ret)
                  ret = tpm20_clear();
-            break;
+            भङ्ग;
     }
 
-    if (ret)
-        printf("Op %d: An error occurred: 0x%x\n", msgCode, ret);
+    जइ (ret)
+        printf("Op %d: An error occurred: 0x%x\n", सन्देशः_Code, ret);
 
-    return ret;
+    प्रत्यागम ret;
 }
 
-static int
-tpm12_get_tpm_state(void)
+स्थिर पूर्णाङ्क
+tpm12_get_tpm_state(शून्य)
 {
-    int state = 0;
-    struct tpm_permanent_flags pf;
-    int has_owner;
+    पूर्णाङ्क state = 0;
+    संरचना tpm_permanent_flags pf;
+    पूर्णाङ्क has_owner;
 
-    if (tpm12_read_permanent_flags((char *)&pf, sizeof(pf)) ||
+    जइ (tpm12_read_permanent_flags((वर्ण *)&pf, परिमाण(pf)) ||
         tpm12_read_has_owner(&has_owner))
-        return ~0;
+        प्रत्यागम ~0;
 
-    if (!pf.flags[PERM_FLAG_IDX_DISABLE])
+    जइ (!pf.flags[PERM_FLAG_IDX_DISABLE])
         state |= TPM_STATE_ENABLED;
 
-    if (!pf.flags[PERM_FLAG_IDX_DEACTIVATED])
+    जइ (!pf.flags[PERM_FLAG_IDX_DEACTIVATED])
         state |= TPM_STATE_ACTIVE;
 
-    if (has_owner) {
+    जइ (has_owner) {
         state |= TPM_STATE_OWNED;
-    } else {
-        if (pf.flags[PERM_FLAG_IDX_OWNERSHIP])
+    } अण्णहा {
+        जइ (pf.flags[PERM_FLAG_IDX_OWNERSHIP])
             state |= TPM_STATE_OWNERINSTALL;
     }
 
-    return state;
+    प्रत्यागम state;
 }
 
-static void
-tpm12_show_tpm_menu(int state, int next_scancodes[7])
+स्थिर शून्य
+tpm12_show_tpm_menu(पूर्णाङ्क state, पूर्णाङ्क next_scancodes[7])
 {
-    int i = 0;
+    पूर्णाङ्क i = 0;
 
     printf("\nThe current state of the TPM is:\n");
 
-    if (state & TPM_STATE_ENABLED)
+    जइ (state & TPM_STATE_ENABLED)
         printf("  Enabled");
-    else
+    अण्णहा
         printf("  Disabled");
 
-    if (state & TPM_STATE_ACTIVE)
+    जइ (state & TPM_STATE_ACTIVE)
         printf(" and active\n");
-    else
+    अण्णहा
         printf(" and deactivated\n");
 
-    if (state & TPM_STATE_OWNED)
+    जइ (state & TPM_STATE_OWNED)
         printf("  Ownership has been taken\n");
-    else {
+    अण्णहा {
         printf("  Ownership has not been taken\n");
-        if (state & TPM_STATE_OWNERINSTALL)
+        जइ (state & TPM_STATE_OWNERINSTALL)
             printf("  A user can take ownership of the TPM\n");
-        else
+        अण्णहा
             printf("  Taking ownership of the TPM has been disabled\n");
     }
 
-    if ((state & (TPM_STATE_ENABLED | TPM_STATE_ACTIVE)) !=
+    जइ ((state & (TPM_STATE_ENABLED | TPM_STATE_ACTIVE)) !=
         (TPM_STATE_ENABLED | TPM_STATE_ACTIVE)) {
         printf("\nNote: To make use of all functionality, the TPM must be "
                "enabled and active.\n");
     }
 
     printf("\nAvailable options are:\n");
-    if (state & TPM_STATE_ENABLED) {
+    जइ (state & TPM_STATE_ENABLED) {
         printf(" d. Disable the TPM\n");
         next_scancodes[i++] = 32;
 
-        if (state & TPM_STATE_ACTIVE) {
+        जइ (state & TPM_STATE_ACTIVE) {
             printf(" v. Deactivate the TPM\n");
             next_scancodes[i++] = 47;
 
-            if (state & TPM_STATE_OWNERINSTALL) {
+            जइ (state & TPM_STATE_OWNERINSTALL) {
                 printf(" p. Prevent installation of an owner\n");
                 next_scancodes[i++] = 25;
-            } else {
+            } अण्णहा {
                 printf(" s. Allow installation of an owner\n");
                 next_scancodes[i++] = 31;
             }
-        } else {
+        } अण्णहा {
             printf(" a. Activate the TPM\n");
             next_scancodes[i++] = 30;
         }
 
-    } else {
+    } अण्णहा {
         printf(" e. Enable the TPM\n");
         next_scancodes[i++] = 18;
     }
 
-    if (state & TPM_STATE_OWNED) {
+    जइ (state & TPM_STATE_OWNED) {
         printf(" c. Clear ownership\n");
         next_scancodes[i++] = 46;
     }
@@ -2108,88 +2108,88 @@ tpm12_show_tpm_menu(int state, int next_scancodes[7])
     next_scancodes[i++] = 0;
 }
 
-static void
-tpm12_menu(void)
+स्थिर शून्य
+tpm12_menu(शून्य)
 {
-    int scancode, next_scancodes[7];
-    tpm_ppi_code msgCode;
-    int state = 0, i;
-    int waitkey;
+    पूर्णाङ्क scancode, next_scancodes[7];
+    tpm_ppi_code सन्देशः_Code;
+    पूर्णाङ्क state = 0, i;
+    पूर्णाङ्क waitkey;
 
     printf("The Trusted Platform Module (TPM) is a hardware device in "
            "this machine.\n"
            "It can help verify the integrity of system software.\n\n");
 
-    for (;;) {
-        if ((state = tpm12_get_tpm_state()) != ~0) {
+    प्रति (;;) {
+        जइ ((state = tpm12_get_tpm_state()) != ~0) {
             tpm12_show_tpm_menu(state, next_scancodes);
-        } else {
+        } अण्णहा {
             printf("TPM is not working correctly.\n");
-            return;
+            प्रत्यागम;
         }
 
         printf("\nIf no change is desired or if this menu was reached by "
                "mistake, press ESC to\n"
                "reboot the machine.\n");
 
-        msgCode = TPM_PPI_OP_NOOP;
+        सन्देशः_Code = TPM_PPI_OP_NOOP;
 
         waitkey = 1;
 
-        while (waitkey) {
-            while ((scancode = get_keystroke(1000)) == ~0)
+        जाव (waitkey) {
+            जाव ((scancode = get_keystroke(1000)) == ~0)
                 ;
 
-            switch (scancode) {
-            case 1:
+            विकल्प (scancode) {
+            पक्ष 1:
                 // ESC
                 reset();
-                break;
-            case 18: /* e. enable */
-                msgCode = TPM_PPI_OP_ENABLE;
-                break;
-            case 32: /* d. disable */
-                msgCode = TPM_PPI_OP_DISABLE;
-                break;
-            case 30: /* a. activate */
-                msgCode = TPM_PPI_OP_ACTIVATE;
-                break;
-            case 47: /* v. deactivate */
-                msgCode = TPM_PPI_OP_DEACTIVATE;
-                break;
-            case 46: /* c. clear owner */
-                msgCode = TPM_PPI_OP_CLEAR;
-                break;
-            case 25: /* p. prevent ownerinstall */
-                msgCode = TPM_PPI_OP_SET_OWNERINSTALL_FALSE;
-                break;
-            case 31: /* s. allow ownerinstall */
-                msgCode = TPM_PPI_OP_SET_OWNERINSTALL_TRUE;
-                break;
-            default:
-                continue;
+                भङ्ग;
+            पक्ष 18: /* e. enable */
+                सन्देशः_Code = TPM_PPI_OP_ENABLE;
+                भङ्ग;
+            पक्ष 32: /* d. disable */
+                सन्देशः_Code = TPM_PPI_OP_DISABLE;
+                भङ्ग;
+            पक्ष 30: /* a. activate */
+                सन्देशः_Code = TPM_PPI_OP_ACTIVATE;
+                भङ्ग;
+            पक्ष 47: /* v. deactivate */
+                सन्देशः_Code = TPM_PPI_OP_DEACTIVATE;
+                भङ्ग;
+            पक्ष 46: /* c. clear owner */
+                सन्देशः_Code = TPM_PPI_OP_CLEAR;
+                भङ्ग;
+            पक्ष 25: /* p. prevent ownerinstall */
+                सन्देशः_Code = TPM_PPI_OP_SET_OWNERINSTALL_FALSE;
+                भङ्ग;
+            पक्ष 31: /* s. allow ownerinstall */
+                सन्देशः_Code = TPM_PPI_OP_SET_OWNERINSTALL_TRUE;
+                भङ्ग;
+            स्वभाव:
+                अनुवर्त;
             }
 
             /*
              * Using the next_scancodes array, check whether the
              * pressed key is currently a valid option.
              */
-            for (i = 0; i < sizeof(next_scancodes); i++) {
-                if (next_scancodes[i] == 0)
-                    break;
+            प्रति (i = 0; i < परिमाण(next_scancodes); i++) {
+                जइ (next_scancodes[i] == 0)
+                    भङ्ग;
 
-                if (next_scancodes[i] == scancode) {
-                    tpm12_process_cfg(msgCode, 1);
+                जइ (next_scancodes[i] == scancode) {
+                    tpm12_process_cfg(सन्देशः_Code, 1);
                     waitkey = 0;
-                    break;
+                    भङ्ग;
                 }
             }
         }
     }
 }
 
-static int
-tpm20_menu_change_active_pcrbanks(void)
+स्थिर पूर्णाङ्क
+tpm20_menu_change_active_pcrbanks(शून्य)
 {
     u8 active_banks, suppt_banks;
 
@@ -2197,20 +2197,20 @@ tpm20_menu_change_active_pcrbanks(void)
 
     u8 activate_banks = active_banks;
 
-    while (1) {
+    जाव (1) {
         u8 hashalg_flag = TPM2_ALG_SHA1_FLAG;
         u8 i = 0;
 
         printf("\nToggle active PCR banks by pressing number key\n\n");
 
-        while (hashalg_flag) {
+        जाव (hashalg_flag) {
             u8 flag = hashalg_flag & suppt_banks;
-            const char *hashname = tpm20_hashalg_flag_to_name(flag);
+            ध्रुव वर्ण *hashname = tpm20_hashalg_flag_to_name(flag);
 
             i++;
-            if (hashname) {
+            जइ (hashname) {
                 printf("  %d: %s", i, hashname);
-                if (activate_banks & hashalg_flag)
+                जइ (activate_banks & hashalg_flag)
                     printf(" (enabled)");
                 printf("\n");
             }
@@ -2219,44 +2219,44 @@ tpm20_menu_change_active_pcrbanks(void)
         }
         printf("\n"
                "ESC: return to previous menu without changes\n");
-        if (activate_banks)
+        जइ (activate_banks)
             printf("A  : activate selection\n");
 
         u8 flagnum;
-        int show = 0;
-        while (!show) {
-            int scancode = get_keystroke(1000);
+        पूर्णाङ्क show = 0;
+        जाव (!show) {
+            पूर्णाङ्क scancode = get_keystroke(1000);
 
-            switch (scancode) {
-            case ~0:
-                continue;
-            case 1: /* ESC */
+            विकल्प (scancode) {
+            पक्ष ~0:
+                अनुवर्त;
+            पक्ष 1: /* ESC */
                 printf("\n");
-                return -1;
-            case 2 ... 6: /* keys 1 .. 5 */
+                प्रत्यागम -1;
+            पक्ष 2 ... 6: /* keys 1 .. 5 */
                 flagnum = scancode - 1;
-                if (flagnum > i)
-                    continue;
-                if (suppt_banks & (1 << (flagnum - 1))) {
+                जइ (flagnum > i)
+                    अनुवर्त;
+                जइ (suppt_banks & (1 << (flagnum - 1))) {
                     activate_banks ^= 1 << (flagnum - 1);
                     show = 1;
                 }
-                break;
-            case 30: /* a */
-                if (activate_banks)
+                भङ्ग;
+            पक्ष 30: /* a */
+                जइ (activate_banks)
                     tpm20_activate_pcrbanks(activate_banks);
             }
         }
     }
 }
 
-static void
-tpm20_menu(void)
+स्थिर शून्य
+tpm20_menu(शून्य)
 {
-    int scan_code;
-    tpm_ppi_code msgCode;
+    पूर्णाङ्क scan_code;
+    tpm_ppi_code सन्देशः_Code;
 
-    for (;;) {
+    प्रति (;;) {
         printf("1. Clear TPM\n");
         printf("2. Change active PCR banks\n");
 
@@ -2264,58 +2264,58 @@ tpm20_menu(void)
                "mistake, press ESC to\n"
                "reboot the machine.\n");
 
-        msgCode = TPM_PPI_OP_NOOP;
+        सन्देशः_Code = TPM_PPI_OP_NOOP;
 
-        while ((scan_code = get_keystroke(1000)) == ~0)
+        जाव ((scan_code = get_keystroke(1000)) == ~0)
             ;
 
-        switch (scan_code) {
-        case 1:
+        विकल्प (scan_code) {
+        पक्ष 1:
             // ESC
             reset();
-            break;
-        case 2:
-            msgCode = TPM_PPI_OP_CLEAR;
-            break;
-        case 3:
+            भङ्ग;
+        पक्ष 2:
+            सन्देशः_Code = TPM_PPI_OP_CLEAR;
+            भङ्ग;
+        पक्ष 3:
             tpm20_menu_change_active_pcrbanks();
-            continue;
-        default:
-            continue;
+            अनुवर्त;
+        स्वभाव:
+            अनुवर्त;
         }
 
-        tpm20_process_cfg(msgCode, 0);
+        tpm20_process_cfg(सन्देशः_Code, 0);
     }
 }
 
-void
-tpm_menu(void)
+शून्य
+tpm_menu(शून्य)
 {
-    if (!CONFIG_TCGBIOS)
-        return;
+    जइ (!CONFIG_TCGBIOS)
+        प्रत्यागम;
 
-    while (get_keystroke(0) >= 0)
+    जाव (get_keystroke(0) >= 0)
         ;
     wait_threads();
 
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
+    विकल्प (TPM_version) {
+    पक्ष TPM_VERSION_1_2:
         tpm12_menu();
-        break;
-    case TPM_VERSION_2:
+        भङ्ग;
+    पक्ष TPM_VERSION_2:
         tpm20_menu();
-        break;
+        भङ्ग;
     }
 }
 
-int
-tpm_can_show_menu(void)
+पूर्णाङ्क
+tpm_can_show_menu(शून्य)
 {
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
-        return tpm_is_working() && TPM_has_physical_presence;
-    case TPM_VERSION_2:
-        return tpm_is_working();
+    विकल्प (TPM_version) {
+    पक्ष TPM_VERSION_1_2:
+        प्रत्यागम tpm_is_working() && TPM_has_physical_presence;
+    पक्ष TPM_VERSION_2:
+        प्रत्यागम tpm_is_working();
     }
-    return 0;
+    प्रत्यागम 0;
 }
