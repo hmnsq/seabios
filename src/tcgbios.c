@@ -9,29 +9,29 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "bregs.h" // struct bregs
-#include "byteorder.h" // cpu_to_*
-#include "config.h" // CONFIG_TCGBIOS
-#include "farptr.h" // MAKE_FLATPTR
-#include "fw/paravirt.h" // runningOnXen
-#include "hw/tpm_drivers.h" // tpm_drivers[]
-#include "output.h" // dprintf
-#include "sha.h" // sha1, sha256, ...
-#include "std/acpi.h"  // RSDP_SIGNATURE, rsdt_descriptor
-#include "std/smbios.h" // struct smbios_21_entry_point
-#include "std/tcg.h" // TCG_PC_LOGOVERFLOW
-#include "string.h" // checksum
-#include "tcgbios.h"// tpm_*, prototypes
-#include "util.h" // printf, get_keystroke
-#include "stacks.h" // wait_threads, reset
-#include "malloc.h" // malloc_high
+#ضمن "bregs.h" // struct bregs
+#ضمن "byteorder.h" // cpu_to_*
+#ضمن "config.h" // CONFIG_TCGBIOS
+#ضمن "farptr.h" // MAKE_FLATPTR
+#ضمن "fw/paravirt.h" // runningOnXen
+#ضمن "hw/tpm_drivers.h" // tpm_drivers[]
+#ضمن "output.h" // dprintf
+#ضمن "sha.h" // sha1, sha256, ...
+#ضمن "std/acpi.h"  // RSDP_SIGNATURE, rsdt_descriptor
+#ضمن "std/smbios.h" // struct smbios_21_entry_point
+#ضمن "std/tcg.h" // TCG_PC_LOGOVERFLOW
+#ضمن "string.h" // checksum
+#ضمن "tcgbios.h"// tpm_*, prototypes
+#ضمن "util.h" // printf, get_keystroke
+#ضمن "stacks.h" // wait_threads, reset
+#ضمن "malloc.h" // malloc_high
 
 
 /****************************************************************
  * ACPI TCPA table interface
  ****************************************************************/
 
-struct {
+بنية {
     /* length of the TCPA log buffer */
     u32           log_area_minimum_length;
 
@@ -39,7 +39,7 @@ struct {
     u8 *          log_area_start_address;
 
     /* number of log entries written */
-    u32           entry_count;
+    u32           entry_كدي;
 
     /* address to write next log entry to */
     u8 *          log_area_next_entry;
@@ -48,51 +48,51 @@ struct {
     u8 *          log_area_last_entry;
 } tpm_state VARLOW;
 
-static int tpm_set_log_area(u8 *log_area_start_address,
+ساكن صحيح tpm_set_log_area(u8 *log_area_start_address,
                             u32 log_area_minimum_length)
 {
-    if (!log_area_start_address || !log_area_minimum_length)
-        return -1;
+    إذا (!log_area_start_address || !log_area_minimum_length)
+        أرجع -1;
 
     memset(log_area_start_address, 0, log_area_minimum_length);
     tpm_state.log_area_start_address = log_area_start_address;
     tpm_state.log_area_minimum_length = log_area_minimum_length;
     tpm_state.log_area_next_entry = log_area_start_address;
-    tpm_state.log_area_last_entry = NULL;
-    tpm_state.entry_count = 0;
-    return 0;
+    tpm_state.log_area_last_entry = عدم;
+    tpm_state.entry_كدي = 0;
+    أرجع 0;
 }
 
-static int
-tpm_tcpa_probe(void)
+ساكن صحيح
+tpm_tcpa_probe(فراغ)
 {
-    struct tcpa_descriptor_rev2 *tcpa = find_acpi_table(TCPA_SIGNATURE);
-    if (!tcpa)
-        return -1;
+    بنية tcpa_descriptor_rev2 *tcpa = find_acpi_table(TCPA_SIGNATURE);
+    إذا (!tcpa)
+        أرجع -1;
 
     dprintf(DEBUG_tcg, "TCGBIOS: TCPA: LASA = %p, LAML = %u\n",
             (u8 *)(long)tcpa->log_area_start_address,
             tcpa->log_area_minimum_length);
 
-    return tpm_set_log_area((u8*)(long)tcpa->log_area_start_address,
+    أرجع tpm_set_log_area((u8*)(long)tcpa->log_area_start_address,
                             tcpa->log_area_minimum_length);
 }
 
-static int
-tpm_tpm2_probe(void)
+ساكن صحيح
+tpm_tpm2_probe(فراغ)
 {
-    struct tpm2_descriptor_rev2 *tpm2 = find_acpi_table(TPM2_SIGNATURE);
-    if (!tpm2)
-        return -1;
+    بنية tpm2_descriptor_rev2 *tpm2 = find_acpi_table(TPM2_SIGNATURE);
+    إذا (!tpm2)
+        أرجع -1;
 
-    if (tpm2->length < 76)
-        return -1;
+    إذا (tpm2->length < 76)
+        أرجع -1;
 
     dprintf(DEBUG_tcg, "TCGBIOS: TPM2: LASA = %p, LAML = %u\n",
             (u8 *)(long)tpm2->log_area_start_address,
             tpm2->log_area_minimum_length);
 
-    return tpm_set_log_area((u8*)(long)tpm2->log_area_start_address,
+    أرجع tpm_set_log_area((u8*)(long)tpm2->log_area_start_address,
                             tpm2->log_area_minimum_length);
 }
 
@@ -108,36 +108,36 @@ tpm_tpm2_probe(void)
  * Output:
  *  Returns an error code in case of faiure, 0 in case of success
  */
-static int
-tpm_log_event(struct tpm_log_header *entry, int digest_len
-              , const void *event, int event_len)
+ساكن صحيح
+tpm_log_event(بنية tpm_log_header *entry, صحيح digest_len
+              , ثابت فراغ *event, صحيح event_len)
 {
     dprintf(DEBUG_tcg, "TCGBIOS: LASA = %p, next entry = %p\n",
             tpm_state.log_area_start_address, tpm_state.log_area_next_entry);
 
-    if (tpm_state.log_area_next_entry == NULL)
-        return -1;
+    إذا (tpm_state.log_area_next_entry == عدم)
+        أرجع -1;
 
-    u32 size = (sizeof(*entry) + digest_len
-                + sizeof(struct tpm_log_trailer) + event_len);
+    u32 size = (حجم(*entry) + digest_len
+                + حجم(بنية tpm_log_trailer) + event_len);
     u32 logsize = (tpm_state.log_area_next_entry + size
                    - tpm_state.log_area_start_address);
-    if (logsize > tpm_state.log_area_minimum_length) {
+    إذا (logsize > tpm_state.log_area_minimum_length) {
         dprintf(DEBUG_tcg, "TCGBIOS: LOG OVERFLOW: size = %d\n", size);
-        return -1;
+        أرجع -1;
     }
 
-    void *dest = tpm_state.log_area_next_entry;
-    memcpy(dest, entry, sizeof(*entry) + digest_len);
-    struct tpm_log_trailer *t = dest + sizeof(*entry) + digest_len;
+    فراغ *dest = tpm_state.log_area_next_entry;
+    memcpy(dest, entry, حجم(*entry) + digest_len);
+    بنية tpm_log_trailer *t = dest + حجم(*entry) + digest_len;
     t->eventdatasize = event_len;
     memcpy(t->event, event, event_len);
 
     tpm_state.log_area_last_entry = tpm_state.log_area_next_entry;
     tpm_state.log_area_next_entry += size;
-    tpm_state.entry_count++;
+    tpm_state.entry_كدي++;
 
-    return 0;
+    أرجع 0;
 }
 
 
@@ -145,29 +145,29 @@ tpm_log_event(struct tpm_log_header *entry, int digest_len
  * Digest formatting
  ****************************************************************/
 
-static TPMVersion TPM_version;
-static u32 tpm20_pcr_selection_size;
-static struct tpml_pcr_selection *tpm20_pcr_selection;
+ساكن TPMVersion TPM_version;
+ساكن u32 tpm20_pcr_selection_size;
+ساكن بنية tpml_pcr_selection *tpm20_pcr_selection;
 
 // A 'struct tpm_log_entry' is a local data structure containing a
 // 'tpm_log_header' followed by space for the maximum supported
 // digest.  (The digest is a sha1 hash on tpm1.2 or a series of
 // tpm2_digest_value structs on tpm2.0)
-struct tpm_log_entry {
-    struct tpm_log_header hdr;
-    u8 pad[sizeof(struct tpm2_digest_values)
-           + 8 * sizeof(struct tpm2_digest_value)
+بنية tpm_log_entry {
+    بنية tpm_log_header hdr;
+    u8 pad[حجم(بنية tpm2_digest_درجوجي)
+           + 8 * حجم(بنية tpm2_digest_درج)
            + SHA1_BUFSIZE + SHA256_BUFSIZE + SHA384_BUFSIZE
            + SHA512_BUFSIZE + SM3_256_BUFSIZE + SHA3_256_BUFSIZE
            + SHA3_384_BUFSIZE + SHA3_512_BUFSIZE];
 } PACKED;
 
-static const struct hash_parameters {
+ساكن ثابت بنية hash_parameters {
     u16 hashalg;
     u8  hashalg_flag;
     u8  hash_buffersize;
-    const char *name;
-    void (*hashfunc)(const u8 *data, u32 length, u8 *hash);
+    ثابت حرف *name;
+    فراغ (*hashfunc)(ثابت u8 *data, u32 length, u8 *hash);
 } hash_parameters[] = {
     {
         .hashalg = TPM2_ALG_SHA1,
@@ -216,63 +216,63 @@ static const struct hash_parameters {
     }
 };
 
-static int
+ساكن صحيح
 tpm20_get_hash_buffersize(u16 hashAlg)
 {
     unsigned i;
 
-    for (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
-        if (hash_parameters[i].hashalg == hashAlg)
-            return hash_parameters[i].hash_buffersize;
+    لكل (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
+        إذا (hash_parameters[i].hashalg == hashAlg)
+            أرجع hash_parameters[i].hash_buffersize;
     }
-    return -1;
+    أرجع -1;
 }
 
-static u8
+ساكن u8
 tpm20_hashalg_to_flag(u16 hashAlg)
 {
     unsigned i;
 
-    for (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
-        if (hash_parameters[i].hashalg == hashAlg)
-            return hash_parameters[i].hashalg_flag;
+    لكل (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
+        إذا (hash_parameters[i].hashalg == hashAlg)
+            أرجع hash_parameters[i].hashalg_flag;
     }
-    return 0;
+    أرجع 0;
 }
 
-static u16
+ساكن u16
 tpm20_hashalg_flag_to_hashalg(u8 hashalg_flag)
 {
     unsigned i;
 
-    for (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
-        if (hash_parameters[i].hashalg_flag == hashalg_flag)
-            return hash_parameters[i].hashalg;
+    لكل (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
+        إذا (hash_parameters[i].hashalg_flag == hashalg_flag)
+            أرجع hash_parameters[i].hashalg;
     }
-    return 0;
+    أرجع 0;
 }
 
-static const char *
+ساكن ثابت حرف *
 tpm20_hashalg_flag_to_name(u8 hashalg_flag)
 {
     unsigned i;
 
-    for (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
-        if (hash_parameters[i].hashalg_flag == hashalg_flag)
-            return hash_parameters[i].name;
+    لكل (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
+        إذا (hash_parameters[i].hashalg_flag == hashalg_flag)
+            أرجع hash_parameters[i].name;
     }
-    return NULL;
+    أرجع عدم;
 }
 
-static void tpm2_hash_data(u16 hashAlg, const u8 *data, u32 data_len, u8 *hash)
+ساكن فراغ tpm2_hash_data(u16 hashAlg, ثابت u8 *data, u32 data_len, u8 *hash)
 {
     unsigned i;
 
-    for (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
-        if (hash_parameters[i].hashalg == hashAlg) {
-            if (hash_parameters[i].hashfunc) {
+    لكل (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
+        إذا (hash_parameters[i].hashalg == hashAlg) {
+            إذا (hash_parameters[i].hashfunc) {
                 hash_parameters[i].hashfunc(data, data_len, hash);
-            } else {
+            } وإلا {
                 memset(hash, 0xff, hash_parameters[i].hash_buffersize);
             }
         }
@@ -280,15 +280,15 @@ static void tpm2_hash_data(u16 hashAlg, const u8 *data, u32 data_len, u8 *hash)
 }
 
 // Add an entry at the start of the log describing digest formats
-static int
-tpm20_write_EfiSpecIdEventStruct(void)
+ساكن صحيح
+tpm20_write_EfiSpecIdEventStruct(فراغ)
 {
-    if (!tpm20_pcr_selection)
-        return -1;
+    إذا (!tpm20_pcr_selection)
+        أرجع -1;
 
-    struct {
-        struct TCG_EfiSpecIdEventStruct hdr;
-        u8 pad[sizeof(struct tpm_log_entry) + sizeof(u8)];
+    بنية {
+        بنية TCG_EfiSpecIdEventStruct hdr;
+        u8 pad[حجم(بنية tpm_log_entry) + حجم(u8)];
     } event = {
         .hdr.signature = "Spec ID Event03",
         .hdr.platformClass = TPM_TCPA_ACPI_CLASS_CLIENT,
@@ -298,59 +298,59 @@ tpm20_write_EfiSpecIdEventStruct(void)
         .hdr.uintnSize = 2,
     };
 
-    struct tpms_pcr_selection *sel = tpm20_pcr_selection->selections;
-    void *nsel, *end = (void*)tpm20_pcr_selection + tpm20_pcr_selection_size;
+    بنية tpms_pcr_selection *sel = tpm20_pcr_selection->selections;
+    فراغ *nsel, *end = (فراغ*)tpm20_pcr_selection + tpm20_pcr_selection_size;
 
-    u32 count, numAlgs = 0;
-    for (count = 0; count < be32_to_cpu(tpm20_pcr_selection->count); count++) {
+    u32 كدي, لمب_Algs = 0;
+    لكل (كدي = 0; كدي < be32_to_cpu(tpm20_pcr_selection->كدي); كدي++) {
         u8 sizeOfSelect = sel->sizeOfSelect;
 
-        nsel = (void*)sel + sizeof(*sel) + sizeOfSelect;
-        if (nsel > end)
-            break;
+        nsel = (فراغ*)sel + حجم(*sel) + sizeOfSelect;
+        إذا (nsel > end)
+            اكسر;
 
-        if (!sizeOfSelect || sel->pcrSelect[0] == 0) {
+        إذا (!sizeOfSelect || sel->pcrSelect[0] == 0) {
             sel = nsel;
-            continue;
+            استمر;
         }
 
-        int hsize = tpm20_get_hash_buffersize(be16_to_cpu(sel->hashAlg));
-        if (hsize < 0) {
+        صحيح hsize = tpm20_get_hash_buffersize(be16_to_cpu(sel->hashAlg));
+        إذا (hsize < 0) {
             dprintf(DEBUG_tcg, "TPM is using an unsupported hash: %d\n",
                     be16_to_cpu(sel->hashAlg));
-            return -1;
+            أرجع -1;
         }
 
-        int event_size = offsetof(struct TCG_EfiSpecIdEventStruct
-                                  , digestSizes[count+1]);
-        if (event_size > sizeof(event) - sizeof(u8)) {
+        صحيح event_size = offsetof(بنية TCG_EfiSpecIdEventStruct
+                                  , digestSizes[كدي+1]);
+        إذا (event_size > حجم(event) - حجم(u8)) {
             dprintf(DEBUG_tcg, "EfiSpecIdEventStruct pad too small\n");
-            return -1;
+            أرجع -1;
         }
 
-        event.hdr.digestSizes[numAlgs].algorithmId = be16_to_cpu(sel->hashAlg);
-        event.hdr.digestSizes[numAlgs].digestSize = hsize;
-        numAlgs++;
+        event.hdr.digestSizes[لمب_Algs].algorithmId = be16_to_cpu(sel->hashAlg);
+        event.hdr.digestSizes[لمب_Algs].digestSize = hsize;
+        لمب_Algs++;
 
         sel = nsel;
     }
 
-    if (sel != end) {
+    إذا (sel != end) {
         dprintf(DEBUG_tcg, "Malformed pcr selection structure fron TPM\n");
-        return -1;
+        أرجع -1;
     }
 
-    event.hdr.numberOfAlgorithms = numAlgs;
-    int event_size = offsetof(struct TCG_EfiSpecIdEventStruct
-                              , digestSizes[numAlgs]);
-    u8 *vendorInfoSize = (void*)&event + event_size;
+    event.hdr.لمب_Of_Algorithms = لمب_Algs;
+    صحيح event_size = offsetof(بنية TCG_EfiSpecIdEventStruct
+                              , digestSizes[لمب_Algs]);
+    u8 *vendorInfoSize = (فراغ*)&event + event_size;
     *vendorInfoSize = 0;
-    event_size += sizeof(*vendorInfoSize);
+    event_size += حجم(*vendorInfoSize);
 
-    struct tpm_log_entry le = {
+    بنية tpm_log_entry le = {
         .hdr.eventtype = EV_NO_ACTION,
     };
-    return tpm_log_event(&le.hdr, SHA1_BUFSIZE, &event, event_size);
+    أرجع tpm_log_event(&le.hdr, SHA1_BUFSIZE, &event, event_size);
 }
 
 /*
@@ -369,100 +369,100 @@ tpm20_write_EfiSpecIdEventStruct(void)
  *
  * Returns the digest size; -1 on fatal error
  */
-static int
-tpm20_build_digest(struct tpm_log_entry *le,
-                   const u8 *hashdata, u32 hashdata_len, int bigEndian)
+ساكن صحيح
+tpm20_build_digest(بنية tpm_log_entry *le,
+                   ثابت u8 *hashdata, u32 hashdata_len, صحيح bigEndian)
 {
-    if (!tpm20_pcr_selection)
-        return -1;
+    إذا (!tpm20_pcr_selection)
+        أرجع -1;
 
-    struct tpms_pcr_selection *sel = tpm20_pcr_selection->selections;
-    void *nsel, *end = (void*)tpm20_pcr_selection + tpm20_pcr_selection_size;
-    void *dest = le->hdr.digest + sizeof(struct tpm2_digest_values);
+    بنية tpms_pcr_selection *sel = tpm20_pcr_selection->selections;
+    فراغ *nsel, *end = (فراغ*)tpm20_pcr_selection + tpm20_pcr_selection_size;
+    فراغ *dest = le->hdr.digest + حجم(بنية tpm2_digest_درجوجي);
 
-    u32 count, numAlgs = 0;
-    for (count = 0; count < be32_to_cpu(tpm20_pcr_selection->count); count++) {
+    u32 كدي, لمب_Algs = 0;
+    لكل (كدي = 0; كدي < be32_to_cpu(tpm20_pcr_selection->كدي); كدي++) {
         u8 sizeOfSelect = sel->sizeOfSelect;
 
-        nsel = (void*)sel + sizeof(*sel) + sizeOfSelect;
-        if (nsel > end)
-            break;
+        nsel = (فراغ*)sel + حجم(*sel) + sizeOfSelect;
+        إذا (nsel > end)
+            اكسر;
 
         /* PCR 0-7 unused? -- skip */
-        if (!sizeOfSelect || sel->pcrSelect[0] == 0) {
+        إذا (!sizeOfSelect || sel->pcrSelect[0] == 0) {
             sel = nsel;
-            continue;
+            استمر;
         }
 
-        int hsize = tpm20_get_hash_buffersize(be16_to_cpu(sel->hashAlg));
-        if (hsize < 0) {
+        صحيح hsize = tpm20_get_hash_buffersize(be16_to_cpu(sel->hashAlg));
+        إذا (hsize < 0) {
             dprintf(DEBUG_tcg, "TPM is using an unsupported hash: %d\n",
                     be16_to_cpu(sel->hashAlg));
-            return -1;
+            أرجع -1;
         }
 
         /* buffer size sanity check before writing */
-        struct tpm2_digest_value *v = dest;
-        if (dest + sizeof(*v) + hsize > (void*)le + sizeof(*le)) {
+        بنية tpm2_digest_درج *v = dest;
+        إذا (dest + حجم(*v) + hsize > (فراغ*)le + حجم(*le)) {
             dprintf(DEBUG_tcg, "tpm_log_entry is too small\n");
-            return -1;
+            أرجع -1;
         }
 
-        if (bigEndian)
+        إذا (bigEndian)
             v->hashAlg = sel->hashAlg;
-        else
+        وإلا
             v->hashAlg = be16_to_cpu(sel->hashAlg);
 
         tpm2_hash_data(be16_to_cpu(sel->hashAlg), hashdata, hashdata_len,
                        v->hash);
 
-        dest += sizeof(*v) + hsize;
+        dest += حجم(*v) + hsize;
         sel = nsel;
 
-        numAlgs++;
+        لمب_Algs++;
     }
 
-    if (sel != end) {
+    إذا (sel != end) {
         dprintf(DEBUG_tcg, "Malformed pcr selection structure fron TPM\n");
-        return -1;
+        أرجع -1;
     }
 
-    struct tpm2_digest_values *v = (void*)le->hdr.digest;
-    if (bigEndian)
-        v->count = cpu_to_be32(numAlgs);
-    else
-        v->count = numAlgs;
+    بنية tpm2_digest_درجوجي *v = (فراغ*)le->hdr.digest;
+    إذا (bigEndian)
+        v->كدي = cpu_to_be32(لمب_Algs);
+    وإلا
+        v->كدي = لمب_Algs;
 
-    return dest - (void*)le->hdr.digest;
+    أرجع dest - (فراغ*)le->hdr.digest;
 }
 
-static int
-tpm12_build_digest(struct tpm_log_entry *le,
-                   const u8 *hashdata, u32 hashdata_len)
+ساكن صحيح
+tpm12_build_digest(بنية tpm_log_entry *le,
+                   ثابت u8 *hashdata, u32 hashdata_len)
 {
     sha1(hashdata, hashdata_len, le->hdr.digest);
-    return SHA1_BUFSIZE;
+    أرجع SHA1_BUFSIZE;
 }
 
-static int
-tpm12_build_digest_direct(struct tpm_log_entry *le, const u8 *sha1)
+ساكن صحيح
+tpm12_build_digest_direct(بنية tpm_log_entry *le, ثابت u8 *sha1)
 {
     // On TPM 1.2 the digest contains just the SHA1 hash
     memcpy(le->hdr.digest, sha1, SHA1_BUFSIZE);
-    return SHA1_BUFSIZE;
+    أرجع SHA1_BUFSIZE;
 }
 
-static int
-tpm_build_digest(struct tpm_log_entry *le, const u8 *hashdata, u32 hashdata_len
-                 , int bigEndian)
+ساكن صحيح
+tpm_build_digest(بنية tpm_log_entry *le, ثابت u8 *hashdata, u32 hashdata_len
+                 , صحيح bigEndian)
 {
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
-        return tpm12_build_digest(le, hashdata, hashdata_len);
-    case TPM_VERSION_2:
-        return tpm20_build_digest(le, hashdata, hashdata_len, bigEndian);
+    بدل (TPM_version) {
+    حالة TPM_VERSION_1_2:
+        أرجع tpm12_build_digest(le, hashdata, hashdata_len);
+    حالة TPM_VERSION_2:
+        أرجع tpm20_build_digest(le, hashdata, hashdata_len, bigEndian);
     }
-    return -1;
+    أرجع -1;
 }
 
 
@@ -472,54 +472,54 @@ tpm_build_digest(struct tpm_log_entry *le, const u8 *hashdata, u32 hashdata_len
 
 // Helper function for sending tpm commands that take a single
 // optional parameter (0, 1, or 2 bytes) and have no special response.
-static int
+ساكن صحيح
 tpm_simple_cmd(u8 locty, u32 ordinal
-               , int param_size, u16 param, enum tpmDurationType to_t)
+               , صحيح param_size, u16 param, تعداد tpmDurationType to_t)
 {
-    struct {
-        struct tpm_req_header trqh;
+    بنية {
+        بنية tpm_req_header trqh;
         u16 param;
     } PACKED req = {
-        .trqh.totlen = cpu_to_be32(sizeof(req.trqh) + param_size),
+        .trqh.totlen = cpu_to_be32(حجم(req.trqh) + param_size),
         .trqh.ordinal = cpu_to_be32(ordinal),
         .param = param_size == 2 ? cpu_to_be16(param) : param,
     };
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
+    بدل (TPM_version) {
+    حالة TPM_VERSION_1_2:
         req.trqh.tag = cpu_to_be16(TPM_TAG_RQU_CMD);
-        break;
-    case TPM_VERSION_2:
+        اكسر;
+    حالة TPM_VERSION_2:
         req.trqh.tag = cpu_to_be16(TPM2_ST_NO_SESSIONS);
-        break;
+        اكسر;
     }
 
     u8 obuffer[64];
-    struct tpm_rsp_header *trsh = (void*)obuffer;
-    u32 obuffer_len = sizeof(obuffer);
-    memset(obuffer, 0x0, sizeof(obuffer));
+    بنية tpm_rsp_header *trsh = (فراغ*)obuffer;
+    u32 obuffer_len = حجم(obuffer);
+    memset(obuffer, 0x0, حجم(obuffer));
 
-    int ret = tpmhw_transmit(locty, &req.trqh, obuffer, &obuffer_len, to_t);
+    صحيح ret = tpmhw_transmit(locty, &req.trqh, obuffer, &obuffer_len, to_t);
     ret = ret ? -1 : be32_to_cpu(trsh->errcode);
     dprintf(DEBUG_tcg, "Return from tpm_simple_cmd(%x, %x) = %x\n",
             ordinal, param, ret);
-    return ret;
+    أرجع ret;
 }
 
-static int
-tpm20_getcapability(u32 capability, u32 property, u32 count,
-                    struct tpm_rsp_header *rsp, u32 rsize)
+ساكن صحيح
+tpm20_getcapability(u32 capability, u32 property, u32 كدي,
+                    بنية tpm_rsp_header *rsp, u32 rsize)
 {
-    struct tpm2_req_getcapability trg = {
+    بنية tpm2_req_getcapability trg = {
         .hdr.tag = cpu_to_be16(TPM2_ST_NO_SESSIONS),
-        .hdr.totlen = cpu_to_be32(sizeof(trg)),
+        .hdr.totlen = cpu_to_be32(حجم(trg)),
         .hdr.ordinal = cpu_to_be32(TPM2_CC_GetCapability),
         .capability = cpu_to_be32(capability),
         .property = cpu_to_be32(property),
-        .propertycount = cpu_to_be32(count),
+        .propertycount = cpu_to_be32(كدي),
     };
 
     u32 resp_size = rsize;
-    int ret = tpmhw_transmit(0, &trg.hdr, rsp, &resp_size,
+    صحيح ret = tpmhw_transmit(0, &trg.hdr, rsp, &resp_size,
                              TPM_DURATION_TYPE_SHORT);
     ret = (ret ||
            rsize < be32_to_cpu(rsp->totlen)) ? -1 : be32_to_cpu(rsp->errcode);
@@ -527,61 +527,61 @@ tpm20_getcapability(u32 capability, u32 property, u32 count,
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_GetCapability = 0x%08x\n",
             ret);
 
-    return ret;
+    أرجع ret;
 }
 
-static int
-tpm20_get_pcrbanks(void)
+ساكن صحيح
+tpm20_get_pcrbanks(فراغ)
 {
     u8 buffer[128];
-    struct tpm2_res_getcapability *trg =
-      (struct tpm2_res_getcapability *)&buffer;
+    بنية tpm2_res_getcapability *trg =
+      (بنية tpm2_res_getcapability *)&buffer;
 
-    int ret = tpm20_getcapability(TPM2_CAP_PCRS, 0, 8, &trg->hdr,
-                                  sizeof(buffer));
-    if (ret)
-        return ret;
+    صحيح ret = tpm20_getcapability(TPM2_CAP_PCRS, 0, 8, &trg->hdr,
+                                  حجم(buffer));
+    إذا (ret)
+        أرجع ret;
 
     /* defend against (broken) TPM sending packets that are too short */
     u32 resplen = be32_to_cpu(trg->hdr.totlen);
-    if (resplen <= offsetof(struct tpm2_res_getcapability, data))
-        return -1;
+    إذا (resplen <= offsetof(بنية tpm2_res_getcapability, data))
+        أرجع -1;
 
-    u32 size = resplen - offsetof(struct tpm2_res_getcapability, data);
+    u32 size = resplen - offsetof(بنية tpm2_res_getcapability, data);
     /* we need a valid tpml_pcr_selection up to and including sizeOfSelect */
-    if (size < offsetof(struct tpml_pcr_selection, selections) +
-               offsetof(struct tpms_pcr_selection, pcrSelect))
-        return -1;
+    إذا (size < offsetof(بنية tpml_pcr_selection, selections) +
+               offsetof(بنية tpms_pcr_selection, pcrSelect))
+        أرجع -1;
 
-    tpm20_pcr_selection = malloc_high(size);
-    if (tpm20_pcr_selection) {
+    tpm20_pcr_selection = malloc_سم(size);
+    إذا (tpm20_pcr_selection) {
         memcpy(tpm20_pcr_selection, &trg->data, size);
         tpm20_pcr_selection_size = size;
-    } else {
+    } وإلا {
         warn_noalloc();
         ret = -1;
     }
 
-    return ret;
+    أرجع ret;
 }
 
-static int
+ساكن صحيح
 tpm20_get_suppt_pcrbanks(u8 *suppt_pcrbanks, u8 *active_pcrbanks)
 {
     *suppt_pcrbanks = 0;
     *active_pcrbanks = 0;
 
-    if (!tpm20_pcr_selection)
-        return -1;
+    إذا (!tpm20_pcr_selection)
+        أرجع -1;
 
-    struct tpms_pcr_selection *sel = tpm20_pcr_selection->selections;
-    void *end = (void*)tpm20_pcr_selection + tpm20_pcr_selection_size;
+    بنية tpms_pcr_selection *sel = tpm20_pcr_selection->selections;
+    فراغ *end = (فراغ*)tpm20_pcr_selection + tpm20_pcr_selection_size;
 
-    while (1) {
+    طالما (1) {
         u8 sizeOfSelect = sel->sizeOfSelect;
-        void *nsel = (void*)sel + sizeof(*sel) + sizeOfSelect;
-        if (nsel > end)
-            return 0;
+        فراغ *nsel = (فراغ*)sel + حجم(*sel) + sizeOfSelect;
+        إذا (nsel > end)
+            أرجع 0;
 
         u16 hashalg = be16_to_cpu(sel->hashAlg);
         u8 hashalg_flag = tpm20_hashalg_to_flag(hashalg);
@@ -589,10 +589,10 @@ tpm20_get_suppt_pcrbanks(u8 *suppt_pcrbanks, u8 *active_pcrbanks)
         *suppt_pcrbanks |= hashalg_flag;
 
         unsigned i;
-        for (i = 0; i < sizeOfSelect; i++) {
-            if (sel->pcrSelect[i]) {
+        لكل (i = 0; i < sizeOfSelect; i++) {
+            إذا (sel->pcrSelect[i]) {
                 *active_pcrbanks |= hashalg_flag;
-                break;
+                اكسر;
             }
         }
 
@@ -600,14 +600,14 @@ tpm20_get_suppt_pcrbanks(u8 *suppt_pcrbanks, u8 *active_pcrbanks)
     }
 }
 
-static int
+ساكن صحيح
 tpm20_set_pcrbanks(u32 active_banks)
 {
-    struct tpm2_req_pcr_allocate trpa = {
+    بنية tpm2_req_pcr_allocate trpa = {
         .hdr.tag     = cpu_to_be16(TPM2_ST_SESSIONS),
         .hdr.ordinal = cpu_to_be32(TPM2_CC_PCR_Allocate),
         .authhandle = cpu_to_be32(TPM2_RH_PLATFORM),
-        .authblocksize = cpu_to_be32(sizeof(trpa.authblock)),
+        .authblocksize = cpu_to_be32(حجم(trpa.authblock)),
         .authblock = {
             .handle = cpu_to_be32(TPM2_RS_PW),
             .noncesize = cpu_to_be16(0),
@@ -615,27 +615,27 @@ tpm20_set_pcrbanks(u32 active_banks)
             .pwdsize = cpu_to_be16(0),
         },
     };
-    struct tpms_pcr_selection3 {
+    بنية tpms_pcr_selection3 {
         u16 hashAlg;
         u8 sizeOfSelect;
         u8 pcrSelect[3];
     } tps[ARRAY_SIZE(trpa.tpms_pcr_selections)];
-    int i = 0;
+    صحيح i = 0;
     u8 hashalg_flag = TPM2_ALG_SHA1_FLAG;
     u8 dontcare, suppt_banks;
 
     tpm20_get_suppt_pcrbanks(&suppt_banks, &dontcare);
 
-    while (hashalg_flag) {
-        if ((hashalg_flag & suppt_banks)) {
+    طالما (hashalg_flag) {
+        إذا ((hashalg_flag & suppt_banks)) {
             u16 hashalg = tpm20_hashalg_flag_to_hashalg(hashalg_flag);
 
-            if (hashalg) {
+            إذا (hashalg) {
                 u8 mask = 0;
                 tps[i].hashAlg = cpu_to_be16(hashalg);
                 tps[i].sizeOfSelect = 3;
 
-                if (active_banks & hashalg_flag)
+                إذا (active_banks & hashalg_flag)
                     mask = 0xff;
 
                 tps[i].pcrSelect[0] = mask;
@@ -647,89 +647,89 @@ tpm20_set_pcrbanks(u32 active_banks)
         hashalg_flag <<= 1;
     }
 
-    trpa.count = cpu_to_be32(i);
-    memcpy(trpa.tpms_pcr_selections, tps, i * sizeof(tps[0]));
-    trpa.hdr.totlen = cpu_to_be32(offsetof(struct tpm2_req_pcr_allocate,
+    trpa.كدي = cpu_to_be32(i);
+    memcpy(trpa.tpms_pcr_selections, tps, i * حجم(tps[0]));
+    trpa.hdr.totlen = cpu_to_be32(offsetof(بنية tpm2_req_pcr_allocate,
                                            tpms_pcr_selections) +
-                                  i * sizeof(tps[0]));
+                                  i * حجم(tps[0]));
 
-    struct tpm_rsp_header rsp;
-    u32 resp_length = sizeof(rsp);
+    بنية tpm_rsp_header rsp;
+    u32 resp_length = حجم(rsp);
 
-    int ret = tpmhw_transmit(0, &trpa.hdr, &rsp, &resp_length,
+    صحيح ret = tpmhw_transmit(0, &trpa.hdr, &rsp, &resp_length,
                              TPM_DURATION_TYPE_SHORT);
     ret = ret ? -1 : be32_to_cpu(rsp.errcode);
 
-    return ret;
+    أرجع ret;
 }
 
-static int tpm20_activate_pcrbanks(u32 active_banks)
+ساكن صحيح tpm20_activate_pcrbanks(u32 active_banks)
 {
-    int ret = tpm20_set_pcrbanks(active_banks);
-    if (!ret)
+    صحيح ret = tpm20_set_pcrbanks(active_banks);
+    إذا (!ret)
         ret = tpm_simple_cmd(0, TPM2_CC_Shutdown,
                              2, TPM2_SU_CLEAR, TPM_DURATION_TYPE_SHORT);
-    if (!ret)
+    إذا (!ret)
         reset();
-    return ret;
+    أرجع ret;
 }
 
-static int
-tpm12_get_capability(u32 cap, u32 subcap, struct tpm_rsp_header *rsp, u32 rsize)
+ساكن صحيح
+tpm12_get_capability(u32 cap, u32 subcap, بنية tpm_rsp_header *rsp, u32 rsize)
 {
-    struct tpm_req_getcap trgc = {
+    بنية tpm_req_getcap trgc = {
         .hdr.tag = cpu_to_be16(TPM_TAG_RQU_CMD),
-        .hdr.totlen = cpu_to_be32(sizeof(trgc)),
+        .hdr.totlen = cpu_to_be32(حجم(trgc)),
         .hdr.ordinal = cpu_to_be32(TPM_ORD_GetCapability),
         .capArea = cpu_to_be32(cap),
-        .subCapSize = cpu_to_be32(sizeof(trgc.subCap)),
+        .subCapSize = cpu_to_be32(حجم(trgc.subCap)),
         .subCap = cpu_to_be32(subcap)
     };
     u32 resp_size = rsize;
-    int ret = tpmhw_transmit(0, &trgc.hdr, rsp, &resp_size,
+    صحيح ret = tpmhw_transmit(0, &trgc.hdr, rsp, &resp_size,
                              TPM_DURATION_TYPE_SHORT);
     ret = (ret || resp_size != rsize) ? -1 : be32_to_cpu(rsp->errcode);
     dprintf(DEBUG_tcg, "TCGBIOS: Return code from TPM_GetCapability(%d, %d)"
             " = %x\n", cap, subcap, ret);
-    return ret;
+    أرجع ret;
 }
 
-static int
-tpm12_read_permanent_flags(char *buf, int buf_len)
+ساكن صحيح
+tpm12_read_permanent_flags(حرف *buf, صحيح buf_len)
 {
     memset(buf, 0, buf_len);
 
-    struct tpm_res_getcap_perm_flags pf;
-    int ret = tpm12_get_capability(TPM_CAP_FLAG, TPM_CAP_FLAG_PERMANENT
-                                   , &pf.hdr, sizeof(pf));
-    if (ret)
-        return -1;
+    بنية tpm_res_getcap_perm_flags pf;
+    صحيح ret = tpm12_get_capability(TPM_CAP_FLAG, TPM_CAP_FLAG_PERMANENT
+                                   , &pf.hdr, حجم(pf));
+    إذا (ret)
+        أرجع -1;
 
     memcpy(buf, &pf.perm_flags, buf_len);
 
-    return 0;
+    أرجع 0;
 }
 
-static int
-tpm12_determine_timeouts(void)
+ساكن صحيح
+tpm12_determine_timeouts(فراغ)
 {
-    struct tpm_res_getcap_timeouts timeouts;
-    int ret = tpm12_get_capability(TPM_CAP_PROPERTY, TPM_CAP_PROP_TIS_TIMEOUT
-                                   , &timeouts.hdr, sizeof(timeouts));
-    if (ret)
-        return ret;
+    بنية tpm_res_getcap_timeouts timeouts;
+    صحيح ret = tpm12_get_capability(TPM_CAP_PROPERTY, TPM_CAP_PROP_TIS_TIMEOUT
+                                   , &timeouts.hdr, حجم(timeouts));
+    إذا (ret)
+        أرجع ret;
 
-    struct tpm_res_getcap_durations durations;
+    بنية tpm_res_getcap_durations durations;
     ret = tpm12_get_capability(TPM_CAP_PROPERTY, TPM_CAP_PROP_DURATION
-                               , &durations.hdr, sizeof(durations));
-    if (ret)
-        return ret;
+                               , &durations.hdr, حجم(durations));
+    إذا (ret)
+        أرجع ret;
 
-    int i;
-    for (i = 0; i < 3; i++)
+    صحيح i;
+    لكل (i = 0; i < 3; i++)
         durations.durations[i] = be32_to_cpu(durations.durations[i]);
 
-    for (i = 0; i < 4; i++)
+    لكل (i = 0; i < 4; i++)
         timeouts.timeouts[i] = be32_to_cpu(timeouts.timeouts[i]);
 
     dprintf(DEBUG_tcg, "TCGBIOS: timeouts: %u %u %u %u\n",
@@ -745,11 +745,11 @@ tpm12_determine_timeouts(void)
 
     tpmhw_set_timeouts(timeouts.timeouts, durations.durations);
 
-    return 0;
+    أرجع 0;
 }
 
-static void
-tpm20_set_timeouts(void)
+ساكن فراغ
+tpm20_set_timeouts(فراغ)
 {
     u32 durations[3] = {
         TPM2_DEFAULT_DURATION_SHORT,
@@ -766,35 +766,35 @@ tpm20_set_timeouts(void)
     tpmhw_set_timeouts(timeouts, durations);
 }
 
-static int
-tpm12_extend(struct tpm_log_entry *le, int digest_len)
+ساكن صحيح
+tpm12_extend(بنية tpm_log_entry *le, صحيح digest_len)
 {
-    struct tpm_req_extend tre = {
+    بنية tpm_req_extend tre = {
         .hdr.tag     = cpu_to_be16(TPM_TAG_RQU_CMD),
-        .hdr.totlen  = cpu_to_be32(sizeof(tre)),
+        .hdr.totlen  = cpu_to_be32(حجم(tre)),
         .hdr.ordinal = cpu_to_be32(TPM_ORD_Extend),
         .pcrindex    = cpu_to_be32(le->hdr.pcrindex),
     };
-    memcpy(tre.digest, le->hdr.digest, sizeof(tre.digest));
+    memcpy(tre.digest, le->hdr.digest, حجم(tre.digest));
 
-    struct tpm_rsp_extend rsp;
-    u32 resp_length = sizeof(rsp);
-    int ret = tpmhw_transmit(0, &tre.hdr, &rsp, &resp_length,
+    بنية tpm_rsp_extend rsp;
+    u32 resp_length = حجم(rsp);
+    صحيح ret = tpmhw_transmit(0, &tre.hdr, &rsp, &resp_length,
                              TPM_DURATION_TYPE_SHORT);
-    if (ret || resp_length != sizeof(rsp) || rsp.hdr.errcode)
-        return -1;
+    إذا (ret || resp_length != حجم(rsp) || rsp.hdr.errcode)
+        أرجع -1;
 
-    return 0;
+    أرجع 0;
 }
 
-static int tpm20_extend(struct tpm_log_entry *le, int digest_len)
+ساكن صحيح tpm20_extend(بنية tpm_log_entry *le, صحيح digest_len)
 {
-    struct tpm2_req_extend tmp_tre = {
+    بنية tpm2_req_extend tmp_tre = {
         .hdr.tag     = cpu_to_be16(TPM2_ST_SESSIONS),
         .hdr.totlen  = cpu_to_be32(0),
         .hdr.ordinal = cpu_to_be32(TPM2_CC_PCR_Extend),
         .pcrindex    = cpu_to_be32(le->hdr.pcrindex),
-        .authblocksize = cpu_to_be32(sizeof(tmp_tre.authblock)),
+        .authblocksize = cpu_to_be32(حجم(tmp_tre.authblock)),
         .authblock = {
             .handle = cpu_to_be32(TPM2_RS_PW),
             .noncesize = cpu_to_be16(0),
@@ -802,101 +802,101 @@ static int tpm20_extend(struct tpm_log_entry *le, int digest_len)
             .pwdsize = cpu_to_be16(0),
         },
     };
-    u8 buffer[sizeof(tmp_tre) + sizeof(le->pad)];
-    struct tpm2_req_extend *tre = (struct tpm2_req_extend *)buffer;
+    u8 buffer[حجم(tmp_tre) + حجم(le->pad)];
+    بنية tpm2_req_extend *tre = (بنية tpm2_req_extend *)buffer;
 
-    memcpy(tre, &tmp_tre, sizeof(tmp_tre));
+    memcpy(tre, &tmp_tre, حجم(tmp_tre));
     memcpy(&tre->digest[0], le->hdr.digest, digest_len);
 
-    tre->hdr.totlen = cpu_to_be32(sizeof(tmp_tre) + digest_len);
+    tre->hdr.totlen = cpu_to_be32(حجم(tmp_tre) + digest_len);
 
-    struct tpm_rsp_header rsp;
-    u32 resp_length = sizeof(rsp);
-    int ret = tpmhw_transmit(0, &tre->hdr, &rsp, &resp_length,
+    بنية tpm_rsp_header rsp;
+    u32 resp_length = حجم(rsp);
+    صحيح ret = tpmhw_transmit(0, &tre->hdr, &rsp, &resp_length,
                              TPM_DURATION_TYPE_SHORT);
-    if (ret || resp_length != sizeof(rsp) || rsp.errcode)
-        return -1;
+    إذا (ret || resp_length != حجم(rsp) || rsp.errcode)
+        أرجع -1;
 
-    return 0;
+    أرجع 0;
 }
 
-static int
-tpm_extend(struct tpm_log_entry *le, int digest_len)
+ساكن صحيح
+tpm_extend(بنية tpm_log_entry *le, صحيح digest_len)
 {
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
-        return tpm12_extend(le, digest_len);
-    case TPM_VERSION_2:
-        return tpm20_extend(le, digest_len);
+    بدل (TPM_version) {
+    حالة TPM_VERSION_1_2:
+        أرجع tpm12_extend(le, digest_len);
+    حالة TPM_VERSION_2:
+        أرجع tpm20_extend(le, digest_len);
     }
-    return -1;
+    أرجع -1;
 }
 
-static int
-tpm20_stirrandom(void)
+ساكن صحيح
+tpm20_stirrandom(فراغ)
 {
-    struct tpm2_req_stirrandom stir = {
+    بنية tpm2_req_stirrandom stir = {
         .hdr.tag = cpu_to_be16(TPM2_ST_NO_SESSIONS),
-        .hdr.totlen = cpu_to_be32(sizeof(stir)),
+        .hdr.totlen = cpu_to_be32(حجم(stir)),
         .hdr.ordinal = cpu_to_be32(TPM2_CC_StirRandom),
-        .size = cpu_to_be16(sizeof(stir.stir)),
+        .size = cpu_to_be16(حجم(stir.stir)),
         .stir = rdtscll(),
     };
     /* set more bits to stir with */
     stir.stir += swab64(rdtscll());
 
-    struct tpm_rsp_header rsp;
-    u32 resp_length = sizeof(rsp);
-    int ret = tpmhw_transmit(0, &stir.hdr, &rsp, &resp_length,
+    بنية tpm_rsp_header rsp;
+    u32 resp_length = حجم(rsp);
+    صحيح ret = tpmhw_transmit(0, &stir.hdr, &rsp, &resp_length,
                              TPM_DURATION_TYPE_SHORT);
-    if (ret || resp_length != sizeof(rsp) || rsp.errcode)
+    إذا (ret || resp_length != حجم(rsp) || rsp.errcode)
         ret = -1;
 
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_StirRandom = 0x%08x\n",
             ret);
 
-    return ret;
+    أرجع ret;
 }
 
-static int
+ساكن صحيح
 tpm20_getrandom(u8 *buf, u16 buf_len)
 {
-    struct tpm2_res_getrandom rsp;
+    بنية tpm2_res_getrandom rsp;
 
-    if (buf_len > sizeof(rsp.rnd.buffer))
-        return -1;
+    إذا (buf_len > حجم(rsp.rnd.buffer))
+        أرجع -1;
 
-    struct tpm2_req_getrandom trgr = {
+    بنية tpm2_req_getrandom trgr = {
         .hdr.tag = cpu_to_be16(TPM2_ST_NO_SESSIONS),
-        .hdr.totlen = cpu_to_be32(sizeof(trgr)),
+        .hdr.totlen = cpu_to_be32(حجم(trgr)),
         .hdr.ordinal = cpu_to_be32(TPM2_CC_GetRandom),
         .bytesRequested = cpu_to_be16(buf_len),
     };
-    u32 resp_length = sizeof(rsp);
+    u32 resp_length = حجم(rsp);
 
-    int ret = tpmhw_transmit(0, &trgr.hdr, &rsp, &resp_length,
+    صحيح ret = tpmhw_transmit(0, &trgr.hdr, &rsp, &resp_length,
                              TPM_DURATION_TYPE_MEDIUM);
-    if (ret || resp_length != sizeof(rsp) || rsp.hdr.errcode)
+    إذا (ret || resp_length != حجم(rsp) || rsp.hdr.errcode)
         ret = -1;
-    else
+    وإلا
         memcpy(buf, rsp.rnd.buffer, buf_len);
 
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_GetRandom = 0x%08x\n",
             ret);
 
-    return ret;
+    أرجع ret;
 }
 
-static int
+ساكن صحيح
 tpm20_hierarchycontrol(u32 hierarchy, u8 state)
 {
     /* we will try to deactivate the TPM now - ignoring all errors */
-    struct tpm2_req_hierarchycontrol trh = {
+    بنية tpm2_req_hierarchycontrol trh = {
         .hdr.tag = cpu_to_be16(TPM2_ST_SESSIONS),
-        .hdr.totlen = cpu_to_be32(sizeof(trh)),
+        .hdr.totlen = cpu_to_be32(حجم(trh)),
         .hdr.ordinal = cpu_to_be32(TPM2_CC_HierarchyControl),
         .authhandle = cpu_to_be32(TPM2_RH_PLATFORM),
-        .authblocksize = cpu_to_be32(sizeof(trh.authblock)),
+        .authblocksize = cpu_to_be32(حجم(trh.authblock)),
         .authblock = {
             .handle = cpu_to_be32(TPM2_RS_PW),
             .noncesize = cpu_to_be16(0),
@@ -906,28 +906,28 @@ tpm20_hierarchycontrol(u32 hierarchy, u8 state)
         .enable = cpu_to_be32(hierarchy),
         .state = state,
     };
-    struct tpm_rsp_header rsp;
-    u32 resp_length = sizeof(rsp);
-    int ret = tpmhw_transmit(0, &trh.hdr, &rsp, &resp_length,
+    بنية tpm_rsp_header rsp;
+    u32 resp_length = حجم(rsp);
+    صحيح ret = tpmhw_transmit(0, &trh.hdr, &rsp, &resp_length,
                              TPM_DURATION_TYPE_MEDIUM);
-    if (ret || resp_length != sizeof(rsp) || rsp.errcode)
+    إذا (ret || resp_length != حجم(rsp) || rsp.errcode)
         ret = -1;
 
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_HierarchyControl = 0x%08x\n",
             ret);
 
-    return ret;
+    أرجع ret;
 }
 
-static int
+ساكن صحيح
 tpm20_hierarchychangeauth(u8 auth[20])
 {
-    struct tpm2_req_hierarchychangeauth trhca = {
+    بنية tpm2_req_hierarchychangeauth trhca = {
         .hdr.tag = cpu_to_be16(TPM2_ST_SESSIONS),
-        .hdr.totlen = cpu_to_be32(sizeof(trhca)),
+        .hdr.totlen = cpu_to_be32(حجم(trhca)),
         .hdr.ordinal = cpu_to_be32(TPM2_CC_HierarchyChangeAuth),
         .authhandle = cpu_to_be32(TPM2_RH_PLATFORM),
-        .authblocksize = cpu_to_be32(sizeof(trhca.authblock)),
+        .authblocksize = cpu_to_be32(حجم(trhca.authblock)),
         .authblock = {
             .handle = cpu_to_be32(TPM2_RS_PW),
             .noncesize = cpu_to_be16(0),
@@ -935,22 +935,22 @@ tpm20_hierarchychangeauth(u8 auth[20])
             .pwdsize = cpu_to_be16(0),
         },
         .newAuth = {
-            .size = cpu_to_be16(sizeof(trhca.newAuth.buffer)),
+            .size = cpu_to_be16(حجم(trhca.newAuth.buffer)),
         },
     };
-    memcpy(trhca.newAuth.buffer, auth, sizeof(trhca.newAuth.buffer));
+    memcpy(trhca.newAuth.buffer, auth, حجم(trhca.newAuth.buffer));
 
-    struct tpm_rsp_header rsp;
-    u32 resp_length = sizeof(rsp);
-    int ret = tpmhw_transmit(0, &trhca.hdr, &rsp, &resp_length,
+    بنية tpm_rsp_header rsp;
+    u32 resp_length = حجم(rsp);
+    صحيح ret = tpmhw_transmit(0, &trhca.hdr, &rsp, &resp_length,
                              TPM_DURATION_TYPE_MEDIUM);
-    if (ret || resp_length != sizeof(rsp) || rsp.errcode)
+    إذا (ret || resp_length != حجم(rsp) || rsp.errcode)
         ret = -1;
 
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_HierarchyChangeAuth = 0x%08x\n",
             ret);
 
-    return ret;
+    أرجع ret;
 }
 
 
@@ -958,20 +958,20 @@ tpm20_hierarchychangeauth(u8 auth[20])
  * Setup and Measurements
  ****************************************************************/
 
-static int TPM_has_physical_presence;
+ساكن صحيح TPM_has_physical_presence;
 u8 TPM_working VARLOW;
 
-static int
-tpm_is_working(void)
+ساكن صحيح
+tpm_is_working(فراغ)
 {
-    return CONFIG_TCGBIOS && TPM_working;
+    أرجع CONFIG_TCGBIOS && TPM_working;
 }
 
-static void
-tpm_set_failure(void)
+ساكن فراغ
+tpm_set_failure(فراغ)
 {
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
+    بدل (TPM_version) {
+    حالة TPM_VERSION_1_2:
         /*
          * We will try to deactivate the TPM now - ignoring all errors
          * Physical presence is asserted.
@@ -979,12 +979,12 @@ tpm_set_failure(void)
 
         tpm_simple_cmd(0, TPM_ORD_SetTempDeactivated,
                        0, 0, TPM_DURATION_TYPE_SHORT);
-        break;
-    case TPM_VERSION_2:
+        اكسر;
+    حالة TPM_VERSION_2:
         tpm20_hierarchycontrol(TPM2_RH_ENDORSEMENT, TPM2_NO);
         tpm20_hierarchycontrol(TPM2_RH_OWNER, TPM2_NO);
         tpm20_hierarchycontrol(TPM2_RH_PLATFORM, TPM2_NO);
-        break;
+        اكسر;
     }
 
     TPM_working = 0;
@@ -1002,33 +1002,33 @@ tpm_set_failure(void)
  *  hashdata    : pointer to the data to be hashed
  *  hashdata_length: length of the data to be hashed
  */
-static void
+ساكن فراغ
 tpm_add_measurement_to_log(u32 pcrindex, u32 event_type,
-                           const char *event, u32 event_length,
-                           const u8 *hashdata, u32 hashdata_length)
+                           ثابت حرف *event, u32 event_length,
+                           ثابت u8 *hashdata, u32 hashdata_length)
 {
-    if (!tpm_is_working())
-        return;
+    إذا (!tpm_is_working())
+        أرجع;
 
-    struct tpm_log_entry le = {
+    بنية tpm_log_entry le = {
         .hdr.pcrindex = pcrindex,
         .hdr.eventtype = event_type,
     };
-    int digest_len = tpm_build_digest(&le, hashdata, hashdata_length, 1);
-    if (digest_len < 0)
-        return;
-    int ret = tpm_extend(&le, digest_len);
-    if (ret) {
+    صحيح digest_len = tpm_build_digest(&le, hashdata, hashdata_length, 1);
+    إذا (digest_len < 0)
+        أرجع;
+    صحيح ret = tpm_extend(&le, digest_len);
+    إذا (ret) {
         tpm_set_failure();
-        return;
+        أرجع;
     }
     tpm_build_digest(&le, hashdata, hashdata_length, 0);
     tpm_log_event(&le.hdr, digest_len, event, event_length);
 }
 
 // Add an EV_ACTION measurement to the list of measurements
-static void
-tpm_add_action(u32 pcrIndex, const char *string)
+ساكن فراغ
+tpm_add_action(u32 pcrIndex, ثابت حرف *string)
 {
     u32 len = strlen(string);
     tpm_add_measurement_to_log(pcrIndex, EV_ACTION,
@@ -1038,132 +1038,132 @@ tpm_add_action(u32 pcrIndex, const char *string)
 /*
  * Add event separators for PCRs 0 to 7; specs on 'Measuring Boot Events'
  */
-static void
-tpm_add_event_separators(void)
+ساكن فراغ
+tpm_add_event_separators(فراغ)
 {
-    static const u8 evt_separator[] = {0xff,0xff,0xff,0xff};
+    ساكن ثابت u8 evt_separator[] = {0xff,0xff,0xff,0xff};
     u32 pcrIndex;
-    for (pcrIndex = 0; pcrIndex <= 7; pcrIndex++)
+    لكل (pcrIndex = 0; pcrIndex <= 7; pcrIndex++)
         tpm_add_measurement_to_log(pcrIndex, EV_SEPARATOR,
-                                   (const char *)evt_separator,
-                                   sizeof(evt_separator),
+                                   (ثابت حرف *)evt_separator,
+                                   حجم(evt_separator),
                                    evt_separator,
-                                   sizeof(evt_separator));
+                                   حجم(evt_separator));
 }
 
-static void
-tpm_smbios_measure(void)
+ساكن فراغ
+tpm_smbios_measure(فراغ)
 {
-    struct pcctes pcctes = {
+    بنية pcctes pcctes = {
         .eventid = 1,
         .eventdatasize = SHA1_BUFSIZE,
     };
     u32 smbios_len;
-    void *smbios_tables = smbios_get_tables(&smbios_len);
+    فراغ *smbios_tables = smbios_get_tables(&smbios_len);
 
     dprintf(DEBUG_tcg, "TCGBIOS: SMBIOS tables at %p\n", smbios_tables);
 
-    if (!smbios_tables)
-        return;
+    إذا (!smbios_tables)
+        أرجع;
 
-    sha1((const u8 *)smbios_tables, smbios_len, pcctes.digest);
+    sha1((ثابت u8 *)smbios_tables, smbios_len, pcctes.digest);
     tpm_add_measurement_to_log(1,
                                EV_EVENT_TAG,
-                               (const char *)&pcctes, sizeof(pcctes),
-                               (u8 *)&pcctes, sizeof(pcctes));
+                               (ثابت حرف *)&pcctes, حجم(pcctes),
+                               (u8 *)&pcctes, حجم(pcctes));
 }
 
-static int
-tpm12_assert_physical_presence(void)
+ساكن صحيح
+tpm12_assert_physical_presence(فراغ)
 {
-    int ret = tpm_simple_cmd(0, TPM_ORD_PhysicalPresence,
+    صحيح ret = tpm_simple_cmd(0, TPM_ORD_PhysicalPresence,
                              2, TPM_PP_PRESENT, TPM_DURATION_TYPE_SHORT);
-    if (!ret)
-        return 0;
+    إذا (!ret)
+        أرجع 0;
 
-    struct tpm_permanent_flags pf;
-    ret = tpm12_read_permanent_flags((char *)&pf, sizeof(pf));
-    if (ret)
-        return -1;
+    بنية tpm_permanent_flags pf;
+    ret = tpm12_read_permanent_flags((حرف *)&pf, حجم(pf));
+    إذا (ret)
+        أرجع -1;
 
     /* check if hardware physical presence is supported */
-    if (pf.flags[PERM_FLAG_IDX_PHYSICAL_PRESENCE_HW_ENABLE]) {
+    إذا (pf.flags[PERM_FLAG_IDX_PHYSICAL_PRESENCE_HW_ENABLE]) {
         /* HW phys. presence may not be asserted... */
-        return 0;
+        أرجع 0;
     }
 
-    if (!pf.flags[PERM_FLAG_IDX_PHYSICAL_PRESENCE_LIFETIME_LOCK]
+    إذا (!pf.flags[PERM_FLAG_IDX_PHYSICAL_PRESENCE_LIFETIME_LOCK]
         && !pf.flags[PERM_FLAG_IDX_PHYSICAL_PRESENCE_CMD_ENABLE]) {
         tpm_simple_cmd(0, TPM_ORD_PhysicalPresence,
                        2, TPM_PP_CMD_ENABLE, TPM_DURATION_TYPE_SHORT);
 
-        return tpm_simple_cmd(0, TPM_ORD_PhysicalPresence,
+        أرجع tpm_simple_cmd(0, TPM_ORD_PhysicalPresence,
                               2, TPM_PP_PRESENT, TPM_DURATION_TYPE_SHORT);
     }
-    return -1;
+    أرجع -1;
 }
 
-static int
-tpm12_startup(void)
+ساكن صحيح
+tpm12_startup(فراغ)
 {
     dprintf(DEBUG_tcg, "TCGBIOS: Starting with TPM_Startup(ST_CLEAR)\n");
-    int ret = tpm_simple_cmd(0, TPM_ORD_Startup,
+    صحيح ret = tpm_simple_cmd(0, TPM_ORD_Startup,
                              2, TPM_ST_CLEAR, TPM_DURATION_TYPE_SHORT);
-    if (CONFIG_COREBOOT && ret == TPM_INVALID_POSTINIT)
+    إذا (CONFIG_COREBOOT && ret == TPM_INVALID_POSTINIT)
         /* with other firmware on the system the TPM may already have been
          * initialized
          */
         ret = 0;
-    if (ret)
-        goto err_exit;
+    إذا (ret)
+        اذهب err_exit;
 
     /* assertion of physical presence is only possible after startup */
     ret = tpm12_assert_physical_presence();
-    if (!ret)
+    إذا (!ret)
         TPM_has_physical_presence = 1;
 
     ret = tpm12_determine_timeouts();
-    if (ret)
-        goto err_exit;
+    إذا (ret)
+        اذهب err_exit;
 
     ret = tpm_simple_cmd(0, TPM_ORD_SelfTestFull,
                          0, 0, TPM_DURATION_TYPE_LONG);
-    if (ret)
-        goto err_exit;
+    إذا (ret)
+        اذهب err_exit;
 
     ret = tpm_simple_cmd(3, TSC_ORD_ResetEstablishmentBit,
                          0, 0, TPM_DURATION_TYPE_SHORT);
-    if (ret && ret != TPM_BAD_LOCALITY)
-        goto err_exit;
+    إذا (ret && ret != TPM_BAD_LOCALITY)
+        اذهب err_exit;
 
-    return 0;
+    أرجع 0;
 
 err_exit:
     dprintf(DEBUG_tcg, "TCGBIOS: TPM malfunctioning (line %d).\n", __LINE__);
 
     tpm_set_failure();
-    return -1;
+    أرجع -1;
 }
 
-static int
-tpm20_startup(void)
+ساكن صحيح
+tpm20_startup(فراغ)
 {
     tpm20_set_timeouts();
 
-    int ret = tpm_simple_cmd(0, TPM2_CC_Startup,
+    صحيح ret = tpm_simple_cmd(0, TPM2_CC_Startup,
                              2, TPM2_SU_CLEAR, TPM_DURATION_TYPE_SHORT);
 
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_Startup(SU_CLEAR) = 0x%08x\n",
             ret);
 
-    if (CONFIG_COREBOOT && ret == TPM2_RC_INITIALIZE)
+    إذا (CONFIG_COREBOOT && ret == TPM2_RC_INITIALIZE)
         /* with other firmware on the system the TPM may already have been
          * initialized
          */
         ret = 0;
 
-    if (ret)
-        goto err_exit;
+    إذا (ret)
+        اذهب err_exit;
 
     ret = tpm_simple_cmd(0, TPM2_CC_SelfTest,
                          1, TPM2_YES, TPM_DURATION_TYPE_LONG);
@@ -1171,54 +1171,54 @@ tpm20_startup(void)
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_SelfTest = 0x%08x\n",
             ret);
 
-    if (ret)
-        goto err_exit;
+    إذا (ret)
+        اذهب err_exit;
 
     ret = tpm20_get_pcrbanks();
-    if (ret)
-        goto err_exit;
+    إذا (ret)
+        اذهب err_exit;
 
     ret = tpm20_write_EfiSpecIdEventStruct();
-    if (ret)
-        goto err_exit;
+    إذا (ret)
+        اذهب err_exit;
 
-    return 0;
+    أرجع 0;
 
 err_exit:
     dprintf(DEBUG_tcg, "TCGBIOS: TPM malfunctioning (line %d).\n", __LINE__);
 
     tpm_set_failure();
-    return -1;
+    أرجع -1;
 }
 
-static int
-tpm_startup(void)
+ساكن صحيح
+tpm_startup(فراغ)
 {
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
-        return tpm12_startup();
-    case TPM_VERSION_2:
-        return tpm20_startup();
+    بدل (TPM_version) {
+    حالة TPM_VERSION_1_2:
+        أرجع tpm12_startup();
+    حالة TPM_VERSION_2:
+        أرجع tpm20_startup();
     }
-    return -1;
+    أرجع -1;
 }
 
-void
-tpm_setup(void)
+فراغ
+tpm_setup(فراغ)
 {
-    if (!CONFIG_TCGBIOS)
-        return;
+    إذا (!CONFIG_TCGBIOS)
+        أرجع;
 
-    int ret = tpm_tpm2_probe();
-    if (ret) {
+    صحيح ret = tpm_tpm2_probe();
+    إذا (ret) {
         ret = tpm_tcpa_probe();
-        if (ret)
-            return;
+        إذا (ret)
+            أرجع;
     }
 
     TPM_version = tpmhw_probe();
-    if (TPM_version == TPM_VERSION_NONE)
-        return;
+    إذا (TPM_version == TPM_VERSION_NONE)
+        أرجع;
 
     dprintf(DEBUG_tcg,
             "TCGBIOS: Detected a TPM %s.\n",
@@ -1226,34 +1226,34 @@ tpm_setup(void)
 
     TPM_working = 1;
 
-    if (runningOnXen())
-        return;
+    إذا (runningOnXen())
+        أرجع;
 
     ret = tpm_startup();
-    if (ret)
-        return;
+    إذا (ret)
+        أرجع;
 
     tpm_smbios_measure();
     tpm_add_action(2, "Start Option ROM Scan");
 }
 
-static void
-tpm20_prepboot(void)
+ساكن فراغ
+tpm20_prepboot(فراغ)
 {
-    int ret = tpm20_stirrandom();
-    if (ret)
-         goto err_exit;
+    صحيح ret = tpm20_stirrandom();
+    إذا (ret)
+         اذهب err_exit;
 
     u8 auth[20];
-    ret = tpm20_getrandom(&auth[0], sizeof(auth));
-    if (ret)
-        goto err_exit;
+    ret = tpm20_getrandom(&auth[0], حجم(auth));
+    إذا (ret)
+        اذهب err_exit;
 
     ret = tpm20_hierarchychangeauth(auth);
-    if (ret)
-        goto err_exit;
+    إذا (ret)
+        اذهب err_exit;
 
-    return;
+    أرجع;
 
 err_exit:
     dprintf(DEBUG_tcg, "TCGBIOS: TPM malfunctioning (line %d).\n", __LINE__);
@@ -1261,21 +1261,21 @@ err_exit:
     tpm_set_failure();
 }
 
-void
-tpm_prepboot(void)
+فراغ
+tpm_prepboot(فراغ)
 {
-    if (!CONFIG_TCGBIOS)
-        return;
+    إذا (!CONFIG_TCGBIOS)
+        أرجع;
 
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
-        if (TPM_has_physical_presence)
+    بدل (TPM_version) {
+    حالة TPM_VERSION_1_2:
+        إذا (TPM_has_physical_presence)
             tpm_simple_cmd(0, TPM_ORD_PhysicalPresence,
                            2, TPM_PP_NOT_PRESENT_LOCK, TPM_DURATION_TYPE_SHORT);
-        break;
-    case TPM_VERSION_2:
+        اكسر;
+    حالة TPM_VERSION_2:
         tpm20_prepboot();
-        break;
+        اكسر;
     }
 
     tpm_add_action(4, "Calling INT 19h");
@@ -1285,34 +1285,34 @@ tpm_prepboot(void)
 /*
  * Add measurement to the log about an option rom
  */
-void
-tpm_option_rom(const void *addr, u32 len)
+فراغ
+tpm_option_rom(ثابت فراغ *addr, u32 len)
 {
-    if (!tpm_is_working())
-        return;
+    إذا (!tpm_is_working())
+        أرجع;
 
-    struct pcctes_romex pcctes = {
+    بنية pcctes_romex pcctes = {
         .eventid = 7,
-        .eventdatasize = sizeof(u16) + sizeof(u16) + SHA1_BUFSIZE,
+        .eventdatasize = حجم(u16) + حجم(u16) + SHA1_BUFSIZE,
     };
-    sha1((const u8 *)addr, len, pcctes.digest);
+    sha1((ثابت u8 *)addr, len, pcctes.digest);
     tpm_add_measurement_to_log(2,
                                EV_EVENT_TAG,
-                               (const char *)&pcctes, sizeof(pcctes),
-                               (u8 *)&pcctes, sizeof(pcctes));
+                               (ثابت حرف *)&pcctes, حجم(pcctes),
+                               (u8 *)&pcctes, حجم(pcctes));
 }
 
-void
-tpm_add_bcv(u32 bootdrv, const u8 *addr, u32 length)
+فراغ
+tpm_add_bcv(u32 bootdrv, ثابت u8 *addr, u32 length)
 {
-    if (!tpm_is_working())
-        return;
+    إذا (!tpm_is_working())
+        أرجع;
 
-    if (length < 0x200)
-        return;
+    إذا (length < 0x200)
+        أرجع;
 
-    const char *string = "Booting BCV device 00h (Floppy)";
-    if (bootdrv == 0x80)
+    ثابت حرف *string = "Booting BCV device 00h (Floppy)";
+    إذا (bootdrv == 0x80)
         string = "Booting BCV device 80h (HDD)";
     tpm_add_action(4, string);
 
@@ -1330,60 +1330,60 @@ tpm_add_bcv(u32 bootdrv, const u8 *addr, u32 length)
                                addr + 0x1b8, 0x48);
 }
 
-void
-tpm_add_cdrom(u32 bootdrv, const u8 *addr, u32 length)
+فراغ
+tpm_add_cdrom(u32 bootdrv, ثابت u8 *addr, u32 length)
 {
-    if (!tpm_is_working())
-        return;
+    إذا (!tpm_is_working())
+        أرجع;
 
     tpm_add_action(4, "Booting from CD ROM device");
 
     /* specs: see section 'El Torito' */
-    const char *string = "EL TORITO IPL";
+    ثابت حرف *string = "EL TORITO IPL";
     tpm_add_measurement_to_log(4, EV_IPL,
                                string, strlen(string),
                                addr, length);
 }
 
-void
-tpm_add_cdrom_catalog(const u8 *addr, u32 length)
+فراغ
+tpm_add_cdrom_catalog(ثابت u8 *addr, u32 length)
 {
-    if (!tpm_is_working())
-        return;
+    إذا (!tpm_is_working())
+        أرجع;
 
     tpm_add_action(4, "Booting from CD ROM device");
 
     /* specs: see section 'El Torito' */
-    const char *string = "BOOT CATALOG";
+    ثابت حرف *string = "BOOT CATALOG";
     tpm_add_measurement_to_log(5, EV_IPL_PARTITION_DATA,
                                string, strlen(string),
                                addr, length);
 }
 
-void
-tpm_s3_resume(void)
+فراغ
+tpm_s3_resume(فراغ)
 {
-    if (!tpm_is_working())
-        return;
+    إذا (!tpm_is_working())
+        أرجع;
 
     dprintf(DEBUG_tcg, "TCGBIOS: Resuming with TPM_Startup(ST_STATE)\n");
 
-    int ret = -1;
+    صحيح ret = -1;
 
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
+    بدل (TPM_version) {
+    حالة TPM_VERSION_1_2:
         ret = tpm_simple_cmd(0, TPM_ORD_Startup,
                              2, TPM_ST_STATE, TPM_DURATION_TYPE_SHORT);
-        break;
-    case TPM_VERSION_2:
+        اكسر;
+    حالة TPM_VERSION_2:
         ret = tpm_simple_cmd(0, TPM2_CC_Startup,
                              2, TPM2_SU_STATE, TPM_DURATION_TYPE_SHORT);
 
         dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_Startup(SU_STATE) = 0x%08x\n",
                 ret);
 
-        if (ret)
-            goto err_exit;
+        إذا (ret)
+            اذهب err_exit;
 
 
         ret = tpm_simple_cmd(0, TPM2_CC_SelfTest,
@@ -1392,13 +1392,13 @@ tpm_s3_resume(void)
         dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_SelfTest() = 0x%08x\n",
                 ret);
 
-        break;
+        اكسر;
     }
 
-    if (ret)
-        goto err_exit;
+    إذا (ret)
+        اذهب err_exit;
 
-    return;
+    أرجع;
 
 err_exit:
     dprintf(DEBUG_tcg, "TCGBIOS: TPM malfunctioning (line %d).\n", __LINE__);
@@ -1413,262 +1413,262 @@ err_exit:
 
 u8 TPM_interface_shutdown VARLOW;
 
-static inline void *input_buf32(struct bregs *regs)
+ساكن مضمن فراغ *شغرو_buf32(بنية bregs *regs)
 {
-    return MAKE_FLATPTR(regs->es, regs->di);
+    أرجع MAKE_FLATPTR(regs->es, regs->di);
 }
 
-static inline void *output_buf32(struct bregs *regs)
+ساكن مضمن فراغ *output_buf32(بنية bregs *regs)
 {
-    return MAKE_FLATPTR(regs->ds, regs->si);
+    أرجع MAKE_FLATPTR(regs->ds, regs->si);
 }
 
-static u32
-hash_log_extend(struct pcpes *pcpes, const void *hashdata, u32 hashdata_length
-                , void *event, int extend)
+ساكن u32
+hash_log_extend(بنية pcpes *pcpes, ثابت فراغ *hashdata, u32 hashdata_length
+                , فراغ *event, صحيح extend)
 {
-    if (pcpes->pcrindex >= 24)
-        return TCG_INVALID_INPUT_PARA;
-    if (hashdata)
+    إذا (pcpes->pcrindex >= 24)
+        أرجع TCG_INVALID_شغرو_PARA;
+    إذا (hashdata)
         sha1(hashdata, hashdata_length, pcpes->digest);
 
-    struct tpm_log_entry le = {
+    بنية tpm_log_entry le = {
         .hdr.pcrindex = pcpes->pcrindex,
         .hdr.eventtype = pcpes->eventtype,
     };
-    int digest_len = tpm12_build_digest_direct(&le, pcpes->digest);
-    if (digest_len < 0)
-        return TCG_GENERAL_ERROR;
-    if (extend) {
-        int ret = tpm_extend(&le, digest_len);
-        if (ret)
-            return TCG_TCG_COMMAND_ERROR;
+    صحيح digest_len = tpm12_build_digest_direct(&le, pcpes->digest);
+    إذا (digest_len < 0)
+        أرجع TCG_GENERAL_ERROR;
+    إذا (extend) {
+        صحيح ret = tpm_extend(&le, digest_len);
+        إذا (ret)
+            أرجع TCG_TCG_COMMAND_ERROR;
     }
     tpm12_build_digest_direct(&le, pcpes->digest);
-    int ret = tpm_log_event(&le.hdr, digest_len
+    صحيح ret = tpm_log_event(&le.hdr, digest_len
                             , pcpes->event, pcpes->eventdatasize);
-    if (ret)
-        return TCG_PC_LOGOVERFLOW;
-    return 0;
+    إذا (ret)
+        أرجع TCG_PC_LOGOVERFLOW;
+    أرجع 0;
 }
 
-static u32
-hash_log_extend_event_int(const struct hleei_short *hleei_s,
-                          struct hleeo *hleeo)
+ساكن u32
+hash_log_extend_event_int(ثابت بنية hleei_short *hleei_s,
+                          بنية hleeo *hleeo)
 {
     u32 rc = 0;
-    struct hleei_long *hleei_l = (struct hleei_long *)hleei_s;
-    const void *logdataptr;
+    بنية hleei_long *hleei_l = (بنية hleei_long *)hleei_s;
+    ثابت فراغ *logdataptr;
     u32 logdatalen;
-    struct pcpes *pcpes;
+    بنية pcpes *pcpes;
     u32 pcrindex;
 
     /* short or long version? */
-    switch (hleei_s->ipblength) {
-    case sizeof(struct hleei_short):
+    بدل (hleei_s->ipblength) {
+    حالة حجم(بنية hleei_short):
         /* short */
         logdataptr = hleei_s->logdataptr;
         logdatalen = hleei_s->logdatalen;
         pcrindex = hleei_s->pcrindex;
-    break;
+    اكسر;
 
-    case sizeof(struct hleei_long):
+    حالة حجم(بنية hleei_long):
         /* long */
         logdataptr = hleei_l->logdataptr;
         logdatalen = hleei_l->logdatalen;
         pcrindex = hleei_l->pcrindex;
-    break;
+    اكسر;
 
-    default:
+    افتراضي:
         /* bad input block */
-        rc = TCG_INVALID_INPUT_PARA;
-        goto err_exit;
+        rc = TCG_INVALID_شغرو_PARA;
+        اذهب err_exit;
     }
 
-    pcpes = (struct pcpes *)logdataptr;
+    pcpes = (بنية pcpes *)logdataptr;
 
-    if (pcpes->pcrindex != pcrindex
-        || logdatalen != sizeof(*pcpes) + pcpes->eventdatasize) {
-        rc = TCG_INVALID_INPUT_PARA;
-        goto err_exit;
+    إذا (pcpes->pcrindex != pcrindex
+        || logdatalen != حجم(*pcpes) + pcpes->eventdatasize) {
+        rc = TCG_INVALID_شغرو_PARA;
+        اذهب err_exit;
     }
     rc = hash_log_extend(pcpes, hleei_s->hashdataptr, hleei_s->hashdatalen
                          , pcpes->event, 1);
-    if (rc)
-        goto err_exit;
+    إذا (rc)
+        اذهب err_exit;
 
-    hleeo->opblength = sizeof(struct hleeo);
+    hleeo->opblength = حجم(بنية hleeo);
     hleeo->reserved  = 0;
-    hleeo->eventnumber = tpm_state.entry_count;
-    memcpy(hleeo->digest, pcpes->digest, sizeof(hleeo->digest));
+    hleeo->eventnumber = tpm_state.entry_كدي;
+    memcpy(hleeo->digest, pcpes->digest, حجم(hleeo->digest));
 
 err_exit:
-    if (rc != 0) {
+    إذا (rc != 0) {
         hleeo->opblength = 4;
         hleeo->reserved  = 0;
     }
 
-    return rc;
+    أرجع rc;
 }
 
-static u32
-pass_through_to_tpm_int(struct pttti *pttti, struct pttto *pttto)
+ساكن u32
+pass_through_to_tpm_int(بنية pttti *pttti, بنية pttto *pttto)
 {
     u32 rc = 0;
-    struct tpm_req_header *trh = (void*)pttti->tpmopin;
+    بنية tpm_req_header *trh = (فراغ*)pttti->tpmopin;
 
-    if (pttti->ipblength < sizeof(struct pttti) + sizeof(*trh)
-        || pttti->ipblength != sizeof(struct pttti) + be32_to_cpu(trh->totlen)
-        || pttti->opblength < sizeof(struct pttto)) {
-        rc = TCG_INVALID_INPUT_PARA;
-        goto err_exit;
+    إذا (pttti->ipblength < حجم(بنية pttti) + حجم(*trh)
+        || pttti->ipblength != حجم(بنية pttti) + be32_to_cpu(trh->totlen)
+        || pttti->opblength < حجم(بنية pttto)) {
+        rc = TCG_INVALID_شغرو_PARA;
+        اذهب err_exit;
     }
 
     u16 tag = be16_to_cpu(trh->tag);
 
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
-        if (tag != TPM_TAG_RQU_CMD && tag != TPM_TAG_RQU_AUTH1_CMD
+    بدل (TPM_version) {
+    حالة TPM_VERSION_1_2:
+        إذا (tag != TPM_TAG_RQU_CMD && tag != TPM_TAG_RQU_AUTH1_CMD
             && tag != TPM_TAG_RQU_AUTH2_CMD) {
-            rc = TCG_INVALID_INPUT_PARA;
-            goto err_exit;
+            rc = TCG_INVALID_شغرو_PARA;
+            اذهب err_exit;
         }
-        break;
-    case TPM_VERSION_2:
-        if (tag != TPM2_ST_NO_SESSIONS && tag != TPM2_ST_SESSIONS) {
-            rc = TCG_INVALID_INPUT_PARA;
-            goto err_exit;
+        اكسر;
+    حالة TPM_VERSION_2:
+        إذا (tag != TPM2_ST_NO_SESSIONS && tag != TPM2_ST_SESSIONS) {
+            rc = TCG_INVALID_شغرو_PARA;
+            اذهب err_exit;
         }
     }
 
-    u32 resbuflen = pttti->opblength - offsetof(struct pttto, tpmopout);
-    int ret = tpmhw_transmit(0, trh, pttto->tpmopout, &resbuflen,
+    u32 resbuflen = pttti->opblength - offsetof(بنية pttto, tpmopout);
+    صحيح ret = tpmhw_transmit(0, trh, pttto->tpmopout, &resbuflen,
                              TPM_DURATION_TYPE_LONG /* worst case */);
-    if (ret) {
+    إذا (ret) {
         rc = TCG_FATAL_COM_ERROR;
-        goto err_exit;
+        اذهب err_exit;
     }
 
-    pttto->opblength = offsetof(struct pttto, tpmopout) + resbuflen;
+    pttto->opblength = offsetof(بنية pttto, tpmopout) + resbuflen;
     pttto->reserved  = 0;
 
 err_exit:
-    if (rc != 0) {
+    إذا (rc != 0) {
         pttto->opblength = 4;
         pttto->reserved = 0;
     }
 
-    return rc;
+    أرجع rc;
 }
 
-static u32
-shutdown_preboot_interface(void)
+ساكن u32
+shutdown_preboot_interface(فراغ)
 {
     TPM_interface_shutdown = 1;
-    return 0;
+    أرجع 0;
 }
 
-static u32
-hash_log_event_int(const struct hlei *hlei, struct hleo *hleo)
+ساكن u32
+hash_log_event_int(ثابت بنية hlei *hlei, بنية hleo *hleo)
 {
     u32 rc = 0;
     u16 size;
-    struct pcpes *pcpes;
+    بنية pcpes *pcpes;
 
     size = hlei->ipblength;
-    if (size != sizeof(*hlei)) {
-        rc = TCG_INVALID_INPUT_PARA;
-        goto err_exit;
+    إذا (size != حجم(*hlei)) {
+        rc = TCG_INVALID_شغرو_PARA;
+        اذهب err_exit;
     }
 
-    pcpes = (struct pcpes *)hlei->logdataptr;
+    pcpes = (بنية pcpes *)hlei->logdataptr;
 
-    if (pcpes->pcrindex != hlei->pcrindex
+    إذا (pcpes->pcrindex != hlei->pcrindex
         || pcpes->eventtype != hlei->logeventtype
-        || hlei->logdatalen != sizeof(*pcpes) + pcpes->eventdatasize) {
-        rc = TCG_INVALID_INPUT_PARA;
-        goto err_exit;
+        || hlei->logdatalen != حجم(*pcpes) + pcpes->eventdatasize) {
+        rc = TCG_INVALID_شغرو_PARA;
+        اذهب err_exit;
     }
     rc = hash_log_extend(pcpes, hlei->hashdataptr, hlei->hashdatalen
                          , pcpes->event, 0);
-    if (rc)
-        goto err_exit;
+    إذا (rc)
+        اذهب err_exit;
 
     /* updating the log was fine */
-    hleo->opblength = sizeof(struct hleo);
+    hleo->opblength = حجم(بنية hleo);
     hleo->reserved  = 0;
-    hleo->eventnumber = tpm_state.entry_count;
+    hleo->eventnumber = tpm_state.entry_كدي;
 
 err_exit:
-    if (rc != 0) {
+    إذا (rc != 0) {
         hleo->opblength = 2;
         hleo->reserved = 0;
     }
 
-    return rc;
+    أرجع rc;
 }
 
-static u32
-hash_all_int(const struct hai *hai, u8 *hash)
+ساكن u32
+hash_all_int(ثابت بنية hai *hai, u8 *hash)
 {
-    if (hai->ipblength != sizeof(struct hai) ||
+    إذا (hai->ipblength != حجم(بنية hai) ||
         hai->hashdataptr == 0 ||
         hai->hashdatalen == 0 ||
         hai->algorithmid != TPM_ALG_SHA)
-        return TCG_INVALID_INPUT_PARA;
+        أرجع TCG_INVALID_شغرو_PARA;
 
-    sha1((const u8 *)hai->hashdataptr, hai->hashdatalen, hash);
-    return 0;
+    sha1((ثابت u8 *)hai->hashdataptr, hai->hashdatalen, hash);
+    أرجع 0;
 }
 
-static u32
-tss_int(struct ti *ti, struct to *to)
+ساكن u32
+tss_int(بنية ti *ti, بنية to *to)
 {
-    to->opblength = sizeof(struct to);
+    to->opblength = حجم(بنية to);
     to->reserved  = 0;
 
-    return TCG_PC_UNSUPPORTED;
+    أرجع TCG_PC_UNSUPPORTED;
 }
 
-static u32
+ساكن u32
 compact_hash_log_extend_event_int(u8 *buffer,
                                   u32 info,
                                   u32 length,
                                   u32 pcrindex,
                                   u32 *edx_ptr)
 {
-    struct pcpes pcpes = {
+    بنية pcpes pcpes = {
         .pcrindex      = pcrindex,
         .eventtype     = EV_COMPACT_HASH,
-        .eventdatasize = sizeof(info),
+        .eventdatasize = حجم(info),
     };
     u32 rc = hash_log_extend(&pcpes, buffer, length, &info, 1);
-    if (rc)
-        return rc;
+    إذا (rc)
+        أرجع rc;
 
-    *edx_ptr = tpm_state.entry_count;
-    return 0;
+    *edx_ptr = tpm_state.entry_كدي;
+    أرجع 0;
 }
 
-void VISIBLE32FLAT
-tpm_interrupt_handler32(struct bregs *regs)
+فراغ VISIBLE32FLAT
+tpm_interrupt_handler32(بنية bregs *regs)
 {
-    if (!CONFIG_TCGBIOS)
-        return;
+    إذا (!CONFIG_TCGBIOS)
+        أرجع;
 
     set_cf(regs, 0);
 
-    if (TPM_interface_shutdown && regs->al) {
+    إذا (TPM_interface_shutdown && regs->al) {
         regs->eax = TCG_INTERFACE_SHUTDOWN;
-        return;
+        أرجع;
     }
 
-    switch ((enum irq_ids)regs->al) {
-    case TCG_StatusCheck:
-        if (!tpmhw_is_present()) {
+    بدل ((تعداد irq_ids)regs->al) {
+    حالة TCG_StatusCheck:
+        إذا (!tpmhw_is_present()) {
             /* no TPM available */
             regs->eax = TCG_PC_TPM_NOT_PRESENT;
-        } else {
+        } وإلا {
             regs->eax = 0;
             regs->ebx = TCG_MAGIC;
             regs->ch = TCG_VERSION_MAJOR;
@@ -1677,55 +1677,55 @@ tpm_interrupt_handler32(struct bregs *regs)
             regs->esi = (u32)tpm_state.log_area_start_address;
             regs->edi = (u32)tpm_state.log_area_last_entry;
         }
-        break;
+        اكسر;
 
-    case TCG_HashLogExtendEvent:
+    حالة TCG_HashLogExtendEvent:
         regs->eax =
             hash_log_extend_event_int(
-                  (struct hleei_short *)input_buf32(regs),
-                  (struct hleeo *)output_buf32(regs));
-        break;
+                  (بنية hleei_short *)شغرو_buf32(regs),
+                  (بنية hleeo *)output_buf32(regs));
+        اكسر;
 
-    case TCG_PassThroughToTPM:
+    حالة TCG_PassThroughToTPM:
         regs->eax =
-            pass_through_to_tpm_int((struct pttti *)input_buf32(regs),
-                                    (struct pttto *)output_buf32(regs));
-        break;
+            pass_through_to_tpm_int((بنية pttti *)شغرو_buf32(regs),
+                                    (بنية pttto *)output_buf32(regs));
+        اكسر;
 
-    case TCG_ShutdownPreBootInterface:
+    حالة TCG_ShutdownPreBootInterface:
         regs->eax = shutdown_preboot_interface();
-        break;
+        اكسر;
 
-    case TCG_HashLogEvent:
-        regs->eax = hash_log_event_int((struct hlei*)input_buf32(regs),
-                                       (struct hleo*)output_buf32(regs));
-        break;
+    حالة TCG_HashLogEvent:
+        regs->eax = hash_log_event_int((بنية hlei*)شغرو_buf32(regs),
+                                       (بنية hleo*)output_buf32(regs));
+        اكسر;
 
-    case TCG_HashAll:
+    حالة TCG_HashAll:
         regs->eax =
-            hash_all_int((struct hai*)input_buf32(regs),
+            hash_all_int((بنية hai*)شغرو_buf32(regs),
                           (u8 *)output_buf32(regs));
-        break;
+        اكسر;
 
-    case TCG_TSS:
-        regs->eax = tss_int((struct ti*)input_buf32(regs),
-                            (struct to*)output_buf32(regs));
-        break;
+    حالة TCG_TSS:
+        regs->eax = tss_int((بنية ti*)شغرو_buf32(regs),
+                            (بنية to*)output_buf32(regs));
+        اكسر;
 
-    case TCG_CompactHashLogExtendEvent:
+    حالة TCG_CompactHashLogExtendEvent:
         regs->eax =
-          compact_hash_log_extend_event_int((u8 *)input_buf32(regs),
+          compact_hash_log_extend_event_int((u8 *)شغرو_buf32(regs),
                                             regs->esi,
                                             regs->ecx,
                                             regs->edx,
                                             &regs->edx);
-        break;
+        اكسر;
 
-    default:
+    افتراضي:
         set_cf(regs, 1);
     }
 
-    return;
+    أرجع;
 }
 
 
@@ -1733,66 +1733,66 @@ tpm_interrupt_handler32(struct bregs *regs)
  * TPM Configuration Menu
  ****************************************************************/
 
-typedef u8 tpm_ppi_code;
+تعريفنوع u8 tpm_ppi_code;
 
-static int
-tpm12_read_has_owner(int *has_owner)
+ساكن صحيح
+tpm12_read_has_owner(صحيح *has_owner)
 {
-    struct tpm_res_getcap_ownerauth oauth;
-    int ret = tpm12_get_capability(TPM_CAP_PROPERTY, TPM_CAP_PROP_OWNER
-                                   , &oauth.hdr, sizeof(oauth));
-    if (ret)
-        return -1;
+    بنية tpm_res_getcap_ownerauth oauth;
+    صحيح ret = tpm12_get_capability(TPM_CAP_PROPERTY, TPM_CAP_PROP_OWNER
+                                   , &oauth.hdr, حجم(oauth));
+    إذا (ret)
+        أرجع -1;
 
     *has_owner = oauth.flag;
 
-    return 0;
+    أرجع 0;
 }
 
-static int
-tpm12_enable_tpm(int enable, int verbose)
+ساكن صحيح
+tpm12_enable_tpm(صحيح enable, صحيح verbose)
 {
-    struct tpm_permanent_flags pf;
-    int ret = tpm12_read_permanent_flags((char *)&pf, sizeof(pf));
-    if (ret)
-        return -1;
+    بنية tpm_permanent_flags pf;
+    صحيح ret = tpm12_read_permanent_flags((حرف *)&pf, حجم(pf));
+    إذا (ret)
+        أرجع -1;
 
-    if (pf.flags[PERM_FLAG_IDX_DISABLE] && !enable)
-        return 0;
+    إذا (pf.flags[PERM_FLAG_IDX_DISABLE] && !enable)
+        أرجع 0;
 
     ret = tpm_simple_cmd(0, enable ? TPM_ORD_PhysicalEnable
                                    : TPM_ORD_PhysicalDisable,
                          0, 0, TPM_DURATION_TYPE_SHORT);
-    if (ret) {
-        if (enable)
+    إذا (ret) {
+        إذا (enable)
             dprintf(DEBUG_tcg, "TCGBIOS: Enabling the TPM failed.\n");
-        else
+        وإلا
             dprintf(DEBUG_tcg, "TCGBIOS: Disabling the TPM failed.\n");
     }
-    return ret;
+    أرجع ret;
 }
 
-static int
-tpm12_activate_tpm(int activate, int allow_reset, int verbose)
+ساكن صحيح
+tpm12_activate_tpm(صحيح activate, صحيح allow_reset, صحيح verbose)
 {
-    struct tpm_permanent_flags pf;
-    int ret = tpm12_read_permanent_flags((char *)&pf, sizeof(pf));
-    if (ret)
-        return -1;
+    بنية tpm_permanent_flags pf;
+    صحيح ret = tpm12_read_permanent_flags((حرف *)&pf, حجم(pf));
+    إذا (ret)
+        أرجع -1;
 
-    if (pf.flags[PERM_FLAG_IDX_DEACTIVATED] && !activate)
-        return 0;
+    إذا (pf.flags[PERM_FLAG_IDX_DEACTIVATED] && !activate)
+        أرجع 0;
 
-    if (pf.flags[PERM_FLAG_IDX_DISABLE])
-        return 0;
+    إذا (pf.flags[PERM_FLAG_IDX_DISABLE])
+        أرجع 0;
 
     ret = tpm_simple_cmd(0, TPM_ORD_PhysicalSetDeactivated,
                          1, activate ? 0x00 : 0x01, TPM_DURATION_TYPE_SHORT);
-    if (ret)
-        return ret;
+    إذا (ret)
+        أرجع ret;
 
-    if (activate && allow_reset) {
-        if (verbose) {
+    إذا (activate && allow_reset) {
+        إذا (verbose) {
             printf("Requiring a reboot to activate the TPM.\n");
 
             msleep(2000);
@@ -1800,148 +1800,148 @@ tpm12_activate_tpm(int activate, int allow_reset, int verbose)
         reset();
     }
 
-    return 0;
+    أرجع 0;
 }
 
-static int
-tpm12_enable_activate(int allow_reset, int verbose)
+ساكن صحيح
+tpm12_enable_activate(صحيح allow_reset, صحيح verbose)
 {
-    int ret = tpm12_enable_tpm(1, verbose);
-    if (ret)
-        return ret;
+    صحيح ret = tpm12_enable_tpm(1, verbose);
+    إذا (ret)
+        أرجع ret;
 
-    return tpm12_activate_tpm(1, allow_reset, verbose);
+    أرجع tpm12_activate_tpm(1, allow_reset, verbose);
 }
 
-static int
-tpm12_force_clear(int enable_activate_before, int enable_activate_after,
-                  int verbose)
+ساكن صحيح
+tpm12_force_clear(صحيح enable_activate_before, صحيح enable_activate_after,
+                  صحيح verbose)
 {
-    int has_owner;
-    int ret = tpm12_read_has_owner(&has_owner);
-    if (ret)
-        return -1;
-    if (!has_owner) {
-        if (verbose)
+    صحيح has_owner;
+    صحيح ret = tpm12_read_has_owner(&has_owner);
+    إذا (ret)
+        أرجع -1;
+    إذا (!has_owner) {
+        إذا (verbose)
             printf("TPM does not have an owner.\n");
-        return 0;
+        أرجع 0;
     }
 
-    if (enable_activate_before) {
+    إذا (enable_activate_before) {
         ret = tpm12_enable_activate(0, verbose);
-        if (ret) {
+        إذا (ret) {
             dprintf(DEBUG_tcg,
                     "TCGBIOS: Enabling/activating the TPM failed.\n");
-            return ret;
+            أرجع ret;
         }
     }
 
     ret = tpm_simple_cmd(0, TPM_ORD_ForceClear,
                          0, 0, TPM_DURATION_TYPE_SHORT);
-    if (ret)
-        return ret;
+    إذا (ret)
+        أرجع ret;
 
-    if (!enable_activate_after) {
-        if (verbose)
+    إذا (!enable_activate_after) {
+        إذا (verbose)
             printf("Owner successfully cleared.\n"
                    "You will need to enable/activate the TPM again.\n\n");
-        return 0;
+        أرجع 0;
     }
 
-    return tpm12_enable_activate(1, verbose);
+    أرجع tpm12_enable_activate(1, verbose);
 }
 
-static int
-tpm12_set_owner_install(int allow, int verbose)
+ساكن صحيح
+tpm12_set_owner_install(صحيح allow, صحيح verbose)
 {
-    int has_owner;
-    int ret = tpm12_read_has_owner(&has_owner);
-    if (ret)
-        return -1;
-    if (has_owner) {
-        if (verbose)
+    صحيح has_owner;
+    صحيح ret = tpm12_read_has_owner(&has_owner);
+    إذا (ret)
+        أرجع -1;
+    إذا (has_owner) {
+        إذا (verbose)
             printf("Must first remove owner.\n");
-        return 0;
+        أرجع 0;
     }
 
-    struct tpm_permanent_flags pf;
-    ret = tpm12_read_permanent_flags((char *)&pf, sizeof(pf));
-    if (ret)
-        return -1;
+    بنية tpm_permanent_flags pf;
+    ret = tpm12_read_permanent_flags((حرف *)&pf, حجم(pf));
+    إذا (ret)
+        أرجع -1;
 
-    if (pf.flags[PERM_FLAG_IDX_DISABLE]) {
-        if (verbose)
+    إذا (pf.flags[PERM_FLAG_IDX_DISABLE]) {
+        إذا (verbose)
             printf("TPM must first be enable.\n");
-        return 0;
+        أرجع 0;
     }
 
     ret = tpm_simple_cmd(0, TPM_ORD_SetOwnerInstall,
                          1, allow ? 0x01 : 0x00, TPM_DURATION_TYPE_SHORT);
-    if (ret)
-        return ret;
+    إذا (ret)
+        أرجع ret;
 
-    if (verbose)
+    إذا (verbose)
         printf("Installation of owner %s.\n", allow ? "enabled" : "disabled");
 
-    return 0;
+    أرجع 0;
 }
 
-static int
-tpm12_process_cfg(tpm_ppi_code msgCode, int verbose)
+ساكن صحيح
+tpm12_process_cfg(tpm_ppi_code سكو_Code, صحيح verbose)
 {
-    int ret = 0;
+    صحيح ret = 0;
 
-    switch (msgCode) {
-        case TPM_PPI_OP_NOOP: /* no-op */
-            break;
+    بدل (سكو_Code) {
+        حالة TPM_PPI_OP_NOOP: /* no-op */
+            اكسر;
 
-        case TPM_PPI_OP_ENABLE:
+        حالة TPM_PPI_OP_ENABLE:
             ret = tpm12_enable_tpm(1, verbose);
-            break;
+            اكسر;
 
-        case TPM_PPI_OP_DISABLE:
+        حالة TPM_PPI_OP_DISABLE:
             ret = tpm12_enable_tpm(0, verbose);
-            break;
+            اكسر;
 
-        case TPM_PPI_OP_ACTIVATE:
+        حالة TPM_PPI_OP_ACTIVATE:
             ret = tpm12_activate_tpm(1, 1, verbose);
-            break;
+            اكسر;
 
-        case TPM_PPI_OP_DEACTIVATE:
+        حالة TPM_PPI_OP_DEACTIVATE:
             ret = tpm12_activate_tpm(0, 1, verbose);
-            break;
+            اكسر;
 
-        case TPM_PPI_OP_CLEAR:
+        حالة TPM_PPI_OP_CLEAR:
             ret = tpm12_force_clear(1, 0, verbose);
-            break;
+            اكسر;
 
-        case TPM_PPI_OP_SET_OWNERINSTALL_TRUE:
+        حالة TPM_PPI_OP_SET_OWNERINSTALL_TRUE:
             ret = tpm12_set_owner_install(1, verbose);
-            break;
+            اكسر;
 
-        case TPM_PPI_OP_SET_OWNERINSTALL_FALSE:
+        حالة TPM_PPI_OP_SET_OWNERINSTALL_FALSE:
             ret = tpm12_set_owner_install(0, verbose);
-            break;
+            اكسر;
 
-        default:
-            break;
+        افتراضي:
+            اكسر;
     }
 
-    if (ret)
-        printf("Op %d: An error occurred: 0x%x\n", msgCode, ret);
+    إذا (ret)
+        printf("Op %d: An error occurred: 0x%x\n", سكو_Code, ret);
 
-    return ret;
+    أرجع ret;
 }
 
-static int
-tpm20_clearcontrol(u8 disable, int verbose)
+ساكن صحيح
+tpm20_clearcontrol(u8 disable, صحيح verbose)
 {
-    struct tpm2_req_clearcontrol trc = {
+    بنية tpm2_req_clearcontrol trc = {
         .hdr.tag     = cpu_to_be16(TPM2_ST_SESSIONS),
-        .hdr.totlen  = cpu_to_be32(sizeof(trc)),
+        .hdr.totlen  = cpu_to_be32(حجم(trc)),
         .hdr.ordinal = cpu_to_be32(TPM2_CC_ClearControl),
         .authhandle = cpu_to_be32(TPM2_RH_PLATFORM),
-        .authblocksize = cpu_to_be32(sizeof(trc.authblock)),
+        .authblocksize = cpu_to_be32(حجم(trc.authblock)),
         .authblock = {
             .handle = cpu_to_be32(TPM2_RS_PW),
             .noncesize = cpu_to_be16(0),
@@ -1950,28 +1950,28 @@ tpm20_clearcontrol(u8 disable, int verbose)
         },
         .disable = disable,
     };
-    struct tpm_rsp_header rsp;
-    u32 resp_length = sizeof(rsp);
-    int ret = tpmhw_transmit(0, &trc.hdr, &rsp, &resp_length,
+    بنية tpm_rsp_header rsp;
+    u32 resp_length = حجم(rsp);
+    صحيح ret = tpmhw_transmit(0, &trc.hdr, &rsp, &resp_length,
                              TPM_DURATION_TYPE_SHORT);
-    if (ret || resp_length != sizeof(rsp) || rsp.errcode)
+    إذا (ret || resp_length != حجم(rsp) || rsp.errcode)
         ret = -1;
 
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_ClearControl = 0x%08x\n",
             ret);
 
-    return ret;
+    أرجع ret;
 }
 
-static int
-tpm20_clear(void)
+ساكن صحيح
+tpm20_clear(فراغ)
 {
-    struct tpm2_req_clear trq = {
+    بنية tpm2_req_clear trq = {
         .hdr.tag     = cpu_to_be16(TPM2_ST_SESSIONS),
-        .hdr.totlen  = cpu_to_be32(sizeof(trq)),
+        .hdr.totlen  = cpu_to_be32(حجم(trq)),
         .hdr.ordinal = cpu_to_be32(TPM2_CC_Clear),
         .authhandle = cpu_to_be32(TPM2_RH_PLATFORM),
-        .authblocksize = cpu_to_be32(sizeof(trq.authblock)),
+        .authblocksize = cpu_to_be32(حجم(trq.authblock)),
         .authblock = {
             .handle = cpu_to_be32(TPM2_RS_PW),
             .noncesize = cpu_to_be16(0),
@@ -1979,128 +1979,128 @@ tpm20_clear(void)
             .pwdsize = cpu_to_be16(0),
         },
     };
-    struct tpm_rsp_header rsp;
-    u32 resp_length = sizeof(rsp);
-    int ret = tpmhw_transmit(0, &trq.hdr, &rsp, &resp_length,
+    بنية tpm_rsp_header rsp;
+    u32 resp_length = حجم(rsp);
+    صحيح ret = tpmhw_transmit(0, &trq.hdr, &rsp, &resp_length,
                              TPM_DURATION_TYPE_MEDIUM);
-    if (ret || resp_length != sizeof(rsp) || rsp.errcode)
+    إذا (ret || resp_length != حجم(rsp) || rsp.errcode)
         ret = -1;
 
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_Clear = 0x%08x\n",
             ret);
 
-    return ret;
+    أرجع ret;
 }
 
-static int
-tpm20_process_cfg(tpm_ppi_code msgCode, int verbose)
+ساكن صحيح
+tpm20_process_cfg(tpm_ppi_code سكو_Code, صحيح verbose)
 {
-    int ret = 0;
+    صحيح ret = 0;
 
-    switch (msgCode) {
-        case TPM_PPI_OP_NOOP: /* no-op */
-            break;
+    بدل (سكو_Code) {
+        حالة TPM_PPI_OP_NOOP: /* no-op */
+            اكسر;
 
-        case TPM_PPI_OP_CLEAR:
+        حالة TPM_PPI_OP_CLEAR:
             ret = tpm20_clearcontrol(0, verbose);
-            if (!ret)
+            إذا (!ret)
                  ret = tpm20_clear();
-            break;
+            اكسر;
     }
 
-    if (ret)
-        printf("Op %d: An error occurred: 0x%x\n", msgCode, ret);
+    إذا (ret)
+        printf("Op %d: An error occurred: 0x%x\n", سكو_Code, ret);
 
-    return ret;
+    أرجع ret;
 }
 
-static int
-tpm12_get_tpm_state(void)
+ساكن صحيح
+tpm12_get_tpm_state(فراغ)
 {
-    int state = 0;
-    struct tpm_permanent_flags pf;
-    int has_owner;
+    صحيح state = 0;
+    بنية tpm_permanent_flags pf;
+    صحيح has_owner;
 
-    if (tpm12_read_permanent_flags((char *)&pf, sizeof(pf)) ||
+    إذا (tpm12_read_permanent_flags((حرف *)&pf, حجم(pf)) ||
         tpm12_read_has_owner(&has_owner))
-        return ~0;
+        أرجع ~0;
 
-    if (!pf.flags[PERM_FLAG_IDX_DISABLE])
+    إذا (!pf.flags[PERM_FLAG_IDX_DISABLE])
         state |= TPM_STATE_ENABLED;
 
-    if (!pf.flags[PERM_FLAG_IDX_DEACTIVATED])
+    إذا (!pf.flags[PERM_FLAG_IDX_DEACTIVATED])
         state |= TPM_STATE_ACTIVE;
 
-    if (has_owner) {
+    إذا (has_owner) {
         state |= TPM_STATE_OWNED;
-    } else {
-        if (pf.flags[PERM_FLAG_IDX_OWNERSHIP])
+    } وإلا {
+        إذا (pf.flags[PERM_FLAG_IDX_OWNERSHIP])
             state |= TPM_STATE_OWNERINSTALL;
     }
 
-    return state;
+    أرجع state;
 }
 
-static void
-tpm12_show_tpm_menu(int state, int next_scancodes[7])
+ساكن فراغ
+tpm12_show_tpm_menu(صحيح state, صحيح next_scancodes[7])
 {
-    int i = 0;
+    صحيح i = 0;
 
     printf("\nThe current state of the TPM is:\n");
 
-    if (state & TPM_STATE_ENABLED)
+    إذا (state & TPM_STATE_ENABLED)
         printf("  Enabled");
-    else
+    وإلا
         printf("  Disabled");
 
-    if (state & TPM_STATE_ACTIVE)
+    إذا (state & TPM_STATE_ACTIVE)
         printf(" and active\n");
-    else
+    وإلا
         printf(" and deactivated\n");
 
-    if (state & TPM_STATE_OWNED)
+    إذا (state & TPM_STATE_OWNED)
         printf("  Ownership has been taken\n");
-    else {
+    وإلا {
         printf("  Ownership has not been taken\n");
-        if (state & TPM_STATE_OWNERINSTALL)
+        إذا (state & TPM_STATE_OWNERINSTALL)
             printf("  A user can take ownership of the TPM\n");
-        else
+        وإلا
             printf("  Taking ownership of the TPM has been disabled\n");
     }
 
-    if ((state & (TPM_STATE_ENABLED | TPM_STATE_ACTIVE)) !=
+    إذا ((state & (TPM_STATE_ENABLED | TPM_STATE_ACTIVE)) !=
         (TPM_STATE_ENABLED | TPM_STATE_ACTIVE)) {
         printf("\nNote: To make use of all functionality, the TPM must be "
                "enabled and active.\n");
     }
 
     printf("\nAvailable options are:\n");
-    if (state & TPM_STATE_ENABLED) {
+    إذا (state & TPM_STATE_ENABLED) {
         printf(" d. Disable the TPM\n");
         next_scancodes[i++] = 32;
 
-        if (state & TPM_STATE_ACTIVE) {
+        إذا (state & TPM_STATE_ACTIVE) {
             printf(" v. Deactivate the TPM\n");
             next_scancodes[i++] = 47;
 
-            if (state & TPM_STATE_OWNERINSTALL) {
+            إذا (state & TPM_STATE_OWNERINSTALL) {
                 printf(" p. Prevent installation of an owner\n");
                 next_scancodes[i++] = 25;
-            } else {
+            } وإلا {
                 printf(" s. Allow installation of an owner\n");
                 next_scancodes[i++] = 31;
             }
-        } else {
+        } وإلا {
             printf(" a. Activate the TPM\n");
             next_scancodes[i++] = 30;
         }
 
-    } else {
+    } وإلا {
         printf(" e. Enable the TPM\n");
         next_scancodes[i++] = 18;
     }
 
-    if (state & TPM_STATE_OWNED) {
+    إذا (state & TPM_STATE_OWNED) {
         printf(" c. Clear ownership\n");
         next_scancodes[i++] = 46;
     }
@@ -2108,88 +2108,88 @@ tpm12_show_tpm_menu(int state, int next_scancodes[7])
     next_scancodes[i++] = 0;
 }
 
-static void
-tpm12_menu(void)
+ساكن فراغ
+tpm12_menu(فراغ)
 {
-    int scancode, next_scancodes[7];
-    tpm_ppi_code msgCode;
-    int state = 0, i;
-    int waitkey;
+    صحيح scancode, next_scancodes[7];
+    tpm_ppi_code سكو_Code;
+    صحيح state = 0, i;
+    صحيح waitkey;
 
     printf("The Trusted Platform Module (TPM) is a hardware device in "
            "this machine.\n"
            "It can help verify the integrity of system software.\n\n");
 
-    for (;;) {
-        if ((state = tpm12_get_tpm_state()) != ~0) {
+    لكل (;;) {
+        إذا ((state = tpm12_get_tpm_state()) != ~0) {
             tpm12_show_tpm_menu(state, next_scancodes);
-        } else {
+        } وإلا {
             printf("TPM is not working correctly.\n");
-            return;
+            أرجع;
         }
 
         printf("\nIf no change is desired or if this menu was reached by "
                "mistake, press ESC to\n"
                "reboot the machine.\n");
 
-        msgCode = TPM_PPI_OP_NOOP;
+        سكو_Code = TPM_PPI_OP_NOOP;
 
         waitkey = 1;
 
-        while (waitkey) {
-            while ((scancode = get_keystroke(1000)) == ~0)
+        طالما (waitkey) {
+            طالما ((scancode = get_keystroke(1000)) == ~0)
                 ;
 
-            switch (scancode) {
-            case 1:
+            بدل (scancode) {
+            حالة 1:
                 // ESC
                 reset();
-                break;
-            case 18: /* e. enable */
-                msgCode = TPM_PPI_OP_ENABLE;
-                break;
-            case 32: /* d. disable */
-                msgCode = TPM_PPI_OP_DISABLE;
-                break;
-            case 30: /* a. activate */
-                msgCode = TPM_PPI_OP_ACTIVATE;
-                break;
-            case 47: /* v. deactivate */
-                msgCode = TPM_PPI_OP_DEACTIVATE;
-                break;
-            case 46: /* c. clear owner */
-                msgCode = TPM_PPI_OP_CLEAR;
-                break;
-            case 25: /* p. prevent ownerinstall */
-                msgCode = TPM_PPI_OP_SET_OWNERINSTALL_FALSE;
-                break;
-            case 31: /* s. allow ownerinstall */
-                msgCode = TPM_PPI_OP_SET_OWNERINSTALL_TRUE;
-                break;
-            default:
-                continue;
+                اكسر;
+            حالة 18: /* e. enable */
+                سكو_Code = TPM_PPI_OP_ENABLE;
+                اكسر;
+            حالة 32: /* d. disable */
+                سكو_Code = TPM_PPI_OP_DISABLE;
+                اكسر;
+            حالة 30: /* a. activate */
+                سكو_Code = TPM_PPI_OP_ACTIVATE;
+                اكسر;
+            حالة 47: /* v. deactivate */
+                سكو_Code = TPM_PPI_OP_DEACTIVATE;
+                اكسر;
+            حالة 46: /* c. clear owner */
+                سكو_Code = TPM_PPI_OP_CLEAR;
+                اكسر;
+            حالة 25: /* p. prevent ownerinstall */
+                سكو_Code = TPM_PPI_OP_SET_OWNERINSTALL_FALSE;
+                اكسر;
+            حالة 31: /* s. allow ownerinstall */
+                سكو_Code = TPM_PPI_OP_SET_OWNERINSTALL_TRUE;
+                اكسر;
+            افتراضي:
+                استمر;
             }
 
             /*
              * Using the next_scancodes array, check whether the
              * pressed key is currently a valid option.
              */
-            for (i = 0; i < sizeof(next_scancodes); i++) {
-                if (next_scancodes[i] == 0)
-                    break;
+            لكل (i = 0; i < حجم(next_scancodes); i++) {
+                إذا (next_scancodes[i] == 0)
+                    اكسر;
 
-                if (next_scancodes[i] == scancode) {
-                    tpm12_process_cfg(msgCode, 1);
+                إذا (next_scancodes[i] == scancode) {
+                    tpm12_process_cfg(سكو_Code, 1);
                     waitkey = 0;
-                    break;
+                    اكسر;
                 }
             }
         }
     }
 }
 
-static int
-tpm20_menu_change_active_pcrbanks(void)
+ساكن صحيح
+tpm20_menu_change_active_pcrbanks(فراغ)
 {
     u8 active_banks, suppt_banks;
 
@@ -2197,20 +2197,20 @@ tpm20_menu_change_active_pcrbanks(void)
 
     u8 activate_banks = active_banks;
 
-    while (1) {
+    طالما (1) {
         u8 hashalg_flag = TPM2_ALG_SHA1_FLAG;
         u8 i = 0;
 
         printf("\nToggle active PCR banks by pressing number key\n\n");
 
-        while (hashalg_flag) {
+        طالما (hashalg_flag) {
             u8 flag = hashalg_flag & suppt_banks;
-            const char *hashname = tpm20_hashalg_flag_to_name(flag);
+            ثابت حرف *hashname = tpm20_hashalg_flag_to_name(flag);
 
             i++;
-            if (hashname) {
+            إذا (hashname) {
                 printf("  %d: %s", i, hashname);
-                if (activate_banks & hashalg_flag)
+                إذا (activate_banks & hashalg_flag)
                     printf(" (enabled)");
                 printf("\n");
             }
@@ -2219,44 +2219,44 @@ tpm20_menu_change_active_pcrbanks(void)
         }
         printf("\n"
                "ESC: return to previous menu without changes\n");
-        if (activate_banks)
+        إذا (activate_banks)
             printf("A  : activate selection\n");
 
         u8 flagnum;
-        int show = 0;
-        while (!show) {
-            int scancode = get_keystroke(1000);
+        صحيح show = 0;
+        طالما (!show) {
+            صحيح scancode = get_keystroke(1000);
 
-            switch (scancode) {
-            case ~0:
-                continue;
-            case 1: /* ESC */
+            بدل (scancode) {
+            حالة ~0:
+                استمر;
+            حالة 1: /* ESC */
                 printf("\n");
-                return -1;
-            case 2 ... 6: /* keys 1 .. 5 */
+                أرجع -1;
+            حالة 2 ... 6: /* keys 1 .. 5 */
                 flagnum = scancode - 1;
-                if (flagnum > i)
-                    continue;
-                if (suppt_banks & (1 << (flagnum - 1))) {
+                إذا (flagnum > i)
+                    استمر;
+                إذا (suppt_banks & (1 << (flagnum - 1))) {
                     activate_banks ^= 1 << (flagnum - 1);
                     show = 1;
                 }
-                break;
-            case 30: /* a */
-                if (activate_banks)
+                اكسر;
+            حالة 30: /* a */
+                إذا (activate_banks)
                     tpm20_activate_pcrbanks(activate_banks);
             }
         }
     }
 }
 
-static void
-tpm20_menu(void)
+ساكن فراغ
+tpm20_menu(فراغ)
 {
-    int scan_code;
-    tpm_ppi_code msgCode;
+    صحيح scan_code;
+    tpm_ppi_code سكو_Code;
 
-    for (;;) {
+    لكل (;;) {
         printf("1. Clear TPM\n");
         printf("2. Change active PCR banks\n");
 
@@ -2264,58 +2264,58 @@ tpm20_menu(void)
                "mistake, press ESC to\n"
                "reboot the machine.\n");
 
-        msgCode = TPM_PPI_OP_NOOP;
+        سكو_Code = TPM_PPI_OP_NOOP;
 
-        while ((scan_code = get_keystroke(1000)) == ~0)
+        طالما ((scan_code = get_keystroke(1000)) == ~0)
             ;
 
-        switch (scan_code) {
-        case 1:
+        بدل (scan_code) {
+        حالة 1:
             // ESC
             reset();
-            break;
-        case 2:
-            msgCode = TPM_PPI_OP_CLEAR;
-            break;
-        case 3:
+            اكسر;
+        حالة 2:
+            سكو_Code = TPM_PPI_OP_CLEAR;
+            اكسر;
+        حالة 3:
             tpm20_menu_change_active_pcrbanks();
-            continue;
-        default:
-            continue;
+            استمر;
+        افتراضي:
+            استمر;
         }
 
-        tpm20_process_cfg(msgCode, 0);
+        tpm20_process_cfg(سكو_Code, 0);
     }
 }
 
-void
-tpm_menu(void)
+فراغ
+tpm_menu(فراغ)
 {
-    if (!CONFIG_TCGBIOS)
-        return;
+    إذا (!CONFIG_TCGBIOS)
+        أرجع;
 
-    while (get_keystroke(0) >= 0)
+    طالما (get_keystroke(0) >= 0)
         ;
     wait_threads();
 
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
+    بدل (TPM_version) {
+    حالة TPM_VERSION_1_2:
         tpm12_menu();
-        break;
-    case TPM_VERSION_2:
+        اكسر;
+    حالة TPM_VERSION_2:
         tpm20_menu();
-        break;
+        اكسر;
     }
 }
 
-int
-tpm_can_show_menu(void)
+صحيح
+tpm_can_show_menu(فراغ)
 {
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
-        return tpm_is_working() && TPM_has_physical_presence;
-    case TPM_VERSION_2:
-        return tpm_is_working();
+    بدل (TPM_version) {
+    حالة TPM_VERSION_1_2:
+        أرجع tpm_is_working() && TPM_has_physical_presence;
+    حالة TPM_VERSION_2:
+        أرجع tpm_is_working();
     }
-    return 0;
+    أرجع 0;
 }
