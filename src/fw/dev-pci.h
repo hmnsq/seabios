@@ -1,7 +1,7 @@
-#ifndef _PCI_CAP_H
-#define _PCI_CAP_H
+#جے_بنا_تعریف _PCI_CAP_H
+#تعریف_کرو _PCI_CAP_H
 
-#include "types.h"
+#ضمن "types.h"
 
 /*
  *
@@ -35,18 +35,18 @@
 */
 
 /* Offset of vendor-specific capability type field */
-#define PCI_CAP_REDHAT_TYPE_OFFSET  3
+#تعریف_کرو PCI_CAP_REDHAT_TYPE_وتھ  3
 
 /* List of valid Red Hat vendor-specific capability types */
-#define REDHAT_CAP_RESOURCE_RESERVE 1
+#تعریف_کرو REDHAT_CAP_RESOURCE_RESERVE 1
 
 
 /* Offsets of RESOURCE_RESERVE capability fields */
-#define RES_RESERVE_BUS_RES        4
-#define RES_RESERVE_IO             8
-#define RES_RESERVE_MEM            16
-#define RES_RESERVE_PREF_MEM_32    20
-#define RES_RESERVE_PREF_MEM_64    24
-#define RES_RESERVE_CAP_SIZE       32
+#تعریف_کرو RES_RESERVE_BUS_RES        4
+#تعریف_کرو RES_RESERVE_IO             8
+#تعریف_کرو RES_RESERVE_MEM            16
+#تعریف_کرو RES_RESERVE_PREF_MEM_32    20
+#تعریف_کرو RES_RESERVE_PREF_MEM_64    24
+#تعریف_کرو RES_RESERVE_CAP_ناپ       32
 
-#endif /* _PCI_CAP_H */
+#جے_انت /* _PCI_CAP_H */

@@ -5,110 +5,110 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // SET_IVT
-#include "config.h" // CONFIG_*
-#include "output.h" // dprintf
-#include "pic.h" // pic_*
+#ضمن "biosvar.h" // SET_IVT
+#ضمن "config.h" // CONFIG_*
+#ضمن "output.h" // dprintf
+#ضمن "pic.h" // pic_*
 
 u16
-pic_irqmask_read(void)
+pic_irqmask_read(فراغ)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return 0;
-    return inb(PORT_PIC1_DATA) | (inb(PORT_PIC2_DATA) << 8);
+    إذا (!CONFIG_HARDWARE_IRQ)
+        أرجع 0;
+    أرجع inb(پورٹ_PIC1_انکڑے) | (inb(پورٹ_PIC2_انکڑے) << 8);
 }
 
-void
-pic_irqmask_write(u16 mask)
+فراغ
+pic_irqmask_write(u16 نقاب)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return;
-    outb(mask, PORT_PIC1_DATA);
-    outb(mask >> 8, PORT_PIC2_DATA);
+    إذا (!CONFIG_HARDWARE_IRQ)
+        أرجع;
+    outb(نقاب, پورٹ_PIC1_انکڑے);
+    outb(نقاب >> 8, پورٹ_PIC2_انکڑے);
 }
 
-void
-pic_irqmask_mask(u16 off, u16 on)
+فراغ
+pic_irqmask_نقاب(u16 off, u16 on)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return;
+    إذا (!CONFIG_HARDWARE_IRQ)
+        أرجع;
     u8 pic1off = off, pic1on = on, pic2off = off>>8, pic2on = on>>8;
-    outb((inb(PORT_PIC1_DATA) & ~pic1off) | pic1on, PORT_PIC1_DATA);
-    outb((inb(PORT_PIC2_DATA) & ~pic2off) | pic2on, PORT_PIC2_DATA);
+    outb((inb(پورٹ_PIC1_انکڑے) & ~pic1off) | pic1on, پورٹ_PIC1_انکڑے);
+    outb((inb(پورٹ_PIC2_انکڑے) & ~pic2off) | pic2on, پورٹ_PIC2_انکڑے);
 }
 
-void
+فراغ
 pic_reset(u8 irq0, u8 irq8)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return;
+    إذا (!CONFIG_HARDWARE_IRQ)
+        أرجع;
     // Send ICW1 (select OCW1 + will send ICW4)
-    outb(0x11, PORT_PIC1_CMD);
-    outb(0x11, PORT_PIC2_CMD);
+    outb(0x11, پورٹ_PIC1_CMD);
+    outb(0x11, پورٹ_PIC2_CMD);
     // Send ICW2 (base irqs: 0x08-0x0f for irq0-7, 0x70-0x77 for irq8-15)
-    outb(irq0, PORT_PIC1_DATA);
-    outb(irq8, PORT_PIC2_DATA);
+    outb(irq0, پورٹ_PIC1_انکڑے);
+    outb(irq8, پورٹ_PIC2_انکڑے);
     // Send ICW3 (cascaded pic ids)
-    outb(0x04, PORT_PIC1_DATA);
-    outb(0x02, PORT_PIC2_DATA);
+    outb(0x04, پورٹ_PIC1_انکڑے);
+    outb(0x02, پورٹ_PIC2_انکڑے);
     // Send ICW4 (enable 8086 mode)
-    outb(0x01, PORT_PIC1_DATA);
-    outb(0x01, PORT_PIC2_DATA);
+    outb(0x01, پورٹ_PIC1_انکڑے);
+    outb(0x01, پورٹ_PIC2_انکڑے);
     // Mask all irqs (except cascaded PIC2 irq)
     pic_irqmask_write(PIC_IRQMASK_DEFAULT);
 }
 
-void
-pic_setup(void)
+فراغ
+pic_تیاری(فراغ)
 {
     dprintf(3, "init pic\n");
-    pic_reset(BIOS_HWIRQ0_VECTOR, BIOS_HWIRQ8_VECTOR);
+    pic_reset(BIOS_HWIRQ0_سمتیہ, BIOS_HWIRQ8_سمتیہ);
 }
 
-void
-enable_hwirq(int hwirq, struct segoff_s func)
+فراغ
+enable_hwirq(صحيح hwirq, بنية segoff_s func)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return;
-    pic_irqmask_mask(1 << hwirq, 0);
-    int vector;
-    if (hwirq < 8)
-        vector = BIOS_HWIRQ0_VECTOR + hwirq;
-    else
-        vector = BIOS_HWIRQ8_VECTOR + hwirq - 8;
-    SET_IVT(vector, func);
+    إذا (!CONFIG_HARDWARE_IRQ)
+        أرجع;
+    pic_irqmask_نقاب(1 << hwirq, 0);
+    صحيح سمتیہ;
+    إذا (hwirq < 8)
+        سمتیہ = BIOS_HWIRQ0_سمتیہ + hwirq;
+    وإلا
+        سمتیہ = BIOS_HWIRQ8_سمتیہ + hwirq - 8;
+    سیٹ_IVT(سمتیہ, func);
 }
 
-static u8
-pic_isr1_read(void)
+ساكن u8
+pic_isr1_read(فراغ)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return 0;
+    إذا (!CONFIG_HARDWARE_IRQ)
+        أرجع 0;
     // 0x0b == select OCW1 + read ISR
-    outb(0x0b, PORT_PIC1_CMD);
-    return inb(PORT_PIC1_CMD);
+    outb(0x0b, پورٹ_PIC1_CMD);
+    أرجع inb(پورٹ_PIC1_CMD);
 }
 
-static u8
-pic_isr2_read(void)
+ساكن u8
+pic_isr2_read(فراغ)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return 0;
+    إذا (!CONFIG_HARDWARE_IRQ)
+        أرجع 0;
     // 0x0b == select OCW1 + read ISR
-    outb(0x0b, PORT_PIC2_CMD);
-    return inb(PORT_PIC2_CMD);
+    outb(0x0b, پورٹ_PIC2_CMD);
+    أرجع inb(پورٹ_PIC2_CMD);
 }
 
 // Handler for otherwise unused hardware irqs.
-void VISIBLE16
-handle_hwpic1(void)
+فراغ VISIBLE16
+handle_hwpic1(فراغ)
 {
     dprintf(DEBUG_ISR_hwpic1, "handle_hwpic1 irq=%x\n", pic_isr1_read());
     pic_eoi1();
 }
 
-void VISIBLE16
-handle_hwpic2(void)
+فراغ VISIBLE16
+handle_hwpic2(فراغ)
 {
     dprintf(DEBUG_ISR_hwpic2, "handle_hwpic2 irq=%x\n", pic_isr2_read());
     pic_eoi2();

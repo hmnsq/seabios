@@ -1,284 +1,284 @@
 // Basic x86 asm functions.
-#ifndef __X86_H
-#define __X86_H
+#جے_بنا_تعریف __X86_H
+#تعریف_کرو __X86_H
 
 // CPU flag bitdefs
-#define F_CF (1<<0)
-#define F_ZF (1<<6)
-#define F_IF (1<<9)
-#define F_ID (1<<21)
+#تعریف_کرو F_CF (1<<0)
+#تعریف_کرو F_ZF (1<<6)
+#تعریف_کرو F_IF (1<<9)
+#تعریف_کرو F_ID (1<<21)
 
 // CR0 flags
-#define CR0_PG (1<<31) // Paging
-#define CR0_CD (1<<30) // Cache disable
-#define CR0_NW (1<<29) // Not Write-through
-#define CR0_PE (1<<0)  // Protection enable
+#تعریف_کرو CR0_PG (1<<31) // Paging
+#تعریف_کرو CR0_CD (1<<30) // Cache disable
+#تعریف_کرو CR0_NW (1<<29) // Not Write-through
+#تعریف_کرو CR0_PE (1<<0)  // Protection enable
 
 // PORT_A20 bitdefs
-#define PORT_A20 0x0092
-#define A20_ENABLE_BIT 0x02
+#تعریف_کرو پورٹ_A20 0x0092
+#تعریف_کرو A20_ENABLE_ثنائی_ہندسہ 0x02
 
-#ifndef __ASSEMBLY__
+#جے_بنا_تعریف __ASSEMBLY__
 
-#include "types.h" // u32
+#ضمن "types.h" // u32
 
-static inline void irq_disable(void)
+ساكن مضمن فراغ irq_disable(فراغ)
 {
-    asm volatile("cli": : :"memory");
+    asm متطاير("cli": : :"memory");
 }
 
-static inline void irq_enable(void)
+ساكن مضمن فراغ irq_enable(فراغ)
 {
-    asm volatile("sti": : :"memory");
+    asm متطاير("sti": : :"memory");
 }
 
-static inline u32 save_flags(void)
+ساكن مضمن u32 save_flags(فراغ)
 {
     u32 flags;
-    asm volatile("pushfl ; popl %0" : "=rm" (flags));
-    return flags;
+    asm متطاير("pushfl ; popl %0" : "=rm" (flags));
+    أرجع flags;
 }
 
-static inline void restore_flags(u32 flags)
+ساكن مضمن فراغ restore_flags(u32 flags)
 {
-    asm volatile("pushl %0 ; popfl" : : "g" (flags) : "memory", "cc");
+    asm متطاير("pushl %0 ; popfl" : : "g" (flags) : "memory", "cc");
 }
 
-static inline void cpu_relax(void)
+ساكن مضمن فراغ cpu_relax(فراغ)
 {
-    asm volatile("rep ; nop": : :"memory");
+    asm متطاير("rep ; nop": : :"memory");
 }
 
-static inline void nop(void)
+ساكن مضمن فراغ nop(فراغ)
 {
-    asm volatile("nop");
+    asm متطاير("nop");
 }
 
-static inline void hlt(void)
+ساكن مضمن فراغ hlt(فراغ)
 {
-    asm volatile("hlt": : :"memory");
+    asm متطاير("hlt": : :"memory");
 }
 
-static inline void wbinvd(void)
+ساكن مضمن فراغ wbinvd(فراغ)
 {
-    asm volatile("wbinvd": : :"memory");
+    asm متطاير("wbinvd": : :"memory");
 }
 
-#define CPUID_TSC (1 << 4)
-#define CPUID_MSR (1 << 5)
-#define CPUID_APIC (1 << 9)
-#define CPUID_MTRR (1 << 12)
-#define CPUID_X2APIC (1 << 21)
-static inline void __cpuid(u32 index, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx)
+#تعریف_کرو CPUID_TSC (1 << 4)
+#تعریف_کرو CPUID_MSR (1 << 5)
+#تعریف_کرو CPUID_APIC (1 << 9)
+#تعریف_کرو CPUID_MTRR (1 << 12)
+#تعریف_کرو CPUID_X2APIC (1 << 21)
+ساكن مضمن فراغ __cpuid(u32 اشاریہ, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx)
 {
     asm("cpuid"
         : "=a" (*eax), "=b" (*ebx), "=c" (*ecx), "=d" (*edx)
-        : "0" (index));
+        : "0" (اشاریہ));
 }
 
-static inline u32 cr0_read(void) {
+ساكن مضمن u32 cr0_read(فراغ) {
     u32 cr0;
     asm("movl %%cr0, %0" : "=r"(cr0));
-    return cr0;
+    أرجع cr0;
 }
-static inline void cr0_write(u32 cr0) {
+ساكن مضمن فراغ cr0_write(u32 cr0) {
     asm("movl %0, %%cr0" : : "r"(cr0));
 }
-static inline void cr0_mask(u32 off, u32 on) {
+ساكن مضمن فراغ cr0_نقاب(u32 off, u32 on) {
     cr0_write((cr0_read() & ~off) | on);
 }
-static inline u16 cr0_vm86_read(void) {
+ساكن مضمن u16 cr0_vm86_read(فراغ) {
     u16 cr0;
     asm("smsww %0" : "=r"(cr0));
-    return cr0;
+    أرجع cr0;
 }
 
-static inline u64 rdmsr(u32 index)
+ساكن مضمن u64 rdmsr(u32 اشاریہ)
 {
     u64 ret;
-    asm ("rdmsr" : "=A"(ret) : "c"(index));
-    return ret;
+    asm ("rdmsr" : "=A"(ret) : "c"(اشاریہ));
+    أرجع ret;
 }
 
-static inline void wrmsr(u32 index, u64 val)
+ساكن مضمن فراغ wrmsr(u32 اشاریہ, u64 val)
 {
-    asm volatile ("wrmsr" : : "c"(index), "A"(val));
+    asm متطاير ("wrmsr" : : "c"(اشاریہ), "A"(val));
 }
 
-static inline u64 rdtscll(void)
+ساكن مضمن u64 rdtscll(فراغ)
 {
     u64 val;
-    asm volatile("rdtsc" : "=A" (val));
-    return val;
+    asm متطاير("rdtsc" : "=A" (val));
+    أرجع val;
 }
 
-static inline u32 __ffs(u32 word)
+ساكن مضمن u32 __ffs(u32 لفظ)
 {
     asm("bsf %1,%0"
-        : "=r" (word)
-        : "rm" (word));
-    return word;
+        : "=r" (لفظ)
+        : "rm" (لفظ));
+    أرجع لفظ;
 }
-static inline u32 __fls(u32 word)
+ساكن مضمن u32 __fls(u32 لفظ)
 {
     asm("bsr %1,%0"
-        : "=r" (word)
-        : "rm" (word));
-    return word;
+        : "=r" (لفظ)
+        : "rm" (لفظ));
+    أرجع لفظ;
 }
 
-static inline u32 getesp(void) {
+ساكن مضمن u32 getesp(فراغ) {
     u32 esp;
     asm("movl %%esp, %0" : "=rm"(esp));
-    return esp;
+    أرجع esp;
 }
 
-static inline u32 rol(u32 val, u16 rol) {
+ساكن مضمن u32 rol(u32 val, u16 rol) {
     u32 res;
-    asm volatile("roll %%cl, %%eax"
+    asm متطاير("roll %%cl, %%eax"
                  : "=a" (res) : "a" (val), "c" (rol));
-    return res;
+    أرجع res;
 }
 
-static inline u32 ror(u32 val, u16 ror) {
+ساكن مضمن u32 ror(u32 val, u16 ror) {
     u32 res;
-    asm volatile("rorl %%cl, %%eax"
+    asm متطاير("rorl %%cl, %%eax"
                  : "=a" (res) : "a" (val), "c" (ror));
-    return res;
+    أرجع res;
 }
 
-static inline void outb(u8 value, u16 port) {
-    __asm__ __volatile__("outb %b0, %w1" : : "a"(value), "Nd"(port));
+ساكن مضمن فراغ outb(u8 قدر, u16 پورٹ) {
+    __asm__ __volatile__("outb %b0, %w1" : : "a"(قدر), "Nd"(پورٹ));
 }
-static inline void outw(u16 value, u16 port) {
-    __asm__ __volatile__("outw %w0, %w1" : : "a"(value), "Nd"(port));
+ساكن مضمن فراغ outw(u16 قدر, u16 پورٹ) {
+    __asm__ __volatile__("outw %w0, %w1" : : "a"(قدر), "Nd"(پورٹ));
 }
-static inline void outl(u32 value, u16 port) {
-    __asm__ __volatile__("outl %0, %w1" : : "a"(value), "Nd"(port));
+ساكن مضمن فراغ outl(u32 قدر, u16 پورٹ) {
+    __asm__ __volatile__("outl %0, %w1" : : "a"(قدر), "Nd"(پورٹ));
 }
-static inline u8 inb(u16 port) {
-    u8 value;
-    __asm__ __volatile__("inb %w1, %b0" : "=a"(value) : "Nd"(port));
-    return value;
+ساكن مضمن u8 inb(u16 پورٹ) {
+    u8 قدر;
+    __asm__ __volatile__("inb %w1, %b0" : "=a"(قدر) : "Nd"(پورٹ));
+    أرجع قدر;
 }
-static inline u16 inw(u16 port) {
-    u16 value;
-    __asm__ __volatile__("inw %w1, %w0" : "=a"(value) : "Nd"(port));
-    return value;
+ساكن مضمن u16 inw(u16 پورٹ) {
+    u16 قدر;
+    __asm__ __volatile__("inw %w1, %w0" : "=a"(قدر) : "Nd"(پورٹ));
+    أرجع قدر;
 }
-static inline u32 inl(u16 port) {
-    u32 value;
-    __asm__ __volatile__("inl %w1, %0" : "=a"(value) : "Nd"(port));
-    return value;
+ساكن مضمن u32 inl(u16 پورٹ) {
+    u32 قدر;
+    __asm__ __volatile__("inl %w1, %0" : "=a"(قدر) : "Nd"(پورٹ));
+    أرجع قدر;
 }
 
-static inline void insb(u16 port, u8 *data, u32 count) {
-    asm volatile("rep insb (%%dx), %%es:(%%edi)"
-                 : "+c"(count), "+D"(data) : "d"(port) : "memory");
+ساكن مضمن فراغ insb(u16 پورٹ, u8 *انکڑے, u32 گنتی) {
+    asm متطاير("rep insb (%%dx), %%es:(%%edi)"
+                 : "+c"(گنتی), "+D"(انکڑے) : "d"(پورٹ) : "memory");
 }
-static inline void insw(u16 port, u16 *data, u32 count) {
-    asm volatile("rep insw (%%dx), %%es:(%%edi)"
-                 : "+c"(count), "+D"(data) : "d"(port) : "memory");
+ساكن مضمن فراغ insw(u16 پورٹ, u16 *انکڑے, u32 گنتی) {
+    asm متطاير("rep insw (%%dx), %%es:(%%edi)"
+                 : "+c"(گنتی), "+D"(انکڑے) : "d"(پورٹ) : "memory");
 }
-static inline void insl(u16 port, u32 *data, u32 count) {
-    asm volatile("rep insl (%%dx), %%es:(%%edi)"
-                 : "+c"(count), "+D"(data) : "d"(port) : "memory");
+ساكن مضمن فراغ insl(u16 پورٹ, u32 *انکڑے, u32 گنتی) {
+    asm متطاير("rep insl (%%dx), %%es:(%%edi)"
+                 : "+c"(گنتی), "+D"(انکڑے) : "d"(پورٹ) : "memory");
 }
 // XXX - outs not limited to es segment
-static inline void outsb(u16 port, u8 *data, u32 count) {
-    asm volatile("rep outsb %%es:(%%esi), (%%dx)"
-                 : "+c"(count), "+S"(data) : "d"(port) : "memory");
+ساكن مضمن فراغ outsb(u16 پورٹ, u8 *انکڑے, u32 گنتی) {
+    asm متطاير("rep outsb %%es:(%%esi), (%%dx)"
+                 : "+c"(گنتی), "+S"(انکڑے) : "d"(پورٹ) : "memory");
 }
-static inline void outsw(u16 port, u16 *data, u32 count) {
-    asm volatile("rep outsw %%es:(%%esi), (%%dx)"
-                 : "+c"(count), "+S"(data) : "d"(port) : "memory");
+ساكن مضمن فراغ outsw(u16 پورٹ, u16 *انکڑے, u32 گنتی) {
+    asm متطاير("rep outsw %%es:(%%esi), (%%dx)"
+                 : "+c"(گنتی), "+S"(انکڑے) : "d"(پورٹ) : "memory");
 }
-static inline void outsl(u16 port, u32 *data, u32 count) {
-    asm volatile("rep outsl %%es:(%%esi), (%%dx)"
-                 : "+c"(count), "+S"(data) : "d"(port) : "memory");
+ساكن مضمن فراغ outsl(u16 پورٹ, u32 *انکڑے, u32 گنتی) {
+    asm متطاير("rep outsl %%es:(%%esi), (%%dx)"
+                 : "+c"(گنتی), "+S"(انکڑے) : "d"(پورٹ) : "memory");
 }
 
 /* Compiler barrier is enough as an x86 CPU does not reorder reads or writes */
-static inline void smp_rmb(void) {
+ساكن مضمن فراغ smp_rmb(فراغ) {
     barrier();
 }
-static inline void smp_wmb(void) {
+ساكن مضمن فراغ smp_wmb(فراغ) {
     barrier();
 }
 
-static inline void writel(void *addr, u32 val) {
+ساكن مضمن فراغ writel(فراغ *addr, u32 val) {
     barrier();
-    *(volatile u32 *)addr = val;
+    *(متطاير u32 *)addr = val;
 }
-static inline void writew(void *addr, u16 val) {
+ساكن مضمن فراغ writew(فراغ *addr, u16 val) {
     barrier();
-    *(volatile u16 *)addr = val;
+    *(متطاير u16 *)addr = val;
 }
-static inline void writeb(void *addr, u8 val) {
+ساكن مضمن فراغ writeb(فراغ *addr, u8 val) {
     barrier();
-    *(volatile u8 *)addr = val;
+    *(متطاير u8 *)addr = val;
 }
-static inline u64 readq(const void *addr) {
-    u64 val = *(volatile const u64 *)addr;
+ساكن مضمن u64 readq(ثابت فراغ *addr) {
+    u64 val = *(متطاير ثابت u64 *)addr;
     barrier();
-    return val;
+    أرجع val;
 }
-static inline u32 readl(const void *addr) {
-    u32 val = *(volatile const u32 *)addr;
+ساكن مضمن u32 readl(ثابت فراغ *addr) {
+    u32 val = *(متطاير ثابت u32 *)addr;
     barrier();
-    return val;
+    أرجع val;
 }
-static inline u16 readw(const void *addr) {
-    u16 val = *(volatile const u16 *)addr;
+ساكن مضمن u16 readw(ثابت فراغ *addr) {
+    u16 val = *(متطاير ثابت u16 *)addr;
     barrier();
-    return val;
+    أرجع val;
 }
-static inline u8 readb(const void *addr) {
-    u8 val = *(volatile const u8 *)addr;
+ساكن مضمن u8 readb(ثابت فراغ *addr) {
+    u8 val = *(متطاير ثابت u8 *)addr;
     barrier();
-    return val;
+    أرجع val;
 }
 
 // GDT bits
-#define GDT_CODE     (0x9bULL << 40) // Code segment - P,R,A bits also set
-#define GDT_DATA     (0x93ULL << 40) // Data segment - W,A bits also set
-#define GDT_B        (0x1ULL << 54)  // Big flag
-#define GDT_G        (0x1ULL << 55)  // Granularity flag
+#تعریف_کرو GDT_کوڈ     (0x9bULL << 40) // Code segment - P,R,A bits also set
+#تعریف_کرو GDT_انکڑے     (0x93ULL << 40) // Data segment - W,A bits also set
+#تعریف_کرو GDT_B        (0x1ULL << 54)  // Big flag
+#تعریف_کرو GDT_G        (0x1ULL << 55)  // Granularity flag
 // GDT bits for segment base
-#define GDT_BASE(v)  ((((u64)(v) & 0xff000000) << 32)           \
+#تعریف_کرو GDT_ادھار(v)  ((((u64)(v) & 0xff000000) << 32)           \
                       | (((u64)(v) & 0x00ffffff) << 16))
 // GDT bits for segment limit (0-1Meg)
-#define GDT_LIMIT(v) ((((u64)(v) & 0x000f0000) << 32)   \
+#تعریف_کرو GDT_حد_بندی(v) ((((u64)(v) & 0x000f0000) << 32)   \
                       | (((u64)(v) & 0x0000ffff) << 0))
 // GDT bits for segment limit (0-4Gig in 4K chunks)
-#define GDT_GRANLIMIT(v) (GDT_G | GDT_LIMIT((v) >> 12))
+#تعریف_کرو GDT_GRANLIMIT(v) (GDT_G | GDT_حد_بندی((v) >> 12))
 
-struct descloc_s {
-    u16 length;
+بنية descloc_s {
+    u16 لمائی;
     u32 addr;
 } PACKED;
 
-static inline void sgdt(struct descloc_s *desc) {
+ساكن مضمن فراغ sgdt(بنية descloc_s *desc) {
     asm("sgdtl %0" : "=m"(*desc));
 }
-static inline void lgdt(struct descloc_s *desc) {
+ساكن مضمن فراغ lgdt(بنية descloc_s *desc) {
     asm("lgdtl %0" : : "m"(*desc) : "memory");
 }
 
-static inline u8 get_a20(void) {
-    return (inb(PORT_A20) & A20_ENABLE_BIT) != 0;
+ساكن مضمن u8 get_a20(فراغ) {
+    أرجع (inb(پورٹ_A20) & A20_ENABLE_ثنائی_ہندسہ) != 0;
 }
 
-static inline u8 set_a20(u8 cond) {
-    u8 val = inb(PORT_A20), a20_enabled = (val & A20_ENABLE_BIT) != 0;
-    if (a20_enabled != !!cond)
-        outb(val ^ A20_ENABLE_BIT, PORT_A20);
-    return a20_enabled;
+ساكن مضمن u8 سیٹ_a20(u8 cond) {
+    u8 val = inb(پورٹ_A20), a20_enabled = (val & A20_ENABLE_ثنائی_ہندسہ) != 0;
+    إذا (a20_enabled != !!cond)
+        outb(val ^ A20_ENABLE_ثنائی_ہندسہ, پورٹ_A20);
+    أرجع a20_enabled;
 }
 
 // x86.c
-void cpuid(u32 index, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx);
+فراغ cpuid(u32 اشاریہ, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx);
 
-#endif // !__ASSEMBLY__
+#جے_انت // !__ASSEMBLY__
 
-#endif // x86.h
+#جے_انت // x86.h

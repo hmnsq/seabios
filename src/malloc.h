@@ -1,70 +1,70 @@
-#ifndef __MALLOC_H
-#define __MALLOC_H
+#جے_بنا_تعریف __MALLOC_H
+#تعریف_کرو __MALLOC_H
 
-#include "types.h" // u32
+#ضمن "types.h" // u32
 
 // malloc.c
-extern struct zone_s ZoneLow, ZoneHigh, ZoneFSeg, ZoneTmpLow, ZoneTmpHigh;
-u32 rom_get_max(void);
-u32 rom_get_last(void);
-struct rom_header *rom_reserve(u32 size);
-int rom_confirm(u32 size);
-void malloc_csm_preinit(u32 low_pmm, u32 low_pmm_size, u32 hi_pmm,
-                        u32 hi_pmm_size);
-void malloc_preinit(void);
-extern u32 LegacyRamSize;
-void malloc_init(void);
-void malloc_prepboot(void);
-u32 malloc_palloc(struct zone_s *zone, u32 size, u32 align);
-void *_malloc(struct zone_s *zone, u32 size, u32 align);
-int malloc_pfree(u32 data);
-void free(void *data);
-u32 malloc_getspace(struct zone_s *zone);
-void malloc_sethandle(u32 data, u32 handle);
+خارجي بنية zone_s Zone_کم, Zone_بلند, ZoneFSeg, Zone_Tmp_کم, Zone_Tmp_بلند;
+u32 rom_get_max(فراغ);
+u32 rom_get_آخری(فراغ);
+بنية rom_سرخی *rom_reserve(u32 ناپ);
+صحيح rom_confirm(u32 ناپ);
+فراغ malloc_csm_preinit(u32 کم_pmm, u32 کم_pmm_ناپ, u32 hi_pmm,
+                        u32 hi_pmm_ناپ);
+فراغ malloc_preinit(فراغ);
+خارجي u32 Legacy_Ram_ناپ;
+فراغ malloc_init(فراغ);
+فراغ malloc_prepboot(فراغ);
+u32 malloc_palloc(بنية zone_s *zone, u32 ناپ, u32 align);
+فراغ *_malloc(بنية zone_s *zone, u32 ناپ, u32 align);
+صحيح malloc_pfree(u32 انکڑے);
+فراغ حرر(فراغ *انکڑے);
+u32 malloc_getspace(بنية zone_s *zone);
+فراغ malloc_sethandle(u32 انکڑے, u32 handle);
 u32 malloc_findhandle(u32 handle);
 
-#define MALLOC_DEFAULT_HANDLE 0xFFFFFFFF
+#تعریف_کرو MALLOC_DEFAULT_HANDLE 0xFFFFFFFF
 // Minimum alignment of malloc'd memory
-#define MALLOC_MIN_ALIGN 16
+#تعریف_کرو MALLOC_MIN_ALIGN 16
 // Helper functions for memory allocation.
-static inline void *malloc_low(u32 size) {
-    return _malloc(&ZoneLow, size, MALLOC_MIN_ALIGN);
+ساكن مضمن فراغ *malloc_کم(u32 ناپ) {
+    أرجع _malloc(&Zone_کم, ناپ, MALLOC_MIN_ALIGN);
 }
-static inline void *malloc_high(u32 size) {
-    return _malloc(&ZoneHigh, size, MALLOC_MIN_ALIGN);
+ساكن مضمن فراغ *malloc_بلند(u32 ناپ) {
+    أرجع _malloc(&Zone_بلند, ناپ, MALLOC_MIN_ALIGN);
 }
-static inline void *malloc_fseg(u32 size) {
-    return _malloc(&ZoneFSeg, size, MALLOC_MIN_ALIGN);
+ساكن مضمن فراغ *malloc_fseg(u32 ناپ) {
+    أرجع _malloc(&ZoneFSeg, ناپ, MALLOC_MIN_ALIGN);
 }
-static inline void *malloc_tmplow(u32 size) {
-    return _malloc(&ZoneTmpLow, size, MALLOC_MIN_ALIGN);
+ساكن مضمن فراغ *malloc_tmplow(u32 ناپ) {
+    أرجع _malloc(&Zone_Tmp_کم, ناپ, MALLOC_MIN_ALIGN);
 }
-static inline void *malloc_tmphigh(u32 size) {
-    return _malloc(&ZoneTmpHigh, size, MALLOC_MIN_ALIGN);
+ساكن مضمن فراغ *malloc_tmphigh(u32 ناپ) {
+    أرجع _malloc(&Zone_Tmp_بلند, ناپ, MALLOC_MIN_ALIGN);
 }
-static inline void *malloc_tmp(u32 size) {
-    void *ret = malloc_tmphigh(size);
-    if (ret)
-        return ret;
-    return malloc_tmplow(size);
+ساكن مضمن فراغ *malloc_tmp(u32 ناپ) {
+    فراغ *ret = malloc_tmphigh(ناپ);
+    إذا (ret)
+        أرجع ret;
+    أرجع malloc_tmplow(ناپ);
 }
-static inline void *memalign_low(u32 align, u32 size) {
-    return _malloc(&ZoneLow, size, align);
+ساكن مضمن فراغ *memalign_کم(u32 align, u32 ناپ) {
+    أرجع _malloc(&Zone_کم, ناپ, align);
 }
-static inline void *memalign_high(u32 align, u32 size) {
-    return _malloc(&ZoneHigh, size, align);
+ساكن مضمن فراغ *memalign_بلند(u32 align, u32 ناپ) {
+    أرجع _malloc(&Zone_بلند, ناپ, align);
 }
-static inline void *memalign_tmplow(u32 align, u32 size) {
-    return _malloc(&ZoneTmpLow, size, align);
+ساكن مضمن فراغ *memalign_tmplow(u32 align, u32 ناپ) {
+    أرجع _malloc(&Zone_Tmp_کم, ناپ, align);
 }
-static inline void *memalign_tmphigh(u32 align, u32 size) {
-    return _malloc(&ZoneTmpHigh, size, align);
+ساكن مضمن فراغ *memalign_tmphigh(u32 align, u32 ناپ) {
+    أرجع _malloc(&Zone_Tmp_بلند, ناپ, align);
 }
-static inline void *memalign_tmp(u32 align, u32 size) {
-    void *ret = memalign_tmphigh(align, size);
-    if (ret)
-        return ret;
-    return memalign_tmplow(align, size);
+ساكن مضمن فراغ *memalign_tmp(u32 align, u32 ناپ) {
+    فراغ *ret = memalign_tmphigh(align, ناپ);
+    إذا (ret)
+        أرجع ret;
+    أرجع memalign_tmplow(align, ناپ);
 }
 
-#endif // malloc.h
+#جے_انت // malloc.h

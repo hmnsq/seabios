@@ -19,84 +19,84 @@
  *  IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef MULTIBOOT_HEADER
-#define MULTIBOOT_HEADER 1
+#جے_بنا_تعریف MULTIBOOT_سرخی
+#تعریف_کرو MULTIBOOT_سرخی 1
 
 /* How many bytes from the start of the file we search for the header.  */
-#define MULTIBOOT_SEARCH			8192
-#define MULTIBOOT_HEADER_ALIGN			4
+#تعریف_کرو MULTIBOOT_تلاش			8192
+#تعریف_کرو MULTIBOOT_سرخی_ALIGN			4
 
 /* The magic field should contain this.  */
-#define MULTIBOOT_HEADER_MAGIC			0x1BADB002
+#تعریف_کرو MULTIBOOT_سرخی_MAGIC			0x1BADB002
 
 /* This should be in %eax.  */
-#define MULTIBOOT_BOOTLOADER_MAGIC		0x2BADB002
+#تعریف_کرو MULTIBOOT_BOOTLOADER_MAGIC		0x2BADB002
 
 /* Alignment of multiboot modules.  */
-#define MULTIBOOT_MOD_ALIGN			0x00001000
+#تعریف_کرو MULTIBOOT_MOD_ALIGN			0x00001000
 
 /* Alignment of the multiboot info structure.  */
-#define MULTIBOOT_INFO_ALIGN			0x00000004
+#تعریف_کرو MULTIBOOT_INFO_ALIGN			0x00000004
 
 /* Flags set in the 'flags' member of the multiboot header.  */
 
 /* Align all boot modules on i386 page (4KB) boundaries.  */
-#define MULTIBOOT_PAGE_ALIGN			0x00000001
+#تعریف_کرو MULTIBOOT_ورقہ_ALIGN			0x00000001
 
 /* Must pass memory information to OS.  */
-#define MULTIBOOT_MEMORY_INFO			0x00000002
+#تعریف_کرو MULTIBOOT_حافظہ_INFO			0x00000002
 
 /* Must pass video information to OS.  */
-#define MULTIBOOT_VIDEO_MODE			0x00000004
+#تعریف_کرو MULTIBOOT_VIDEO_منوال			0x00000004
 
 /* This flag indicates the use of the address fields in the header.  */
-#define MULTIBOOT_AOUT_KLUDGE			0x00010000
+#تعریف_کرو MULTIBOOT_AOUT_KLUDGE			0x00010000
 
 /* Flags to be set in the 'flags' member of the multiboot info structure.  */
 
 /* is there basic lower/upper memory information? */
-#define MULTIBOOT_INFO_MEMORY			0x00000001
+#تعریف_کرو MULTIBOOT_INFO_حافظہ			0x00000001
 /* is there a boot device set? */
-#define MULTIBOOT_INFO_BOOTDEV			0x00000002
+#تعریف_کرو MULTIBOOT_INFO_BOOTDEV			0x00000002
 /* is the command-line defined? */
-#define MULTIBOOT_INFO_CMDLINE			0x00000004
+#تعریف_کرو MULTIBOOT_INFO_CMDLINE			0x00000004
 /* are there modules to do something with? */
-#define MULTIBOOT_INFO_MODS			0x00000008
+#تعریف_کرو MULTIBOOT_INFO_MODS			0x00000008
 
 /* These next two are mutually exclusive */
 
 /* is there a symbol table loaded? */
-#define MULTIBOOT_INFO_AOUT_SYMS		0x00000010
+#تعریف_کرو MULTIBOOT_INFO_AOUT_SYMS		0x00000010
 /* is there an ELF section header table? */
-#define MULTIBOOT_INFO_ELF_SHDR			0X00000020
+#تعریف_کرو MULTIBOOT_INFO_ELF_SHDR			0X00000020
 
 /* is there a full memory map? */
-#define MULTIBOOT_INFO_MEM_MAP			0x00000040
+#تعریف_کرو MULTIBOOT_INFO_MEM_MAP			0x00000040
 
 /* Is there drive info?  */
-#define MULTIBOOT_INFO_DRIVE_INFO		0x00000080
+#تعریف_کرو MULTIBOOT_INFO_DRIVE_INFO		0x00000080
 
 /* Is there a config table?  */
-#define MULTIBOOT_INFO_CONFIG_TABLE		0x00000100
+#تعریف_کرو MULTIBOOT_INFO_CONFIG_جدول		0x00000100
 
 /* Is there a boot loader name?  */
-#define MULTIBOOT_INFO_BOOT_LOADER_NAME		0x00000200
+#تعریف_کرو MULTIBOOT_INFO_BOOT_LOADER_NAME		0x00000200
 
 /* Is there a APM table?  */
-#define MULTIBOOT_INFO_APM_TABLE		0x00000400
+#تعریف_کرو MULTIBOOT_INFO_APM_جدول		0x00000400
 
 /* Is there video information?  */
-#define MULTIBOOT_INFO_VBE_INFO		        0x00000800
-#define MULTIBOOT_INFO_FRAMEBUFFER_INFO	        0x00001000
+#تعریف_کرو MULTIBOOT_INFO_VBE_INFO		        0x00000800
+#تعریف_کرو MULTIBOOT_INFO_FRAMEBUFFER_INFO	        0x00001000
 
-#ifndef ASM_FILE
+#جے_بنا_تعریف ASM_FILE
 
-typedef unsigned char		multiboot_uint8_t;
-typedef unsigned short		multiboot_uint16_t;
-typedef unsigned int		multiboot_uint32_t;
-typedef unsigned long long	multiboot_uint64_t;
+تعريفنوع بنانشانی حرف		multiboot_uint8_t;
+تعريفنوع بنانشانی چھوٹا		multiboot_uint16_t;
+تعريفنوع بنانشانی صحيح		multiboot_uint32_t;
+تعريفنوع بنانشانی لما لما	multiboot_uint64_t;
 
-struct multiboot_header
+بنية multiboot_سرخی
 {
   /* Must be MULTIBOOT_MAGIC - see above.  */
   multiboot_uint32_t magic;
@@ -108,47 +108,47 @@ struct multiboot_header
   multiboot_uint32_t checksum;
 
   /* These are only valid if MULTIBOOT_AOUT_KLUDGE is set.  */
-  multiboot_uint32_t header_addr;
-  multiboot_uint32_t load_addr;
-  multiboot_uint32_t load_end_addr;
-  multiboot_uint32_t bss_end_addr;
-  multiboot_uint32_t entry_addr;
+  multiboot_uint32_t سرخی_addr;
+  multiboot_uint32_t لدو_addr;
+  multiboot_uint32_t لدو_سرا_addr;
+  multiboot_uint32_t bss_سرا_addr;
+  multiboot_uint32_t اندراج_addr;
 
   /* These are only valid if MULTIBOOT_VIDEO_MODE is set.  */
-  multiboot_uint32_t mode_type;
-  multiboot_uint32_t width;
-  multiboot_uint32_t height;
-  multiboot_uint32_t depth;
+  multiboot_uint32_t منوال_type;
+  multiboot_uint32_t چوڑائی;
+  multiboot_uint32_t اچائی;
+  multiboot_uint32_t ڈونگھائی;
 };
 
 /* The symbol table for a.out.  */
-struct multiboot_aout_symbol_table
+بنية multiboot_aout_علامت_جدول
 {
   multiboot_uint32_t tabsize;
   multiboot_uint32_t strsize;
   multiboot_uint32_t addr;
   multiboot_uint32_t reserved;
 };
-typedef struct multiboot_aout_symbol_table multiboot_aout_symbol_table_t;
+تعريفنوع بنية multiboot_aout_علامت_جدول multiboot_aout_علامت_جدول_t;
 
 /* The section header table for ELF.  */
-struct multiboot_elf_section_header_table
+بنية multiboot_elf_section_سرخی_جدول
 {
-  multiboot_uint32_t num;
-  multiboot_uint32_t size;
+  multiboot_uint32_t عدد;
+  multiboot_uint32_t ناپ;
   multiboot_uint32_t addr;
   multiboot_uint32_t shndx;
 };
-typedef struct multiboot_elf_section_header_table multiboot_elf_section_header_table_t;
+تعريفنوع بنية multiboot_elf_section_سرخی_جدول multiboot_elf_section_سرخی_جدول_t;
 
-struct multiboot_info
+بنية multiboot_info
 {
   /* Multiboot info version number */
   multiboot_uint32_t flags;
 
   /* Available memory from BIOS */
-  multiboot_uint32_t mem_lower;
-  multiboot_uint32_t mem_upper;
+  multiboot_uint32_t mem_ہیٹھلا;
+  multiboot_uint32_t mem_اتلا;
 
   /* "root" partition */
   multiboot_uint32_t boot_device;
@@ -157,95 +157,95 @@ struct multiboot_info
   multiboot_uint32_t cmdline;
 
   /* Boot-Module list */
-  multiboot_uint32_t mods_count;
+  multiboot_uint32_t mods_گنتی;
   multiboot_uint32_t mods_addr;
 
-  union
+  اتحاد
   {
-    multiboot_aout_symbol_table_t aout_sym;
-    multiboot_elf_section_header_table_t elf_sec;
+    multiboot_aout_علامت_جدول_t aout_sym;
+    multiboot_elf_section_سرخی_جدول_t elf_sec;
   } u;
 
   /* Memory Mapping buffer */
-  multiboot_uint32_t mmap_length;
+  multiboot_uint32_t mmap_لمائی;
   multiboot_uint32_t mmap_addr;
 
   /* Drive Info buffer */
-  multiboot_uint32_t drives_length;
+  multiboot_uint32_t drives_لمائی;
   multiboot_uint32_t drives_addr;
 
   /* ROM configuration table */
-  multiboot_uint32_t config_table;
+  multiboot_uint32_t config_جدول;
 
   /* Boot Loader Name */
   multiboot_uint32_t boot_loader_name;
 
   /* APM table */
-  multiboot_uint32_t apm_table;
+  multiboot_uint32_t apm_جدول;
 
   /* Video */
   multiboot_uint32_t vbe_control_info;
-  multiboot_uint32_t vbe_mode_info;
-  multiboot_uint16_t vbe_mode;
+  multiboot_uint32_t vbe_منوال_info;
+  multiboot_uint16_t vbe_منوال;
   multiboot_uint16_t vbe_interface_seg;
   multiboot_uint16_t vbe_interface_off;
   multiboot_uint16_t vbe_interface_len;
 
   multiboot_uint64_t framebuffer_addr;
   multiboot_uint32_t framebuffer_pitch;
-  multiboot_uint32_t framebuffer_width;
-  multiboot_uint32_t framebuffer_height;
+  multiboot_uint32_t framebuffer_چوڑائی;
+  multiboot_uint32_t framebuffer_اچائی;
   multiboot_uint8_t framebuffer_bpp;
-#define MULTIBOOT_FRAMEBUFFER_TYPE_INDEXED 0
-#define MULTIBOOT_FRAMEBUFFER_TYPE_RGB     1
-#define MULTIBOOT_FRAMEBUFFER_TYPE_EGA_TEXT	2
+#تعریف_کرو MULTIBOOT_FRAMEBUFFER_TYPE_اشاریہ_دار 0
+#تعریف_کرو MULTIBOOT_FRAMEBUFFER_TYPE_RGB     1
+#تعریف_کرو MULTIBOOT_FRAMEBUFFER_TYPE_EGA_متن	2
   multiboot_uint8_t framebuffer_type;
-  union
+  اتحاد
   {
-    struct
+    بنية
     {
       multiboot_uint32_t framebuffer_palette_addr;
-      multiboot_uint16_t framebuffer_palette_num_colors;
+      multiboot_uint16_t framebuffer_palette_عدد_colors;
     };
-    struct
+    بنية
     {
-      multiboot_uint8_t framebuffer_red_field_position;
-      multiboot_uint8_t framebuffer_red_mask_size;
-      multiboot_uint8_t framebuffer_green_field_position;
-      multiboot_uint8_t framebuffer_green_mask_size;
-      multiboot_uint8_t framebuffer_blue_field_position;
-      multiboot_uint8_t framebuffer_blue_mask_size;
+      multiboot_uint8_t framebuffer_red_میدان_position;
+      multiboot_uint8_t framebuffer_red_نقاب_ناپ;
+      multiboot_uint8_t framebuffer_green_میدان_position;
+      multiboot_uint8_t framebuffer_green_نقاب_ناپ;
+      multiboot_uint8_t framebuffer_blue_میدان_position;
+      multiboot_uint8_t framebuffer_blue_نقاب_ناپ;
     };
   };
 };
-typedef struct multiboot_info multiboot_info_t;
+تعريفنوع بنية multiboot_info multiboot_info_t;
 
-struct multiboot_color
+بنية multiboot_color
 {
   multiboot_uint8_t red;
   multiboot_uint8_t green;
   multiboot_uint8_t blue;
 };
 
-struct multiboot_mmap_entry
+بنية multiboot_mmap_اندراج
 {
-  multiboot_uint32_t size;
+  multiboot_uint32_t ناپ;
   multiboot_uint64_t addr;
   multiboot_uint64_t len;
-#define MULTIBOOT_MEMORY_AVAILABLE		1
-#define MULTIBOOT_MEMORY_RESERVED		2
-#define MULTIBOOT_MEMORY_ACPI_RECLAIMABLE       3
-#define MULTIBOOT_MEMORY_NVS                    4
-#define MULTIBOOT_MEMORY_BADRAM                 5
+#تعریف_کرو MULTIBOOT_حافظہ_دستیاب		1
+#تعریف_کرو MULTIBOOT_حافظہ_RESERVED		2
+#تعریف_کرو MULTIBOOT_حافظہ_ACPI_RECLAIMABLE       3
+#تعریف_کرو MULTIBOOT_حافظہ_NVS                    4
+#تعریف_کرو MULTIBOOT_حافظہ_BADRAM                 5
   multiboot_uint32_t type;
 } __attribute__((packed));
-typedef struct multiboot_mmap_entry multiboot_memory_map_t;
+تعريفنوع بنية multiboot_mmap_اندراج multiboot_حافظہ_map_t;
 
-struct multiboot_mod_list
+بنية multiboot_mod_list
 {
   /* the memory used goes from bytes 'mod_start' to 'mod_end-1' inclusive */
-  multiboot_uint32_t mod_start;
-  multiboot_uint32_t mod_end;
+  multiboot_uint32_t mod_شروع;
+  multiboot_uint32_t mod_سرا;
 
   /* Module command line */
   multiboot_uint32_t cmdline;
@@ -253,8 +253,8 @@ struct multiboot_mod_list
   /* padding to take it to 16 bytes (must be zero) */
   multiboot_uint32_t pad;
 };
-typedef struct multiboot_mod_list multiboot_module_t;
+تعريفنوع بنية multiboot_mod_list multiboot_module_t;
 
-#endif /* ! ASM_FILE */
+#جے_انت /* ! ASM_FILE */
 
-#endif /* ! MULTIBOOT_HEADER */
+#جے_انت /* ! MULTIBOOT_HEADER */

@@ -3,27 +3,27 @@
 // Copyright (C) 2008-2013  Kevin O'Connor <kevin@koconnor.net>
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
-#ifndef __BIOSVAR_H
-#define __BIOSVAR_H
+#جے_بنا_تعریف __BIOSVAR_H
+#تعریف_کرو __BIOSVAR_H
 
-#include "config.h" // SEG_BDA
-#include "farptr.h" // GET_FARVAR
-#include "memmap.h" // SYMBOL
-#include "std/bda.h" // struct bios_data_area_s
+#ضمن "config.h" // SEG_BDA
+#ضمن "farptr.h" // GET_FARVAR
+#ضمن "memmap.h" //علامت
+#ضمن "std/bda.h" // struct bios_data_area_s
 
 
 /****************************************************************
  * Interrupt vector table
  ****************************************************************/
 
-#define GET_IVT(vector)                                         \
-    GET_FARVAR(SEG_IVT, ((struct rmode_IVT *)0)->ivec[vector])
-#define SET_IVT(vector, segoff)                                         \
-    SET_FARVAR(SEG_IVT, ((struct rmode_IVT *)0)->ivec[vector], segoff)
+#تعریف_کرو GET_IVT(سمتیہ)                                         \
+    GET_FARVAR(SEG_IVT, ((بنية rmode_IVT *)0)->ivec[سمتیہ])
+#تعریف_کرو سیٹ_IVT(سمتیہ, segoff)                                         \
+    سیٹ_FARVAR(SEG_IVT, ((بنية rmode_IVT *)0)->ivec[سمتیہ], segoff)
 
-#define FUNC16(func) ({                                 \
+#تعریف_کرو FUNC16(func) ({                                 \
         ASSERT32FLAT();                                 \
-        extern void func (void);                        \
+        خارجي فراغ func (فراغ);                        \
         SEGOFF(SEG_BIOS, (u32)func - BUILD_BIOS_ADDR);  \
     })
 
@@ -33,15 +33,15 @@
  ****************************************************************/
 
 // Accessor functions
-#define GET_BDA(var) \
-    GET_FARVAR(SEG_BDA, ((struct bios_data_area_s *)0)->var)
-#define SET_BDA(var, val) \
-    SET_FARVAR(SEG_BDA, ((struct bios_data_area_s *)0)->var, (val))
+#تعریف_کرو GET_BDA(var) \
+    GET_FARVAR(SEG_BDA, ((بنية bios_انکڑے_area_s *)0)->var)
+#تعریف_کرو سیٹ_BDA(var, val) \
+    سیٹ_FARVAR(SEG_BDA, ((بنية bios_انکڑے_area_s *)0)->var, (val))
 
 // Helper function to set the bits of the equipment_list_flags variable.
-static inline void set_equipment_flags(u16 clear, u16 set) {
+ساكن مضمن فراغ سیٹ_equipment_flags(u16 clear, u16 سیٹ) {
     u16 eqf = GET_BDA(equipment_list_flags);
-    SET_BDA(equipment_list_flags, (eqf & ~clear) | set);
+    سیٹ_BDA(equipment_list_flags, (eqf & ~clear) | سیٹ);
 }
 
 
@@ -50,81 +50,81 @@ static inline void set_equipment_flags(u16 clear, u16 set) {
  ****************************************************************/
 
 // The initial size and location of EBDA
-#define EBDA_SIZE_START \
-    DIV_ROUND_UP(sizeof(struct extended_bios_data_area_s), 1024)
-#define EBDA_SEGMENT_START \
-    FLATPTR_TO_SEG(BUILD_LOWRAM_END - EBDA_SIZE_START*1024)
+#تعریف_کرو EBDA_ناپ_شروع \
+    DIV_گیڑا_اتے(حجم(بنية extended_bios_انکڑے_area_s), 1024)
+#تعریف_کرو EBDA_SEGMENT_شروع \
+    FLATPTR_منزل_SEG(BUILD_LOWRAM_سرا - EBDA_ناپ_شروع*1024)
 
 // Accessor functions
-static inline u16 get_ebda_seg(void) {
-    return GET_BDA(ebda_seg);
+ساكن مضمن u16 get_ebda_seg(فراغ) {
+    أرجع GET_BDA(ebda_seg);
 }
-static inline struct extended_bios_data_area_s *
-get_ebda_ptr(void)
+ساكن مضمن بنية extended_bios_انکڑے_area_s *
+get_ebda_ptr(فراغ)
 {
     ASSERT32FLAT();
-    return MAKE_FLATPTR(get_ebda_seg(), 0);
+    أرجع MAKE_FLATPTR(get_ebda_seg(), 0);
 }
-#define GET_EBDA(eseg, var)                                             \
-    GET_FARVAR(eseg, ((struct extended_bios_data_area_s *)0)->var)
-#define SET_EBDA(eseg, var, val)                                        \
-    SET_FARVAR(eseg, ((struct extended_bios_data_area_s *)0)->var, (val))
+#تعریف_کرو GET_EBDA(eseg, var)                                             \
+    GET_FARVAR(eseg, ((بنية extended_bios_انکڑے_area_s *)0)->var)
+#تعریف_کرو سیٹ_EBDA(eseg, var, val)                                        \
+    سیٹ_FARVAR(eseg, ((بنية extended_bios_انکڑے_area_s *)0)->var, (val))
 
 
 /****************************************************************
  * Global variables
  ****************************************************************/
 
-#if MODE16 == 0 && MODESEGMENT == 1
+#إذا MODE16 == 0 && MODESEGMENT == 1
 // In 32bit segmented mode %cs may not be readable and the code may be
 // relocated.  The entry code sets up %gs with a readable segment and
 // the code offset can be determined by get_global_offset().
-#define GLOBAL_SEGREG GS
-static inline u32 __attribute_const get_global_offset(void) {
+#تعریف_کرو GLOBAL_SEGREG GS
+ساكن مضمن u32 __attribute_const get_global_وتھ(فراغ) {
     u32 ret;
     asm("  calll 1f\n"
         "1:popl %0\n"
         "  subl $1b, %0"
         : "=r"(ret));
-    return ret;
+    أرجع ret;
 }
-#else
-#define GLOBAL_SEGREG CS
-static inline u32 __attribute_const get_global_offset(void) {
-    return 0;
+#وإلا
+#تعریف_کرو GLOBAL_SEGREG CS
+ساكن مضمن u32 __attribute_const get_global_وتھ(فراغ) {
+    أرجع 0;
 }
-#endif
-static inline u16 get_global_seg(void) {
-    return GET_SEG(GLOBAL_SEGREG);
+#جے_انت
+ساكن مضمن u16 get_global_seg(فراغ) {
+    أرجع GET_SEG(GLOBAL_SEGREG);
 }
-#define GET_GLOBAL(var)                                                 \
-    GET_VAR(GLOBAL_SEGREG, *(typeof(&(var)))((void*)&(var)              \
-                                             + get_global_offset()))
-#if MODESEGMENT
-#define GLOBALFLAT2GLOBAL(var) ((typeof(var))((void*)(var) - BUILD_BIOS_ADDR))
-#else
-#define GLOBALFLAT2GLOBAL(var) (var)
-#endif
+#تعریف_کرو GET_GLOBAL(var)                                                 \
+    GET_VAR(GLOBAL_SEGREG, *(typeof(&(var)))((فراغ*)&(var)              \
+                                             + get_global_وتھ()))
+#إذا MODESEGMENT
+#تعریف_کرو GLOBALFLAT2GLOBAL(var) ((typeof(var))((فراغ*)(var) - BUILD_BIOS_ADDR))
+#وإلا
+#تعریف_کرو GLOBALFLAT2GLOBAL(var) (var)
+#جے_انت
 // Access a "flat" pointer known to point to the f-segment.
-#define GET_GLOBALFLAT(var) GET_GLOBAL(*GLOBALFLAT2GLOBAL(&(var)))
+#تعریف_کرو GET_GLOBALFLAT(var) GET_GLOBAL(*GLOBALFLAT2GLOBAL(&(var)))
 
 
 /****************************************************************
  * "Low" memory variables
  ****************************************************************/
 
-#define SEG_LOW SYMBOL(_zonelow_seg)
+#تعریف_کرو SEG_کم علامت(_zonelow_seg)
 
-#if MODESEGMENT
-#define GET_LOW(var)            GET_FARVAR(SEG_LOW, (var))
-#define SET_LOW(var, val)       SET_FARVAR(SEG_LOW, (var), (val))
-#define LOWFLAT2LOW(var) ((typeof(var))((void*)(var) - SYMBOL(zonelow_base)))
-#else
-#define GET_LOW(var)            (var)
-#define SET_LOW(var, val)       do { (var) = (val); } while (0)
-#define LOWFLAT2LOW(var) (var)
-#endif
-#define GET_LOWFLAT(var) GET_LOW(*LOWFLAT2LOW(&(var)))
-#define SET_LOWFLAT(var, val) SET_LOW(*LOWFLAT2LOW(&(var)), (val))
+#إذا MODESEGMENT
+#تعریف_کرو GET_کم(var)            GET_FARVAR(SEG_کم, (var))
+#تعریف_کرو سیٹ_کم(var, val)       سیٹ_FARVAR(SEG_کم, (var), (val))
+#تعریف_کرو LOWFLAT2_کم(var) ((typeof(var))((فراغ*)(var) - علامت(zonelow_ادھار)))
+#وإلا
+#تعریف_کرو GET_کم(var)            (var)
+#تعریف_کرو سیٹ_کم(var, val)       افعل { (var) = (val); } طالما (0)
+#تعریف_کرو LOWFLAT2_کم(var) (var)
+#جے_انت
+#تعریف_کرو GET_LOWFLAT(var) GET_کم(*LOWFLAT2_کم(&(var)))
+#تعریف_کرو سیٹ_LOWFLAT(var, val) سیٹ_کم(*LOWFLAT2_کم(&(var)), (val))
 
-#endif // __BIOSVAR_H
+#جے_انت // __BIOSVAR_H

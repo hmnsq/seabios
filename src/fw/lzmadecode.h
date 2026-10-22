@@ -19,39 +19,39 @@
   to this file, however, are subject to the LGPL or CPL terms.
 */
 
-#ifndef __LZMADECODE_H
-#define __LZMADECODE_H
+#جے_بنا_تعریف __LZMADECODE_H
+#تعریف_کرو __LZMADECODE_H
 
-typedef unsigned char Byte;
-typedef unsigned short UInt16;
-typedef unsigned int UInt32;
-typedef UInt32 SizeT;
+تعريفنوع بنانشانی حرف Byte;
+تعريفنوع بنانشانی چھوٹا UInt16;
+تعريفنوع بنانشانی صحيح UInt32;
+تعريفنوع UInt32 ناپ_T;
 
-#define CProb UInt16
+#تعریف_کرو CProb UInt16
 
-#define LZMA_RESULT_OK 0
-#define LZMA_RESULT_DATA_ERROR 1
+#تعریف_کرو LZMA_نتیجہ_OK 0
+#تعریف_کرو LZMA_نتیجہ_انکڑے_ERROR 1
 
 
-#define LZMA_BASE_SIZE 1846
-#define LZMA_LIT_SIZE 768
+#تعریف_کرو LZMA_ادھار_ناپ 1846
+#تعریف_کرو LZMA_LIT_ناپ 768
 
-#define LZMA_PROPERTIES_SIZE 5
+#تعریف_کرو LZMA_PROPERTIES_ناپ 5
 
-typedef struct _CLzmaProperties
+تعريفنوع بنية _CLzmaProperties
 {
-  int lc;
-  int lp;
-  int pb;
+  صحيح lc;
+  صحيح lp;
+  صحيح pb;
 }CLzmaProperties;
 
-int LzmaDecodeProperties(CLzmaProperties *propsRes, const unsigned char *propsData, int size);
+صحيح LzmaDecodeProperties(CLzmaProperties *propsRes, ثابت بنانشانی حرف *props_انکڑے, صحيح ناپ);
 
-#define LzmaGetNumProbs(Properties) (LZMA_BASE_SIZE + (LZMA_LIT_SIZE << ((Properties)->lc + (Properties)->lp)))
+#تعریف_کرو Lzma_Get_عدد_Probs(Properties) (LZMA_ادھار_ناپ + (LZMA_LIT_ناپ << ((Properties)->lc + (Properties)->lp)))
 
-#define kLzmaNeedInitId (-2)
+#تعریف_کرو kLzmaNeedInitId (-2)
 
-typedef struct _CLzmaDecoderState
+تعريفنوع بنية _CLzmaDecoderState
 {
   CLzmaProperties Properties;
   CProb *Probs;
@@ -60,8 +60,8 @@ typedef struct _CLzmaDecoderState
 } CLzmaDecoderState;
 
 
-int LzmaDecode(CLzmaDecoderState *vs,
-    const unsigned char *inStream, SizeT inSize, SizeT *inSizeProcessed,
-    unsigned char *outStream, SizeT outSize, SizeT *outSizeProcessed);
+صحيح LzmaDecode(CLzmaDecoderState *vs,
+    ثابت بنانشانی حرف *وچ_دھارا, ناپ_T وچ_ناپ, ناپ_T *وچ_ناپ_Processed,
+    بنانشانی حرف *باہرلا_دھارا, ناپ_T باہرلا_ناپ, ناپ_T *باہرلا_ناپ_Processed);
 
-#endif
+#جے_انت
