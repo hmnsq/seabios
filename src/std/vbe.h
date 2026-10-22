@@ -1,28 +1,28 @@
 #ifndef __VBE_H
 #define __VBE_H
 
-#include "types.h" // u8
+#അന്തര്ഭാവ "types.h" // u8
 
 #define VESA_SIGNATURE 0x41534556 // VESA
 #define VBE2_SIGNATURE 0x32454256 // VBE2
 
-struct vbe_info {
+ഘടന vbe_info {
     u32 signature;
     u16 version;
-    struct segoff_s oem_string;
+    ഘടന segoff_s oem_string;
     u32 capabilities;
-    struct segoff_s video_mode;
+    ഘടന segoff_s video_mode;
     u16 total_memory;
     u16 oem_revision;
-    struct segoff_s oem_vendor_string;
-    struct segoff_s oem_product_string;
-    struct segoff_s oem_revision_string;
+    ഘടന segoff_s oem_vendor_string;
+    ഘടന segoff_s oem_product_string;
+    ഘടന segoff_s oem_revision_string;
     u8 reserved[222];
     /* VBE 2.0 */
     u8 oem_data[256];
 } PACKED;
 
-struct vbe_mode_info {
+ഘടന vbe_mode_info {
     /* VBE */
     u16 mode_attributes;
     u8 winA_attributes;
@@ -31,7 +31,7 @@ struct vbe_mode_info {
     u16 win_size;
     u16 winA_seg;
     u16 winB_seg;
-    struct segoff_s win_func_ptr;
+    ഘടന segoff_s win_func_ptr;
     u16 bytes_per_scanline;
     /* VBE 1.2 */
     u16 xres;
@@ -75,7 +75,7 @@ struct vbe_mode_info {
     u8 reserved[190];
 } PACKED;
 
-struct vbe_crtc_info {
+ഘടന vbe_crtc_info {
     u16 horiz_total;
     u16 horiz_sync_start;
     u16 horiz_sync_end;
@@ -88,7 +88,7 @@ struct vbe_crtc_info {
     u8 reserved[40];
 } PACKED;
 
-struct vbe_palette_entry {
+ഘടന vbe_palette_entry {
     u8 blue;
     u8 green;
     u8 red;

@@ -1,25 +1,25 @@
 #ifndef __BLOCK_H
 #define __BLOCK_H
 
-#include "types.h" // u32
+#അന്തര്ഭാവ "types.h" // u32
 
 
 /****************************************************************
  * Disk command request
  ****************************************************************/
 
-struct disk_op_s {
-    void *buf_fl;
-    struct drive_s *drive_fl;
+ഘടന disk_op_s {
+    ശൂന്യം *buf_fl;
+    ഘടന drive_s *drive_fl;
     u8 command;
-    u16 count;
-    union {
+    u16 എണ്ണം;
+    സംഘം {
         // Commands: READ, WRITE, VERIFY, SEEK, FORMAT
         u64 lba;
         // Commands: SCSI
-        struct {
+        ഘടന {
             u16 blocksize;
-            void *cdbcmd;
+            ശൂന്യം *cdbcmd;
         };
     };
 };
@@ -38,17 +38,17 @@ struct disk_op_s {
  * Global storage
  ****************************************************************/
 
-struct chs_s {
+ഘടന chs_s {
     u16 head;
     u16 cylinder;
     u16 sector;
     u16 pad;
 };
 
-struct drive_s {
+ഘടന drive_s {
     u8 type;            // Driver type (DTYPE_*)
     u8 floppy_type;     // Type of floppy (only for floppy drives).
-    struct chs_s lchs;  // Logical CHS
+    ഘടന chs_s lchs;  // Logical CHS
     u64 sectors;        // Total sectors count
     u32 cntl_id;        // Unique id for a given driver type.
     u8 removable;       // Is media removable (currently unused)
@@ -56,7 +56,7 @@ struct drive_s {
     // Info for EDD calls
     u8 translation;     // type of translation
     u16 blksize;        // block size
-    struct chs_s pchs;  // Physical CHS
+    ഘടന chs_s pchs;  // Physical CHS
     u32 max_segment_size; //max_segment_size
     u32 max_segments;   //max_segments
 };
@@ -107,18 +107,18 @@ struct drive_s {
  ****************************************************************/
 
 // block.c
-extern u8 FloppyCount, CDCount;
-extern u8 *bounce_buf_fl;
-struct drive_s *getDrive(u8 exttype, u8 extdriveoffset);
-int getDriveId(u8 exttype, struct drive_s *drive);
-void map_floppy_drive(struct drive_s *drive);
-void map_hd_drive(struct drive_s *drive);
-void map_cd_drive(struct drive_s *drive);
-struct int13dpt_s;
-int fill_edd(struct segoff_s edd, struct drive_s *drive_fl);
-void block_setup(void);
-int default_process_op(struct disk_op_s *op);
-int process_op(struct disk_op_s *op);
-int create_bounce_buf(void);
+ബാഹ്യ u8 Floppy_എണ്ണം, CDCount;
+ബാഹ്യ u8 *bounce_buf_fl;
+ഘടന drive_s *getDrive(u8 exttype, u8 extdriveoffset);
+പൂർണ്ണസംഖ്യ getDriveId(u8 exttype, ഘടന drive_s *drive);
+ശൂന്യം map_floppy_drive(ഘടന drive_s *drive);
+ശൂന്യം map_hd_drive(ഘടന drive_s *drive);
+ശൂന്യം map_cd_drive(ഘടന drive_s *drive);
+ഘടന int13dpt_s;
+പൂർണ്ണസംഖ്യ fill_edd(ഘടന segoff_s edd, ഘടന drive_s *drive_fl);
+ശൂന്യം block_setup(ശൂന്യം);
+പൂർണ്ണസംഖ്യ default_process_op(ഘടന disk_op_s *op);
+പൂർണ്ണസംഖ്യ process_op(ഘടന disk_op_s *op);
+പൂർണ്ണസംഖ്യ create_bounce_buf(ശൂന്യം);
 
 #endif // block.h

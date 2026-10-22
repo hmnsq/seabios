@@ -5,82 +5,82 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // SET_BDA
-#include "bregs.h" // struct bregs
-#include "hw/serialio.h" // SEROFF_IER
-#include "output.h" // debug_enter
-#include "romfile.h" // romfile_loadint
-#include "stacks.h" // yield
-#include "util.h" // serial_setup
+#അന്തര്ഭാവ "biosvar.h" // SET_BDA
+#അന്തര്ഭാവ "bregs.h" // struct bregs
+#അന്തര്ഭാവ "hw/serialio.h" // SEROFF_IER
+#അന്തര്ഭാവ "output.h" // debug_enter
+#അന്തര്ഭാവ "romfile.h" // romfile_loadint
+#അന്തര്ഭാവ "stacks.h" // yield
+#അന്തര്ഭാവ "util.h" // serial_setup
 
 
 /****************************************************************
  * COM ports
  ****************************************************************/
 
-static u16
-detect_serial(u16 port, u8 timeout, u8 count)
+സ്ഥിതം u16
+detect_serial(u16 port, u8 timeout, u8 എണ്ണം)
 {
-    if (CONFIG_DEBUG_SERIAL && port == CONFIG_DEBUG_SERIAL_PORT
+    എങ്കിൽ (CONFIG_DEBUG_SERIAL && port == CONFIG_DEBUG_SERIAL_PORT
         && !romfile_loadint("etc/advertise-serial-debug-port", 1))
-        return 0;
+        തിരികെ 0;
     outb(0x02, port+SEROFF_IER);
     u8 ier = inb(port+SEROFF_IER);
-    if (ier != 0x02)
-        return 0;
+    എങ്കിൽ (ier != 0x02)
+        തിരികെ 0;
     u8 iir = inb(port+SEROFF_IIR);
-    if ((iir & 0x3f) != 0x02)
-        return 0;
+    എങ്കിൽ ((iir & 0x3f) != 0x02)
+        തിരികെ 0;
 
     outb(0x00, port+SEROFF_IER);
-    SET_BDA(port_com[count], port);
-    SET_BDA(com_timeout[count], timeout);
-    return 1;
+    SET_BDA(port_com[എണ്ണം], port);
+    SET_BDA(com_timeout[എണ്ണം], timeout);
+    തിരികെ 1;
 }
 
-void
-serial_setup(void)
+ശൂന്യം
+serial_setup(ശൂന്യം)
 {
-    if (! CONFIG_SERIAL)
-        return;
+    എങ്കിൽ (! CONFIG_SERIAL)
+        തിരികെ;
     dprintf(3, "init serial\n");
 
-    u16 count = 0;
-    count += detect_serial(PORT_SERIAL1, 0x0a, count);
-    count += detect_serial(PORT_SERIAL2, 0x0a, count);
-    count += detect_serial(PORT_SERIAL3, 0x0a, count);
-    count += detect_serial(PORT_SERIAL4, 0x0a, count);
-    dprintf(1, "Found %d serial ports\n", count);
+    u16 എണ്ണം = 0;
+    എണ്ണം += detect_serial(PORT_SERIAL1, 0x0a, എണ്ണം);
+    എണ്ണം += detect_serial(PORT_SERIAL2, 0x0a, എണ്ണം);
+    എണ്ണം += detect_serial(PORT_SERIAL3, 0x0a, എണ്ണം);
+    എണ്ണം += detect_serial(PORT_SERIAL4, 0x0a, എണ്ണം);
+    dprintf(1, "Found %d serial ports\n", എണ്ണം);
 
     // Equipment word bits 9..11 determing # serial ports
-    set_equipment_flags(0xe00, count << 9);
+    set_equipment_flags(0xe00, എണ്ണം << 9);
 }
 
-static u16
-getComAddr(struct bregs *regs)
+സ്ഥിതം u16
+getComAddr(ഘടന bregs *regs)
 {
-    if (regs->dx >= 4) {
+    എങ്കിൽ (regs->dx >= 4) {
         set_invalid(regs);
-        return 0;
+        തിരികെ 0;
     }
     u16 addr = GET_BDA(port_com[regs->dx]);
-    if (! addr)
+    എങ്കിൽ (! addr)
         set_invalid(regs);
-    return addr;
+    തിരികെ addr;
 }
 
 // SERIAL - INITIALIZE PORT
-static void
-handle_1400(struct bregs *regs)
+സ്ഥിതം ശൂന്യം
+handle_1400(ഘടന bregs *regs)
 {
     u16 addr = getComAddr(regs);
-    if (!addr)
-        return;
+    എങ്കിൽ (!addr)
+        തിരികെ;
     outb(inb(addr+SEROFF_LCR) | 0x80, addr+SEROFF_LCR);
-    if ((regs->al & 0xE0) == 0) {
+    എങ്കിൽ ((regs->al & 0xE0) == 0) {
         outb(0x17, addr+SEROFF_DLL);
         outb(0x04, addr+SEROFF_DLH);
-    } else {
+    } അല്ലെങ്കിൽ {
         u16 val16 = 0x600 >> ((regs->al & 0xE0) >> 5);
         outb(val16 & 0xFF, addr+SEROFF_DLL);
         outb(val16 >> 8, addr+SEROFF_DLH);
@@ -92,26 +92,26 @@ handle_1400(struct bregs *regs)
 }
 
 // SERIAL - WRITE CHARACTER TO PORT
-static void
-handle_1401(struct bregs *regs)
+സ്ഥിതം ശൂന്യം
+handle_1401(ഘടന bregs *regs)
 {
     u16 addr = getComAddr(regs);
-    if (!addr)
-        return;
+    എങ്കിൽ (!addr)
+        തിരികെ;
     u32 end = irqtimer_calc_ticks(GET_BDA(com_timeout[regs->dx]));
-    for (;;) {
+    വേണ്ടി (;;) {
         u8 lsr = inb(addr+SEROFF_LSR);
-        if ((lsr & 0x60) == 0x60) {
+        എങ്കിൽ ((lsr & 0x60) == 0x60) {
             // Success - can write data
             outb(regs->al, addr+SEROFF_DATA);
             // XXX - reread lsr?
             regs->ah = lsr;
-            break;
+            നിർത്തുക;
         }
-        if (irqtimer_check(end)) {
+        എങ്കിൽ (irqtimer_check(end)) {
             // Timed out - can't write data.
             regs->ah = lsr | 0x80;
-            break;
+            നിർത്തുക;
         }
         yield();
     }
@@ -119,25 +119,25 @@ handle_1401(struct bregs *regs)
 }
 
 // SERIAL - READ CHARACTER FROM PORT
-static void
-handle_1402(struct bregs *regs)
+സ്ഥിതം ശൂന്യം
+handle_1402(ഘടന bregs *regs)
 {
     u16 addr = getComAddr(regs);
-    if (!addr)
-        return;
+    എങ്കിൽ (!addr)
+        തിരികെ;
     u32 end = irqtimer_calc_ticks(GET_BDA(com_timeout[regs->dx]));
-    for (;;) {
+    വേണ്ടി (;;) {
         u8 lsr = inb(addr+SEROFF_LSR);
-        if (lsr & 0x01) {
+        എങ്കിൽ (lsr & 0x01) {
             // Success - can read data
             regs->al = inb(addr+SEROFF_DATA);
             regs->ah = lsr;
-            break;
+            നിർത്തുക;
         }
-        if (irqtimer_check(end)) {
+        എങ്കിൽ (irqtimer_check(end)) {
             // Timed out - can't read data.
             regs->ah = lsr | 0x80;
-            break;
+            നിർത്തുക;
         }
         yield();
     }
@@ -145,39 +145,39 @@ handle_1402(struct bregs *regs)
 }
 
 // SERIAL - GET PORT STATUS
-static void
-handle_1403(struct bregs *regs)
+സ്ഥിതം ശൂന്യം
+handle_1403(ഘടന bregs *regs)
 {
     u16 addr = getComAddr(regs);
-    if (!addr)
-        return;
+    എങ്കിൽ (!addr)
+        തിരികെ;
     regs->ah = inb(addr+SEROFF_LSR);
     regs->al = inb(addr+SEROFF_MSR);
     set_success(regs);
 }
 
-static void
-handle_14XX(struct bregs *regs)
+സ്ഥിതം ശൂന്യം
+handle_14XX(ഘടന bregs *regs)
 {
     set_unimplemented(regs);
 }
 
 // INT 14h Serial Communications Service Entry Point
-void VISIBLE16
-handle_14(struct bregs *regs)
+ശൂന്യം VISIBLE16
+handle_14(ഘടന bregs *regs)
 {
     debug_enter(regs, DEBUG_HDL_14);
-    if (! CONFIG_SERIAL) {
+    എങ്കിൽ (! CONFIG_SERIAL) {
         handle_14XX(regs);
-        return;
+        തിരികെ;
     }
 
-    switch (regs->ah) {
-    case 0x00: handle_1400(regs); break;
-    case 0x01: handle_1401(regs); break;
-    case 0x02: handle_1402(regs); break;
-    case 0x03: handle_1403(regs); break;
-    default:   handle_14XX(regs); break;
+    തിരഞ്ഞെടുപ്പ് (regs->ah) {
+    അവസ്ഥ 0x00: handle_1400(regs); നിർത്തുക;
+    അവസ്ഥ 0x01: handle_1401(regs); നിർത്തുക;
+    അവസ്ഥ 0x02: handle_1402(regs); നിർത്തുക;
+    അവസ്ഥ 0x03: handle_1403(regs); നിർത്തുക;
+    സ്ഥിരസ്ഥിതി:   handle_14XX(regs); നിർത്തുക;
     }
 }
 
@@ -186,57 +186,57 @@ handle_14(struct bregs *regs)
  * LPT ports
  ****************************************************************/
 
-static u16
-detect_parport(u16 port, u8 timeout, u8 count)
+സ്ഥിതം u16
+detect_parport(u16 port, u8 timeout, u8 എണ്ണം)
 {
     // clear input mode
     outb(inb(port+2) & 0xdf, port+2);
 
     outb(0xaa, port);
-    if (inb(port) != 0xaa)
+    എങ്കിൽ (inb(port) != 0xaa)
         // Not present
-        return 0;
-    SET_BDA(port_lpt[count], port);
-    SET_BDA(lpt_timeout[count], timeout);
-    return 1;
+        തിരികെ 0;
+    SET_BDA(port_lpt[എണ്ണം], port);
+    SET_BDA(lpt_timeout[എണ്ണം], timeout);
+    തിരികെ 1;
 }
 
-void
-lpt_setup(void)
+ശൂന്യം
+lpt_setup(ശൂന്യം)
 {
-    if (! CONFIG_LPT)
-        return;
+    എങ്കിൽ (! CONFIG_LPT)
+        തിരികെ;
     dprintf(3, "init lpt\n");
 
-    u16 count = 0;
-    count += detect_parport(PORT_LPT1, 0x14, count);
-    count += detect_parport(PORT_LPT2, 0x14, count);
-    dprintf(1, "Found %d lpt ports\n", count);
+    u16 എണ്ണം = 0;
+    എണ്ണം += detect_parport(PORT_LPT1, 0x14, എണ്ണം);
+    എണ്ണം += detect_parport(PORT_LPT2, 0x14, എണ്ണം);
+    dprintf(1, "Found %d lpt ports\n", എണ്ണം);
 
     // Equipment word bits 14..15 determing # parallel ports
-    set_equipment_flags(0xc000, count << 14);
+    set_equipment_flags(0xc000, എണ്ണം << 14);
 }
 
-static u16
-getLptAddr(struct bregs *regs)
+സ്ഥിതം u16
+getLptAddr(ഘടന bregs *regs)
 {
-    if (regs->dx >= 3) {
+    എങ്കിൽ (regs->dx >= 3) {
         set_invalid(regs);
-        return 0;
+        തിരികെ 0;
     }
     u16 addr = GET_BDA(port_lpt[regs->dx]);
-    if (! addr)
+    എങ്കിൽ (! addr)
         set_invalid(regs);
-    return addr;
+    തിരികെ addr;
 }
 
 // INT 17 - PRINTER - WRITE CHARACTER
-static void
-handle_1700(struct bregs *regs)
+സ്ഥിതം ശൂന്യം
+handle_1700(ഘടന bregs *regs)
 {
     u16 addr = getLptAddr(regs);
-    if (!addr)
-        return;
+    എങ്കിൽ (!addr)
+        തിരികെ;
 
     u32 end = irqtimer_calc_ticks(GET_BDA(lpt_timeout[regs->dx]));
 
@@ -246,17 +246,17 @@ handle_1700(struct bregs *regs)
     udelay(5);
     outb(val8 & ~0x01, addr+2);
 
-    for (;;) {
+    വേണ്ടി (;;) {
         u8 v = inb(addr+1);
-        if (!(v & 0x40)) {
+        എങ്കിൽ (!(v & 0x40)) {
             // Success
             regs->ah = v ^ 0x48;
-            break;
+            നിർത്തുക;
         }
-        if (irqtimer_check(end)) {
+        എങ്കിൽ (irqtimer_check(end)) {
             // Timeout
             regs->ah = (v ^ 0x48) | 0x01;
-            break;
+            നിർത്തുക;
         }
         yield();
     }
@@ -265,12 +265,12 @@ handle_1700(struct bregs *regs)
 }
 
 // INT 17 - PRINTER - INITIALIZE PORT
-static void
-handle_1701(struct bregs *regs)
+സ്ഥിതം ശൂന്യം
+handle_1701(ഘടന bregs *regs)
 {
     u16 addr = getLptAddr(regs);
-    if (!addr)
-        return;
+    എങ്കിൽ (!addr)
+        തിരികെ;
 
     u8 val8 = inb(addr+2);
     outb(val8 & ~0x04, addr+2); // send init
@@ -282,36 +282,36 @@ handle_1701(struct bregs *regs)
 }
 
 // INT 17 - PRINTER - GET STATUS
-static void
-handle_1702(struct bregs *regs)
+സ്ഥിതം ശൂന്യം
+handle_1702(ഘടന bregs *regs)
 {
     u16 addr = getLptAddr(regs);
-    if (!addr)
-        return;
+    എങ്കിൽ (!addr)
+        തിരികെ;
     regs->ah = inb(addr+1) ^ 0x48;
     set_success(regs);
 }
 
-static void
-handle_17XX(struct bregs *regs)
+സ്ഥിതം ശൂന്യം
+handle_17XX(ഘടന bregs *regs)
 {
     set_unimplemented(regs);
 }
 
 // INT17h : Printer Service Entry Point
-void VISIBLE16
-handle_17(struct bregs *regs)
+ശൂന്യം VISIBLE16
+handle_17(ഘടന bregs *regs)
 {
     debug_enter(regs, DEBUG_HDL_17);
-    if (! CONFIG_LPT) {
+    എങ്കിൽ (! CONFIG_LPT) {
         handle_17XX(regs);
-        return;
+        തിരികെ;
     }
 
-    switch (regs->ah) {
-    case 0x00: handle_1700(regs); break;
-    case 0x01: handle_1701(regs); break;
-    case 0x02: handle_1702(regs); break;
-    default:   handle_17XX(regs); break;
+    തിരഞ്ഞെടുപ്പ് (regs->ah) {
+    അവസ്ഥ 0x00: handle_1700(regs); നിർത്തുക;
+    അവസ്ഥ 0x01: handle_1701(regs); നിർത്തുക;
+    അവസ്ഥ 0x02: handle_1702(regs); നിർത്തുക;
+    സ്ഥിരസ്ഥിതി:   handle_17XX(regs); നിർത്തുക;
     }
 }

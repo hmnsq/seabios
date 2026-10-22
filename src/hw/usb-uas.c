@@ -14,17 +14,17 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_GLOBALFLAT
-#include "block.h" // DTYPE_USB
-#include "blockcmd.h" // cdb_read
-#include "config.h" // CONFIG_USB_UAS
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "std/disk.h" // DISK_RET_SUCCESS
-#include "string.h" // memset
-#include "usb.h" // struct usb_s
-#include "usb-uas.h" // usb_uas_init
-#include "util.h" // bootprio_find_usb
+#അന്തര്ഭാവ "biosvar.h" // GET_GLOBALFLAT
+#അന്തര്ഭാവ "block.h" // DTYPE_USB
+#അന്തര്ഭാവ "blockcmd.h" // cdb_read
+#അന്തര്ഭാവ "config.h" // CONFIG_USB_UAS
+#അന്തര്ഭാവ "malloc.h" // free
+#അന്തര്ഭാവ "output.h" // dprintf
+#അന്തര്ഭാവ "std/disk.h" // DISK_RET_SUCCESS
+#അന്തര്ഭാവ "string.h" // memset
+#അന്തര്ഭാവ "usb.h" // struct usb_s
+#അന്തര്ഭാവ "usb-uas.h" // usb_uas_init
+#അന്തര്ഭാവ "util.h" // bootprio_find_usb
 
 #define UAS_UI_COMMAND              0x01
 #define UAS_UI_SENSE                0x03
@@ -38,13 +38,13 @@
 #define UAS_PIPE_ID_DATA_IN         0x03
 #define UAS_PIPE_ID_DATA_OUT        0x04
 
-typedef struct {
+തരനിർവചനം ഘടന {
     u8    id;
     u8    reserved;
     u16   tag;
 } PACKED  uas_ui_header;
 
-typedef struct {
+തരനിർവചനം ഘടന {
     u8    prio_taskattr;   /* 6:3 priority, 2:0 task attribute   */
     u8    reserved_1;
     u8    add_cdb_length;  /* 7:2 additional adb length (dwords) */
@@ -54,7 +54,7 @@ typedef struct {
     u8    add_cdb[];
 } PACKED  uas_ui_command;
 
-typedef struct {
+തരനിർവചനം ഘടന {
     u16   status_qualifier;
     u8    status;
     u8    reserved[7];
@@ -62,21 +62,21 @@ typedef struct {
     u8    sense_data[18];
 } PACKED  uas_ui_sense;
 
-typedef struct {
+തരനിർവചനം ഘടന {
     u16   add_response_info;
     u8    response_code;
 } PACKED  uas_ui_response;
 
-typedef struct {
+തരനിർവചനം ഘടന {
     u8    function;
     u8    reserved;
     u16   task_tag;
     u8    lun[8];
 } PACKED  uas_ui_task_mgmt;
 
-typedef struct {
+തരനിർവചനം ഘടന {
     uas_ui_header  hdr;
-    union {
+    സംഘം {
         uas_ui_command   command;
         uas_ui_sense     sense;
         uas_ui_task_mgmt task;
@@ -84,101 +84,101 @@ typedef struct {
     };
 } PACKED  uas_ui;
 
-struct uasdrive_s {
-    struct drive_s drive;
-    struct usbdevice_s *usbdev;
-    struct usb_pipe *command, *status, *data_in, *data_out;
+ഘടന uasdrive_s {
+    ഘടന drive_s drive;
+    ഘടന usbdevice_s *usbdev;
+    ഘടന usb_pipe *command, *status, *data_in, *data_out;
     u32 lun;
 };
 
-int
-uas_process_op(struct disk_op_s *op)
+പൂർണ്ണസംഖ്യ
+uas_process_op(ഘടന disk_op_s *op)
 {
-    if (!CONFIG_USB_UAS)
-        return DISK_RET_EBADTRACK;
+    എങ്കിൽ (!CONFIG_USB_UAS)
+        തിരികെ DISK_RET_EBADTRACK;
 
-    struct uasdrive_s *drive_gf = container_of(
-        op->drive_fl, struct uasdrive_s, drive);
+    ഘടന uasdrive_s *drive_gf = container_of(
+        op->drive_fl, ഘടന uasdrive_s, drive);
 
     uas_ui ui;
-    memset(&ui, 0, sizeof(ui));
+    memset(&ui, 0, വലുപ്പം(ui));
     ui.hdr.id = UAS_UI_COMMAND;
     ui.hdr.tag = 0xdead;
     ui.command.lun[1] = GET_GLOBALFLAT(drive_gf->lun);
-    int blocksize = scsi_fill_cmd(op, ui.command.cdb, sizeof(ui.command.cdb));
-    if (blocksize < 0)
-        return default_process_op(op);
-    int ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->command),
+    പൂർണ്ണസംഖ്യ blocksize = scsi_fill_cmd(op, ui.command.cdb, വലുപ്പം(ui.command.cdb));
+    എങ്കിൽ (blocksize < 0)
+        തിരികെ default_process_op(op);
+    പൂർണ്ണസംഖ്യ ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->command),
                             USB_DIR_OUT, MAKE_FLATPTR(GET_SEG(SS), &ui),
-                            sizeof(ui.hdr) + sizeof(ui.command));
-    if (ret) {
+                            വലുപ്പം(ui.hdr) + വലുപ്പം(ui.command));
+    എങ്കിൽ (ret) {
         dprintf(1, "uas: command send fail");
-        goto fail;
+        പോകുക fail;
     }
 
-    memset(&ui, 0xff, sizeof(ui));
+    memset(&ui, 0xff, വലുപ്പം(ui));
     ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->status),
-                        USB_DIR_IN, MAKE_FLATPTR(GET_SEG(SS), &ui), sizeof(ui));
-    if (ret) {
+                        USB_DIR_IN, MAKE_FLATPTR(GET_SEG(SS), &ui), വലുപ്പം(ui));
+    എങ്കിൽ (ret) {
         dprintf(1, "uas: status recv fail");
-        goto fail;
+        പോകുക fail;
     }
 
-    switch (ui.hdr.id) {
-    case UAS_UI_SENSE:
-        goto have_sense;
-    case UAS_UI_READ_READY:
+    തിരഞ്ഞെടുപ്പ് (ui.hdr.id) {
+    അവസ്ഥ UAS_UI_SENSE:
+        പോകുക have_sense;
+    അവസ്ഥ UAS_UI_READ_READY:
         ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->data_in),
-                            USB_DIR_IN, op->buf_fl, op->count * blocksize);
-        if (ret) {
+                            USB_DIR_IN, op->buf_fl, op->എണ്ണം * blocksize);
+        എങ്കിൽ (ret) {
             dprintf(1, "uas: data read fail");
-            goto fail;
+            പോകുക fail;
         }
-        break;
-    case UAS_UI_WRITE_READY:
+        നിർത്തുക;
+    അവസ്ഥ UAS_UI_WRITE_READY:
         ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->data_out),
-                            USB_DIR_OUT, op->buf_fl, op->count * blocksize);
-        if (ret) {
+                            USB_DIR_OUT, op->buf_fl, op->എണ്ണം * blocksize);
+        എങ്കിൽ (ret) {
             dprintf(1, "uas: data write fail");
-            goto fail;
+            പോകുക fail;
         }
-        break;
-    default:
+        നിർത്തുക;
+    സ്ഥിരസ്ഥിതി:
         dprintf(1, "uas: unknown status ui id %d", ui.hdr.id);
-        goto fail;
+        പോകുക fail;
     }
 
-    memset(&ui, 0xff, sizeof(ui));
+    memset(&ui, 0xff, വലുപ്പം(ui));
     ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->status),
-                        USB_DIR_IN, MAKE_FLATPTR(GET_SEG(SS), &ui), sizeof(ui));
-    if (ret) {
+                        USB_DIR_IN, MAKE_FLATPTR(GET_SEG(SS), &ui), വലുപ്പം(ui));
+    എങ്കിൽ (ret) {
         dprintf(1, "uas: status recv fail");
-        goto fail;
+        പോകുക fail;
     }
-    if (ui.hdr.id != UAS_UI_SENSE) {
+    എങ്കിൽ (ui.hdr.id != UAS_UI_SENSE) {
         dprintf(1, "uas: expected sense ui, got ui id %d", ui.hdr.id);
-        goto fail;
+        പോകുക fail;
     }
 
 have_sense:
-    if (ui.sense.status == 0) {
-        return DISK_RET_SUCCESS;
+    എങ്കിൽ (ui.sense.status == 0) {
+        തിരികെ DISK_RET_SUCCESS;
     }
 
 fail:
-    return DISK_RET_EBADTRACK;
+    തിരികെ DISK_RET_EBADTRACK;
 }
 
-static void
-uas_init_lun(struct uasdrive_s *drive, struct usbdevice_s *usbdev,
-             struct usb_pipe *command, struct usb_pipe *status,
-             struct usb_pipe *data_in, struct usb_pipe *data_out,
+സ്ഥിതം ശൂന്യം
+uas_init_lun(ഘടന uasdrive_s *drive, ഘടന usbdevice_s *usbdev,
+             ഘടന usb_pipe *command, ഘടന usb_pipe *status,
+             ഘടന usb_pipe *data_in, ഘടന usb_pipe *data_out,
              u32 lun)
 {
-    memset(drive, 0, sizeof(*drive));
-    if (usb_32bit_pipe(data_in))
+    memset(drive, 0, വലുപ്പം(*drive));
+    എങ്കിൽ (usb_32bit_pipe(data_in))
         drive->drive.type = DTYPE_UAS_32;
-    else
+    അല്ലെങ്കിൽ
         drive->drive.type = DTYPE_UAS;
     drive->usbdev = usbdev;
     drive->command = command;
@@ -188,102 +188,102 @@ uas_init_lun(struct uasdrive_s *drive, struct usbdevice_s *usbdev,
     drive->lun = lun;
 }
 
-static int
-uas_add_lun(u32 lun, struct drive_s *tmpl_drv)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+uas_add_lun(u32 lun, ഘടന drive_s *tmpl_drv)
 {
-    struct uasdrive_s *tmpl_lun =
-        container_of(tmpl_drv, struct uasdrive_s, drive);
-    struct uasdrive_s *drive = malloc_fseg(sizeof(*drive));
-    if (!drive) {
+    ഘടന uasdrive_s *tmpl_lun =
+        container_of(tmpl_drv, ഘടന uasdrive_s, drive);
+    ഘടന uasdrive_s *drive = malloc_fseg(വലുപ്പം(*drive));
+    എങ്കിൽ (!drive) {
         warn_noalloc();
-        return -1;
+        തിരികെ -1;
     }
     uas_init_lun(drive, tmpl_lun->usbdev,
                  tmpl_lun->command, tmpl_lun->status,
                  tmpl_lun->data_in, tmpl_lun->data_out,
                  lun);
 
-    int prio = bootprio_find_usb(drive->usbdev, drive->lun);
-    int ret = scsi_drive_setup(&drive->drive, "USB UAS", prio);
-    if (ret) {
-        free(drive);
-        return -1;
+    പൂർണ്ണസംഖ്യ prio = bootprio_find_usb(drive->usbdev, drive->lun);
+    പൂർണ്ണസംഖ്യ ret = scsi_drive_setup(&drive->drive, "USB UAS", prio);
+    എങ്കിൽ (ret) {
+        സ്വതന്ത്രം(drive);
+        തിരികെ -1;
     }
-    return 0;
+    തിരികെ 0;
 }
 
-int
-usb_uas_setup(struct usbdevice_s *usbdev)
+പൂർണ്ണസംഖ്യ
+usb_uas_setup(ഘടന usbdevice_s *usbdev)
 {
-    if (!CONFIG_USB_UAS)
-        return -1;
+    എങ്കിൽ (!CONFIG_USB_UAS)
+        തിരികെ -1;
 
     // Verify right kind of device
-    struct usb_interface_descriptor *iface = usbdev->iface;
-    if (iface->bInterfaceSubClass != US_SC_SCSI ||
+    ഘടന usb_interface_descriptor *iface = usbdev->iface;
+    എങ്കിൽ (iface->bInterfaceSubClass != US_SC_SCSI ||
         iface->bInterfaceProtocol != US_PR_UAS) {
         dprintf(1, "Unsupported UAS device (subclass=%02x proto=%02x)\n"
                 , iface->bInterfaceSubClass, iface->bInterfaceProtocol);
-        return -1;
+        തിരികെ -1;
     }
 
     /* find & allocate pipes */
-    struct usb_endpoint_descriptor *ep = NULL;
-    struct usb_pipe *command = NULL;
-    struct usb_pipe *status = NULL;
-    struct usb_pipe *data_in = NULL;
-    struct usb_pipe *data_out = NULL;
+    ഘടന usb_endpoint_descriptor *ep = ശൂന്യ;
+    ഘടന usb_pipe *command = ശൂന്യ;
+    ഘടന usb_pipe *status = ശൂന്യ;
+    ഘടന usb_pipe *data_in = ശൂന്യ;
+    ഘടന usb_pipe *data_out = ശൂന്യ;
     u8 *desc = (u8*)iface;
-    while (desc) {
+    ആകുമ്പോൾ (desc) {
         desc += desc[0];
-        switch (desc[1]) {
-        case USB_DT_ENDPOINT:
-            ep = (void*)desc;
-            break;
-        case USB_DT_ENDPOINT_COMPANION:
+        തിരഞ്ഞെടുപ്പ് (desc[1]) {
+        അവസ്ഥ USB_DT_ENDPOINT:
+            ep = (ശൂന്യം*)desc;
+            നിർത്തുക;
+        അവസ്ഥ USB_DT_ENDPOINT_COMPANION:
             /* No support (yet) for usb3 streams */
             dprintf(1, "Superspeed UAS devices not supported (yet)\n");
-            goto fail;
-        case 0x24:
-            switch (desc[2]) {
-            case UAS_PIPE_ID_COMMAND:
+            പോകുക fail;
+        അവസ്ഥ 0x24:
+            തിരഞ്ഞെടുപ്പ് (desc[2]) {
+            അവസ്ഥ UAS_PIPE_ID_COMMAND:
                 command = usb_alloc_pipe(usbdev, ep);
-                break;
-            case UAS_PIPE_ID_STATUS:
+                നിർത്തുക;
+            അവസ്ഥ UAS_PIPE_ID_STATUS:
                 status = usb_alloc_pipe(usbdev, ep);
-                break;
-            case UAS_PIPE_ID_DATA_IN:
+                നിർത്തുക;
+            അവസ്ഥ UAS_PIPE_ID_DATA_IN:
                 data_in = usb_alloc_pipe(usbdev, ep);
-                break;
-            case UAS_PIPE_ID_DATA_OUT:
+                നിർത്തുക;
+            അവസ്ഥ UAS_PIPE_ID_DATA_OUT:
                 data_out = usb_alloc_pipe(usbdev, ep);
-                break;
-            default:
-                goto fail;
+                നിർത്തുക;
+            സ്ഥിരസ്ഥിതി:
+                പോകുക fail;
             }
-            break;
-        default:
-            desc = NULL;
-            break;
+            നിർത്തുക;
+        സ്ഥിരസ്ഥിതി:
+            desc = ശൂന്യ;
+            നിർത്തുക;
         }
     }
-    if (!command || !status || !data_in || !data_out)
-        goto fail;
+    എങ്കിൽ (!command || !status || !data_in || !data_out)
+        പോകുക fail;
 
-    struct uasdrive_s lun0;
+    ഘടന uasdrive_s lun0;
     uas_init_lun(&lun0, usbdev, command, status, data_in, data_out, 0);
-    int ret = scsi_rep_luns_scan(&lun0.drive, uas_add_lun);
-    if (ret <= 0) {
+    പൂർണ്ണസംഖ്യ ret = scsi_rep_luns_scan(&lun0.drive, uas_add_lun);
+    എങ്കിൽ (ret <= 0) {
         dprintf(1, "Unable to configure UAS drive.\n");
-        goto fail;
+        പോകുക fail;
     }
 
-    return 0;
+    തിരികെ 0;
 
 fail:
     usb_free_pipe(usbdev, command);
     usb_free_pipe(usbdev, status);
     usb_free_pipe(usbdev, data_in);
     usb_free_pipe(usbdev, data_out);
-    return -1;
+    തിരികെ -1;
 }

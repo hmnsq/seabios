@@ -22,10 +22,10 @@
 #ifndef __LZMADECODE_H
 #define __LZMADECODE_H
 
-typedef unsigned char Byte;
-typedef unsigned short UInt16;
-typedef unsigned int UInt32;
-typedef UInt32 SizeT;
+തരനിർവചനം unsigned അക്ഷരം Byte;
+തരനിർവചനം unsigned short UInt16;
+തരനിർവചനം unsigned പൂർണ്ണസംഖ്യ UInt32;
+തരനിർവചനം UInt32 SizeT;
 
 #define CProb UInt16
 
@@ -38,20 +38,20 @@ typedef UInt32 SizeT;
 
 #define LZMA_PROPERTIES_SIZE 5
 
-typedef struct _CLzmaProperties
+തരനിർവചനം ഘടന _CLzmaProperties
 {
-  int lc;
-  int lp;
-  int pb;
+  പൂർണ്ണസംഖ്യ lc;
+  പൂർണ്ണസംഖ്യ lp;
+  പൂർണ്ണസംഖ്യ pb;
 }CLzmaProperties;
 
-int LzmaDecodeProperties(CLzmaProperties *propsRes, const unsigned char *propsData, int size);
+പൂർണ്ണസംഖ്യ LzmaDecodeProperties(CLzmaProperties *propsRes, സ്ഥിരം unsigned അക്ഷരം *propsData, പൂർണ്ണസംഖ്യ size);
 
-#define LzmaGetNumProbs(Properties) (LZMA_BASE_SIZE + (LZMA_LIT_SIZE << ((Properties)->lc + (Properties)->lp)))
+#define Lzma_Get_അക്കം_Probs(Properties) (LZMA_BASE_SIZE + (LZMA_LIT_SIZE << ((Properties)->lc + (Properties)->lp)))
 
 #define kLzmaNeedInitId (-2)
 
-typedef struct _CLzmaDecoderState
+തരനിർവചനം ഘടന _CLzmaDecoderState
 {
   CLzmaProperties Properties;
   CProb *Probs;
@@ -60,8 +60,8 @@ typedef struct _CLzmaDecoderState
 } CLzmaDecoderState;
 
 
-int LzmaDecode(CLzmaDecoderState *vs,
-    const unsigned char *inStream, SizeT inSize, SizeT *inSizeProcessed,
-    unsigned char *outStream, SizeT outSize, SizeT *outSizeProcessed);
+പൂർണ്ണസംഖ്യ LzmaDecode(CLzmaDecoderState *vs,
+    സ്ഥിരം unsigned അക്ഷരം *inStream, SizeT inSize, SizeT *inSizeProcessed,
+    unsigned അക്ഷരം *outStream, SizeT outSize, SizeT *outSizeProcessed);
 
 #endif

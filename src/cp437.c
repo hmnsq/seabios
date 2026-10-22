@@ -4,11 +4,11 @@
  * This file may be distributed under the terms of the GNU LGPLv3 license.
  */
 
-#include "types.h"
-#include "biosvar.h"
-#include "cp437.h"
+#അന്തര്ഭാവ "types.h"
+#അന്തര്ഭാവ "biosvar.h"
+#അന്തര്ഭാവ "cp437.h"
 
-static VAR16 u16 cp437_to_unicode_map[256] = {
+സ്ഥിതം VAR16 u16 cp437_to_unicode_map[256] = {
 
     /* https://en.wikipedia.org/wiki/Code_page_437 */
     [ 0x00 ] = 0x0000,
@@ -273,5 +273,5 @@ static VAR16 u16 cp437_to_unicode_map[256] = {
 
 u16 cp437_to_unicode(u8 cp437)
 {
-    return GET_GLOBAL(cp437_to_unicode_map[cp437]);
+    തിരികെ GET_GLOBAL(cp437_to_unicode_map[cp437]);
 }

@@ -5,22 +5,22 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "block.h" // struct drive_s
-#include "bregs.h" // struct bregs
-#include "config.h" // CONFIG_*
-#include "fw/paravirt.h" // qemu_cfg_show_boot_menu
-#include "hw/pci.h" // pci_bdf_to_*
-#include "hw/pcidevice.h" // struct pci_device
-#include "hw/rtc.h" // rtc_read
-#include "hw/usb.h" // struct usbdevice_s
-#include "list.h" // hlist_node
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "romfile.h" // romfile_loadint
-#include "std/disk.h" // struct mbr_s
-#include "string.h" // memset
-#include "util.h" // irqtimer_calc
-#include "tcgbios.h" // tpm_*
+#അന്തര്ഭാവ "block.h" // struct drive_s
+#അന്തര്ഭാവ "bregs.h" // struct bregs
+#അന്തര്ഭാവ "config.h" // CONFIG_*
+#അന്തര്ഭാവ "fw/paravirt.h" // qemu_cfg_show_boot_menu
+#അന്തര്ഭാവ "hw/pci.h" // pci_bdf_to_*
+#അന്തര്ഭാവ "hw/pcidevice.h" // struct pci_device
+#അന്തര്ഭാവ "hw/rtc.h" // rtc_read
+#അന്തര്ഭാവ "hw/usb.h" // struct usbdevice_s
+#അന്തര്ഭാവ "list.h" // hlist_node
+#അന്തര്ഭാവ "malloc.h" // free
+#അന്തര്ഭാവ "output.h" // dprintf
+#അന്തര്ഭാവ "romfile.h" // romfile_loadint
+#അന്തര്ഭാവ "std/disk.h" // struct mbr_s
+#അന്തര്ഭാവ "string.h" // memset
+#അന്തര്ഭാവ "util.h" // irqtimer_calc
+#അന്തര്ഭാവ "tcgbios.h" // tpm_*
 
 /****************************************************************
  * Helper search functions
@@ -29,21 +29,21 @@
 // See if 'str' starts with 'glob' - if glob contains an '*' character
 // it will match any number of characters in str that aren't a '/' or
 // the next glob character.
-static char *
-glob_prefix(const char *glob, const char *str)
+സ്ഥിതം അക്ഷരം *
+glob_prefix(സ്ഥിരം അക്ഷരം *glob, സ്ഥിരം അക്ഷരം *str)
 {
-    for (;;) {
-        if (!*glob && (!*str || *str == '/'))
-            return (char*)str;
-        if (*glob == '*') {
-            if (!*str || *str == '/' || *str == glob[1])
+    വേണ്ടി (;;) {
+        എങ്കിൽ (!*glob && (!*str || *str == '/'))
+            തിരികെ (അക്ഷരം*)str;
+        എങ്കിൽ (*glob == '*') {
+            എങ്കിൽ (!*str || *str == '/' || *str == glob[1])
                 glob++;
-            else
+            അല്ലെങ്കിൽ
                 str++;
-            continue;
+            തുടരുക;
         }
-        if (*glob != *str)
-            return NULL;
+        എങ്കിൽ (*glob != *str)
+            തിരികെ ശൂന്യ;
         glob++;
         str++;
     }
@@ -51,48 +51,48 @@ glob_prefix(const char *glob, const char *str)
 
 #define FW_PCI_DOMAIN "/pci@i0cf8"
 
-static char *
-build_pci_path(char *buf, int max, const char *devname, struct pci_device *pci)
+സ്ഥിതം അക്ഷരം *
+build_pci_path(അക്ഷരം *buf, പൂർണ്ണസംഖ്യ max, സ്ഥിരം അക്ഷരം *devname, ഘടന pci_device *pci)
 {
     // Build the string path of a bdf - for example: /pci@i0cf8/isa@1,2
-    char *p = buf;
-    if (pci->parent) {
+    അക്ഷരം *p = buf;
+    എങ്കിൽ (pci->parent) {
         p = build_pci_path(p, max, "pci-bridge", pci->parent);
-    } else {
+    } അല്ലെങ്കിൽ {
         p += snprintf(p, buf+max-p, "%s", FW_PCI_DOMAIN);
-        if (pci->rootbus)
+        എങ്കിൽ (pci->rootbus)
             p += snprintf(p, buf+max-p, ",%x", pci->rootbus);
     }
 
-    int dev = pci_bdf_to_dev(pci->bdf), fn = pci_bdf_to_fn(pci->bdf);
+    പൂർണ്ണസംഖ്യ dev = pci_bdf_to_dev(pci->bdf), fn = pci_bdf_to_fn(pci->bdf);
     p += snprintf(p, buf+max-p, "/%s@%x", devname, dev);
-    if (fn)
+    എങ്കിൽ (fn)
         p += snprintf(p, buf+max-p, ",%x", fn);
-    return p;
+    തിരികെ p;
 }
 
-static char *
-build_scsi_path(char *buf, int max,
-                struct pci_device *pci, int target, int lun)
+സ്ഥിതം അക്ഷരം *
+build_scsi_path(അക്ഷരം *buf, പൂർണ്ണസംഖ്യ max,
+                ഘടന pci_device *pci, പൂർണ്ണസംഖ്യ target, പൂർണ്ണസംഖ്യ lun)
 {
     // Build the string path of a scsi drive - for example:
     // /pci@i0cf8/scsi@5/channel@0/disk@1,0
-    char *p;
+    അക്ഷരം *p;
     p = build_pci_path(buf, max, "*", pci);
     p += snprintf(p, buf+max-p, "/*@0/*@%x,%x", target, lun);
-    return p;
+    തിരികെ p;
 }
 
-static char *
-build_ata_path(char *buf, int max,
-               struct pci_device *pci, int chanid, int slave)
+സ്ഥിതം അക്ഷരം *
+build_ata_path(അക്ഷരം *buf, പൂർണ്ണസംഖ്യ max,
+               ഘടന pci_device *pci, പൂർണ്ണസംഖ്യ chanid, പൂർണ്ണസംഖ്യ slave)
 {
     // Build the string path of an ata drive - for example:
     // /pci@i0cf8/ide@1,1/drive@1/disk@0
-    char *p;
+    അക്ഷരം *p;
     p = build_pci_path(buf, max, "*", pci);
     p += snprintf(p, buf+max-p, "/drive@%x/disk@%x", chanid, slave);
-    return p;
+    തിരികെ p;
 }
 
 
@@ -100,141 +100,141 @@ build_ata_path(char *buf, int max,
  * Boot device logical geometry
  ****************************************************************/
 
-typedef struct BootDeviceLCHS {
-    char *name;
+തരനിർവചനം ഘടന BootDeviceLCHS {
+    അക്ഷരം *name;
     u32 lcyls;
     u32 lheads;
     u32 lsecs;
 } BootDeviceLCHS;
 
-static BootDeviceLCHS *BiosGeometry VARVERIFY32INIT;
-static int BiosGeometryCount;
+സ്ഥിതം BootDeviceLCHS *BiosGeometry VARVERIFY32INIT;
+സ്ഥിതം പൂർണ്ണസംഖ്യ Bios_Geometry_എണ്ണം;
 
-static char *
-parse_u32(char *cur, u32 *n)
+സ്ഥിതം അക്ഷരം *
+parse_u32(അക്ഷരം *cur, u32 *n)
 {
     u32 m = 0;
-    if (cur) {
-        while ('0' <= *cur && *cur <= '9') {
+    എങ്കിൽ (cur) {
+        ആകുമ്പോൾ ('0' <= *cur && *cur <= '9') {
             m = 10 * m + (*cur - '0');
             cur++;
         }
-        if (*cur != '\0')
+        എങ്കിൽ (*cur != '\0')
             cur++;
     }
     *n = m;
-    return cur;
+    തിരികെ cur;
 }
 
-static void
-loadBiosGeometry(void)
+സ്ഥിതം ശൂന്യം
+loadBiosGeometry(ശൂന്യം)
 {
-    if (!CONFIG_HOST_BIOS_GEOMETRY)
-        return;
-    char *f = romfile_loadfile("bios-geometry", NULL);
-    if (!f)
-        return;
+    എങ്കിൽ (!CONFIG_HOST_BIOS_GEOMETRY)
+        തിരികെ;
+    അക്ഷരം *f = romfile_loadfile("bios-geometry", ശൂന്യ);
+    എങ്കിൽ (!f)
+        തിരികെ;
 
-    int i = 0;
-    BiosGeometryCount = 1;
-    while (f[i]) {
-        if (f[i] == '\n')
-            BiosGeometryCount++;
+    പൂർണ്ണസംഖ്യ i = 0;
+    Bios_Geometry_എണ്ണം = 1;
+    ആകുമ്പോൾ (f[i]) {
+        എങ്കിൽ (f[i] == '\n')
+            Bios_Geometry_എണ്ണം++;
         i++;
     }
-    BiosGeometry = malloc_tmphigh(BiosGeometryCount * sizeof(BootDeviceLCHS));
-    if (!BiosGeometry) {
+    BiosGeometry = malloc_tmphigh(Bios_Geometry_എണ്ണം * വലുപ്പം(BootDeviceLCHS));
+    എങ്കിൽ (!BiosGeometry) {
         warn_noalloc();
-        free(f);
-        BiosGeometryCount = 0;
-        return;
+        സ്വതന്ത്രം(f);
+        Bios_Geometry_എണ്ണം = 0;
+        തിരികെ;
     }
 
     dprintf(1, "bios geometry:\n");
     i = 0;
-    do {
+    ചെയ്യുക {
         BootDeviceLCHS *d = &BiosGeometry[i];
         d->name = f;
         f = strchr(f, '\n');
-        if (f)
+        എങ്കിൽ (f)
             *(f++) = '\0';
-        char *chs_values = strchr(d->name, ' ');
-        if (chs_values)
-            *(chs_values++) = '\0';
-        chs_values = parse_u32(chs_values, &d->lcyls);
-        chs_values = parse_u32(chs_values, &d->lheads);
-        chs_values = parse_u32(chs_values, &d->lsecs);
+        അക്ഷരം *chs_മൂല്യങ്ങൾ = strchr(d->name, ' ');
+        എങ്കിൽ (chs_മൂല്യങ്ങൾ)
+            *(chs_മൂല്യങ്ങൾ++) = '\0';
+        chs_മൂല്യങ്ങൾ = parse_u32(chs_മൂല്യങ്ങൾ, &d->lcyls);
+        chs_മൂല്യങ്ങൾ = parse_u32(chs_മൂല്യങ്ങൾ, &d->lheads);
+        chs_മൂല്യങ്ങൾ = parse_u32(chs_മൂല്യങ്ങൾ, &d->lsecs);
         dprintf(1, "%s: (%u, %u, %u)\n",
                 d->name, d->lcyls, d->lheads, d->lsecs);
         i++;
-    } while (f);
+    } ആകുമ്പോൾ (f);
 }
 
 // Search the bios-geometry list for the given glob pattern.
-static BootDeviceLCHS *
-boot_lchs_find(const char *glob)
+സ്ഥിതം BootDeviceLCHS *
+boot_lchs_find(സ്ഥിരം അക്ഷരം *glob)
 {
     dprintf(1, "Searching bios-geometry for: %s\n", glob);
-    int i;
-    for (i = 0; i < BiosGeometryCount; i++)
-        if (glob_prefix(glob, BiosGeometry[i].name))
-            return &BiosGeometry[i];
-    return NULL;
+    പൂർണ്ണസംഖ്യ i;
+    വേണ്ടി (i = 0; i < Bios_Geometry_എണ്ണം; i++)
+        എങ്കിൽ (glob_prefix(glob, BiosGeometry[i].name))
+            തിരികെ &BiosGeometry[i];
+    തിരികെ ശൂന്യ;
 }
 
-int boot_lchs_find_pci_device(struct pci_device *pci, struct chs_s *chs)
+പൂർണ്ണസംഖ്യ boot_lchs_find_pci_device(ഘടന pci_device *pci, ഘടന chs_s *chs)
 {
-    if (!CONFIG_HOST_BIOS_GEOMETRY)
-        return -1;
-    char desc[256];
-    build_pci_path(desc, sizeof(desc), "*", pci);
+    എങ്കിൽ (!CONFIG_HOST_BIOS_GEOMETRY)
+        തിരികെ -1;
+    അക്ഷരം desc[256];
+    build_pci_path(desc, വലുപ്പം(desc), "*", pci);
     BootDeviceLCHS *b = boot_lchs_find(desc);
-    if (!b)
-        return -1;
+    എങ്കിൽ (!b)
+        തിരികെ -1;
     chs->cylinder = (u16)b->lcyls;
     chs->head = (u16)b->lheads;
     chs->sector = (u16)b->lsecs;
-    return 0;
+    തിരികെ 0;
 }
 
-int boot_lchs_find_scsi_device(struct pci_device *pci, int target, int lun,
-                               struct chs_s *chs)
+പൂർണ്ണസംഖ്യ boot_lchs_find_scsi_device(ഘടന pci_device *pci, പൂർണ്ണസംഖ്യ target, പൂർണ്ണസംഖ്യ lun,
+                               ഘടന chs_s *chs)
 {
-    if (!CONFIG_HOST_BIOS_GEOMETRY)
-        return -1;
-    if (!pci)
+    എങ്കിൽ (!CONFIG_HOST_BIOS_GEOMETRY)
+        തിരികെ -1;
+    എങ്കിൽ (!pci)
         // support only pci machine for now
-        return -1;
+        തിരികെ -1;
     // Find scsi drive - for example: /pci@i0cf8/scsi@5/channel@0/disk@1,0
-    char desc[256];
-    build_scsi_path(desc, sizeof(desc), pci, target, lun);
+    അക്ഷരം desc[256];
+    build_scsi_path(desc, വലുപ്പം(desc), pci, target, lun);
     BootDeviceLCHS *b = boot_lchs_find(desc);
-    if (!b)
-        return -1;
+    എങ്കിൽ (!b)
+        തിരികെ -1;
     chs->cylinder = (u16)b->lcyls;
     chs->head = (u16)b->lheads;
     chs->sector = (u16)b->lsecs;
-    return 0;
+    തിരികെ 0;
 }
 
-int boot_lchs_find_ata_device(struct pci_device *pci, int chanid, int slave,
-                              struct chs_s *chs)
+പൂർണ്ണസംഖ്യ boot_lchs_find_ata_device(ഘടന pci_device *pci, പൂർണ്ണസംഖ്യ chanid, പൂർണ്ണസംഖ്യ slave,
+                              ഘടന chs_s *chs)
 {
-    if (!CONFIG_HOST_BIOS_GEOMETRY)
-        return -1;
-    if (!pci)
+    എങ്കിൽ (!CONFIG_HOST_BIOS_GEOMETRY)
+        തിരികെ -1;
+    എങ്കിൽ (!pci)
         // support only pci machine for now
-        return -1;
+        തിരികെ -1;
     // Find ata drive - for example: /pci@i0cf8/ide@1,1/drive@1/disk@0
-    char desc[256];
-    build_ata_path(desc, sizeof(desc), pci, chanid, slave);
+    അക്ഷരം desc[256];
+    build_ata_path(desc, വലുപ്പം(desc), pci, chanid, slave);
     BootDeviceLCHS *b = boot_lchs_find(desc);
-    if (!b)
-        return -1;
+    എങ്കിൽ (!b)
+        തിരികെ -1;
     chs->cylinder = (u16)b->lcyls;
     chs->head = (u16)b->lheads;
     chs->sector = (u16)b->lsecs;
-    return 0;
+    തിരികെ 0;
 }
 
 
@@ -242,209 +242,209 @@ int boot_lchs_find_ata_device(struct pci_device *pci, int chanid, int slave,
  * Boot priority ordering
  ****************************************************************/
 
-static char **Bootorder VARVERIFY32INIT;
-static int BootorderCount;
+സ്ഥിതം അക്ഷരം **Bootorder VARVERIFY32INIT;
+സ്ഥിതം പൂർണ്ണസംഖ്യ Bootorder_എണ്ണം;
 
-static void
-loadBootOrder(void)
+സ്ഥിതം ശൂന്യം
+loadBootOrder(ശൂന്യം)
 {
-    if (!CONFIG_BOOTORDER)
-        return;
+    എങ്കിൽ (!CONFIG_BOOTORDER)
+        തിരികെ;
 
-    char *f = romfile_loadfile("bootorder", NULL);
-    if (!f)
-        return;
+    അക്ഷരം *f = romfile_loadfile("bootorder", ശൂന്യ);
+    എങ്കിൽ (!f)
+        തിരികെ;
 
-    int i = 0;
-    BootorderCount = 1;
-    while (f[i]) {
-        if (f[i] == '\n')
-            BootorderCount++;
+    പൂർണ്ണസംഖ്യ i = 0;
+    Bootorder_എണ്ണം = 1;
+    ആകുമ്പോൾ (f[i]) {
+        എങ്കിൽ (f[i] == '\n')
+            Bootorder_എണ്ണം++;
         i++;
     }
-    Bootorder = malloc_tmphigh(BootorderCount*sizeof(char*));
-    if (!Bootorder) {
+    Bootorder = malloc_tmphigh(Bootorder_എണ്ണം*വലുപ്പം(അക്ഷരം*));
+    എങ്കിൽ (!Bootorder) {
         warn_noalloc();
-        free(f);
-        BootorderCount = 0;
-        return;
+        സ്വതന്ത്രം(f);
+        Bootorder_എണ്ണം = 0;
+        തിരികെ;
     }
 
     dprintf(1, "boot order:\n");
     i = 0;
-    do {
+    ചെയ്യുക {
         Bootorder[i] = f;
         f = strchr(f, '\n');
-        if (f)
+        എങ്കിൽ (f)
             *(f++) = '\0';
         Bootorder[i] = nullTrailingSpace(Bootorder[i]);
         dprintf(1, "%d: %s\n", i+1, Bootorder[i]);
         i++;
-    } while (f);
+    } ആകുമ്പോൾ (f);
 }
 
 // Search the bootorder list for the given glob pattern.
-static int
-find_prio(const char *glob)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+find_prio(സ്ഥിരം അക്ഷരം *glob)
 {
     dprintf(1, "Searching bootorder for: %s\n", glob);
-    int i;
-    for (i = 0; i < BootorderCount; i++)
-        if (glob_prefix(glob, Bootorder[i]))
-            return i+1;
-    return -1;
+    പൂർണ്ണസംഖ്യ i;
+    വേണ്ടി (i = 0; i < Bootorder_എണ്ണം; i++)
+        എങ്കിൽ (glob_prefix(glob, Bootorder[i]))
+            തിരികെ i+1;
+    തിരികെ -1;
 }
 
-u8 is_bootprio_strict(void)
+u8 is_bootprio_strict(ശൂന്യം)
 {
-    static int prio_halt = -2;
+    സ്ഥിതം പൂർണ്ണസംഖ്യ prio_halt = -2;
 
-    if (prio_halt == -2)
+    എങ്കിൽ (prio_halt == -2)
         prio_halt = find_prio("HALT");
-    return prio_halt >= 0;
+    തിരികെ prio_halt >= 0;
 }
 
-int bootprio_find_pci_device(struct pci_device *pci)
+പൂർണ്ണസംഖ്യ bootprio_find_pci_device(ഘടന pci_device *pci)
 {
-    if (CONFIG_CSM)
-        return csm_bootprio_pci(pci);
-    if (!CONFIG_BOOTORDER)
-        return -1;
+    എങ്കിൽ (CONFIG_CSM)
+        തിരികെ csm_bootprio_pci(pci);
+    എങ്കിൽ (!CONFIG_BOOTORDER)
+        തിരികെ -1;
     // Find pci device - for example: /pci@i0cf8/ethernet@5
-    char desc[256];
-    build_pci_path(desc, sizeof(desc), "*", pci);
-    return find_prio(desc);
+    അക്ഷരം desc[256];
+    build_pci_path(desc, വലുപ്പം(desc), "*", pci);
+    തിരികെ find_prio(desc);
 }
 
-int bootprio_find_mmio_device(void *mmio)
+പൂർണ്ണസംഖ്യ bootprio_find_mmio_device(ശൂന്യം *mmio)
 {
-    if (!CONFIG_BOOTORDER)
-        return -1;
-    char desc[256];
-    snprintf(desc, sizeof(desc), "/virtio-mmio@%016x/*", (u32)mmio);
-    return find_prio(desc);
+    എങ്കിൽ (!CONFIG_BOOTORDER)
+        തിരികെ -1;
+    അക്ഷരം desc[256];
+    snprintf(desc, വലുപ്പം(desc), "/virtio-mmio@%016x/*", (u32)mmio);
+    തിരികെ find_prio(desc);
 }
 
-int bootprio_find_scsi_device(struct pci_device *pci, int target, int lun)
+പൂർണ്ണസംഖ്യ bootprio_find_scsi_device(ഘടന pci_device *pci, പൂർണ്ണസംഖ്യ target, പൂർണ്ണസംഖ്യ lun)
 {
-    if (!CONFIG_BOOTORDER)
-        return -1;
-    if (!pci)
+    എങ്കിൽ (!CONFIG_BOOTORDER)
+        തിരികെ -1;
+    എങ്കിൽ (!pci)
         // support only pci machine for now
-        return -1;
-    char desc[256];
-    build_scsi_path(desc, sizeof(desc), pci, target, lun);
-    return find_prio(desc);
+        തിരികെ -1;
+    അക്ഷരം desc[256];
+    build_scsi_path(desc, വലുപ്പം(desc), pci, target, lun);
+    തിരികെ find_prio(desc);
 }
 
-int bootprio_find_scsi_mmio_device(void *mmio, int target, int lun)
+പൂർണ്ണസംഖ്യ bootprio_find_scsi_mmio_device(ശൂന്യം *mmio, പൂർണ്ണസംഖ്യ target, പൂർണ്ണസംഖ്യ lun)
 {
-    if (!CONFIG_BOOTORDER)
-        return -1;
-    char desc[256];
-    snprintf(desc, sizeof(desc), "/virtio-mmio@%016x/*@0/*@%x,%x",
+    എങ്കിൽ (!CONFIG_BOOTORDER)
+        തിരികെ -1;
+    അക്ഷരം desc[256];
+    snprintf(desc, വലുപ്പം(desc), "/virtio-mmio@%016x/*@0/*@%x,%x",
              (u32)mmio, target, lun);
-    return find_prio(desc);
+    തിരികെ find_prio(desc);
 }
 
-int bootprio_find_ata_device(struct pci_device *pci, int chanid, int slave)
+പൂർണ്ണസംഖ്യ bootprio_find_ata_device(ഘടന pci_device *pci, പൂർണ്ണസംഖ്യ chanid, പൂർണ്ണസംഖ്യ slave)
 {
-    if (CONFIG_CSM)
-        return csm_bootprio_ata(pci, chanid, slave);
-    if (!CONFIG_BOOTORDER)
-        return -1;
-    if (!pci)
+    എങ്കിൽ (CONFIG_CSM)
+        തിരികെ csm_bootprio_ata(pci, chanid, slave);
+    എങ്കിൽ (!CONFIG_BOOTORDER)
+        തിരികെ -1;
+    എങ്കിൽ (!pci)
         // support only pci machine for now
-        return -1;
-    char desc[256];
-    build_ata_path(desc, sizeof(desc), pci, chanid, slave);
-    return find_prio(desc);
+        തിരികെ -1;
+    അക്ഷരം desc[256];
+    build_ata_path(desc, വലുപ്പം(desc), pci, chanid, slave);
+    തിരികെ find_prio(desc);
 }
 
-int bootprio_find_fdc_device(struct pci_device *pci, int port, int fdid)
+പൂർണ്ണസംഖ്യ bootprio_find_fdc_device(ഘടന pci_device *pci, പൂർണ്ണസംഖ്യ port, പൂർണ്ണസംഖ്യ fdid)
 {
-    if (CONFIG_CSM)
-        return csm_bootprio_fdc(pci, port, fdid);
-    if (!CONFIG_BOOTORDER)
-        return -1;
-    if (!pci)
+    എങ്കിൽ (CONFIG_CSM)
+        തിരികെ csm_bootprio_fdc(pci, port, fdid);
+    എങ്കിൽ (!CONFIG_BOOTORDER)
+        തിരികെ -1;
+    എങ്കിൽ (!pci)
         // support only pci machine for now
-        return -1;
+        തിരികെ -1;
     // Find floppy - for example: /pci@i0cf8/isa@1/fdc@03f1/floppy@0
-    char desc[256], *p;
-    p = build_pci_path(desc, sizeof(desc), "isa", pci);
-    snprintf(p, desc+sizeof(desc)-p, "/fdc@%04x/floppy@%x", port, fdid);
-    return find_prio(desc);
+    അക്ഷരം desc[256], *p;
+    p = build_pci_path(desc, വലുപ്പം(desc), "isa", pci);
+    snprintf(p, desc+വലുപ്പം(desc)-p, "/fdc@%04x/floppy@%x", port, fdid);
+    തിരികെ find_prio(desc);
 }
 
-int bootprio_find_pci_rom(struct pci_device *pci, int instance)
+പൂർണ്ണസംഖ്യ bootprio_find_pci_rom(ഘടന pci_device *pci, പൂർണ്ണസംഖ്യ instance)
 {
-    if (!CONFIG_BOOTORDER)
-        return -1;
+    എങ്കിൽ (!CONFIG_BOOTORDER)
+        തിരികെ -1;
     // Find pci rom - for example: /pci@i0cf8/scsi@3:rom2
-    char desc[256], *p;
-    p = build_pci_path(desc, sizeof(desc), "*", pci);
-    if (instance)
-        snprintf(p, desc+sizeof(desc)-p, ":rom%x", instance);
-    return find_prio(desc);
+    അക്ഷരം desc[256], *p;
+    p = build_pci_path(desc, വലുപ്പം(desc), "*", pci);
+    എങ്കിൽ (instance)
+        snprintf(p, desc+വലുപ്പം(desc)-p, ":rom%x", instance);
+    തിരികെ find_prio(desc);
 }
 
-int bootprio_find_named_rom(const char *name, int instance)
+പൂർണ്ണസംഖ്യ bootprio_find_named_rom(സ്ഥിരം അക്ഷരം *name, പൂർണ്ണസംഖ്യ instance)
 {
-    if (!CONFIG_BOOTORDER)
-        return -1;
+    എങ്കിൽ (!CONFIG_BOOTORDER)
+        തിരികെ -1;
     // Find named rom - for example: /rom@genroms/linuxboot.bin
-    char desc[256], *p;
-    p = desc + snprintf(desc, sizeof(desc), "/rom@%s", name);
-    if (instance)
-        snprintf(p, desc+sizeof(desc)-p, ":rom%x", instance);
-    return find_prio(desc);
+    അക്ഷരം desc[256], *p;
+    p = desc + snprintf(desc, വലുപ്പം(desc), "/rom@%s", name);
+    എങ്കിൽ (instance)
+        snprintf(p, desc+വലുപ്പം(desc)-p, ":rom%x", instance);
+    തിരികെ find_prio(desc);
 }
 
-static int usb_portmap(struct usbdevice_s *usbdev)
+സ്ഥിതം പൂർണ്ണസംഖ്യ usb_portmap(ഘടന usbdevice_s *usbdev)
 {
-    if (usbdev->hub->op->portmap)
-        return usbdev->hub->op->portmap(usbdev->hub, usbdev->port);
-    return usbdev->port + 1;
+    എങ്കിൽ (usbdev->hub->op->portmap)
+        തിരികെ usbdev->hub->op->portmap(usbdev->hub, usbdev->port);
+    തിരികെ usbdev->port + 1;
 }
 
-static char *
-build_usb_path(char *buf, int max, struct usbhub_s *hub)
+സ്ഥിതം അക്ഷരം *
+build_usb_path(അക്ഷരം *buf, പൂർണ്ണസംഖ്യ max, ഘടന usbhub_s *hub)
 {
-    if (!hub->usbdev)
+    എങ്കിൽ (!hub->usbdev)
         // Root hub - nothing to add.
-        return buf;
-    char *p = build_usb_path(buf, max, hub->usbdev->hub);
+        തിരികെ buf;
+    അക്ഷരം *p = build_usb_path(buf, max, hub->usbdev->hub);
     p += snprintf(p, buf+max-p, "/hub@%x", usb_portmap(hub->usbdev));
-    return p;
+    തിരികെ p;
 }
 
-int bootprio_find_usb(struct usbdevice_s *usbdev, int lun)
+പൂർണ്ണസംഖ്യ bootprio_find_usb(ഘടന usbdevice_s *usbdev, പൂർണ്ണസംഖ്യ lun)
 {
-    if (!CONFIG_BOOTORDER)
-        return -1;
+    എങ്കിൽ (!CONFIG_BOOTORDER)
+        തിരികെ -1;
     // Find usb - examples:
     //   pci:  /pci@i0cf8/usb@1,2/storage@1/channel@0/disk@0,0
     //   mmio: /sysbus-xhci@00000000fe900000/storage@1/channel@0/disk@0,0
-    char desc[256], *p;
+    അക്ഷരം desc[256], *p;
 
-    if (usbdev->hub->cntl->pci)
-        p = build_pci_path(desc, sizeof(desc), "usb", usbdev->hub->cntl->pci);
-    else if (usbdev->hub->cntl->mmio)
-        p = desc + snprintf(desc, sizeof(desc), "/*@%016x"
+    എങ്കിൽ (usbdev->hub->cntl->pci)
+        p = build_pci_path(desc, വലുപ്പം(desc), "usb", usbdev->hub->cntl->pci);
+    അല്ലെങ്കിൽ എങ്കിൽ (usbdev->hub->cntl->mmio)
+        p = desc + snprintf(desc, വലുപ്പം(desc), "/*@%016x"
                             , (u32)usbdev->hub->cntl->mmio);
-    else
-        return -1;
+    അല്ലെങ്കിൽ
+        തിരികെ -1;
 
-    p = build_usb_path(p, desc+sizeof(desc)-p, usbdev->hub);
-    snprintf(p, desc+sizeof(desc)-p, "/storage@%x/*@0/*@0,%x"
+    p = build_usb_path(p, desc+വലുപ്പം(desc)-p, usbdev->hub);
+    snprintf(p, desc+വലുപ്പം(desc)-p, "/storage@%x/*@0/*@0,%x"
              , usb_portmap(usbdev), lun);
-    int ret = find_prio(desc);
-    if (ret >= 0)
-        return ret;
+    പൂർണ്ണസംഖ്യ ret = find_prio(desc);
+    എങ്കിൽ (ret >= 0)
+        തിരികെ ret;
     // Try usb-host/redir - for example: /pci@i0cf8/usb@1,2/usb-host@1
-    snprintf(p, desc+sizeof(desc)-p, "/usb-*@%x", usb_portmap(usbdev));
-    return find_prio(desc);
+    snprintf(p, desc+വലുപ്പം(desc)-p, "/usb-*@%x", usb_portmap(usbdev));
+    തിരികെ find_prio(desc);
 }
 
 
@@ -452,39 +452,39 @@ int bootprio_find_usb(struct usbdevice_s *usbdev, int lun)
  * Boot setup
  ****************************************************************/
 
-static int BootRetryTime;
-static int CheckFloppySig = 1;
+സ്ഥിതം പൂർണ്ണസംഖ്യ BootRetryTime;
+സ്ഥിതം പൂർണ്ണസംഖ്യ CheckFloppySig = 1;
 
 #define DEFAULT_PRIO           9999
 
-static int DefaultFloppyPrio = 101;
-static int DefaultCDPrio     = 102;
-static int DefaultHDPrio     = 103;
-static int DefaultBEVPrio    = 104;
+സ്ഥിതം പൂർണ്ണസംഖ്യ DefaultFloppyPrio = 101;
+സ്ഥിതം പൂർണ്ണസംഖ്യ DefaultCDPrio     = 102;
+സ്ഥിതം പൂർണ്ണസംഖ്യ DefaultHDPrio     = 103;
+സ്ഥിതം പൂർണ്ണസംഖ്യ DefaultBEVPrio    = 104;
 
-void
-boot_init(void)
+ശൂന്യം
+boot_init(ശൂന്യം)
 {
-    if (! CONFIG_BOOT)
-        return;
+    എങ്കിൽ (! CONFIG_BOOT)
+        തിരികെ;
 
-    if (CONFIG_QEMU) {
+    എങ്കിൽ (CONFIG_QEMU) {
         // On emulators, get boot order from nvram.
-        if (rtc_read(CMOS_BIOS_BOOTFLAG1) & 1)
+        എങ്കിൽ (rtc_read(CMOS_BIOS_BOOTFLAG1) & 1)
             CheckFloppySig = 0;
         u32 bootorder = (rtc_read(CMOS_BIOS_BOOTFLAG2)
                          | ((rtc_read(CMOS_BIOS_BOOTFLAG1) & 0xf0) << 4));
         DefaultFloppyPrio = DefaultCDPrio = DefaultHDPrio
             = DefaultBEVPrio = DEFAULT_PRIO;
-        int i;
-        for (i=101; i<104; i++) {
+        പൂർണ്ണസംഖ്യ i;
+        വേണ്ടി (i=101; i<104; i++) {
             u32 val = bootorder & 0x0f;
             bootorder >>= 4;
-            switch (val) {
-            case 1: DefaultFloppyPrio = i; break;
-            case 2: DefaultHDPrio = i;     break;
-            case 3: DefaultCDPrio = i;     break;
-            case 4: DefaultBEVPrio = i;    break;
+            തിരഞ്ഞെടുപ്പ് (val) {
+            അവസ്ഥ 1: DefaultFloppyPrio = i; നിർത്തുക;
+            അവസ്ഥ 2: DefaultHDPrio = i;     നിർത്തുക;
+            അവസ്ഥ 3: DefaultCDPrio = i;     നിർത്തുക;
+            അവസ്ഥ 4: DefaultBEVPrio = i;    നിർത്തുക;
             }
         }
     }
@@ -500,18 +500,18 @@ boot_init(void)
  * BootList handling
  ****************************************************************/
 
-struct bootentry_s {
-    int type;
-    union {
+ഘടന bootentry_s {
+    പൂർണ്ണസംഖ്യ type;
+    സംഘം {
         u32 data;
-        struct segoff_s vector;
-        struct drive_s *drive;
+        ഘടന segoff_s vector;
+        ഘടന drive_s *drive;
     };
-    int priority;
-    const char *description;
-    struct hlist_node node;
+    പൂർണ്ണസംഖ്യ priority;
+    സ്ഥിരം അക്ഷരം *description;
+    ഘടന hlist_കണ്ണി കണ്ണി;
 };
-static struct hlist_head BootList VARVERIFY32INIT;
+സ്ഥിതം ഘടന hlist_head BootList VARVERIFY32INIT;
 
 #define IPL_TYPE_FLOPPY      0x01
 #define IPL_TYPE_HARDDISK    0x02
@@ -521,15 +521,15 @@ static struct hlist_head BootList VARVERIFY32INIT;
 #define IPL_TYPE_BCV         0x81
 #define IPL_TYPE_HALT        0xf0
 
-static void
-bootentry_add(int type, int prio, u32 data, const char *desc)
+സ്ഥിതം ശൂന്യം
+bootentry_add(പൂർണ്ണസംഖ്യ type, പൂർണ്ണസംഖ്യ prio, u32 data, സ്ഥിരം അക്ഷരം *desc)
 {
-    if (! CONFIG_BOOT)
-        return;
-    struct bootentry_s *be = malloc_tmp(sizeof(*be));
-    if (!be) {
+    എങ്കിൽ (! CONFIG_BOOT)
+        തിരികെ;
+    ഘടന bootentry_s *be = malloc_tmp(വലുപ്പം(*be));
+    എങ്കിൽ (!be) {
         warn_noalloc();
-        return;
+        തിരികെ;
     }
     be->type = type;
     be->priority = prio;
@@ -539,34 +539,34 @@ bootentry_add(int type, int prio, u32 data, const char *desc)
             , be->description, type, prio, data);
 
     // Add entry in sorted order.
-    struct hlist_node **pprev;
-    struct bootentry_s *pos;
-    hlist_for_each_entry_pprev(pos, pprev, &BootList, node) {
-        if (be->priority < pos->priority)
-            break;
-        if (be->priority > pos->priority)
-            continue;
-        if (be->type < pos->type)
-            break;
-        if (be->type > pos->type)
-            continue;
-        if (be->type <= IPL_TYPE_CDROM
+    ഘടന hlist_കണ്ണി **pprev;
+    ഘടന bootentry_s *pos;
+    hlist_for_each_entry_pprev(pos, pprev, &BootList, കണ്ണി) {
+        എങ്കിൽ (be->priority < pos->priority)
+            നിർത്തുക;
+        എങ്കിൽ (be->priority > pos->priority)
+            തുടരുക;
+        എങ്കിൽ (be->type < pos->type)
+            നിർത്തുക;
+        എങ്കിൽ (be->type > pos->type)
+            തുടരുക;
+        എങ്കിൽ (be->type <= IPL_TYPE_CDROM
             && (be->drive->type < pos->drive->type
                 || (be->drive->type == pos->drive->type
                     && be->drive->cntl_id < pos->drive->cntl_id)))
-            break;
+            നിർത്തുക;
     }
-    hlist_add(&be->node, pprev);
+    hlist_add(&be->കണ്ണി, pprev);
 }
 
 // Return the given priority if it's set - defaultprio otherwise.
-static inline int defPrio(int priority, int defaultprio) {
-    return (priority < 0) ? defaultprio : priority;
+സ്ഥിതം വരിയിൽ പൂർണ്ണസംഖ്യ defPrio(പൂർണ്ണസംഖ്യ priority, പൂർണ്ണസംഖ്യ defaultprio) {
+    തിരികെ (priority < 0) ? defaultprio : priority;
 }
 
 // Add a BEV vector for a given pnp compatible option rom.
-void
-boot_add_bev(u16 seg, u16 bev, u16 desc, int prio)
+ശൂന്യം
+boot_add_bev(u16 seg, u16 bev, u16 desc, പൂർണ്ണസംഖ്യ prio)
 {
     bootentry_add(IPL_TYPE_BEV, defPrio(prio, DefaultBEVPrio)
                   , SEGOFF(seg, bev).segoff
@@ -575,39 +575,39 @@ boot_add_bev(u16 seg, u16 bev, u16 desc, int prio)
 }
 
 // Add a bcv entry for an expansion card harddrive or legacy option rom
-void
-boot_add_bcv(u16 seg, u16 ip, u16 desc, int prio)
+ശൂന്യം
+boot_add_bcv(u16 seg, u16 ip, u16 desc, പൂർണ്ണസംഖ്യ prio)
 {
     bootentry_add(IPL_TYPE_BCV, defPrio(prio, DefaultHDPrio)
                   , SEGOFF(seg, ip).segoff
                   , desc ? MAKE_FLATPTR(seg, desc) : "Legacy option rom");
 }
 
-void
-boot_add_floppy(struct drive_s *drive, const char *desc, int prio)
+ശൂന്യം
+boot_add_floppy(ഘടന drive_s *drive, സ്ഥിരം അക്ഷരം *desc, പൂർണ്ണസംഖ്യ prio)
 {
     bootentry_add(IPL_TYPE_FLOPPY, defPrio(prio, DefaultFloppyPrio)
                   , (u32)drive, desc);
 }
 
-void
-boot_add_hd(struct drive_s *drive, const char *desc, int prio)
+ശൂന്യം
+boot_add_hd(ഘടന drive_s *drive, സ്ഥിരം അക്ഷരം *desc, പൂർണ്ണസംഖ്യ prio)
 {
     bootentry_add(IPL_TYPE_HARDDISK, defPrio(prio, DefaultHDPrio)
                   , (u32)drive, desc);
 }
 
-void
-boot_add_cd(struct drive_s *drive, const char *desc, int prio)
+ശൂന്യം
+boot_add_cd(ഘടന drive_s *drive, സ്ഥിരം അക്ഷരം *desc, പൂർണ്ണസംഖ്യ prio)
 {
-    if (GET_GLOBAL(PlatformRunningOn) & PF_QEMU) {
+    എങ്കിൽ (GET_GLOBAL(PlatformRunningOn) & PF_QEMU) {
         // We want short boot times.  But on physical hardware even
         // the test unit ready can take several seconds.  So do media
         // access on qemu only, where we know it will be fast.
-        char *extra = cdrom_media_info(drive);
-        if (extra) {
+        അക്ഷരം *extra = cdrom_media_info(drive);
+        എങ്കിൽ (extra) {
             desc = znprintf(MAXDESCSIZE, "%s (%s)", desc, extra);
-            free(extra);
+            സ്വതന്ത്രം(extra);
         }
     }
     bootentry_add(IPL_TYPE_CDROM, defPrio(prio, DefaultCDPrio)
@@ -615,8 +615,8 @@ boot_add_cd(struct drive_s *drive, const char *desc, int prio)
 }
 
 // Add a CBFS payload entry
-void
-boot_add_cbfs(void *data, const char *desc, int prio)
+ശൂന്യം
+boot_add_cbfs(ശൂന്യം *data, സ്ഥിരം അക്ഷരം *desc, പൂർണ്ണസംഖ്യ prio)
 {
     bootentry_add(IPL_TYPE_CBFS, defPrio(prio, DEFAULT_PRIO), (u32)data, desc);
 }
@@ -627,53 +627,53 @@ boot_add_cbfs(void *data, const char *desc, int prio)
  ****************************************************************/
 
 // See if a keystroke is pending in the keyboard buffer.
-static int
-check_for_keystroke(void)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+check_for_keystroke(ശൂന്യം)
 {
-    struct bregs br;
-    memset(&br, 0, sizeof(br));
+    ഘടന bregs br;
+    memset(&br, 0, വലുപ്പം(br));
     br.flags = F_IF|F_ZF;
     br.ah = 1;
     call16_int(0x16, &br);
-    return !(br.flags & F_ZF);
+    തിരികെ !(br.flags & F_ZF);
 }
 
 // Return a keystroke - waiting forever if necessary.
-static int
-get_raw_keystroke(void)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+get_raw_keystroke(ശൂന്യം)
 {
-    struct bregs br;
-    memset(&br, 0, sizeof(br));
+    ഘടന bregs br;
+    memset(&br, 0, വലുപ്പം(br));
     br.flags = F_IF;
     call16_int(0x16, &br);
-    return br.ax;
+    തിരികെ br.ax;
 }
 
 // Read a keystroke - waiting up to 'msec' milliseconds.
 // returns both scancode and ascii code.
-int
-get_keystroke_full(int msec)
+പൂർണ്ണസംഖ്യ
+get_keystroke_full(പൂർണ്ണസംഖ്യ msec)
 {
     u32 end = irqtimer_calc(msec);
-    for (;;) {
-        if (check_for_keystroke())
-            return get_raw_keystroke();
-        if (irqtimer_check(end))
-            return -1;
+    വേണ്ടി (;;) {
+        എങ്കിൽ (check_for_keystroke())
+            തിരികെ get_raw_keystroke();
+        എങ്കിൽ (irqtimer_check(end))
+            തിരികെ -1;
         yield_toirq();
     }
 }
 
 // Read a keystroke - waiting up to 'msec' milliseconds.
 // returns scancode only.
-int
-get_keystroke(int msec)
+പൂർണ്ണസംഖ്യ
+get_keystroke(പൂർണ്ണസംഖ്യ msec)
 {
-    int keystroke = get_keystroke_full(msec);
+    പൂർണ്ണസംഖ്യ keystroke = get_keystroke_full(msec);
 
-    if (keystroke < 0)
-        return keystroke;
-    return keystroke >> 8;
+    എങ്കിൽ (keystroke < 0)
+        തിരികെ keystroke;
+    തിരികെ keystroke >> 8;
 }
 
 /****************************************************************
@@ -682,7 +682,7 @@ get_keystroke(int msec)
 
 #define DEFAULT_BOOTMENU_WAIT 2500
 
-static const char menuchars[] = {
+സ്ഥിതം സ്ഥിരം അക്ഷരം menuchars[] = {
     '1', '2', '3', '4', '5', '6', '7', '8', '9',
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i',
     'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r',
@@ -691,60 +691,60 @@ static const char menuchars[] = {
 };
 
 // Show IPL option menu.
-void
-interactive_bootmenu(void)
+ശൂന്യം
+interactive_bootmenu(ശൂന്യം)
 {
-    if (! CONFIG_BOOTMENU)
-        return;
-    int show_boot_menu = romfile_loadint("etc/show-boot-menu", 1);
-    if (!show_boot_menu)
-        return;
+    എങ്കിൽ (! CONFIG_BOOTMENU)
+        തിരികെ;
+    പൂർണ്ണസംഖ്യ show_boot_menu = romfile_loadint("etc/show-boot-menu", 1);
+    എങ്കിൽ (!show_boot_menu)
+        തിരികെ;
 
     // skip menu if only one boot device and no TPM
-    if (show_boot_menu == 2 && !tpm_can_show_menu()
+    എങ്കിൽ (show_boot_menu == 2 && !tpm_can_show_menu()
         && !hlist_empty(&BootList) && !BootList.first->next) {
         dprintf(1, "Only one boot device present. Skip boot menu.\n");
         printf("\n");
-        return;
+        തിരികെ;
     }
 
-    int menutime = romfile_loadint("etc/boot-menu-wait", DEFAULT_BOOTMENU_WAIT);
-    int menukey = romfile_loadint("etc/boot-menu-key", 1);
-    int scan_code;
-    if (menutime >= 0) {
-        while (get_keystroke(0) >= 0)
+    പൂർണ്ണസംഖ്യ menutime = romfile_loadint("etc/boot-menu-wait", DEFAULT_BOOTMENU_WAIT);
+    പൂർണ്ണസംഖ്യ menukey = romfile_loadint("etc/boot-menu-key", 1);
+    പൂർണ്ണസംഖ്യ scan_code;
+    എങ്കിൽ (menutime >= 0) {
+        ആകുമ്പോൾ (get_keystroke(0) >= 0)
             ;
 
-        char *bootmsg = romfile_loadfile("etc/boot-menu-message", NULL);
+        അക്ഷരം *bootmsg = romfile_loadfile("etc/boot-menu-message", ശൂന്യ);
         printf("%s", bootmsg ?: "\nPress ESC for boot menu.\n\n");
-        free(bootmsg);
+        സ്വതന്ത്രം(bootmsg);
 
         enable_bootsplash();
         scan_code = get_keystroke(menutime);
         disable_bootsplash();
-        if (scan_code != menukey)
-            return;
+        എങ്കിൽ (scan_code != menukey)
+            തിരികെ;
     }
 
-    while (get_keystroke(0) >= 0)
+    ആകുമ്പോൾ (get_keystroke(0) >= 0)
         ;
 
     printf("Select boot device:\n\n");
     wait_threads();
 
     // Show menu items
-    int maxmenu = 0;
-    struct bootentry_s *pos, *boot = NULL;
-    hlist_for_each_entry(pos, &BootList, node) {
-        char desc[77];
-        if (maxmenu >= ARRAY_SIZE(menuchars)) {
-            break;
+    പൂർണ്ണസംഖ്യ maxmenu = 0;
+    ഘടന bootentry_s *pos, *boot = ശൂന്യ;
+    hlist_for_each_entry(pos, &BootList, കണ്ണി) {
+        അക്ഷരം desc[77];
+        എങ്കിൽ (maxmenu >= ARRAY_SIZE(menuchars)) {
+            നിർത്തുക;
         }
         printf("%c. %s\n", menuchars[maxmenu]
                , strtcpy(desc, pos->description, ARRAY_SIZE(desc)));
         maxmenu++;
     }
-    if (tpm_can_show_menu()) {
+    എങ്കിൽ (tpm_can_show_menu()) {
         printf("\nt. TPM Configuration\n");
     }
 
@@ -752,103 +752,103 @@ interactive_bootmenu(void)
     // 1.5 seconds have passed.  Otherwise users (trained by years of
     // repeatedly hitting keys to enter the BIOS) will end up hitting ESC
     // multiple times and immediately booting the primary boot device.
-    int esc_accepted_time = irqtimer_calc(menukey == 1 ? 1500 : 0);
-    for (;;) {
-        int keystroke = get_keystroke_full(1000);
-        if (keystroke == 0x011b && !irqtimer_check(esc_accepted_time))
-            continue;
-        if (keystroke < 0) // timeout
-            continue;
+    പൂർണ്ണസംഖ്യ esc_accepted_time = irqtimer_calc(menukey == 1 ? 1500 : 0);
+    വേണ്ടി (;;) {
+        പൂർണ്ണസംഖ്യ keystroke = get_keystroke_full(1000);
+        എങ്കിൽ (keystroke == 0x011b && !irqtimer_check(esc_accepted_time))
+            തുടരുക;
+        എങ്കിൽ (keystroke < 0) // timeout
+            തുടരുക;
 
         scan_code = keystroke >> 8;
-        int key_ascii = keystroke & 0xff;
-        if (tpm_can_show_menu() && key_ascii == 't') {
+        പൂർണ്ണസംഖ്യ താക്കോൽ_ascii = keystroke & 0xff;
+        എങ്കിൽ (tpm_can_show_menu() && താക്കോൽ_ascii == 't') {
             printf("\n");
             tpm_menu();
         }
-        if (scan_code == 1) {
+        എങ്കിൽ (scan_code == 1) {
             // ESC
             printf("\n");
-            return;
+            തിരികെ;
         }
 
         maxmenu = 0;
-        hlist_for_each_entry(pos, &BootList, node) {
-            if (maxmenu >= ARRAY_SIZE(menuchars))
-                break;
-            if (key_ascii == menuchars[maxmenu]) {
+        hlist_for_each_entry(pos, &BootList, കണ്ണി) {
+            എങ്കിൽ (maxmenu >= ARRAY_SIZE(menuchars))
+                നിർത്തുക;
+            എങ്കിൽ (താക്കോൽ_ascii == menuchars[maxmenu]) {
                 boot = pos;
-                break;
+                നിർത്തുക;
             }
             maxmenu++;
         }
-        if (boot)
-            break;
+        എങ്കിൽ (boot)
+            നിർത്തുക;
     }
     printf("\n");
 
     // Find entry and make top priority.
-    hlist_del(&boot->node);
+    hlist_del(&boot->കണ്ണി);
     boot->priority = 0;
-    hlist_add_head(&boot->node, &BootList);
+    hlist_add_head(&boot->കണ്ണി, &BootList);
 }
 
 // BEV (Boot Execution Vector) list
-struct bev_s {
-    int type;
+ഘടന bev_s {
+    പൂർണ്ണസംഖ്യ type;
     u32 vector;
 };
-static struct bev_s BEV[20];
-static int BEVCount;
-static int HaveHDBoot, HaveFDBoot;
+സ്ഥിതം ഘടന bev_s BEV[20];
+സ്ഥിതം പൂർണ്ണസംഖ്യ BEVCount;
+സ്ഥിതം പൂർണ്ണസംഖ്യ HaveHDBoot, HaveFDBoot;
 
-static void
-add_bev(int type, u32 vector)
+സ്ഥിതം ശൂന്യം
+add_bev(പൂർണ്ണസംഖ്യ type, u32 vector)
 {
-    if (type == IPL_TYPE_HARDDISK && HaveHDBoot++)
-        return;
-    if (type == IPL_TYPE_FLOPPY && HaveFDBoot++)
-        return;
-    if (BEVCount >= ARRAY_SIZE(BEV))
-        return;
-    struct bev_s *bev = &BEV[BEVCount++];
+    എങ്കിൽ (type == IPL_TYPE_HARDDISK && HaveHDBoot++)
+        തിരികെ;
+    എങ്കിൽ (type == IPL_TYPE_FLOPPY && HaveFDBoot++)
+        തിരികെ;
+    എങ്കിൽ (BEVCount >= ARRAY_SIZE(BEV))
+        തിരികെ;
+    ഘടന bev_s *bev = &BEV[BEVCount++];
     bev->type = type;
     bev->vector = vector;
 }
 
 // Prepare for boot - show menu and run bcvs.
-void
-bcv_prepboot(void)
+ശൂന്യം
+bcv_prepboot(ശൂന്യം)
 {
-    if (! CONFIG_BOOT)
-        return;
+    എങ്കിൽ (! CONFIG_BOOT)
+        തിരികെ;
 
-    int haltprio = find_prio("HALT");
-    if (haltprio >= 0)
+    പൂർണ്ണസംഖ്യ haltprio = find_prio("HALT");
+    എങ്കിൽ (haltprio >= 0)
         bootentry_add(IPL_TYPE_HALT, haltprio, 0, "HALT");
 
     // Map drives and populate BEV list
-    struct bootentry_s *pos;
-    hlist_for_each_entry(pos, &BootList, node) {
-        switch (pos->type) {
-        case IPL_TYPE_BCV:
+    ഘടന bootentry_s *pos;
+    hlist_for_each_entry(pos, &BootList, കണ്ണി) {
+        തിരഞ്ഞെടുപ്പ് (pos->type) {
+        അവസ്ഥ IPL_TYPE_BCV:
             call_bcv(pos->vector.seg, pos->vector.offset);
             add_bev(IPL_TYPE_HARDDISK, 0);
-            break;
-        case IPL_TYPE_FLOPPY:
+            നിർത്തുക;
+        അവസ്ഥ IPL_TYPE_FLOPPY:
             map_floppy_drive(pos->drive);
             add_bev(IPL_TYPE_FLOPPY, 0);
-            break;
-        case IPL_TYPE_HARDDISK:
+            നിർത്തുക;
+        അവസ്ഥ IPL_TYPE_HARDDISK:
             map_hd_drive(pos->drive);
             add_bev(IPL_TYPE_HARDDISK, 0);
-            break;
-        case IPL_TYPE_CDROM:
+            നിർത്തുക;
+        അവസ്ഥ IPL_TYPE_CDROM:
             map_cd_drive(pos->drive);
             // NO BREAK
-        default:
+        സ്ഥിരസ്ഥിതി:
             add_bev(pos->type, pos->data);
-            break;
+            നിർത്തുക;
         }
     }
 
@@ -863,12 +863,12 @@ bcv_prepboot(void)
  ****************************************************************/
 
 // Jump to a bootup entry point.
-static void
-call_boot_entry(struct segoff_s bootsegip, u8 bootdrv)
+സ്ഥിതം ശൂന്യം
+call_boot_entry(ഘടന segoff_s bootsegip, u8 bootdrv)
 {
     dprintf(1, "Booting from %04x:%04x\n", bootsegip.seg, bootsegip.offset);
-    struct bregs br;
-    memset(&br, 0, sizeof(br));
+    ഘടന bregs br;
+    memset(&br, 0, വലുപ്പം(br));
     br.flags = F_IF;
     br.code = bootsegip;
     // Set the magic number in ax and the boot drive in dl.
@@ -878,14 +878,14 @@ call_boot_entry(struct segoff_s bootsegip, u8 bootdrv)
 }
 
 // Boot from a disk (either floppy or harddrive)
-static void
-boot_disk(u8 bootdrv, int checksig)
+സ്ഥിതം ശൂന്യം
+boot_disk(u8 bootdrv, പൂർണ്ണസംഖ്യ checksig)
 {
     u16 bootseg = 0x07c0;
 
     // Read sector
-    struct bregs br;
-    memset(&br, 0, sizeof(br));
+    ഘടന bregs br;
+    memset(&br, 0, വലുപ്പം(br));
     br.flags = F_IF;
     br.dl = bootdrv;
     br.es = bootseg;
@@ -894,16 +894,16 @@ boot_disk(u8 bootdrv, int checksig)
     br.cl = 1;
     call16_int(0x13, &br);
 
-    if (br.flags & F_CF) {
+    എങ്കിൽ (br.flags & F_CF) {
         printf("Boot failed: could not read the boot disk\n\n");
-        return;
+        തിരികെ;
     }
 
-    if (checksig) {
-        struct mbr_s *mbr = (void*)0;
-        if (GET_FARVAR(bootseg, mbr->signature) != MBR_SIGNATURE) {
+    എങ്കിൽ (checksig) {
+        ഘടന mbr_s *mbr = (ശൂന്യം*)0;
+        എങ്കിൽ (GET_FARVAR(bootseg, mbr->signature) != MBR_SIGNATURE) {
             printf("Boot failed: not a bootable disk\n\n");
-            return;
+            തിരികെ;
         }
     }
 
@@ -917,17 +917,17 @@ boot_disk(u8 bootdrv, int checksig)
 }
 
 // Boot from a CD-ROM
-static void
-boot_cdrom(struct drive_s *drive)
+സ്ഥിതം ശൂന്യം
+boot_cdrom(ഘടന drive_s *drive)
 {
-    if (! CONFIG_CDROM_BOOT)
-        return;
+    എങ്കിൽ (! CONFIG_CDROM_BOOT)
+        തിരികെ;
     printf("Booting from DVD/CD...\n");
 
-    int status = cdrom_boot(drive);
-    if (status) {
+    പൂർണ്ണസംഖ്യ status = cdrom_boot(drive);
+    എങ്കിൽ (status) {
         printf("Boot failed: Could not read from CDROM (code %04x)\n", status);
-        return;
+        തിരികെ;
     }
 
     u8 bootdrv = CDEmu.emulated_drive;
@@ -943,39 +943,39 @@ boot_cdrom(struct drive_s *drive)
 }
 
 // Boot from a CBFS payload
-static void
-boot_cbfs(struct cbfs_file *file)
+സ്ഥിതം ശൂന്യം
+boot_cbfs(ഘടന cbfs_file *file)
 {
-    if (!CONFIG_COREBOOT_FLASH)
-        return;
+    എങ്കിൽ (!CONFIG_COREBOOT_FLASH)
+        തിരികെ;
     printf("Booting from CBFS...\n");
     cbfs_run_payload(file);
 }
 
 // Boot from a BEV entry on an optionrom.
-static void
+സ്ഥിതം ശൂന്യം
 boot_rom(u32 vector)
 {
     printf("Booting from ROM...\n");
-    struct segoff_s so;
+    ഘടന segoff_s so;
     so.segoff = vector;
     call_boot_entry(so, 0);
 }
 
 // Unable to find bootable device - warn user and eventually retry.
-static void
-boot_fail(void)
+സ്ഥിതം ശൂന്യം
+boot_fail(ശൂന്യം)
 {
-    if (BootRetryTime == (u32)-1)
+    എങ്കിൽ (BootRetryTime == (u32)-1)
         printf("No bootable device.\n");
-    else
+    അല്ലെങ്കിൽ
         printf("No bootable device.  Retrying in %d seconds.\n"
                , BootRetryTime/1000);
     // Wait for 'BootRetryTime' milliseconds and then reboot.
     u32 end = irqtimer_calc(BootRetryTime);
-    for (;;) {
-        if (BootRetryTime != (u32)-1 && irqtimer_check(end))
-            break;
+    വേണ്ടി (;;) {
+        എങ്കിൽ (BootRetryTime != (u32)-1 && irqtimer_check(end))
+            നിർത്തുക;
         yield_toirq();
     }
     printf("Rebooting.\n");
@@ -983,64 +983,64 @@ boot_fail(void)
 }
 
 // Determine next boot method and attempt a boot using it.
-static void
-do_boot(int seq_nr)
+സ്ഥിതം ശൂന്യം
+do_boot(പൂർണ്ണസംഖ്യ seq_nr)
 {
-    if (! CONFIG_BOOT)
+    എങ്കിൽ (! CONFIG_BOOT)
         panic("Boot support not compiled in.\n");
 
-    if (seq_nr >= BEVCount)
+    എങ്കിൽ (seq_nr >= BEVCount)
         boot_fail();
 
     // Boot the given BEV type.
-    struct bev_s *ie = &BEV[seq_nr];
-    switch (ie->type) {
-    case IPL_TYPE_FLOPPY:
+    ഘടന bev_s *ie = &BEV[seq_nr];
+    തിരഞ്ഞെടുപ്പ് (ie->type) {
+    അവസ്ഥ IPL_TYPE_FLOPPY:
         printf("Booting from Floppy...\n");
         boot_disk(0x00, CheckFloppySig);
-        break;
-    case IPL_TYPE_HARDDISK:
+        നിർത്തുക;
+    അവസ്ഥ IPL_TYPE_HARDDISK:
         printf("Booting from Hard Disk...\n");
         boot_disk(0x80, 1);
-        break;
-    case IPL_TYPE_CDROM:
-        boot_cdrom((void*)ie->vector);
-        break;
-    case IPL_TYPE_CBFS:
-        boot_cbfs((void*)ie->vector);
-        break;
-    case IPL_TYPE_BEV:
+        നിർത്തുക;
+    അവസ്ഥ IPL_TYPE_CDROM:
+        boot_cdrom((ശൂന്യം*)ie->vector);
+        നിർത്തുക;
+    അവസ്ഥ IPL_TYPE_CBFS:
+        boot_cbfs((ശൂന്യം*)ie->vector);
+        നിർത്തുക;
+    അവസ്ഥ IPL_TYPE_BEV:
         boot_rom(ie->vector);
-        break;
-    case IPL_TYPE_HALT:
+        നിർത്തുക;
+    അവസ്ഥ IPL_TYPE_HALT:
         boot_fail();
-        break;
+        നിർത്തുക;
     }
 
     // Boot failed: invoke the boot recovery function
-    struct bregs br;
-    memset(&br, 0, sizeof(br));
+    ഘടന bregs br;
+    memset(&br, 0, വലുപ്പം(br));
     br.flags = F_IF;
     call16_int(0x18, &br);
 }
 
-int BootSequence VARLOW = -1;
+പൂർണ്ണസംഖ്യ BootSequence VARLOW = -1;
 
 // Boot Failure recovery: try the next device.
-void VISIBLE32FLAT
-handle_18(void)
+ശൂന്യം VISIBLE32FLAT
+handle_18(ശൂന്യം)
 {
-    debug_enter(NULL, DEBUG_HDL_18);
-    int seq = BootSequence + 1;
+    debug_enter(ശൂന്യ, DEBUG_HDL_18);
+    പൂർണ്ണസംഖ്യ seq = BootSequence + 1;
     BootSequence = seq;
     do_boot(seq);
 }
 
 // INT 19h Boot Load Service Entry Point
-void VISIBLE32FLAT
-handle_19(void)
+ശൂന്യം VISIBLE32FLAT
+handle_19(ശൂന്യം)
 {
-    debug_enter(NULL, DEBUG_HDL_19);
+    debug_enter(ശൂന്യ, DEBUG_HDL_19);
     BootSequence = 0;
     do_boot(0);
 }

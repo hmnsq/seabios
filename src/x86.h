@@ -20,48 +20,48 @@
 
 #ifndef __ASSEMBLY__
 
-#include "types.h" // u32
+#അന്തര്ഭാവ "types.h" // u32
 
-static inline void irq_disable(void)
+സ്ഥിതം വരിയിൽ ശൂന്യം irq_disable(ശൂന്യം)
 {
-    asm volatile("cli": : :"memory");
+    asm അസ്ഥിര("cli": : :"memory");
 }
 
-static inline void irq_enable(void)
+സ്ഥിതം വരിയിൽ ശൂന്യം irq_enable(ശൂന്യം)
 {
-    asm volatile("sti": : :"memory");
+    asm അസ്ഥിര("sti": : :"memory");
 }
 
-static inline u32 save_flags(void)
+സ്ഥിതം വരിയിൽ u32 save_flags(ശൂന്യം)
 {
     u32 flags;
-    asm volatile("pushfl ; popl %0" : "=rm" (flags));
-    return flags;
+    asm അസ്ഥിര("pushfl ; popl %0" : "=rm" (flags));
+    തിരികെ flags;
 }
 
-static inline void restore_flags(u32 flags)
+സ്ഥിതം വരിയിൽ ശൂന്യം restore_flags(u32 flags)
 {
-    asm volatile("pushl %0 ; popfl" : : "g" (flags) : "memory", "cc");
+    asm അസ്ഥിര("pushl %0 ; popfl" : : "g" (flags) : "memory", "cc");
 }
 
-static inline void cpu_relax(void)
+സ്ഥിതം വരിയിൽ ശൂന്യം cpu_relax(ശൂന്യം)
 {
-    asm volatile("rep ; nop": : :"memory");
+    asm അസ്ഥിര("rep ; nop": : :"memory");
 }
 
-static inline void nop(void)
+സ്ഥിതം വരിയിൽ ശൂന്യം nop(ശൂന്യം)
 {
-    asm volatile("nop");
+    asm അസ്ഥിര("nop");
 }
 
-static inline void hlt(void)
+സ്ഥിതം വരിയിൽ ശൂന്യം hlt(ശൂന്യം)
 {
-    asm volatile("hlt": : :"memory");
+    asm അസ്ഥിര("hlt": : :"memory");
 }
 
-static inline void wbinvd(void)
+സ്ഥിതം വരിയിൽ ശൂന്യം wbinvd(ശൂന്യം)
 {
-    asm volatile("wbinvd": : :"memory");
+    asm അസ്ഥിര("wbinvd": : :"memory");
 }
 
 #define CPUID_TSC (1 << 4)
@@ -69,174 +69,174 @@ static inline void wbinvd(void)
 #define CPUID_APIC (1 << 9)
 #define CPUID_MTRR (1 << 12)
 #define CPUID_X2APIC (1 << 21)
-static inline void __cpuid(u32 index, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx)
+സ്ഥിതം വരിയിൽ ശൂന്യം __cpuid(u32 index, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx)
 {
     asm("cpuid"
         : "=a" (*eax), "=b" (*ebx), "=c" (*ecx), "=d" (*edx)
         : "0" (index));
 }
 
-static inline u32 cr0_read(void) {
+സ്ഥിതം വരിയിൽ u32 cr0_read(ശൂന്യം) {
     u32 cr0;
     asm("movl %%cr0, %0" : "=r"(cr0));
-    return cr0;
+    തിരികെ cr0;
 }
-static inline void cr0_write(u32 cr0) {
+സ്ഥിതം വരിയിൽ ശൂന്യം cr0_write(u32 cr0) {
     asm("movl %0, %%cr0" : : "r"(cr0));
 }
-static inline void cr0_mask(u32 off, u32 on) {
+സ്ഥിതം വരിയിൽ ശൂന്യം cr0_mask(u32 off, u32 on) {
     cr0_write((cr0_read() & ~off) | on);
 }
-static inline u16 cr0_vm86_read(void) {
+സ്ഥിതം വരിയിൽ u16 cr0_vm86_read(ശൂന്യം) {
     u16 cr0;
     asm("smsww %0" : "=r"(cr0));
-    return cr0;
+    തിരികെ cr0;
 }
 
-static inline u64 rdmsr(u32 index)
+സ്ഥിതം വരിയിൽ u64 rdmsr(u32 index)
 {
     u64 ret;
     asm ("rdmsr" : "=A"(ret) : "c"(index));
-    return ret;
+    തിരികെ ret;
 }
 
-static inline void wrmsr(u32 index, u64 val)
+സ്ഥിതം വരിയിൽ ശൂന്യം wrmsr(u32 index, u64 val)
 {
-    asm volatile ("wrmsr" : : "c"(index), "A"(val));
+    asm അസ്ഥിര ("wrmsr" : : "c"(index), "A"(val));
 }
 
-static inline u64 rdtscll(void)
+സ്ഥിതം വരിയിൽ u64 rdtscll(ശൂന്യം)
 {
     u64 val;
-    asm volatile("rdtsc" : "=A" (val));
-    return val;
+    asm അസ്ഥിര("rdtsc" : "=A" (val));
+    തിരികെ val;
 }
 
-static inline u32 __ffs(u32 word)
+സ്ഥിതം വരിയിൽ u32 __ffs(u32 word)
 {
     asm("bsf %1,%0"
         : "=r" (word)
         : "rm" (word));
-    return word;
+    തിരികെ word;
 }
-static inline u32 __fls(u32 word)
+സ്ഥിതം വരിയിൽ u32 __fls(u32 word)
 {
     asm("bsr %1,%0"
         : "=r" (word)
         : "rm" (word));
-    return word;
+    തിരികെ word;
 }
 
-static inline u32 getesp(void) {
+സ്ഥിതം വരിയിൽ u32 getesp(ശൂന്യം) {
     u32 esp;
     asm("movl %%esp, %0" : "=rm"(esp));
-    return esp;
+    തിരികെ esp;
 }
 
-static inline u32 rol(u32 val, u16 rol) {
+സ്ഥിതം വരിയിൽ u32 rol(u32 val, u16 rol) {
     u32 res;
-    asm volatile("roll %%cl, %%eax"
+    asm അസ്ഥിര("roll %%cl, %%eax"
                  : "=a" (res) : "a" (val), "c" (rol));
-    return res;
+    തിരികെ res;
 }
 
-static inline u32 ror(u32 val, u16 ror) {
+സ്ഥിതം വരിയിൽ u32 ror(u32 val, u16 ror) {
     u32 res;
-    asm volatile("rorl %%cl, %%eax"
+    asm അസ്ഥിര("rorl %%cl, %%eax"
                  : "=a" (res) : "a" (val), "c" (ror));
-    return res;
+    തിരികെ res;
 }
 
-static inline void outb(u8 value, u16 port) {
-    __asm__ __volatile__("outb %b0, %w1" : : "a"(value), "Nd"(port));
+സ്ഥിതം വരിയിൽ ശൂന്യം outb(u8 മൂല്യം, u16 port) {
+    __asm__ __volatile__("outb %b0, %w1" : : "a"(മൂല്യം), "Nd"(port));
 }
-static inline void outw(u16 value, u16 port) {
-    __asm__ __volatile__("outw %w0, %w1" : : "a"(value), "Nd"(port));
+സ്ഥിതം വരിയിൽ ശൂന്യം outw(u16 മൂല്യം, u16 port) {
+    __asm__ __volatile__("outw %w0, %w1" : : "a"(മൂല്യം), "Nd"(port));
 }
-static inline void outl(u32 value, u16 port) {
-    __asm__ __volatile__("outl %0, %w1" : : "a"(value), "Nd"(port));
+സ്ഥിതം വരിയിൽ ശൂന്യം outl(u32 മൂല്യം, u16 port) {
+    __asm__ __volatile__("outl %0, %w1" : : "a"(മൂല്യം), "Nd"(port));
 }
-static inline u8 inb(u16 port) {
-    u8 value;
-    __asm__ __volatile__("inb %w1, %b0" : "=a"(value) : "Nd"(port));
-    return value;
+സ്ഥിതം വരിയിൽ u8 inb(u16 port) {
+    u8 മൂല്യം;
+    __asm__ __volatile__("inb %w1, %b0" : "=a"(മൂല്യം) : "Nd"(port));
+    തിരികെ മൂല്യം;
 }
-static inline u16 inw(u16 port) {
-    u16 value;
-    __asm__ __volatile__("inw %w1, %w0" : "=a"(value) : "Nd"(port));
-    return value;
+സ്ഥിതം വരിയിൽ u16 inw(u16 port) {
+    u16 മൂല്യം;
+    __asm__ __volatile__("inw %w1, %w0" : "=a"(മൂല്യം) : "Nd"(port));
+    തിരികെ മൂല്യം;
 }
-static inline u32 inl(u16 port) {
-    u32 value;
-    __asm__ __volatile__("inl %w1, %0" : "=a"(value) : "Nd"(port));
-    return value;
+സ്ഥിതം വരിയിൽ u32 inl(u16 port) {
+    u32 മൂല്യം;
+    __asm__ __volatile__("inl %w1, %0" : "=a"(മൂല്യം) : "Nd"(port));
+    തിരികെ മൂല്യം;
 }
 
-static inline void insb(u16 port, u8 *data, u32 count) {
-    asm volatile("rep insb (%%dx), %%es:(%%edi)"
-                 : "+c"(count), "+D"(data) : "d"(port) : "memory");
+സ്ഥിതം വരിയിൽ ശൂന്യം insb(u16 port, u8 *data, u32 എണ്ണം) {
+    asm അസ്ഥിര("rep insb (%%dx), %%es:(%%edi)"
+                 : "+c"(എണ്ണം), "+D"(data) : "d"(port) : "memory");
 }
-static inline void insw(u16 port, u16 *data, u32 count) {
-    asm volatile("rep insw (%%dx), %%es:(%%edi)"
-                 : "+c"(count), "+D"(data) : "d"(port) : "memory");
+സ്ഥിതം വരിയിൽ ശൂന്യം insw(u16 port, u16 *data, u32 എണ്ണം) {
+    asm അസ്ഥിര("rep insw (%%dx), %%es:(%%edi)"
+                 : "+c"(എണ്ണം), "+D"(data) : "d"(port) : "memory");
 }
-static inline void insl(u16 port, u32 *data, u32 count) {
-    asm volatile("rep insl (%%dx), %%es:(%%edi)"
-                 : "+c"(count), "+D"(data) : "d"(port) : "memory");
+സ്ഥിതം വരിയിൽ ശൂന്യം insl(u16 port, u32 *data, u32 എണ്ണം) {
+    asm അസ്ഥിര("rep insl (%%dx), %%es:(%%edi)"
+                 : "+c"(എണ്ണം), "+D"(data) : "d"(port) : "memory");
 }
 // XXX - outs not limited to es segment
-static inline void outsb(u16 port, u8 *data, u32 count) {
-    asm volatile("rep outsb %%es:(%%esi), (%%dx)"
-                 : "+c"(count), "+S"(data) : "d"(port) : "memory");
+സ്ഥിതം വരിയിൽ ശൂന്യം outsb(u16 port, u8 *data, u32 എണ്ണം) {
+    asm അസ്ഥിര("rep outsb %%es:(%%esi), (%%dx)"
+                 : "+c"(എണ്ണം), "+S"(data) : "d"(port) : "memory");
 }
-static inline void outsw(u16 port, u16 *data, u32 count) {
-    asm volatile("rep outsw %%es:(%%esi), (%%dx)"
-                 : "+c"(count), "+S"(data) : "d"(port) : "memory");
+സ്ഥിതം വരിയിൽ ശൂന്യം outsw(u16 port, u16 *data, u32 എണ്ണം) {
+    asm അസ്ഥിര("rep outsw %%es:(%%esi), (%%dx)"
+                 : "+c"(എണ്ണം), "+S"(data) : "d"(port) : "memory");
 }
-static inline void outsl(u16 port, u32 *data, u32 count) {
-    asm volatile("rep outsl %%es:(%%esi), (%%dx)"
-                 : "+c"(count), "+S"(data) : "d"(port) : "memory");
+സ്ഥിതം വരിയിൽ ശൂന്യം outsl(u16 port, u32 *data, u32 എണ്ണം) {
+    asm അസ്ഥിര("rep outsl %%es:(%%esi), (%%dx)"
+                 : "+c"(എണ്ണം), "+S"(data) : "d"(port) : "memory");
 }
 
 /* Compiler barrier is enough as an x86 CPU does not reorder reads or writes */
-static inline void smp_rmb(void) {
+സ്ഥിതം വരിയിൽ ശൂന്യം smp_rmb(ശൂന്യം) {
     barrier();
 }
-static inline void smp_wmb(void) {
+സ്ഥിതം വരിയിൽ ശൂന്യം smp_wmb(ശൂന്യം) {
     barrier();
 }
 
-static inline void writel(void *addr, u32 val) {
+സ്ഥിതം വരിയിൽ ശൂന്യം writel(ശൂന്യം *addr, u32 val) {
     barrier();
-    *(volatile u32 *)addr = val;
+    *(അസ്ഥിര u32 *)addr = val;
 }
-static inline void writew(void *addr, u16 val) {
+സ്ഥിതം വരിയിൽ ശൂന്യം writew(ശൂന്യം *addr, u16 val) {
     barrier();
-    *(volatile u16 *)addr = val;
+    *(അസ്ഥിര u16 *)addr = val;
 }
-static inline void writeb(void *addr, u8 val) {
+സ്ഥിതം വരിയിൽ ശൂന്യം writeb(ശൂന്യം *addr, u8 val) {
     barrier();
-    *(volatile u8 *)addr = val;
+    *(അസ്ഥിര u8 *)addr = val;
 }
-static inline u64 readq(const void *addr) {
-    u64 val = *(volatile const u64 *)addr;
+സ്ഥിതം വരിയിൽ u64 readq(സ്ഥിരം ശൂന്യം *addr) {
+    u64 val = *(അസ്ഥിര സ്ഥിരം u64 *)addr;
     barrier();
-    return val;
+    തിരികെ val;
 }
-static inline u32 readl(const void *addr) {
-    u32 val = *(volatile const u32 *)addr;
+സ്ഥിതം വരിയിൽ u32 readl(സ്ഥിരം ശൂന്യം *addr) {
+    u32 val = *(അസ്ഥിര സ്ഥിരം u32 *)addr;
     barrier();
-    return val;
+    തിരികെ val;
 }
-static inline u16 readw(const void *addr) {
-    u16 val = *(volatile const u16 *)addr;
+സ്ഥിതം വരിയിൽ u16 readw(സ്ഥിരം ശൂന്യം *addr) {
+    u16 val = *(അസ്ഥിര സ്ഥിരം u16 *)addr;
     barrier();
-    return val;
+    തിരികെ val;
 }
-static inline u8 readb(const void *addr) {
-    u8 val = *(volatile const u8 *)addr;
+സ്ഥിതം വരിയിൽ u8 readb(സ്ഥിരം ശൂന്യം *addr) {
+    u8 val = *(അസ്ഥിര സ്ഥിരം u8 *)addr;
     barrier();
-    return val;
+    തിരികെ val;
 }
 
 // GDT bits
@@ -253,31 +253,31 @@ static inline u8 readb(const void *addr) {
 // GDT bits for segment limit (0-4Gig in 4K chunks)
 #define GDT_GRANLIMIT(v) (GDT_G | GDT_LIMIT((v) >> 12))
 
-struct descloc_s {
+ഘടന descloc_s {
     u16 length;
     u32 addr;
 } PACKED;
 
-static inline void sgdt(struct descloc_s *desc) {
+സ്ഥിതം വരിയിൽ ശൂന്യം sgdt(ഘടന descloc_s *desc) {
     asm("sgdtl %0" : "=m"(*desc));
 }
-static inline void lgdt(struct descloc_s *desc) {
+സ്ഥിതം വരിയിൽ ശൂന്യം lgdt(ഘടന descloc_s *desc) {
     asm("lgdtl %0" : : "m"(*desc) : "memory");
 }
 
-static inline u8 get_a20(void) {
-    return (inb(PORT_A20) & A20_ENABLE_BIT) != 0;
+സ്ഥിതം വരിയിൽ u8 get_a20(ശൂന്യം) {
+    തിരികെ (inb(PORT_A20) & A20_ENABLE_BIT) != 0;
 }
 
-static inline u8 set_a20(u8 cond) {
+സ്ഥിതം വരിയിൽ u8 set_a20(u8 cond) {
     u8 val = inb(PORT_A20), a20_enabled = (val & A20_ENABLE_BIT) != 0;
-    if (a20_enabled != !!cond)
+    എങ്കിൽ (a20_enabled != !!cond)
         outb(val ^ A20_ENABLE_BIT, PORT_A20);
-    return a20_enabled;
+    തിരികെ a20_enabled;
 }
 
 // x86.c
-void cpuid(u32 index, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx);
+ശൂന്യം cpuid(u32 index, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx);
 
 #endif // !__ASSEMBLY__
 

@@ -5,43 +5,43 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // SET_IVT
-#include "config.h" // CONFIG_*
-#include "output.h" // dprintf
-#include "pic.h" // pic_*
+#അന്തര്ഭാവ "biosvar.h" // SET_IVT
+#അന്തര്ഭാവ "config.h" // CONFIG_*
+#അന്തര്ഭാവ "output.h" // dprintf
+#അന്തര്ഭാവ "pic.h" // pic_*
 
 u16
-pic_irqmask_read(void)
+pic_irqmask_read(ശൂന്യം)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return 0;
-    return inb(PORT_PIC1_DATA) | (inb(PORT_PIC2_DATA) << 8);
+    എങ്കിൽ (!CONFIG_HARDWARE_IRQ)
+        തിരികെ 0;
+    തിരികെ inb(PORT_PIC1_DATA) | (inb(PORT_PIC2_DATA) << 8);
 }
 
-void
+ശൂന്യം
 pic_irqmask_write(u16 mask)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return;
+    എങ്കിൽ (!CONFIG_HARDWARE_IRQ)
+        തിരികെ;
     outb(mask, PORT_PIC1_DATA);
     outb(mask >> 8, PORT_PIC2_DATA);
 }
 
-void
+ശൂന്യം
 pic_irqmask_mask(u16 off, u16 on)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return;
+    എങ്കിൽ (!CONFIG_HARDWARE_IRQ)
+        തിരികെ;
     u8 pic1off = off, pic1on = on, pic2off = off>>8, pic2on = on>>8;
     outb((inb(PORT_PIC1_DATA) & ~pic1off) | pic1on, PORT_PIC1_DATA);
     outb((inb(PORT_PIC2_DATA) & ~pic2off) | pic2on, PORT_PIC2_DATA);
 }
 
-void
+ശൂന്യം
 pic_reset(u8 irq0, u8 irq8)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return;
+    എങ്കിൽ (!CONFIG_HARDWARE_IRQ)
+        തിരികെ;
     // Send ICW1 (select OCW1 + will send ICW4)
     outb(0x11, PORT_PIC1_CMD);
     outb(0x11, PORT_PIC2_CMD);
@@ -58,57 +58,57 @@ pic_reset(u8 irq0, u8 irq8)
     pic_irqmask_write(PIC_IRQMASK_DEFAULT);
 }
 
-void
-pic_setup(void)
+ശൂന്യം
+pic_setup(ശൂന്യം)
 {
     dprintf(3, "init pic\n");
     pic_reset(BIOS_HWIRQ0_VECTOR, BIOS_HWIRQ8_VECTOR);
 }
 
-void
-enable_hwirq(int hwirq, struct segoff_s func)
+ശൂന്യം
+enable_hwirq(പൂർണ്ണസംഖ്യ hwirq, ഘടന segoff_s func)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return;
+    എങ്കിൽ (!CONFIG_HARDWARE_IRQ)
+        തിരികെ;
     pic_irqmask_mask(1 << hwirq, 0);
-    int vector;
-    if (hwirq < 8)
+    പൂർണ്ണസംഖ്യ vector;
+    എങ്കിൽ (hwirq < 8)
         vector = BIOS_HWIRQ0_VECTOR + hwirq;
-    else
+    അല്ലെങ്കിൽ
         vector = BIOS_HWIRQ8_VECTOR + hwirq - 8;
     SET_IVT(vector, func);
 }
 
-static u8
-pic_isr1_read(void)
+സ്ഥിതം u8
+pic_isr1_read(ശൂന്യം)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return 0;
+    എങ്കിൽ (!CONFIG_HARDWARE_IRQ)
+        തിരികെ 0;
     // 0x0b == select OCW1 + read ISR
     outb(0x0b, PORT_PIC1_CMD);
-    return inb(PORT_PIC1_CMD);
+    തിരികെ inb(PORT_PIC1_CMD);
 }
 
-static u8
-pic_isr2_read(void)
+സ്ഥിതം u8
+pic_isr2_read(ശൂന്യം)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return 0;
+    എങ്കിൽ (!CONFIG_HARDWARE_IRQ)
+        തിരികെ 0;
     // 0x0b == select OCW1 + read ISR
     outb(0x0b, PORT_PIC2_CMD);
-    return inb(PORT_PIC2_CMD);
+    തിരികെ inb(PORT_PIC2_CMD);
 }
 
 // Handler for otherwise unused hardware irqs.
-void VISIBLE16
-handle_hwpic1(void)
+ശൂന്യം VISIBLE16
+handle_hwpic1(ശൂന്യം)
 {
     dprintf(DEBUG_ISR_hwpic1, "handle_hwpic1 irq=%x\n", pic_isr1_read());
     pic_eoi1();
 }
 
-void VISIBLE16
-handle_hwpic2(void)
+ശൂന്യം VISIBLE16
+handle_hwpic2(ശൂന്യം)
 {
     dprintf(DEBUG_ISR_hwpic2, "handle_hwpic2 irq=%x\n", pic_isr2_read());
     pic_eoi2();

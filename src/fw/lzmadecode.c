@@ -19,105 +19,105 @@
   to this file, however, are subject to the LGPL or CPL terms.
 */
 
-#include "lzmadecode.h"
+#അന്തര്ഭാവ "lzmadecode.h"
 
-#define kNumTopBits 24
-#define kTopValue ((UInt32)1 << kNumTopBits)
+#define k_അക്കം_മുകൾ_Bits 24
+#define k_മുകൾ_മൂല്യം ((UInt32)1 << k_അക്കം_മുകൾ_Bits)
 
-#define kNumBitModelTotalBits 11
-#define kBitModelTotal (1 << kNumBitModelTotalBits)
-#define kNumMoveBits 5
+#define k_അക്കം_Bit_Model_Total_Bits 11
+#define kBitModelTotal (1 << k_അക്കം_Bit_Model_Total_Bits)
+#define k_അക്കം_Move_Bits 5
 
 #define RC_READ_BYTE (*Buffer++)
 
 #define RC_INIT2 Code = 0; Range = 0xFFFFFFFF; \
-  { int i; for(i = 0; i < 5; i++) { RC_TEST; Code = (Code << 8) | RC_READ_BYTE; }}
+  { പൂർണ്ണസംഖ്യ i; വേണ്ടി(i = 0; i < 5; i++) { RC_TEST; Code = (Code << 8) | RC_READ_BYTE; }}
 
 
-#define RC_TEST { if (Buffer == BufferLim) return LZMA_RESULT_DATA_ERROR; }
+#define RC_TEST { എങ്കിൽ (Buffer == BufferLim) തിരികെ LZMA_RESULT_DATA_ERROR; }
 
 #define RC_INIT(buffer, bufferSize) Buffer = buffer; BufferLim = buffer + bufferSize; RC_INIT2
  
 
-#define RC_NORMALIZE if (Range < kTopValue) { RC_TEST; Range <<= 8; Code = (Code << 8) | RC_READ_BYTE; }
+#define RC_NORMALIZE എങ്കിൽ (Range < k_മുകൾ_മൂല്യം) { RC_TEST; Range <<= 8; Code = (Code << 8) | RC_READ_BYTE; }
 
-#define IfBit0(p) RC_NORMALIZE; bound = (Range >> kNumBitModelTotalBits) * *(p); if (Code < bound)
-#define UpdateBit0(p) Range = bound; *(p) += (kBitModelTotal - *(p)) >> kNumMoveBits;
-#define UpdateBit1(p) Range -= bound; Code -= bound; *(p) -= (*(p)) >> kNumMoveBits;
+#define IfBit0(p) RC_NORMALIZE; bound = (Range >> k_അക്കം_Bit_Model_Total_Bits) * *(p); എങ്കിൽ (Code < bound)
+#define UpdateBit0(p) Range = bound; *(p) += (kBitModelTotal - *(p)) >> k_അക്കം_Move_Bits;
+#define UpdateBit1(p) Range -= bound; Code -= bound; *(p) -= (*(p)) >> k_അക്കം_Move_Bits;
 
 #define RC_GET_BIT2(p, mi, A0, A1) IfBit0(p) \
-  { UpdateBit0(p); mi <<= 1; A0; } else \
+  { UpdateBit0(p); mi <<= 1; A0; } അല്ലെങ്കിൽ \
   { UpdateBit1(p); mi = (mi + mi) + 1; A1; } 
   
 #define RC_GET_BIT(p, mi) RC_GET_BIT2(p, mi, ; , ;)               
 
-#define RangeDecoderBitTreeDecode(probs, numLevels, res) \
-  { int i = numLevels; res = 1; \
-  do { CProb *cp = probs + res; RC_GET_BIT(cp, res) } while(--i != 0); \
-  res -= (1 << numLevels); }
+#define Range_Decoder_Bit_വൃക്ഷം_Decode(probs, അക്കം_Levels, res) \
+  { പൂർണ്ണസംഖ്യ i = അക്കം_Levels; res = 1; \
+  ചെയ്യുക { CProb *cp = probs + res; RC_GET_BIT(cp, res) } ആകുമ്പോൾ(--i != 0); \
+  res -= (1 << അക്കം_Levels); }
 
 
-#define kNumPosBitsMax 4
-#define kNumPosStatesMax (1 << kNumPosBitsMax)
+#define k_അക്കം_Pos_Bits_Max 4
+#define k_അക്കം_Pos_States_Max (1 << k_അക്കം_Pos_Bits_Max)
 
-#define kLenNumLowBits 3
-#define kLenNumLowSymbols (1 << kLenNumLowBits)
-#define kLenNumMidBits 3
-#define kLenNumMidSymbols (1 << kLenNumMidBits)
-#define kLenNumHighBits 8
-#define kLenNumHighSymbols (1 << kLenNumHighBits)
+#define k_Len_അക്കം_താഴെയുള്ള_Bits 3
+#define k_Len_അക്കം_താഴെയുള്ള_Symbols (1 << k_Len_അക്കം_താഴെയുള്ള_Bits)
+#define k_Len_അക്കം_Mid_Bits 3
+#define k_Len_അക്കം_Mid_Symbols (1 << k_Len_അക്കം_Mid_Bits)
+#define k_Len_അക്കം_മുകളിലെ_Bits 8
+#define k_Len_അക്കം_മുകളിലെ_Symbols (1 << k_Len_അക്കം_മുകളിലെ_Bits)
 
 #define LenChoice 0
 #define LenChoice2 (LenChoice + 1)
-#define LenLow (LenChoice2 + 1)
-#define LenMid (LenLow + (kNumPosStatesMax << kLenNumLowBits))
-#define LenHigh (LenMid + (kNumPosStatesMax << kLenNumMidBits))
-#define kNumLenProbs (LenHigh + kLenNumHighSymbols) 
+#define Len_താഴെയുള്ള (LenChoice2 + 1)
+#define LenMid (Len_താഴെയുള്ള + (k_അക്കം_Pos_States_Max << k_Len_അക്കം_താഴെയുള്ള_Bits))
+#define Len_മുകളിലെ (LenMid + (k_അക്കം_Pos_States_Max << k_Len_അക്കം_Mid_Bits))
+#define k_അക്കം_Len_Probs (Len_മുകളിലെ + k_Len_അക്കം_മുകളിലെ_Symbols) 
 
 
-#define kNumStates 12
-#define kNumLitStates 7
+#define k_അക്കം_States 12
+#define k_അക്കം_Lit_States 7
 
 #define kStartPosModelIndex 4
 #define kEndPosModelIndex 14
-#define kNumFullDistances (1 << (kEndPosModelIndex >> 1))
+#define k_അക്കം_Full_Distances (1 << (kEndPosModelIndex >> 1))
 
-#define kNumPosSlotBits 6
-#define kNumLenToPosStates 4
+#define k_അക്കം_Pos_Slot_Bits 6
+#define k_അക്കം_Len_To_Pos_States 4
 
-#define kNumAlignBits 4
-#define kAlignTableSize (1 << kNumAlignBits)
+#define k_അക്കം_Align_Bits 4
+#define kAlignTableSize (1 << k_അക്കം_Align_Bits)
 
 #define kMatchMinLen 2
 
 #define IsMatch 0
-#define IsRep (IsMatch + (kNumStates << kNumPosBitsMax))
-#define IsRepG0 (IsRep + kNumStates)
-#define IsRepG1 (IsRepG0 + kNumStates)
-#define IsRepG2 (IsRepG1 + kNumStates)
-#define IsRep0Long (IsRepG2 + kNumStates)
-#define PosSlot (IsRep0Long + (kNumStates << kNumPosBitsMax))
-#define SpecPos (PosSlot + (kNumLenToPosStates << kNumPosSlotBits))
-#define Align (SpecPos + kNumFullDistances - kEndPosModelIndex)
+#define IsRep (IsMatch + (k_അക്കം_States << k_അക്കം_Pos_Bits_Max))
+#define IsRepG0 (IsRep + k_അക്കം_States)
+#define IsRepG1 (IsRepG0 + k_അക്കം_States)
+#define IsRepG2 (IsRepG1 + k_അക്കം_States)
+#define IsRep0Long (IsRepG2 + k_അക്കം_States)
+#define PosSlot (IsRep0Long + (k_അക്കം_States << k_അക്കം_Pos_Bits_Max))
+#define SpecPos (PosSlot + (k_അക്കം_Len_To_Pos_States << k_അക്കം_Pos_Slot_Bits))
+#define Align (SpecPos + k_അക്കം_Full_Distances - kEndPosModelIndex)
 #define LenCoder (Align + kAlignTableSize)
-#define RepLenCoder (LenCoder + kNumLenProbs)
-#define Literal (RepLenCoder + kNumLenProbs)
+#define RepLenCoder (LenCoder + k_അക്കം_Len_Probs)
+#define Literal (RepLenCoder + k_അക്കം_Len_Probs)
 
-#if Literal != LZMA_BASE_SIZE
+#എങ്കിൽ Literal != LZMA_BASE_SIZE
 StopCompilingDueBUG
 #endif
 
-int LzmaDecodeProperties(CLzmaProperties *propsRes, const unsigned char *propsData, int size)
+പൂർണ്ണസംഖ്യ LzmaDecodeProperties(CLzmaProperties *propsRes, സ്ഥിരം unsigned അക്ഷരം *propsData, പൂർണ്ണസംഖ്യ size)
 {
-  unsigned char prop0;
-  if (size < LZMA_PROPERTIES_SIZE)
-    return LZMA_RESULT_DATA_ERROR;
+  unsigned അക്ഷരം prop0;
+  എങ്കിൽ (size < LZMA_PROPERTIES_SIZE)
+    തിരികെ LZMA_RESULT_DATA_ERROR;
   prop0 = propsData[0];
-  if (prop0 >= (9 * 5 * 5))
-    return LZMA_RESULT_DATA_ERROR;
+  എങ്കിൽ (prop0 >= (9 * 5 * 5))
+    തിരികെ LZMA_RESULT_DATA_ERROR;
   {
-    for (propsRes->pb = 0; prop0 >= (9 * 5); propsRes->pb++, prop0 -= (9 * 5));
-    for (propsRes->lp = 0; prop0 >= 9; propsRes->lp++, prop0 -= 9);
+    വേണ്ടി (propsRes->pb = 0; prop0 >= (9 * 5); propsRes->pb++, prop0 -= (9 * 5));
+    വേണ്ടി (propsRes->lp = 0; prop0 >= 9; propsRes->lp++, prop0 -= 9);
     propsRes->lc = prop0;
     /*
     unsigned char remainder = (unsigned char)(prop0 / 9);
@@ -127,28 +127,28 @@ int LzmaDecodeProperties(CLzmaProperties *propsRes, const unsigned char *propsDa
     */
   }
 
-  return LZMA_RESULT_OK;
+  തിരികെ LZMA_RESULT_OK;
 }
 
 #define kLzmaStreamWasFinishedId (-1)
 
-int LzmaDecode(CLzmaDecoderState *vs,
-    const unsigned char *inStream, SizeT inSize, SizeT *inSizeProcessed,
-    unsigned char *outStream, SizeT outSize, SizeT *outSizeProcessed)
+പൂർണ്ണസംഖ്യ LzmaDecode(CLzmaDecoderState *vs,
+    സ്ഥിരം unsigned അക്ഷരം *inStream, SizeT inSize, SizeT *inSizeProcessed,
+    unsigned അക്ഷരം *outStream, SizeT outSize, SizeT *outSizeProcessed)
 {
   CProb *p = vs->Probs;
   SizeT nowPos = 0;
   Byte previousByte = 0;
   UInt32 posStateMask = (1 << (vs->Properties.pb)) - 1;
   UInt32 literalPosMask = (1 << (vs->Properties.lp)) - 1;
-  int lc = vs->Properties.lc;
+  പൂർണ്ണസംഖ്യ lc = vs->Properties.lc;
 
 
-  int state = 0;
+  പൂർണ്ണസംഖ്യ state = 0;
   UInt32 rep0 = 1, rep1 = 1, rep2 = 1, rep3 = 1;
-  int len = 0;
-  const Byte *Buffer;
-  const Byte *BufferLim;
+  പൂർണ്ണസംഖ്യ len = 0;
+  സ്ഥിരം Byte *Buffer;
+  സ്ഥിരം Byte *BufferLim;
   UInt32 Range;
   UInt32 Code;
 
@@ -157,27 +157,27 @@ int LzmaDecode(CLzmaDecoderState *vs,
 
   {
     UInt32 i;
-    UInt32 numProbs = Literal + ((UInt32)LZMA_LIT_SIZE << (lc + vs->Properties.lp));
-    for (i = 0; i < numProbs; i++)
+    UInt32 അക്കം_Probs = Literal + ((UInt32)LZMA_LIT_SIZE << (lc + vs->Properties.lp));
+    വേണ്ടി (i = 0; i < അക്കം_Probs; i++)
       p[i] = kBitModelTotal >> 1;
   }
   
   RC_INIT(inStream, inSize);
 
 
-  while(nowPos < outSize)
+  ആകുമ്പോൾ(nowPos < outSize)
   {
     CProb *prob;
     UInt32 bound;
-    int posState = (int)(
+    പൂർണ്ണസംഖ്യ posState = (പൂർണ്ണസംഖ്യ)(
         (nowPos 
         )
         & posStateMask);
 
-    prob = p + IsMatch + (state << kNumPosBitsMax) + posState;
+    prob = p + IsMatch + (state << k_അക്കം_Pos_Bits_Max) + posState;
     IfBit0(prob)
     {
-      int symbol = 1;
+      പൂർണ്ണസംഖ്യ ചിഹ്നം_2 = 1;
       UpdateBit0(prob)
       prob = p + Literal + (LZMA_LIT_SIZE * 
         (((
@@ -185,34 +185,34 @@ int LzmaDecode(CLzmaDecoderState *vs,
         )
         & literalPosMask) << lc) + (previousByte >> (8 - lc))));
 
-      if (state >= kNumLitStates)
+      എങ്കിൽ (state >= k_അക്കം_Lit_States)
       {
-        int matchByte;
+        പൂർണ്ണസംഖ്യ matchByte;
         matchByte = outStream[nowPos - rep0];
-        do
+        ചെയ്യുക
         {
-          int bit;
+          പൂർണ്ണസംഖ്യ bit;
           CProb *probLit;
           matchByte <<= 1;
           bit = (matchByte & 0x100);
-          probLit = prob + 0x100 + bit + symbol;
-          RC_GET_BIT2(probLit, symbol, if (bit != 0) break, if (bit == 0) break)
+          probLit = prob + 0x100 + bit + ചിഹ്നം_2;
+          RC_GET_BIT2(probLit, ചിഹ്നം_2, എങ്കിൽ (bit != 0) നിർത്തുക, എങ്കിൽ (bit == 0) നിർത്തുക)
         }
-        while (symbol < 0x100);
+        ആകുമ്പോൾ (ചിഹ്നം_2 < 0x100);
       }
-      while (symbol < 0x100)
+      ആകുമ്പോൾ (ചിഹ്നം_2 < 0x100)
       {
-        CProb *probLit = prob + symbol;
-        RC_GET_BIT(probLit, symbol)
+        CProb *probLit = prob + ചിഹ്നം_2;
+        RC_GET_BIT(probLit, ചിഹ്നം_2)
       }
-      previousByte = (Byte)symbol;
+      previousByte = (Byte)ചിഹ്നം_2;
 
       outStream[nowPos++] = previousByte;
-      if (state < 4) state = 0;
-      else if (state < 10) state -= 3;
-      else state -= 6;
+      എങ്കിൽ (state < 4) state = 0;
+      അല്ലെങ്കിൽ എങ്കിൽ (state < 10) state -= 3;
+      അല്ലെങ്കിൽ state -= 6;
     }
-    else             
+    അല്ലെങ്കിൽ             
     {
       UpdateBit1(prob);
       prob = p + IsRep + state;
@@ -222,36 +222,36 @@ int LzmaDecode(CLzmaDecoderState *vs,
         rep3 = rep2;
         rep2 = rep1;
         rep1 = rep0;
-        state = state < kNumLitStates ? 0 : 3;
+        state = state < k_അക്കം_Lit_States ? 0 : 3;
         prob = p + LenCoder;
       }
-      else
+      അല്ലെങ്കിൽ
       {
         UpdateBit1(prob);
         prob = p + IsRepG0 + state;
         IfBit0(prob)
         {
           UpdateBit0(prob);
-          prob = p + IsRep0Long + (state << kNumPosBitsMax) + posState;
+          prob = p + IsRep0Long + (state << k_അക്കം_Pos_Bits_Max) + posState;
           IfBit0(prob)
           {
             UpdateBit0(prob);
             
-            if (nowPos == 0)
-              return LZMA_RESULT_DATA_ERROR;
+            എങ്കിൽ (nowPos == 0)
+              തിരികെ LZMA_RESULT_DATA_ERROR;
             
-            state = state < kNumLitStates ? 9 : 11;
+            state = state < k_അക്കം_Lit_States ? 9 : 11;
             previousByte = outStream[nowPos - rep0];
             outStream[nowPos++] = previousByte;
 
-            continue;
+            തുടരുക;
           }
-          else
+          അല്ലെങ്കിൽ
           {
             UpdateBit1(prob);
           }
         }
-        else
+        അല്ലെങ്കിൽ
         {
           UInt32 distance;
           UpdateBit1(prob);
@@ -261,7 +261,7 @@ int LzmaDecode(CLzmaDecoderState *vs,
             UpdateBit0(prob);
             distance = rep1;
           }
-          else 
+          അല്ലെങ്കിൽ 
           {
             UpdateBit1(prob);
             prob = p + IsRepG2 + state;
@@ -270,7 +270,7 @@ int LzmaDecode(CLzmaDecoderState *vs,
               UpdateBit0(prob);
               distance = rep2;
             }
-            else
+            അല്ലെങ്കിൽ
             {
               UpdateBit1(prob);
               distance = rep3;
@@ -281,112 +281,112 @@ int LzmaDecode(CLzmaDecoderState *vs,
           rep1 = rep0;
           rep0 = distance;
         }
-        state = state < kNumLitStates ? 8 : 11;
+        state = state < k_അക്കം_Lit_States ? 8 : 11;
         prob = p + RepLenCoder;
       }
       {
-        int numBits, offset;
+        പൂർണ്ണസംഖ്യ അക്കം_Bits, offset;
         CProb *probLen = prob + LenChoice;
         IfBit0(probLen)
         {
           UpdateBit0(probLen);
-          probLen = prob + LenLow + (posState << kLenNumLowBits);
+          probLen = prob + Len_താഴെയുള്ള + (posState << k_Len_അക്കം_താഴെയുള്ള_Bits);
           offset = 0;
-          numBits = kLenNumLowBits;
+          അക്കം_Bits = k_Len_അക്കം_താഴെയുള്ള_Bits;
         }
-        else
+        അല്ലെങ്കിൽ
         {
           UpdateBit1(probLen);
           probLen = prob + LenChoice2;
           IfBit0(probLen)
           {
             UpdateBit0(probLen);
-            probLen = prob + LenMid + (posState << kLenNumMidBits);
-            offset = kLenNumLowSymbols;
-            numBits = kLenNumMidBits;
+            probLen = prob + LenMid + (posState << k_Len_അക്കം_Mid_Bits);
+            offset = k_Len_അക്കം_താഴെയുള്ള_Symbols;
+            അക്കം_Bits = k_Len_അക്കം_Mid_Bits;
           }
-          else
+          അല്ലെങ്കിൽ
           {
             UpdateBit1(probLen);
-            probLen = prob + LenHigh;
-            offset = kLenNumLowSymbols + kLenNumMidSymbols;
-            numBits = kLenNumHighBits;
+            probLen = prob + Len_മുകളിലെ;
+            offset = k_Len_അക്കം_താഴെയുള്ള_Symbols + k_Len_അക്കം_Mid_Symbols;
+            അക്കം_Bits = k_Len_അക്കം_മുകളിലെ_Bits;
           }
         }
-        RangeDecoderBitTreeDecode(probLen, numBits, len);
+        Range_Decoder_Bit_വൃക്ഷം_Decode(probLen, അക്കം_Bits, len);
         len += offset;
       }
 
-      if (state < 4)
+      എങ്കിൽ (state < 4)
       {
-        int posSlot;
-        state += kNumLitStates;
+        പൂർണ്ണസംഖ്യ posSlot;
+        state += k_അക്കം_Lit_States;
         prob = p + PosSlot +
-            ((len < kNumLenToPosStates ? len : kNumLenToPosStates - 1) << 
-            kNumPosSlotBits);
-        RangeDecoderBitTreeDecode(prob, kNumPosSlotBits, posSlot);
-        if (posSlot >= kStartPosModelIndex)
+            ((len < k_അക്കം_Len_To_Pos_States ? len : k_അക്കം_Len_To_Pos_States - 1) << 
+            k_അക്കം_Pos_Slot_Bits);
+        Range_Decoder_Bit_വൃക്ഷം_Decode(prob, k_അക്കം_Pos_Slot_Bits, posSlot);
+        എങ്കിൽ (posSlot >= kStartPosModelIndex)
         {
-          int numDirectBits = ((posSlot >> 1) - 1);
+          പൂർണ്ണസംഖ്യ അക്കം_Direct_Bits = ((posSlot >> 1) - 1);
           rep0 = (2 | ((UInt32)posSlot & 1));
-          if (posSlot < kEndPosModelIndex)
+          എങ്കിൽ (posSlot < kEndPosModelIndex)
           {
-            rep0 <<= numDirectBits;
+            rep0 <<= അക്കം_Direct_Bits;
             prob = p + SpecPos + rep0 - posSlot - 1;
           }
-          else
+          അല്ലെങ്കിൽ
           {
-            numDirectBits -= kNumAlignBits;
-            do
+            അക്കം_Direct_Bits -= k_അക്കം_Align_Bits;
+            ചെയ്യുക
             {
               RC_NORMALIZE
               Range >>= 1;
               rep0 <<= 1;
-              if (Code >= Range)
+              എങ്കിൽ (Code >= Range)
               {
                 Code -= Range;
                 rep0 |= 1;
               }
             }
-            while (--numDirectBits != 0);
+            ആകുമ്പോൾ (--അക്കം_Direct_Bits != 0);
             prob = p + Align;
-            rep0 <<= kNumAlignBits;
-            numDirectBits = kNumAlignBits;
+            rep0 <<= k_അക്കം_Align_Bits;
+            അക്കം_Direct_Bits = k_അക്കം_Align_Bits;
           }
           {
-            int i = 1;
-            int mi = 1;
-            do
+            പൂർണ്ണസംഖ്യ i = 1;
+            പൂർണ്ണസംഖ്യ mi = 1;
+            ചെയ്യുക
             {
               CProb *prob3 = prob + mi;
               RC_GET_BIT2(prob3, mi, ; , rep0 |= i);
               i <<= 1;
             }
-            while(--numDirectBits != 0);
+            ആകുമ്പോൾ(--അക്കം_Direct_Bits != 0);
           }
         }
-        else
+        അല്ലെങ്കിൽ
           rep0 = posSlot;
-        if (++rep0 == (UInt32)(0))
+        എങ്കിൽ (++rep0 == (UInt32)(0))
         {
           /* it's for stream version */
           len = kLzmaStreamWasFinishedId;
-          break;
+          നിർത്തുക;
         }
       }
 
       len += kMatchMinLen;
-      if (rep0 > nowPos)
-        return LZMA_RESULT_DATA_ERROR;
+      എങ്കിൽ (rep0 > nowPos)
+        തിരികെ LZMA_RESULT_DATA_ERROR;
 
 
-      do
+      ചെയ്യുക
       {
         previousByte = outStream[nowPos - rep0];
         len--;
         outStream[nowPos++] = previousByte;
       }
-      while(len != 0 && nowPos < outSize);
+      ആകുമ്പോൾ(len != 0 && nowPos < outSize);
     }
   }
   RC_NORMALIZE;
@@ -394,5 +394,5 @@ int LzmaDecode(CLzmaDecoderState *vs,
 
   *inSizeProcessed = (SizeT)(Buffer - inStream);
   *outSizeProcessed = nowPos;
-  return LZMA_RESULT_OK;
+  തിരികെ LZMA_RESULT_OK;
 }

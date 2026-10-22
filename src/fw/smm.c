@@ -5,19 +5,19 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_*
-#include "dev-q35.h"
-#include "dev-piix.h"
-#include "hw/pci.h" // pci_config_writel
-#include "hw/pcidevice.h" // pci_find_device
-#include "hw/pci_ids.h" // PCI_VENDOR_ID_INTEL
-#include "hw/pci_regs.h" // PCI_DEVICE_ID
-#include "output.h" // dprintf
-#include "paravirt.h" // PORT_SMI_STATUS
-#include "stacks.h" // HaveSmmCall32
-#include "string.h" // memcpy
-#include "util.h" // smm_setup
-#include "x86.h" // wbinvd
+#അന്തര്ഭാവ "config.h" // CONFIG_*
+#അന്തര്ഭാവ "dev-q35.h"
+#അന്തര്ഭാവ "dev-piix.h"
+#അന്തര്ഭാവ "hw/pci.h" // pci_config_writel
+#അന്തര്ഭാവ "hw/pcidevice.h" // pci_find_device
+#അന്തര്ഭാവ "hw/pci_ids.h" // PCI_VENDOR_ID_INTEL
+#അന്തര്ഭാവ "hw/pci_regs.h" // PCI_DEVICE_ID
+#അന്തര്ഭാവ "output.h" // dprintf
+#അന്തര്ഭാവ "paravirt.h" // PORT_SMI_STATUS
+#അന്തര്ഭാവ "stacks.h" // HaveSmmCall32
+#അന്തര്ഭാവ "string.h" // memcpy
+#അന്തര്ഭാവ "util.h" // smm_setup
+#അന്തര്ഭാവ "x86.h" // wbinvd
 
 /*
  * Check SMM state save area format (bits 0-15) and require support
@@ -28,9 +28,9 @@
 #define SMM_REV_I32  0x00020000
 #define SMM_REV_I64  0x00020064
 
-struct smm_state {
-    union {
-        struct {
+ഘടന smm_state {
+    സംഘം {
+        ഘടന {
             u8 pad_000[0xf8];
             u32 smm_base;
             u32 smm_rev;
@@ -38,7 +38,7 @@ struct smm_state {
             u32 eax, ecx, edx, ebx, esp, ebp, esi, edi, eip, eflags;
             u8 pad_1f8[0x08];
         } i32;
-        struct {
+        ഘടന {
             u8 pad_000[0xfc];
             u32 smm_rev;
             u32 smm_base;
@@ -49,92 +49,92 @@ struct smm_state {
     };
 };
 
-struct smm_layout {
-    struct smm_state backup1;
-    struct smm_state backup2;
+ഘടന smm_layout {
+    ഘടന smm_state backup1;
+    ഘടന smm_state backup2;
     u32 backup_a20;
-    u8 stack[0x8000 - sizeof(struct smm_state)*2 - sizeof(u32)];
+    u8 അട്ടി[0x8000 - വലുപ്പം(ഘടന smm_state)*2 - വലുപ്പം(u32)];
     u64 codeentry;
     u8 pad_8008[0x7df8];
-    struct smm_state cpu;
+    ഘടന smm_state cpu;
 };
 
 // Hack to supress some gcc array-bounds warnings
-static void
-memcpy_nowarn(void *d, const void *s, size_t len)
+സ്ഥിതം ശൂന്യം
+memcpy_nowarn(ശൂന്യം *d, സ്ഥിരം ശൂന്യം *s, size_t len)
 {
     asm("" : "+r"(d), "+r"(s));
     memcpy(d, s, len);
 }
 
-void VISIBLE32FLAT
+ശൂന്യം VISIBLE32FLAT
 handle_smi(u16 cs)
 {
-    if (!CONFIG_USE_SMM)
-        return;
+    എങ്കിൽ (!CONFIG_USE_SMM)
+        തിരികെ;
     u8 cmd = inb(PORT_SMI_CMD);
-    struct smm_layout *smm = MAKE_FLATPTR(cs, 0);
+    ഘടന smm_layout *smm = MAKE_FLATPTR(cs, 0);
     u32 rev = smm->cpu.i32.smm_rev & SMM_REV_MASK;
     dprintf(DEBUG_HDL_smi, "handle_smi cmd=%x smbase=%p\n", cmd, smm);
 
-    if (smm == (void*)BUILD_SMM_INIT_ADDR) {
+    എങ്കിൽ (smm == (ശൂന്യം*)BUILD_SMM_INIT_ADDR) {
         // relocate SMBASE to 0xa0000
-        if (rev == SMM_REV_I32) {
+        എങ്കിൽ (rev == SMM_REV_I32) {
             smm->cpu.i32.smm_base = BUILD_SMM_ADDR;
-        } else if (rev == SMM_REV_I64) {
+        } അല്ലെങ്കിൽ എങ്കിൽ (rev == SMM_REV_I64) {
             smm->cpu.i64.smm_base = BUILD_SMM_ADDR;
-        } else {
+        } അല്ലെങ്കിൽ {
             warn_internalerror();
-            return;
+            തിരികെ;
         }
         // indicate to smm_relocate_and_restore() that the SMM code was executed
         outb(0x00, PORT_SMI_STATUS);
 
-        if (CONFIG_CALL32_SMM) {
+        എങ്കിൽ (CONFIG_CALL32_SMM) {
             // Backup current cpu state for SMM trampolining
-            struct smm_layout *newsmm = (void*)BUILD_SMM_ADDR;
-            memcpy_nowarn(&newsmm->backup1, &smm->cpu, sizeof(newsmm->backup1));
-            memcpy_nowarn(&newsmm->backup2, &smm->cpu, sizeof(newsmm->backup2));
+            ഘടന smm_layout *newsmm = (ശൂന്യം*)BUILD_SMM_ADDR;
+            memcpy_nowarn(&newsmm->backup1, &smm->cpu, വലുപ്പം(newsmm->backup1));
+            memcpy_nowarn(&newsmm->backup2, &smm->cpu, വലുപ്പം(newsmm->backup2));
             HaveSmmCall32 = 1;
         }
 
-        return;
+        തിരികെ;
     }
 
-    if (CONFIG_CALL32_SMM && cmd == CALL32SMM_CMDID) {
-        if (rev == SMM_REV_I32) {
+    എങ്കിൽ (CONFIG_CALL32_SMM && cmd == CALL32SMM_CMDID) {
+        എങ്കിൽ (rev == SMM_REV_I32) {
             u32 regs[8];
-            memcpy(regs, &smm->cpu.i32.eax, sizeof(regs));
-            if (smm->cpu.i32.ecx == CALL32SMM_ENTERID) {
+            memcpy(regs, &smm->cpu.i32.eax, വലുപ്പം(regs));
+            എങ്കിൽ (smm->cpu.i32.ecx == CALL32SMM_ENTERID) {
                 dprintf(9, "smm cpu call pc=%x esp=%x\n", regs[3], regs[4]);
-                memcpy(&smm->backup2, &smm->cpu, sizeof(smm->backup2));
-                memcpy(&smm->cpu, &smm->backup1, sizeof(smm->cpu));
-                memcpy(&smm->cpu.i32.eax, regs, sizeof(regs));
+                memcpy(&smm->backup2, &smm->cpu, വലുപ്പം(smm->backup2));
+                memcpy(&smm->cpu, &smm->backup1, വലുപ്പം(smm->cpu));
+                memcpy(&smm->cpu.i32.eax, regs, വലുപ്പം(regs));
                 smm->cpu.i32.eip = regs[3];
                 // Enable a20 and backup its previous state
                 smm->backup_a20 = set_a20(1);
-            } else if (smm->cpu.i32.ecx == CALL32SMM_RETURNID) {
+            } അല്ലെങ്കിൽ എങ്കിൽ (smm->cpu.i32.ecx == CALL32SMM_RETURNID) {
                 dprintf(9, "smm cpu ret %x esp=%x\n", regs[3], regs[4]);
-                memcpy(&smm->cpu, &smm->backup2, sizeof(smm->cpu));
-                memcpy(&smm->cpu.i32.eax, regs, sizeof(regs));
-                if (!smm->backup_a20)
+                memcpy(&smm->cpu, &smm->backup2, വലുപ്പം(smm->cpu));
+                memcpy(&smm->cpu.i32.eax, regs, വലുപ്പം(regs));
+                എങ്കിൽ (!smm->backup_a20)
                     set_a20(0);
                 smm->cpu.i32.eip = regs[3];
             }
-        } else if (rev == SMM_REV_I64) {
+        } അല്ലെങ്കിൽ എങ്കിൽ (rev == SMM_REV_I64) {
             u64 regs[8];
-            memcpy(regs, &smm->cpu.i64.rdi, sizeof(regs));
-            if ((u32)smm->cpu.i64.rcx == CALL32SMM_ENTERID) {
-                memcpy(&smm->backup2, &smm->cpu, sizeof(smm->backup2));
-                memcpy(&smm->cpu, &smm->backup1, sizeof(smm->cpu));
-                memcpy(&smm->cpu.i64.rdi, regs, sizeof(regs));
+            memcpy(regs, &smm->cpu.i64.rdi, വലുപ്പം(regs));
+            എങ്കിൽ ((u32)smm->cpu.i64.rcx == CALL32SMM_ENTERID) {
+                memcpy(&smm->backup2, &smm->cpu, വലുപ്പം(smm->backup2));
+                memcpy(&smm->cpu, &smm->backup1, വലുപ്പം(smm->cpu));
+                memcpy(&smm->cpu.i64.rdi, regs, വലുപ്പം(regs));
                 smm->cpu.i64.rip = (u32)regs[4];
                 // Enable a20 and backup its previous state
                 smm->backup_a20 = set_a20(1);
-            } else if ((u32)smm->cpu.i64.rcx == CALL32SMM_RETURNID) {
-                memcpy(&smm->cpu, &smm->backup2, sizeof(smm->cpu));
-                memcpy(&smm->cpu.i64.rdi, regs, sizeof(regs));
-                if (!smm->backup_a20)
+            } അല്ലെങ്കിൽ എങ്കിൽ ((u32)smm->cpu.i64.rcx == CALL32SMM_RETURNID) {
+                memcpy(&smm->cpu, &smm->backup2, വലുപ്പം(smm->cpu));
+                memcpy(&smm->cpu.i64.rdi, regs, വലുപ്പം(regs));
+                എങ്കിൽ (!smm->backup_a20)
                     set_a20(0);
                 smm->cpu.i64.rip = (u32)regs[4];
             }
@@ -142,26 +142,26 @@ handle_smi(u16 cs)
     }
 }
 
-extern void entry_smi(void);
+ബാഹ്യ ശൂന്യം entry_smi(ശൂന്യം);
 // movw %cs, %ax; ljmpw $SEG_BIOS, $(entry_smi - BUILD_BIOS_ADDR)
 #define SMI_INSN (0xeac88c | ((u64)SEG_BIOS<<40) \
                   | ((u64)((u32)entry_smi - BUILD_BIOS_ADDR) << 24))
 
-static void
-smm_save_and_copy(void)
+സ്ഥിതം ശൂന്യം
+smm_save_and_copy(ശൂന്യം)
 {
     // save original memory content
-    struct smm_layout *initsmm = (void*)BUILD_SMM_INIT_ADDR;
-    struct smm_layout *smm = (void*)BUILD_SMM_ADDR;
-    memcpy_nowarn(&smm->cpu, &initsmm->cpu, sizeof(smm->cpu));
-    memcpy_nowarn(&smm->codeentry, &initsmm->codeentry, sizeof(smm->codeentry));
+    ഘടന smm_layout *initsmm = (ശൂന്യം*)BUILD_SMM_INIT_ADDR;
+    ഘടന smm_layout *smm = (ശൂന്യം*)BUILD_SMM_ADDR;
+    memcpy_nowarn(&smm->cpu, &initsmm->cpu, വലുപ്പം(smm->cpu));
+    memcpy_nowarn(&smm->codeentry, &initsmm->codeentry, വലുപ്പം(smm->codeentry));
 
     // Setup code entry point.
     initsmm->codeentry = SMI_INSN;
 }
 
-static void
-smm_relocate_and_restore(void)
+സ്ഥിതം ശൂന്യം
+smm_relocate_and_restore(ശൂന്യം)
 {
     /* init APM status port */
     outb(0x01, PORT_SMI_STATUS);
@@ -170,15 +170,15 @@ smm_relocate_and_restore(void)
     outb(0x00, PORT_SMI_CMD);
 
     /* wait until SMM code executed */
-    while (inb(PORT_SMI_STATUS) != 0x00)
+    ആകുമ്പോൾ (inb(PORT_SMI_STATUS) != 0x00)
         ;
 
     /* restore original memory content */
-    struct smm_layout *initsmm = (void*)BUILD_SMM_INIT_ADDR;
-    struct smm_layout *smm = (void*)BUILD_SMM_ADDR;
-    memcpy_nowarn(&initsmm->cpu, &smm->cpu, sizeof(initsmm->cpu));
+    ഘടന smm_layout *initsmm = (ശൂന്യം*)BUILD_SMM_INIT_ADDR;
+    ഘടന smm_layout *smm = (ശൂന്യം*)BUILD_SMM_ADDR;
+    memcpy_nowarn(&initsmm->cpu, &smm->cpu, വലുപ്പം(initsmm->cpu));
     memcpy_nowarn(&initsmm->codeentry, &smm->codeentry
-                  , sizeof(initsmm->codeentry));
+                  , വലുപ്പം(initsmm->codeentry));
 
     // Setup code entry point.
     smm->codeentry = SMI_INSN;
@@ -186,12 +186,12 @@ smm_relocate_and_restore(void)
 }
 
 // This code is hardcoded for PIIX4 Power Management device.
-static void piix4_apmc_smm_setup(int isabdf, int i440_bdf)
+സ്ഥിതം ശൂന്യം piix4_apmc_smm_setup(പൂർണ്ണസംഖ്യ isabdf, പൂർണ്ണസംഖ്യ i440_bdf)
 {
     /* check if SMM init is already done */
-    u32 value = pci_config_readl(isabdf, PIIX_DEVACTB);
-    if (value & PIIX_DEVACTB_APMC_EN)
-        return;
+    u32 മൂല്യം = pci_config_readl(isabdf, PIIX_DEVACTB);
+    എങ്കിൽ (മൂല്യം & PIIX_DEVACTB_APMC_EN)
+        തിരികെ;
 
     /* enable the SMM memory window */
     pci_config_writeb(i440_bdf, I440FX_SMRAM, 0x02 | 0x48);
@@ -199,11 +199,11 @@ static void piix4_apmc_smm_setup(int isabdf, int i440_bdf)
     smm_save_and_copy();
 
     /* enable SMI generation when writing to the APMC register */
-    pci_config_writel(isabdf, PIIX_DEVACTB, value | PIIX_DEVACTB_APMC_EN);
+    pci_config_writel(isabdf, PIIX_DEVACTB, മൂല്യം | PIIX_DEVACTB_APMC_EN);
 
     /* enable SMI generation */
-    value = inl(acpi_pm_base + PIIX_PMIO_GLBCTL);
-    outl(value | PIIX_PMIO_GLBCTL_SMI_EN, acpi_pm_base + PIIX_PMIO_GLBCTL);
+    മൂല്യം = inl(acpi_pm_base + PIIX_PMIO_GLBCTL);
+    outl(മൂല്യം | PIIX_PMIO_GLBCTL_SMI_EN, acpi_pm_base + PIIX_PMIO_GLBCTL);
 
     smm_relocate_and_restore();
 
@@ -212,12 +212,12 @@ static void piix4_apmc_smm_setup(int isabdf, int i440_bdf)
 }
 
 /* PCI_VENDOR_ID_INTEL && PCI_DEVICE_ID_INTEL_ICH9_LPC */
-void ich9_lpc_apmc_smm_setup(int isabdf, int mch_bdf)
+ശൂന്യം ich9_lpc_apmc_smm_setup(പൂർണ്ണസംഖ്യ isabdf, പൂർണ്ണസംഖ്യ mch_bdf)
 {
     /* check if SMM init is already done */
-    u32 value = inl(acpi_pm_base + ICH9_PMIO_SMI_EN);
-    if (value & ICH9_PMIO_SMI_EN_APMC_EN)
-        return;
+    u32 മൂല്യം = inl(acpi_pm_base + ICH9_PMIO_SMI_EN);
+    എങ്കിൽ (മൂല്യം & ICH9_PMIO_SMI_EN_APMC_EN)
+        തിരികെ;
 
     /* enable the SMM memory window */
     pci_config_writeb(mch_bdf, Q35_HOST_BRIDGE_SMRAM, 0x02 | 0x48);
@@ -225,13 +225,13 @@ void ich9_lpc_apmc_smm_setup(int isabdf, int mch_bdf)
     smm_save_and_copy();
 
     /* enable SMI generation when writing to the APMC register */
-    outl(value | ICH9_PMIO_SMI_EN_APMC_EN | ICH9_PMIO_SMI_EN_GLB_SMI_EN,
+    outl(മൂല്യം | ICH9_PMIO_SMI_EN_APMC_EN | ICH9_PMIO_SMI_EN_GLB_SMI_EN,
          acpi_pm_base + ICH9_PMIO_SMI_EN);
 
     /* lock SMI generation */
-    value = pci_config_readw(isabdf, ICH9_LPC_GEN_PMCON_1);
+    മൂല്യം = pci_config_readw(isabdf, ICH9_LPC_GEN_PMCON_1);
     pci_config_writel(isabdf, ICH9_LPC_GEN_PMCON_1,
-                      value | ICH9_LPC_GEN_PMCON_1_SMI_LOCK);
+                      മൂല്യം | ICH9_LPC_GEN_PMCON_1_SMI_LOCK);
 
     smm_relocate_and_restore();
 
@@ -239,40 +239,40 @@ void ich9_lpc_apmc_smm_setup(int isabdf, int mch_bdf)
     pci_config_writeb(mch_bdf, Q35_HOST_BRIDGE_SMRAM, 0x02 | 0x08);
 }
 
-static int SMMISADeviceBDF = -1, SMMPMDeviceBDF = -1;
+സ്ഥിതം പൂർണ്ണസംഖ്യ SMMISADeviceBDF = -1, SMMPMDeviceBDF = -1;
 
-void
-smm_device_setup(void)
+ശൂന്യം
+smm_device_setup(ശൂന്യം)
 {
-    if (!CONFIG_USE_SMM)
-        return;
+    എങ്കിൽ (!CONFIG_USE_SMM)
+        തിരികെ;
 
-    struct pci_device *isapci, *pmpci;
+    ഘടന pci_device *isapci, *pmpci;
     isapci = pci_find_device(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82371AB_3);
     pmpci = pci_find_device(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82441);
-    if (isapci && pmpci) {
+    എങ്കിൽ (isapci && pmpci) {
         SMMISADeviceBDF = isapci->bdf;
         SMMPMDeviceBDF = pmpci->bdf;
-        return;
+        തിരികെ;
     }
     isapci = pci_find_device(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH9_LPC);
     pmpci = pci_find_device(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_Q35_MCH);
-    if (isapci && pmpci) {
+    എങ്കിൽ (isapci && pmpci) {
         SMMISADeviceBDF = isapci->bdf;
         SMMPMDeviceBDF = pmpci->bdf;
     }
 }
 
-void
-smm_setup(void)
+ശൂന്യം
+smm_setup(ശൂന്യം)
 {
-    if (!CONFIG_USE_SMM || SMMISADeviceBDF < 0)
-        return;
+    എങ്കിൽ (!CONFIG_USE_SMM || SMMISADeviceBDF < 0)
+        തിരികെ;
 
     dprintf(3, "init smm\n");
     u16 device = pci_config_readw(SMMISADeviceBDF, PCI_DEVICE_ID);
-    if (device == PCI_DEVICE_ID_INTEL_82371AB_3)
+    എങ്കിൽ (device == PCI_DEVICE_ID_INTEL_82371AB_3)
         piix4_apmc_smm_setup(SMMISADeviceBDF, SMMPMDeviceBDF);
-    else
+    അല്ലെങ്കിൽ
         ich9_lpc_apmc_smm_setup(SMMISADeviceBDF, SMMPMDeviceBDF);
 }

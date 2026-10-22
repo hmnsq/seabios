@@ -5,8 +5,8 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "util.h" // dma_setup
-#include "x86.h" // outb
+#അന്തര്ഭാവ "util.h" // dma_setup
+#അന്തര്ഭാവ "x86.h" // outb
 
 #define PORT_DMA_ADDR_2        0x0004
 #define PORT_DMA_CNT_2         0x0005
@@ -20,17 +20,17 @@
 #define PORT_DMA2_MASTER_CLEAR 0x00da
 
 // Setup the DMA controller for a floppy transfer.
-int
-dma_floppy(u32 addr, int count, int isWrite)
+പൂർണ്ണസംഖ്യ
+dma_floppy(u32 addr, പൂർണ്ണസംഖ്യ എണ്ണം, പൂർണ്ണസംഖ്യ isWrite)
 {
     // check for 64K boundary overrun
-    u16 end = count - 1;
+    u16 end = എണ്ണം - 1;
     u32 last_addr = addr + end;
-    if ((addr >> 16) != (last_addr >> 16))
-        return -1;
+    എങ്കിൽ ((addr >> 16) != (last_addr >> 16))
+        തിരികെ -1;
 
     u8 mode_register = 0x46; // single mode, increment, autoinit disable,
-    if (isWrite)
+    എങ്കിൽ (isWrite)
         mode_register = 0x4a;
 
     outb(0x06, PORT_DMA1_MASK_REG);
@@ -50,12 +50,12 @@ dma_floppy(u32 addr, int count, int isWrite)
 
     outb(0x02, PORT_DMA1_MASK_REG); // unmask channel 2
 
-    return 0;
+    തിരികെ 0;
 }
 
 // Reset DMA controller
-void
-dma_setup(void)
+ശൂന്യം
+dma_setup(ശൂന്യം)
 {
     // first reset the DMA controllers
     outb(0, PORT_DMA1_MASTER_CLEAR);

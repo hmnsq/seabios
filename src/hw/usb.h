@@ -2,13 +2,13 @@
 #ifndef __USB_H
 #define __USB_H
 
-#include "stacks.h" // struct mutex_s
+#അന്തര്ഭാവ "stacks.h" // struct mutex_s
 
 // Information on a USB end point.
-struct usb_pipe {
-    union {
-        struct usb_s *cntl;
-        struct usb_pipe *freenext;
+ഘടന usb_pipe {
+    സംഘം {
+        ഘടന usb_s *cntl;
+        ഘടന usb_pipe *freenext;
     };
     u8 type;
     u8 ep;
@@ -19,33 +19,33 @@ struct usb_pipe {
 };
 
 // Common information for usb devices.
-struct usbdevice_s {
-    struct usbhub_s *hub;
-    struct usb_pipe *defpipe;
+ഘടന usbdevice_s {
+    ഘടന usbhub_s *hub;
+    ഘടന usb_pipe *defpipe;
     u32 port;
-    struct usb_config_descriptor *config;
-    struct usb_interface_descriptor *iface;
-    int imax;
+    ഘടന usb_config_descriptor *config;
+    ഘടന usb_interface_descriptor *iface;
+    പൂർണ്ണസംഖ്യ imax;
     u8 speed;
     u8 devaddr;
 };
 
 // Common information for usb controllers.
-struct usb_s {
-    struct usb_pipe *freelist;
-    struct mutex_s resetlock;
-    struct pci_device *pci;
-    void *mmio;
+ഘടന usb_s {
+    ഘടന usb_pipe *freelist;
+    ഘടന mutex_s resetlock;
+    ഘടന pci_device *pci;
+    ശൂന്യം *mmio;
     u8 type;
     u8 maxaddr;
 };
 
 // Information for enumerating USB hubs
-struct usbhub_s {
-    struct usbhub_op_s *op;
-    struct usbdevice_s *usbdev;
-    struct usb_s *cntl;
-    struct mutex_s lock;
+ഘടന usbhub_s {
+    ഘടന usbhub_op_s *op;
+    ഘടന usbdevice_s *usbdev;
+    ഘടന usb_s *cntl;
+    ഘടന mutex_s lock;
     u32 detectend;
     u32 port;
     u32 threads;
@@ -54,11 +54,11 @@ struct usbhub_s {
 };
 
 // Hub callback (32bit) info
-struct usbhub_op_s {
-    int (*detect)(struct usbhub_s *hub, u32 port);
-    int (*reset)(struct usbhub_s *hub, u32 port);
-    int (*portmap)(struct usbhub_s *hub, u32 port);
-    void (*disconnect)(struct usbhub_s *hub, u32 port);
+ഘടന usbhub_op_s {
+    പൂർണ്ണസംഖ്യ (*detect)(ഘടന usbhub_s *hub, u32 port);
+    പൂർണ്ണസംഖ്യ (*reset)(ഘടന usbhub_s *hub, u32 port);
+    പൂർണ്ണസംഖ്യ (*portmap)(ഘടന usbhub_s *hub, u32 port);
+    ശൂന്യം (*disconnect)(ഘടന usbhub_s *hub, u32 port);
 };
 
 #define USB_TYPE_UHCI  1
@@ -122,10 +122,10 @@ struct usbhub_op_s {
 #define USB_REQ_SET_INTERFACE           0x0B
 #define USB_REQ_SYNCH_FRAME             0x0C
 
-struct usb_ctrlrequest {
+ഘടന usb_ctrlrequest {
     u8 bRequestType;
     u8 bRequest;
-    u16 wValue;
+    u16 w_മൂല്യം;
     u16 wIndex;
     u16 wLength;
 } PACKED;
@@ -139,7 +139,7 @@ struct usb_ctrlrequest {
 #define USB_DT_OTHER_SPEED_CONFIG       0x07
 #define USB_DT_ENDPOINT_COMPANION       0x30
 
-struct usb_device_descriptor {
+ഘടന usb_device_descriptor {
     u8  bLength;
     u8  bDescriptorType;
 
@@ -153,8 +153,8 @@ struct usb_device_descriptor {
     u16 bcdDevice;
     u8  iManufacturer;
     u8  iProduct;
-    u8  iSerialNumber;
-    u8  bNumConfigurations;
+    u8  i_Serial_സംഖ്യ;
+    u8  b_അക്കം_Configurations;
 } PACKED;
 
 #define USB_CLASS_PER_INTERFACE         0       /* for DeviceClass */
@@ -167,32 +167,32 @@ struct usb_device_descriptor {
 #define USB_CLASS_MASS_STORAGE          8
 #define USB_CLASS_HUB                   9
 
-struct usb_config_descriptor {
+ഘടന usb_config_descriptor {
     u8  bLength;
     u8  bDescriptorType;
 
     u16 wTotalLength;
-    u8  bNumInterfaces;
-    u8  bConfigurationValue;
+    u8  b_അക്കം_Interfaces;
+    u8  b_Configuration_മൂല്യം;
     u8  iConfiguration;
     u8  bmAttributes;
     u8  bMaxPower;
 } PACKED;
 
-struct usb_interface_descriptor {
+ഘടന usb_interface_descriptor {
     u8  bLength;
     u8  bDescriptorType;
 
-    u8  bInterfaceNumber;
+    u8  b_Interface_സംഖ്യ;
     u8  bAlternateSetting;
-    u8  bNumEndpoints;
+    u8  b_അക്കം_Endpoints;
     u8  bInterfaceClass;
     u8  bInterfaceSubClass;
     u8  bInterfaceProtocol;
     u8  iInterface;
 } PACKED;
 
-struct usb_endpoint_descriptor {
+ഘടന usb_endpoint_descriptor {
     u8  bLength;
     u8  bDescriptorType;
 
@@ -202,7 +202,7 @@ struct usb_endpoint_descriptor {
     u8  bInterval;
 } PACKED;
 
-#define USB_ENDPOINT_NUMBER_MASK        0x0f    /* in bEndpointAddress */
+#define USB_ENDPOINT_സംഖ്യ_MASK        0x0f    /* in bEndpointAddress */
 #define USB_ENDPOINT_DIR_MASK           0x80
 
 #define USB_ENDPOINT_XFERTYPE_MASK      0x03    /* in bmAttributes */
@@ -231,25 +231,25 @@ struct usb_endpoint_descriptor {
  ****************************************************************/
 
 // usb.c
-int usb_send_bulk(struct usb_pipe *pipe, int dir, void *data, int datasize);
-int usb_poll_intr(struct usb_pipe *pipe, void *data);
-int usb_32bit_pipe(struct usb_pipe *pipe_fl);
-struct usb_pipe *usb_alloc_pipe(struct usbdevice_s *usbdev
-                                , struct usb_endpoint_descriptor *epdesc);
-void usb_free_pipe(struct usbdevice_s *usbdev, struct usb_pipe *pipe);
-int usb_send_default_control(struct usb_pipe *pipe
-                             , const struct usb_ctrlrequest *req, void *data);
-int usb_is_freelist(struct usb_s *cntl, struct usb_pipe *pipe);
-void usb_add_freelist(struct usb_pipe *pipe);
-struct usb_pipe *usb_get_freelist(struct usb_s *cntl, u8 eptype);
-void usb_desc2pipe(struct usb_pipe *pipe, struct usbdevice_s *usbdev
-                   , struct usb_endpoint_descriptor *epdesc);
-int usb_get_period(struct usbdevice_s *usbdev
-                   , struct usb_endpoint_descriptor *epdesc);
-int usb_xfer_time(struct usb_pipe *pipe, int datalen);
-struct usb_endpoint_descriptor *usb_find_desc(struct usbdevice_s *usbdev
-                                              , int type, int dir);
-void usb_enumerate(struct usbhub_s *hub);
-void usb_setup(void);
+പൂർണ്ണസംഖ്യ usb_send_bulk(ഘടന usb_pipe *pipe, പൂർണ്ണസംഖ്യ dir, ശൂന്യം *data, പൂർണ്ണസംഖ്യ datasize);
+പൂർണ്ണസംഖ്യ usb_poll_intr(ഘടന usb_pipe *pipe, ശൂന്യം *data);
+പൂർണ്ണസംഖ്യ usb_32bit_pipe(ഘടന usb_pipe *pipe_fl);
+ഘടന usb_pipe *usb_alloc_pipe(ഘടന usbdevice_s *usbdev
+                                , ഘടന usb_endpoint_descriptor *epdesc);
+ശൂന്യം usb_free_pipe(ഘടന usbdevice_s *usbdev, ഘടന usb_pipe *pipe);
+പൂർണ്ണസംഖ്യ usb_send_default_control(ഘടന usb_pipe *pipe
+                             , സ്ഥിരം ഘടന usb_ctrlrequest *req, ശൂന്യം *data);
+പൂർണ്ണസംഖ്യ usb_is_freelist(ഘടന usb_s *cntl, ഘടന usb_pipe *pipe);
+ശൂന്യം usb_add_freelist(ഘടന usb_pipe *pipe);
+ഘടന usb_pipe *usb_get_freelist(ഘടന usb_s *cntl, u8 eptype);
+ശൂന്യം usb_desc2pipe(ഘടന usb_pipe *pipe, ഘടന usbdevice_s *usbdev
+                   , ഘടന usb_endpoint_descriptor *epdesc);
+പൂർണ്ണസംഖ്യ usb_get_period(ഘടന usbdevice_s *usbdev
+                   , ഘടന usb_endpoint_descriptor *epdesc);
+പൂർണ്ണസംഖ്യ usb_xfer_time(ഘടന usb_pipe *pipe, പൂർണ്ണസംഖ്യ datalen);
+ഘടന usb_endpoint_descriptor *usb_find_desc(ഘടന usbdevice_s *usbdev
+                                              , പൂർണ്ണസംഖ്യ type, പൂർണ്ണസംഖ്യ dir);
+ശൂന്യം usb_enumerate(ഘടന usbhub_s *hub);
+ശൂന്യം usb_setup(ശൂന്യം);
 
 #endif // usb.h

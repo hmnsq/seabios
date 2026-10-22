@@ -1,49 +1,49 @@
 #ifndef __OUTPUT_H
 #define __OUTPUT_H
 
-#include "config.h" // CONFIG_DEBUG_LEVEL
-#include "types.h" // u32
+#അന്തര്ഭാവ "config.h" // CONFIG_DEBUG_LEVEL
+#അന്തര്ഭാവ "types.h" // u32
 
 // output.c
-void debug_banner(void);
-void panic(const char *fmt, ...)
+ശൂന്യം debug_banner(ശൂന്യം);
+ശൂന്യം panic(സ്ഥിരം അക്ഷരം *fmt, ...)
     __attribute__ ((format (printf, 1, 2))) __noreturn;
-void printf(const char *fmt, ...)
+ശൂന്യം printf(സ്ഥിരം അക്ഷരം *fmt, ...)
     __attribute__ ((format (printf, 1, 2)));
-int snprintf(char *str, size_t size, const char *fmt, ...)
+പൂർണ്ണസംഖ്യ snprintf(അക്ഷരം *str, size_t size, സ്ഥിരം അക്ഷരം *fmt, ...)
     __attribute__ ((format (printf, 3, 4)));
-char * znprintf(size_t size, const char *fmt, ...)
+അക്ഷരം * znprintf(size_t size, സ്ഥിരം അക്ഷരം *fmt, ...)
     __attribute__ ((format (printf, 2, 3)));
-void __dprintf(const char *fmt, ...)
+ശൂന്യം __dprintf(സ്ഥിരം അക്ഷരം *fmt, ...)
     __attribute__ ((format (printf, 1, 2)));
-struct bregs;
-void __debug_enter(struct bregs *regs, const char *fname);
-void __debug_isr(const char *fname);
-void __debug_stub(struct bregs *regs, int lineno, const char *fname);
-void __warn_invalid(struct bregs *regs, int lineno, const char *fname);
-void __warn_unimplemented(struct bregs *regs, int lineno, const char *fname);
-void __warn_internalerror(int lineno, const char *fname);
-void __warn_noalloc(int lineno, const char *fname);
-void __warn_timeout(int lineno, const char *fname);
-void __set_invalid(struct bregs *regs, int lineno, const char *fname);
-void __set_unimplemented(struct bregs *regs, int lineno, const char *fname);
-void __set_code_invalid(struct bregs *regs, u32 linecode, const char *fname);
-void __set_code_unimplemented(struct bregs *regs, u32 linecode
-                              , const char *fname);
-void hexdump(const void *d, int len);
+ഘടന bregs;
+ശൂന്യം __debug_enter(ഘടന bregs *regs, സ്ഥിരം അക്ഷരം *fname);
+ശൂന്യം __debug_isr(സ്ഥിരം അക്ഷരം *fname);
+ശൂന്യം __debug_stub(ഘടന bregs *regs, പൂർണ്ണസംഖ്യ lineno, സ്ഥിരം അക്ഷരം *fname);
+ശൂന്യം __warn_invalid(ഘടന bregs *regs, പൂർണ്ണസംഖ്യ lineno, സ്ഥിരം അക്ഷരം *fname);
+ശൂന്യം __warn_unimplemented(ഘടന bregs *regs, പൂർണ്ണസംഖ്യ lineno, സ്ഥിരം അക്ഷരം *fname);
+ശൂന്യം __warn_internalerror(പൂർണ്ണസംഖ്യ lineno, സ്ഥിരം അക്ഷരം *fname);
+ശൂന്യം __warn_noalloc(പൂർണ്ണസംഖ്യ lineno, സ്ഥിരം അക്ഷരം *fname);
+ശൂന്യം __warn_timeout(പൂർണ്ണസംഖ്യ lineno, സ്ഥിരം അക്ഷരം *fname);
+ശൂന്യം __set_invalid(ഘടന bregs *regs, പൂർണ്ണസംഖ്യ lineno, സ്ഥിരം അക്ഷരം *fname);
+ശൂന്യം __set_unimplemented(ഘടന bregs *regs, പൂർണ്ണസംഖ്യ lineno, സ്ഥിരം അക്ഷരം *fname);
+ശൂന്യം __set_code_invalid(ഘടന bregs *regs, u32 linecode, സ്ഥിരം അക്ഷരം *fname);
+ശൂന്യം __set_code_unimplemented(ഘടന bregs *regs, u32 linecode
+                              , സ്ഥിരം അക്ഷരം *fname);
+ശൂന്യം hexdump(സ്ഥിരം ശൂന്യം *d, പൂർണ്ണസംഖ്യ len);
 
-#define dprintf(lvl, fmt, args...) do {                         \
-        if (CONFIG_DEBUG_LEVEL && (lvl) <= CONFIG_DEBUG_LEVEL)  \
+#define dprintf(lvl, fmt, args...) ചെയ്യുക {                         \
+        എങ്കിൽ (CONFIG_DEBUG_LEVEL && (lvl) <= CONFIG_DEBUG_LEVEL)  \
             __dprintf((fmt) , ##args );                         \
-    } while (0)
-#define debug_enter(regs, lvl) do {                     \
-        if ((lvl) && (lvl) <= CONFIG_DEBUG_LEVEL)       \
+    } ആകുമ്പോൾ (0)
+#define debug_enter(regs, lvl) ചെയ്യുക {                     \
+        എങ്കിൽ ((lvl) && (lvl) <= CONFIG_DEBUG_LEVEL)       \
             __debug_enter((regs), __func__);            \
-    } while (0)
-#define debug_isr(lvl) do {                             \
-        if ((lvl) && (lvl) <= CONFIG_DEBUG_LEVEL)       \
+    } ആകുമ്പോൾ (0)
+#define debug_isr(lvl) ചെയ്യുക {                             \
+        എങ്കിൽ ((lvl) && (lvl) <= CONFIG_DEBUG_LEVEL)       \
             __debug_isr(__func__);                      \
-    } while (0)
+    } ആകുമ്പോൾ (0)
 #define debug_stub(regs)                        \
     __debug_stub((regs), __LINE__, __func__)
 #define warn_invalid(regs)                      \

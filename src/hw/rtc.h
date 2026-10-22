@@ -33,18 +33,18 @@
 #define CMOS_DISK_DRIVE2_TYPE    0x1a
 #define CMOS_DISK_DRIVE1_CYL     0x1b
 #define CMOS_DISK_DRIVE2_CYL     0x24
-#define CMOS_MEM_EXTMEM_LOW      0x30
-#define CMOS_MEM_EXTMEM_HIGH     0x31
+#define CMOS_MEM_EXTMEM_താഴെയുള്ള      0x30
+#define CMOS_MEM_EXTMEM_മുകളിലെ     0x31
 #define CMOS_CENTURY             0x32
-#define CMOS_MEM_EXTMEM2_LOW     0x34
-#define CMOS_MEM_EXTMEM2_HIGH    0x35
+#define CMOS_MEM_EXTMEM2_താഴെയുള്ള     0x34
+#define CMOS_MEM_EXTMEM2_മുകളിലെ    0x35
 #define CMOS_BIOS_BOOTFLAG1      0x38
 #define CMOS_BIOS_DISKTRANSFLAG  0x39
 #define CMOS_BIOS_BOOTFLAG2      0x3d
-#define CMOS_MEM_HIGHMEM_LOW     0x5b
+#define CMOS_MEM_HIGHMEM_താഴെയുള്ള     0x5b
 #define CMOS_MEM_HIGHMEM_MID     0x5c
-#define CMOS_MEM_HIGHMEM_HIGH    0x5d
-#define CMOS_BIOS_SMP_COUNT      0x5f
+#define CMOS_MEM_HIGHMEM_മുകളിലെ    0x5d
+#define CMOS_BIOS_SMP_എണ്ണം      0x5f
 
 // RTC register flags
 #define RTC_A_UIP 0x80
@@ -59,16 +59,16 @@
 
 #ifndef __ASSEMBLY__
 
-#include "types.h" // u8
+#അന്തര്ഭാവ "types.h" // u8
 
 // rtc.c
 u8 rtc_read(u8 index);
-void rtc_write(u8 index, u8 val);
-void rtc_mask(u8 index, u8 off, u8 on);
-int rtc_updating(void);
-void rtc_setup(void);
-void rtc_use(void);
-void rtc_release(void);
+ശൂന്യം rtc_write(u8 index, u8 val);
+ശൂന്യം rtc_mask(u8 index, u8 off, u8 on);
+പൂർണ്ണസംഖ്യ rtc_updating(ശൂന്യം);
+ശൂന്യം rtc_setup(ശൂന്യം);
+ശൂന്യം rtc_use(ശൂന്യം);
+ശൂന്യം rtc_release(ശൂന്യം);
 
 #endif // !__ASSEMBLY__
 

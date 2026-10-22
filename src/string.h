@@ -2,30 +2,30 @@
 #ifndef __STRING_H
 #define __STRING_H
 
-#include "types.h" // u32
+#അന്തര്ഭാവ "types.h" // u32
 
 // string.c
-u8 checksum_far(u16 buf_seg, void *buf_far, u32 len);
-u8 checksum(void *buf, u32 len);
-size_t strlen(const char *s);
-int memcmp_far(u16 s1seg, const void *s1, u16 s2seg, const void *s2, size_t n);
-int memcmp(const void *s1, const void *s2, size_t n);
-int strcmp(const char *s1, const char *s2);
-void memset_far(u16 d_seg, void *d_far, u8 c, size_t len);
-void memset16_far(u16 d_seg, void *d_far, u16 c, size_t len);
-void *memset(void *s, int c, size_t n);
-void memset_fl(void *ptr, u8 val, size_t size);
-void memcpy_far(u16 d_seg, void *d_far
-                , u16 s_seg, const void *s_far, size_t len);
-void memcpy_fl(void *d_fl, const void *s_fl, size_t len);
-void *memcpy(void *d1, const void *s1, size_t len);
-#if MODESEGMENT == 0
+u8 checksum_far(u16 buf_seg, ശൂന്യം *buf_far, u32 len);
+u8 checksum(ശൂന്യം *buf, u32 len);
+size_t strlen(സ്ഥിരം അക്ഷരം *s);
+പൂർണ്ണസംഖ്യ memcmp_far(u16 s1seg, സ്ഥിരം ശൂന്യം *s1, u16 s2seg, സ്ഥിരം ശൂന്യം *s2, size_t n);
+പൂർണ്ണസംഖ്യ memcmp(സ്ഥിരം ശൂന്യം *s1, സ്ഥിരം ശൂന്യം *s2, size_t n);
+പൂർണ്ണസംഖ്യ strcmp(സ്ഥിരം അക്ഷരം *s1, സ്ഥിരം അക്ഷരം *s2);
+ശൂന്യം memset_far(u16 d_seg, ശൂന്യം *d_far, u8 c, size_t len);
+ശൂന്യം memset16_far(u16 d_seg, ശൂന്യം *d_far, u16 c, size_t len);
+ശൂന്യം *memset(ശൂന്യം *s, പൂർണ്ണസംഖ്യ c, size_t n);
+ശൂന്യം memset_fl(ശൂന്യം *ptr, u8 val, size_t size);
+ശൂന്യം memcpy_far(u16 d_seg, ശൂന്യം *d_far
+                , u16 s_seg, സ്ഥിരം ശൂന്യം *s_far, size_t len);
+ശൂന്യം memcpy_fl(ശൂന്യം *d_fl, സ്ഥിരം ശൂന്യം *s_fl, size_t len);
+ശൂന്യം *memcpy(ശൂന്യം *d1, സ്ഥിരം ശൂന്യം *s1, size_t len);
+#എങ്കിൽ MODESEGMENT == 0
 #define memcpy __builtin_memcpy
 #endif
-void iomemcpy(void *d, const void *s, u32 len);
-void *memmove(void *d, const void *s, size_t len);
-char *strtcpy(char *dest, const char *src, size_t len);
-char *strchr(const char *s, int c);
-char *nullTrailingSpace(char *buf);
+ശൂന്യം iomemcpy(ശൂന്യം *d, സ്ഥിരം ശൂന്യം *s, u32 len);
+ശൂന്യം *memmove(ശൂന്യം *d, സ്ഥിരം ശൂന്യം *s, size_t len);
+അക്ഷരം *strtcpy(അക്ഷരം *dest, സ്ഥിരം അക്ഷരം *src, size_t len);
+അക്ഷരം *strchr(സ്ഥിരം അക്ഷരം *s, പൂർണ്ണസംഖ്യ c);
+അക്ഷരം *nullTrailingSpace(അക്ഷരം *buf);
 
 #endif // string.h

@@ -4,22 +4,22 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_GLOBALFLAT
-#include "block.h" // DTYPE_USB
-#include "blockcmd.h" // cdb_read
-#include "config.h" // CONFIG_USB_MSC
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "std/disk.h" // DISK_RET_SUCCESS
-#include "string.h" // memset
-#include "usb.h" // struct usb_s
-#include "usb-msc.h" // usb_msc_setup
-#include "util.h" // bootprio_find_usb
+#അന്തര്ഭാവ "biosvar.h" // GET_GLOBALFLAT
+#അന്തര്ഭാവ "block.h" // DTYPE_USB
+#അന്തര്ഭാവ "blockcmd.h" // cdb_read
+#അന്തര്ഭാവ "config.h" // CONFIG_USB_MSC
+#അന്തര്ഭാവ "malloc.h" // free
+#അന്തര്ഭാവ "output.h" // dprintf
+#അന്തര്ഭാവ "std/disk.h" // DISK_RET_SUCCESS
+#അന്തര്ഭാവ "string.h" // memset
+#അന്തര്ഭാവ "usb.h" // struct usb_s
+#അന്തര്ഭാവ "usb-msc.h" // usb_msc_setup
+#അന്തര്ഭാവ "util.h" // bootprio_find_usb
 
-struct usbdrive_s {
-    struct drive_s drive;
-    struct usb_pipe *bulkin, *bulkout;
-    int lun;
+ഘടന usbdrive_s {
+    ഘടന drive_s drive;
+    ഘടന usb_pipe *bulkin, *bulkout;
+    പൂർണ്ണസംഖ്യ lun;
 };
 
 
@@ -31,7 +31,7 @@ struct usbdrive_s {
 
 #define CBW_SIGNATURE 0x43425355 // USBC
 
-struct cbw_s {
+ഘടന cbw_s {
     u32 dCBWSignature;
     u32 dCBWTag;
     u32 dCBWDataTransferLength;
@@ -43,43 +43,43 @@ struct cbw_s {
 
 #define CSW_SIGNATURE 0x53425355 // USBS
 
-struct csw_s {
+ഘടന csw_s {
     u32 dCSWSignature;
     u32 dCSWTag;
     u32 dCSWDataResidue;
     u8 bCSWStatus;
 } PACKED;
 
-static int
-usb_msc_send(struct usbdrive_s *udrive_gf, int dir, void *buf, u32 bytes)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+usb_msc_send(ഘടന usbdrive_s *udrive_gf, പൂർണ്ണസംഖ്യ dir, ശൂന്യം *buf, u32 bytes)
 {
-    struct usb_pipe *pipe;
-    if (dir == USB_DIR_OUT)
+    ഘടന usb_pipe *pipe;
+    എങ്കിൽ (dir == USB_DIR_OUT)
         pipe = GET_GLOBALFLAT(udrive_gf->bulkout);
-    else
+    അല്ലെങ്കിൽ
         pipe = GET_GLOBALFLAT(udrive_gf->bulkin);
-    return usb_send_bulk(pipe, dir, buf, bytes);
+    തിരികെ usb_send_bulk(pipe, dir, buf, bytes);
 }
 
 // Low-level usb command transmit function.
-int
-usb_process_op(struct disk_op_s *op)
+പൂർണ്ണസംഖ്യ
+usb_process_op(ഘടന disk_op_s *op)
 {
-    if (!CONFIG_USB_MSC)
-        return 0;
+    എങ്കിൽ (!CONFIG_USB_MSC)
+        തിരികെ 0;
 
     dprintf(16, "usb_cmd_data id=%p write=%d count=%d buf=%p\n"
-            , op->drive_fl, 0, op->count, op->buf_fl);
-    struct usbdrive_s *udrive_gf = container_of(
-        op->drive_fl, struct usbdrive_s, drive);
+            , op->drive_fl, 0, op->എണ്ണം, op->buf_fl);
+    ഘടന usbdrive_s *udrive_gf = container_of(
+        op->drive_fl, ഘടന usbdrive_s, drive);
 
     // Setup command block wrapper.
-    struct cbw_s cbw;
-    memset(&cbw, 0, sizeof(cbw));
-    int blocksize = scsi_fill_cmd(op, cbw.CBWCB, USB_CDB_SIZE);
-    if (blocksize < 0)
-        return default_process_op(op);
-    u32 bytes = blocksize * op->count;
+    ഘടന cbw_s cbw;
+    memset(&cbw, 0, വലുപ്പം(cbw));
+    പൂർണ്ണസംഖ്യ blocksize = scsi_fill_cmd(op, cbw.CBWCB, USB_CDB_SIZE);
+    എങ്കിൽ (blocksize < 0)
+        തിരികെ default_process_op(op);
+    u32 bytes = blocksize * op->എണ്ണം;
     cbw.dCBWSignature = CBW_SIGNATURE;
     cbw.dCBWTag = 999; // XXX
     cbw.dCBWDataTransferLength = bytes;
@@ -88,83 +88,83 @@ usb_process_op(struct disk_op_s *op)
     cbw.bCBWCBLength = USB_CDB_SIZE;
 
     // Transfer cbw to device.
-    int ret = usb_msc_send(udrive_gf, USB_DIR_OUT
-                           , MAKE_FLATPTR(GET_SEG(SS), &cbw), sizeof(cbw));
-    if (ret)
-        goto fail;
+    പൂർണ്ണസംഖ്യ ret = usb_msc_send(udrive_gf, USB_DIR_OUT
+                           , MAKE_FLATPTR(GET_SEG(SS), &cbw), വലുപ്പം(cbw));
+    എങ്കിൽ (ret)
+        പോകുക fail;
 
     // Transfer data to/from device.
-    if (bytes) {
+    എങ്കിൽ (bytes) {
         ret = usb_msc_send(udrive_gf, cbw.bmCBWFlags, op->buf_fl, bytes);
-        if (ret)
-            goto fail;
+        എങ്കിൽ (ret)
+            പോകുക fail;
     }
 
     // Transfer csw info.
-    struct csw_s csw;
+    ഘടന csw_s csw;
     ret = usb_msc_send(udrive_gf, USB_DIR_IN
-                       , MAKE_FLATPTR(GET_SEG(SS), &csw), sizeof(csw));
-    if (ret)
-        goto fail;
+                       , MAKE_FLATPTR(GET_SEG(SS), &csw), വലുപ്പം(csw));
+    എങ്കിൽ (ret)
+        പോകുക fail;
 
-    if (!csw.bCSWStatus)
-        return DISK_RET_SUCCESS;
-    if (csw.bCSWStatus == 2)
-        goto fail;
+    എങ്കിൽ (!csw.bCSWStatus)
+        തിരികെ DISK_RET_SUCCESS;
+    എങ്കിൽ (csw.bCSWStatus == 2)
+        പോകുക fail;
 
-    if (blocksize)
-        op->count -= csw.dCSWDataResidue / blocksize;
-    return DISK_RET_EBADTRACK;
+    എങ്കിൽ (blocksize)
+        op->എണ്ണം -= csw.dCSWDataResidue / blocksize;
+    തിരികെ DISK_RET_EBADTRACK;
 
 fail:
     // XXX - reset connection
     dprintf(1, "USB transmission failed\n");
-    return DISK_RET_EBADTRACK;
+    തിരികെ DISK_RET_EBADTRACK;
 }
 
-static int
-usb_msc_maxlun(struct usb_pipe *pipe)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+usb_msc_maxlun(ഘടന usb_pipe *pipe)
 {
-    struct usb_ctrlrequest req;
+    ഘടന usb_ctrlrequest req;
     req.bRequestType = USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_INTERFACE;
     req.bRequest = 0xfe;
-    req.wValue = 0;
+    req.w_മൂല്യം = 0;
     req.wIndex = 0;
     req.wLength = 1;
-    unsigned char maxlun;
-    int ret = usb_send_default_control(pipe, &req, &maxlun);
-    if (ret)
-        return 0;
-    return maxlun;
+    unsigned അക്ഷരം maxlun;
+    പൂർണ്ണസംഖ്യ ret = usb_send_default_control(pipe, &req, &maxlun);
+    എങ്കിൽ (ret)
+        തിരികെ 0;
+    തിരികെ maxlun;
 }
 
-static int
-usb_msc_lun_setup(struct usb_pipe *inpipe, struct usb_pipe *outpipe,
-                  struct usbdevice_s *usbdev, int lun)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+usb_msc_lun_setup(ഘടന usb_pipe *inpipe, ഘടന usb_pipe *outpipe,
+                  ഘടന usbdevice_s *usbdev, പൂർണ്ണസംഖ്യ lun)
 {
     // Allocate drive structure.
-    struct usbdrive_s *drive = malloc_fseg(sizeof(*drive));
-    if (!drive) {
+    ഘടന usbdrive_s *drive = malloc_fseg(വലുപ്പം(*drive));
+    എങ്കിൽ (!drive) {
         warn_noalloc();
-        return -1;
+        തിരികെ -1;
     }
-    memset(drive, 0, sizeof(*drive));
-    if (usb_32bit_pipe(inpipe))
+    memset(drive, 0, വലുപ്പം(*drive));
+    എങ്കിൽ (usb_32bit_pipe(inpipe))
         drive->drive.type = DTYPE_USB_32;
-    else
+    അല്ലെങ്കിൽ
         drive->drive.type = DTYPE_USB;
     drive->bulkin = inpipe;
     drive->bulkout = outpipe;
     drive->lun = lun;
 
-    int prio = bootprio_find_usb(usbdev, lun);
-    int ret = scsi_drive_setup(&drive->drive, "USB MSC", prio);
-    if (ret) {
+    പൂർണ്ണസംഖ്യ prio = bootprio_find_usb(usbdev, lun);
+    പൂർണ്ണസംഖ്യ ret = scsi_drive_setup(&drive->drive, "USB MSC", prio);
+    എങ്കിൽ (ret) {
         dprintf(1, "Unable to configure USB MSC drive.\n");
-        free(drive);
-        return -1;
+        സ്വതന്ത്രം(drive);
+        തിരികെ -1;
     }
-    return 0;
+    തിരികെ 0;
 }
 
 /****************************************************************
@@ -172,51 +172,51 @@ usb_msc_lun_setup(struct usb_pipe *inpipe, struct usb_pipe *outpipe,
  ****************************************************************/
 
 // Configure a usb msc device.
-int
-usb_msc_setup(struct usbdevice_s *usbdev)
+പൂർണ്ണസംഖ്യ
+usb_msc_setup(ഘടന usbdevice_s *usbdev)
 {
-    if (!CONFIG_USB_MSC)
-        return -1;
+    എങ്കിൽ (!CONFIG_USB_MSC)
+        തിരികെ -1;
 
     // Verify right kind of device
-    struct usb_interface_descriptor *iface = usbdev->iface;
-    if ((iface->bInterfaceSubClass != US_SC_SCSI &&
+    ഘടന usb_interface_descriptor *iface = usbdev->iface;
+    എങ്കിൽ ((iface->bInterfaceSubClass != US_SC_SCSI &&
          iface->bInterfaceSubClass != US_SC_ATAPI_8070 &&
          iface->bInterfaceSubClass != US_SC_ATAPI_8020)
         || iface->bInterfaceProtocol != US_PR_BULK) {
         dprintf(1, "Unsupported MSC USB device (subclass=%02x proto=%02x)\n"
                 , iface->bInterfaceSubClass, iface->bInterfaceProtocol);
-        return -1;
+        തിരികെ -1;
     }
 
     // Find bulk in and bulk out endpoints.
-    struct usb_pipe *inpipe = NULL, *outpipe = NULL;
-    struct usb_endpoint_descriptor *indesc = usb_find_desc(
+    ഘടന usb_pipe *inpipe = ശൂന്യ, *outpipe = ശൂന്യ;
+    ഘടന usb_endpoint_descriptor *indesc = usb_find_desc(
         usbdev, USB_ENDPOINT_XFER_BULK, USB_DIR_IN);
-    struct usb_endpoint_descriptor *outdesc = usb_find_desc(
+    ഘടന usb_endpoint_descriptor *outdesc = usb_find_desc(
         usbdev, USB_ENDPOINT_XFER_BULK, USB_DIR_OUT);
-    if (!indesc || !outdesc)
-        goto fail;
+    എങ്കിൽ (!indesc || !outdesc)
+        പോകുക fail;
     inpipe = usb_alloc_pipe(usbdev, indesc);
     outpipe = usb_alloc_pipe(usbdev, outdesc);
-    if (!inpipe || !outpipe)
-        goto fail;
+    എങ്കിൽ (!inpipe || !outpipe)
+        പോകുക fail;
 
-    int maxlun = usb_msc_maxlun(usbdev->defpipe);
-    int lun, pipesused = 0;
-    for (lun = 0; lun < maxlun + 1; lun++) {
-        int ret = usb_msc_lun_setup(inpipe, outpipe, usbdev, lun);
-        if (!ret)
+    പൂർണ്ണസംഖ്യ maxlun = usb_msc_maxlun(usbdev->defpipe);
+    പൂർണ്ണസംഖ്യ lun, pipesused = 0;
+    വേണ്ടി (lun = 0; lun < maxlun + 1; lun++) {
+        പൂർണ്ണസംഖ്യ ret = usb_msc_lun_setup(inpipe, outpipe, usbdev, lun);
+        എങ്കിൽ (!ret)
             pipesused = 1;
     }
 
-    if (!pipesused)
-        goto fail;
+    എങ്കിൽ (!pipesused)
+        പോകുക fail;
 
-    return 0;
+    തിരികെ 0;
 fail:
     dprintf(1, "Unable to configure USB MSC device.\n");
     usb_free_pipe(usbdev, inpipe);
     usb_free_pipe(usbdev, outpipe);
-    return -1;
+    തിരികെ -1;
 }

@@ -1,8 +1,8 @@
 #ifndef __ESP_SCSI_H
 #define __ESP_SCSI_H
 
-struct disk_op_s;
-int esp_scsi_process_op(struct disk_op_s *op);
-void esp_scsi_setup(void);
+ഘടന disk_op_s;
+പൂർണ്ണസംഖ്യ esp_scsi_process_op(ഘടന disk_op_s *op);
+ശൂന്യം esp_scsi_setup(ശൂന്യം);
 
 #endif /* __ESP_SCSI_H */

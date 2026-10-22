@@ -1,14 +1,14 @@
 #ifndef __PCIDEVICE_H
 #define __PCIDEVICE_H
 
-#include "types.h" // u32
-#include "list.h" // hlist_node
+#അന്തര്ഭാവ "types.h" // u32
+#അന്തര്ഭാവ "list.h" // hlist_node
 
-struct pci_device {
+ഘടന pci_device {
     u16 bdf;
     u8 rootbus;
-    struct hlist_node node;
-    struct pci_device *parent;
+    ഘടന hlist_കണ്ണി കണ്ണി;
+    ഘടന pci_device *parent;
 
     // Configuration space device information
     u16 vendor, device;
@@ -18,25 +18,25 @@ struct pci_device {
     u8 secondary_bus;
 
     // Local information on device.
-    int have_driver;
+    പൂർണ്ണസംഖ്യ have_driver;
 };
-extern struct hlist_head PCIDevices;
-extern int MaxPCIBus;
+ബാഹ്യ ഘടന hlist_head PCIDevices;
+ബാഹ്യ പൂർണ്ണസംഖ്യ MaxPCIBus;
 
-static inline u32 pci_classprog(struct pci_device *pci) {
-    return (pci->class << 8) | pci->prog_if;
+സ്ഥിതം വരിയിൽ u32 pci_classprog(ഘടന pci_device *pci) {
+    തിരികെ (pci->class << 8) | pci->prog_if;
 }
 
 #define foreachpci(PCI)                                 \
-    hlist_for_each_entry(PCI, &PCIDevices, node)
+    hlist_for_each_entry(PCI, &PCIDevices, കണ്ണി)
 
 #define PCI_ANY_ID      (~0)
-struct pci_device_id {
+ഘടന pci_device_id {
     u32 vendid;
     u32 devid;
     u32 class;
     u32 class_mask;
-    void (*func)(struct pci_device *pci, void *arg);
+    ശൂന്യം (*func)(ഘടന pci_device *pci, ശൂന്യം *arg);
 };
 
 #define PCI_DEVICE(vendor_id, device_id, init_func)     \
@@ -62,15 +62,15 @@ struct pci_device_id {
         .vendid = 0,                            \
     }
 
-void pci_probe_devices(void);
-struct pci_device *pci_find_device(u16 vendid, u16 devid);
-struct pci_device *pci_find_class(u16 classid);
-int pci_init_device(const struct pci_device_id *ids
-                    , struct pci_device *pci, void *arg);
-struct pci_device *pci_find_init_device(const struct pci_device_id *ids
-                                        , void *arg);
-void pci_enable_busmaster(struct pci_device *pci);
-u16 pci_enable_iobar(struct pci_device *pci, u32 addr);
-void *pci_enable_membar(struct pci_device *pci, u32 addr);
+ശൂന്യം pci_probe_devices(ശൂന്യം);
+ഘടന pci_device *pci_find_device(u16 vendid, u16 devid);
+ഘടന pci_device *pci_find_class(u16 classid);
+പൂർണ്ണസംഖ്യ pci_init_device(സ്ഥിരം ഘടന pci_device_id *ids
+                    , ഘടന pci_device *pci, ശൂന്യം *arg);
+ഘടന pci_device *pci_find_init_device(സ്ഥിരം ഘടന pci_device_id *ids
+                                        , ശൂന്യം *arg);
+ശൂന്യം pci_enable_busmaster(ഘടന pci_device *pci);
+u16 pci_enable_iobar(ഘടന pci_device *pci, u32 addr);
+ശൂന്യം *pci_enable_membar(ഘടന pci_device *pci, u32 addr);
 
 #endif // pcidevice.h

@@ -4,166 +4,166 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_*
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "romfile.h" // struct romfile_s
-#include "string.h" // memcmp
+#അന്തര്ഭാവ "config.h" // CONFIG_*
+#അന്തര്ഭാവ "malloc.h" // free
+#അന്തര്ഭാവ "output.h" // dprintf
+#അന്തര്ഭാവ "romfile.h" // struct romfile_s
+#അന്തര്ഭാവ "string.h" // memcmp
 
-static struct romfile_s *RomfileRoot VARVERIFY32INIT;
+സ്ഥിതം ഘടന romfile_s *Romfile_വേര് VARVERIFY32INIT;
 
-void
-romfile_add(struct romfile_s *file)
+ശൂന്യം
+romfile_add(ഘടന romfile_s *file)
 {
     dprintf(3, "Add romfile: %s (size=%d)\n", file->name, file->size);
-    file->next = RomfileRoot;
-    RomfileRoot = file;
+    file->next = Romfile_വേര്;
+    Romfile_വേര് = file;
 }
 
 // Search for the specified file.
-static struct romfile_s *
-__romfile_findprefix(const char *prefix, int prefixlen, struct romfile_s *prev)
+സ്ഥിതം ഘടന romfile_s *
+__romfile_findprefix(സ്ഥിരം അക്ഷരം *prefix, പൂർണ്ണസംഖ്യ prefixlen, ഘടന romfile_s *prev)
 {
-    struct romfile_s *cur = RomfileRoot;
-    if (prev)
+    ഘടന romfile_s *cur = Romfile_വേര്;
+    എങ്കിൽ (prev)
         cur = prev->next;
-    while (cur) {
-        if (memcmp(prefix, cur->name, prefixlen) == 0)
-            return cur;
+    ആകുമ്പോൾ (cur) {
+        എങ്കിൽ (memcmp(prefix, cur->name, prefixlen) == 0)
+            തിരികെ cur;
         cur = cur->next;
     }
-    return NULL;
+    തിരികെ ശൂന്യ;
 }
 
-struct romfile_s *
-romfile_findprefix(const char *prefix, struct romfile_s *prev)
+ഘടന romfile_s *
+romfile_findprefix(സ്ഥിരം അക്ഷരം *prefix, ഘടന romfile_s *prev)
 {
-    return __romfile_findprefix(prefix, strlen(prefix), prev);
+    തിരികെ __romfile_findprefix(prefix, strlen(prefix), prev);
 }
 
-struct romfile_s *
-romfile_find(const char *name)
+ഘടന romfile_s *
+romfile_find(സ്ഥിരം അക്ഷരം *name)
 {
-    return __romfile_findprefix(name, strlen(name) + 1, NULL);
+    തിരികെ __romfile_findprefix(name, strlen(name) + 1, ശൂന്യ);
 }
 
 // Helper function to find, malloc_tmphigh, and copy a romfile.  This
 // function adds a trailing zero to the malloc'd copy.
-void *
-romfile_loadfile(const char *name, int *psize)
+ശൂന്യം *
+romfile_loadfile(സ്ഥിരം അക്ഷരം *name, പൂർണ്ണസംഖ്യ *psize)
 {
-    struct romfile_s *file = romfile_find(name);
-    if (!file)
-        return NULL;
+    ഘടന romfile_s *file = romfile_find(name);
+    എങ്കിൽ (!file)
+        തിരികെ ശൂന്യ;
 
-    int filesize = file->size;
-    if (!filesize)
-        return NULL;
+    പൂർണ്ണസംഖ്യ filesize = file->size;
+    എങ്കിൽ (!filesize)
+        തിരികെ ശൂന്യ;
 
-    char *data = malloc_tmphigh(filesize+1);
-    if (!data) {
+    അക്ഷരം *data = malloc_tmphigh(filesize+1);
+    എങ്കിൽ (!data) {
         warn_noalloc();
-        return NULL;
+        തിരികെ ശൂന്യ;
     }
 
     dprintf(5, "Copying romfile '%s' (len %d)\n", name, filesize);
-    int ret = file->copy(file, data, filesize);
-    if (ret < 0) {
-        free(data);
-        return NULL;
+    പൂർണ്ണസംഖ്യ ret = file->copy(file, data, filesize);
+    എങ്കിൽ (ret < 0) {
+        സ്വതന്ത്രം(data);
+        തിരികെ ശൂന്യ;
     }
-    if (psize)
+    എങ്കിൽ (psize)
         *psize = filesize;
     data[filesize] = '\0';
-    return data;
+    തിരികെ data;
 }
 
 // Attempt to load an integer from the given file - return 'defval'
 // if unsuccessful.
 u64
-romfile_loadint(const char *name, u64 defval)
+romfile_loadint(സ്ഥിരം അക്ഷരം *name, u64 defval)
 {
-    struct romfile_s *file = romfile_find(name);
-    if (!file)
-        return defval;
+    ഘടന romfile_s *file = romfile_find(name);
+    എങ്കിൽ (!file)
+        തിരികെ defval;
 
-    int filesize = file->size;
-    if (!filesize || filesize > sizeof(u64) || (filesize & (filesize-1)))
+    പൂർണ്ണസംഖ്യ filesize = file->size;
+    എങ്കിൽ (!filesize || filesize > വലുപ്പം(u64) || (filesize & (filesize-1)))
         // Doesn't look like a valid integer.
-        return defval;
+        തിരികെ defval;
 
     u64 val = 0;
-    int ret = file->copy(file, &val, sizeof(val));
-    if (ret < 0)
-        return defval;
-    return val;
+    പൂർണ്ണസംഖ്യ ret = file->copy(file, &val, വലുപ്പം(val));
+    എങ്കിൽ (ret < 0)
+        തിരികെ defval;
+    തിരികെ val;
 }
 
 u32
-romfile_loadbool(const char *name, u32 defval)
+romfile_loadbool(സ്ഥിരം അക്ഷരം *name, u32 defval)
 {
-    static const char *true_strings[] = { "1", "on", "yes" };
-    static const char *false_strings[] = { "0", "off", "no" };
-    char *str = romfile_loadfile(name, NULL);
-    int i;
+    സ്ഥിതം സ്ഥിരം അക്ഷരം *true_strings[] = { "1", "on", "yes" };
+    സ്ഥിതം സ്ഥിരം അക്ഷരം *false_strings[] = { "0", "off", "no" };
+    അക്ഷരം *str = romfile_loadfile(name, ശൂന്യ);
+    പൂർണ്ണസംഖ്യ i;
 
-    if (!str)
-        return defval;
+    എങ്കിൽ (!str)
+        തിരികെ defval;
 
-    for (i = 0; i < ARRAY_SIZE(true_strings); i++)
-        if (0 == strcmp(str, true_strings[i]))
-            return 1;
+    വേണ്ടി (i = 0; i < ARRAY_SIZE(true_strings); i++)
+        എങ്കിൽ (0 == strcmp(str, true_strings[i]))
+            തിരികെ 1;
 
-    for (i = 0; i < ARRAY_SIZE(false_strings); i++)
-        if (0 == strcmp(str, false_strings[i]))
-            return 0;
+    വേണ്ടി (i = 0; i < ARRAY_SIZE(false_strings); i++)
+        എങ്കിൽ (0 == strcmp(str, false_strings[i]))
+            തിരികെ 0;
 
     dprintf(1, "%s: unknown bool string: %s\n", __func__, str);
-    return defval;
+    തിരികെ defval;
 }
 
-struct const_romfile_s {
-    struct romfile_s file;
-    void *data;
+ഘടന const_romfile_s {
+    ഘടന romfile_s file;
+    ശൂന്യം *data;
 };
 
-static int
-const_read_file(struct romfile_s *file, void *dst, u32 maxlen)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+const_read_file(ഘടന romfile_s *file, ശൂന്യം *dst, u32 maxlen)
 {
-    if (file->size > maxlen)
-        return -1;
-    struct const_romfile_s *cfile;
-    cfile = container_of(file, struct const_romfile_s, file);
-    if (maxlen > file->size)
+    എങ്കിൽ (file->size > maxlen)
+        തിരികെ -1;
+    ഘടന const_romfile_s *cfile;
+    cfile = container_of(file, ഘടന const_romfile_s, file);
+    എങ്കിൽ (maxlen > file->size)
         maxlen = file->size;
     memcpy(dst, cfile->data, maxlen);
-    return file->size;
+    തിരികെ file->size;
 }
 
-static void
-const_romfile_add(char *name, void *data, int size)
+സ്ഥിതം ശൂന്യം
+const_romfile_add(അക്ഷരം *name, ശൂന്യം *data, പൂർണ്ണസംഖ്യ size)
 {
-    struct const_romfile_s *cfile = malloc_tmp(sizeof(*cfile));
-    if (!cfile) {
+    ഘടന const_romfile_s *cfile = malloc_tmp(വലുപ്പം(*cfile));
+    എങ്കിൽ (!cfile) {
         warn_noalloc();
-        return;
+        തിരികെ;
     }
-    memset(cfile, 0, sizeof(*cfile));
-    strtcpy(cfile->file.name, name, sizeof(cfile->file.name));
+    memset(cfile, 0, വലുപ്പം(*cfile));
+    strtcpy(cfile->file.name, name, വലുപ്പം(cfile->file.name));
     cfile->file.size = size;
     cfile->file.copy = const_read_file;
     cfile->data = data;
     romfile_add(&cfile->file);
 }
 
-void
-const_romfile_add_int(char *name, u32 value)
+ശൂന്യം
+const_romfile_add_int(അക്ഷരം *name, u32 മൂല്യം)
 {
-    u32 *data = malloc_tmp(sizeof(*data));
-    if (!data) {
+    u32 *data = malloc_tmp(വലുപ്പം(*data));
+    എങ്കിൽ (!data) {
         warn_noalloc();
-        return;
+        തിരികെ;
     }
-    *data = value;
-    const_romfile_add(name, data, sizeof(*data));
+    *data = മൂല്യം;
+    const_romfile_add(name, data, വലുപ്പം(*data));
 }

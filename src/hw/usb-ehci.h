@@ -2,24 +2,24 @@
 #define __USB_EHCI_H
 
 // usb-ehci.c
-void ehci_setup(void);
-void ehci_wait_controllers(void);
-struct usbdevice_s;
-struct usb_endpoint_descriptor;
-struct usb_pipe;
-struct usb_pipe *ehci_realloc_pipe(struct usbdevice_s *usbdev
-                                   , struct usb_pipe *upipe
-                                   , struct usb_endpoint_descriptor *epdesc);
-int ehci_send_pipe(struct usb_pipe *p, int dir, const void *cmd
-                   , void *data, int datasize);
-int ehci_poll_intr(struct usb_pipe *p, void *data);
+ശൂന്യം ehci_setup(ശൂന്യം);
+ശൂന്യം ehci_wait_controllers(ശൂന്യം);
+ഘടന usbdevice_s;
+ഘടന usb_endpoint_descriptor;
+ഘടന usb_pipe;
+ഘടന usb_pipe *ehci_realloc_pipe(ഘടന usbdevice_s *usbdev
+                                   , ഘടന usb_pipe *upipe
+                                   , ഘടന usb_endpoint_descriptor *epdesc);
+പൂർണ്ണസംഖ്യ ehci_send_pipe(ഘടന usb_pipe *p, പൂർണ്ണസംഖ്യ dir, സ്ഥിരം ശൂന്യം *cmd
+                   , ശൂന്യം *data, പൂർണ്ണസംഖ്യ datasize);
+പൂർണ്ണസംഖ്യ ehci_poll_intr(ഘടന usb_pipe *p, ശൂന്യം *data);
 
 
 /****************************************************************
  * ehci structs and flags
  ****************************************************************/
 
-struct ehci_caps {
+ഘടന ehci_caps {
     u8 caplength;
     u8 reserved_01;
     u16 hciversion;
@@ -32,7 +32,7 @@ struct ehci_caps {
 
 #define HCS_N_PORTS_MASK 0xf
 
-struct ehci_regs {
+ഘടന ehci_regs {
     u32 usbcmd;
     u32 usbsts;
     u32 usbintr;
@@ -93,7 +93,7 @@ struct ehci_regs {
 
 #define EHCI_QH_ALIGN 128 // Can't span a 4K boundary, so increase from 32
 
-struct ehci_qh {
+ഘടന ehci_qh {
     u32 next;
     u32 info1;
     u32 info2;
@@ -136,7 +136,7 @@ struct ehci_qh {
 
 #define EHCI_QTD_ALIGN 64 // Can't span a 4K boundary, so increase from 32
 
-struct ehci_qtd {
+ഘടന ehci_qtd {
     u32 qtd_next;
     u32 alt_next;
     u32 token;
@@ -170,7 +170,7 @@ struct ehci_qtd {
 #define ehci_maxerr(err) (((err) << QTD_CERR_SHIFT) & QTD_CERR_MASK)
 
 
-struct ehci_framelist {
+ഘടന ehci_framelist {
     u32 links[1024];
 } PACKED;
 

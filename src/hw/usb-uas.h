@@ -1,9 +1,9 @@
 #ifndef __USB_UAS_H
 #define __USB_UAS_H
 
-struct disk_op_s;
-int uas_process_op(struct disk_op_s *op);
-struct usbdevice_s;
-int usb_uas_setup(struct usbdevice_s *usbdev);
+ഘടന disk_op_s;
+പൂർണ്ണസംഖ്യ uas_process_op(ഘടന disk_op_s *op);
+ഘടന usbdevice_s;
+പൂർണ്ണസംഖ്യ usb_uas_setup(ഘടന usbdevice_s *usbdev);
 
 #endif /* __USB_UAS_H */

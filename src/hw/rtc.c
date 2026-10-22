@@ -5,21 +5,21 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_LOW
-#include "rtc.h" // rtc_read
-#include "stacks.h" // yield
-#include "util.h" // timer_calc
-#include "x86.h" // inb
+#അന്തര്ഭാവ "biosvar.h" // GET_LOW
+#അന്തര്ഭാവ "rtc.h" // rtc_read
+#അന്തര്ഭാവ "stacks.h" // yield
+#അന്തര്ഭാവ "util.h" // timer_calc
+#അന്തര്ഭാവ "x86.h" // inb
 
 u8
 rtc_read(u8 index)
 {
     index |= NMI_DISABLE_BIT;
     outb(index, PORT_CMOS_INDEX);
-    return inb(PORT_CMOS_DATA);
+    തിരികെ inb(PORT_CMOS_DATA);
 }
 
-void
+ശൂന്യം
 rtc_write(u8 index, u8 val)
 {
     index |= NMI_DISABLE_BIT;
@@ -27,7 +27,7 @@ rtc_write(u8 index, u8 val)
     outb(val, PORT_CMOS_DATA);
 }
 
-void
+ശൂന്യം
 rtc_mask(u8 index, u8 off, u8 on)
 {
     index |= NMI_DISABLE_BIT;
@@ -36,8 +36,8 @@ rtc_mask(u8 index, u8 off, u8 on)
     outb((val & ~off) | on, PORT_CMOS_DATA);
 }
 
-int
-rtc_updating(void)
+പൂർണ്ണസംഖ്യ
+rtc_updating(ശൂന്യം)
 {
     // This function checks to see if the update-in-progress bit
     // is set in CMOS Status Register A.  If not, it returns 0.
@@ -47,54 +47,54 @@ rtc_updating(void)
     // that this bit should be set is constrained to (1984+244)
     // useconds, but we wait for longer just to be sure.
 
-    if ((rtc_read(CMOS_STATUS_A) & RTC_A_UIP) == 0)
-        return 0;
+    എങ്കിൽ ((rtc_read(CMOS_STATUS_A) & RTC_A_UIP) == 0)
+        തിരികെ 0;
     u32 end = timer_calc(15);
-    for (;;) {
-        if ((rtc_read(CMOS_STATUS_A) & RTC_A_UIP) == 0)
-            return 0;
-        if (timer_check(end))
+    വേണ്ടി (;;) {
+        എങ്കിൽ ((rtc_read(CMOS_STATUS_A) & RTC_A_UIP) == 0)
+            തിരികെ 0;
+        എങ്കിൽ (timer_check(end))
             // update-in-progress never transitioned to 0
-            return -1;
+            തിരികെ -1;
         yield();
     }
 }
 
-void
-rtc_setup(void)
+ശൂന്യം
+rtc_setup(ശൂന്യം)
 {
-    if (!CONFIG_RTC_TIMER)
-        return;
+    എങ്കിൽ (!CONFIG_RTC_TIMER)
+        തിരികെ;
     rtc_write(CMOS_STATUS_A, 0x26);    // 32,768Khz src, 976.5625us updates
     rtc_mask(CMOS_STATUS_B, ~RTC_B_DSE, RTC_B_24HR);
     rtc_read(CMOS_STATUS_C);
     rtc_read(CMOS_STATUS_D);
 }
 
-int RTCusers VARLOW;
+പൂർണ്ണസംഖ്യ RTCusers VARLOW;
 
-void
-rtc_use(void)
+ശൂന്യം
+rtc_use(ശൂന്യം)
 {
-    if (!CONFIG_RTC_TIMER)
-        return;
-    int count = GET_LOW(RTCusers);
-    SET_LOW(RTCusers, count+1);
-    if (count)
-        return;
+    എങ്കിൽ (!CONFIG_RTC_TIMER)
+        തിരികെ;
+    പൂർണ്ണസംഖ്യ എണ്ണം = GET_താഴെയുള്ള(RTCusers);
+    SET_താഴെയുള്ള(RTCusers, എണ്ണം+1);
+    എങ്കിൽ (എണ്ണം)
+        തിരികെ;
     // Turn on the Periodic Interrupt timer
     rtc_mask(CMOS_STATUS_B, 0, RTC_B_PIE);
 }
 
-void
-rtc_release(void)
+ശൂന്യം
+rtc_release(ശൂന്യം)
 {
-    if (!CONFIG_RTC_TIMER)
-        return;
-    int count = GET_LOW(RTCusers);
-    SET_LOW(RTCusers, count-1);
-    if (count != 1)
-        return;
+    എങ്കിൽ (!CONFIG_RTC_TIMER)
+        തിരികെ;
+    പൂർണ്ണസംഖ്യ എണ്ണം = GET_താഴെയുള്ള(RTCusers);
+    SET_താഴെയുള്ള(RTCusers, എണ്ണം-1);
+    എങ്കിൽ (എണ്ണം != 1)
+        തിരികെ;
     // Clear the Periodic Interrupt.
     rtc_mask(CMOS_STATUS_B, RTC_B_PIE, 0);
 }

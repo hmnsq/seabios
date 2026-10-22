@@ -5,25 +5,25 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "bregs.h" // struct bregs
-#include "config.h" // CONFIG_*
-#include "farptr.h" // FLATPTR_TO_SEG
-#include "biosvar.h" // GET_IVT
-#include "hw/pci.h" // pci_config_readl
-#include "hw/pcidevice.h" // foreachpci
-#include "hw/pci_ids.h" // PCI_CLASS_DISPLAY_VGA
-#include "hw/pci_regs.h" // PCI_ROM_ADDRESS
-#include "malloc.h" // rom_confirm
-#include "output.h" // dprintf
-#include "romfile.h" // romfile_loadint
-#include "stacks.h" // farcall16big
-#include "std/optionrom.h" // struct rom_header
-#include "std/pnpbios.h" // PNP_SIGNATURE
-#include "string.h" // memset
-#include "util.h" // get_pnp_offset
-#include "tcgbios.h" // tpm_*
+#അന്തര്ഭാവ "bregs.h" // struct bregs
+#അന്തര്ഭാവ "config.h" // CONFIG_*
+#അന്തര്ഭാവ "farptr.h" // FLATPTR_TO_SEG
+#അന്തര്ഭാവ "biosvar.h" // GET_IVT
+#അന്തര്ഭാവ "hw/pci.h" // pci_config_readl
+#അന്തര്ഭാവ "hw/pcidevice.h" // foreachpci
+#അന്തര്ഭാവ "hw/pci_ids.h" // PCI_CLASS_DISPLAY_VGA
+#അന്തര്ഭാവ "hw/pci_regs.h" // PCI_ROM_ADDRESS
+#അന്തര്ഭാവ "malloc.h" // rom_confirm
+#അന്തര്ഭാവ "output.h" // dprintf
+#അന്തര്ഭാവ "romfile.h" // romfile_loadint
+#അന്തര്ഭാവ "stacks.h" // farcall16big
+#അന്തര്ഭാവ "std/optionrom.h" // struct rom_header
+#അന്തര്ഭാവ "std/pnpbios.h" // PNP_SIGNATURE
+#അന്തര്ഭാവ "string.h" // memset
+#അന്തര്ഭാവ "util.h" // get_pnp_offset
+#അന്തര്ഭാവ "tcgbios.h" // tpm_*
 
-static int EnforceChecksum, S3ResumeVga, RunPCIroms;
+സ്ഥിതം പൂർണ്ണസംഖ്യ EnforceChecksum, S3ResumeVga, RunPCIroms;
 
 
 /****************************************************************
@@ -31,14 +31,14 @@ static int EnforceChecksum, S3ResumeVga, RunPCIroms;
  ****************************************************************/
 
 // Execute a given option rom.
-static void
-__callrom(struct rom_header *rom, u16 offset, u16 bdf)
+സ്ഥിതം ശൂന്യം
+__callrom(ഘടന rom_header *rom, u16 offset, u16 bdf)
 {
     u16 seg = FLATPTR_TO_SEG(rom);
     dprintf(1, "Running option rom at %04x:%04x\n", seg, offset);
 
-    struct bregs br;
-    memset(&br, 0, sizeof(br));
+    ഘടന bregs br;
+    memset(&br, 0, വലുപ്പം(br));
     br.flags = F_IF;
     br.ax = bdf;
     br.bx = 0xffff;
@@ -52,117 +52,117 @@ __callrom(struct rom_header *rom, u16 offset, u16 bdf)
 }
 
 // Execute a given option rom at the standard entry vector.
-void
-callrom(struct rom_header *rom, u16 bdf)
+ശൂന്യം
+callrom(ഘടന rom_header *rom, u16 bdf)
 {
     __callrom(rom, OPTION_ROM_INITVECTOR, bdf);
 }
 
 // Execute a BCV option rom registered via add_bcv().
-void
+ശൂന്യം
 call_bcv(u16 seg, u16 ip)
 {
     __callrom(MAKE_FLATPTR(seg, 0), ip, 0);
 }
 
 // Verify that an option rom looks valid
-static int
-is_valid_rom(struct rom_header *rom)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+is_valid_rom(ഘടന rom_header *rom)
 {
     dprintf(6, "Checking rom %p (sig %x size %d)\n"
             , rom, rom->signature, rom->size);
-    if (rom->signature != OPTION_ROM_SIGNATURE)
-        return 0;
-    if (! rom->size)
-        return 0;
+    എങ്കിൽ (rom->signature != OPTION_ROM_SIGNATURE)
+        തിരികെ 0;
+    എങ്കിൽ (! rom->size)
+        തിരികെ 0;
     u32 len = rom->size * 512;
     u8 sum = checksum(rom, len);
-    if (sum != 0) {
+    എങ്കിൽ (sum != 0) {
         dprintf(1, "Found option rom with bad checksum: loc=%p len=%d sum=%x\n"
                 , rom, len, sum);
-        if (EnforceChecksum)
-            return 0;
+        എങ്കിൽ (EnforceChecksum)
+            തിരികെ 0;
     }
-    return 1;
+    തിരികെ 1;
 }
 
 // Check if a valid option rom has a pnp struct; return it if so.
-static struct pnp_data *
-get_pnp_rom(struct rom_header *rom)
+സ്ഥിതം ഘടന pnp_data *
+get_pnp_rom(ഘടന rom_header *rom)
 {
-    struct pnp_data *pnp = (void*)((u8*)rom + rom->pnpoffset);
-    if (pnp->signature != PNP_SIGNATURE)
-        return NULL;
-    return pnp;
+    ഘടന pnp_data *pnp = (ശൂന്യം*)((u8*)rom + rom->pnpoffset);
+    എങ്കിൽ (pnp->signature != PNP_SIGNATURE)
+        തിരികെ ശൂന്യ;
+    തിരികെ pnp;
 }
 
 // Check for multiple pnp option rom headers.
-static struct pnp_data *
-get_pnp_next(struct rom_header *rom, struct pnp_data *pnp)
+സ്ഥിതം ഘടന pnp_data *
+get_pnp_next(ഘടന rom_header *rom, ഘടന pnp_data *pnp)
 {
-    if (! pnp->nextoffset)
-        return NULL;
-    pnp = (void*)((u8*)rom + pnp->nextoffset);
-    if (pnp->signature != PNP_SIGNATURE)
-        return NULL;
-    return pnp;
+    എങ്കിൽ (! pnp->nextoffset)
+        തിരികെ ശൂന്യ;
+    pnp = (ശൂന്യം*)((u8*)rom + pnp->nextoffset);
+    എങ്കിൽ (pnp->signature != PNP_SIGNATURE)
+        തിരികെ ശൂന്യ;
+    തിരികെ pnp;
 }
 
 // Check if a valid option rom has a pci struct; return it if so.
-static struct pci_data *
-get_pci_rom(struct rom_header *rom)
+സ്ഥിതം ഘടന pci_data *
+get_pci_rom(ഘടന rom_header *rom)
 {
-    struct pci_data *pd = (void*)((u32)rom + rom->pcioffset);
-    if (pd->signature != PCI_ROM_SIGNATURE)
-        return NULL;
-    if (rom->pcioffset & 3)
+    ഘടന pci_data *pd = (ശൂന്യം*)((u32)rom + rom->pcioffset);
+    എങ്കിൽ (pd->signature != PCI_ROM_SIGNATURE)
+        തിരികെ ശൂന്യ;
+    എങ്കിൽ (rom->pcioffset & 3)
         dprintf(1, "WARNING! Found unaligned PCI rom (vd=%04x:%04x)\n"
                 , pd->vendor, pd->device);
-    return pd;
+    തിരികെ pd;
 }
 
 // Run rom init code and note rom size.
-static int
-init_optionrom(struct rom_header *rom, u16 bdf, int isvga)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+init_optionrom(ഘടന rom_header *rom, u16 bdf, പൂർണ്ണസംഖ്യ isvga)
 {
-    if (! is_valid_rom(rom))
-        return -1;
-    struct rom_header *newrom = rom_reserve(rom->size * 512);
-    if (!newrom) {
+    എങ്കിൽ (! is_valid_rom(rom))
+        തിരികെ -1;
+    ഘടന rom_header *newrom = rom_reserve(rom->size * 512);
+    എങ്കിൽ (!newrom) {
         warn_noalloc();
-        return -1;
+        തിരികെ -1;
     }
-    if (newrom != rom)
+    എങ്കിൽ (newrom != rom)
         memmove(newrom, rom, rom->size * 512);
 
     tpm_option_rom(newrom, rom->size * 512);
 
-    if (isvga || get_pnp_rom(newrom))
+    എങ്കിൽ (isvga || get_pnp_rom(newrom))
         // Only init vga and PnP roms here.
         callrom(newrom, bdf);
 
-    return rom_confirm(newrom->size * 512);
+    തിരികെ rom_confirm(newrom->size * 512);
 }
 
 #define RS_PCIROM (1LL<<33)
 
-static void
-setRomSource(u64 *sources, struct rom_header *rom, u64 source)
+സ്ഥിതം ശൂന്യം
+setRomSource(u64 *sources, ഘടന rom_header *rom, u64 source)
 {
-    if (sources)
+    എങ്കിൽ (sources)
         sources[((u32)rom - BUILD_ROM_START) / OPTION_ROM_ALIGN] = source;
 }
 
-static int
-getRomPriority(u64 *sources, struct rom_header *rom, int instance)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+getRomPriority(u64 *sources, ഘടന rom_header *rom, പൂർണ്ണസംഖ്യ instance)
 {
     u64 source = sources[((u32)rom - BUILD_ROM_START) / OPTION_ROM_ALIGN];
-    if (!source)
-        return -1;
-    if (source & RS_PCIROM)
-        return bootprio_find_pci_rom((void*)(u32)source, instance);
-    struct romfile_s *file = (void*)(u32)source;
-    return bootprio_find_named_rom(file->name, instance);
+    എങ്കിൽ (!source)
+        തിരികെ -1;
+    എങ്കിൽ (source & RS_PCIROM)
+        തിരികെ bootprio_find_pci_rom((ശൂന്യം*)(u32)source, instance);
+    ഘടന romfile_s *file = (ശൂന്യം*)(u32)source;
+    തിരികെ bootprio_find_named_rom(file->name, instance);
 }
 
 
@@ -170,32 +170,32 @@ getRomPriority(u64 *sources, struct rom_header *rom, int instance)
  * Roms in CBFS
  ****************************************************************/
 
-static struct rom_header *
-deploy_romfile(struct romfile_s *file)
+സ്ഥിതം ഘടന rom_header *
+deploy_romfile(ഘടന romfile_s *file)
 {
     u32 size = file->size;
-    struct rom_header *rom = rom_reserve(size);
-    if (!rom) {
+    ഘടന rom_header *rom = rom_reserve(size);
+    എങ്കിൽ (!rom) {
         warn_noalloc();
-        return NULL;
+        തിരികെ ശൂന്യ;
     }
-    int ret = file->copy(file, rom, size);
-    if (ret <= 0)
-        return NULL;
-    return rom;
+    പൂർണ്ണസംഖ്യ ret = file->copy(file, rom, size);
+    എങ്കിൽ (ret <= 0)
+        തിരികെ ശൂന്യ;
+    തിരികെ rom;
 }
 
 // Run all roms in a given CBFS directory.
-static void
-run_file_roms(const char *prefix, int isvga, u64 *sources)
+സ്ഥിതം ശൂന്യം
+run_file_roms(സ്ഥിരം അക്ഷരം *prefix, പൂർണ്ണസംഖ്യ isvga, u64 *sources)
 {
-    struct romfile_s *file = NULL;
-    for (;;) {
+    ഘടന romfile_s *file = ശൂന്യ;
+    വേണ്ടി (;;) {
         file = romfile_findprefix(prefix, file);
-        if (!file)
-            break;
-        struct rom_header *rom = deploy_romfile(file);
-        if (rom) {
+        എങ്കിൽ (!file)
+            നിർത്തുക;
+        ഘടന rom_header *rom = deploy_romfile(file);
+        എങ്കിൽ (rom) {
             setRomSource(sources, rom, (u32)file);
             init_optionrom(rom, 0, isvga);
         }
@@ -208,49 +208,49 @@ run_file_roms(const char *prefix, int isvga, u64 *sources)
  ****************************************************************/
 
 // Verify device is a vga device with legacy address decoding enabled.
-int
-is_pci_vga(struct pci_device *pci)
+പൂർണ്ണസംഖ്യ
+is_pci_vga(ഘടന pci_device *pci)
 {
-    if (pci->class != PCI_CLASS_DISPLAY_VGA)
-        return 0;
+    എങ്കിൽ (pci->class != PCI_CLASS_DISPLAY_VGA)
+        തിരികെ 0;
     u16 cmd = pci_config_readw(pci->bdf, PCI_COMMAND);
-    if (!(cmd & PCI_COMMAND_IO && cmd & PCI_COMMAND_MEMORY))
-        return 0;
-    while (pci->parent) {
+    എങ്കിൽ (!(cmd & PCI_COMMAND_IO && cmd & PCI_COMMAND_MEMORY))
+        തിരികെ 0;
+    ആകുമ്പോൾ (pci->parent) {
         pci = pci->parent;
         u32 ctrl = pci_config_readb(pci->bdf, PCI_BRIDGE_CONTROL);
-        if (!(ctrl & PCI_BRIDGE_CTL_VGA))
-            return 0;
+        എങ്കിൽ (!(ctrl & PCI_BRIDGE_CTL_VGA))
+            തിരികെ 0;
     }
-    return 1;
+    തിരികെ 1;
 }
 
 // Copy a rom to its permanent location below 1MiB
-static struct rom_header *
-copy_rom(struct rom_header *rom)
+സ്ഥിതം ഘടന rom_header *
+copy_rom(ഘടന rom_header *rom)
 {
     u32 romsize = rom->size * 512;
-    struct rom_header *newrom = rom_reserve(romsize);
-    if (!newrom) {
+    ഘടന rom_header *newrom = rom_reserve(romsize);
+    എങ്കിൽ (!newrom) {
         warn_noalloc();
-        return NULL;
+        തിരികെ ശൂന്യ;
     }
     dprintf(4, "Copying option rom (size %d) from %p to %p\n"
             , romsize, rom, newrom);
     iomemcpy(newrom, rom, romsize);
-    return newrom;
+    തിരികെ newrom;
 }
 
 // Map the option rom of a given PCI device.
-static struct rom_header *
-map_pcirom(struct pci_device *pci)
+സ്ഥിതം ഘടന rom_header *
+map_pcirom(ഘടന pci_device *pci)
 {
     dprintf(6, "Attempting to map option rom on dev %pP\n", pci);
 
-    if ((pci->header_type & 0x7f) != PCI_HEADER_TYPE_NORMAL) {
+    എങ്കിൽ ((pci->header_type & 0x7f) != PCI_HEADER_TYPE_NORMAL) {
         dprintf(6, "Skipping non-normal pci device (type=%x)\n"
                 , pci->header_type);
-        return NULL;
+        തിരികെ ശൂന്യ;
     }
 
     u16 bdf = pci->bdf;
@@ -260,95 +260,95 @@ map_pcirom(struct pci_device *pci)
 
     dprintf(6, "Option rom sizing returned %x %x\n", orig, sz);
     orig &= ~PCI_ROM_ADDRESS_ENABLE;
-    if (!sz || sz == 0xffffffff)
-        goto fail;
+    എങ്കിൽ (!sz || sz == 0xffffffff)
+        പോകുക fail;
 
-    if (orig == sz || (u32)(orig + 4*1024*1024) < 20*1024*1024) {
+    എങ്കിൽ (orig == sz || (u32)(orig + 4*1024*1024) < 20*1024*1024) {
         // Don't try to map to a pci addresses at its max, in the last
         // 4MiB of ram, or the first 16MiB of ram.
         dprintf(6, "Preset rom address doesn't look valid\n");
-        goto fail;
+        പോകുക fail;
     }
 
     // Looks like a rom - enable it.
     pci_config_writel(bdf, PCI_ROM_ADDRESS, orig | PCI_ROM_ADDRESS_ENABLE);
 
-    struct rom_header *rom = (void*)orig;
-    for (;;) {
+    ഘടന rom_header *rom = (ശൂന്യം*)orig;
+    വേണ്ടി (;;) {
         dprintf(5, "Inspecting possible rom at %p (vd=%04x:%04x bdf=%pP)\n"
                 , rom, pci->vendor, pci->device, pci);
-        if (rom->signature != OPTION_ROM_SIGNATURE) {
+        എങ്കിൽ (rom->signature != OPTION_ROM_SIGNATURE) {
             dprintf(6, "No option rom signature (got %x)\n", rom->signature);
-            goto fail;
+            പോകുക fail;
         }
-        struct pci_data *pd = get_pci_rom(rom);
-        if (! pd) {
+        ഘടന pci_data *pd = get_pci_rom(rom);
+        എങ്കിൽ (! pd) {
             dprintf(6, "No valid pci signature found\n");
-            goto fail;
+            പോകുക fail;
         }
 
-        if (pd->vendor == pci->vendor && pd->device == pci->device
+        എങ്കിൽ (pd->vendor == pci->vendor && pd->device == pci->device
             && pd->type == PCIROM_CODETYPE_X86)
             // A match
-            break;
+            നിർത്തുക;
         dprintf(6, "Didn't match dev/ven (got %04x:%04x) or type (got %d)\n"
                 , pd->vendor, pd->device, pd->type);
-        if (pd->indicator & 0x80) {
+        എങ്കിൽ (pd->indicator & 0x80) {
             dprintf(6, "No more images left\n");
-            goto fail;
+            പോകുക fail;
         }
-        rom = (void*)((u32)rom + pd->ilen * 512);
+        rom = (ശൂന്യം*)((u32)rom + pd->ilen * 512);
     }
 
     rom = copy_rom(rom);
     pci_config_writel(bdf, PCI_ROM_ADDRESS, orig);
-    return rom;
+    തിരികെ rom;
 fail:
     // Not valid - restore original and exit.
     pci_config_writel(bdf, PCI_ROM_ADDRESS, orig);
-    return NULL;
+    തിരികെ ശൂന്യ;
 }
 
-static int boot_irq_captured(void)
+സ്ഥിതം പൂർണ്ണസംഖ്യ boot_irq_captured(ശൂന്യം)
 {
-    return GET_IVT(0x19).segoff != FUNC16(entry_19_official).segoff;
+    തിരികെ GET_IVT(0x19).segoff != FUNC16(entry_19_official).segoff;
 }
 
-static void boot_irq_restore(void)
+സ്ഥിതം ശൂന്യം boot_irq_restore(ശൂന്യം)
 {
-    struct segoff_s seabios;
+    ഘടന segoff_s seabios;
 
     seabios = FUNC16(entry_19_official);
     SET_IVT(0x19, seabios);
 }
 
 // Attempt to map and initialize the option rom on a given PCI device.
-static void
-init_pcirom(struct pci_device *pci, int isvga, u64 *sources)
+സ്ഥിതം ശൂന്യം
+init_pcirom(ഘടന pci_device *pci, പൂർണ്ണസംഖ്യ isvga, u64 *sources)
 {
     dprintf(4, "Attempting to init PCI bdf %pP (vd %04x:%04x)\n"
             , pci, pci->vendor, pci->device);
 
-    char fname[17];
-    snprintf(fname, sizeof(fname), "pci%04x,%04x.rom"
+    അക്ഷരം fname[17];
+    snprintf(fname, വലുപ്പം(fname), "pci%04x,%04x.rom"
              , pci->vendor, pci->device);
-    struct romfile_s *file = romfile_find(fname);
-    struct rom_header *rom = NULL;
-    if (file)
+    ഘടന romfile_s *file = romfile_find(fname);
+    ഘടന rom_header *rom = ശൂന്യ;
+    എങ്കിൽ (file)
         rom = deploy_romfile(file);
-    else if (RunPCIroms > 1 || (RunPCIroms == 1 && isvga))
+    അല്ലെങ്കിൽ എങ്കിൽ (RunPCIroms > 1 || (RunPCIroms == 1 && isvga))
         rom = map_pcirom(pci);
-    if (! rom)
+    എങ്കിൽ (! rom)
         // No ROM present.
-        return;
-    int irq_was_captured = boot_irq_captured();
-    struct pnp_data *pnp = get_pnp_rom(rom);
+        തിരികെ;
+    പൂർണ്ണസംഖ്യ irq_was_captured = boot_irq_captured();
+    ഘടന pnp_data *pnp = get_pnp_rom(rom);
     setRomSource(sources, rom, RS_PCIROM | (u32)pci);
     init_optionrom(rom, pci->bdf, isvga);
-    if (boot_irq_captured() && !irq_was_captured &&
+    എങ്കിൽ (boot_irq_captured() && !irq_was_captured &&
         !file && !isvga && pnp) {
         // This PCI rom is misbehaving - recapture the boot irqs
-        char *desc = MAKE_FLATPTR(FLATPTR_TO_SEG(rom), pnp->productname);
+        അക്ഷരം *desc = MAKE_FLATPTR(FLATPTR_TO_SEG(rom), pnp->productname);
         dprintf(1, "PnP optionrom \"%s\" (bdf %pP) captured int19, restoring\n",
                 desc, pci);
         boot_irq_restore();
@@ -360,24 +360,24 @@ init_pcirom(struct pci_device *pci, int isvga, u64 *sources)
  * Non-VGA option rom init
  ****************************************************************/
 
-void
-optionrom_setup(void)
+ശൂന്യം
+optionrom_setup(ശൂന്യം)
 {
-    if (! CONFIG_OPTIONROMS)
-        return;
+    എങ്കിൽ (! CONFIG_OPTIONROMS)
+        തിരികെ;
 
     dprintf(1, "Scan for option roms\n");
     u64 sources[(BUILD_BIOS_ADDR - BUILD_ROM_START) / OPTION_ROM_ALIGN];
-    memset(sources, 0, sizeof(sources));
+    memset(sources, 0, വലുപ്പം(sources));
     u32 post_vga = rom_get_last();
 
     // Find and deploy PCI roms.
-    struct pci_device *pci;
+    ഘടന pci_device *pci;
     foreachpci(pci) {
-        if (pci->class == PCI_CLASS_DISPLAY_VGA ||
+        എങ്കിൽ (pci->class == PCI_CLASS_DISPLAY_VGA ||
             pci->class == PCI_CLASS_DISPLAY_OTHER ||
             pci->have_driver)
-            continue;
+            തുടരുക;
         init_pcirom(pci, 0, sources);
     }
 
@@ -388,31 +388,31 @@ optionrom_setup(void)
     // All option roms found and deployed - now build BEV/BCV vectors.
 
     u32 pos = post_vga;
-    while (pos < rom_get_last()) {
-        struct rom_header *rom = (void*)pos;
-        if (! is_valid_rom(rom)) {
+    ആകുമ്പോൾ (pos < rom_get_last()) {
+        ഘടന rom_header *rom = (ശൂന്യം*)pos;
+        എങ്കിൽ (! is_valid_rom(rom)) {
             pos += OPTION_ROM_ALIGN;
-            continue;
+            തുടരുക;
         }
         pos += ALIGN(rom->size * 512, OPTION_ROM_ALIGN);
-        struct pnp_data *pnp = get_pnp_rom(rom);
-        if (! pnp) {
+        ഘടന pnp_data *pnp = get_pnp_rom(rom);
+        എങ്കിൽ (! pnp) {
             // Legacy rom.
             boot_add_bcv(FLATPTR_TO_SEG(rom), OPTION_ROM_INITVECTOR, 0
                          , getRomPriority(sources, rom, 0));
-            continue;
+            തുടരുക;
         }
         // PnP rom - check for BEV and BCV boot capabilities.
-        int instance = 0;
-        while (pnp) {
-            if (pnp->bev)
+        പൂർണ്ണസംഖ്യ instance = 0;
+        ആകുമ്പോൾ (pnp) {
+            എങ്കിൽ (pnp->bev)
                 boot_add_bev(FLATPTR_TO_SEG(rom), pnp->bev, pnp->productname
                              , getRomPriority(sources, rom, instance++));
-            else if (pnp->bcv)
+            അല്ലെങ്കിൽ എങ്കിൽ (pnp->bcv)
                 boot_add_bcv(FLATPTR_TO_SEG(rom), pnp->bcv, pnp->productname
                              , getRomPriority(sources, rom, instance++));
-            else
-                break;
+            അല്ലെങ്കിൽ
+                നിർത്തുക;
             pnp = get_pnp_next(rom, pnp);
         }
     }
@@ -423,37 +423,37 @@ optionrom_setup(void)
  * VGA init
  ****************************************************************/
 
-int ScreenAndDebug;
-struct rom_header *VgaROM;
+പൂർണ്ണസംഖ്യ ScreenAndDebug;
+ഘടന rom_header *VgaROM;
 
-static void try_setup_display_other(void)
+സ്ഥിതം ശൂന്യം try_setup_display_other(ശൂന്യം)
 {
-    struct pci_device *pci;
+    ഘടന pci_device *pci;
 
     dprintf(1, "No VGA found, scan for other display\n");
 
     foreachpci(pci) {
-        if (pci->class != PCI_CLASS_DISPLAY_OTHER)
-            continue;
-        struct rom_header *rom = map_pcirom(pci);
-        if (!rom)
-            continue;
+        എങ്കിൽ (pci->class != PCI_CLASS_DISPLAY_OTHER)
+            തുടരുക;
+        ഘടന rom_header *rom = map_pcirom(pci);
+        എങ്കിൽ (!rom)
+            തുടരുക;
         dprintf(1, "Other display found at %pP\n", pci);
         pci_config_maskw(pci->bdf, PCI_COMMAND, 0,
                          PCI_COMMAND_IO | PCI_COMMAND_MEMORY);
         init_optionrom(rom, pci->bdf, 1);
-        return;
+        തിരികെ;
     }
 }
 
 // Call into vga code to turn on console.
-void
-vgarom_setup(void)
+ശൂന്യം
+vgarom_setup(ശൂന്യം)
 {
-    int have_vga = 0;
+    പൂർണ്ണസംഖ്യ have_vga = 0;
 
-    if (! CONFIG_OPTIONROMS)
-        return;
+    എങ്കിൽ (! CONFIG_OPTIONROMS)
+        തിരികെ;
 
     dprintf(1, "Scan for VGA option rom\n");
 
@@ -464,36 +464,36 @@ vgarom_setup(void)
     ScreenAndDebug = romfile_loadint("etc/screen-and-debug", 1);
 
     // Clear option rom memory
-    memset((void*)BUILD_ROM_START, 0, rom_get_max() - BUILD_ROM_START);
+    memset((ശൂന്യം*)BUILD_ROM_START, 0, rom_get_max() - BUILD_ROM_START);
 
     // Find and deploy PCI VGA rom.
-    struct pci_device *pci;
+    ഘടന pci_device *pci;
     foreachpci(pci) {
-        if (!is_pci_vga(pci))
-            continue;
+        എങ്കിൽ (!is_pci_vga(pci))
+            തുടരുക;
         vgahook_setup(pci);
-        init_pcirom(pci, 1, NULL);
+        init_pcirom(pci, 1, ശൂന്യ);
         have_vga = 1;
-        break;
+        നിർത്തുക;
     }
-    if (!have_vga)
+    എങ്കിൽ (!have_vga)
         try_setup_display_other();
 
     // Find and deploy CBFS vga-style roms not associated with a device.
-    run_file_roms("vgaroms/", 1, NULL);
+    run_file_roms("vgaroms/", 1, ശൂന്യ);
     rom_reserve(0);
 
-    if (rom_get_last() != BUILD_ROM_START)
+    എങ്കിൽ (rom_get_last() != BUILD_ROM_START)
         // VGA rom found
-        VgaROM = (void*)BUILD_ROM_START;
+        VgaROM = (ശൂന്യം*)BUILD_ROM_START;
 }
 
-void
-s3_resume_vga(void)
+ശൂന്യം
+s3_resume_vga(ശൂന്യം)
 {
-    if (!S3ResumeVga)
-        return;
-    if (!VgaROM || ! is_valid_rom(VgaROM))
-        return;
+    എങ്കിൽ (!S3ResumeVga)
+        തിരികെ;
+    എങ്കിൽ (!VgaROM || ! is_valid_rom(VgaROM))
+        തിരികെ;
     callrom(VgaROM, 0);
 }

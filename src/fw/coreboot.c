@@ -4,26 +4,26 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "block.h" // MAXDESCSIZE
-#include "byteorder.h" // be32_to_cpu
-#include "config.h" // CONFIG_*
-#include "e820map.h" // e820_add
-#include "hw/pcidevice.h" // pci_probe_devices
-#include "lzmadecode.h" // LzmaDecode
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "paravirt.h" // PlatformRunningOn
-#include "romfile.h" // romfile_findprefix
-#include "stacks.h" // yield
-#include "string.h" // memset
-#include "util.h" // coreboot_preinit
+#അന്തര്ഭാവ "block.h" // MAXDESCSIZE
+#അന്തര്ഭാവ "byteorder.h" // be32_to_cpu
+#അന്തര്ഭാവ "config.h" // CONFIG_*
+#അന്തര്ഭാവ "e820map.h" // e820_add
+#അന്തര്ഭാവ "hw/pcidevice.h" // pci_probe_devices
+#അന്തര്ഭാവ "lzmadecode.h" // LzmaDecode
+#അന്തര്ഭാവ "malloc.h" // free
+#അന്തര്ഭാവ "output.h" // dprintf
+#അന്തര്ഭാവ "paravirt.h" // PlatformRunningOn
+#അന്തര്ഭാവ "romfile.h" // romfile_findprefix
+#അന്തര്ഭാവ "stacks.h" // yield
+#അന്തര്ഭാവ "string.h" // memset
+#അന്തര്ഭാവ "util.h" // coreboot_preinit
 
 
 /****************************************************************
  * Memory map
  ****************************************************************/
 
-struct cb_header {
+ഘടന cb_header {
     u32 signature;
     u32 header_bytes;
     u32 header_checksum;
@@ -34,7 +34,7 @@ struct cb_header {
 
 #define CB_SIGNATURE 0x4f49424C // "LBIO"
 
-struct cb_memory_range {
+ഘടന cb_memory_range {
     u64 start;
     u64 size;
     u32 type;
@@ -42,28 +42,28 @@ struct cb_memory_range {
 
 #define CB_MEM_TABLE    16
 
-struct cb_memory {
+ഘടന cb_memory {
     u32 tag;
     u32 size;
-    struct cb_memory_range map[0];
+    ഘടന cb_memory_range map[0];
 };
 
 #define CB_TAG_MEMORY 0x01
 
-#define MEM_RANGE_COUNT(_rec) \
-        (((_rec)->size - sizeof(*(_rec))) / sizeof((_rec)->map[0]))
+#define MEM_RANGE_എണ്ണം(_rec) \
+        (((_rec)->size - വലുപ്പം(*(_rec))) / വലുപ്പം((_rec)->map[0]))
 
-struct cb_mainboard {
+ഘടന cb_mainboard {
     u32 tag;
     u32 size;
     u8  vendor_idx;
     u8  part_idx;
-    char  strings[0];
+    അക്ഷരം  strings[0];
 };
 
 #define CB_TAG_MAINBOARD 0x0003
 
-struct cb_forward {
+ഘടന cb_forward {
     u32 tag;
     u32 size;
     u64 forward;
@@ -71,7 +71,7 @@ struct cb_forward {
 
 #define CB_TAG_FORWARD 0x11
 
-struct cb_cbmem_ref {
+ഘടന cb_cbmem_ref {
     u32 tag;
     u32 size;
     u64 cbmem_addr;
@@ -79,112 +79,112 @@ struct cb_cbmem_ref {
 
 #define CB_TAG_CBMEM_CONSOLE 0x17
 
-struct cbmem_console {
+ഘടന cbmem_console {
     u32 size;
     u32 cursor;
     u8  body[0];
 } PACKED;
 #define CBMC_CURSOR_MASK ((1 << 28) - 1)
 #define CBMC_OVERFLOW (1 << 31)
-static struct cbmem_console *cbcon = NULL;
+സ്ഥിതം ഘടന cbmem_console *cbcon = ശൂന്യ;
 
-static u16
-ipchksum(char *buf, int count)
+സ്ഥിതം u16
+ipchksum(അക്ഷരം *buf, പൂർണ്ണസംഖ്യ എണ്ണം)
 {
     u16 *p = (u16*)buf;
     u32 sum = 0;
-    while (count > 1) {
+    ആകുമ്പോൾ (എണ്ണം > 1) {
         sum += GET_FARVAR(0, *p);
         p++;
-        count -= 2;
+        എണ്ണം -= 2;
     }
-    if (count)
+    എങ്കിൽ (എണ്ണം)
         sum += GET_FARVAR(0, *(u8*)p);
     sum = (sum >> 16) + (sum & 0xffff);
     sum += (sum >> 16);
-    return ~sum;
+    തിരികെ ~sum;
 }
 
 // Try to locate the coreboot header in a given address range.
-static struct cb_header *
-find_cb_header(u32 addr, int len)
+സ്ഥിതം ഘടന cb_header *
+find_cb_header(u32 addr, പൂർണ്ണസംഖ്യ len)
 {
     u32 end = addr + len;
-    for (; addr < end; addr += 16) {
-        struct cb_header *cbh = (void*)addr;
-        if (GET_FARVAR(0, cbh->signature) != CB_SIGNATURE)
-            continue;
+    വേണ്ടി (; addr < end; addr += 16) {
+        ഘടന cb_header *cbh = (ശൂന്യം*)addr;
+        എങ്കിൽ (GET_FARVAR(0, cbh->signature) != CB_SIGNATURE)
+            തുടരുക;
         u32 tsize = GET_FARVAR(0, cbh->table_bytes);
-        if (! tsize)
-            continue;
-        if (ipchksum((void*)addr, sizeof(*cbh)) != 0)
-            continue;
-        if (ipchksum((void*)addr + sizeof(*cbh), tsize)
+        എങ്കിൽ (! tsize)
+            തുടരുക;
+        എങ്കിൽ (ipchksum((ശൂന്യം*)addr, വലുപ്പം(*cbh)) != 0)
+            തുടരുക;
+        എങ്കിൽ (ipchksum((ശൂന്യം*)addr + വലുപ്പം(*cbh), tsize)
             != GET_FARVAR(0, cbh->table_checksum))
-            continue;
-        return cbh;
+            തുടരുക;
+        തിരികെ cbh;
     }
-    return NULL;
+    തിരികെ ശൂന്യ;
 }
 
 // Try to find the coreboot memory table in the given coreboot table.
-void *
-find_cb_subtable(struct cb_header *cbh, u32 tag)
+ശൂന്യം *
+find_cb_subtable(ഘടന cb_header *cbh, u32 tag)
 {
-    char *tbl = (char *)cbh + sizeof(*cbh);
-    u32 count = GET_FARVAR(0, cbh->table_entries);
-    int i;
-    for (i=0; i<count; i++) {
-        struct cb_memory *cbm = (void*)tbl;
+    അക്ഷരം *tbl = (അക്ഷരം *)cbh + വലുപ്പം(*cbh);
+    u32 എണ്ണം = GET_FARVAR(0, cbh->table_entries);
+    പൂർണ്ണസംഖ്യ i;
+    വേണ്ടി (i=0; i<എണ്ണം; i++) {
+        ഘടന cb_memory *cbm = (ശൂന്യം*)tbl;
         tbl += GET_FARVAR(0, cbm->size);
-        if (GET_FARVAR(0, cbm->tag) == tag)
-            return cbm;
+        എങ്കിൽ (GET_FARVAR(0, cbm->tag) == tag)
+            തിരികെ cbm;
     }
-    return NULL;
+    തിരികെ ശൂന്യ;
 }
 
-struct cb_header *
-find_cb_table(void)
+ഘടന cb_header *
+find_cb_table(ശൂന്യം)
 {
-    struct cb_header *cbh = find_cb_header(0, 0x1000);
-    if (!cbh)
-        return NULL;
-    struct cb_forward *cbf = find_cb_subtable(cbh, CB_TAG_FORWARD);
-    if (cbf) {
+    ഘടന cb_header *cbh = find_cb_header(0, 0x1000);
+    എങ്കിൽ (!cbh)
+        തിരികെ ശൂന്യ;
+    ഘടന cb_forward *cbf = find_cb_subtable(cbh, CB_TAG_FORWARD);
+    എങ്കിൽ (cbf) {
         dprintf(3, "Found coreboot table forwarder.\n");
         cbh = find_cb_header(GET_FARVAR(0, cbf->forward), 0x100);
-        if (!cbh)
-            return NULL;
+        എങ്കിൽ (!cbh)
+            തിരികെ ശൂന്യ;
     }
-    return cbh;
+    തിരികെ cbh;
 }
 
-static struct cb_memory *CBMemTable;
-const char *CBvendor = "", *CBpart = "";
+സ്ഥിതം ഘടന cb_memory *CBMemTable;
+സ്ഥിരം അക്ഷരം *CBvendor = "", *CBpart = "";
 
 // Populate max ram and e820 map info by scanning for a coreboot table.
-void
-coreboot_preinit(void)
+ശൂന്യം
+coreboot_preinit(ശൂന്യം)
 {
-    if (!CONFIG_COREBOOT)
-        return;
+    എങ്കിൽ (!CONFIG_COREBOOT)
+        തിരികെ;
 
     dprintf(3, "Attempting to find coreboot table\n");
 
     // Find coreboot table.
-    struct cb_header *cbh = find_cb_table();
-    if (!cbh)
-        goto fail;
+    ഘടന cb_header *cbh = find_cb_table();
+    എങ്കിൽ (!cbh)
+        പോകുക fail;
     dprintf(3, "Now attempting to find coreboot memory map\n");
-    struct cb_memory *cbm = CBMemTable = find_cb_subtable(cbh, CB_TAG_MEMORY);
-    if (!cbm)
-        goto fail;
+    ഘടന cb_memory *cbm = CBMemTable = find_cb_subtable(cbh, CB_TAG_MEMORY);
+    എങ്കിൽ (!cbm)
+        പോകുക fail;
 
-    int i, count = MEM_RANGE_COUNT(cbm);
-    for (i=0; i<count; i++) {
-        struct cb_memory_range *m = &cbm->map[i];
+    പൂർണ്ണസംഖ്യ i, എണ്ണം = MEM_RANGE_എണ്ണം(cbm);
+    വേണ്ടി (i=0; i<എണ്ണം; i++) {
+        ഘടന cb_memory_range *m = &cbm->map[i];
         u32 type = m->type;
-        if (type == CB_MEM_TABLE)
+        എങ്കിൽ (type == CB_MEM_TABLE)
             type = E820_RESERVED;
         e820_add(m->start, m->size, type);
     }
@@ -193,41 +193,41 @@ coreboot_preinit(void)
     // confuses grub.  So, override it.
     e820_add(0, 16*1024, E820_RAM);
 
-    struct cb_cbmem_ref *cbref = find_cb_subtable(cbh, CB_TAG_CBMEM_CONSOLE);
-    if (cbref) {
-        cbcon = (void*)(u32)cbref->cbmem_addr;
+    ഘടന cb_cbmem_ref *cbref = find_cb_subtable(cbh, CB_TAG_CBMEM_CONSOLE);
+    എങ്കിൽ (cbref) {
+        cbcon = (ശൂന്യം*)(u32)cbref->cbmem_addr;
         debug_banner();
         dprintf(1, "Found coreboot cbmem console @ %llx\n", cbref->cbmem_addr);
     }
 
-    struct cb_mainboard *cbmb = find_cb_subtable(cbh, CB_TAG_MAINBOARD);
-    if (cbmb) {
+    ഘടന cb_mainboard *cbmb = find_cb_subtable(cbh, CB_TAG_MAINBOARD);
+    എങ്കിൽ (cbmb) {
         CBvendor = &cbmb->strings[cbmb->vendor_idx];
         CBpart = &cbmb->strings[cbmb->part_idx];
         dprintf(1, "Found mainboard %s %s\n", CBvendor, CBpart);
     }
 
-    return;
+    തിരികെ;
 
 fail:
     // No table found..  Use 16Megs as a dummy value.
     dprintf(1, "Unable to find coreboot table!\n");
     e820_add(0, 16*1024*1024, E820_RAM);
-    return;
+    തിരികെ;
 }
 
-void coreboot_debug_putc(char c)
+ശൂന്യം coreboot_debug_putc(അക്ഷരം c)
 {
-    if (!CONFIG_DEBUG_COREBOOT)
-        return;
-    if (!cbcon)
-        return;
+    എങ്കിൽ (!CONFIG_DEBUG_COREBOOT)
+        തിരികെ;
+    എങ്കിൽ (!cbcon)
+        തിരികെ;
     u32 cursor = cbcon->cursor & CBMC_CURSOR_MASK;
     u32 flags = cbcon->cursor & ~CBMC_CURSOR_MASK;
-    if (cursor >= cbcon->size)
-        return; // Old coreboot version with legacy overflow mechanism.
+    എങ്കിൽ (cursor >= cbcon->size)
+        തിരികെ; // Old coreboot version with legacy overflow mechanism.
     cbcon->body[cursor++] = c;
-    if (cursor >= cbcon->size) {
+    എങ്കിൽ (cursor >= cbcon->size) {
         cursor = 0;
         flags |= CBMC_OVERFLOW;
     }
@@ -240,33 +240,33 @@ void coreboot_debug_putc(char c)
 
 // Attempt to find (and relocate) any standard bios tables found in a
 // given address range.
-static void
+സ്ഥിതം ശൂന്യം
 scan_tables(u32 start, u32 size)
 {
-    void *p = (void*)ALIGN(start, 16);
-    void *end = (void*)start + size;
-    for (; p<end; p += 16)
+    ശൂന്യം *p = (ശൂന്യം*)ALIGN(start, 16);
+    ശൂന്യം *end = (ശൂന്യം*)start + size;
+    വേണ്ടി (; p<end; p += 16)
         copy_table(p);
 }
 
-void
-coreboot_platform_setup(void)
+ശൂന്യം
+coreboot_platform_setup(ശൂന്യം)
 {
-    if (!CONFIG_COREBOOT)
-        return;
+    എങ്കിൽ (!CONFIG_COREBOOT)
+        തിരികെ;
     pci_probe_devices();
 
-    struct cb_memory *cbm = CBMemTable;
-    if (!cbm)
-        return;
+    ഘടന cb_memory *cbm = CBMemTable;
+    എങ്കിൽ (!cbm)
+        തിരികെ;
 
     dprintf(3, "Relocating coreboot bios tables\n");
 
     // Scan CB_MEM_TABLE areas for bios tables.
-    int i, count = MEM_RANGE_COUNT(cbm);
-    for (i=0; i<count; i++) {
-        struct cb_memory_range *m = &cbm->map[i];
-        if (m->type == CB_MEM_TABLE)
+    പൂർണ്ണസംഖ്യ i, എണ്ണം = MEM_RANGE_എണ്ണം(cbm);
+    വേണ്ടി (i=0; i<എണ്ണം; i++) {
+        ഘടന cb_memory_range *m = &cbm->map[i];
+        എങ്കിൽ (m->type == CB_MEM_TABLE)
             scan_tables(m->start, m->size);
     }
 
@@ -279,37 +279,37 @@ coreboot_platform_setup(void)
  ****************************************************************/
 
 // Uncompress data in flash to an area of memory.
-static int
-ulzma(u8 *dst, u32 maxlen, const u8 *src, u32 srclen)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+ulzma(u8 *dst, u32 maxlen, സ്ഥിരം u8 *src, u32 srclen)
 {
     dprintf(3, "Uncompressing data %d@%p to %d@%p\n", srclen, src, maxlen, dst);
     CLzmaDecoderState state;
-    int ret = LzmaDecodeProperties(&state.Properties, src, LZMA_PROPERTIES_SIZE);
-    if (ret != LZMA_RESULT_OK) {
+    പൂർണ്ണസംഖ്യ ret = LzmaDecodeProperties(&state.Properties, src, LZMA_PROPERTIES_SIZE);
+    എങ്കിൽ (ret != LZMA_RESULT_OK) {
         dprintf(1, "LzmaDecodeProperties error - %d\n", ret);
-        return -1;
+        തിരികെ -1;
     }
     u8 scratch[15980];
-    int need = (LzmaGetNumProbs(&state.Properties) * sizeof(CProb));
-    if (need > sizeof(scratch)) {
-        dprintf(1, "LzmaDecode need %d have %d\n", need, (unsigned int)sizeof(scratch));
-        return -1;
+    പൂർണ്ണസംഖ്യ need = (Lzma_Get_അക്കം_Probs(&state.Properties) * വലുപ്പം(CProb));
+    എങ്കിൽ (need > വലുപ്പം(scratch)) {
+        dprintf(1, "LzmaDecode need %d have %d\n", need, (unsigned പൂർണ്ണസംഖ്യ)വലുപ്പം(scratch));
+        തിരികെ -1;
     }
     state.Probs = (CProb *)scratch;
 
     u32 dstlen = *(u32*)(src + LZMA_PROPERTIES_SIZE);
-    if (dstlen > maxlen) {
+    എങ്കിൽ (dstlen > maxlen) {
         dprintf(1, "LzmaDecode too large (max %d need %d)\n", maxlen, dstlen);
-        return -1;
+        തിരികെ -1;
     }
     u32 inProcessed, outProcessed;
     ret = LzmaDecode(&state, src + LZMA_PROPERTIES_SIZE + 8, srclen
                      , &inProcessed, dst, dstlen, &outProcessed);
-    if (ret) {
+    എങ്കിൽ (ret) {
         dprintf(1, "LzmaDecode returned %d\n", ret);
-        return -1;
+        തിരികെ -1;
     }
-    return dstlen;
+    തിരികെ dstlen;
 }
 
 
@@ -320,7 +320,7 @@ ulzma(u8 *dst, u32 maxlen, const u8 *src, u32 srclen)
 #define CBFS_HEADER_MAGIC 0x4F524243
 #define CBFS_VERSION1 0x31313131
 
-struct cbfs_header {
+ഘടന cbfs_header {
     u32 magic;
     u32 version;
     u32 romsize;
@@ -332,140 +332,140 @@ struct cbfs_header {
 
 #define CBFS_FILE_MAGIC 0x455649484352414cLL // LARCHIVE
 
-struct cbfs_file {
+ഘടന cbfs_file {
     u64 magic;
     u32 len;
     u32 type;
     u32 checksum;
     u32 offset;
-    char filename[0];
+    അക്ഷരം filename[0];
 } PACKED;
 
-struct cbfs_romfile_s {
-    struct romfile_s file;
-    struct cbfs_file *fhdr;
-    void *data;
+ഘടന cbfs_romfile_s {
+    ഘടന romfile_s file;
+    ഘടന cbfs_file *fhdr;
+    ശൂന്യം *data;
     u32 rawsize, flags;
 };
 
 // Copy a file to memory (uncompressing if necessary)
-static int
-cbfs_copyfile(struct romfile_s *file, void *dst, u32 maxlen)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+cbfs_copyfile(ഘടന romfile_s *file, ശൂന്യം *dst, u32 maxlen)
 {
-    if (!CONFIG_COREBOOT_FLASH)
-        return -1;
+    എങ്കിൽ (!CONFIG_COREBOOT_FLASH)
+        തിരികെ -1;
 
-    struct cbfs_romfile_s *cfile;
-    cfile = container_of(file, struct cbfs_romfile_s, file);
+    ഘടന cbfs_romfile_s *cfile;
+    cfile = container_of(file, ഘടന cbfs_romfile_s, file);
     u32 size = cfile->rawsize;
-    void *src = cfile->data;
-    if (cfile->flags) {
+    ശൂന്യം *src = cfile->data;
+    എങ്കിൽ (cfile->flags) {
         // Compressed - copy to temp ram and uncompress it.
-        void *temp = malloc_tmphigh(size);
-        if (!temp) {
+        ശൂന്യം *temp = malloc_tmphigh(size);
+        എങ്കിൽ (!temp) {
             warn_noalloc();
-            return -1;
+            തിരികെ -1;
         }
         iomemcpy(temp, src, size);
-        int ret = ulzma(dst, maxlen, temp, size);
+        പൂർണ്ണസംഖ്യ ret = ulzma(dst, maxlen, temp, size);
         yield();
-        free(temp);
-        return ret;
+        സ്വതന്ത്രം(temp);
+        തിരികെ ret;
     }
 
     // Not compressed.
     dprintf(3, "Copying data %d@%p to %d@%p\n", size, src, maxlen, dst);
-    if (size > maxlen) {
+    എങ്കിൽ (size > maxlen) {
         warn_noalloc();
-        return -1;
+        തിരികെ -1;
     }
     iomemcpy(dst, src, size);
-    return size;
+    തിരികെ size;
 }
 
 // Process CBFS links file.  The links file is a newline separated
 // file where each line has a "link name" and a "destination name"
 // separated by a space character.
-static void
-process_links_file(void)
+സ്ഥിതം ശൂന്യം
+process_links_file(ശൂന്യം)
 {
-    char *links = romfile_loadfile("links", NULL), *next = links;
-    while (next) {
+    അക്ഷരം *links = romfile_loadfile("links", ശൂന്യ), *next = links;
+    ആകുമ്പോൾ (next) {
         // Parse out linkname and destname
-        char *linkname = next;
+        അക്ഷരം *linkname = next;
         next = strchr(linkname, '\n');
-        if (next)
+        എങ്കിൽ (next)
             *next++ = '\0';
-        char *comment = strchr(linkname, '#');
-        if (comment)
+        അക്ഷരം *comment = strchr(linkname, '#');
+        എങ്കിൽ (comment)
             *comment = '\0';
         linkname = nullTrailingSpace(linkname);
-        char *destname = strchr(linkname, ' ');
-        if (!destname)
-            continue;
+        അക്ഷരം *destname = strchr(linkname, ' ');
+        എങ്കിൽ (!destname)
+            തുടരുക;
         *destname++ = '\0';
         destname = nullTrailingSpace(destname);
         // Lookup destname and create new romfile entry for linkname
-        struct romfile_s *ufile = romfile_find(destname);
-        if (!ufile)
-            continue;
-        struct cbfs_romfile_s *cufile
-            = container_of(ufile, struct cbfs_romfile_s, file);
-        struct cbfs_romfile_s *cfile = malloc_tmp(sizeof(*cfile));
-        if (!cfile) {
+        ഘടന romfile_s *ufile = romfile_find(destname);
+        എങ്കിൽ (!ufile)
+            തുടരുക;
+        ഘടന cbfs_romfile_s *cufile
+            = container_of(ufile, ഘടന cbfs_romfile_s, file);
+        ഘടന cbfs_romfile_s *cfile = malloc_tmp(വലുപ്പം(*cfile));
+        എങ്കിൽ (!cfile) {
             warn_noalloc();
-            break;
+            നിർത്തുക;
         }
-        memcpy(cfile, cufile, sizeof(*cfile));
-        strtcpy(cfile->file.name, linkname, sizeof(cfile->file.name));
+        memcpy(cfile, cufile, വലുപ്പം(*cfile));
+        strtcpy(cfile->file.name, linkname, വലുപ്പം(cfile->file.name));
         romfile_add(&cfile->file);
     }
-    free(links);
+    സ്വതന്ത്രം(links);
 }
 
-void
-coreboot_cbfs_init(void)
+ശൂന്യം
+coreboot_cbfs_init(ശൂന്യം)
 {
-    if (!CONFIG_COREBOOT_FLASH)
-        return;
+    എങ്കിൽ (!CONFIG_COREBOOT_FLASH)
+        തിരികെ;
 
-    struct cbfs_header *hdr = *(void **)(CONFIG_CBFS_LOCATION - 4);
-    if ((u32)hdr & 0x03) {
+    ഘടന cbfs_header *hdr = *(ശൂന്യം **)(CONFIG_CBFS_LOCATION - 4);
+    എങ്കിൽ ((u32)hdr & 0x03) {
         dprintf(1, "Invalid CBFS pointer %p\n", hdr);
-        return;
+        തിരികെ;
     }
-    if (CONFIG_CBFS_LOCATION && (u32)hdr > CONFIG_CBFS_LOCATION)
+    എങ്കിൽ (CONFIG_CBFS_LOCATION && (u32)hdr > CONFIG_CBFS_LOCATION)
         // Looks like the pointer is relative to CONFIG_CBFS_LOCATION
-        hdr = (void*)hdr + CONFIG_CBFS_LOCATION;
-    if (hdr->magic != cpu_to_be32(CBFS_HEADER_MAGIC)) {
+        hdr = (ശൂന്യം*)hdr + CONFIG_CBFS_LOCATION;
+    എങ്കിൽ (hdr->magic != cpu_to_be32(CBFS_HEADER_MAGIC)) {
         dprintf(1, "Unable to find CBFS (ptr=%p; got %x not %x)\n"
                 , hdr, hdr->magic, cpu_to_be32(CBFS_HEADER_MAGIC));
-        return;
+        തിരികെ;
     }
     dprintf(1, "Found CBFS header at %p\n", hdr);
 
     u32 romsize = be32_to_cpu(hdr->romsize);
     u32 romstart = CONFIG_CBFS_LOCATION - romsize;
-    struct cbfs_file *fhdr = (void*)romstart + be32_to_cpu(hdr->offset);
-    for (;;) {
-        if ((u32)fhdr - romstart > romsize)
-            break;
+    ഘടന cbfs_file *fhdr = (ശൂന്യം*)romstart + be32_to_cpu(hdr->offset);
+    വേണ്ടി (;;) {
+        എങ്കിൽ ((u32)fhdr - romstart > romsize)
+            നിർത്തുക;
         u64 magic = fhdr->magic;
-        if (magic != CBFS_FILE_MAGIC)
-            break;
-        struct cbfs_romfile_s *cfile = malloc_tmp(sizeof(*cfile));
-        if (!cfile) {
+        എങ്കിൽ (magic != CBFS_FILE_MAGIC)
+            നിർത്തുക;
+        ഘടന cbfs_romfile_s *cfile = malloc_tmp(വലുപ്പം(*cfile));
+        എങ്കിൽ (!cfile) {
             warn_noalloc();
-            break;
+            നിർത്തുക;
         }
-        memset(cfile, 0, sizeof(*cfile));
-        strtcpy(cfile->file.name, fhdr->filename, sizeof(cfile->file.name));
+        memset(cfile, 0, വലുപ്പം(*cfile));
+        strtcpy(cfile->file.name, fhdr->filename, വലുപ്പം(cfile->file.name));
         cfile->file.size = cfile->rawsize = be32_to_cpu(fhdr->len);
         cfile->fhdr = fhdr;
         cfile->file.copy = cbfs_copyfile;
-        cfile->data = (void*)fhdr + be32_to_cpu(fhdr->offset);
-        int len = strlen(cfile->file.name);
-        if (len > 5 && strcmp(&cfile->file.name[len-5], ".lzma") == 0) {
+        cfile->data = (ശൂന്യം*)fhdr + be32_to_cpu(fhdr->offset);
+        പൂർണ്ണസംഖ്യ len = strlen(cfile->file.name);
+        എങ്കിൽ (len > 5 && strcmp(&cfile->file.name[len-5], ".lzma") == 0) {
             // Using compression.
             cfile->flags = 1;
             cfile->file.name[len-5] = '\0';
@@ -473,14 +473,14 @@ coreboot_cbfs_init(void)
         }
         romfile_add(&cfile->file);
 
-        fhdr = (void*)ALIGN((u32)cfile->data + cfile->rawsize
+        fhdr = (ശൂന്യം*)ALIGN((u32)cfile->data + cfile->rawsize
                             , be32_to_cpu(hdr->align));
     }
 
     process_links_file();
 }
 
-struct cbfs_payload_segment {
+ഘടന cbfs_payload_segment {
     u32 type;
     u32 compression;
     u32 offset;
@@ -495,75 +495,75 @@ struct cbfs_payload_segment {
 #define CBFS_COMPRESS_NONE  0
 #define CBFS_COMPRESS_LZMA  1
 
-struct cbfs_payload {
-    struct cbfs_payload_segment segments[1];
+ഘടന cbfs_payload {
+    ഘടന cbfs_payload_segment segments[1];
 };
 
-void
-cbfs_run_payload(struct cbfs_file *fhdr)
+ശൂന്യം
+cbfs_run_payload(ഘടന cbfs_file *fhdr)
 {
-    if (!CONFIG_COREBOOT_FLASH || !fhdr)
-        return;
+    എങ്കിൽ (!CONFIG_COREBOOT_FLASH || !fhdr)
+        തിരികെ;
     dprintf(1, "Run %s\n", fhdr->filename);
-    struct cbfs_payload *pay = (void*)fhdr + be32_to_cpu(fhdr->offset);
-    struct cbfs_payload_segment *seg = pay->segments;
-    for (;;) {
-        void *src = (void*)pay + be32_to_cpu(seg->offset);
-        void *dest = (void*)(u32)be64_to_cpu(seg->load_addr);
+    ഘടന cbfs_payload *pay = (ശൂന്യം*)fhdr + be32_to_cpu(fhdr->offset);
+    ഘടന cbfs_payload_segment *seg = pay->segments;
+    വേണ്ടി (;;) {
+        ശൂന്യം *src = (ശൂന്യം*)pay + be32_to_cpu(seg->offset);
+        ശൂന്യം *dest = (ശൂന്യം*)(u32)be64_to_cpu(seg->load_addr);
         u32 src_len = be32_to_cpu(seg->len);
         u32 dest_len = be32_to_cpu(seg->mem_len);
-        switch (seg->type) {
-        case PAYLOAD_SEGMENT_BSS:
+        തിരഞ്ഞെടുപ്പ് (seg->type) {
+        അവസ്ഥ PAYLOAD_SEGMENT_BSS:
             dprintf(3, "BSS segment %d@%p\n", dest_len, dest);
             memset(dest, 0, dest_len);
-            break;
-        case PAYLOAD_SEGMENT_ENTRY: {
+            നിർത്തുക;
+        അവസ്ഥ PAYLOAD_SEGMENT_ENTRY: {
             dprintf(1, "Calling addr %p\n", dest);
-            void (*func)(void) = dest;
+            ശൂന്യം (*func)(ശൂന്യം) = dest;
             func();
-            return;
+            തിരികെ;
         }
-        default:
+        സ്ഥിരസ്ഥിതി:
             dprintf(3, "Segment %x %d@%p -> %d@%p\n"
                     , seg->type, src_len, src, dest_len, dest);
-            if (seg->compression == cpu_to_be32(CBFS_COMPRESS_NONE)) {
-                if (src_len > dest_len)
+            എങ്കിൽ (seg->compression == cpu_to_be32(CBFS_COMPRESS_NONE)) {
+                എങ്കിൽ (src_len > dest_len)
                     src_len = dest_len;
                 memcpy(dest, src, src_len);
-            } else if (CONFIG_LZMA
+            } അല്ലെങ്കിൽ എങ്കിൽ (CONFIG_LZMA
                        && seg->compression == cpu_to_be32(CBFS_COMPRESS_LZMA)) {
-                int ret = ulzma(dest, dest_len, src, src_len);
-                if (ret < 0)
-                    return;
+                പൂർണ്ണസംഖ്യ ret = ulzma(dest, dest_len, src, src_len);
+                എങ്കിൽ (ret < 0)
+                    തിരികെ;
                 src_len = ret;
-            } else {
+            } അല്ലെങ്കിൽ {
                 dprintf(1, "No support for compression type %x\n"
                         , seg->compression);
-                return;
+                തിരികെ;
             }
-            if (dest_len > src_len)
+            എങ്കിൽ (dest_len > src_len)
                 memset(dest + src_len, 0, dest_len - src_len);
-            break;
+            നിർത്തുക;
         }
         seg++;
     }
 }
 
 // Register payloads in "img/" directory with boot system.
-void
-cbfs_payload_setup(void)
+ശൂന്യം
+cbfs_payload_setup(ശൂന്യം)
 {
-    if (!CONFIG_COREBOOT_FLASH)
-        return;
-    struct romfile_s *file = NULL;
-    for (;;) {
+    എങ്കിൽ (!CONFIG_COREBOOT_FLASH)
+        തിരികെ;
+    ഘടന romfile_s *file = ശൂന്യ;
+    വേണ്ടി (;;) {
         file = romfile_findprefix("img/", file);
-        if (!file)
-            break;
-        struct cbfs_romfile_s *cfile;
-        cfile = container_of(file, struct cbfs_romfile_s, file);
-        const char *filename = file->name;
-        char *desc = znprintf(MAXDESCSIZE, "Payload [%s]", &filename[4]);
+        എങ്കിൽ (!file)
+            നിർത്തുക;
+        ഘടന cbfs_romfile_s *cfile;
+        cfile = container_of(file, ഘടന cbfs_romfile_s, file);
+        സ്ഥിരം അക്ഷരം *filename = file->name;
+        അക്ഷരം *desc = znprintf(MAXDESCSIZE, "Payload [%s]", &filename[4]);
         boot_add_cbfs(cfile->fhdr, desc, bootprio_find_named_rom(filename, 0));
     }
 }

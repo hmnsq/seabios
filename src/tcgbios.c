@@ -9,29 +9,29 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "bregs.h" // struct bregs
-#include "byteorder.h" // cpu_to_*
-#include "config.h" // CONFIG_TCGBIOS
-#include "farptr.h" // MAKE_FLATPTR
-#include "fw/paravirt.h" // runningOnXen
-#include "hw/tpm_drivers.h" // tpm_drivers[]
-#include "output.h" // dprintf
-#include "sha.h" // sha1, sha256, ...
-#include "std/acpi.h"  // RSDP_SIGNATURE, rsdt_descriptor
-#include "std/smbios.h" // struct smbios_21_entry_point
-#include "std/tcg.h" // TCG_PC_LOGOVERFLOW
-#include "string.h" // checksum
-#include "tcgbios.h"// tpm_*, prototypes
-#include "util.h" // printf, get_keystroke
-#include "stacks.h" // wait_threads, reset
-#include "malloc.h" // malloc_high
+#അന്തര്ഭാവ "bregs.h" // struct bregs
+#അന്തര്ഭാവ "byteorder.h" // cpu_to_*
+#അന്തര്ഭാവ "config.h" // CONFIG_TCGBIOS
+#അന്തര്ഭാവ "farptr.h" // MAKE_FLATPTR
+#അന്തര്ഭാവ "fw/paravirt.h" // runningOnXen
+#അന്തര്ഭാവ "hw/tpm_drivers.h" // tpm_drivers[]
+#അന്തര്ഭാവ "output.h" // dprintf
+#അന്തര്ഭാവ "sha.h" // sha1, sha256, ...
+#അന്തര്ഭാവ "std/acpi.h"  // RSDP_SIGNATURE, rsdt_descriptor
+#അന്തര്ഭാവ "std/smbios.h" // struct smbios_21_entry_point
+#അന്തര്ഭാവ "std/tcg.h" // TCG_PC_LOGOVERFLOW
+#അന്തര്ഭാവ "string.h" // checksum
+#അന്തര്ഭാവ "tcgbios.h"// tpm_*, prototypes
+#അന്തര്ഭാവ "util.h" // printf, get_keystroke
+#അന്തര്ഭാവ "stacks.h" // wait_threads, reset
+#അന്തര്ഭാവ "malloc.h" // malloc_high
 
 
 /****************************************************************
  * ACPI TCPA table interface
  ****************************************************************/
 
-struct {
+ഘടന {
     /* length of the TCPA log buffer */
     u32           log_area_minimum_length;
 
@@ -39,7 +39,7 @@ struct {
     u8 *          log_area_start_address;
 
     /* number of log entries written */
-    u32           entry_count;
+    u32           entry_എണ്ണം;
 
     /* address to write next log entry to */
     u8 *          log_area_next_entry;
@@ -48,51 +48,51 @@ struct {
     u8 *          log_area_last_entry;
 } tpm_state VARLOW;
 
-static int tpm_set_log_area(u8 *log_area_start_address,
+സ്ഥിതം പൂർണ്ണസംഖ്യ tpm_set_log_area(u8 *log_area_start_address,
                             u32 log_area_minimum_length)
 {
-    if (!log_area_start_address || !log_area_minimum_length)
-        return -1;
+    എങ്കിൽ (!log_area_start_address || !log_area_minimum_length)
+        തിരികെ -1;
 
     memset(log_area_start_address, 0, log_area_minimum_length);
     tpm_state.log_area_start_address = log_area_start_address;
     tpm_state.log_area_minimum_length = log_area_minimum_length;
     tpm_state.log_area_next_entry = log_area_start_address;
-    tpm_state.log_area_last_entry = NULL;
-    tpm_state.entry_count = 0;
-    return 0;
+    tpm_state.log_area_last_entry = ശൂന്യ;
+    tpm_state.entry_എണ്ണം = 0;
+    തിരികെ 0;
 }
 
-static int
-tpm_tcpa_probe(void)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+tpm_tcpa_probe(ശൂന്യം)
 {
-    struct tcpa_descriptor_rev2 *tcpa = find_acpi_table(TCPA_SIGNATURE);
-    if (!tcpa)
-        return -1;
+    ഘടന tcpa_descriptor_rev2 *tcpa = find_acpi_table(TCPA_SIGNATURE);
+    എങ്കിൽ (!tcpa)
+        തിരികെ -1;
 
     dprintf(DEBUG_tcg, "TCGBIOS: TCPA: LASA = %p, LAML = %u\n",
             (u8 *)(long)tcpa->log_area_start_address,
             tcpa->log_area_minimum_length);
 
-    return tpm_set_log_area((u8*)(long)tcpa->log_area_start_address,
+    തിരികെ tpm_set_log_area((u8*)(long)tcpa->log_area_start_address,
                             tcpa->log_area_minimum_length);
 }
 
-static int
-tpm_tpm2_probe(void)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+tpm_tpm2_probe(ശൂന്യം)
 {
-    struct tpm2_descriptor_rev2 *tpm2 = find_acpi_table(TPM2_SIGNATURE);
-    if (!tpm2)
-        return -1;
+    ഘടന tpm2_descriptor_rev2 *tpm2 = find_acpi_table(TPM2_SIGNATURE);
+    എങ്കിൽ (!tpm2)
+        തിരികെ -1;
 
-    if (tpm2->length < 76)
-        return -1;
+    എങ്കിൽ (tpm2->length < 76)
+        തിരികെ -1;
 
     dprintf(DEBUG_tcg, "TCGBIOS: TPM2: LASA = %p, LAML = %u\n",
             (u8 *)(long)tpm2->log_area_start_address,
             tpm2->log_area_minimum_length);
 
-    return tpm_set_log_area((u8*)(long)tpm2->log_area_start_address,
+    തിരികെ tpm_set_log_area((u8*)(long)tpm2->log_area_start_address,
                             tpm2->log_area_minimum_length);
 }
 
@@ -108,36 +108,36 @@ tpm_tpm2_probe(void)
  * Output:
  *  Returns an error code in case of faiure, 0 in case of success
  */
-static int
-tpm_log_event(struct tpm_log_header *entry, int digest_len
-              , const void *event, int event_len)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+tpm_log_event(ഘടന tpm_log_header *entry, പൂർണ്ണസംഖ്യ digest_len
+              , സ്ഥിരം ശൂന്യം *event, പൂർണ്ണസംഖ്യ event_len)
 {
     dprintf(DEBUG_tcg, "TCGBIOS: LASA = %p, next entry = %p\n",
             tpm_state.log_area_start_address, tpm_state.log_area_next_entry);
 
-    if (tpm_state.log_area_next_entry == NULL)
-        return -1;
+    എങ്കിൽ (tpm_state.log_area_next_entry == ശൂന്യ)
+        തിരികെ -1;
 
-    u32 size = (sizeof(*entry) + digest_len
-                + sizeof(struct tpm_log_trailer) + event_len);
+    u32 size = (വലുപ്പം(*entry) + digest_len
+                + വലുപ്പം(ഘടന tpm_log_trailer) + event_len);
     u32 logsize = (tpm_state.log_area_next_entry + size
                    - tpm_state.log_area_start_address);
-    if (logsize > tpm_state.log_area_minimum_length) {
+    എങ്കിൽ (logsize > tpm_state.log_area_minimum_length) {
         dprintf(DEBUG_tcg, "TCGBIOS: LOG OVERFLOW: size = %d\n", size);
-        return -1;
+        തിരികെ -1;
     }
 
-    void *dest = tpm_state.log_area_next_entry;
-    memcpy(dest, entry, sizeof(*entry) + digest_len);
-    struct tpm_log_trailer *t = dest + sizeof(*entry) + digest_len;
+    ശൂന്യം *dest = tpm_state.log_area_next_entry;
+    memcpy(dest, entry, വലുപ്പം(*entry) + digest_len);
+    ഘടന tpm_log_trailer *t = dest + വലുപ്പം(*entry) + digest_len;
     t->eventdatasize = event_len;
     memcpy(t->event, event, event_len);
 
     tpm_state.log_area_last_entry = tpm_state.log_area_next_entry;
     tpm_state.log_area_next_entry += size;
-    tpm_state.entry_count++;
+    tpm_state.entry_എണ്ണം++;
 
-    return 0;
+    തിരികെ 0;
 }
 
 
@@ -145,29 +145,29 @@ tpm_log_event(struct tpm_log_header *entry, int digest_len
  * Digest formatting
  ****************************************************************/
 
-static TPMVersion TPM_version;
-static u32 tpm20_pcr_selection_size;
-static struct tpml_pcr_selection *tpm20_pcr_selection;
+സ്ഥിതം TPMVersion TPM_version;
+സ്ഥിതം u32 tpm20_pcr_selection_size;
+സ്ഥിതം ഘടന tpml_pcr_selection *tpm20_pcr_selection;
 
 // A 'struct tpm_log_entry' is a local data structure containing a
 // 'tpm_log_header' followed by space for the maximum supported
 // digest.  (The digest is a sha1 hash on tpm1.2 or a series of
 // tpm2_digest_value structs on tpm2.0)
-struct tpm_log_entry {
-    struct tpm_log_header hdr;
-    u8 pad[sizeof(struct tpm2_digest_values)
-           + 8 * sizeof(struct tpm2_digest_value)
+ഘടന tpm_log_entry {
+    ഘടന tpm_log_header hdr;
+    u8 pad[വലുപ്പം(ഘടന tpm2_digest_മൂല്യങ്ങൾ)
+           + 8 * വലുപ്പം(ഘടന tpm2_digest_മൂല്യം)
            + SHA1_BUFSIZE + SHA256_BUFSIZE + SHA384_BUFSIZE
            + SHA512_BUFSIZE + SM3_256_BUFSIZE + SHA3_256_BUFSIZE
            + SHA3_384_BUFSIZE + SHA3_512_BUFSIZE];
 } PACKED;
 
-static const struct hash_parameters {
+സ്ഥിതം സ്ഥിരം ഘടന hash_parameters {
     u16 hashalg;
     u8  hashalg_flag;
     u8  hash_buffersize;
-    const char *name;
-    void (*hashfunc)(const u8 *data, u32 length, u8 *hash);
+    സ്ഥിരം അക്ഷരം *name;
+    ശൂന്യം (*hashfunc)(സ്ഥിരം u8 *data, u32 length, u8 *hash);
 } hash_parameters[] = {
     {
         .hashalg = TPM2_ALG_SHA1,
@@ -216,63 +216,63 @@ static const struct hash_parameters {
     }
 };
 
-static int
+സ്ഥിതം പൂർണ്ണസംഖ്യ
 tpm20_get_hash_buffersize(u16 hashAlg)
 {
     unsigned i;
 
-    for (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
-        if (hash_parameters[i].hashalg == hashAlg)
-            return hash_parameters[i].hash_buffersize;
+    വേണ്ടി (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
+        എങ്കിൽ (hash_parameters[i].hashalg == hashAlg)
+            തിരികെ hash_parameters[i].hash_buffersize;
     }
-    return -1;
+    തിരികെ -1;
 }
 
-static u8
+സ്ഥിതം u8
 tpm20_hashalg_to_flag(u16 hashAlg)
 {
     unsigned i;
 
-    for (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
-        if (hash_parameters[i].hashalg == hashAlg)
-            return hash_parameters[i].hashalg_flag;
+    വേണ്ടി (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
+        എങ്കിൽ (hash_parameters[i].hashalg == hashAlg)
+            തിരികെ hash_parameters[i].hashalg_flag;
     }
-    return 0;
+    തിരികെ 0;
 }
 
-static u16
+സ്ഥിതം u16
 tpm20_hashalg_flag_to_hashalg(u8 hashalg_flag)
 {
     unsigned i;
 
-    for (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
-        if (hash_parameters[i].hashalg_flag == hashalg_flag)
-            return hash_parameters[i].hashalg;
+    വേണ്ടി (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
+        എങ്കിൽ (hash_parameters[i].hashalg_flag == hashalg_flag)
+            തിരികെ hash_parameters[i].hashalg;
     }
-    return 0;
+    തിരികെ 0;
 }
 
-static const char *
+സ്ഥിതം സ്ഥിരം അക്ഷരം *
 tpm20_hashalg_flag_to_name(u8 hashalg_flag)
 {
     unsigned i;
 
-    for (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
-        if (hash_parameters[i].hashalg_flag == hashalg_flag)
-            return hash_parameters[i].name;
+    വേണ്ടി (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
+        എങ്കിൽ (hash_parameters[i].hashalg_flag == hashalg_flag)
+            തിരികെ hash_parameters[i].name;
     }
-    return NULL;
+    തിരികെ ശൂന്യ;
 }
 
-static void tpm2_hash_data(u16 hashAlg, const u8 *data, u32 data_len, u8 *hash)
+സ്ഥിതം ശൂന്യം tpm2_hash_data(u16 hashAlg, സ്ഥിരം u8 *data, u32 data_len, u8 *hash)
 {
     unsigned i;
 
-    for (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
-        if (hash_parameters[i].hashalg == hashAlg) {
-            if (hash_parameters[i].hashfunc) {
+    വേണ്ടി (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
+        എങ്കിൽ (hash_parameters[i].hashalg == hashAlg) {
+            എങ്കിൽ (hash_parameters[i].hashfunc) {
                 hash_parameters[i].hashfunc(data, data_len, hash);
-            } else {
+            } അല്ലെങ്കിൽ {
                 memset(hash, 0xff, hash_parameters[i].hash_buffersize);
             }
         }
@@ -280,15 +280,15 @@ static void tpm2_hash_data(u16 hashAlg, const u8 *data, u32 data_len, u8 *hash)
 }
 
 // Add an entry at the start of the log describing digest formats
-static int
-tpm20_write_EfiSpecIdEventStruct(void)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+tpm20_write_EfiSpecIdEventStruct(ശൂന്യം)
 {
-    if (!tpm20_pcr_selection)
-        return -1;
+    എങ്കിൽ (!tpm20_pcr_selection)
+        തിരികെ -1;
 
-    struct {
-        struct TCG_EfiSpecIdEventStruct hdr;
-        u8 pad[sizeof(struct tpm_log_entry) + sizeof(u8)];
+    ഘടന {
+        ഘടന TCG_EfiSpecIdEventStruct hdr;
+        u8 pad[വലുപ്പം(ഘടന tpm_log_entry) + വലുപ്പം(u8)];
     } event = {
         .hdr.signature = "Spec ID Event03",
         .hdr.platformClass = TPM_TCPA_ACPI_CLASS_CLIENT,
@@ -298,59 +298,59 @@ tpm20_write_EfiSpecIdEventStruct(void)
         .hdr.uintnSize = 2,
     };
 
-    struct tpms_pcr_selection *sel = tpm20_pcr_selection->selections;
-    void *nsel, *end = (void*)tpm20_pcr_selection + tpm20_pcr_selection_size;
+    ഘടന tpms_pcr_selection *sel = tpm20_pcr_selection->selections;
+    ശൂന്യം *nsel, *end = (ശൂന്യം*)tpm20_pcr_selection + tpm20_pcr_selection_size;
 
-    u32 count, numAlgs = 0;
-    for (count = 0; count < be32_to_cpu(tpm20_pcr_selection->count); count++) {
+    u32 എണ്ണം, അക്കം_Algs = 0;
+    വേണ്ടി (എണ്ണം = 0; എണ്ണം < be32_to_cpu(tpm20_pcr_selection->എണ്ണം); എണ്ണം++) {
         u8 sizeOfSelect = sel->sizeOfSelect;
 
-        nsel = (void*)sel + sizeof(*sel) + sizeOfSelect;
-        if (nsel > end)
-            break;
+        nsel = (ശൂന്യം*)sel + വലുപ്പം(*sel) + sizeOfSelect;
+        എങ്കിൽ (nsel > end)
+            നിർത്തുക;
 
-        if (!sizeOfSelect || sel->pcrSelect[0] == 0) {
+        എങ്കിൽ (!sizeOfSelect || sel->pcrSelect[0] == 0) {
             sel = nsel;
-            continue;
+            തുടരുക;
         }
 
-        int hsize = tpm20_get_hash_buffersize(be16_to_cpu(sel->hashAlg));
-        if (hsize < 0) {
+        പൂർണ്ണസംഖ്യ hsize = tpm20_get_hash_buffersize(be16_to_cpu(sel->hashAlg));
+        എങ്കിൽ (hsize < 0) {
             dprintf(DEBUG_tcg, "TPM is using an unsupported hash: %d\n",
                     be16_to_cpu(sel->hashAlg));
-            return -1;
+            തിരികെ -1;
         }
 
-        int event_size = offsetof(struct TCG_EfiSpecIdEventStruct
-                                  , digestSizes[count+1]);
-        if (event_size > sizeof(event) - sizeof(u8)) {
+        പൂർണ്ണസംഖ്യ event_size = offsetof(ഘടന TCG_EfiSpecIdEventStruct
+                                  , digestSizes[എണ്ണം+1]);
+        എങ്കിൽ (event_size > വലുപ്പം(event) - വലുപ്പം(u8)) {
             dprintf(DEBUG_tcg, "EfiSpecIdEventStruct pad too small\n");
-            return -1;
+            തിരികെ -1;
         }
 
-        event.hdr.digestSizes[numAlgs].algorithmId = be16_to_cpu(sel->hashAlg);
-        event.hdr.digestSizes[numAlgs].digestSize = hsize;
-        numAlgs++;
+        event.hdr.digestSizes[അക്കം_Algs].algorithmId = be16_to_cpu(sel->hashAlg);
+        event.hdr.digestSizes[അക്കം_Algs].digestSize = hsize;
+        അക്കം_Algs++;
 
         sel = nsel;
     }
 
-    if (sel != end) {
+    എങ്കിൽ (sel != end) {
         dprintf(DEBUG_tcg, "Malformed pcr selection structure fron TPM\n");
-        return -1;
+        തിരികെ -1;
     }
 
-    event.hdr.numberOfAlgorithms = numAlgs;
-    int event_size = offsetof(struct TCG_EfiSpecIdEventStruct
-                              , digestSizes[numAlgs]);
-    u8 *vendorInfoSize = (void*)&event + event_size;
+    event.hdr.സംഖ്യ_Of_Algorithms = അക്കം_Algs;
+    പൂർണ്ണസംഖ്യ event_size = offsetof(ഘടന TCG_EfiSpecIdEventStruct
+                              , digestSizes[അക്കം_Algs]);
+    u8 *vendorInfoSize = (ശൂന്യം*)&event + event_size;
     *vendorInfoSize = 0;
-    event_size += sizeof(*vendorInfoSize);
+    event_size += വലുപ്പം(*vendorInfoSize);
 
-    struct tpm_log_entry le = {
+    ഘടന tpm_log_entry le = {
         .hdr.eventtype = EV_NO_ACTION,
     };
-    return tpm_log_event(&le.hdr, SHA1_BUFSIZE, &event, event_size);
+    തിരികെ tpm_log_event(&le.hdr, SHA1_BUFSIZE, &event, event_size);
 }
 
 /*
@@ -369,100 +369,100 @@ tpm20_write_EfiSpecIdEventStruct(void)
  *
  * Returns the digest size; -1 on fatal error
  */
-static int
-tpm20_build_digest(struct tpm_log_entry *le,
-                   const u8 *hashdata, u32 hashdata_len, int bigEndian)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+tpm20_build_digest(ഘടന tpm_log_entry *le,
+                   സ്ഥിരം u8 *hashdata, u32 hashdata_len, പൂർണ്ണസംഖ്യ bigEndian)
 {
-    if (!tpm20_pcr_selection)
-        return -1;
+    എങ്കിൽ (!tpm20_pcr_selection)
+        തിരികെ -1;
 
-    struct tpms_pcr_selection *sel = tpm20_pcr_selection->selections;
-    void *nsel, *end = (void*)tpm20_pcr_selection + tpm20_pcr_selection_size;
-    void *dest = le->hdr.digest + sizeof(struct tpm2_digest_values);
+    ഘടന tpms_pcr_selection *sel = tpm20_pcr_selection->selections;
+    ശൂന്യം *nsel, *end = (ശൂന്യം*)tpm20_pcr_selection + tpm20_pcr_selection_size;
+    ശൂന്യം *dest = le->hdr.digest + വലുപ്പം(ഘടന tpm2_digest_മൂല്യങ്ങൾ);
 
-    u32 count, numAlgs = 0;
-    for (count = 0; count < be32_to_cpu(tpm20_pcr_selection->count); count++) {
+    u32 എണ്ണം, അക്കം_Algs = 0;
+    വേണ്ടി (എണ്ണം = 0; എണ്ണം < be32_to_cpu(tpm20_pcr_selection->എണ്ണം); എണ്ണം++) {
         u8 sizeOfSelect = sel->sizeOfSelect;
 
-        nsel = (void*)sel + sizeof(*sel) + sizeOfSelect;
-        if (nsel > end)
-            break;
+        nsel = (ശൂന്യം*)sel + വലുപ്പം(*sel) + sizeOfSelect;
+        എങ്കിൽ (nsel > end)
+            നിർത്തുക;
 
         /* PCR 0-7 unused? -- skip */
-        if (!sizeOfSelect || sel->pcrSelect[0] == 0) {
+        എങ്കിൽ (!sizeOfSelect || sel->pcrSelect[0] == 0) {
             sel = nsel;
-            continue;
+            തുടരുക;
         }
 
-        int hsize = tpm20_get_hash_buffersize(be16_to_cpu(sel->hashAlg));
-        if (hsize < 0) {
+        പൂർണ്ണസംഖ്യ hsize = tpm20_get_hash_buffersize(be16_to_cpu(sel->hashAlg));
+        എങ്കിൽ (hsize < 0) {
             dprintf(DEBUG_tcg, "TPM is using an unsupported hash: %d\n",
                     be16_to_cpu(sel->hashAlg));
-            return -1;
+            തിരികെ -1;
         }
 
         /* buffer size sanity check before writing */
-        struct tpm2_digest_value *v = dest;
-        if (dest + sizeof(*v) + hsize > (void*)le + sizeof(*le)) {
+        ഘടന tpm2_digest_മൂല്യം *v = dest;
+        എങ്കിൽ (dest + വലുപ്പം(*v) + hsize > (ശൂന്യം*)le + വലുപ്പം(*le)) {
             dprintf(DEBUG_tcg, "tpm_log_entry is too small\n");
-            return -1;
+            തിരികെ -1;
         }
 
-        if (bigEndian)
+        എങ്കിൽ (bigEndian)
             v->hashAlg = sel->hashAlg;
-        else
+        അല്ലെങ്കിൽ
             v->hashAlg = be16_to_cpu(sel->hashAlg);
 
         tpm2_hash_data(be16_to_cpu(sel->hashAlg), hashdata, hashdata_len,
                        v->hash);
 
-        dest += sizeof(*v) + hsize;
+        dest += വലുപ്പം(*v) + hsize;
         sel = nsel;
 
-        numAlgs++;
+        അക്കം_Algs++;
     }
 
-    if (sel != end) {
+    എങ്കിൽ (sel != end) {
         dprintf(DEBUG_tcg, "Malformed pcr selection structure fron TPM\n");
-        return -1;
+        തിരികെ -1;
     }
 
-    struct tpm2_digest_values *v = (void*)le->hdr.digest;
-    if (bigEndian)
-        v->count = cpu_to_be32(numAlgs);
-    else
-        v->count = numAlgs;
+    ഘടന tpm2_digest_മൂല്യങ്ങൾ *v = (ശൂന്യം*)le->hdr.digest;
+    എങ്കിൽ (bigEndian)
+        v->എണ്ണം = cpu_to_be32(അക്കം_Algs);
+    അല്ലെങ്കിൽ
+        v->എണ്ണം = അക്കം_Algs;
 
-    return dest - (void*)le->hdr.digest;
+    തിരികെ dest - (ശൂന്യം*)le->hdr.digest;
 }
 
-static int
-tpm12_build_digest(struct tpm_log_entry *le,
-                   const u8 *hashdata, u32 hashdata_len)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+tpm12_build_digest(ഘടന tpm_log_entry *le,
+                   സ്ഥിരം u8 *hashdata, u32 hashdata_len)
 {
     sha1(hashdata, hashdata_len, le->hdr.digest);
-    return SHA1_BUFSIZE;
+    തിരികെ SHA1_BUFSIZE;
 }
 
-static int
-tpm12_build_digest_direct(struct tpm_log_entry *le, const u8 *sha1)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+tpm12_build_digest_direct(ഘടന tpm_log_entry *le, സ്ഥിരം u8 *sha1)
 {
     // On TPM 1.2 the digest contains just the SHA1 hash
     memcpy(le->hdr.digest, sha1, SHA1_BUFSIZE);
-    return SHA1_BUFSIZE;
+    തിരികെ SHA1_BUFSIZE;
 }
 
-static int
-tpm_build_digest(struct tpm_log_entry *le, const u8 *hashdata, u32 hashdata_len
-                 , int bigEndian)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+tpm_build_digest(ഘടന tpm_log_entry *le, സ്ഥിരം u8 *hashdata, u32 hashdata_len
+                 , പൂർണ്ണസംഖ്യ bigEndian)
 {
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
-        return tpm12_build_digest(le, hashdata, hashdata_len);
-    case TPM_VERSION_2:
-        return tpm20_build_digest(le, hashdata, hashdata_len, bigEndian);
+    തിരഞ്ഞെടുപ്പ് (TPM_version) {
+    അവസ്ഥ TPM_VERSION_1_2:
+        തിരികെ tpm12_build_digest(le, hashdata, hashdata_len);
+    അവസ്ഥ TPM_VERSION_2:
+        തിരികെ tpm20_build_digest(le, hashdata, hashdata_len, bigEndian);
     }
-    return -1;
+    തിരികെ -1;
 }
 
 
@@ -472,54 +472,54 @@ tpm_build_digest(struct tpm_log_entry *le, const u8 *hashdata, u32 hashdata_len
 
 // Helper function for sending tpm commands that take a single
 // optional parameter (0, 1, or 2 bytes) and have no special response.
-static int
+സ്ഥിതം പൂർണ്ണസംഖ്യ
 tpm_simple_cmd(u8 locty, u32 ordinal
-               , int param_size, u16 param, enum tpmDurationType to_t)
+               , പൂർണ്ണസംഖ്യ param_size, u16 param, എണ്ണൽ tpmDurationType to_t)
 {
-    struct {
-        struct tpm_req_header trqh;
+    ഘടന {
+        ഘടന tpm_req_header trqh;
         u16 param;
     } PACKED req = {
-        .trqh.totlen = cpu_to_be32(sizeof(req.trqh) + param_size),
+        .trqh.totlen = cpu_to_be32(വലുപ്പം(req.trqh) + param_size),
         .trqh.ordinal = cpu_to_be32(ordinal),
         .param = param_size == 2 ? cpu_to_be16(param) : param,
     };
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
+    തിരഞ്ഞെടുപ്പ് (TPM_version) {
+    അവസ്ഥ TPM_VERSION_1_2:
         req.trqh.tag = cpu_to_be16(TPM_TAG_RQU_CMD);
-        break;
-    case TPM_VERSION_2:
+        നിർത്തുക;
+    അവസ്ഥ TPM_VERSION_2:
         req.trqh.tag = cpu_to_be16(TPM2_ST_NO_SESSIONS);
-        break;
+        നിർത്തുക;
     }
 
     u8 obuffer[64];
-    struct tpm_rsp_header *trsh = (void*)obuffer;
-    u32 obuffer_len = sizeof(obuffer);
-    memset(obuffer, 0x0, sizeof(obuffer));
+    ഘടന tpm_rsp_header *trsh = (ശൂന്യം*)obuffer;
+    u32 obuffer_len = വലുപ്പം(obuffer);
+    memset(obuffer, 0x0, വലുപ്പം(obuffer));
 
-    int ret = tpmhw_transmit(locty, &req.trqh, obuffer, &obuffer_len, to_t);
+    പൂർണ്ണസംഖ്യ ret = tpmhw_transmit(locty, &req.trqh, obuffer, &obuffer_len, to_t);
     ret = ret ? -1 : be32_to_cpu(trsh->errcode);
     dprintf(DEBUG_tcg, "Return from tpm_simple_cmd(%x, %x) = %x\n",
             ordinal, param, ret);
-    return ret;
+    തിരികെ ret;
 }
 
-static int
-tpm20_getcapability(u32 capability, u32 property, u32 count,
-                    struct tpm_rsp_header *rsp, u32 rsize)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+tpm20_getcapability(u32 capability, u32 property, u32 എണ്ണം,
+                    ഘടന tpm_rsp_header *rsp, u32 rsize)
 {
-    struct tpm2_req_getcapability trg = {
+    ഘടന tpm2_req_getcapability trg = {
         .hdr.tag = cpu_to_be16(TPM2_ST_NO_SESSIONS),
-        .hdr.totlen = cpu_to_be32(sizeof(trg)),
+        .hdr.totlen = cpu_to_be32(വലുപ്പം(trg)),
         .hdr.ordinal = cpu_to_be32(TPM2_CC_GetCapability),
         .capability = cpu_to_be32(capability),
         .property = cpu_to_be32(property),
-        .propertycount = cpu_to_be32(count),
+        .propertycount = cpu_to_be32(എണ്ണം),
     };
 
     u32 resp_size = rsize;
-    int ret = tpmhw_transmit(0, &trg.hdr, rsp, &resp_size,
+    പൂർണ്ണസംഖ്യ ret = tpmhw_transmit(0, &trg.hdr, rsp, &resp_size,
                              TPM_DURATION_TYPE_SHORT);
     ret = (ret ||
            rsize < be32_to_cpu(rsp->totlen)) ? -1 : be32_to_cpu(rsp->errcode);
@@ -527,61 +527,61 @@ tpm20_getcapability(u32 capability, u32 property, u32 count,
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_GetCapability = 0x%08x\n",
             ret);
 
-    return ret;
+    തിരികെ ret;
 }
 
-static int
-tpm20_get_pcrbanks(void)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+tpm20_get_pcrbanks(ശൂന്യം)
 {
     u8 buffer[128];
-    struct tpm2_res_getcapability *trg =
-      (struct tpm2_res_getcapability *)&buffer;
+    ഘടന tpm2_res_getcapability *trg =
+      (ഘടന tpm2_res_getcapability *)&buffer;
 
-    int ret = tpm20_getcapability(TPM2_CAP_PCRS, 0, 8, &trg->hdr,
-                                  sizeof(buffer));
-    if (ret)
-        return ret;
+    പൂർണ്ണസംഖ്യ ret = tpm20_getcapability(TPM2_CAP_PCRS, 0, 8, &trg->hdr,
+                                  വലുപ്പം(buffer));
+    എങ്കിൽ (ret)
+        തിരികെ ret;
 
     /* defend against (broken) TPM sending packets that are too short */
     u32 resplen = be32_to_cpu(trg->hdr.totlen);
-    if (resplen <= offsetof(struct tpm2_res_getcapability, data))
-        return -1;
+    എങ്കിൽ (resplen <= offsetof(ഘടന tpm2_res_getcapability, data))
+        തിരികെ -1;
 
-    u32 size = resplen - offsetof(struct tpm2_res_getcapability, data);
+    u32 size = resplen - offsetof(ഘടന tpm2_res_getcapability, data);
     /* we need a valid tpml_pcr_selection up to and including sizeOfSelect */
-    if (size < offsetof(struct tpml_pcr_selection, selections) +
-               offsetof(struct tpms_pcr_selection, pcrSelect))
-        return -1;
+    എങ്കിൽ (size < offsetof(ഘടന tpml_pcr_selection, selections) +
+               offsetof(ഘടന tpms_pcr_selection, pcrSelect))
+        തിരികെ -1;
 
-    tpm20_pcr_selection = malloc_high(size);
-    if (tpm20_pcr_selection) {
+    tpm20_pcr_selection = malloc_മുകളിലെ(size);
+    എങ്കിൽ (tpm20_pcr_selection) {
         memcpy(tpm20_pcr_selection, &trg->data, size);
         tpm20_pcr_selection_size = size;
-    } else {
+    } അല്ലെങ്കിൽ {
         warn_noalloc();
         ret = -1;
     }
 
-    return ret;
+    തിരികെ ret;
 }
 
-static int
+സ്ഥിതം പൂർണ്ണസംഖ്യ
 tpm20_get_suppt_pcrbanks(u8 *suppt_pcrbanks, u8 *active_pcrbanks)
 {
     *suppt_pcrbanks = 0;
     *active_pcrbanks = 0;
 
-    if (!tpm20_pcr_selection)
-        return -1;
+    എങ്കിൽ (!tpm20_pcr_selection)
+        തിരികെ -1;
 
-    struct tpms_pcr_selection *sel = tpm20_pcr_selection->selections;
-    void *end = (void*)tpm20_pcr_selection + tpm20_pcr_selection_size;
+    ഘടന tpms_pcr_selection *sel = tpm20_pcr_selection->selections;
+    ശൂന്യം *end = (ശൂന്യം*)tpm20_pcr_selection + tpm20_pcr_selection_size;
 
-    while (1) {
+    ആകുമ്പോൾ (1) {
         u8 sizeOfSelect = sel->sizeOfSelect;
-        void *nsel = (void*)sel + sizeof(*sel) + sizeOfSelect;
-        if (nsel > end)
-            return 0;
+        ശൂന്യം *nsel = (ശൂന്യം*)sel + വലുപ്പം(*sel) + sizeOfSelect;
+        എങ്കിൽ (nsel > end)
+            തിരികെ 0;
 
         u16 hashalg = be16_to_cpu(sel->hashAlg);
         u8 hashalg_flag = tpm20_hashalg_to_flag(hashalg);
@@ -589,10 +589,10 @@ tpm20_get_suppt_pcrbanks(u8 *suppt_pcrbanks, u8 *active_pcrbanks)
         *suppt_pcrbanks |= hashalg_flag;
 
         unsigned i;
-        for (i = 0; i < sizeOfSelect; i++) {
-            if (sel->pcrSelect[i]) {
+        വേണ്ടി (i = 0; i < sizeOfSelect; i++) {
+            എങ്കിൽ (sel->pcrSelect[i]) {
                 *active_pcrbanks |= hashalg_flag;
-                break;
+                നിർത്തുക;
             }
         }
 
@@ -600,14 +600,14 @@ tpm20_get_suppt_pcrbanks(u8 *suppt_pcrbanks, u8 *active_pcrbanks)
     }
 }
 
-static int
+സ്ഥിതം പൂർണ്ണസംഖ്യ
 tpm20_set_pcrbanks(u32 active_banks)
 {
-    struct tpm2_req_pcr_allocate trpa = {
+    ഘടന tpm2_req_pcr_allocate trpa = {
         .hdr.tag     = cpu_to_be16(TPM2_ST_SESSIONS),
         .hdr.ordinal = cpu_to_be32(TPM2_CC_PCR_Allocate),
         .authhandle = cpu_to_be32(TPM2_RH_PLATFORM),
-        .authblocksize = cpu_to_be32(sizeof(trpa.authblock)),
+        .authblocksize = cpu_to_be32(വലുപ്പം(trpa.authblock)),
         .authblock = {
             .handle = cpu_to_be32(TPM2_RS_PW),
             .noncesize = cpu_to_be16(0),
@@ -615,27 +615,27 @@ tpm20_set_pcrbanks(u32 active_banks)
             .pwdsize = cpu_to_be16(0),
         },
     };
-    struct tpms_pcr_selection3 {
+    ഘടന tpms_pcr_selection3 {
         u16 hashAlg;
         u8 sizeOfSelect;
         u8 pcrSelect[3];
     } tps[ARRAY_SIZE(trpa.tpms_pcr_selections)];
-    int i = 0;
+    പൂർണ്ണസംഖ്യ i = 0;
     u8 hashalg_flag = TPM2_ALG_SHA1_FLAG;
     u8 dontcare, suppt_banks;
 
     tpm20_get_suppt_pcrbanks(&suppt_banks, &dontcare);
 
-    while (hashalg_flag) {
-        if ((hashalg_flag & suppt_banks)) {
+    ആകുമ്പോൾ (hashalg_flag) {
+        എങ്കിൽ ((hashalg_flag & suppt_banks)) {
             u16 hashalg = tpm20_hashalg_flag_to_hashalg(hashalg_flag);
 
-            if (hashalg) {
+            എങ്കിൽ (hashalg) {
                 u8 mask = 0;
                 tps[i].hashAlg = cpu_to_be16(hashalg);
                 tps[i].sizeOfSelect = 3;
 
-                if (active_banks & hashalg_flag)
+                എങ്കിൽ (active_banks & hashalg_flag)
                     mask = 0xff;
 
                 tps[i].pcrSelect[0] = mask;
@@ -647,89 +647,89 @@ tpm20_set_pcrbanks(u32 active_banks)
         hashalg_flag <<= 1;
     }
 
-    trpa.count = cpu_to_be32(i);
-    memcpy(trpa.tpms_pcr_selections, tps, i * sizeof(tps[0]));
-    trpa.hdr.totlen = cpu_to_be32(offsetof(struct tpm2_req_pcr_allocate,
+    trpa.എണ്ണം = cpu_to_be32(i);
+    memcpy(trpa.tpms_pcr_selections, tps, i * വലുപ്പം(tps[0]));
+    trpa.hdr.totlen = cpu_to_be32(offsetof(ഘടന tpm2_req_pcr_allocate,
                                            tpms_pcr_selections) +
-                                  i * sizeof(tps[0]));
+                                  i * വലുപ്പം(tps[0]));
 
-    struct tpm_rsp_header rsp;
-    u32 resp_length = sizeof(rsp);
+    ഘടന tpm_rsp_header rsp;
+    u32 resp_length = വലുപ്പം(rsp);
 
-    int ret = tpmhw_transmit(0, &trpa.hdr, &rsp, &resp_length,
+    പൂർണ്ണസംഖ്യ ret = tpmhw_transmit(0, &trpa.hdr, &rsp, &resp_length,
                              TPM_DURATION_TYPE_SHORT);
     ret = ret ? -1 : be32_to_cpu(rsp.errcode);
 
-    return ret;
+    തിരികെ ret;
 }
 
-static int tpm20_activate_pcrbanks(u32 active_banks)
+സ്ഥിതം പൂർണ്ണസംഖ്യ tpm20_activate_pcrbanks(u32 active_banks)
 {
-    int ret = tpm20_set_pcrbanks(active_banks);
-    if (!ret)
+    പൂർണ്ണസംഖ്യ ret = tpm20_set_pcrbanks(active_banks);
+    എങ്കിൽ (!ret)
         ret = tpm_simple_cmd(0, TPM2_CC_Shutdown,
                              2, TPM2_SU_CLEAR, TPM_DURATION_TYPE_SHORT);
-    if (!ret)
+    എങ്കിൽ (!ret)
         reset();
-    return ret;
+    തിരികെ ret;
 }
 
-static int
-tpm12_get_capability(u32 cap, u32 subcap, struct tpm_rsp_header *rsp, u32 rsize)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+tpm12_get_capability(u32 cap, u32 subcap, ഘടന tpm_rsp_header *rsp, u32 rsize)
 {
-    struct tpm_req_getcap trgc = {
+    ഘടന tpm_req_getcap trgc = {
         .hdr.tag = cpu_to_be16(TPM_TAG_RQU_CMD),
-        .hdr.totlen = cpu_to_be32(sizeof(trgc)),
+        .hdr.totlen = cpu_to_be32(വലുപ്പം(trgc)),
         .hdr.ordinal = cpu_to_be32(TPM_ORD_GetCapability),
         .capArea = cpu_to_be32(cap),
-        .subCapSize = cpu_to_be32(sizeof(trgc.subCap)),
+        .subCapSize = cpu_to_be32(വലുപ്പം(trgc.subCap)),
         .subCap = cpu_to_be32(subcap)
     };
     u32 resp_size = rsize;
-    int ret = tpmhw_transmit(0, &trgc.hdr, rsp, &resp_size,
+    പൂർണ്ണസംഖ്യ ret = tpmhw_transmit(0, &trgc.hdr, rsp, &resp_size,
                              TPM_DURATION_TYPE_SHORT);
     ret = (ret || resp_size != rsize) ? -1 : be32_to_cpu(rsp->errcode);
     dprintf(DEBUG_tcg, "TCGBIOS: Return code from TPM_GetCapability(%d, %d)"
             " = %x\n", cap, subcap, ret);
-    return ret;
+    തിരികെ ret;
 }
 
-static int
-tpm12_read_permanent_flags(char *buf, int buf_len)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+tpm12_read_permanent_flags(അക്ഷരം *buf, പൂർണ്ണസംഖ്യ buf_len)
 {
     memset(buf, 0, buf_len);
 
-    struct tpm_res_getcap_perm_flags pf;
-    int ret = tpm12_get_capability(TPM_CAP_FLAG, TPM_CAP_FLAG_PERMANENT
-                                   , &pf.hdr, sizeof(pf));
-    if (ret)
-        return -1;
+    ഘടന tpm_res_getcap_perm_flags pf;
+    പൂർണ്ണസംഖ്യ ret = tpm12_get_capability(TPM_CAP_FLAG, TPM_CAP_FLAG_PERMANENT
+                                   , &pf.hdr, വലുപ്പം(pf));
+    എങ്കിൽ (ret)
+        തിരികെ -1;
 
     memcpy(buf, &pf.perm_flags, buf_len);
 
-    return 0;
+    തിരികെ 0;
 }
 
-static int
-tpm12_determine_timeouts(void)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+tpm12_determine_timeouts(ശൂന്യം)
 {
-    struct tpm_res_getcap_timeouts timeouts;
-    int ret = tpm12_get_capability(TPM_CAP_PROPERTY, TPM_CAP_PROP_TIS_TIMEOUT
-                                   , &timeouts.hdr, sizeof(timeouts));
-    if (ret)
-        return ret;
+    ഘടന tpm_res_getcap_timeouts timeouts;
+    പൂർണ്ണസംഖ്യ ret = tpm12_get_capability(TPM_CAP_PROPERTY, TPM_CAP_PROP_TIS_TIMEOUT
+                                   , &timeouts.hdr, വലുപ്പം(timeouts));
+    എങ്കിൽ (ret)
+        തിരികെ ret;
 
-    struct tpm_res_getcap_durations durations;
+    ഘടന tpm_res_getcap_durations durations;
     ret = tpm12_get_capability(TPM_CAP_PROPERTY, TPM_CAP_PROP_DURATION
-                               , &durations.hdr, sizeof(durations));
-    if (ret)
-        return ret;
+                               , &durations.hdr, വലുപ്പം(durations));
+    എങ്കിൽ (ret)
+        തിരികെ ret;
 
-    int i;
-    for (i = 0; i < 3; i++)
+    പൂർണ്ണസംഖ്യ i;
+    വേണ്ടി (i = 0; i < 3; i++)
         durations.durations[i] = be32_to_cpu(durations.durations[i]);
 
-    for (i = 0; i < 4; i++)
+    വേണ്ടി (i = 0; i < 4; i++)
         timeouts.timeouts[i] = be32_to_cpu(timeouts.timeouts[i]);
 
     dprintf(DEBUG_tcg, "TCGBIOS: timeouts: %u %u %u %u\n",
@@ -745,11 +745,11 @@ tpm12_determine_timeouts(void)
 
     tpmhw_set_timeouts(timeouts.timeouts, durations.durations);
 
-    return 0;
+    തിരികെ 0;
 }
 
-static void
-tpm20_set_timeouts(void)
+സ്ഥിതം ശൂന്യം
+tpm20_set_timeouts(ശൂന്യം)
 {
     u32 durations[3] = {
         TPM2_DEFAULT_DURATION_SHORT,
@@ -766,35 +766,35 @@ tpm20_set_timeouts(void)
     tpmhw_set_timeouts(timeouts, durations);
 }
 
-static int
-tpm12_extend(struct tpm_log_entry *le, int digest_len)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+tpm12_extend(ഘടന tpm_log_entry *le, പൂർണ്ണസംഖ്യ digest_len)
 {
-    struct tpm_req_extend tre = {
+    ഘടന tpm_req_extend tre = {
         .hdr.tag     = cpu_to_be16(TPM_TAG_RQU_CMD),
-        .hdr.totlen  = cpu_to_be32(sizeof(tre)),
+        .hdr.totlen  = cpu_to_be32(വലുപ്പം(tre)),
         .hdr.ordinal = cpu_to_be32(TPM_ORD_Extend),
         .pcrindex    = cpu_to_be32(le->hdr.pcrindex),
     };
-    memcpy(tre.digest, le->hdr.digest, sizeof(tre.digest));
+    memcpy(tre.digest, le->hdr.digest, വലുപ്പം(tre.digest));
 
-    struct tpm_rsp_extend rsp;
-    u32 resp_length = sizeof(rsp);
-    int ret = tpmhw_transmit(0, &tre.hdr, &rsp, &resp_length,
+    ഘടന tpm_rsp_extend rsp;
+    u32 resp_length = വലുപ്പം(rsp);
+    പൂർണ്ണസംഖ്യ ret = tpmhw_transmit(0, &tre.hdr, &rsp, &resp_length,
                              TPM_DURATION_TYPE_SHORT);
-    if (ret || resp_length != sizeof(rsp) || rsp.hdr.errcode)
-        return -1;
+    എങ്കിൽ (ret || resp_length != വലുപ്പം(rsp) || rsp.hdr.errcode)
+        തിരികെ -1;
 
-    return 0;
+    തിരികെ 0;
 }
 
-static int tpm20_extend(struct tpm_log_entry *le, int digest_len)
+സ്ഥിതം പൂർണ്ണസംഖ്യ tpm20_extend(ഘടന tpm_log_entry *le, പൂർണ്ണസംഖ്യ digest_len)
 {
-    struct tpm2_req_extend tmp_tre = {
+    ഘടന tpm2_req_extend tmp_tre = {
         .hdr.tag     = cpu_to_be16(TPM2_ST_SESSIONS),
         .hdr.totlen  = cpu_to_be32(0),
         .hdr.ordinal = cpu_to_be32(TPM2_CC_PCR_Extend),
         .pcrindex    = cpu_to_be32(le->hdr.pcrindex),
-        .authblocksize = cpu_to_be32(sizeof(tmp_tre.authblock)),
+        .authblocksize = cpu_to_be32(വലുപ്പം(tmp_tre.authblock)),
         .authblock = {
             .handle = cpu_to_be32(TPM2_RS_PW),
             .noncesize = cpu_to_be16(0),
@@ -802,101 +802,101 @@ static int tpm20_extend(struct tpm_log_entry *le, int digest_len)
             .pwdsize = cpu_to_be16(0),
         },
     };
-    u8 buffer[sizeof(tmp_tre) + sizeof(le->pad)];
-    struct tpm2_req_extend *tre = (struct tpm2_req_extend *)buffer;
+    u8 buffer[വലുപ്പം(tmp_tre) + വലുപ്പം(le->pad)];
+    ഘടന tpm2_req_extend *tre = (ഘടന tpm2_req_extend *)buffer;
 
-    memcpy(tre, &tmp_tre, sizeof(tmp_tre));
+    memcpy(tre, &tmp_tre, വലുപ്പം(tmp_tre));
     memcpy(&tre->digest[0], le->hdr.digest, digest_len);
 
-    tre->hdr.totlen = cpu_to_be32(sizeof(tmp_tre) + digest_len);
+    tre->hdr.totlen = cpu_to_be32(വലുപ്പം(tmp_tre) + digest_len);
 
-    struct tpm_rsp_header rsp;
-    u32 resp_length = sizeof(rsp);
-    int ret = tpmhw_transmit(0, &tre->hdr, &rsp, &resp_length,
+    ഘടന tpm_rsp_header rsp;
+    u32 resp_length = വലുപ്പം(rsp);
+    പൂർണ്ണസംഖ്യ ret = tpmhw_transmit(0, &tre->hdr, &rsp, &resp_length,
                              TPM_DURATION_TYPE_SHORT);
-    if (ret || resp_length != sizeof(rsp) || rsp.errcode)
-        return -1;
+    എങ്കിൽ (ret || resp_length != വലുപ്പം(rsp) || rsp.errcode)
+        തിരികെ -1;
 
-    return 0;
+    തിരികെ 0;
 }
 
-static int
-tpm_extend(struct tpm_log_entry *le, int digest_len)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+tpm_extend(ഘടന tpm_log_entry *le, പൂർണ്ണസംഖ്യ digest_len)
 {
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
-        return tpm12_extend(le, digest_len);
-    case TPM_VERSION_2:
-        return tpm20_extend(le, digest_len);
+    തിരഞ്ഞെടുപ്പ് (TPM_version) {
+    അവസ്ഥ TPM_VERSION_1_2:
+        തിരികെ tpm12_extend(le, digest_len);
+    അവസ്ഥ TPM_VERSION_2:
+        തിരികെ tpm20_extend(le, digest_len);
     }
-    return -1;
+    തിരികെ -1;
 }
 
-static int
-tpm20_stirrandom(void)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+tpm20_stirrandom(ശൂന്യം)
 {
-    struct tpm2_req_stirrandom stir = {
+    ഘടന tpm2_req_stirrandom stir = {
         .hdr.tag = cpu_to_be16(TPM2_ST_NO_SESSIONS),
-        .hdr.totlen = cpu_to_be32(sizeof(stir)),
+        .hdr.totlen = cpu_to_be32(വലുപ്പം(stir)),
         .hdr.ordinal = cpu_to_be32(TPM2_CC_StirRandom),
-        .size = cpu_to_be16(sizeof(stir.stir)),
+        .size = cpu_to_be16(വലുപ്പം(stir.stir)),
         .stir = rdtscll(),
     };
     /* set more bits to stir with */
     stir.stir += swab64(rdtscll());
 
-    struct tpm_rsp_header rsp;
-    u32 resp_length = sizeof(rsp);
-    int ret = tpmhw_transmit(0, &stir.hdr, &rsp, &resp_length,
+    ഘടന tpm_rsp_header rsp;
+    u32 resp_length = വലുപ്പം(rsp);
+    പൂർണ്ണസംഖ്യ ret = tpmhw_transmit(0, &stir.hdr, &rsp, &resp_length,
                              TPM_DURATION_TYPE_SHORT);
-    if (ret || resp_length != sizeof(rsp) || rsp.errcode)
+    എങ്കിൽ (ret || resp_length != വലുപ്പം(rsp) || rsp.errcode)
         ret = -1;
 
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_StirRandom = 0x%08x\n",
             ret);
 
-    return ret;
+    തിരികെ ret;
 }
 
-static int
+സ്ഥിതം പൂർണ്ണസംഖ്യ
 tpm20_getrandom(u8 *buf, u16 buf_len)
 {
-    struct tpm2_res_getrandom rsp;
+    ഘടന tpm2_res_getrandom rsp;
 
-    if (buf_len > sizeof(rsp.rnd.buffer))
-        return -1;
+    എങ്കിൽ (buf_len > വലുപ്പം(rsp.rnd.buffer))
+        തിരികെ -1;
 
-    struct tpm2_req_getrandom trgr = {
+    ഘടന tpm2_req_getrandom trgr = {
         .hdr.tag = cpu_to_be16(TPM2_ST_NO_SESSIONS),
-        .hdr.totlen = cpu_to_be32(sizeof(trgr)),
+        .hdr.totlen = cpu_to_be32(വലുപ്പം(trgr)),
         .hdr.ordinal = cpu_to_be32(TPM2_CC_GetRandom),
         .bytesRequested = cpu_to_be16(buf_len),
     };
-    u32 resp_length = sizeof(rsp);
+    u32 resp_length = വലുപ്പം(rsp);
 
-    int ret = tpmhw_transmit(0, &trgr.hdr, &rsp, &resp_length,
+    പൂർണ്ണസംഖ്യ ret = tpmhw_transmit(0, &trgr.hdr, &rsp, &resp_length,
                              TPM_DURATION_TYPE_MEDIUM);
-    if (ret || resp_length != sizeof(rsp) || rsp.hdr.errcode)
+    എങ്കിൽ (ret || resp_length != വലുപ്പം(rsp) || rsp.hdr.errcode)
         ret = -1;
-    else
+    അല്ലെങ്കിൽ
         memcpy(buf, rsp.rnd.buffer, buf_len);
 
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_GetRandom = 0x%08x\n",
             ret);
 
-    return ret;
+    തിരികെ ret;
 }
 
-static int
+സ്ഥിതം പൂർണ്ണസംഖ്യ
 tpm20_hierarchycontrol(u32 hierarchy, u8 state)
 {
     /* we will try to deactivate the TPM now - ignoring all errors */
-    struct tpm2_req_hierarchycontrol trh = {
+    ഘടന tpm2_req_hierarchycontrol trh = {
         .hdr.tag = cpu_to_be16(TPM2_ST_SESSIONS),
-        .hdr.totlen = cpu_to_be32(sizeof(trh)),
+        .hdr.totlen = cpu_to_be32(വലുപ്പം(trh)),
         .hdr.ordinal = cpu_to_be32(TPM2_CC_HierarchyControl),
         .authhandle = cpu_to_be32(TPM2_RH_PLATFORM),
-        .authblocksize = cpu_to_be32(sizeof(trh.authblock)),
+        .authblocksize = cpu_to_be32(വലുപ്പം(trh.authblock)),
         .authblock = {
             .handle = cpu_to_be32(TPM2_RS_PW),
             .noncesize = cpu_to_be16(0),
@@ -906,28 +906,28 @@ tpm20_hierarchycontrol(u32 hierarchy, u8 state)
         .enable = cpu_to_be32(hierarchy),
         .state = state,
     };
-    struct tpm_rsp_header rsp;
-    u32 resp_length = sizeof(rsp);
-    int ret = tpmhw_transmit(0, &trh.hdr, &rsp, &resp_length,
+    ഘടന tpm_rsp_header rsp;
+    u32 resp_length = വലുപ്പം(rsp);
+    പൂർണ്ണസംഖ്യ ret = tpmhw_transmit(0, &trh.hdr, &rsp, &resp_length,
                              TPM_DURATION_TYPE_MEDIUM);
-    if (ret || resp_length != sizeof(rsp) || rsp.errcode)
+    എങ്കിൽ (ret || resp_length != വലുപ്പം(rsp) || rsp.errcode)
         ret = -1;
 
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_HierarchyControl = 0x%08x\n",
             ret);
 
-    return ret;
+    തിരികെ ret;
 }
 
-static int
+സ്ഥിതം പൂർണ്ണസംഖ്യ
 tpm20_hierarchychangeauth(u8 auth[20])
 {
-    struct tpm2_req_hierarchychangeauth trhca = {
+    ഘടന tpm2_req_hierarchychangeauth trhca = {
         .hdr.tag = cpu_to_be16(TPM2_ST_SESSIONS),
-        .hdr.totlen = cpu_to_be32(sizeof(trhca)),
+        .hdr.totlen = cpu_to_be32(വലുപ്പം(trhca)),
         .hdr.ordinal = cpu_to_be32(TPM2_CC_HierarchyChangeAuth),
         .authhandle = cpu_to_be32(TPM2_RH_PLATFORM),
-        .authblocksize = cpu_to_be32(sizeof(trhca.authblock)),
+        .authblocksize = cpu_to_be32(വലുപ്പം(trhca.authblock)),
         .authblock = {
             .handle = cpu_to_be32(TPM2_RS_PW),
             .noncesize = cpu_to_be16(0),
@@ -935,22 +935,22 @@ tpm20_hierarchychangeauth(u8 auth[20])
             .pwdsize = cpu_to_be16(0),
         },
         .newAuth = {
-            .size = cpu_to_be16(sizeof(trhca.newAuth.buffer)),
+            .size = cpu_to_be16(വലുപ്പം(trhca.newAuth.buffer)),
         },
     };
-    memcpy(trhca.newAuth.buffer, auth, sizeof(trhca.newAuth.buffer));
+    memcpy(trhca.newAuth.buffer, auth, വലുപ്പം(trhca.newAuth.buffer));
 
-    struct tpm_rsp_header rsp;
-    u32 resp_length = sizeof(rsp);
-    int ret = tpmhw_transmit(0, &trhca.hdr, &rsp, &resp_length,
+    ഘടന tpm_rsp_header rsp;
+    u32 resp_length = വലുപ്പം(rsp);
+    പൂർണ്ണസംഖ്യ ret = tpmhw_transmit(0, &trhca.hdr, &rsp, &resp_length,
                              TPM_DURATION_TYPE_MEDIUM);
-    if (ret || resp_length != sizeof(rsp) || rsp.errcode)
+    എങ്കിൽ (ret || resp_length != വലുപ്പം(rsp) || rsp.errcode)
         ret = -1;
 
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_HierarchyChangeAuth = 0x%08x\n",
             ret);
 
-    return ret;
+    തിരികെ ret;
 }
 
 
@@ -958,20 +958,20 @@ tpm20_hierarchychangeauth(u8 auth[20])
  * Setup and Measurements
  ****************************************************************/
 
-static int TPM_has_physical_presence;
+സ്ഥിതം പൂർണ്ണസംഖ്യ TPM_has_physical_presence;
 u8 TPM_working VARLOW;
 
-static int
-tpm_is_working(void)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+tpm_is_working(ശൂന്യം)
 {
-    return CONFIG_TCGBIOS && TPM_working;
+    തിരികെ CONFIG_TCGBIOS && TPM_working;
 }
 
-static void
-tpm_set_failure(void)
+സ്ഥിതം ശൂന്യം
+tpm_set_failure(ശൂന്യം)
 {
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
+    തിരഞ്ഞെടുപ്പ് (TPM_version) {
+    അവസ്ഥ TPM_VERSION_1_2:
         /*
          * We will try to deactivate the TPM now - ignoring all errors
          * Physical presence is asserted.
@@ -979,12 +979,12 @@ tpm_set_failure(void)
 
         tpm_simple_cmd(0, TPM_ORD_SetTempDeactivated,
                        0, 0, TPM_DURATION_TYPE_SHORT);
-        break;
-    case TPM_VERSION_2:
+        നിർത്തുക;
+    അവസ്ഥ TPM_VERSION_2:
         tpm20_hierarchycontrol(TPM2_RH_ENDORSEMENT, TPM2_NO);
         tpm20_hierarchycontrol(TPM2_RH_OWNER, TPM2_NO);
         tpm20_hierarchycontrol(TPM2_RH_PLATFORM, TPM2_NO);
-        break;
+        നിർത്തുക;
     }
 
     TPM_working = 0;
@@ -1002,33 +1002,33 @@ tpm_set_failure(void)
  *  hashdata    : pointer to the data to be hashed
  *  hashdata_length: length of the data to be hashed
  */
-static void
+സ്ഥിതം ശൂന്യം
 tpm_add_measurement_to_log(u32 pcrindex, u32 event_type,
-                           const char *event, u32 event_length,
-                           const u8 *hashdata, u32 hashdata_length)
+                           സ്ഥിരം അക്ഷരം *event, u32 event_length,
+                           സ്ഥിരം u8 *hashdata, u32 hashdata_length)
 {
-    if (!tpm_is_working())
-        return;
+    എങ്കിൽ (!tpm_is_working())
+        തിരികെ;
 
-    struct tpm_log_entry le = {
+    ഘടന tpm_log_entry le = {
         .hdr.pcrindex = pcrindex,
         .hdr.eventtype = event_type,
     };
-    int digest_len = tpm_build_digest(&le, hashdata, hashdata_length, 1);
-    if (digest_len < 0)
-        return;
-    int ret = tpm_extend(&le, digest_len);
-    if (ret) {
+    പൂർണ്ണസംഖ്യ digest_len = tpm_build_digest(&le, hashdata, hashdata_length, 1);
+    എങ്കിൽ (digest_len < 0)
+        തിരികെ;
+    പൂർണ്ണസംഖ്യ ret = tpm_extend(&le, digest_len);
+    എങ്കിൽ (ret) {
         tpm_set_failure();
-        return;
+        തിരികെ;
     }
     tpm_build_digest(&le, hashdata, hashdata_length, 0);
     tpm_log_event(&le.hdr, digest_len, event, event_length);
 }
 
 // Add an EV_ACTION measurement to the list of measurements
-static void
-tpm_add_action(u32 pcrIndex, const char *string)
+സ്ഥിതം ശൂന്യം
+tpm_add_action(u32 pcrIndex, സ്ഥിരം അക്ഷരം *string)
 {
     u32 len = strlen(string);
     tpm_add_measurement_to_log(pcrIndex, EV_ACTION,
@@ -1038,132 +1038,132 @@ tpm_add_action(u32 pcrIndex, const char *string)
 /*
  * Add event separators for PCRs 0 to 7; specs on 'Measuring Boot Events'
  */
-static void
-tpm_add_event_separators(void)
+സ്ഥിതം ശൂന്യം
+tpm_add_event_separators(ശൂന്യം)
 {
-    static const u8 evt_separator[] = {0xff,0xff,0xff,0xff};
+    സ്ഥിതം സ്ഥിരം u8 evt_separator[] = {0xff,0xff,0xff,0xff};
     u32 pcrIndex;
-    for (pcrIndex = 0; pcrIndex <= 7; pcrIndex++)
+    വേണ്ടി (pcrIndex = 0; pcrIndex <= 7; pcrIndex++)
         tpm_add_measurement_to_log(pcrIndex, EV_SEPARATOR,
-                                   (const char *)evt_separator,
-                                   sizeof(evt_separator),
+                                   (സ്ഥിരം അക്ഷരം *)evt_separator,
+                                   വലുപ്പം(evt_separator),
                                    evt_separator,
-                                   sizeof(evt_separator));
+                                   വലുപ്പം(evt_separator));
 }
 
-static void
-tpm_smbios_measure(void)
+സ്ഥിതം ശൂന്യം
+tpm_smbios_measure(ശൂന്യം)
 {
-    struct pcctes pcctes = {
+    ഘടന pcctes pcctes = {
         .eventid = 1,
         .eventdatasize = SHA1_BUFSIZE,
     };
     u32 smbios_len;
-    void *smbios_tables = smbios_get_tables(&smbios_len);
+    ശൂന്യം *smbios_tables = smbios_get_tables(&smbios_len);
 
     dprintf(DEBUG_tcg, "TCGBIOS: SMBIOS tables at %p\n", smbios_tables);
 
-    if (!smbios_tables)
-        return;
+    എങ്കിൽ (!smbios_tables)
+        തിരികെ;
 
-    sha1((const u8 *)smbios_tables, smbios_len, pcctes.digest);
+    sha1((സ്ഥിരം u8 *)smbios_tables, smbios_len, pcctes.digest);
     tpm_add_measurement_to_log(1,
                                EV_EVENT_TAG,
-                               (const char *)&pcctes, sizeof(pcctes),
-                               (u8 *)&pcctes, sizeof(pcctes));
+                               (സ്ഥിരം അക്ഷരം *)&pcctes, വലുപ്പം(pcctes),
+                               (u8 *)&pcctes, വലുപ്പം(pcctes));
 }
 
-static int
-tpm12_assert_physical_presence(void)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+tpm12_assert_physical_presence(ശൂന്യം)
 {
-    int ret = tpm_simple_cmd(0, TPM_ORD_PhysicalPresence,
+    പൂർണ്ണസംഖ്യ ret = tpm_simple_cmd(0, TPM_ORD_PhysicalPresence,
                              2, TPM_PP_PRESENT, TPM_DURATION_TYPE_SHORT);
-    if (!ret)
-        return 0;
+    എങ്കിൽ (!ret)
+        തിരികെ 0;
 
-    struct tpm_permanent_flags pf;
-    ret = tpm12_read_permanent_flags((char *)&pf, sizeof(pf));
-    if (ret)
-        return -1;
+    ഘടന tpm_permanent_flags pf;
+    ret = tpm12_read_permanent_flags((അക്ഷരം *)&pf, വലുപ്പം(pf));
+    എങ്കിൽ (ret)
+        തിരികെ -1;
 
     /* check if hardware physical presence is supported */
-    if (pf.flags[PERM_FLAG_IDX_PHYSICAL_PRESENCE_HW_ENABLE]) {
+    എങ്കിൽ (pf.flags[PERM_FLAG_IDX_PHYSICAL_PRESENCE_HW_ENABLE]) {
         /* HW phys. presence may not be asserted... */
-        return 0;
+        തിരികെ 0;
     }
 
-    if (!pf.flags[PERM_FLAG_IDX_PHYSICAL_PRESENCE_LIFETIME_LOCK]
+    എങ്കിൽ (!pf.flags[PERM_FLAG_IDX_PHYSICAL_PRESENCE_LIFETIME_LOCK]
         && !pf.flags[PERM_FLAG_IDX_PHYSICAL_PRESENCE_CMD_ENABLE]) {
         tpm_simple_cmd(0, TPM_ORD_PhysicalPresence,
                        2, TPM_PP_CMD_ENABLE, TPM_DURATION_TYPE_SHORT);
 
-        return tpm_simple_cmd(0, TPM_ORD_PhysicalPresence,
+        തിരികെ tpm_simple_cmd(0, TPM_ORD_PhysicalPresence,
                               2, TPM_PP_PRESENT, TPM_DURATION_TYPE_SHORT);
     }
-    return -1;
+    തിരികെ -1;
 }
 
-static int
-tpm12_startup(void)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+tpm12_startup(ശൂന്യം)
 {
     dprintf(DEBUG_tcg, "TCGBIOS: Starting with TPM_Startup(ST_CLEAR)\n");
-    int ret = tpm_simple_cmd(0, TPM_ORD_Startup,
+    പൂർണ്ണസംഖ്യ ret = tpm_simple_cmd(0, TPM_ORD_Startup,
                              2, TPM_ST_CLEAR, TPM_DURATION_TYPE_SHORT);
-    if (CONFIG_COREBOOT && ret == TPM_INVALID_POSTINIT)
+    എങ്കിൽ (CONFIG_COREBOOT && ret == TPM_INVALID_POSTINIT)
         /* with other firmware on the system the TPM may already have been
          * initialized
          */
         ret = 0;
-    if (ret)
-        goto err_exit;
+    എങ്കിൽ (ret)
+        പോകുക err_exit;
 
     /* assertion of physical presence is only possible after startup */
     ret = tpm12_assert_physical_presence();
-    if (!ret)
+    എങ്കിൽ (!ret)
         TPM_has_physical_presence = 1;
 
     ret = tpm12_determine_timeouts();
-    if (ret)
-        goto err_exit;
+    എങ്കിൽ (ret)
+        പോകുക err_exit;
 
     ret = tpm_simple_cmd(0, TPM_ORD_SelfTestFull,
                          0, 0, TPM_DURATION_TYPE_LONG);
-    if (ret)
-        goto err_exit;
+    എങ്കിൽ (ret)
+        പോകുക err_exit;
 
     ret = tpm_simple_cmd(3, TSC_ORD_ResetEstablishmentBit,
                          0, 0, TPM_DURATION_TYPE_SHORT);
-    if (ret && ret != TPM_BAD_LOCALITY)
-        goto err_exit;
+    എങ്കിൽ (ret && ret != TPM_BAD_LOCALITY)
+        പോകുക err_exit;
 
-    return 0;
+    തിരികെ 0;
 
 err_exit:
     dprintf(DEBUG_tcg, "TCGBIOS: TPM malfunctioning (line %d).\n", __LINE__);
 
     tpm_set_failure();
-    return -1;
+    തിരികെ -1;
 }
 
-static int
-tpm20_startup(void)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+tpm20_startup(ശൂന്യം)
 {
     tpm20_set_timeouts();
 
-    int ret = tpm_simple_cmd(0, TPM2_CC_Startup,
+    പൂർണ്ണസംഖ്യ ret = tpm_simple_cmd(0, TPM2_CC_Startup,
                              2, TPM2_SU_CLEAR, TPM_DURATION_TYPE_SHORT);
 
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_Startup(SU_CLEAR) = 0x%08x\n",
             ret);
 
-    if (CONFIG_COREBOOT && ret == TPM2_RC_INITIALIZE)
+    എങ്കിൽ (CONFIG_COREBOOT && ret == TPM2_RC_INITIALIZE)
         /* with other firmware on the system the TPM may already have been
          * initialized
          */
         ret = 0;
 
-    if (ret)
-        goto err_exit;
+    എങ്കിൽ (ret)
+        പോകുക err_exit;
 
     ret = tpm_simple_cmd(0, TPM2_CC_SelfTest,
                          1, TPM2_YES, TPM_DURATION_TYPE_LONG);
@@ -1171,54 +1171,54 @@ tpm20_startup(void)
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_SelfTest = 0x%08x\n",
             ret);
 
-    if (ret)
-        goto err_exit;
+    എങ്കിൽ (ret)
+        പോകുക err_exit;
 
     ret = tpm20_get_pcrbanks();
-    if (ret)
-        goto err_exit;
+    എങ്കിൽ (ret)
+        പോകുക err_exit;
 
     ret = tpm20_write_EfiSpecIdEventStruct();
-    if (ret)
-        goto err_exit;
+    എങ്കിൽ (ret)
+        പോകുക err_exit;
 
-    return 0;
+    തിരികെ 0;
 
 err_exit:
     dprintf(DEBUG_tcg, "TCGBIOS: TPM malfunctioning (line %d).\n", __LINE__);
 
     tpm_set_failure();
-    return -1;
+    തിരികെ -1;
 }
 
-static int
-tpm_startup(void)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+tpm_startup(ശൂന്യം)
 {
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
-        return tpm12_startup();
-    case TPM_VERSION_2:
-        return tpm20_startup();
+    തിരഞ്ഞെടുപ്പ് (TPM_version) {
+    അവസ്ഥ TPM_VERSION_1_2:
+        തിരികെ tpm12_startup();
+    അവസ്ഥ TPM_VERSION_2:
+        തിരികെ tpm20_startup();
     }
-    return -1;
+    തിരികെ -1;
 }
 
-void
-tpm_setup(void)
+ശൂന്യം
+tpm_setup(ശൂന്യം)
 {
-    if (!CONFIG_TCGBIOS)
-        return;
+    എങ്കിൽ (!CONFIG_TCGBIOS)
+        തിരികെ;
 
-    int ret = tpm_tpm2_probe();
-    if (ret) {
+    പൂർണ്ണസംഖ്യ ret = tpm_tpm2_probe();
+    എങ്കിൽ (ret) {
         ret = tpm_tcpa_probe();
-        if (ret)
-            return;
+        എങ്കിൽ (ret)
+            തിരികെ;
     }
 
     TPM_version = tpmhw_probe();
-    if (TPM_version == TPM_VERSION_NONE)
-        return;
+    എങ്കിൽ (TPM_version == TPM_VERSION_NONE)
+        തിരികെ;
 
     dprintf(DEBUG_tcg,
             "TCGBIOS: Detected a TPM %s.\n",
@@ -1226,34 +1226,34 @@ tpm_setup(void)
 
     TPM_working = 1;
 
-    if (runningOnXen())
-        return;
+    എങ്കിൽ (runningOnXen())
+        തിരികെ;
 
     ret = tpm_startup();
-    if (ret)
-        return;
+    എങ്കിൽ (ret)
+        തിരികെ;
 
     tpm_smbios_measure();
     tpm_add_action(2, "Start Option ROM Scan");
 }
 
-static void
-tpm20_prepboot(void)
+സ്ഥിതം ശൂന്യം
+tpm20_prepboot(ശൂന്യം)
 {
-    int ret = tpm20_stirrandom();
-    if (ret)
-         goto err_exit;
+    പൂർണ്ണസംഖ്യ ret = tpm20_stirrandom();
+    എങ്കിൽ (ret)
+         പോകുക err_exit;
 
     u8 auth[20];
-    ret = tpm20_getrandom(&auth[0], sizeof(auth));
-    if (ret)
-        goto err_exit;
+    ret = tpm20_getrandom(&auth[0], വലുപ്പം(auth));
+    എങ്കിൽ (ret)
+        പോകുക err_exit;
 
     ret = tpm20_hierarchychangeauth(auth);
-    if (ret)
-        goto err_exit;
+    എങ്കിൽ (ret)
+        പോകുക err_exit;
 
-    return;
+    തിരികെ;
 
 err_exit:
     dprintf(DEBUG_tcg, "TCGBIOS: TPM malfunctioning (line %d).\n", __LINE__);
@@ -1261,21 +1261,21 @@ err_exit:
     tpm_set_failure();
 }
 
-void
-tpm_prepboot(void)
+ശൂന്യം
+tpm_prepboot(ശൂന്യം)
 {
-    if (!CONFIG_TCGBIOS)
-        return;
+    എങ്കിൽ (!CONFIG_TCGBIOS)
+        തിരികെ;
 
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
-        if (TPM_has_physical_presence)
+    തിരഞ്ഞെടുപ്പ് (TPM_version) {
+    അവസ്ഥ TPM_VERSION_1_2:
+        എങ്കിൽ (TPM_has_physical_presence)
             tpm_simple_cmd(0, TPM_ORD_PhysicalPresence,
                            2, TPM_PP_NOT_PRESENT_LOCK, TPM_DURATION_TYPE_SHORT);
-        break;
-    case TPM_VERSION_2:
+        നിർത്തുക;
+    അവസ്ഥ TPM_VERSION_2:
         tpm20_prepboot();
-        break;
+        നിർത്തുക;
     }
 
     tpm_add_action(4, "Calling INT 19h");
@@ -1285,34 +1285,34 @@ tpm_prepboot(void)
 /*
  * Add measurement to the log about an option rom
  */
-void
-tpm_option_rom(const void *addr, u32 len)
+ശൂന്യം
+tpm_option_rom(സ്ഥിരം ശൂന്യം *addr, u32 len)
 {
-    if (!tpm_is_working())
-        return;
+    എങ്കിൽ (!tpm_is_working())
+        തിരികെ;
 
-    struct pcctes_romex pcctes = {
+    ഘടന pcctes_romex pcctes = {
         .eventid = 7,
-        .eventdatasize = sizeof(u16) + sizeof(u16) + SHA1_BUFSIZE,
+        .eventdatasize = വലുപ്പം(u16) + വലുപ്പം(u16) + SHA1_BUFSIZE,
     };
-    sha1((const u8 *)addr, len, pcctes.digest);
+    sha1((സ്ഥിരം u8 *)addr, len, pcctes.digest);
     tpm_add_measurement_to_log(2,
                                EV_EVENT_TAG,
-                               (const char *)&pcctes, sizeof(pcctes),
-                               (u8 *)&pcctes, sizeof(pcctes));
+                               (സ്ഥിരം അക്ഷരം *)&pcctes, വലുപ്പം(pcctes),
+                               (u8 *)&pcctes, വലുപ്പം(pcctes));
 }
 
-void
-tpm_add_bcv(u32 bootdrv, const u8 *addr, u32 length)
+ശൂന്യം
+tpm_add_bcv(u32 bootdrv, സ്ഥിരം u8 *addr, u32 length)
 {
-    if (!tpm_is_working())
-        return;
+    എങ്കിൽ (!tpm_is_working())
+        തിരികെ;
 
-    if (length < 0x200)
-        return;
+    എങ്കിൽ (length < 0x200)
+        തിരികെ;
 
-    const char *string = "Booting BCV device 00h (Floppy)";
-    if (bootdrv == 0x80)
+    സ്ഥിരം അക്ഷരം *string = "Booting BCV device 00h (Floppy)";
+    എങ്കിൽ (bootdrv == 0x80)
         string = "Booting BCV device 80h (HDD)";
     tpm_add_action(4, string);
 
@@ -1330,60 +1330,60 @@ tpm_add_bcv(u32 bootdrv, const u8 *addr, u32 length)
                                addr + 0x1b8, 0x48);
 }
 
-void
-tpm_add_cdrom(u32 bootdrv, const u8 *addr, u32 length)
+ശൂന്യം
+tpm_add_cdrom(u32 bootdrv, സ്ഥിരം u8 *addr, u32 length)
 {
-    if (!tpm_is_working())
-        return;
+    എങ്കിൽ (!tpm_is_working())
+        തിരികെ;
 
     tpm_add_action(4, "Booting from CD ROM device");
 
     /* specs: see section 'El Torito' */
-    const char *string = "EL TORITO IPL";
+    സ്ഥിരം അക്ഷരം *string = "EL TORITO IPL";
     tpm_add_measurement_to_log(4, EV_IPL,
                                string, strlen(string),
                                addr, length);
 }
 
-void
-tpm_add_cdrom_catalog(const u8 *addr, u32 length)
+ശൂന്യം
+tpm_add_cdrom_catalog(സ്ഥിരം u8 *addr, u32 length)
 {
-    if (!tpm_is_working())
-        return;
+    എങ്കിൽ (!tpm_is_working())
+        തിരികെ;
 
     tpm_add_action(4, "Booting from CD ROM device");
 
     /* specs: see section 'El Torito' */
-    const char *string = "BOOT CATALOG";
+    സ്ഥിരം അക്ഷരം *string = "BOOT CATALOG";
     tpm_add_measurement_to_log(5, EV_IPL_PARTITION_DATA,
                                string, strlen(string),
                                addr, length);
 }
 
-void
-tpm_s3_resume(void)
+ശൂന്യം
+tpm_s3_resume(ശൂന്യം)
 {
-    if (!tpm_is_working())
-        return;
+    എങ്കിൽ (!tpm_is_working())
+        തിരികെ;
 
     dprintf(DEBUG_tcg, "TCGBIOS: Resuming with TPM_Startup(ST_STATE)\n");
 
-    int ret = -1;
+    പൂർണ്ണസംഖ്യ ret = -1;
 
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
+    തിരഞ്ഞെടുപ്പ് (TPM_version) {
+    അവസ്ഥ TPM_VERSION_1_2:
         ret = tpm_simple_cmd(0, TPM_ORD_Startup,
                              2, TPM_ST_STATE, TPM_DURATION_TYPE_SHORT);
-        break;
-    case TPM_VERSION_2:
+        നിർത്തുക;
+    അവസ്ഥ TPM_VERSION_2:
         ret = tpm_simple_cmd(0, TPM2_CC_Startup,
                              2, TPM2_SU_STATE, TPM_DURATION_TYPE_SHORT);
 
         dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_Startup(SU_STATE) = 0x%08x\n",
                 ret);
 
-        if (ret)
-            goto err_exit;
+        എങ്കിൽ (ret)
+            പോകുക err_exit;
 
 
         ret = tpm_simple_cmd(0, TPM2_CC_SelfTest,
@@ -1392,13 +1392,13 @@ tpm_s3_resume(void)
         dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_SelfTest() = 0x%08x\n",
                 ret);
 
-        break;
+        നിർത്തുക;
     }
 
-    if (ret)
-        goto err_exit;
+    എങ്കിൽ (ret)
+        പോകുക err_exit;
 
-    return;
+    തിരികെ;
 
 err_exit:
     dprintf(DEBUG_tcg, "TCGBIOS: TPM malfunctioning (line %d).\n", __LINE__);
@@ -1413,262 +1413,262 @@ err_exit:
 
 u8 TPM_interface_shutdown VARLOW;
 
-static inline void *input_buf32(struct bregs *regs)
+സ്ഥിതം വരിയിൽ ശൂന്യം *നിവേശം_buf32(ഘടന bregs *regs)
 {
-    return MAKE_FLATPTR(regs->es, regs->di);
+    തിരികെ MAKE_FLATPTR(regs->es, regs->di);
 }
 
-static inline void *output_buf32(struct bregs *regs)
+സ്ഥിതം വരിയിൽ ശൂന്യം *output_buf32(ഘടന bregs *regs)
 {
-    return MAKE_FLATPTR(regs->ds, regs->si);
+    തിരികെ MAKE_FLATPTR(regs->ds, regs->si);
 }
 
-static u32
-hash_log_extend(struct pcpes *pcpes, const void *hashdata, u32 hashdata_length
-                , void *event, int extend)
+സ്ഥിതം u32
+hash_log_extend(ഘടന pcpes *pcpes, സ്ഥിരം ശൂന്യം *hashdata, u32 hashdata_length
+                , ശൂന്യം *event, പൂർണ്ണസംഖ്യ extend)
 {
-    if (pcpes->pcrindex >= 24)
-        return TCG_INVALID_INPUT_PARA;
-    if (hashdata)
+    എങ്കിൽ (pcpes->pcrindex >= 24)
+        തിരികെ TCG_INVALID_നിവേശം_PARA;
+    എങ്കിൽ (hashdata)
         sha1(hashdata, hashdata_length, pcpes->digest);
 
-    struct tpm_log_entry le = {
+    ഘടന tpm_log_entry le = {
         .hdr.pcrindex = pcpes->pcrindex,
         .hdr.eventtype = pcpes->eventtype,
     };
-    int digest_len = tpm12_build_digest_direct(&le, pcpes->digest);
-    if (digest_len < 0)
-        return TCG_GENERAL_ERROR;
-    if (extend) {
-        int ret = tpm_extend(&le, digest_len);
-        if (ret)
-            return TCG_TCG_COMMAND_ERROR;
+    പൂർണ്ണസംഖ്യ digest_len = tpm12_build_digest_direct(&le, pcpes->digest);
+    എങ്കിൽ (digest_len < 0)
+        തിരികെ TCG_GENERAL_ERROR;
+    എങ്കിൽ (extend) {
+        പൂർണ്ണസംഖ്യ ret = tpm_extend(&le, digest_len);
+        എങ്കിൽ (ret)
+            തിരികെ TCG_TCG_COMMAND_ERROR;
     }
     tpm12_build_digest_direct(&le, pcpes->digest);
-    int ret = tpm_log_event(&le.hdr, digest_len
+    പൂർണ്ണസംഖ്യ ret = tpm_log_event(&le.hdr, digest_len
                             , pcpes->event, pcpes->eventdatasize);
-    if (ret)
-        return TCG_PC_LOGOVERFLOW;
-    return 0;
+    എങ്കിൽ (ret)
+        തിരികെ TCG_PC_LOGOVERFLOW;
+    തിരികെ 0;
 }
 
-static u32
-hash_log_extend_event_int(const struct hleei_short *hleei_s,
-                          struct hleeo *hleeo)
+സ്ഥിതം u32
+hash_log_extend_event_int(സ്ഥിരം ഘടന hleei_short *hleei_s,
+                          ഘടന hleeo *hleeo)
 {
     u32 rc = 0;
-    struct hleei_long *hleei_l = (struct hleei_long *)hleei_s;
-    const void *logdataptr;
+    ഘടന hleei_long *hleei_l = (ഘടന hleei_long *)hleei_s;
+    സ്ഥിരം ശൂന്യം *logdataptr;
     u32 logdatalen;
-    struct pcpes *pcpes;
+    ഘടന pcpes *pcpes;
     u32 pcrindex;
 
     /* short or long version? */
-    switch (hleei_s->ipblength) {
-    case sizeof(struct hleei_short):
+    തിരഞ്ഞെടുപ്പ് (hleei_s->ipblength) {
+    അവസ്ഥ വലുപ്പം(ഘടന hleei_short):
         /* short */
         logdataptr = hleei_s->logdataptr;
         logdatalen = hleei_s->logdatalen;
         pcrindex = hleei_s->pcrindex;
-    break;
+    നിർത്തുക;
 
-    case sizeof(struct hleei_long):
+    അവസ്ഥ വലുപ്പം(ഘടന hleei_long):
         /* long */
         logdataptr = hleei_l->logdataptr;
         logdatalen = hleei_l->logdatalen;
         pcrindex = hleei_l->pcrindex;
-    break;
+    നിർത്തുക;
 
-    default:
+    സ്ഥിരസ്ഥിതി:
         /* bad input block */
-        rc = TCG_INVALID_INPUT_PARA;
-        goto err_exit;
+        rc = TCG_INVALID_നിവേശം_PARA;
+        പോകുക err_exit;
     }
 
-    pcpes = (struct pcpes *)logdataptr;
+    pcpes = (ഘടന pcpes *)logdataptr;
 
-    if (pcpes->pcrindex != pcrindex
-        || logdatalen != sizeof(*pcpes) + pcpes->eventdatasize) {
-        rc = TCG_INVALID_INPUT_PARA;
-        goto err_exit;
+    എങ്കിൽ (pcpes->pcrindex != pcrindex
+        || logdatalen != വലുപ്പം(*pcpes) + pcpes->eventdatasize) {
+        rc = TCG_INVALID_നിവേശം_PARA;
+        പോകുക err_exit;
     }
     rc = hash_log_extend(pcpes, hleei_s->hashdataptr, hleei_s->hashdatalen
                          , pcpes->event, 1);
-    if (rc)
-        goto err_exit;
+    എങ്കിൽ (rc)
+        പോകുക err_exit;
 
-    hleeo->opblength = sizeof(struct hleeo);
+    hleeo->opblength = വലുപ്പം(ഘടന hleeo);
     hleeo->reserved  = 0;
-    hleeo->eventnumber = tpm_state.entry_count;
-    memcpy(hleeo->digest, pcpes->digest, sizeof(hleeo->digest));
+    hleeo->eventnumber = tpm_state.entry_എണ്ണം;
+    memcpy(hleeo->digest, pcpes->digest, വലുപ്പം(hleeo->digest));
 
 err_exit:
-    if (rc != 0) {
+    എങ്കിൽ (rc != 0) {
         hleeo->opblength = 4;
         hleeo->reserved  = 0;
     }
 
-    return rc;
+    തിരികെ rc;
 }
 
-static u32
-pass_through_to_tpm_int(struct pttti *pttti, struct pttto *pttto)
+സ്ഥിതം u32
+pass_through_to_tpm_int(ഘടന pttti *pttti, ഘടന pttto *pttto)
 {
     u32 rc = 0;
-    struct tpm_req_header *trh = (void*)pttti->tpmopin;
+    ഘടന tpm_req_header *trh = (ശൂന്യം*)pttti->tpmopin;
 
-    if (pttti->ipblength < sizeof(struct pttti) + sizeof(*trh)
-        || pttti->ipblength != sizeof(struct pttti) + be32_to_cpu(trh->totlen)
-        || pttti->opblength < sizeof(struct pttto)) {
-        rc = TCG_INVALID_INPUT_PARA;
-        goto err_exit;
+    എങ്കിൽ (pttti->ipblength < വലുപ്പം(ഘടന pttti) + വലുപ്പം(*trh)
+        || pttti->ipblength != വലുപ്പം(ഘടന pttti) + be32_to_cpu(trh->totlen)
+        || pttti->opblength < വലുപ്പം(ഘടന pttto)) {
+        rc = TCG_INVALID_നിവേശം_PARA;
+        പോകുക err_exit;
     }
 
     u16 tag = be16_to_cpu(trh->tag);
 
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
-        if (tag != TPM_TAG_RQU_CMD && tag != TPM_TAG_RQU_AUTH1_CMD
+    തിരഞ്ഞെടുപ്പ് (TPM_version) {
+    അവസ്ഥ TPM_VERSION_1_2:
+        എങ്കിൽ (tag != TPM_TAG_RQU_CMD && tag != TPM_TAG_RQU_AUTH1_CMD
             && tag != TPM_TAG_RQU_AUTH2_CMD) {
-            rc = TCG_INVALID_INPUT_PARA;
-            goto err_exit;
+            rc = TCG_INVALID_നിവേശം_PARA;
+            പോകുക err_exit;
         }
-        break;
-    case TPM_VERSION_2:
-        if (tag != TPM2_ST_NO_SESSIONS && tag != TPM2_ST_SESSIONS) {
-            rc = TCG_INVALID_INPUT_PARA;
-            goto err_exit;
+        നിർത്തുക;
+    അവസ്ഥ TPM_VERSION_2:
+        എങ്കിൽ (tag != TPM2_ST_NO_SESSIONS && tag != TPM2_ST_SESSIONS) {
+            rc = TCG_INVALID_നിവേശം_PARA;
+            പോകുക err_exit;
         }
     }
 
-    u32 resbuflen = pttti->opblength - offsetof(struct pttto, tpmopout);
-    int ret = tpmhw_transmit(0, trh, pttto->tpmopout, &resbuflen,
+    u32 resbuflen = pttti->opblength - offsetof(ഘടന pttto, tpmopout);
+    പൂർണ്ണസംഖ്യ ret = tpmhw_transmit(0, trh, pttto->tpmopout, &resbuflen,
                              TPM_DURATION_TYPE_LONG /* worst case */);
-    if (ret) {
+    എങ്കിൽ (ret) {
         rc = TCG_FATAL_COM_ERROR;
-        goto err_exit;
+        പോകുക err_exit;
     }
 
-    pttto->opblength = offsetof(struct pttto, tpmopout) + resbuflen;
+    pttto->opblength = offsetof(ഘടന pttto, tpmopout) + resbuflen;
     pttto->reserved  = 0;
 
 err_exit:
-    if (rc != 0) {
+    എങ്കിൽ (rc != 0) {
         pttto->opblength = 4;
         pttto->reserved = 0;
     }
 
-    return rc;
+    തിരികെ rc;
 }
 
-static u32
-shutdown_preboot_interface(void)
+സ്ഥിതം u32
+shutdown_preboot_interface(ശൂന്യം)
 {
     TPM_interface_shutdown = 1;
-    return 0;
+    തിരികെ 0;
 }
 
-static u32
-hash_log_event_int(const struct hlei *hlei, struct hleo *hleo)
+സ്ഥിതം u32
+hash_log_event_int(സ്ഥിരം ഘടന hlei *hlei, ഘടന hleo *hleo)
 {
     u32 rc = 0;
     u16 size;
-    struct pcpes *pcpes;
+    ഘടന pcpes *pcpes;
 
     size = hlei->ipblength;
-    if (size != sizeof(*hlei)) {
-        rc = TCG_INVALID_INPUT_PARA;
-        goto err_exit;
+    എങ്കിൽ (size != വലുപ്പം(*hlei)) {
+        rc = TCG_INVALID_നിവേശം_PARA;
+        പോകുക err_exit;
     }
 
-    pcpes = (struct pcpes *)hlei->logdataptr;
+    pcpes = (ഘടന pcpes *)hlei->logdataptr;
 
-    if (pcpes->pcrindex != hlei->pcrindex
+    എങ്കിൽ (pcpes->pcrindex != hlei->pcrindex
         || pcpes->eventtype != hlei->logeventtype
-        || hlei->logdatalen != sizeof(*pcpes) + pcpes->eventdatasize) {
-        rc = TCG_INVALID_INPUT_PARA;
-        goto err_exit;
+        || hlei->logdatalen != വലുപ്പം(*pcpes) + pcpes->eventdatasize) {
+        rc = TCG_INVALID_നിവേശം_PARA;
+        പോകുക err_exit;
     }
     rc = hash_log_extend(pcpes, hlei->hashdataptr, hlei->hashdatalen
                          , pcpes->event, 0);
-    if (rc)
-        goto err_exit;
+    എങ്കിൽ (rc)
+        പോകുക err_exit;
 
     /* updating the log was fine */
-    hleo->opblength = sizeof(struct hleo);
+    hleo->opblength = വലുപ്പം(ഘടന hleo);
     hleo->reserved  = 0;
-    hleo->eventnumber = tpm_state.entry_count;
+    hleo->eventnumber = tpm_state.entry_എണ്ണം;
 
 err_exit:
-    if (rc != 0) {
+    എങ്കിൽ (rc != 0) {
         hleo->opblength = 2;
         hleo->reserved = 0;
     }
 
-    return rc;
+    തിരികെ rc;
 }
 
-static u32
-hash_all_int(const struct hai *hai, u8 *hash)
+സ്ഥിതം u32
+hash_all_int(സ്ഥിരം ഘടന hai *hai, u8 *hash)
 {
-    if (hai->ipblength != sizeof(struct hai) ||
+    എങ്കിൽ (hai->ipblength != വലുപ്പം(ഘടന hai) ||
         hai->hashdataptr == 0 ||
         hai->hashdatalen == 0 ||
         hai->algorithmid != TPM_ALG_SHA)
-        return TCG_INVALID_INPUT_PARA;
+        തിരികെ TCG_INVALID_നിവേശം_PARA;
 
-    sha1((const u8 *)hai->hashdataptr, hai->hashdatalen, hash);
-    return 0;
+    sha1((സ്ഥിരം u8 *)hai->hashdataptr, hai->hashdatalen, hash);
+    തിരികെ 0;
 }
 
-static u32
-tss_int(struct ti *ti, struct to *to)
+സ്ഥിതം u32
+tss_int(ഘടന ti *ti, ഘടന to *to)
 {
-    to->opblength = sizeof(struct to);
+    to->opblength = വലുപ്പം(ഘടന to);
     to->reserved  = 0;
 
-    return TCG_PC_UNSUPPORTED;
+    തിരികെ TCG_PC_UNSUPPORTED;
 }
 
-static u32
+സ്ഥിതം u32
 compact_hash_log_extend_event_int(u8 *buffer,
                                   u32 info,
                                   u32 length,
                                   u32 pcrindex,
                                   u32 *edx_ptr)
 {
-    struct pcpes pcpes = {
+    ഘടന pcpes pcpes = {
         .pcrindex      = pcrindex,
         .eventtype     = EV_COMPACT_HASH,
-        .eventdatasize = sizeof(info),
+        .eventdatasize = വലുപ്പം(info),
     };
     u32 rc = hash_log_extend(&pcpes, buffer, length, &info, 1);
-    if (rc)
-        return rc;
+    എങ്കിൽ (rc)
+        തിരികെ rc;
 
-    *edx_ptr = tpm_state.entry_count;
-    return 0;
+    *edx_ptr = tpm_state.entry_എണ്ണം;
+    തിരികെ 0;
 }
 
-void VISIBLE32FLAT
-tpm_interrupt_handler32(struct bregs *regs)
+ശൂന്യം VISIBLE32FLAT
+tpm_interrupt_handler32(ഘടന bregs *regs)
 {
-    if (!CONFIG_TCGBIOS)
-        return;
+    എങ്കിൽ (!CONFIG_TCGBIOS)
+        തിരികെ;
 
     set_cf(regs, 0);
 
-    if (TPM_interface_shutdown && regs->al) {
+    എങ്കിൽ (TPM_interface_shutdown && regs->al) {
         regs->eax = TCG_INTERFACE_SHUTDOWN;
-        return;
+        തിരികെ;
     }
 
-    switch ((enum irq_ids)regs->al) {
-    case TCG_StatusCheck:
-        if (!tpmhw_is_present()) {
+    തിരഞ്ഞെടുപ്പ് ((എണ്ണൽ irq_ids)regs->al) {
+    അവസ്ഥ TCG_StatusCheck:
+        എങ്കിൽ (!tpmhw_is_present()) {
             /* no TPM available */
             regs->eax = TCG_PC_TPM_NOT_PRESENT;
-        } else {
+        } അല്ലെങ്കിൽ {
             regs->eax = 0;
             regs->ebx = TCG_MAGIC;
             regs->ch = TCG_VERSION_MAJOR;
@@ -1677,55 +1677,55 @@ tpm_interrupt_handler32(struct bregs *regs)
             regs->esi = (u32)tpm_state.log_area_start_address;
             regs->edi = (u32)tpm_state.log_area_last_entry;
         }
-        break;
+        നിർത്തുക;
 
-    case TCG_HashLogExtendEvent:
+    അവസ്ഥ TCG_HashLogExtendEvent:
         regs->eax =
             hash_log_extend_event_int(
-                  (struct hleei_short *)input_buf32(regs),
-                  (struct hleeo *)output_buf32(regs));
-        break;
+                  (ഘടന hleei_short *)നിവേശം_buf32(regs),
+                  (ഘടന hleeo *)output_buf32(regs));
+        നിർത്തുക;
 
-    case TCG_PassThroughToTPM:
+    അവസ്ഥ TCG_PassThroughToTPM:
         regs->eax =
-            pass_through_to_tpm_int((struct pttti *)input_buf32(regs),
-                                    (struct pttto *)output_buf32(regs));
-        break;
+            pass_through_to_tpm_int((ഘടന pttti *)നിവേശം_buf32(regs),
+                                    (ഘടന pttto *)output_buf32(regs));
+        നിർത്തുക;
 
-    case TCG_ShutdownPreBootInterface:
+    അവസ്ഥ TCG_ShutdownPreBootInterface:
         regs->eax = shutdown_preboot_interface();
-        break;
+        നിർത്തുക;
 
-    case TCG_HashLogEvent:
-        regs->eax = hash_log_event_int((struct hlei*)input_buf32(regs),
-                                       (struct hleo*)output_buf32(regs));
-        break;
+    അവസ്ഥ TCG_HashLogEvent:
+        regs->eax = hash_log_event_int((ഘടന hlei*)നിവേശം_buf32(regs),
+                                       (ഘടന hleo*)output_buf32(regs));
+        നിർത്തുക;
 
-    case TCG_HashAll:
+    അവസ്ഥ TCG_HashAll:
         regs->eax =
-            hash_all_int((struct hai*)input_buf32(regs),
+            hash_all_int((ഘടന hai*)നിവേശം_buf32(regs),
                           (u8 *)output_buf32(regs));
-        break;
+        നിർത്തുക;
 
-    case TCG_TSS:
-        regs->eax = tss_int((struct ti*)input_buf32(regs),
-                            (struct to*)output_buf32(regs));
-        break;
+    അവസ്ഥ TCG_TSS:
+        regs->eax = tss_int((ഘടന ti*)നിവേശം_buf32(regs),
+                            (ഘടന to*)output_buf32(regs));
+        നിർത്തുക;
 
-    case TCG_CompactHashLogExtendEvent:
+    അവസ്ഥ TCG_CompactHashLogExtendEvent:
         regs->eax =
-          compact_hash_log_extend_event_int((u8 *)input_buf32(regs),
+          compact_hash_log_extend_event_int((u8 *)നിവേശം_buf32(regs),
                                             regs->esi,
                                             regs->ecx,
                                             regs->edx,
                                             &regs->edx);
-        break;
+        നിർത്തുക;
 
-    default:
+    സ്ഥിരസ്ഥിതി:
         set_cf(regs, 1);
     }
 
-    return;
+    തിരികെ;
 }
 
 
@@ -1733,66 +1733,66 @@ tpm_interrupt_handler32(struct bregs *regs)
  * TPM Configuration Menu
  ****************************************************************/
 
-typedef u8 tpm_ppi_code;
+തരനിർവചനം u8 tpm_ppi_code;
 
-static int
-tpm12_read_has_owner(int *has_owner)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+tpm12_read_has_owner(പൂർണ്ണസംഖ്യ *has_owner)
 {
-    struct tpm_res_getcap_ownerauth oauth;
-    int ret = tpm12_get_capability(TPM_CAP_PROPERTY, TPM_CAP_PROP_OWNER
-                                   , &oauth.hdr, sizeof(oauth));
-    if (ret)
-        return -1;
+    ഘടന tpm_res_getcap_ownerauth oauth;
+    പൂർണ്ണസംഖ്യ ret = tpm12_get_capability(TPM_CAP_PROPERTY, TPM_CAP_PROP_OWNER
+                                   , &oauth.hdr, വലുപ്പം(oauth));
+    എങ്കിൽ (ret)
+        തിരികെ -1;
 
     *has_owner = oauth.flag;
 
-    return 0;
+    തിരികെ 0;
 }
 
-static int
-tpm12_enable_tpm(int enable, int verbose)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+tpm12_enable_tpm(പൂർണ്ണസംഖ്യ enable, പൂർണ്ണസംഖ്യ verbose)
 {
-    struct tpm_permanent_flags pf;
-    int ret = tpm12_read_permanent_flags((char *)&pf, sizeof(pf));
-    if (ret)
-        return -1;
+    ഘടന tpm_permanent_flags pf;
+    പൂർണ്ണസംഖ്യ ret = tpm12_read_permanent_flags((അക്ഷരം *)&pf, വലുപ്പം(pf));
+    എങ്കിൽ (ret)
+        തിരികെ -1;
 
-    if (pf.flags[PERM_FLAG_IDX_DISABLE] && !enable)
-        return 0;
+    എങ്കിൽ (pf.flags[PERM_FLAG_IDX_DISABLE] && !enable)
+        തിരികെ 0;
 
     ret = tpm_simple_cmd(0, enable ? TPM_ORD_PhysicalEnable
                                    : TPM_ORD_PhysicalDisable,
                          0, 0, TPM_DURATION_TYPE_SHORT);
-    if (ret) {
-        if (enable)
+    എങ്കിൽ (ret) {
+        എങ്കിൽ (enable)
             dprintf(DEBUG_tcg, "TCGBIOS: Enabling the TPM failed.\n");
-        else
+        അല്ലെങ്കിൽ
             dprintf(DEBUG_tcg, "TCGBIOS: Disabling the TPM failed.\n");
     }
-    return ret;
+    തിരികെ ret;
 }
 
-static int
-tpm12_activate_tpm(int activate, int allow_reset, int verbose)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+tpm12_activate_tpm(പൂർണ്ണസംഖ്യ activate, പൂർണ്ണസംഖ്യ allow_reset, പൂർണ്ണസംഖ്യ verbose)
 {
-    struct tpm_permanent_flags pf;
-    int ret = tpm12_read_permanent_flags((char *)&pf, sizeof(pf));
-    if (ret)
-        return -1;
+    ഘടന tpm_permanent_flags pf;
+    പൂർണ്ണസംഖ്യ ret = tpm12_read_permanent_flags((അക്ഷരം *)&pf, വലുപ്പം(pf));
+    എങ്കിൽ (ret)
+        തിരികെ -1;
 
-    if (pf.flags[PERM_FLAG_IDX_DEACTIVATED] && !activate)
-        return 0;
+    എങ്കിൽ (pf.flags[PERM_FLAG_IDX_DEACTIVATED] && !activate)
+        തിരികെ 0;
 
-    if (pf.flags[PERM_FLAG_IDX_DISABLE])
-        return 0;
+    എങ്കിൽ (pf.flags[PERM_FLAG_IDX_DISABLE])
+        തിരികെ 0;
 
     ret = tpm_simple_cmd(0, TPM_ORD_PhysicalSetDeactivated,
                          1, activate ? 0x00 : 0x01, TPM_DURATION_TYPE_SHORT);
-    if (ret)
-        return ret;
+    എങ്കിൽ (ret)
+        തിരികെ ret;
 
-    if (activate && allow_reset) {
-        if (verbose) {
+    എങ്കിൽ (activate && allow_reset) {
+        എങ്കിൽ (verbose) {
             printf("Requiring a reboot to activate the TPM.\n");
 
             msleep(2000);
@@ -1800,148 +1800,148 @@ tpm12_activate_tpm(int activate, int allow_reset, int verbose)
         reset();
     }
 
-    return 0;
+    തിരികെ 0;
 }
 
-static int
-tpm12_enable_activate(int allow_reset, int verbose)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+tpm12_enable_activate(പൂർണ്ണസംഖ്യ allow_reset, പൂർണ്ണസംഖ്യ verbose)
 {
-    int ret = tpm12_enable_tpm(1, verbose);
-    if (ret)
-        return ret;
+    പൂർണ്ണസംഖ്യ ret = tpm12_enable_tpm(1, verbose);
+    എങ്കിൽ (ret)
+        തിരികെ ret;
 
-    return tpm12_activate_tpm(1, allow_reset, verbose);
+    തിരികെ tpm12_activate_tpm(1, allow_reset, verbose);
 }
 
-static int
-tpm12_force_clear(int enable_activate_before, int enable_activate_after,
-                  int verbose)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+tpm12_force_clear(പൂർണ്ണസംഖ്യ enable_activate_before, പൂർണ്ണസംഖ്യ enable_activate_after,
+                  പൂർണ്ണസംഖ്യ verbose)
 {
-    int has_owner;
-    int ret = tpm12_read_has_owner(&has_owner);
-    if (ret)
-        return -1;
-    if (!has_owner) {
-        if (verbose)
+    പൂർണ്ണസംഖ്യ has_owner;
+    പൂർണ്ണസംഖ്യ ret = tpm12_read_has_owner(&has_owner);
+    എങ്കിൽ (ret)
+        തിരികെ -1;
+    എങ്കിൽ (!has_owner) {
+        എങ്കിൽ (verbose)
             printf("TPM does not have an owner.\n");
-        return 0;
+        തിരികെ 0;
     }
 
-    if (enable_activate_before) {
+    എങ്കിൽ (enable_activate_before) {
         ret = tpm12_enable_activate(0, verbose);
-        if (ret) {
+        എങ്കിൽ (ret) {
             dprintf(DEBUG_tcg,
                     "TCGBIOS: Enabling/activating the TPM failed.\n");
-            return ret;
+            തിരികെ ret;
         }
     }
 
     ret = tpm_simple_cmd(0, TPM_ORD_ForceClear,
                          0, 0, TPM_DURATION_TYPE_SHORT);
-    if (ret)
-        return ret;
+    എങ്കിൽ (ret)
+        തിരികെ ret;
 
-    if (!enable_activate_after) {
-        if (verbose)
+    എങ്കിൽ (!enable_activate_after) {
+        എങ്കിൽ (verbose)
             printf("Owner successfully cleared.\n"
                    "You will need to enable/activate the TPM again.\n\n");
-        return 0;
+        തിരികെ 0;
     }
 
-    return tpm12_enable_activate(1, verbose);
+    തിരികെ tpm12_enable_activate(1, verbose);
 }
 
-static int
-tpm12_set_owner_install(int allow, int verbose)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+tpm12_set_owner_install(പൂർണ്ണസംഖ്യ allow, പൂർണ്ണസംഖ്യ verbose)
 {
-    int has_owner;
-    int ret = tpm12_read_has_owner(&has_owner);
-    if (ret)
-        return -1;
-    if (has_owner) {
-        if (verbose)
+    പൂർണ്ണസംഖ്യ has_owner;
+    പൂർണ്ണസംഖ്യ ret = tpm12_read_has_owner(&has_owner);
+    എങ്കിൽ (ret)
+        തിരികെ -1;
+    എങ്കിൽ (has_owner) {
+        എങ്കിൽ (verbose)
             printf("Must first remove owner.\n");
-        return 0;
+        തിരികെ 0;
     }
 
-    struct tpm_permanent_flags pf;
-    ret = tpm12_read_permanent_flags((char *)&pf, sizeof(pf));
-    if (ret)
-        return -1;
+    ഘടന tpm_permanent_flags pf;
+    ret = tpm12_read_permanent_flags((അക്ഷരം *)&pf, വലുപ്പം(pf));
+    എങ്കിൽ (ret)
+        തിരികെ -1;
 
-    if (pf.flags[PERM_FLAG_IDX_DISABLE]) {
-        if (verbose)
+    എങ്കിൽ (pf.flags[PERM_FLAG_IDX_DISABLE]) {
+        എങ്കിൽ (verbose)
             printf("TPM must first be enable.\n");
-        return 0;
+        തിരികെ 0;
     }
 
     ret = tpm_simple_cmd(0, TPM_ORD_SetOwnerInstall,
                          1, allow ? 0x01 : 0x00, TPM_DURATION_TYPE_SHORT);
-    if (ret)
-        return ret;
+    എങ്കിൽ (ret)
+        തിരികെ ret;
 
-    if (verbose)
+    എങ്കിൽ (verbose)
         printf("Installation of owner %s.\n", allow ? "enabled" : "disabled");
 
-    return 0;
+    തിരികെ 0;
 }
 
-static int
-tpm12_process_cfg(tpm_ppi_code msgCode, int verbose)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+tpm12_process_cfg(tpm_ppi_code സന്ദേശം_Code, പൂർണ്ണസംഖ്യ verbose)
 {
-    int ret = 0;
+    പൂർണ്ണസംഖ്യ ret = 0;
 
-    switch (msgCode) {
-        case TPM_PPI_OP_NOOP: /* no-op */
-            break;
+    തിരഞ്ഞെടുപ്പ് (സന്ദേശം_Code) {
+        അവസ്ഥ TPM_PPI_OP_NOOP: /* no-op */
+            നിർത്തുക;
 
-        case TPM_PPI_OP_ENABLE:
+        അവസ്ഥ TPM_PPI_OP_ENABLE:
             ret = tpm12_enable_tpm(1, verbose);
-            break;
+            നിർത്തുക;
 
-        case TPM_PPI_OP_DISABLE:
+        അവസ്ഥ TPM_PPI_OP_DISABLE:
             ret = tpm12_enable_tpm(0, verbose);
-            break;
+            നിർത്തുക;
 
-        case TPM_PPI_OP_ACTIVATE:
+        അവസ്ഥ TPM_PPI_OP_ACTIVATE:
             ret = tpm12_activate_tpm(1, 1, verbose);
-            break;
+            നിർത്തുക;
 
-        case TPM_PPI_OP_DEACTIVATE:
+        അവസ്ഥ TPM_PPI_OP_DEACTIVATE:
             ret = tpm12_activate_tpm(0, 1, verbose);
-            break;
+            നിർത്തുക;
 
-        case TPM_PPI_OP_CLEAR:
+        അവസ്ഥ TPM_PPI_OP_CLEAR:
             ret = tpm12_force_clear(1, 0, verbose);
-            break;
+            നിർത്തുക;
 
-        case TPM_PPI_OP_SET_OWNERINSTALL_TRUE:
+        അവസ്ഥ TPM_PPI_OP_SET_OWNERINSTALL_TRUE:
             ret = tpm12_set_owner_install(1, verbose);
-            break;
+            നിർത്തുക;
 
-        case TPM_PPI_OP_SET_OWNERINSTALL_FALSE:
+        അവസ്ഥ TPM_PPI_OP_SET_OWNERINSTALL_FALSE:
             ret = tpm12_set_owner_install(0, verbose);
-            break;
+            നിർത്തുക;
 
-        default:
-            break;
+        സ്ഥിരസ്ഥിതി:
+            നിർത്തുക;
     }
 
-    if (ret)
-        printf("Op %d: An error occurred: 0x%x\n", msgCode, ret);
+    എങ്കിൽ (ret)
+        printf("Op %d: An error occurred: 0x%x\n", സന്ദേശം_Code, ret);
 
-    return ret;
+    തിരികെ ret;
 }
 
-static int
-tpm20_clearcontrol(u8 disable, int verbose)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+tpm20_clearcontrol(u8 disable, പൂർണ്ണസംഖ്യ verbose)
 {
-    struct tpm2_req_clearcontrol trc = {
+    ഘടന tpm2_req_clearcontrol trc = {
         .hdr.tag     = cpu_to_be16(TPM2_ST_SESSIONS),
-        .hdr.totlen  = cpu_to_be32(sizeof(trc)),
+        .hdr.totlen  = cpu_to_be32(വലുപ്പം(trc)),
         .hdr.ordinal = cpu_to_be32(TPM2_CC_ClearControl),
         .authhandle = cpu_to_be32(TPM2_RH_PLATFORM),
-        .authblocksize = cpu_to_be32(sizeof(trc.authblock)),
+        .authblocksize = cpu_to_be32(വലുപ്പം(trc.authblock)),
         .authblock = {
             .handle = cpu_to_be32(TPM2_RS_PW),
             .noncesize = cpu_to_be16(0),
@@ -1950,28 +1950,28 @@ tpm20_clearcontrol(u8 disable, int verbose)
         },
         .disable = disable,
     };
-    struct tpm_rsp_header rsp;
-    u32 resp_length = sizeof(rsp);
-    int ret = tpmhw_transmit(0, &trc.hdr, &rsp, &resp_length,
+    ഘടന tpm_rsp_header rsp;
+    u32 resp_length = വലുപ്പം(rsp);
+    പൂർണ്ണസംഖ്യ ret = tpmhw_transmit(0, &trc.hdr, &rsp, &resp_length,
                              TPM_DURATION_TYPE_SHORT);
-    if (ret || resp_length != sizeof(rsp) || rsp.errcode)
+    എങ്കിൽ (ret || resp_length != വലുപ്പം(rsp) || rsp.errcode)
         ret = -1;
 
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_ClearControl = 0x%08x\n",
             ret);
 
-    return ret;
+    തിരികെ ret;
 }
 
-static int
-tpm20_clear(void)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+tpm20_clear(ശൂന്യം)
 {
-    struct tpm2_req_clear trq = {
+    ഘടന tpm2_req_clear trq = {
         .hdr.tag     = cpu_to_be16(TPM2_ST_SESSIONS),
-        .hdr.totlen  = cpu_to_be32(sizeof(trq)),
+        .hdr.totlen  = cpu_to_be32(വലുപ്പം(trq)),
         .hdr.ordinal = cpu_to_be32(TPM2_CC_Clear),
         .authhandle = cpu_to_be32(TPM2_RH_PLATFORM),
-        .authblocksize = cpu_to_be32(sizeof(trq.authblock)),
+        .authblocksize = cpu_to_be32(വലുപ്പം(trq.authblock)),
         .authblock = {
             .handle = cpu_to_be32(TPM2_RS_PW),
             .noncesize = cpu_to_be16(0),
@@ -1979,128 +1979,128 @@ tpm20_clear(void)
             .pwdsize = cpu_to_be16(0),
         },
     };
-    struct tpm_rsp_header rsp;
-    u32 resp_length = sizeof(rsp);
-    int ret = tpmhw_transmit(0, &trq.hdr, &rsp, &resp_length,
+    ഘടന tpm_rsp_header rsp;
+    u32 resp_length = വലുപ്പം(rsp);
+    പൂർണ്ണസംഖ്യ ret = tpmhw_transmit(0, &trq.hdr, &rsp, &resp_length,
                              TPM_DURATION_TYPE_MEDIUM);
-    if (ret || resp_length != sizeof(rsp) || rsp.errcode)
+    എങ്കിൽ (ret || resp_length != വലുപ്പം(rsp) || rsp.errcode)
         ret = -1;
 
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_Clear = 0x%08x\n",
             ret);
 
-    return ret;
+    തിരികെ ret;
 }
 
-static int
-tpm20_process_cfg(tpm_ppi_code msgCode, int verbose)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+tpm20_process_cfg(tpm_ppi_code സന്ദേശം_Code, പൂർണ്ണസംഖ്യ verbose)
 {
-    int ret = 0;
+    പൂർണ്ണസംഖ്യ ret = 0;
 
-    switch (msgCode) {
-        case TPM_PPI_OP_NOOP: /* no-op */
-            break;
+    തിരഞ്ഞെടുപ്പ് (സന്ദേശം_Code) {
+        അവസ്ഥ TPM_PPI_OP_NOOP: /* no-op */
+            നിർത്തുക;
 
-        case TPM_PPI_OP_CLEAR:
+        അവസ്ഥ TPM_PPI_OP_CLEAR:
             ret = tpm20_clearcontrol(0, verbose);
-            if (!ret)
+            എങ്കിൽ (!ret)
                  ret = tpm20_clear();
-            break;
+            നിർത്തുക;
     }
 
-    if (ret)
-        printf("Op %d: An error occurred: 0x%x\n", msgCode, ret);
+    എങ്കിൽ (ret)
+        printf("Op %d: An error occurred: 0x%x\n", സന്ദേശം_Code, ret);
 
-    return ret;
+    തിരികെ ret;
 }
 
-static int
-tpm12_get_tpm_state(void)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+tpm12_get_tpm_state(ശൂന്യം)
 {
-    int state = 0;
-    struct tpm_permanent_flags pf;
-    int has_owner;
+    പൂർണ്ണസംഖ്യ state = 0;
+    ഘടന tpm_permanent_flags pf;
+    പൂർണ്ണസംഖ്യ has_owner;
 
-    if (tpm12_read_permanent_flags((char *)&pf, sizeof(pf)) ||
+    എങ്കിൽ (tpm12_read_permanent_flags((അക്ഷരം *)&pf, വലുപ്പം(pf)) ||
         tpm12_read_has_owner(&has_owner))
-        return ~0;
+        തിരികെ ~0;
 
-    if (!pf.flags[PERM_FLAG_IDX_DISABLE])
+    എങ്കിൽ (!pf.flags[PERM_FLAG_IDX_DISABLE])
         state |= TPM_STATE_ENABLED;
 
-    if (!pf.flags[PERM_FLAG_IDX_DEACTIVATED])
+    എങ്കിൽ (!pf.flags[PERM_FLAG_IDX_DEACTIVATED])
         state |= TPM_STATE_ACTIVE;
 
-    if (has_owner) {
+    എങ്കിൽ (has_owner) {
         state |= TPM_STATE_OWNED;
-    } else {
-        if (pf.flags[PERM_FLAG_IDX_OWNERSHIP])
+    } അല്ലെങ്കിൽ {
+        എങ്കിൽ (pf.flags[PERM_FLAG_IDX_OWNERSHIP])
             state |= TPM_STATE_OWNERINSTALL;
     }
 
-    return state;
+    തിരികെ state;
 }
 
-static void
-tpm12_show_tpm_menu(int state, int next_scancodes[7])
+സ്ഥിതം ശൂന്യം
+tpm12_show_tpm_menu(പൂർണ്ണസംഖ്യ state, പൂർണ്ണസംഖ്യ next_scancodes[7])
 {
-    int i = 0;
+    പൂർണ്ണസംഖ്യ i = 0;
 
     printf("\nThe current state of the TPM is:\n");
 
-    if (state & TPM_STATE_ENABLED)
+    എങ്കിൽ (state & TPM_STATE_ENABLED)
         printf("  Enabled");
-    else
+    അല്ലെങ്കിൽ
         printf("  Disabled");
 
-    if (state & TPM_STATE_ACTIVE)
+    എങ്കിൽ (state & TPM_STATE_ACTIVE)
         printf(" and active\n");
-    else
+    അല്ലെങ്കിൽ
         printf(" and deactivated\n");
 
-    if (state & TPM_STATE_OWNED)
+    എങ്കിൽ (state & TPM_STATE_OWNED)
         printf("  Ownership has been taken\n");
-    else {
+    അല്ലെങ്കിൽ {
         printf("  Ownership has not been taken\n");
-        if (state & TPM_STATE_OWNERINSTALL)
+        എങ്കിൽ (state & TPM_STATE_OWNERINSTALL)
             printf("  A user can take ownership of the TPM\n");
-        else
+        അല്ലെങ്കിൽ
             printf("  Taking ownership of the TPM has been disabled\n");
     }
 
-    if ((state & (TPM_STATE_ENABLED | TPM_STATE_ACTIVE)) !=
+    എങ്കിൽ ((state & (TPM_STATE_ENABLED | TPM_STATE_ACTIVE)) !=
         (TPM_STATE_ENABLED | TPM_STATE_ACTIVE)) {
         printf("\nNote: To make use of all functionality, the TPM must be "
                "enabled and active.\n");
     }
 
     printf("\nAvailable options are:\n");
-    if (state & TPM_STATE_ENABLED) {
+    എങ്കിൽ (state & TPM_STATE_ENABLED) {
         printf(" d. Disable the TPM\n");
         next_scancodes[i++] = 32;
 
-        if (state & TPM_STATE_ACTIVE) {
+        എങ്കിൽ (state & TPM_STATE_ACTIVE) {
             printf(" v. Deactivate the TPM\n");
             next_scancodes[i++] = 47;
 
-            if (state & TPM_STATE_OWNERINSTALL) {
+            എങ്കിൽ (state & TPM_STATE_OWNERINSTALL) {
                 printf(" p. Prevent installation of an owner\n");
                 next_scancodes[i++] = 25;
-            } else {
+            } അല്ലെങ്കിൽ {
                 printf(" s. Allow installation of an owner\n");
                 next_scancodes[i++] = 31;
             }
-        } else {
+        } അല്ലെങ്കിൽ {
             printf(" a. Activate the TPM\n");
             next_scancodes[i++] = 30;
         }
 
-    } else {
+    } അല്ലെങ്കിൽ {
         printf(" e. Enable the TPM\n");
         next_scancodes[i++] = 18;
     }
 
-    if (state & TPM_STATE_OWNED) {
+    എങ്കിൽ (state & TPM_STATE_OWNED) {
         printf(" c. Clear ownership\n");
         next_scancodes[i++] = 46;
     }
@@ -2108,88 +2108,88 @@ tpm12_show_tpm_menu(int state, int next_scancodes[7])
     next_scancodes[i++] = 0;
 }
 
-static void
-tpm12_menu(void)
+സ്ഥിതം ശൂന്യം
+tpm12_menu(ശൂന്യം)
 {
-    int scancode, next_scancodes[7];
-    tpm_ppi_code msgCode;
-    int state = 0, i;
-    int waitkey;
+    പൂർണ്ണസംഖ്യ scancode, next_scancodes[7];
+    tpm_ppi_code സന്ദേശം_Code;
+    പൂർണ്ണസംഖ്യ state = 0, i;
+    പൂർണ്ണസംഖ്യ waitkey;
 
     printf("The Trusted Platform Module (TPM) is a hardware device in "
            "this machine.\n"
            "It can help verify the integrity of system software.\n\n");
 
-    for (;;) {
-        if ((state = tpm12_get_tpm_state()) != ~0) {
+    വേണ്ടി (;;) {
+        എങ്കിൽ ((state = tpm12_get_tpm_state()) != ~0) {
             tpm12_show_tpm_menu(state, next_scancodes);
-        } else {
+        } അല്ലെങ്കിൽ {
             printf("TPM is not working correctly.\n");
-            return;
+            തിരികെ;
         }
 
         printf("\nIf no change is desired or if this menu was reached by "
                "mistake, press ESC to\n"
                "reboot the machine.\n");
 
-        msgCode = TPM_PPI_OP_NOOP;
+        സന്ദേശം_Code = TPM_PPI_OP_NOOP;
 
         waitkey = 1;
 
-        while (waitkey) {
-            while ((scancode = get_keystroke(1000)) == ~0)
+        ആകുമ്പോൾ (waitkey) {
+            ആകുമ്പോൾ ((scancode = get_keystroke(1000)) == ~0)
                 ;
 
-            switch (scancode) {
-            case 1:
+            തിരഞ്ഞെടുപ്പ് (scancode) {
+            അവസ്ഥ 1:
                 // ESC
                 reset();
-                break;
-            case 18: /* e. enable */
-                msgCode = TPM_PPI_OP_ENABLE;
-                break;
-            case 32: /* d. disable */
-                msgCode = TPM_PPI_OP_DISABLE;
-                break;
-            case 30: /* a. activate */
-                msgCode = TPM_PPI_OP_ACTIVATE;
-                break;
-            case 47: /* v. deactivate */
-                msgCode = TPM_PPI_OP_DEACTIVATE;
-                break;
-            case 46: /* c. clear owner */
-                msgCode = TPM_PPI_OP_CLEAR;
-                break;
-            case 25: /* p. prevent ownerinstall */
-                msgCode = TPM_PPI_OP_SET_OWNERINSTALL_FALSE;
-                break;
-            case 31: /* s. allow ownerinstall */
-                msgCode = TPM_PPI_OP_SET_OWNERINSTALL_TRUE;
-                break;
-            default:
-                continue;
+                നിർത്തുക;
+            അവസ്ഥ 18: /* e. enable */
+                സന്ദേശം_Code = TPM_PPI_OP_ENABLE;
+                നിർത്തുക;
+            അവസ്ഥ 32: /* d. disable */
+                സന്ദേശം_Code = TPM_PPI_OP_DISABLE;
+                നിർത്തുക;
+            അവസ്ഥ 30: /* a. activate */
+                സന്ദേശം_Code = TPM_PPI_OP_ACTIVATE;
+                നിർത്തുക;
+            അവസ്ഥ 47: /* v. deactivate */
+                സന്ദേശം_Code = TPM_PPI_OP_DEACTIVATE;
+                നിർത്തുക;
+            അവസ്ഥ 46: /* c. clear owner */
+                സന്ദേശം_Code = TPM_PPI_OP_CLEAR;
+                നിർത്തുക;
+            അവസ്ഥ 25: /* p. prevent ownerinstall */
+                സന്ദേശം_Code = TPM_PPI_OP_SET_OWNERINSTALL_FALSE;
+                നിർത്തുക;
+            അവസ്ഥ 31: /* s. allow ownerinstall */
+                സന്ദേശം_Code = TPM_PPI_OP_SET_OWNERINSTALL_TRUE;
+                നിർത്തുക;
+            സ്ഥിരസ്ഥിതി:
+                തുടരുക;
             }
 
             /*
              * Using the next_scancodes array, check whether the
              * pressed key is currently a valid option.
              */
-            for (i = 0; i < sizeof(next_scancodes); i++) {
-                if (next_scancodes[i] == 0)
-                    break;
+            വേണ്ടി (i = 0; i < വലുപ്പം(next_scancodes); i++) {
+                എങ്കിൽ (next_scancodes[i] == 0)
+                    നിർത്തുക;
 
-                if (next_scancodes[i] == scancode) {
-                    tpm12_process_cfg(msgCode, 1);
+                എങ്കിൽ (next_scancodes[i] == scancode) {
+                    tpm12_process_cfg(സന്ദേശം_Code, 1);
                     waitkey = 0;
-                    break;
+                    നിർത്തുക;
                 }
             }
         }
     }
 }
 
-static int
-tpm20_menu_change_active_pcrbanks(void)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+tpm20_menu_change_active_pcrbanks(ശൂന്യം)
 {
     u8 active_banks, suppt_banks;
 
@@ -2197,20 +2197,20 @@ tpm20_menu_change_active_pcrbanks(void)
 
     u8 activate_banks = active_banks;
 
-    while (1) {
+    ആകുമ്പോൾ (1) {
         u8 hashalg_flag = TPM2_ALG_SHA1_FLAG;
         u8 i = 0;
 
         printf("\nToggle active PCR banks by pressing number key\n\n");
 
-        while (hashalg_flag) {
+        ആകുമ്പോൾ (hashalg_flag) {
             u8 flag = hashalg_flag & suppt_banks;
-            const char *hashname = tpm20_hashalg_flag_to_name(flag);
+            സ്ഥിരം അക്ഷരം *hashname = tpm20_hashalg_flag_to_name(flag);
 
             i++;
-            if (hashname) {
+            എങ്കിൽ (hashname) {
                 printf("  %d: %s", i, hashname);
-                if (activate_banks & hashalg_flag)
+                എങ്കിൽ (activate_banks & hashalg_flag)
                     printf(" (enabled)");
                 printf("\n");
             }
@@ -2219,44 +2219,44 @@ tpm20_menu_change_active_pcrbanks(void)
         }
         printf("\n"
                "ESC: return to previous menu without changes\n");
-        if (activate_banks)
+        എങ്കിൽ (activate_banks)
             printf("A  : activate selection\n");
 
         u8 flagnum;
-        int show = 0;
-        while (!show) {
-            int scancode = get_keystroke(1000);
+        പൂർണ്ണസംഖ്യ show = 0;
+        ആകുമ്പോൾ (!show) {
+            പൂർണ്ണസംഖ്യ scancode = get_keystroke(1000);
 
-            switch (scancode) {
-            case ~0:
-                continue;
-            case 1: /* ESC */
+            തിരഞ്ഞെടുപ്പ് (scancode) {
+            അവസ്ഥ ~0:
+                തുടരുക;
+            അവസ്ഥ 1: /* ESC */
                 printf("\n");
-                return -1;
-            case 2 ... 6: /* keys 1 .. 5 */
+                തിരികെ -1;
+            അവസ്ഥ 2 ... 6: /* keys 1 .. 5 */
                 flagnum = scancode - 1;
-                if (flagnum > i)
-                    continue;
-                if (suppt_banks & (1 << (flagnum - 1))) {
+                എങ്കിൽ (flagnum > i)
+                    തുടരുക;
+                എങ്കിൽ (suppt_banks & (1 << (flagnum - 1))) {
                     activate_banks ^= 1 << (flagnum - 1);
                     show = 1;
                 }
-                break;
-            case 30: /* a */
-                if (activate_banks)
+                നിർത്തുക;
+            അവസ്ഥ 30: /* a */
+                എങ്കിൽ (activate_banks)
                     tpm20_activate_pcrbanks(activate_banks);
             }
         }
     }
 }
 
-static void
-tpm20_menu(void)
+സ്ഥിതം ശൂന്യം
+tpm20_menu(ശൂന്യം)
 {
-    int scan_code;
-    tpm_ppi_code msgCode;
+    പൂർണ്ണസംഖ്യ scan_code;
+    tpm_ppi_code സന്ദേശം_Code;
 
-    for (;;) {
+    വേണ്ടി (;;) {
         printf("1. Clear TPM\n");
         printf("2. Change active PCR banks\n");
 
@@ -2264,58 +2264,58 @@ tpm20_menu(void)
                "mistake, press ESC to\n"
                "reboot the machine.\n");
 
-        msgCode = TPM_PPI_OP_NOOP;
+        സന്ദേശം_Code = TPM_PPI_OP_NOOP;
 
-        while ((scan_code = get_keystroke(1000)) == ~0)
+        ആകുമ്പോൾ ((scan_code = get_keystroke(1000)) == ~0)
             ;
 
-        switch (scan_code) {
-        case 1:
+        തിരഞ്ഞെടുപ്പ് (scan_code) {
+        അവസ്ഥ 1:
             // ESC
             reset();
-            break;
-        case 2:
-            msgCode = TPM_PPI_OP_CLEAR;
-            break;
-        case 3:
+            നിർത്തുക;
+        അവസ്ഥ 2:
+            സന്ദേശം_Code = TPM_PPI_OP_CLEAR;
+            നിർത്തുക;
+        അവസ്ഥ 3:
             tpm20_menu_change_active_pcrbanks();
-            continue;
-        default:
-            continue;
+            തുടരുക;
+        സ്ഥിരസ്ഥിതി:
+            തുടരുക;
         }
 
-        tpm20_process_cfg(msgCode, 0);
+        tpm20_process_cfg(സന്ദേശം_Code, 0);
     }
 }
 
-void
-tpm_menu(void)
+ശൂന്യം
+tpm_menu(ശൂന്യം)
 {
-    if (!CONFIG_TCGBIOS)
-        return;
+    എങ്കിൽ (!CONFIG_TCGBIOS)
+        തിരികെ;
 
-    while (get_keystroke(0) >= 0)
+    ആകുമ്പോൾ (get_keystroke(0) >= 0)
         ;
     wait_threads();
 
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
+    തിരഞ്ഞെടുപ്പ് (TPM_version) {
+    അവസ്ഥ TPM_VERSION_1_2:
         tpm12_menu();
-        break;
-    case TPM_VERSION_2:
+        നിർത്തുക;
+    അവസ്ഥ TPM_VERSION_2:
         tpm20_menu();
-        break;
+        നിർത്തുക;
     }
 }
 
-int
-tpm_can_show_menu(void)
+പൂർണ്ണസംഖ്യ
+tpm_can_show_menu(ശൂന്യം)
 {
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
-        return tpm_is_working() && TPM_has_physical_presence;
-    case TPM_VERSION_2:
-        return tpm_is_working();
+    തിരഞ്ഞെടുപ്പ് (TPM_version) {
+    അവസ്ഥ TPM_VERSION_1_2:
+        തിരികെ tpm_is_working() && TPM_has_physical_presence;
+    അവസ്ഥ TPM_VERSION_2:
+        തിരികെ tpm_is_working();
     }
-    return 0;
+    തിരികെ 0;
 }

@@ -5,32 +5,32 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_BDA
-#include "bregs.h" // struct bregs
-#include "config.h" // CONFIG_*
-#include "hw/ps2port.h" // ps2_kbd_command
-#include "hw/usb-hid.h" // usb_kbd_command
-#include "output.h" // debug_enter
-#include "stacks.h" // yield
-#include "string.h" // memset
-#include "util.h" // kbd_init
+#അന്തര്ഭാവ "biosvar.h" // GET_BDA
+#അന്തര്ഭാവ "bregs.h" // struct bregs
+#അന്തര്ഭാവ "config.h" // CONFIG_*
+#അന്തര്ഭാവ "hw/ps2port.h" // ps2_kbd_command
+#അന്തര്ഭാവ "hw/usb-hid.h" // usb_kbd_command
+#അന്തര്ഭാവ "output.h" // debug_enter
+#അന്തര്ഭാവ "stacks.h" // yield
+#അന്തര്ഭാവ "string.h" // memset
+#അന്തര്ഭാവ "util.h" // kbd_init
 
-void
-kbd_init(void)
+ശൂന്യം
+kbd_init(ശൂന്യം)
 {
     dprintf(3, "init keyboard\n");
-    u16 x = offsetof(struct bios_data_area_s, kbd_buf);
+    u16 x = offsetof(ഘടന bios_data_area_s, kbd_buf);
     SET_BDA(kbd_flag1, KF1_101KBD);
     SET_BDA(kbd_buf_head, x);
     SET_BDA(kbd_buf_tail, x);
     SET_BDA(kbd_buf_start_offset, x);
 
     SET_BDA(kbd_buf_end_offset
-            , x + FIELD_SIZEOF(struct bios_data_area_s, kbd_buf));
+            , x + FIELD_SIZEOF(ഘടന bios_data_area_s, kbd_buf));
 }
 
 u8
-enqueue_key(u16 keycode)
+enqueue_താക്കോൽ(u16 keycode)
 {
     u16 buffer_start = GET_BDA(kbd_buf_start_offset);
     u16 buffer_end   = GET_BDA(kbd_buf_end_offset);
@@ -40,46 +40,46 @@ enqueue_key(u16 keycode)
 
     u16 temp_tail = buffer_tail;
     buffer_tail += 2;
-    if (buffer_tail >= buffer_end)
+    എങ്കിൽ (buffer_tail >= buffer_end)
         buffer_tail = buffer_start;
 
-    if (buffer_tail == buffer_head)
-        return 0;
+    എങ്കിൽ (buffer_tail == buffer_head)
+        തിരികെ 0;
 
     SET_FARVAR(SEG_BDA, *(u16*)(temp_tail+0), keycode);
     SET_BDA(kbd_buf_tail, buffer_tail);
-    return 1;
+    തിരികെ 1;
 }
 
-static void
-dequeue_key(struct bregs *regs, int incr, int extended)
+സ്ഥിതം ശൂന്യം
+dequeue_താക്കോൽ(ഘടന bregs *regs, പൂർണ്ണസംഖ്യ incr, പൂർണ്ണസംഖ്യ extended)
 {
     yield();
     u16 buffer_head;
     u16 buffer_tail;
-    for (;;) {
+    വേണ്ടി (;;) {
         buffer_head = GET_BDA(kbd_buf_head);
         buffer_tail = GET_BDA(kbd_buf_tail);
 
-        if (buffer_head != buffer_tail)
-            break;
-        if (!incr) {
+        എങ്കിൽ (buffer_head != buffer_tail)
+            നിർത്തുക;
+        എങ്കിൽ (!incr) {
             regs->flags |= F_ZF;
-            return;
+            തിരികെ;
         }
         yield_toirq();
     }
 
     u16 keycode = GET_FARVAR(SEG_BDA, *(u16*)(buffer_head+0));
     u8 ascii = keycode & 0xff;
-    if (!extended) {
+    എങ്കിൽ (!extended) {
         // Translate extended keys
-        if (ascii == 0xe0 && keycode & 0xff00)
+        എങ്കിൽ (ascii == 0xe0 && keycode & 0xff00)
             keycode &= 0xff00;
-        else if (keycode == 0xe00d || keycode == 0xe00a)
+        അല്ലെങ്കിൽ എങ്കിൽ (keycode == 0xe00d || keycode == 0xe00a)
             // Extended enter key
             keycode = 0x1c00 | ascii;
-        else if (keycode == 0xe02f)
+        അല്ലെങ്കിൽ എങ്കിൽ (keycode == 0xe02f)
             // Extended '/' key
             keycode = 0x352f;
         // Technically, if the ascii value is 0xf0 or if the
@@ -87,63 +87,63 @@ dequeue_key(struct bregs *regs, int incr, int extended)
         // discarded.  However, there seems no harm in passing on the
         // extended values in these cases.
     }
-    if (ascii == 0xf0 && keycode & 0xff00)
+    എങ്കിൽ (ascii == 0xf0 && keycode & 0xff00)
         keycode &= 0xff00;
     regs->ax = keycode;
 
-    if (!incr) {
+    എങ്കിൽ (!incr) {
         regs->flags &= ~F_ZF;
-        return;
+        തിരികെ;
     }
     u16 buffer_start = GET_BDA(kbd_buf_start_offset);
     u16 buffer_end   = GET_BDA(kbd_buf_end_offset);
 
     buffer_head += 2;
-    if (buffer_head >= buffer_end)
+    എങ്കിൽ (buffer_head >= buffer_end)
         buffer_head = buffer_start;
     SET_BDA(kbd_buf_head, buffer_head);
 }
 
-static int
-kbd_command(int command, u8 *param)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+kbd_command(പൂർണ്ണസംഖ്യ command, u8 *param)
 {
-    if (usb_kbd_active())
-        return usb_kbd_command(command, param);
-    return ps2_kbd_command(command, param);
+    എങ്കിൽ (usb_kbd_active())
+        തിരികെ usb_kbd_command(command, param);
+    തിരികെ ps2_kbd_command(command, param);
 }
 
 // read keyboard input
-static void
-handle_1600(struct bregs *regs)
+സ്ഥിതം ശൂന്യം
+handle_1600(ഘടന bregs *regs)
 {
-    dequeue_key(regs, 1, 0);
+    dequeue_താക്കോൽ(regs, 1, 0);
 }
 
 // check keyboard status
-static void
-handle_1601(struct bregs *regs)
+സ്ഥിതം ശൂന്യം
+handle_1601(ഘടന bregs *regs)
 {
-    dequeue_key(regs, 0, 0);
+    dequeue_താക്കോൽ(regs, 0, 0);
 }
 
 // get shift flag status
-static void
-handle_1602(struct bregs *regs)
+സ്ഥിതം ശൂന്യം
+handle_1602(ഘടന bregs *regs)
 {
     yield();
     regs->al = GET_BDA(kbd_flag0);
 }
 
 // store key-stroke into buffer
-static void
-handle_1605(struct bregs *regs)
+സ്ഥിതം ശൂന്യം
+handle_1605(ഘടന bregs *regs)
 {
-    regs->al = !enqueue_key(regs->cx);
+    regs->al = !enqueue_താക്കോൽ(regs->cx);
 }
 
 // GET KEYBOARD FUNCTIONALITY
-static void
-handle_1609(struct bregs *regs)
+സ്ഥിതം ശൂന്യം
+handle_1609(ഘടന bregs *regs)
 {
     // bit Bochs Description
     //  7    0   reserved
@@ -159,35 +159,35 @@ handle_1609(struct bregs *regs)
 }
 
 // GET KEYBOARD ID
-static void noinline
-handle_160a(struct bregs *regs)
+സ്ഥിതം ശൂന്യം noinline
+handle_160a(ഘടന bregs *regs)
 {
     u8 param[2];
-    int ret = kbd_command(ATKBD_CMD_GETID, param);
-    if (ret) {
+    പൂർണ്ണസംഖ്യ ret = kbd_command(ATKBD_CMD_GETID, param);
+    എങ്കിൽ (ret) {
         regs->bx = 0;
-        return;
+        തിരികെ;
     }
     regs->bx = (param[1] << 8) | param[0];
 }
 
 // read MF-II keyboard input
-static void
-handle_1610(struct bregs *regs)
+സ്ഥിതം ശൂന്യം
+handle_1610(ഘടന bregs *regs)
 {
-    dequeue_key(regs, 1, 1);
+    dequeue_താക്കോൽ(regs, 1, 1);
 }
 
 // check MF-II keyboard status
-static void
-handle_1611(struct bregs *regs)
+സ്ഥിതം ശൂന്യം
+handle_1611(ഘടന bregs *regs)
 {
-    dequeue_key(regs, 0, 1);
+    dequeue_താക്കോൽ(regs, 0, 1);
 }
 
 // get extended keyboard status
-static void
-handle_1612(struct bregs *regs)
+സ്ഥിതം ശൂന്യം
+handle_1612(ഘടന bregs *regs)
 {
     yield();
     regs->ax = ((GET_BDA(kbd_flag0) & ~((KF1_RCTRL|KF1_RALT) << 8))
@@ -195,83 +195,83 @@ handle_1612(struct bregs *regs)
     //BX_DEBUG_INT16("int16: func 12 sending %04x\n",AX);
 }
 
-static void
-handle_166f(struct bregs *regs)
+സ്ഥിതം ശൂന്യം
+handle_166f(ഘടന bregs *regs)
 {
-    if (regs->al == 0x08)
+    എങ്കിൽ (regs->al == 0x08)
         // unsupported, aka normal keyboard
         regs->ah = 2;
 }
 
 // keyboard capability check called by DOS 5.0+ keyb
-static void
-handle_1692(struct bregs *regs)
+സ്ഥിതം ശൂന്യം
+handle_1692(ഘടന bregs *regs)
 {
     // function int16 ah=0x10-0x12 supported
     regs->ah = 0x80;
 }
 
 // 122 keys capability check called by DOS 5.0+ keyb
-static void
-handle_16a2(struct bregs *regs)
+സ്ഥിതം ശൂന്യം
+handle_16a2(ഘടന bregs *regs)
 {
     // don't change AH : function int16 ah=0x20-0x22 NOT supported
 }
 
-static void
-handle_16XX(struct bregs *regs)
+സ്ഥിതം ശൂന്യം
+handle_16XX(ഘടന bregs *regs)
 {
     warn_unimplemented(regs);
 }
 
-static void noinline
-set_leds(void)
+സ്ഥിതം ശൂന്യം noinline
+set_leds(ശൂന്യം)
 {
     u8 shift_flags = (GET_BDA(kbd_flag0) >> 4) & 0x07;
     u8 kbd_led = GET_BDA(kbd_led);
     u8 led_flags = kbd_led & 0x07;
-    if (shift_flags == led_flags)
-        return;
+    എങ്കിൽ (shift_flags == led_flags)
+        തിരികെ;
 
-    int ret = kbd_command(ATKBD_CMD_SETLEDS, &shift_flags);
-    if (ret)
+    പൂർണ്ണസംഖ്യ ret = kbd_command(ATKBD_CMD_SETLEDS, &shift_flags);
+    എങ്കിൽ (ret)
         // Error
-        return;
+        തിരികെ;
     kbd_led = (kbd_led & ~0x07) | shift_flags;
     SET_BDA(kbd_led, kbd_led);
 }
 
 // INT 16h Keyboard Service Entry Point
-void VISIBLE16
-handle_16(struct bregs *regs)
+ശൂന്യം VISIBLE16
+handle_16(ഘടന bregs *regs)
 {
     debug_enter(regs, DEBUG_HDL_16);
-    if (! CONFIG_KEYBOARD)
-        return;
+    എങ്കിൽ (! CONFIG_KEYBOARD)
+        തിരികെ;
 
     // XXX - set_leds should be called from irq handler
     set_leds();
 
-    switch (regs->ah) {
-    case 0x00: handle_1600(regs); break;
-    case 0x01: handle_1601(regs); break;
-    case 0x02: handle_1602(regs); break;
-    case 0x05: handle_1605(regs); break;
-    case 0x09: handle_1609(regs); break;
-    case 0x0a: handle_160a(regs); break;
-    case 0x10: handle_1610(regs); break;
-    case 0x11: handle_1611(regs); break;
-    case 0x12: handle_1612(regs); break;
-    case 0x92: handle_1692(regs); break;
-    case 0xa2: handle_16a2(regs); break;
-    case 0x6f: handle_166f(regs); break;
-    default:   handle_16XX(regs); break;
+    തിരഞ്ഞെടുപ്പ് (regs->ah) {
+    അവസ്ഥ 0x00: handle_1600(regs); നിർത്തുക;
+    അവസ്ഥ 0x01: handle_1601(regs); നിർത്തുക;
+    അവസ്ഥ 0x02: handle_1602(regs); നിർത്തുക;
+    അവസ്ഥ 0x05: handle_1605(regs); നിർത്തുക;
+    അവസ്ഥ 0x09: handle_1609(regs); നിർത്തുക;
+    അവസ്ഥ 0x0a: handle_160a(regs); നിർത്തുക;
+    അവസ്ഥ 0x10: handle_1610(regs); നിർത്തുക;
+    അവസ്ഥ 0x11: handle_1611(regs); നിർത്തുക;
+    അവസ്ഥ 0x12: handle_1612(regs); നിർത്തുക;
+    അവസ്ഥ 0x92: handle_1692(regs); നിർത്തുക;
+    അവസ്ഥ 0xa2: handle_16a2(regs); നിർത്തുക;
+    അവസ്ഥ 0x6f: handle_166f(regs); നിർത്തുക;
+    സ്ഥിരസ്ഥിതി:   handle_16XX(regs); നിർത്തുക;
     }
 }
 
 #define none 0
 
-static struct scaninfo {
+സ്ഥിതം ഘടന scaninfo {
     u16 normal;
     u16 shift;
     u16 control;
@@ -368,38 +368,38 @@ static struct scaninfo {
     { 0x8600, 0x8800, 0x8a00, 0x8c00 }, /* F12 */
 };
 
-struct scaninfo key_ext_enter VAR16 = {
+ഘടന scaninfo താക്കോൽ_ext_enter VAR16 = {
     0xe00d, 0xe00d, 0xe00a, 0xa600
 };
-struct scaninfo key_ext_slash VAR16 = {
+ഘടന scaninfo താക്കോൽ_ext_slash VAR16 = {
     0xe02f, 0xe02f, 0x9500, 0xa400
 };
 
 u16 ascii_to_keycode(u8 ascii)
 {
-    int i;
+    പൂർണ്ണസംഖ്യ i;
 
-    for (i = 0; i < ARRAY_SIZE(scan_to_keycode); i++) {
-        if ((GET_GLOBAL(scan_to_keycode[i].normal) & 0xff) == ascii)
-            return GET_GLOBAL(scan_to_keycode[i].normal);
-        if ((GET_GLOBAL(scan_to_keycode[i].shift) & 0xff) == ascii)
-            return GET_GLOBAL(scan_to_keycode[i].shift);
-        if ((GET_GLOBAL(scan_to_keycode[i].control) & 0xff) == ascii)
-            return GET_GLOBAL(scan_to_keycode[i].control);
+    വേണ്ടി (i = 0; i < ARRAY_SIZE(scan_to_keycode); i++) {
+        എങ്കിൽ ((GET_GLOBAL(scan_to_keycode[i].normal) & 0xff) == ascii)
+            തിരികെ GET_GLOBAL(scan_to_keycode[i].normal);
+        എങ്കിൽ ((GET_GLOBAL(scan_to_keycode[i].shift) & 0xff) == ascii)
+            തിരികെ GET_GLOBAL(scan_to_keycode[i].shift);
+        എങ്കിൽ ((GET_GLOBAL(scan_to_keycode[i].control) & 0xff) == ascii)
+            തിരികെ GET_GLOBAL(scan_to_keycode[i].control);
     }
-    return 0;
+    തിരികെ 0;
 }
 
 // Handle a ps2 style scancode read from the keyboard.
-static void
-kbd_set_flag(int key_release, u16 set_bit0, u8 set_bit1, u16 toggle_bit)
+സ്ഥിതം ശൂന്യം
+kbd_set_flag(പൂർണ്ണസംഖ്യ താക്കോൽ_release, u16 set_bit0, u8 set_bit1, u16 toggle_bit)
 {
     u16 flags0 = GET_BDA(kbd_flag0);
     u8 flags1 = GET_BDA(kbd_flag1);
-    if (key_release) {
+    എങ്കിൽ (താക്കോൽ_release) {
         flags0 &= ~set_bit0;
         flags1 &= ~set_bit1;
-    } else {
+    } അല്ലെങ്കിൽ {
         flags0 ^= toggle_bit;
         flags0 |= set_bit0;
         flags1 |= set_bit1;
@@ -408,11 +408,11 @@ kbd_set_flag(int key_release, u16 set_bit0, u8 set_bit1, u16 toggle_bit)
     SET_BDA(kbd_flag1, flags1);
 }
 
-static void
-kbd_ctrl_break(int key_release)
+സ്ഥിതം ശൂന്യം
+kbd_ctrl_break(പൂർണ്ണസംഖ്യ താക്കോൽ_release)
 {
-    if (!key_release)
-        return;
+    എങ്കിൽ (!താക്കോൽ_release)
+        തിരികെ;
     // Clear keyboard buffer and place 0x0000 in buffer
     u16 buffer_start = GET_BDA(kbd_buf_start_offset);
     SET_BDA(kbd_buf_head, buffer_start);
@@ -421,179 +421,179 @@ kbd_ctrl_break(int key_release)
     // Set break flag
     SET_BDA(break_flag, 0x80);
     // Generate int 0x1b
-    struct bregs br;
-    memset(&br, 0, sizeof(br));
+    ഘടന bregs br;
+    memset(&br, 0, വലുപ്പം(br));
     br.flags = F_IF;
     call16_int(0x1b, &br);
 }
 
-static void
-kbd_sysreq(int key_release)
+സ്ഥിതം ശൂന്യം
+kbd_sysreq(പൂർണ്ണസംഖ്യ താക്കോൽ_release)
 {
     // SysReq generates int 0x15/0x85
-    struct bregs br;
-    memset(&br, 0, sizeof(br));
+    ഘടന bregs br;
+    memset(&br, 0, വലുപ്പം(br));
     br.ah = 0x85;
-    br.al = key_release ? 0x01 : 0x00;
+    br.al = താക്കോൽ_release ? 0x01 : 0x00;
     br.flags = F_IF;
     call16_int(0x15, &br);
 }
 
-static void
-kbd_prtscr(int key_release)
+സ്ഥിതം ശൂന്യം
+kbd_prtscr(പൂർണ്ണസംഖ്യ താക്കോൽ_release)
 {
-    if (key_release)
-        return;
+    എങ്കിൽ (താക്കോൽ_release)
+        തിരികെ;
     // PrtScr generates int 0x05 (ctrl-prtscr has keycode 0x7200?)
-    struct bregs br;
-    memset(&br, 0, sizeof(br));
+    ഘടന bregs br;
+    memset(&br, 0, വലുപ്പം(br));
     br.flags = F_IF;
     call16_int(0x05, &br);
 }
 
 // Handle a ps2 style scancode read from the keyboard.
-static void
+സ്ഥിതം ശൂന്യം
 __process_key(u8 scancode)
 {
     // Check for multi-scancode key sequences
     u8 flags1 = GET_BDA(kbd_flag1);
-    if (scancode == 0xe0 || scancode == 0xe1) {
+    എങ്കിൽ (scancode == 0xe0 || scancode == 0xe1) {
         // Start of two byte extended (e0) or three byte pause key (e1) sequence
         u8 eflag = scancode == 0xe0 ? KF1_LAST_E0 : KF1_LAST_E1;
         SET_BDA(kbd_flag1, flags1 | eflag);
-        return;
+        തിരികെ;
     }
-    int key_release = scancode & 0x80;
+    പൂർണ്ണസംഖ്യ താക്കോൽ_release = scancode & 0x80;
     scancode &= ~0x80;
-    if (flags1 & (KF1_LAST_E0|KF1_LAST_E1)) {
-        if (flags1 & KF1_LAST_E1 && scancode == 0x1d)
+    എങ്കിൽ (flags1 & (KF1_LAST_E0|KF1_LAST_E1)) {
+        എങ്കിൽ (flags1 & KF1_LAST_E1 && scancode == 0x1d)
             // Ignore second byte of pause key (e1 1d 45 / e1 9d c5)
-            return;
+            തിരികെ;
         // Clear E0/E1 flag in memory for next key event
         SET_BDA(kbd_flag1, flags1 & ~(KF1_LAST_E0|KF1_LAST_E1));
     }
 
     // Check for special keys
-    switch (scancode) {
-    case 0x3a: /* Caps Lock */
-        kbd_set_flag(key_release, KF0_CAPS, 0, KF0_CAPSACTIVE);
-        return;
-    case 0x2a: /* L Shift */
-        if (flags1 & KF1_LAST_E0)
+    തിരഞ്ഞെടുപ്പ് (scancode) {
+    അവസ്ഥ 0x3a: /* Caps Lock */
+        kbd_set_flag(താക്കോൽ_release, KF0_CAPS, 0, KF0_CAPSACTIVE);
+        തിരികെ;
+    അവസ്ഥ 0x2a: /* L Shift */
+        എങ്കിൽ (flags1 & KF1_LAST_E0)
             // Ignore fake shifts
-            return;
-        kbd_set_flag(key_release, KF0_LSHIFT, 0, 0);
-        return;
-    case 0x36: /* R Shift */
-        if (flags1 & KF1_LAST_E0)
+            തിരികെ;
+        kbd_set_flag(താക്കോൽ_release, KF0_LSHIFT, 0, 0);
+        തിരികെ;
+    അവസ്ഥ 0x36: /* R Shift */
+        എങ്കിൽ (flags1 & KF1_LAST_E0)
             // Ignore fake shifts
-            return;
-        kbd_set_flag(key_release, KF0_RSHIFT, 0, 0);
-        return;
-    case 0x1d: /* Ctrl */
-        if (flags1 & KF1_LAST_E0)
-            kbd_set_flag(key_release, KF0_CTRLACTIVE, KF1_RCTRL, 0);
-        else
-            kbd_set_flag(key_release, KF0_CTRLACTIVE | KF0_LCTRL, 0, 0);
-        return;
-    case 0x38: /* Alt */
-        if (flags1 & KF1_LAST_E0)
-            kbd_set_flag(key_release, KF0_ALTACTIVE, KF1_RALT, 0);
-        else
-            kbd_set_flag(key_release, KF0_ALTACTIVE | KF0_LALT, 0, 0);
-        return;
-    case 0x45: /* Num Lock */
-        if (flags1 & KF1_LAST_E1)
+            തിരികെ;
+        kbd_set_flag(താക്കോൽ_release, KF0_RSHIFT, 0, 0);
+        തിരികെ;
+    അവസ്ഥ 0x1d: /* Ctrl */
+        എങ്കിൽ (flags1 & KF1_LAST_E0)
+            kbd_set_flag(താക്കോൽ_release, KF0_CTRLACTIVE, KF1_RCTRL, 0);
+        അല്ലെങ്കിൽ
+            kbd_set_flag(താക്കോൽ_release, KF0_CTRLACTIVE | KF0_LCTRL, 0, 0);
+        തിരികെ;
+    അവസ്ഥ 0x38: /* Alt */
+        എങ്കിൽ (flags1 & KF1_LAST_E0)
+            kbd_set_flag(താക്കോൽ_release, KF0_ALTACTIVE, KF1_RALT, 0);
+        അല്ലെങ്കിൽ
+            kbd_set_flag(താക്കോൽ_release, KF0_ALTACTIVE | KF0_LALT, 0, 0);
+        തിരികെ;
+    അവസ്ഥ 0x45: /* Num Lock */
+        എങ്കിൽ (flags1 & KF1_LAST_E1)
             // XXX - pause key.
-            return;
-        kbd_set_flag(key_release, KF0_NUM, 0, KF0_NUMACTIVE);
-        return;
-    case 0x46: /* Scroll Lock */
-        if (flags1 & KF1_LAST_E0) {
-            kbd_ctrl_break(key_release);
-            return;
+            തിരികെ;
+        kbd_set_flag(താക്കോൽ_release, KF0_അക്കം, 0, KF0_NUMACTIVE);
+        തിരികെ;
+    അവസ്ഥ 0x46: /* Scroll Lock */
+        എങ്കിൽ (flags1 & KF1_LAST_E0) {
+            kbd_ctrl_break(താക്കോൽ_release);
+            തിരികെ;
         }
-        kbd_set_flag(key_release, KF0_SCROLL, 0, KF0_SCROLLACTIVE);
-        return;
+        kbd_set_flag(താക്കോൽ_release, KF0_SCROLL, 0, KF0_SCROLLACTIVE);
+        തിരികെ;
 
-    case 0x37: /* * */
-        if (flags1 & KF1_LAST_E0) {
-            kbd_prtscr(key_release);
-            return;
+    അവസ്ഥ 0x37: /* * */
+        എങ്കിൽ (flags1 & KF1_LAST_E0) {
+            kbd_prtscr(താക്കോൽ_release);
+            തിരികെ;
         }
-        break;
-    case 0x54: /* SysReq */
-        kbd_sysreq(key_release);
-        return;
-    case 0x53: /* Del */
-        if ((GET_BDA(kbd_flag0) & (KF0_CTRLACTIVE|KF0_ALTACTIVE))
-            == (KF0_CTRLACTIVE|KF0_ALTACTIVE) && !key_release) {
+        നിർത്തുക;
+    അവസ്ഥ 0x54: /* SysReq */
+        kbd_sysreq(താക്കോൽ_release);
+        തിരികെ;
+    അവസ്ഥ 0x53: /* Del */
+        എങ്കിൽ ((GET_BDA(kbd_flag0) & (KF0_CTRLACTIVE|KF0_ALTACTIVE))
+            == (KF0_CTRLACTIVE|KF0_ALTACTIVE) && !താക്കോൽ_release) {
             // Ctrl+alt+del - reset machine.
             SET_BDA(soft_reset_flag, 0x1234);
             reset();
         }
-        break;
+        നിർത്തുക;
 
-    default:
-        break;
+    സ്ഥിരസ്ഥിതി:
+        നിർത്തുക;
     }
 
     // Handle generic keys
-    if (key_release)
+    എങ്കിൽ (താക്കോൽ_release)
         // ignore key releases
-        return;
-    if (!scancode || scancode >= ARRAY_SIZE(scan_to_keycode)) {
+        തിരികെ;
+    എങ്കിൽ (!scancode || scancode >= ARRAY_SIZE(scan_to_keycode)) {
         dprintf(1, "__process_key unknown scancode read: 0x%02x!\n", scancode);
-        return;
+        തിരികെ;
     }
-    struct scaninfo *info = &scan_to_keycode[scancode];
-    if (flags1 & KF1_LAST_E0 && (scancode == 0x1c || scancode == 0x35))
-        info = (scancode == 0x1c ? &key_ext_enter : &key_ext_slash);
+    ഘടന scaninfo *info = &scan_to_keycode[scancode];
+    എങ്കിൽ (flags1 & KF1_LAST_E0 && (scancode == 0x1c || scancode == 0x35))
+        info = (scancode == 0x1c ? &താക്കോൽ_ext_enter : &താക്കോൽ_ext_slash);
     u16 flags0 = GET_BDA(kbd_flag0);
     u16 keycode;
-    if (flags0 & KF0_ALTACTIVE) {
+    എങ്കിൽ (flags0 & KF0_ALTACTIVE) {
         keycode = GET_GLOBAL(info->alt);
-    } else if (flags0 & KF0_CTRLACTIVE) {
+    } അല്ലെങ്കിൽ എങ്കിൽ (flags0 & KF0_CTRLACTIVE) {
         keycode = GET_GLOBAL(info->control);
-    } else {
+    } അല്ലെങ്കിൽ {
         u8 useshift = flags0 & (KF0_RSHIFT|KF0_LSHIFT) ? 1 : 0;
         u8 ascii = GET_GLOBAL(info->normal) & 0xff;
-        if ((flags0 & KF0_NUMACTIVE && scancode >= 0x47 && scancode <= 0x53)
+        എങ്കിൽ ((flags0 & KF0_NUMACTIVE && scancode >= 0x47 && scancode <= 0x53)
             || (flags0 & KF0_CAPSACTIVE && ascii >= 'a' && ascii <= 'z'))
             // Numlock/capslock toggles shift on certain keys
             useshift ^= 1;
-        if (useshift)
+        എങ്കിൽ (useshift)
             keycode = GET_GLOBAL(info->shift);
-        else
+        അല്ലെങ്കിൽ
             keycode = GET_GLOBAL(info->normal);
     }
-    if (flags1 & KF1_LAST_E0 && scancode >= 0x47 && scancode <= 0x53) {
+    എങ്കിൽ (flags1 & KF1_LAST_E0 && scancode >= 0x47 && scancode <= 0x53) {
         /* extended keys handling */
-        if (flags0 & KF0_ALTACTIVE)
+        എങ്കിൽ (flags0 & KF0_ALTACTIVE)
             keycode = (scancode + 0x50) << 8;
-        else
+        അല്ലെങ്കിൽ
             keycode = (keycode & 0xff00) | 0xe0;
     }
-    if (keycode)
-        enqueue_key(keycode);
+    എങ്കിൽ (keycode)
+        enqueue_താക്കോൽ(keycode);
 }
 
-void
-process_key(u8 key)
+ശൂന്യം
+process_താക്കോൽ(u8 താക്കോൽ)
 {
-    if (!CONFIG_KEYBOARD)
-        return;
+    എങ്കിൽ (!CONFIG_KEYBOARD)
+        തിരികെ;
 
-    if (CONFIG_KBD_CALL_INT15_4F) {
+    എങ്കിൽ (CONFIG_KBD_CALL_INT15_4F) {
         // allow for keyboard intercept
-        struct bregs br;
-        memset(&br, 0, sizeof(br));
-        br.eax = (0x4f << 8) | key;
+        ഘടന bregs br;
+        memset(&br, 0, വലുപ്പം(br));
+        br.eax = (0x4f << 8) | താക്കോൽ;
         br.flags = F_IF|F_CF;
         call16_int(0x15, &br);
-        if (!(br.flags & F_CF))
-            return;
-        key = br.eax;
+        എങ്കിൽ (!(br.flags & F_CF))
+            തിരികെ;
+        താക്കോൽ = br.eax;
     }
-    __process_key(key);
+    __process_key(താക്കോൽ);
 }

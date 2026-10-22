@@ -7,21 +7,21 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "block.h" // struct drive_s
-#include "blockcmd.h" // scsi_drive_setup
-#include "config.h" // CONFIG_*
-#include "malloc.h" // free
-#include "memmap.h" // PAGE_SHIFT, virt_to_phys
-#include "output.h" // dprintf
-#include "pcidevice.h" // foreachpci
-#include "pci_ids.h" // PCI_DEVICE_ID_VMWARE_PVSCSI
-#include "pci_regs.h" // PCI_VENDOR_ID
-#include "pvscsi.h" // pvscsi_setup
-#include "stacks.h" // run_thread
-#include "std/disk.h" // DISK_RET_SUCCESS
-#include "string.h" // memset
-#include "util.h" // usleep
-#include "x86.h" // writel
+#അന്തര്ഭാവ "block.h" // struct drive_s
+#അന്തര്ഭാവ "blockcmd.h" // scsi_drive_setup
+#അന്തര്ഭാവ "config.h" // CONFIG_*
+#അന്തര്ഭാവ "malloc.h" // free
+#അന്തര്ഭാവ "memmap.h" // PAGE_SHIFT, virt_to_phys
+#അന്തര്ഭാവ "output.h" // dprintf
+#അന്തര്ഭാവ "pcidevice.h" // foreachpci
+#അന്തര്ഭാവ "pci_ids.h" // PCI_DEVICE_ID_VMWARE_PVSCSI
+#അന്തര്ഭാവ "pci_regs.h" // PCI_VENDOR_ID
+#അന്തര്ഭാവ "pvscsi.h" // pvscsi_setup
+#അന്തര്ഭാവ "stacks.h" // run_thread
+#അന്തര്ഭാവ "std/disk.h" // DISK_RET_SUCCESS
+#അന്തര്ഭാവ "string.h" // memset
+#അന്തര്ഭാവ "util.h" // usleep
+#അന്തര്ഭാവ "x86.h" // writel
 
 #define MASK(n) ((1 << (n)) - 1)
 
@@ -31,9 +31,9 @@
 #define PVSCSI_INTR_CMPL_1                 (1 << 1)
 #define PVSCSI_INTR_CMPL_MASK              MASK(2)
 
-#define PVSCSI_INTR_MSG_0                  (1 << 2)
-#define PVSCSI_INTR_MSG_1                  (1 << 3)
-#define PVSCSI_INTR_MSG_MASK               (MASK(2) << 2)
+#define PVSCSI_INTR_സന്ദേശം_0                  (1 << 2)
+#define PVSCSI_INTR_സന്ദേശം_1                  (1 << 3)
+#define PVSCSI_INTR_സന്ദേശം_MASK               (MASK(2) << 2)
 #define PVSCSI_INTR_ALL_SUPPORTED          MASK(4)
 
 #define PVSCSI_FLAG_CMD_WITH_SG_LIST       (1 << 0)
@@ -42,7 +42,7 @@
 #define PVSCSI_FLAG_CMD_DIR_TOHOST         (1 << 3)
 #define PVSCSI_FLAG_CMD_DIR_TODEVICE       (1 << 4)
 
-enum PVSCSIRegOffset {
+എണ്ണൽ PVSCSIRegOffset {
     PVSCSI_REG_OFFSET_COMMAND        =    0x0,
     PVSCSI_REG_OFFSET_COMMAND_DATA   =    0x4,
     PVSCSI_REG_OFFSET_COMMAND_STATUS =    0x8,
@@ -57,7 +57,7 @@ enum PVSCSIRegOffset {
     PVSCSI_REG_OFFSET_KICK_RW_IO     = 0x4018,
 };
 
-enum PVSCSICommands {
+എണ്ണൽ PVSCSICommands {
     PVSCSI_CMD_FIRST             = 0,
     PVSCSI_CMD_ADAPTER_RESET     = 1,
     PVSCSI_CMD_ISSUE_SCSI        = 2,
@@ -66,21 +66,21 @@ enum PVSCSICommands {
     PVSCSI_CMD_RESET_DEVICE      = 5,
     PVSCSI_CMD_ABORT_CMD         = 6,
     PVSCSI_CMD_CONFIG            = 7,
-    PVSCSI_CMD_SETUP_MSG_RING    = 8,
+    PVSCSI_CMD_SETUP_സന്ദേശം_RING    = 8,
     PVSCSI_CMD_DEVICE_UNPLUG     = 9,
     PVSCSI_CMD_LAST              = 10
 };
 
-#define PVSCSI_SETUP_RINGS_MAX_NUM_PAGES        32
-struct PVSCSICmdDescSetupRings {
-    u32    reqRingNumPages;
-    u32    cmpRingNumPages;
+#define PVSCSI_SETUP_RINGS_MAX_അക്കം_PAGES        32
+ഘടന PVSCSICmdDescSetupRings {
+    u32    req_Ring_അക്കം_Pages;
+    u32    cmp_Ring_അക്കം_Pages;
     u64    ringsStatePPN;
-    u64    reqRingPPNs[PVSCSI_SETUP_RINGS_MAX_NUM_PAGES];
-    u64    cmpRingPPNs[PVSCSI_SETUP_RINGS_MAX_NUM_PAGES];
+    u64    reqRingPPNs[PVSCSI_SETUP_RINGS_MAX_അക്കം_PAGES];
+    u64    cmpRingPPNs[PVSCSI_SETUP_RINGS_MAX_അക്കം_PAGES];
 } PACKED;
 
-struct PVSCSIRingCmpDesc {
+ഘടന PVSCSIRingCmpDesc {
     u64    context;
     u64    dataLen;
     u32    senseLen;
@@ -89,23 +89,23 @@ struct PVSCSIRingCmpDesc {
     u32    pad[2];
 } PACKED;
 
-struct PVSCSIRingsState {
+ഘടന PVSCSIRingsState {
     u32    reqProdIdx;
     u32    reqConsIdx;
-    u32    reqNumEntriesLog2;
+    u32    req_അക്കം_Entries_Log2;
 
     u32    cmpProdIdx;
     u32    cmpConsIdx;
-    u32    cmpNumEntriesLog2;
+    u32    cmp_അക്കം_Entries_Log2;
 
     u8     pad[104];
 
-    u32    msgProdIdx;
-    u32    msgConsIdx;
-    u32    msgNumEntriesLog2;
+    u32    സന്ദേശം_Prod_Idx;
+    u32    സന്ദേശം_Cons_Idx;
+    u32    സന്ദേശം_അക്കം_Entries_Log2;
 } PACKED;
 
-struct PVSCSIRingReqDesc {
+ഘടന PVSCSIRingReqDesc {
     u64    context;
     u64    dataAddr;
     u64    dataLen;
@@ -122,119 +122,119 @@ struct PVSCSIRingReqDesc {
     u8     unused[59];
 } PACKED;
 
-struct pvscsi_ring_dsc_s {
-    struct PVSCSIRingsState *ring_state;
-    struct PVSCSIRingReqDesc *ring_reqs;
-    struct PVSCSIRingCmpDesc *ring_cmps;
+ഘടന pvscsi_ring_dsc_s {
+    ഘടന PVSCSIRingsState *ring_state;
+    ഘടന PVSCSIRingReqDesc *ring_reqs;
+    ഘടന PVSCSIRingCmpDesc *ring_cmps;
 };
 
-struct pvscsi_lun_s {
-    struct drive_s drive;
-    void *iobase;
+ഘടന pvscsi_lun_s {
+    ഘടന drive_s drive;
+    ശൂന്യം *iobase;
     u8 target;
     u8 lun;
-    struct pvscsi_ring_dsc_s *ring_dsc;
+    ഘടന pvscsi_ring_dsc_s *ring_dsc;
 };
 
-static void
-pvscsi_write_cmd_desc(void *iobase, u32 cmd, const void *desc, size_t len)
+സ്ഥിതം ശൂന്യം
+pvscsi_write_cmd_desc(ശൂന്യം *iobase, u32 cmd, സ്ഥിരം ശൂന്യം *desc, size_t len)
 {
-    const u32 *ptr = desc;
+    സ്ഥിരം u32 *ptr = desc;
     size_t i;
 
-    len /= sizeof(*ptr);
+    len /= വലുപ്പം(*ptr);
     writel(iobase + PVSCSI_REG_OFFSET_COMMAND, cmd);
-    for (i = 0; i < len; i++)
+    വേണ്ടി (i = 0; i < len; i++)
         writel(iobase + PVSCSI_REG_OFFSET_COMMAND_DATA, ptr[i]);
 }
 
-static void
-pvscsi_kick_rw_io(void *iobase)
+സ്ഥിതം ശൂന്യം
+pvscsi_kick_rw_io(ശൂന്യം *iobase)
 {
     writel(iobase + PVSCSI_REG_OFFSET_KICK_RW_IO, 0);
 }
 
-static void
-pvscsi_wait_intr_cmpl(void *iobase)
+സ്ഥിതം ശൂന്യം
+pvscsi_wait_intr_cmpl(ശൂന്യം *iobase)
 {
-    while (!(readl(iobase + PVSCSI_REG_OFFSET_INTR_STATUS) & PVSCSI_INTR_CMPL_MASK))
+    ആകുമ്പോൾ (!(readl(iobase + PVSCSI_REG_OFFSET_INTR_STATUS) & PVSCSI_INTR_CMPL_MASK))
         usleep(5);
     writel(iobase + PVSCSI_REG_OFFSET_INTR_STATUS, PVSCSI_INTR_CMPL_MASK);
 }
 
-static void
-pvscsi_init_rings(void *iobase, struct pvscsi_ring_dsc_s **ring_dsc)
+സ്ഥിതം ശൂന്യം
+pvscsi_init_rings(ശൂന്യം *iobase, ഘടന pvscsi_ring_dsc_s **ring_dsc)
 {
-    struct PVSCSICmdDescSetupRings cmd = {0,};
+    ഘടന PVSCSICmdDescSetupRings cmd = {0,};
 
-    struct pvscsi_ring_dsc_s *dsc = malloc_high(sizeof(*dsc));
-    if (!dsc) {
+    ഘടന pvscsi_ring_dsc_s *dsc = malloc_മുകളിലെ(വലുപ്പം(*dsc));
+    എങ്കിൽ (!dsc) {
         warn_noalloc();
-        return;
+        തിരികെ;
     }
 
     dsc->ring_state =
-        (struct PVSCSIRingsState *)memalign_high(PAGE_SIZE, PAGE_SIZE);
+        (ഘടന PVSCSIRingsState *)memalign_മുകളിലെ(PAGE_SIZE, PAGE_SIZE);
     dsc->ring_reqs =
-        (struct PVSCSIRingReqDesc *)memalign_high(PAGE_SIZE, PAGE_SIZE);
+        (ഘടന PVSCSIRingReqDesc *)memalign_മുകളിലെ(PAGE_SIZE, PAGE_SIZE);
     dsc->ring_cmps =
-        (struct PVSCSIRingCmpDesc *)memalign_high(PAGE_SIZE, PAGE_SIZE);
-    if (!dsc->ring_state || !dsc->ring_reqs || !dsc->ring_cmps) {
+        (ഘടന PVSCSIRingCmpDesc *)memalign_മുകളിലെ(PAGE_SIZE, PAGE_SIZE);
+    എങ്കിൽ (!dsc->ring_state || !dsc->ring_reqs || !dsc->ring_cmps) {
         warn_noalloc();
-        return;
+        തിരികെ;
     }
     memset(dsc->ring_state, 0, PAGE_SIZE);
     memset(dsc->ring_reqs, 0, PAGE_SIZE);
     memset(dsc->ring_cmps, 0, PAGE_SIZE);
 
-    cmd.reqRingNumPages = 1;
-    cmd.cmpRingNumPages = 1;
+    cmd.req_Ring_അക്കം_Pages = 1;
+    cmd.cmp_Ring_അക്കം_Pages = 1;
     cmd.ringsStatePPN = virt_to_phys(dsc->ring_state) >> PAGE_SHIFT;
     cmd.reqRingPPNs[0] = virt_to_phys(dsc->ring_reqs) >> PAGE_SHIFT;
     cmd.cmpRingPPNs[0] = virt_to_phys(dsc->ring_cmps) >> PAGE_SHIFT;
 
     pvscsi_write_cmd_desc(iobase, PVSCSI_CMD_SETUP_RINGS,
-                          &cmd, sizeof(cmd));
+                          &cmd, വലുപ്പം(cmd));
     *ring_dsc = dsc;
 }
 
-static u32
-pvscsi_get_rsp(struct PVSCSIRingsState *s,
-               struct PVSCSIRingCmpDesc *rsp)
+സ്ഥിതം u32
+pvscsi_get_rsp(ഘടന PVSCSIRingsState *s,
+               ഘടന PVSCSIRingCmpDesc *rsp)
 {
     u32 status = rsp->hostStatus;
     s->cmpConsIdx = s->cmpConsIdx + 1;
-    return status;
+    തിരികെ status;
 }
 
-int
-pvscsi_process_op(struct disk_op_s *op)
+പൂർണ്ണസംഖ്യ
+pvscsi_process_op(ഘടന disk_op_s *op)
 {
-    if (!CONFIG_PVSCSI)
-        return DISK_RET_EBADTRACK;
-    struct pvscsi_lun_s *plun =
-        container_of(op->drive_fl, struct pvscsi_lun_s, drive);
-    struct pvscsi_ring_dsc_s *ring_dsc = plun->ring_dsc;
-    struct PVSCSIRingsState *s = ring_dsc->ring_state;
-    u32 req_entries = s->reqNumEntriesLog2;
-    u32 cmp_entries = s->cmpNumEntriesLog2;
-    struct PVSCSIRingReqDesc *req;
-    struct PVSCSIRingCmpDesc *rsp;
+    എങ്കിൽ (!CONFIG_PVSCSI)
+        തിരികെ DISK_RET_EBADTRACK;
+    ഘടന pvscsi_lun_s *plun =
+        container_of(op->drive_fl, ഘടന pvscsi_lun_s, drive);
+    ഘടന pvscsi_ring_dsc_s *ring_dsc = plun->ring_dsc;
+    ഘടന PVSCSIRingsState *s = ring_dsc->ring_state;
+    u32 req_entries = s->req_അക്കം_Entries_Log2;
+    u32 cmp_entries = s->cmp_അക്കം_Entries_Log2;
+    ഘടന PVSCSIRingReqDesc *req;
+    ഘടന PVSCSIRingCmpDesc *rsp;
     u32 status;
 
-    if (s->reqProdIdx - s->cmpConsIdx >= 1 << req_entries) {
+    എങ്കിൽ (s->reqProdIdx - s->cmpConsIdx >= 1 << req_entries) {
         dprintf(1, "pvscsi: ring full: reqProdIdx=%d cmpConsIdx=%d\n",
                 s->reqProdIdx, s->cmpConsIdx);
-        return DISK_RET_EBADTRACK;
+        തിരികെ DISK_RET_EBADTRACK;
     }
 
     req = ring_dsc->ring_reqs + (s->reqProdIdx & MASK(req_entries));
-    int blocksize = scsi_fill_cmd(op, req->cdb, 16);
-    if (blocksize < 0)
-        return default_process_op(op);
+    പൂർണ്ണസംഖ്യ blocksize = scsi_fill_cmd(op, req->cdb, 16);
+    എങ്കിൽ (blocksize < 0)
+        തിരികെ default_process_op(op);
     req->bus = 0;
     req->target = plun->target;
-    memset(req->lun, 0, sizeof(req->lun));
+    memset(req->lun, 0, വലുപ്പം(req->lun));
     req->lun[1] = plun->lun;
     req->senseLen = 0;
     req->senseAddr = 0;
@@ -243,7 +243,7 @@ pvscsi_process_op(struct disk_op_s *op)
     req->tag = SIMPLE_QUEUE_TAG;
     req->flags = scsi_is_read(op) ?
         PVSCSI_FLAG_CMD_DIR_TOHOST : PVSCSI_FLAG_CMD_DIR_TODEVICE;
-    req->dataLen = op->count * blocksize;
+    req->dataLen = op->എണ്ണം * blocksize;
     req->dataAddr = (u32)op->buf_fl;
     s->reqProdIdx = s->reqProdIdx + 1;
 
@@ -253,19 +253,19 @@ pvscsi_process_op(struct disk_op_s *op)
     rsp = ring_dsc->ring_cmps + (s->cmpConsIdx & MASK(cmp_entries));
     status = pvscsi_get_rsp(s, rsp);
 
-    return status == 0 ? DISK_RET_SUCCESS : DISK_RET_EBADTRACK;
+    തിരികെ status == 0 ? DISK_RET_SUCCESS : DISK_RET_EBADTRACK;
 }
 
-static int
-pvscsi_add_lun(struct pci_device *pci, void *iobase,
-               struct pvscsi_ring_dsc_s *ring_dsc, u8 target, u8 lun)
+സ്ഥിതം പൂർണ്ണസംഖ്യ
+pvscsi_add_lun(ഘടന pci_device *pci, ശൂന്യം *iobase,
+               ഘടന pvscsi_ring_dsc_s *ring_dsc, u8 target, u8 lun)
 {
-    struct pvscsi_lun_s *plun = malloc_fseg(sizeof(*plun));
-    if (!plun) {
+    ഘടന pvscsi_lun_s *plun = malloc_fseg(വലുപ്പം(*plun));
+    എങ്കിൽ (!plun) {
         warn_noalloc();
-        return -1;
+        തിരികെ -1;
     }
-    memset(plun, 0, sizeof(*plun));
+    memset(plun, 0, വലുപ്പം(*plun));
     plun->drive.type = DTYPE_PVSCSI;
     plun->drive.cntl_id = pci->bdf;
     plun->target = target;
@@ -274,61 +274,61 @@ pvscsi_add_lun(struct pci_device *pci, void *iobase,
     plun->ring_dsc = ring_dsc;
 
     boot_lchs_find_scsi_device(pci, target, lun, &(plun->drive.lchs));
-    char *name = znprintf(MAXDESCSIZE, "pvscsi %pP %d:%d", pci, target, lun);
-    int prio = bootprio_find_scsi_device(pci, target, lun);
-    int ret = scsi_drive_setup(&plun->drive, name, prio);
-    free(name);
-    if (ret)
-        goto fail;
-    return 0;
+    അക്ഷരം *name = znprintf(MAXDESCSIZE, "pvscsi %pP %d:%d", pci, target, lun);
+    പൂർണ്ണസംഖ്യ prio = bootprio_find_scsi_device(pci, target, lun);
+    പൂർണ്ണസംഖ്യ ret = scsi_drive_setup(&plun->drive, name, prio);
+    സ്വതന്ത്രം(name);
+    എങ്കിൽ (ret)
+        പോകുക fail;
+    തിരികെ 0;
 
 fail:
-    free(plun);
-    return -1;
+    സ്വതന്ത്രം(plun);
+    തിരികെ -1;
 }
 
-static void
-pvscsi_scan_target(struct pci_device *pci, void *iobase,
-                   struct pvscsi_ring_dsc_s *ring_dsc, u8 target)
+സ്ഥിതം ശൂന്യം
+pvscsi_scan_target(ഘടന pci_device *pci, ശൂന്യം *iobase,
+                   ഘടന pvscsi_ring_dsc_s *ring_dsc, u8 target)
 {
     /* pvscsi has no more than a single lun per target */
     pvscsi_add_lun(pci, iobase, ring_dsc, target, 0);
 }
 
-static void
-init_pvscsi(void *data)
+സ്ഥിതം ശൂന്യം
+init_pvscsi(ശൂന്യം *data)
 {
-    struct pci_device *pci = data;
-    void *iobase = pci_enable_membar(pci, PCI_BASE_ADDRESS_0);
-    if (!iobase)
-        return;
+    ഘടന pci_device *pci = data;
+    ശൂന്യം *iobase = pci_enable_membar(pci, PCI_BASE_ADDRESS_0);
+    എങ്കിൽ (!iobase)
+        തിരികെ;
     pci_enable_busmaster(pci);
 
     dprintf(1, "found pvscsi at %pP, io @ %p\n", pci, iobase);
 
-    pvscsi_write_cmd_desc(iobase, PVSCSI_CMD_ADAPTER_RESET, NULL, 0);
+    pvscsi_write_cmd_desc(iobase, PVSCSI_CMD_ADAPTER_RESET, ശൂന്യ, 0);
 
-    struct pvscsi_ring_dsc_s *ring_dsc = NULL;
+    ഘടന pvscsi_ring_dsc_s *ring_dsc = ശൂന്യ;
     pvscsi_init_rings(iobase, &ring_dsc);
-    int i;
-    for (i = 0; i < 64; i++)
+    പൂർണ്ണസംഖ്യ i;
+    വേണ്ടി (i = 0; i < 64; i++)
         pvscsi_scan_target(pci, iobase, ring_dsc, i);
 }
 
-void
-pvscsi_setup(void)
+ശൂന്യം
+pvscsi_setup(ശൂന്യം)
 {
     ASSERT32FLAT();
-    if (! CONFIG_PVSCSI)
-        return;
+    എങ്കിൽ (! CONFIG_PVSCSI)
+        തിരികെ;
 
     dprintf(3, "init pvscsi\n");
 
-    struct pci_device *pci;
+    ഘടന pci_device *pci;
     foreachpci(pci) {
-        if (pci->vendor != PCI_VENDOR_ID_VMWARE
+        എങ്കിൽ (pci->vendor != PCI_VENDOR_ID_VMWARE
             || pci->device != PCI_DEVICE_ID_VMWARE_PVSCSI)
-            continue;
+            തുടരുക;
         run_thread(init_pvscsi, pci);
     }
 }

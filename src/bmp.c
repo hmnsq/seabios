@@ -6,22 +6,22 @@
 *
 * This work is licensed under the terms of the GNU LGPLv3.
 */
-#include "malloc.h" // malloc_tmphigh
-#include "string.h" // memcpy
-#include "util.h" // struct bmp_decdata
+#അന്തര്ഭാവ "malloc.h" // malloc_tmphigh
+#അന്തര്ഭാവ "string.h" // memcpy
+#അന്തര്ഭാവ "util.h" // struct bmp_decdata
 
-struct bmp_decdata {
-    struct tagRGBQUAD *quadp;
-    unsigned char *datap;
-    int width;
-    int height;
-    int bpp;
+ഘടന bmp_decdata {
+    ഘടന tagRGBQUAD *quadp;
+    unsigned അക്ഷരം *datap;
+    പൂർണ്ണസംഖ്യ width;
+    പൂർണ്ണസംഖ്യ height;
+    പൂർണ്ണസംഖ്യ bpp;
 };
 
 #define bmp_load4byte(addr) (*(u32 *)(addr))
 #define bmp_load2byte(addr) (*(u16 *)(addr))
 
-typedef struct tagBITMAPFILEHEADER {
+തരനിർവചനം ഘടന tagBITMAPFILEHEADER {
     u8 bfType[2];
     u8 bfSize[4];
     u8 bfReserved1[2];
@@ -29,12 +29,12 @@ typedef struct tagBITMAPFILEHEADER {
     u8 bfOffBits[4];
 } BITMAPFILEHEADER, tagBITMAPFILEHEADER;
 
-typedef struct tagBITMAPINFOHEADER {
+തരനിർവചനം ഘടന tagBITMAPINFOHEADER {
     u8 biSize[4];
     u8 biWidth[4];
     u8 biHeight[4];
     u8 biPlanes[2];
-    u8 biBitCount[2];
+    u8 bi_Bit_എണ്ണം[2];
     u8 biCompression[4];
     u8 biSizeImage[4];
     u8 biXPelsPerMeter[4];
@@ -43,7 +43,7 @@ typedef struct tagBITMAPINFOHEADER {
     u8 biClrImportant[4];
 } BITMAPINFOHEADER, tagBITMAPINFOHEADER;
 
-typedef struct tagRGBQUAD {
+തരനിർവചനം ഘടന tagRGBQUAD {
     u8 rgbBlue;
     u8 rgbGreen;
     u8 rgbRed;
@@ -56,45 +56,45 @@ typedef struct tagRGBQUAD {
 *   arrange horizontal pixel data, add extra space in the dest buffer
 *       for every line
 */
-static void raw_data_format_adjust(u8 *src, u8 *dest, int width,
-		int height, int bytes_per_line_src, int bytes_per_line_dest)
+സ്ഥിതം ശൂന്യം raw_data_format_adjust(u8 *src, u8 *dest, പൂർണ്ണസംഖ്യ width,
+		പൂർണ്ണസംഖ്യ height, പൂർണ്ണസംഖ്യ bytes_per_വരി_src, പൂർണ്ണസംഖ്യ bytes_per_വരി_dest)
 {
-    int i;
-    for (i = 0 ; i < height ; i++) {
-        memcpy(dest + i * bytes_per_line_dest,
-           src + (height - 1 - i) * bytes_per_line_src, bytes_per_line_src);
+    പൂർണ്ണസംഖ്യ i;
+    വേണ്ടി (i = 0 ; i < height ; i++) {
+        memcpy(dest + i * bytes_per_വരി_dest,
+           src + (height - 1 - i) * bytes_per_വരി_src, bytes_per_വരി_src);
     }
 }
 
 /* allocate decdata struct */
-struct bmp_decdata *bmp_alloc(void)
+ഘടന bmp_decdata *bmp_alloc(ശൂന്യം)
 {
-    struct bmp_decdata *bmp = malloc_tmphigh(sizeof(*bmp));
-    return bmp;
+    ഘടന bmp_decdata *bmp = malloc_tmphigh(വലുപ്പം(*bmp));
+    തിരികെ bmp;
 }
 
 /* extract information from bmp file data */
-int bmp_decode(struct bmp_decdata *bmp, unsigned char *data, int data_size)
+പൂർണ്ണസംഖ്യ bmp_decode(ഘടന bmp_decdata *bmp, unsigned അക്ഷരം *data, പൂർണ്ണസംഖ്യ data_size)
 {
-    if (data_size < 54)
-        return 1;
+    എങ്കിൽ (data_size < 54)
+        തിരികെ 1;
 
     u16 bmp_filehead = bmp_load2byte(data + 0);
-    if (bmp_filehead != 0x4d42)
-        return 2;
+    എങ്കിൽ (bmp_filehead != 0x4d42)
+        തിരികെ 2;
     u32 bmp_recordsize = bmp_load4byte(data + 2);
-    if (bmp_recordsize != data_size)
-        return 3;
+    എങ്കിൽ (bmp_recordsize != data_size)
+        തിരികെ 3;
     u32 bmp_dataoffset = bmp_load4byte(data + 10);
-    bmp->datap = (unsigned char *)data + bmp_dataoffset;
+    bmp->datap = (unsigned അക്ഷരം *)data + bmp_dataoffset;
     bmp->width = bmp_load4byte(data + 18);
     bmp->height = bmp_load4byte(data + 22);
     bmp->bpp = bmp_load2byte(data + 28);
-    return 0;
+    തിരികെ 0;
 }
 
 /* get bmp properties */
-void bmp_get_info(struct bmp_decdata *bmp, int *width, int *height, int *bpp)
+ശൂന്യം bmp_get_info(ഘടന bmp_decdata *bmp, പൂർണ്ണസംഖ്യ *width, പൂർണ്ണസംഖ്യ *height, പൂർണ്ണസംഖ്യ *bpp)
 {
     *width = bmp->width;
     *height = bmp->height;
@@ -102,15 +102,15 @@ void bmp_get_info(struct bmp_decdata *bmp, int *width, int *height, int *bpp)
 }
 
 /* flush flat picture data to *pc */
-int bmp_show(struct bmp_decdata *bmp, unsigned char *pic, int width,
-             int height, int depth, int bytes_per_line_dest)
+പൂർണ്ണസംഖ്യ bmp_show(ഘടന bmp_decdata *bmp, unsigned അക്ഷരം *pic, പൂർണ്ണസംഖ്യ width,
+             പൂർണ്ണസംഖ്യ height, പൂർണ്ണസംഖ്യ depth, പൂർണ്ണസംഖ്യ bytes_per_വരി_dest)
 {
-    if (bmp->datap == pic)
-        return 0;
-    if ((depth == bmp->bpp) && (bmp->bpp%8 == 0)) {
+    എങ്കിൽ (bmp->datap == pic)
+        തിരികെ 0;
+    എങ്കിൽ ((depth == bmp->bpp) && (bmp->bpp%8 == 0)) {
         raw_data_format_adjust(bmp->datap, pic, width, height,
-			(bmp->bpp/8)*width, bytes_per_line_dest);
-        return 0;
+			(bmp->bpp/8)*width, bytes_per_വരി_dest);
+        തിരികെ 0;
     }
-    return 1;
+    തിരികെ 1;
 }

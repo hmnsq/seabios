@@ -4,79 +4,79 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // FUNC16
-#include "config.h" // CONFIG_*
-#include "malloc.h" // _malloc
-#include "output.h" // dprintf
-#include "e820map.h" // struct e820entry
-#include "std/pmm.h" // PMM_SIGNATURE
-#include "string.h" // checksum
-#include "util.h" // pmm_init
-#include "x86.h" // __ffs
+#അന്തര്ഭാവ "biosvar.h" // FUNC16
+#അന്തര്ഭാവ "config.h" // CONFIG_*
+#അന്തര്ഭാവ "malloc.h" // _malloc
+#അന്തര്ഭാവ "output.h" // dprintf
+#അന്തര്ഭാവ "e820map.h" // struct e820entry
+#അന്തര്ഭാവ "std/pmm.h" // PMM_SIGNATURE
+#അന്തര്ഭാവ "string.h" // checksum
+#അന്തര്ഭാവ "util.h" // pmm_init
+#അന്തര്ഭാവ "x86.h" // __ffs
 
-extern struct pmmheader PMMHEADER;
+ബാഹ്യ ഘടന pmmheader PMMHEADER;
 
-#if CONFIG_PMM
-struct pmmheader PMMHEADER __aligned(16) VARFSEG = {
+#എങ്കിൽ CONFIG_PMM
+ഘടന pmmheader PMMHEADER __aligned(16) VARFSEG = {
     .signature = PMM_SIGNATURE,
     .version = 0x01,
-    .length = sizeof(PMMHEADER),
+    .length = വലുപ്പം(PMMHEADER),
 };
 #endif
 
 // PMM - allocate
-static u32
+സ്ഥിതം u32
 handle_pmm00(u16 *args)
 {
     u32 length = *(u32*)&args[1], handle = *(u32*)&args[3];
     u16 flags = args[5];
     dprintf(3, "pmm00: length=%x handle=%x flags=%x\n"
             , length, handle, flags);
-    struct zone_s *lowzone = &ZoneTmpLow, *highzone = &ZoneTmpHigh;
-    if (flags & 8) {
+    ഘടന zone_s *lowzone = &Zone_Tmp_താഴെയുള്ള, *highzone = &Zone_Tmp_മുകളിലെ;
+    എങ്കിൽ (flags & 8) {
         // Permanent memory request.
-        lowzone = &ZoneLow;
-        highzone = &ZoneHigh;
+        lowzone = &Zone_താഴെയുള്ള;
+        highzone = &Zone_മുകളിലെ;
     }
-    if (!length) {
+    എങ്കിൽ (!length) {
         // Memory size request
-        switch (flags & 3) {
-        default:
-        case 0:
-            return 0;
-        case 1:
-            return malloc_getspace(lowzone);
-        case 2:
-            return malloc_getspace(highzone);
-        case 3: {
+        തിരഞ്ഞെടുപ്പ് (flags & 3) {
+        സ്ഥിരസ്ഥിതി:
+        അവസ്ഥ 0:
+            തിരികെ 0;
+        അവസ്ഥ 1:
+            തിരികെ malloc_getspace(lowzone);
+        അവസ്ഥ 2:
+            തിരികെ malloc_getspace(highzone);
+        അവസ്ഥ 3: {
             u32 spacelow = malloc_getspace(lowzone);
             u32 spacehigh = malloc_getspace(highzone);
-            if (spacelow > spacehigh)
-                return spacelow;
-            return spacehigh;
+            എങ്കിൽ (spacelow > spacehigh)
+                തിരികെ spacelow;
+            തിരികെ spacehigh;
         }
         }
     }
     u32 size = length * 16;
-    if ((s32)size <= 0)
-        return 0;
+    എങ്കിൽ ((s32)size <= 0)
+        തിരികെ 0;
     u32 align = MALLOC_MIN_ALIGN;
-    if (flags & 4) {
+    എങ്കിൽ (flags & 4) {
         align = 1<<__ffs(size);
-        if (align < MALLOC_MIN_ALIGN)
+        എങ്കിൽ (align < MALLOC_MIN_ALIGN)
             align = MALLOC_MIN_ALIGN;
     }
     u32 data;
-    switch (flags & 3) {
-    default:
-    case 0:
-        return 0;
-    case 1:
+    തിരഞ്ഞെടുപ്പ് (flags & 3) {
+    സ്ഥിരസ്ഥിതി:
+    അവസ്ഥ 0:
+        തിരികെ 0;
+    അവസ്ഥ 1:
         data = malloc_palloc(lowzone, size, align);
-        break;
-    case 2:
+        നിർത്തുക;
+    അവസ്ഥ 2:
         data = malloc_palloc(highzone, size, align);
-        if (!data && (flags & 8)) {
+        എങ്കിൽ (!data && (flags & 8)) {
             /*
              * We are out of meory.  So go allocate from the (big)
              * ZoneTmpHigh instead and reserve the block in the e820
@@ -84,90 +84,90 @@ handle_pmm00(u16 *args)
              * handle big permanent allocations without needing a big
              * ZoneHigh.
              */
-            data = malloc_palloc(&ZoneTmpHigh, size, align);
-            if (data)
+            data = malloc_palloc(&Zone_Tmp_മുകളിലെ, size, align);
+            എങ്കിൽ (data)
                 e820_add(data, size, E820_RESERVED);
         }
-        break;
-    case 3: {
+        നിർത്തുക;
+    അവസ്ഥ 3: {
         data = malloc_palloc(lowzone, size, align);
-        if (!data)
+        എങ്കിൽ (!data)
             data = malloc_palloc(highzone, size, align);
     }
     }
-    if (data && handle != MALLOC_DEFAULT_HANDLE)
+    എങ്കിൽ (data && handle != MALLOC_DEFAULT_HANDLE)
         malloc_sethandle(data, handle);
-    return data;
+    തിരികെ data;
 }
 
 // PMM - find
-static u32
+സ്ഥിതം u32
 handle_pmm01(u16 *args)
 {
     u32 handle = *(u32*)&args[1];
     dprintf(3, "pmm01: handle=%x\n", handle);
-    if (handle == MALLOC_DEFAULT_HANDLE)
-        return 0;
-    return malloc_findhandle(handle);
+    എങ്കിൽ (handle == MALLOC_DEFAULT_HANDLE)
+        തിരികെ 0;
+    തിരികെ malloc_findhandle(handle);
 }
 
 // PMM - deallocate
-static u32
+സ്ഥിതം u32
 handle_pmm02(u16 *args)
 {
     u32 buffer = *(u32*)&args[1];
     dprintf(3, "pmm02: buffer=%x\n", buffer);
-    int ret = malloc_pfree(buffer);
-    if (ret)
+    പൂർണ്ണസംഖ്യ ret = malloc_pfree(buffer);
+    എങ്കിൽ (ret)
         // Error
-        return 1;
-    return 0;
+        തിരികെ 1;
+    തിരികെ 0;
 }
 
-static u32
+സ്ഥിതം u32
 handle_pmmXX(u16 *args)
 {
-    return PMM_FUNCTION_NOT_SUPPORTED;
+    തിരികെ PMM_FUNCTION_NOT_SUPPORTED;
 }
 
 u32 VISIBLE32INIT
 handle_pmm(u16 *args)
 {
     ASSERT32FLAT();
-    if (! CONFIG_PMM)
-        return PMM_FUNCTION_NOT_SUPPORTED;
+    എങ്കിൽ (! CONFIG_PMM)
+        തിരികെ PMM_FUNCTION_NOT_SUPPORTED;
 
     u16 arg1 = args[0];
     dprintf(DEBUG_HDL_pmm, "pmm call arg1=%x\n", arg1);
 
     u32 ret;
-    switch (arg1) {
-    case 0x00: ret = handle_pmm00(args); break;
-    case 0x01: ret = handle_pmm01(args); break;
-    case 0x02: ret = handle_pmm02(args); break;
-    default:   ret = handle_pmmXX(args); break;
+    തിരഞ്ഞെടുപ്പ് (arg1) {
+    അവസ്ഥ 0x00: ret = handle_pmm00(args); നിർത്തുക;
+    അവസ്ഥ 0x01: ret = handle_pmm01(args); നിർത്തുക;
+    അവസ്ഥ 0x02: ret = handle_pmm02(args); നിർത്തുക;
+    സ്ഥിരസ്ഥിതി:   ret = handle_pmmXX(args); നിർത്തുക;
     }
 
-    return ret;
+    തിരികെ ret;
 }
 
-void
-pmm_init(void)
+ശൂന്യം
+pmm_init(ശൂന്യം)
 {
-    if (! CONFIG_PMM)
-        return;
+    എങ്കിൽ (! CONFIG_PMM)
+        തിരികെ;
 
     dprintf(3, "init PMM\n");
 
     PMMHEADER.entry = FUNC16(entry_pmm);
-    PMMHEADER.checksum -= checksum(&PMMHEADER, sizeof(PMMHEADER));
+    PMMHEADER.checksum -= checksum(&PMMHEADER, വലുപ്പം(PMMHEADER));
 }
 
-void
-pmm_prepboot(void)
+ശൂന്യം
+pmm_prepboot(ശൂന്യം)
 {
-    if (! CONFIG_PMM)
-        return;
+    എങ്കിൽ (! CONFIG_PMM)
+        തിരികെ;
 
     dprintf(3, "finalize PMM\n");
 

@@ -1,122 +1,122 @@
-#include "romfile_loader.h"
-#include "byteorder.h" // leXX_to_cpu/cpu_to_leXX
-#include "util.h" // checksum
-#include "string.h" // strcmp
-#include "romfile.h" // struct romfile_s
-#include "malloc.h" // Zone*, _malloc
-#include "list.h" // struct hlist_node
-#include "output.h" // warn_*
-#include "paravirt.h" // qemu_cfg_write_file
+#അന്തര്ഭാവ "romfile_loader.h"
+#അന്തര്ഭാവ "byteorder.h" // leXX_to_cpu/cpu_to_leXX
+#അന്തര്ഭാവ "util.h" // checksum
+#അന്തര്ഭാവ "string.h" // strcmp
+#അന്തര്ഭാവ "romfile.h" // struct romfile_s
+#അന്തര്ഭാവ "malloc.h" // Zone*, _malloc
+#അന്തര്ഭാവ "list.h" // struct hlist_node
+#അന്തര്ഭാവ "output.h" // warn_*
+#അന്തര്ഭാവ "paravirt.h" // qemu_cfg_write_file
 
-struct romfile_loader_file {
-    struct romfile_s *file;
-    void *data;
+ഘടന romfile_loader_file {
+    ഘടന romfile_s *file;
+    ശൂന്യം *data;
 };
-struct romfile_loader_files {
-    int nfiles;
-    struct romfile_loader_file files[];
+ഘടന romfile_loader_files {
+    പൂർണ്ണസംഖ്യ nfiles;
+    ഘടന romfile_loader_file files[];
 };
 
 // Data structures for storing "write pointer" entries for possible replay
-struct romfile_wr_pointer_entry {
+ഘടന romfile_wr_pointer_entry {
     u64 pointer;
     u32 offset;
-    u16 key;
+    u16 താക്കോൽ;
     u8 ptr_size;
-    struct hlist_node node;
+    ഘടന hlist_കണ്ണി കണ്ണി;
 };
-static struct hlist_head romfile_pointer_list;
+സ്ഥിതം ഘടന hlist_head romfile_pointer_list;
 
-static struct romfile_loader_file *
-romfile_loader_find(const char *name,
-                    struct romfile_loader_files *files)
+സ്ഥിതം ഘടന romfile_loader_file *
+romfile_loader_find(സ്ഥിരം അക്ഷരം *name,
+                    ഘടന romfile_loader_files *files)
 {
-    int i;
-    if (name[ROMFILE_LOADER_FILESZ - 1])
-        return NULL;
-    for (i = 0; i < files->nfiles; ++i)
-        if (!strcmp(files->files[i].file->name, name))
-            return &files->files[i];
-    return NULL;
+    പൂർണ്ണസംഖ്യ i;
+    എങ്കിൽ (name[ROMFILE_LOADER_FILESZ - 1])
+        തിരികെ ശൂന്യ;
+    വേണ്ടി (i = 0; i < files->nfiles; ++i)
+        എങ്കിൽ (!strcmp(files->files[i].file->name, name))
+            തിരികെ &files->files[i];
+    തിരികെ ശൂന്യ;
 }
 
 // Replay "write pointer" entries back to QEMU
-void romfile_fw_cfg_resume(void)
+ശൂന്യം romfile_fw_cfg_resume(ശൂന്യം)
 {
-    if (!CONFIG_QEMU)
-        return;
+    എങ്കിൽ (!CONFIG_QEMU)
+        തിരികെ;
 
-    struct romfile_wr_pointer_entry *entry;
-    hlist_for_each_entry(entry, &romfile_pointer_list, node) {
-        qemu_cfg_write_file_simple(&entry->pointer, entry->key,
+    ഘടന romfile_wr_pointer_entry *entry;
+    hlist_for_each_entry(entry, &romfile_pointer_list, കണ്ണി) {
+        qemu_cfg_write_file_simple(&entry->pointer, entry->താക്കോൽ,
                                    entry->offset, entry->ptr_size);
     }
 }
 
-static void romfile_loader_allocate(struct romfile_loader_entry_s *entry,
-                                    struct romfile_loader_files *files)
+സ്ഥിതം ശൂന്യം romfile_loader_allocate(ഘടന romfile_loader_entry_s *entry,
+                                    ഘടന romfile_loader_files *files)
 {
-    struct zone_s *zone;
-    struct romfile_loader_file *file = &files->files[files->nfiles];
-    void *data;
-    int ret;
+    ഘടന zone_s *zone;
+    ഘടന romfile_loader_file *file = &files->files[files->nfiles];
+    ശൂന്യം *data;
+    പൂർണ്ണസംഖ്യ ret;
     unsigned alloc_align = le32_to_cpu(entry->alloc.align);
 
-    if (alloc_align & (alloc_align - 1))
-        goto err;
+    എങ്കിൽ (alloc_align & (alloc_align - 1))
+        പോകുക err;
 
-    switch (entry->alloc.zone) {
-        case ROMFILE_LOADER_ALLOC_ZONE_HIGH:
-            zone = &ZoneHigh;
-            break;
-        case ROMFILE_LOADER_ALLOC_ZONE_FSEG:
+    തിരഞ്ഞെടുപ്പ് (entry->alloc.zone) {
+        അവസ്ഥ ROMFILE_LOADER_ALLOC_ZONE_മുകളിലെ:
+            zone = &Zone_മുകളിലെ;
+            നിർത്തുക;
+        അവസ്ഥ ROMFILE_LOADER_ALLOC_ZONE_FSEG:
             zone = &ZoneFSeg;
-            break;
-        default:
-            goto err;
+            നിർത്തുക;
+        സ്ഥിരസ്ഥിതി:
+            പോകുക err;
     }
-    if (alloc_align < MALLOC_MIN_ALIGN)
+    എങ്കിൽ (alloc_align < MALLOC_MIN_ALIGN)
         alloc_align = MALLOC_MIN_ALIGN;
-    if (entry->alloc.file[ROMFILE_LOADER_FILESZ - 1])
-        goto err;
+    എങ്കിൽ (entry->alloc.file[ROMFILE_LOADER_FILESZ - 1])
+        പോകുക err;
     file->file = romfile_find(entry->alloc.file);
-    if (!file->file || !file->file->size)
-        return;
+    എങ്കിൽ (!file->file || !file->file->size)
+        തിരികെ;
     data = _malloc(zone, file->file->size, alloc_align);
-    if (!data) {
+    എങ്കിൽ (!data) {
         warn_noalloc();
-        return;
+        തിരികെ;
     }
     ret = file->file->copy(file->file, data, file->file->size);
-    if (ret != file->file->size)
-        goto file_err;
+    എങ്കിൽ (ret != file->file->size)
+        പോകുക file_err;
     file->data = data;
     files->nfiles++;
-    return;
+    തിരികെ;
 
 file_err:
-    free(data);
+    സ്വതന്ത്രം(data);
 err:
     warn_internalerror();
 }
 
-static void romfile_loader_add_pointer(struct romfile_loader_entry_s *entry,
-                                       struct romfile_loader_files *files)
+സ്ഥിതം ശൂന്യം romfile_loader_add_pointer(ഘടന romfile_loader_entry_s *entry,
+                                       ഘടന romfile_loader_files *files)
 {
-    struct romfile_loader_file *dest_file;
-    struct romfile_loader_file *src_file;
+    ഘടന romfile_loader_file *dest_file;
+    ഘടന romfile_loader_file *src_file;
     unsigned offset = le32_to_cpu(entry->pointer.offset);
     u64 pointer = 0;
 
     dest_file = romfile_loader_find(entry->pointer.dest_file, files);
     src_file = romfile_loader_find(entry->pointer.src_file, files);
 
-    if (!dest_file || !src_file || !dest_file->data || !src_file->data ||
+    എങ്കിൽ (!dest_file || !src_file || !dest_file->data || !src_file->data ||
         offset + entry->pointer.size < offset ||
         offset + entry->pointer.size > dest_file->file->size ||
         entry->pointer.size < 1 || entry->pointer.size > 8 ||
         entry->pointer.size & (entry->pointer.size - 1))
-        goto err;
+        പോകുക err;
 
     memcpy(&pointer, dest_file->data + offset, entry->pointer.size);
     pointer = le64_to_cpu(pointer);
@@ -124,15 +124,15 @@ static void romfile_loader_add_pointer(struct romfile_loader_entry_s *entry,
     pointer = cpu_to_le64(pointer);
     memcpy(dest_file->data + offset, &pointer, entry->pointer.size);
 
-    return;
+    തിരികെ;
 err:
     warn_internalerror();
 }
 
-static void romfile_loader_add_checksum(struct romfile_loader_entry_s *entry,
-                                        struct romfile_loader_files *files)
+സ്ഥിതം ശൂന്യം romfile_loader_add_checksum(ഘടന romfile_loader_entry_s *entry,
+                                        ഘടന romfile_loader_files *files)
 {
-    struct romfile_loader_file *file;
+    ഘടന romfile_loader_file *file;
     unsigned offset = le32_to_cpu(entry->cksum.offset);
     unsigned start = le32_to_cpu(entry->cksum.start);
     unsigned len = le32_to_cpu(entry->cksum.length);
@@ -140,23 +140,23 @@ static void romfile_loader_add_checksum(struct romfile_loader_entry_s *entry,
 
     file = romfile_loader_find(entry->cksum.file, files);
 
-    if (!file || !file->data || offset >= file->file->size ||
+    എങ്കിൽ (!file || !file->data || offset >= file->file->size ||
         start + len < start || start + len > file->file->size)
-        goto err;
+        പോകുക err;
 
     data = file->data + offset;
     *data -= checksum(file->data + start, len);
 
-    return;
+    തിരികെ;
 err:
     warn_internalerror();
 }
 
-static void romfile_loader_write_pointer(struct romfile_loader_entry_s *entry,
-                                         struct romfile_loader_files *files)
+സ്ഥിതം ശൂന്യം romfile_loader_write_pointer(ഘടന romfile_loader_entry_s *entry,
+                                         ഘടന romfile_loader_files *files)
 {
-    struct romfile_s *dest_file;
-    struct romfile_loader_file *src_file;
+    ഘടന romfile_s *dest_file;
+    ഘടന romfile_loader_file *src_file;
     unsigned dst_offset = le32_to_cpu(entry->wr_pointer.dst_offset);
     unsigned src_offset = le32_to_cpu(entry->wr_pointer.src_offset);
     u64 pointer = 0;
@@ -165,95 +165,95 @@ static void romfile_loader_write_pointer(struct romfile_loader_entry_s *entry,
     dest_file = romfile_find(entry->wr_pointer.dest_file);
     src_file = romfile_loader_find(entry->wr_pointer.src_file, files);
 
-    if (!dest_file || !src_file || !src_file->data ||
+    എങ്കിൽ (!dest_file || !src_file || !src_file->data ||
         dst_offset + entry->wr_pointer.size < dst_offset ||
         dst_offset + entry->wr_pointer.size > dest_file->size ||
         src_offset >= src_file->file->size ||
         entry->wr_pointer.size < 1 || entry->wr_pointer.size > 8 ||
         entry->wr_pointer.size & (entry->wr_pointer.size - 1)) {
-        goto err;
+        പോകുക err;
     }
 
     pointer = (unsigned long)src_file->data + src_offset;
     /* Make sure the pointer fits within wr_pointer.size */
-    if ((entry->wr_pointer.size != sizeof(u64)) &&
+    എങ്കിൽ ((entry->wr_pointer.size != വലുപ്പം(u64)) &&
         ((pointer >> (entry->wr_pointer.size * 8)) > 0)) {
-        goto err;
+        പോകുക err;
     }
     pointer = cpu_to_le64(pointer);
 
     /* Only supported on QEMU */
-    if (qemu_cfg_write_file(&pointer, dest_file, dst_offset,
+    എങ്കിൽ (qemu_cfg_write_file(&pointer, dest_file, dst_offset,
                             entry->wr_pointer.size) != entry->wr_pointer.size) {
-        goto err;
+        പോകുക err;
     }
 
     /* Store the info so it can replayed later if necessary */
-    struct romfile_wr_pointer_entry *store = malloc_high(sizeof(*store));
-    if (!store) {
+    ഘടന romfile_wr_pointer_entry *store = malloc_മുകളിലെ(വലുപ്പം(*store));
+    എങ്കിൽ (!store) {
         warn_noalloc();
-        return;
+        തിരികെ;
     }
     store->pointer = pointer;
-    store->key = qemu_get_romfile_key(dest_file);
+    store->താക്കോൽ = qemu_get_romfile_താക്കോൽ(dest_file);
     store->offset = dst_offset;
     store->ptr_size = entry->wr_pointer.size;
-    hlist_add_head(&store->node, &romfile_pointer_list);
+    hlist_add_head(&store->കണ്ണി, &romfile_pointer_list);
 
-    return;
+    തിരികെ;
  err:
     warn_internalerror();
 }
 
-int romfile_loader_execute(const char *name)
+പൂർണ്ണസംഖ്യ romfile_loader_execute(സ്ഥിരം അക്ഷരം *name)
 {
-    struct romfile_loader_entry_s *entry;
-    int size, offset = 0, nfiles;
-    struct romfile_loader_files *files;
-    void *data = romfile_loadfile(name, &size);
-    if (!data)
-        return -1;
+    ഘടന romfile_loader_entry_s *entry;
+    പൂർണ്ണസംഖ്യ size, offset = 0, nfiles;
+    ഘടന romfile_loader_files *files;
+    ശൂന്യം *data = romfile_loadfile(name, &size);
+    എങ്കിൽ (!data)
+        തിരികെ -1;
 
-    if (size % sizeof(*entry)) {
+    എങ്കിൽ (size % വലുപ്പം(*entry)) {
         warn_internalerror();
-        goto err;
+        പോകുക err;
     }
 
     /* (over)estimate the number of files to load. */
-    nfiles = size / sizeof(*entry);
-    files = malloc_tmp(sizeof(*files) + nfiles * sizeof(files->files[0]));
-    if (!files) {
+    nfiles = size / വലുപ്പം(*entry);
+    files = malloc_tmp(വലുപ്പം(*files) + nfiles * വലുപ്പം(files->files[0]));
+    എങ്കിൽ (!files) {
         warn_noalloc();
-        goto err;
+        പോകുക err;
     }
     files->nfiles = 0;
 
-    for (offset = 0; offset < size; offset += sizeof(*entry)) {
+    വേണ്ടി (offset = 0; offset < size; offset += വലുപ്പം(*entry)) {
         entry = data + offset;
-        switch (le32_to_cpu(entry->command)) {
-                case ROMFILE_LOADER_COMMAND_ALLOCATE:
+        തിരഞ്ഞെടുപ്പ് (le32_to_cpu(entry->command)) {
+                അവസ്ഥ ROMFILE_LOADER_COMMAND_ALLOCATE:
                         romfile_loader_allocate(entry, files);
-                        break;
-                case ROMFILE_LOADER_COMMAND_ADD_POINTER:
+                        നിർത്തുക;
+                അവസ്ഥ ROMFILE_LOADER_COMMAND_ADD_POINTER:
                         romfile_loader_add_pointer(entry, files);
-                        break;
-                case ROMFILE_LOADER_COMMAND_ADD_CHECKSUM:
+                        നിർത്തുക;
+                അവസ്ഥ ROMFILE_LOADER_COMMAND_ADD_CHECKSUM:
                         romfile_loader_add_checksum(entry, files);
-                        break;
-                case ROMFILE_LOADER_COMMAND_WRITE_POINTER:
+                        നിർത്തുക;
+                അവസ്ഥ ROMFILE_LOADER_COMMAND_WRITE_POINTER:
                         romfile_loader_write_pointer(entry, files);
-                        break;
-                default:
+                        നിർത്തുക;
+                സ്ഥിരസ്ഥിതി:
                         /* Skip commands that we don't recognize. */
-                        break;
+                        നിർത്തുക;
         }
     }
 
-    free(files);
-    free(data);
-    return 0;
+    സ്വതന്ത്രം(files);
+    സ്വതന്ത്രം(data);
+    തിരികെ 0;
 
 err:
-    free(data);
-    return -1;
+    സ്വതന്ത്രം(data);
+    തിരികെ -1;
 }

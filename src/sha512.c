@@ -14,51 +14,51 @@
  *  See: NIST standard for SHA-512 and SHA-384 in FIPS PUB 180-4 & RFC 6234
  */
 
-#include "config.h"
-#include "byteorder.h"
-#include "sha.h"
-#include "string.h"
+#അന്തര്ഭാവ "config.h"
+#അന്തര്ഭാവ "byteorder.h"
+#അന്തര്ഭാവ "sha.h"
+#അന്തര്ഭാവ "string.h"
 
-typedef struct _sha512_ctx {
+തരനിർവചനം ഘടന _sha512_ctx {
     u64 h[8];
 } sha512_ctx;
 
-static inline u64 ror64(u64 x, u8 n)
+സ്ഥിതം വരിയിൽ u64 ror64(u64 x, u8 n)
 {
-    return (x >> n) | (x << (64 - n));
+    തിരികെ (x >> n) | (x << (64 - n));
 }
 
-static inline u64 Ch64(u64 x, u64 y, u64 z)
+സ്ഥിതം വരിയിൽ u64 Ch64(u64 x, u64 y, u64 z)
 {
-    return (x & y) ^ ((x ^ 0xffffffffffffffffULL) & z);
+    തിരികെ (x & y) ^ ((x ^ 0xffffffffffffffffULL) & z);
 }
 
-static inline u64 Maj64(u64 x, u64 y, u64 z)
+സ്ഥിതം വരിയിൽ u64 Maj64(u64 x, u64 y, u64 z)
 {
-    return (x & y) ^ (x & z) ^ (y & z);
+    തിരികെ (x & y) ^ (x & z) ^ (y & z);
 }
 
-static inline u64 sum0_64(u64 x)
+സ്ഥിതം വരിയിൽ u64 sum0_64(u64 x)
 {
-    return ror64(x, 28) ^ ror64(x, 34) ^ ror64(x, 39);
+    തിരികെ ror64(x, 28) ^ ror64(x, 34) ^ ror64(x, 39);
 }
 
-static inline u64 sum1_64(u64 x)
+സ്ഥിതം വരിയിൽ u64 sum1_64(u64 x)
 {
-    return ror64(x, 14) ^ ror64(x, 18) ^ ror64(x, 41);
+    തിരികെ ror64(x, 14) ^ ror64(x, 18) ^ ror64(x, 41);
 }
 
-static inline u64 sigma0_64(u64 x)
+സ്ഥിതം വരിയിൽ u64 sigma0_64(u64 x)
 {
-    return ror64(x, 1) ^ ror64(x, 8) ^ (x >> 7);
+    തിരികെ ror64(x, 1) ^ ror64(x, 8) ^ (x >> 7);
 }
 
-static inline u64 sigma1_64(u64 x)
+സ്ഥിതം വരിയിൽ u64 sigma1_64(u64 x)
 {
-    return ror64(x, 19) ^ ror64(x, 61) ^ (x >> 6);
+    തിരികെ ror64(x, 19) ^ ror64(x, 61) ^ (x >> 6);
 }
 
-static void sha512_block(u64 *w, sha512_ctx *ctx)
+സ്ഥിതം ശൂന്യം sha512_block(u64 *w, sha512_ctx *ctx)
 {
     u32 t;
     u64 a, b, c, d, e, f, g, h;
@@ -67,7 +67,7 @@ static void sha512_block(u64 *w, sha512_ctx *ctx)
     /*
      * FIPS 180-4 4.2.2: SHA512 Constants
      */
-    static const u64 sha_ko[80] = {
+    സ്ഥിതം സ്ഥിരം u64 sha_ko[80] = {
         0x428a2f98d728ae22, 0x7137449123ef65cd, 0xb5c0fbcfec4d3b2f, 0xe9b5dba58189dbbc,
         0x3956c25bf348b538, 0x59f111f1b605d019, 0x923f82a4af194f9b, 0xab1c5ed5da6d8118,
         0xd807aa98a3030242, 0x12835b0145706fbe, 0x243185be4ee4b28c, 0x550c7dc3d5ffb4e2,
@@ -100,10 +100,10 @@ static void sha512_block(u64 *w, sha512_ctx *ctx)
      */
 
     /* w(0)..w(15) are in big endian format */
-    for (t = 0; t <= 15; t++)
+    വേണ്ടി (t = 0; t <= 15; t++)
         w[t] = be64_to_cpu(w[t]);
 
-    for (t = 16; t <= 79; t++)
+    വേണ്ടി (t = 16; t <= 79; t++)
         w[t] = sigma1_64(w[t-2]) + w[t-7] + sigma0_64(w[t-15]) + w[t-16];
 
     /*
@@ -124,7 +124,7 @@ static void sha512_block(u64 *w, sha512_ctx *ctx)
      *    T2 = sum0(a) + Maj(a,b,c)
      *    h = g; g = f; f = e; e = d + T1; d = c; c = b; b = a; a + T1 + T2
      */
-    for (t = 0; t <= 79; t++) {
+    വേണ്ടി (t = 0; t <= 79; t++) {
         T1 = h + sum1_64(e) + Ch64(e, f, g) + sha_ko[t] + w[t];
         T2 = sum0_64(a) + Maj64(a, b, c);
         h = g;
@@ -151,34 +151,34 @@ static void sha512_block(u64 *w, sha512_ctx *ctx)
     ctx->h[7] += h;
 }
 
-static void sha512_do(sha512_ctx *ctx, const u8 *data32, u32 length)
+സ്ഥിതം ശൂന്യം sha512_do(sha512_ctx *ctx, സ്ഥിരം u8 *data32, u32 length)
 {
     u32 offset;
-    u16 num;
+    u16 അക്കം;
     u64 bits = 0;
     u64 w[80];
     u64 tmp;
 
     /* treat data in 128-byte/1024 bit chunks */
-    for (offset = 0; length - offset >= 128; offset += 128) {
+    വേണ്ടി (offset = 0; length - offset >= 128; offset += 128) {
         memcpy(w, data32 + offset, 128);
         sha512_block(w, ctx);
         bits += (128 * 8);
     }
 
     /* last block with less than 128 bytes */
-    num = length - offset;
-    bits += (num << 3);
+    അക്കം = length - offset;
+    bits += (അക്കം << 3);
 
-    memcpy(w, data32 + offset, num);
+    memcpy(w, data32 + offset, അക്കം);
     /*
      * FIPS 180-4 5.1: Padding the Message
      */
-    ((u8 *)w)[num] = 0x80;
-    if (128 - (num + 1) > 0)
-        memset( &((u8 *)w)[num + 1], 0, 128 - (num + 1));
+    ((u8 *)w)[അക്കം] = 0x80;
+    എങ്കിൽ (128 - (അക്കം + 1) > 0)
+        memset( &((u8 *)w)[അക്കം + 1], 0, 128 - (അക്കം + 1));
 
-    if (num >= 112) {
+    എങ്കിൽ (അക്കം >= 112) {
         /* cannot append number of bits here;
          * need space for 128 bits (16 bytes)
          */
@@ -193,11 +193,11 @@ static void sha512_do(sha512_ctx *ctx, const u8 *data32, u32 length)
     sha512_block(w, ctx);
 
     /* need to switch result's endianness */
-    for (num = 0; num < 8; num++)
-        ctx->h[num] = cpu_to_be64(ctx->h[num]);
+    വേണ്ടി (അക്കം = 0; അക്കം < 8; അക്കം++)
+        ctx->h[അക്കം] = cpu_to_be64(ctx->h[അക്കം]);
 }
 
-void sha384(const u8 *data, u32 length, u8 *hash)
+ശൂന്യം sha384(സ്ഥിരം u8 *data, u32 length, u8 *hash)
 {
     sha512_ctx ctx = {
         .h = {
@@ -220,7 +220,7 @@ void sha384(const u8 *data, u32 length, u8 *hash)
     memcpy(hash, ctx.h, 384/8);
 }
 
-void sha512(const u8 *data, u32 length, u8 *hash)
+ശൂന്യം sha512(സ്ഥിരം u8 *data, u32 length, u8 *hash)
 {
     sha512_ctx ctx = {
         .h = {
@@ -240,5 +240,5 @@ void sha512(const u8 *data, u32 length, u8 *hash)
     };
 
     sha512_do(&ctx, data, length);
-    memcpy(hash, ctx.h, sizeof(ctx.h));
+    memcpy(hash, ctx.h, വലുപ്പം(ctx.h));
 }

@@ -6,14 +6,14 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_*
-#include "output.h" // dprintf
+#അന്തര്ഭാവ "config.h" // CONFIG_*
+#അന്തര്ഭാവ "output.h" // dprintf
 
-void
-acpi_setup(void)
+ശൂന്യം
+acpi_setup(ശൂന്യം)
 {
-    if (! CONFIG_ACPI)
-        return;
+    എങ്കിൽ (! CONFIG_ACPI)
+        തിരികെ;
 
     dprintf(1, "ACPI tables for qemu 1.6 and older are not supported any more.\n");
 }
