@@ -4,166 +4,166 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_*
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "romfile.h" // struct romfile_s
-#include "string.h" // memcmp
+#અન્તર્ભાવ "config.h" // CONFIG_*
+#અન્તર્ભાવ "malloc.h" // free
+#અન્તર્ભાવ "output.h" // dprintf
+#અન્તર્ભાવ "romfile.h" // struct romfile_s
+#અન્તર્ભાવ "string.h" // memcmp
 
-static struct romfile_s *RomfileRoot VARVERIFY32INIT;
+સ્થિર સંરચના romfile_s *Romfile_મૂળ VARVERIFY32INIT;
 
-void
-romfile_add(struct romfile_s *file)
+શૂન્ય
+romfile_add(સંરચના romfile_s *file)
 {
     dprintf(3, "Add romfile: %s (size=%d)\n", file->name, file->size);
-    file->next = RomfileRoot;
-    RomfileRoot = file;
+    file->next = Romfile_મૂળ;
+    Romfile_મૂળ = file;
 }
 
 // Search for the specified file.
-static struct romfile_s *
-__romfile_findprefix(const char *prefix, int prefixlen, struct romfile_s *prev)
+સ્થિર સંરચના romfile_s *
+__romfile_findprefix(અચલ અક્ષર *prefix, પૂર્ણાંક prefixlen, સંરચના romfile_s *prev)
 {
-    struct romfile_s *cur = RomfileRoot;
-    if (prev)
+    સંરચના romfile_s *cur = Romfile_મૂળ;
+    જો (prev)
         cur = prev->next;
-    while (cur) {
-        if (memcmp(prefix, cur->name, prefixlen) == 0)
-            return cur;
+    જ્યારે (cur) {
+        જો (memcmp(prefix, cur->name, prefixlen) == 0)
+            પાછા cur;
         cur = cur->next;
     }
-    return NULL;
+    પાછા ખાલી;
 }
 
-struct romfile_s *
-romfile_findprefix(const char *prefix, struct romfile_s *prev)
+સંરચના romfile_s *
+romfile_findprefix(અચલ અક્ષર *prefix, સંરચના romfile_s *prev)
 {
-    return __romfile_findprefix(prefix, strlen(prefix), prev);
+    પાછા __romfile_findprefix(prefix, strlen(prefix), prev);
 }
 
-struct romfile_s *
-romfile_find(const char *name)
+સંરચના romfile_s *
+romfile_find(અચલ અક્ષર *name)
 {
-    return __romfile_findprefix(name, strlen(name) + 1, NULL);
+    પાછા __romfile_findprefix(name, strlen(name) + 1, ખાલી);
 }
 
 // Helper function to find, malloc_tmphigh, and copy a romfile.  This
 // function adds a trailing zero to the malloc'd copy.
-void *
-romfile_loadfile(const char *name, int *psize)
+શૂન્ય *
+romfile_loadfile(અચલ અક્ષર *name, પૂર્ણાંક *psize)
 {
-    struct romfile_s *file = romfile_find(name);
-    if (!file)
-        return NULL;
+    સંરચના romfile_s *file = romfile_find(name);
+    જો (!file)
+        પાછા ખાલી;
 
-    int filesize = file->size;
-    if (!filesize)
-        return NULL;
+    પૂર્ણાંક filesize = file->size;
+    જો (!filesize)
+        પાછા ખાલી;
 
-    char *data = malloc_tmphigh(filesize+1);
-    if (!data) {
+    અક્ષર *data = malloc_tmphigh(filesize+1);
+    જો (!data) {
         warn_noalloc();
-        return NULL;
+        પાછા ખાલી;
     }
 
     dprintf(5, "Copying romfile '%s' (len %d)\n", name, filesize);
-    int ret = file->copy(file, data, filesize);
-    if (ret < 0) {
-        free(data);
-        return NULL;
+    પૂર્ણાંક ret = file->copy(file, data, filesize);
+    જો (ret < 0) {
+        મુક્ત(data);
+        પાછા ખાલી;
     }
-    if (psize)
+    જો (psize)
         *psize = filesize;
     data[filesize] = '\0';
-    return data;
+    પાછા data;
 }
 
 // Attempt to load an integer from the given file - return 'defval'
 // if unsuccessful.
 u64
-romfile_loadint(const char *name, u64 defval)
+romfile_loadint(અચલ અક્ષર *name, u64 defval)
 {
-    struct romfile_s *file = romfile_find(name);
-    if (!file)
-        return defval;
+    સંરચના romfile_s *file = romfile_find(name);
+    જો (!file)
+        પાછા defval;
 
-    int filesize = file->size;
-    if (!filesize || filesize > sizeof(u64) || (filesize & (filesize-1)))
+    પૂર્ણાંક filesize = file->size;
+    જો (!filesize || filesize > કદ(u64) || (filesize & (filesize-1)))
         // Doesn't look like a valid integer.
-        return defval;
+        પાછા defval;
 
     u64 val = 0;
-    int ret = file->copy(file, &val, sizeof(val));
-    if (ret < 0)
-        return defval;
-    return val;
+    પૂર્ણાંક ret = file->copy(file, &val, કદ(val));
+    જો (ret < 0)
+        પાછા defval;
+    પાછા val;
 }
 
 u32
-romfile_loadbool(const char *name, u32 defval)
+romfile_loadbool(અચલ અક્ષર *name, u32 defval)
 {
-    static const char *true_strings[] = { "1", "on", "yes" };
-    static const char *false_strings[] = { "0", "off", "no" };
-    char *str = romfile_loadfile(name, NULL);
-    int i;
+    સ્થિર અચલ અક્ષર *true_strings[] = { "1", "on", "yes" };
+    સ્થિર અચલ અક્ષર *false_strings[] = { "0", "off", "no" };
+    અક્ષર *str = romfile_loadfile(name, ખાલી);
+    પૂર્ણાંક i;
 
-    if (!str)
-        return defval;
+    જો (!str)
+        પાછા defval;
 
-    for (i = 0; i < ARRAY_SIZE(true_strings); i++)
-        if (0 == strcmp(str, true_strings[i]))
-            return 1;
+    માટે (i = 0; i < ARRAY_SIZE(true_strings); i++)
+        જો (0 == strcmp(str, true_strings[i]))
+            પાછા 1;
 
-    for (i = 0; i < ARRAY_SIZE(false_strings); i++)
-        if (0 == strcmp(str, false_strings[i]))
-            return 0;
+    માટે (i = 0; i < ARRAY_SIZE(false_strings); i++)
+        જો (0 == strcmp(str, false_strings[i]))
+            પાછા 0;
 
     dprintf(1, "%s: unknown bool string: %s\n", __func__, str);
-    return defval;
+    પાછા defval;
 }
 
-struct const_romfile_s {
-    struct romfile_s file;
-    void *data;
+સંરચના const_romfile_s {
+    સંરચના romfile_s file;
+    શૂન્ય *data;
 };
 
-static int
-const_read_file(struct romfile_s *file, void *dst, u32 maxlen)
+સ્થિર પૂર્ણાંક
+const_read_file(સંરચના romfile_s *file, શૂન્ય *dst, u32 maxlen)
 {
-    if (file->size > maxlen)
-        return -1;
-    struct const_romfile_s *cfile;
-    cfile = container_of(file, struct const_romfile_s, file);
-    if (maxlen > file->size)
+    જો (file->size > maxlen)
+        પાછા -1;
+    સંરચના const_romfile_s *cfile;
+    cfile = container_of(file, સંરચના const_romfile_s, file);
+    જો (maxlen > file->size)
         maxlen = file->size;
     memcpy(dst, cfile->data, maxlen);
-    return file->size;
+    પાછા file->size;
 }
 
-static void
-const_romfile_add(char *name, void *data, int size)
+સ્થિર શૂન્ય
+const_romfile_add(અક્ષર *name, શૂન્ય *data, પૂર્ણાંક size)
 {
-    struct const_romfile_s *cfile = malloc_tmp(sizeof(*cfile));
-    if (!cfile) {
+    સંરચના const_romfile_s *cfile = malloc_tmp(કદ(*cfile));
+    જો (!cfile) {
         warn_noalloc();
-        return;
+        પાછા;
     }
-    memset(cfile, 0, sizeof(*cfile));
-    strtcpy(cfile->file.name, name, sizeof(cfile->file.name));
+    memset(cfile, 0, કદ(*cfile));
+    strtcpy(cfile->file.name, name, કદ(cfile->file.name));
     cfile->file.size = size;
     cfile->file.copy = const_read_file;
     cfile->data = data;
     romfile_add(&cfile->file);
 }
 
-void
-const_romfile_add_int(char *name, u32 value)
+શૂન્ય
+const_romfile_add_int(અક્ષર *name, u32 કિંમત)
 {
-    u32 *data = malloc_tmp(sizeof(*data));
-    if (!data) {
+    u32 *data = malloc_tmp(કદ(*data));
+    જો (!data) {
         warn_noalloc();
-        return;
+        પાછા;
     }
-    *data = value;
-    const_romfile_add(name, data, sizeof(*data));
+    *data = કિંમત;
+    const_romfile_add(name, data, કદ(*data));
 }

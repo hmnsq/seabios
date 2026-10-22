@@ -1,89 +1,89 @@
 #ifndef __LIST_H
 #define __LIST_H
 
-#include "types.h" // container_of
+#અન્તર્ભાવ "types.h" // container_of
 
 
 /****************************************************************
  * hlist - Double linked lists with a single pointer list head
  ****************************************************************/
 
-struct hlist_node {
-    struct hlist_node *next, **pprev;
+સંરચના hlist_ગાંઠ {
+    સંરચના hlist_ગાંઠ *next, **pprev;
 };
 
-struct hlist_head {
-    struct hlist_node *first;
+સંરચના hlist_head {
+    સંરચના hlist_ગાંઠ *first;
 };
 
-static inline int
-hlist_empty(const struct hlist_head *h)
+સ્થિર અંતઃરેખ પૂર્ણાંક
+hlist_empty(અચલ સંરચના hlist_head *h)
 {
-    return !h->first;
+    પાછા !h->first;
 }
 
-static inline void
-hlist_del(struct hlist_node *n)
+સ્થિર અંતઃરેખ શૂન્ય
+hlist_del(સંરચના hlist_ગાંઠ *n)
 {
-    struct hlist_node *next = n->next;
-    struct hlist_node **pprev = n->pprev;
+    સંરચના hlist_ગાંઠ *next = n->next;
+    સંરચના hlist_ગાંઠ **pprev = n->pprev;
     *pprev = next;
-    if (next)
+    જો (next)
         next->pprev = pprev;
 }
 
-static inline void
-hlist_add(struct hlist_node *n, struct hlist_node **pprev)
+સ્થિર અંતઃરેખ શૂન્ય
+hlist_add(સંરચના hlist_ગાંઠ *n, સંરચના hlist_ગાંઠ **pprev)
 {
-    struct hlist_node *next = *pprev;
+    સંરચના hlist_ગાંઠ *next = *pprev;
     n->pprev = pprev;
     n->next = next;
-    if (next)
+    જો (next)
         next->pprev = &n->next;
     *pprev = n;
 }
 
-static inline void
-hlist_add_head(struct hlist_node *n, struct hlist_head *h)
+સ્થિર અંતઃરેખ શૂન્ય
+hlist_add_head(સંરચના hlist_ગાંઠ *n, સંરચના hlist_head *h)
 {
     hlist_add(n, &h->first);
 }
 
-static inline void
-hlist_add_before(struct hlist_node *n, struct hlist_node *next)
+સ્થિર અંતઃરેખ શૂન્ય
+hlist_add_before(સંરચના hlist_ગાંઠ *n, સંરચના hlist_ગાંઠ *next)
 {
     hlist_add(n, next->pprev);
 }
 
-static inline void
-hlist_add_after(struct hlist_node *n, struct hlist_node *prev)
+સ્થિર અંતઃરેખ શૂન્ય
+hlist_add_after(સંરચના hlist_ગાંઠ *n, સંરચના hlist_ગાંઠ *prev)
 {
     hlist_add(n, &prev->next);
 }
 
-static inline void
-hlist_replace(struct hlist_node *old, struct hlist_node *new)
+સ્થિર અંતઃરેખ શૂન્ય
+hlist_replace(સંરચના hlist_ગાંઠ *old, સંરચના hlist_ગાંઠ *new)
 {
     new->next = old->next;
-    if (new->next)
+    જો (new->next)
         new->next->pprev = &new->next;
     new->pprev = old->pprev;
     *new->pprev = new;
 }
 
 #define hlist_for_each_entry(pos, head, member)                         \
-    for (pos = container_of((head)->first, typeof(*pos), member)        \
-         ; pos != container_of(NULL, typeof(*pos), member)              \
+    માટે (pos = container_of((head)->first, typeof(*pos), member)        \
+         ; pos != container_of(ખાલી, typeof(*pos), member)              \
          ; pos = container_of(pos->member.next, typeof(*pos), member))
 
 #define hlist_for_each_entry_safe(pos, n, head, member)                 \
-    for (pos = container_of((head)->first, typeof(*pos), member)        \
-         ; pos != container_of(NULL, typeof(*pos), member)              \
+    માટે (pos = container_of((head)->first, typeof(*pos), member)        \
+         ; pos != container_of(ખાલી, typeof(*pos), member)              \
              && ({ n = pos->member.next; 1; })                          \
          ; pos = container_of(n, typeof(*pos), member))
 
 #define hlist_for_each_entry_pprev(pos, pprev, head, member)            \
-    for (pprev = &(head)->first                                         \
+    માટે (pprev = &(head)->first                                         \
          ; *pprev && ({ pos=container_of(*pprev, typeof(*pos), member); 1; }) \
          ; pprev = &(*pprev)->next)
 

@@ -5,15 +5,15 @@
 
 
 #define DEFINE(sym, val) \
-    asm volatile("\n->" #sym " %0 " #val : : "i" (val))
+    asm અસ્થિર("\n->" #sym " %0 " #val : : "i" (val))
 
 #define BLANK() \
-    asm volatile("\n->" : : )
+    asm અસ્થિર("\n->" : : )
 
 #define OFFSET(sym, str, mem) \
-    DEFINE(sym, offsetof(struct str, mem))
+    DEFINE(sym, offsetof(સંરચના str, mem))
 
 #define COMMENT(x) \
-    asm volatile("\n->#" x)
+    asm અસ્થિર("\n->#" x)
 
 #endif // gen-defs.h

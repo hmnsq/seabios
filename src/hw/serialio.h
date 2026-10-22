@@ -1,7 +1,7 @@
 #ifndef __SERIALIO_H
 #define __SERIALIO_H
 
-#include "types.h" // u16
+#અન્તર્ભાવ "types.h" // u16
 
 #define PORT_LPT2              0x0278
 #define PORT_SERIAL4           0x02e8
@@ -20,11 +20,11 @@
 #define SEROFF_LSR     5
 #define SEROFF_MSR     6
 
-void serial_debug_preinit(void);
-void serial_debug_putc(char c);
-void serial_debug_flush(void);
-extern u16 DebugOutputPort;
-void qemu_debug_preinit(void);
-void qemu_debug_putc(char c);
+શૂન્ય serial_debug_preinit(શૂન્ય);
+શૂન્ય serial_debug_putc(અક્ષર c);
+શૂન્ય serial_debug_flush(શૂન્ય);
+બાહ્ય u16 DebugOutputPort;
+શૂન્ય qemu_debug_preinit(શૂન્ય);
+શૂન્ય qemu_debug_putc(અક્ષર c);
 
 #endif // serialio.h

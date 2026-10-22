@@ -1,11 +1,11 @@
 #ifndef __MPTABLE_H
 #define __MPTABLE_H
 
-#include "types.h" // u32
+#અન્તર્ભાવ "types.h" // u32
 
 #define MPTABLE_SIGNATURE 0x5f504d5f  // "_MP_"
 
-struct mptable_floating_s {
+સંરચના mptable_floating_s {
     u32 signature;
     u32 physaddr;
     u8 length;
@@ -18,13 +18,13 @@ struct mptable_floating_s {
 
 #define MPCONFIG_SIGNATURE 0x504d4350  // "PCMP"
 
-struct mptable_config_s {
+સંરચના mptable_config_s {
     u32 signature;
     u16 length;
     u8 spec;
     u8 checksum;
-    char oemid[8];
-    char productid[12];
+    અક્ષર oemid[8];
+    અક્ષર productid[12];
     u32 oemptr;
     u16 oemsize;
     u16 entrycount;
@@ -40,7 +40,7 @@ struct mptable_config_s {
 #define MPT_TYPE_INTSRC 3
 #define MPT_TYPE_LOCAL_INT 4
 
-struct mpt_cpu {
+સંરચના mpt_cpu {
     u8 type;
     u8 apicid;
     u8 apicver;
@@ -50,13 +50,13 @@ struct mpt_cpu {
     u32 reserved[2];
 } PACKED;
 
-struct mpt_bus {
+સંરચના mpt_bus {
     u8 type;
     u8 busid;
-    char bustype[6];
+    અક્ષર bustype[6];
 } PACKED;
 
-struct mpt_ioapic {
+સંરચના mpt_ioapic {
     u8 type;
     u8 apicid;
     u8 apicver;
@@ -64,7 +64,7 @@ struct mpt_ioapic {
     u32 apicaddr;
 } PACKED;
 
-struct mpt_intsrc {
+સંરચના mpt_intsrc {
     u8 type;
     u8 irqtype;
     u16 irqflag;

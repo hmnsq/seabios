@@ -2,271 +2,271 @@
 #ifndef __UTIL_H
 #define __UTIL_H
 
-#include "types.h" // u32
+#અન્તર્ભાવ "types.h" // u32
 
 // apm.c
-void apm_shutdown(void);
-struct bregs;
-void handle_1553(struct bregs *regs);
+શૂન્ય apm_shutdown(શૂન્ય);
+સંરચના bregs;
+શૂન્ય handle_1553(સંરચના bregs *regs);
 
 // bmp.c
-struct bmp_decdata *bmp_alloc(void);
-int bmp_decode(struct bmp_decdata *bmp, unsigned char *data, int data_size);
-void bmp_get_info(struct bmp_decdata *bmp, int *width, int *height, int *bpp);
-int bmp_show(struct bmp_decdata *bmp, unsigned char *pic, int width
-             , int height, int depth, int bytes_per_line_dest);
+સંરચના bmp_decdata *bmp_alloc(શૂન્ય);
+પૂર્ણાંક bmp_decode(સંરચના bmp_decdata *bmp, unsigned અક્ષર *data, પૂર્ણાંક data_size);
+શૂન્ય bmp_get_info(સંરચના bmp_decdata *bmp, પૂર્ણાંક *width, પૂર્ણાંક *height, પૂર્ણાંક *bpp);
+પૂર્ણાંક bmp_show(સંરચના bmp_decdata *bmp, unsigned અક્ષર *pic, પૂર્ણાંક width
+             , પૂર્ણાંક height, પૂર્ણાંક depth, પૂર્ણાંક bytes_per_લીટી_dest);
 
 // boot.c
-void boot_init(void);
-void boot_add_bev(u16 seg, u16 bev, u16 desc, int prio);
-void boot_add_bcv(u16 seg, u16 ip, u16 desc, int prio);
-struct drive_s;
-void boot_add_floppy(struct drive_s *drive_g, const char *desc, int prio);
-void boot_add_hd(struct drive_s *drive_g, const char *desc, int prio);
-void boot_add_cd(struct drive_s *drive_g, const char *desc, int prio);
-void boot_add_cbfs(void *data, const char *desc, int prio);
-void interactive_bootmenu(void);
-void bcv_prepboot(void);
-u8 is_bootprio_strict(void);
-struct pci_device;
-int bootprio_find_pci_device(struct pci_device *pci);
-int bootprio_find_mmio_device(void *mmio);
-int bootprio_find_scsi_device(struct pci_device *pci, int target, int lun);
-int bootprio_find_scsi_mmio_device(void *mmio, int target, int lun);
-int bootprio_find_ata_device(struct pci_device *pci, int chanid, int slave);
-int bootprio_find_fdc_device(struct pci_device *pci, int port, int fdid);
-int bootprio_find_pci_rom(struct pci_device *pci, int instance);
-int bootprio_find_named_rom(const char *name, int instance);
-struct usbdevice_s;
-int bootprio_find_usb(struct usbdevice_s *usbdev, int lun);
-int get_keystroke_full(int msec);
-int get_keystroke(int msec);
-struct chs_s;
-int boot_lchs_find_pci_device(struct pci_device *pci, struct chs_s *chs);
-int boot_lchs_find_scsi_device(struct pci_device *pci, int target, int lun,
-                               struct chs_s *chs);
-int boot_lchs_find_ata_device(struct pci_device *pci, int chanid, int slave,
-                              struct chs_s *chs);
+શૂન્ય boot_init(શૂન્ય);
+શૂન્ય boot_add_bev(u16 seg, u16 bev, u16 desc, પૂર્ણાંક prio);
+શૂન્ય boot_add_bcv(u16 seg, u16 ip, u16 desc, પૂર્ણાંક prio);
+સંરચના drive_s;
+શૂન્ય boot_add_floppy(સંરચના drive_s *drive_g, અચલ અક્ષર *desc, પૂર્ણાંક prio);
+શૂન્ય boot_add_hd(સંરચના drive_s *drive_g, અચલ અક્ષર *desc, પૂર્ણાંક prio);
+શૂન્ય boot_add_cd(સંરચના drive_s *drive_g, અચલ અક્ષર *desc, પૂર્ણાંક prio);
+શૂન્ય boot_add_cbfs(શૂન્ય *data, અચલ અક્ષર *desc, પૂર્ણાંક prio);
+શૂન્ય interactive_bootmenu(શૂન્ય);
+શૂન્ય bcv_prepboot(શૂન્ય);
+u8 is_bootprio_strict(શૂન્ય);
+સંરચના pci_device;
+પૂર્ણાંક bootprio_find_pci_device(સંરચના pci_device *pci);
+પૂર્ણાંક bootprio_find_mmio_device(શૂન્ય *mmio);
+પૂર્ણાંક bootprio_find_scsi_device(સંરચના pci_device *pci, પૂર્ણાંક target, પૂર્ણાંક lun);
+પૂર્ણાંક bootprio_find_scsi_mmio_device(શૂન્ય *mmio, પૂર્ણાંક target, પૂર્ણાંક lun);
+પૂર્ણાંક bootprio_find_ata_device(સંરચના pci_device *pci, પૂર્ણાંક chanid, પૂર્ણાંક slave);
+પૂર્ણાંક bootprio_find_fdc_device(સંરચના pci_device *pci, પૂર્ણાંક port, પૂર્ણાંક fdid);
+પૂર્ણાંક bootprio_find_pci_rom(સંરચના pci_device *pci, પૂર્ણાંક instance);
+પૂર્ણાંક bootprio_find_named_rom(અચલ અક્ષર *name, પૂર્ણાંક instance);
+સંરચના usbdevice_s;
+પૂર્ણાંક bootprio_find_usb(સંરચના usbdevice_s *usbdev, પૂર્ણાંક lun);
+પૂર્ણાંક get_keystroke_full(પૂર્ણાંક msec);
+પૂર્ણાંક get_keystroke(પૂર્ણાંક msec);
+સંરચના chs_s;
+પૂર્ણાંક boot_lchs_find_pci_device(સંરચના pci_device *pci, સંરચના chs_s *chs);
+પૂર્ણાંક boot_lchs_find_scsi_device(સંરચના pci_device *pci, પૂર્ણાંક target, પૂર્ણાંક lun,
+                               સંરચના chs_s *chs);
+પૂર્ણાંક boot_lchs_find_ata_device(સંરચના pci_device *pci, પૂર્ણાંક chanid, પૂર્ણાંક slave,
+                              સંરચના chs_s *chs);
 
 // bootsplash.c
-void enable_vga_console(void);
-void enable_bootsplash(void);
-void disable_bootsplash(void);
+શૂન્ય enable_vga_console(શૂન્ય);
+શૂન્ય enable_bootsplash(શૂન્ય);
+શૂન્ય disable_bootsplash(શૂન્ય);
 
 // cdrom.c
-extern struct eltorito_s CDEmu;
-extern struct drive_s *cdemu_drive_gf;
-struct disk_op_s;
-int cdemu_process_op(struct disk_op_s *op);
-void cdrom_prepboot(void);
-int cdrom_boot(struct drive_s *drive_g);
-char *cdrom_media_info(struct drive_s *drive_g);
+બાહ્ય સંરચના eltorito_s CDEmu;
+બાહ્ય સંરચના drive_s *cdemu_drive_gf;
+સંરચના disk_op_s;
+પૂર્ણાંક cdemu_process_op(સંરચના disk_op_s *op);
+શૂન્ય cdrom_prepboot(શૂન્ય);
+પૂર્ણાંક cdrom_boot(સંરચના drive_s *drive_g);
+અક્ષર *cdrom_media_info(સંરચના drive_s *drive_g);
 
 // clock.c
-void clock_setup(void);
-void handle_1583(struct bregs *regs);
-void clock_poll_irq(void);
-u32 irqtimer_calc_ticks(u32 count);
+શૂન્ય clock_setup(શૂન્ય);
+શૂન્ય handle_1583(સંરચના bregs *regs);
+શૂન્ય clock_poll_irq(શૂન્ય);
+u32 irqtimer_calc_ticks(u32 ગણતરી);
 u32 irqtimer_calc(u32 msecs);
-int irqtimer_check(u32 end);
-void handle_1586(struct bregs *regs);
+પૂર્ણાંક irqtimer_check(u32 end);
+શૂન્ય handle_1586(સંરચના bregs *regs);
 
 // fw/acpi.c
-void acpi_setup(void);
+શૂન્ય acpi_setup(શૂન્ય);
 
 // fw/biostable.c
-void copy_pir(void *pos);
-void copy_mptable(void *pos);
-extern struct pir_header *PirAddr;
-void copy_acpi_rsdp(void *pos);
-extern struct rsdp_descriptor *RsdpAddr;
-extern u32 acpi_pm1a_cnt;
-extern u16 acpi_pm_base;
-void *find_acpi_rsdp(void);
-void *find_acpi_table(u32 signature);
-u32 find_resume_vector(void);
-void acpi_reboot(void);
-void find_acpi_features(void);
-void *smbios_get_tables(u32 *length);
-void copy_smbios_21(void *pos);
-void display_uuid(void);
-void copy_table(void *pos);
-void smbios_setup(void);
+શૂન્ય copy_pir(શૂન્ય *pos);
+શૂન્ય copy_mptable(શૂન્ય *pos);
+બાહ્ય સંરચના pir_header *PirAddr;
+શૂન્ય copy_acpi_rsdp(શૂન્ય *pos);
+બાહ્ય સંરચના rsdp_descriptor *RsdpAddr;
+બાહ્ય u32 acpi_pm1a_cnt;
+બાહ્ય u16 acpi_pm_base;
+શૂન્ય *find_acpi_rsdp(શૂન્ય);
+શૂન્ય *find_acpi_table(u32 signature);
+u32 find_resume_vector(શૂન્ય);
+શૂન્ય acpi_reboot(શૂન્ય);
+શૂન્ય find_acpi_features(શૂન્ય);
+શૂન્ય *smbios_get_tables(u32 *length);
+શૂન્ય copy_smbios_21(શૂન્ય *pos);
+શૂન્ય display_uuid(શૂન્ય);
+શૂન્ય copy_table(શૂન્ય *pos);
+શૂન્ય smbios_setup(શૂન્ય);
 
 // fw/dsdt_parser.c
-struct acpi_device;
-void acpi_dsdt_parse(void);
-struct acpi_device *acpi_dsdt_find_string(struct acpi_device *prev, const char *hid);
-struct acpi_device *acpi_dsdt_find_eisaid(struct acpi_device *prev, u16 eisaid);
-char *acpi_dsdt_name(struct acpi_device *dev);
-int acpi_dsdt_present_eisaid(u16 eisaid);
-int acpi_dsdt_find_io(struct acpi_device *dev, u64 *min, u64 *max);
-int acpi_dsdt_find_mem(struct acpi_device *dev, u64 *min, u64 *max);
-int acpi_dsdt_find_irq(struct acpi_device *dev, u64 *irq);
+સંરચના acpi_device;
+શૂન્ય acpi_dsdt_parse(શૂન્ય);
+સંરચના acpi_device *acpi_dsdt_find_string(સંરચના acpi_device *prev, અચલ અક્ષર *hid);
+સંરચના acpi_device *acpi_dsdt_find_eisaid(સંરચના acpi_device *prev, u16 eisaid);
+અક્ષર *acpi_dsdt_name(સંરચના acpi_device *dev);
+પૂર્ણાંક acpi_dsdt_present_eisaid(u16 eisaid);
+પૂર્ણાંક acpi_dsdt_find_io(સંરચના acpi_device *dev, u64 *min, u64 *max);
+પૂર્ણાંક acpi_dsdt_find_mem(સંરચના acpi_device *dev, u64 *min, u64 *max);
+પૂર્ણાંક acpi_dsdt_find_irq(સંરચના acpi_device *dev, u64 *irq);
 
 // fw/coreboot.c
-extern const char *CBvendor, *CBpart;
-struct cbfs_file;
-void coreboot_debug_putc(char c);
-void cbfs_run_payload(struct cbfs_file *file);
-void coreboot_platform_setup(void);
-void cbfs_payload_setup(void);
-void coreboot_preinit(void);
-void coreboot_cbfs_init(void);
-struct cb_header;
-void *find_cb_subtable(struct cb_header *cbh, u32 tag);
-struct cb_header *find_cb_table(void);
+બાહ્ય અચલ અક્ષર *CBvendor, *CBpart;
+સંરચના cbfs_file;
+શૂન્ય coreboot_debug_putc(અક્ષર c);
+શૂન્ય cbfs_run_payload(સંરચના cbfs_file *file);
+શૂન્ય coreboot_platform_setup(શૂન્ય);
+શૂન્ય cbfs_payload_setup(શૂન્ય);
+શૂન્ય coreboot_preinit(શૂન્ય);
+શૂન્ય coreboot_cbfs_init(શૂન્ય);
+સંરચના cb_header;
+શૂન્ય *find_cb_subtable(સંરચના cb_header *cbh, u32 tag);
+સંરચના cb_header *find_cb_table(શૂન્ય);
 
 // fw/csm.c
-int csm_bootprio_fdc(struct pci_device *pci, int port, int fdid);
-int csm_bootprio_ata(struct pci_device *pci, int chanid, int slave);
-int csm_bootprio_pci(struct pci_device *pci);
+પૂર્ણાંક csm_bootprio_fdc(સંરચના pci_device *pci, પૂર્ણાંક port, પૂર્ણાંક fdid);
+પૂર્ણાંક csm_bootprio_ata(સંરચના pci_device *pci, પૂર્ણાંક chanid, પૂર્ણાંક slave);
+પૂર્ણાંક csm_bootprio_pci(સંરચના pci_device *pci);
 
 // fw/mptable.c
-void mptable_setup(void);
+શૂન્ય mptable_setup(શૂન્ય);
 
 // fw/mtrr.c
-void mtrr_setup(void);
+શૂન્ય mtrr_setup(શૂન્ય);
 
 // fw/multiboot.c
-void multiboot_init(void);
+શૂન્ય multiboot_init(શૂન્ય);
 
 // fw/pciinit.c
-extern u64 pcimem_start, pcimem_end;
-extern u64 pcimem64_start, pcimem64_end;
-extern const u8 pci_irqs[4];
-void pci_setup(void);
-void pci_resume(void);
+બાહ્ય u64 pcimem_start, pcimem_end;
+બાહ્ય u64 pcimem64_start, pcimem64_end;
+બાહ્ય અચલ u8 pci_irqs[4];
+શૂન્ય pci_setup(શૂન્ય);
+શૂન્ય pci_resume(શૂન્ય);
 
 // fw/pirtable.c
-void pirtable_setup(void);
+શૂન્ય pirtable_setup(શૂન્ય);
 
 // fw/shadow.c
-void make_bios_writable(void);
-void make_bios_readonly(void);
-void qemu_reboot(void);
+શૂન્ય make_bios_writable(શૂન્ય);
+શૂન્ય make_bios_readonly(શૂન્ય);
+શૂન્ય qemu_reboot(શૂન્ય);
 
 // fw/smbios.c
-void smbios_legacy_setup(void);
+શૂન્ય smbios_legacy_setup(શૂન્ય);
 
 // fw/smm.c
-void smm_device_setup(void);
-void smm_setup(void);
+શૂન્ય smm_device_setup(શૂન્ય);
+શૂન્ય smm_setup(શૂન્ય);
 
 // fw/smp.c
-extern u32 MaxCountCPUs;
-void wrmsr_smp(u32 index, u64 val);
-void smp_setup(void);
-void smp_resume(void);
-int apic_id_is_present(u8 apic_id);
+બાહ્ય u32 Max_ગણતરી_CPUs;
+શૂન્ય wrmsr_smp(u32 index, u64 val);
+શૂન્ય smp_setup(શૂન્ય);
+શૂન્ય smp_resume(શૂન્ય);
+પૂર્ણાંક apic_id_is_present(u8 apic_id);
 
 // hw/dma.c
-int dma_floppy(u32 addr, int count, int isWrite);
-void dma_setup(void);
+પૂર્ણાંક dma_floppy(u32 addr, પૂર્ણાંક ગણતરી, પૂર્ણાંક isWrite);
+શૂન્ય dma_setup(શૂન્ય);
 
 // hw/floppy.c
-extern struct floppy_ext_dbt_s diskette_param_table2;
-void floppy_setup(void);
-struct drive_s *init_floppy(int floppyid, int ftype);
-int find_floppy_type(u32 size);
-int floppy_process_op(struct disk_op_s *op);
-void floppy_tick(void);
+બાહ્ય સંરચના floppy_ext_dbt_s diskette_param_table2;
+શૂન્ય floppy_setup(શૂન્ય);
+સંરચના drive_s *init_floppy(પૂર્ણાંક floppyid, પૂર્ણાંક ftype);
+પૂર્ણાંક find_floppy_type(u32 size);
+પૂર્ણાંક floppy_process_op(સંરચના disk_op_s *op);
+શૂન્ય floppy_tick(શૂન્ય);
 
 // hw/ramdisk.c
-void ramdisk_setup(void);
-int ramdisk_process_op(struct disk_op_s *op);
+શૂન્ય ramdisk_setup(શૂન્ય);
+પૂર્ણાંક ramdisk_process_op(સંરચના disk_op_s *op);
 
 // hw/sdcard.c
-int sdcard_process_op(struct disk_op_s *op);
-void sdcard_setup(void);
+પૂર્ણાંક sdcard_process_op(સંરચના disk_op_s *op);
+શૂન્ય sdcard_setup(શૂન્ય);
 
 // hw/timer.c
-void timer_setup(void);
-void pmtimer_setup(u16 ioport);
-void tsctimer_setfreq(u32 khz, const char *src);
+શૂન્ય timer_setup(શૂન્ય);
+શૂન્ય pmtimer_setup(u16 ioport);
+શૂન્ય tsctimer_setfreq(u32 khz, અચલ અક્ષર *src);
 u32 timer_calc(u32 msecs);
 u32 timer_calc_usec(u32 usecs);
-int timer_check(u32 end);
-void ndelay(u32 count);
-void udelay(u32 count);
-void mdelay(u32 count);
-void nsleep(u32 count);
-void usleep(u32 count);
-void msleep(u32 count);
+પૂર્ણાંક timer_check(u32 end);
+શૂન્ય ndelay(u32 ગણતરી);
+શૂન્ય udelay(u32 ગણતરી);
+શૂન્ય mdelay(u32 ગણતરી);
+શૂન્ય nsleep(u32 ગણતરી);
+શૂન્ય usleep(u32 ગણતરી);
+શૂન્ય msleep(u32 ગણતરી);
 u32 ticks_to_ms(u32 ticks);
 u32 ticks_from_ms(u32 ms);
-void pit_setup(void);
+શૂન્ય pit_setup(શૂન્ય);
 
 // jpeg.c
-struct jpeg_decdata *jpeg_alloc(void);
-int jpeg_decode(struct jpeg_decdata *jpeg, unsigned char *buf);
-void jpeg_get_size(struct jpeg_decdata *jpeg, int *width, int *height);
-int jpeg_show(struct jpeg_decdata *jpeg, unsigned char *pic, int width
-              , int height, int depth, int bytes_per_line_dest);
+સંરચના jpeg_decdata *jpeg_alloc(શૂન્ય);
+પૂર્ણાંક jpeg_decode(સંરચના jpeg_decdata *jpeg, unsigned અક્ષર *buf);
+શૂન્ય jpeg_get_size(સંરચના jpeg_decdata *jpeg, પૂર્ણાંક *width, પૂર્ણાંક *height);
+પૂર્ણાંક jpeg_show(સંરચના jpeg_decdata *jpeg, unsigned અક્ષર *pic, પૂર્ણાંક width
+              , પૂર્ણાંક height, પૂર્ણાંક depth, પૂર્ણાંક bytes_per_લીટી_dest);
 
 // kbd.c
-void kbd_init(void);
-void handle_15c2(struct bregs *regs);
-void process_key(u8 key);
-u8 enqueue_key(u16 keycode);
+શૂન્ય kbd_init(શૂન્ય);
+શૂન્ય handle_15c2(સંરચના bregs *regs);
+શૂન્ય process_ચાવી(u8 ચાવી);
+u8 enqueue_ચાવી(u16 keycode);
 u16 ascii_to_keycode(u8 ascii);
 
 // misc.c
-extern int HaveRunPost;
-extern struct bios_config_table_s BIOS_CONFIG_TABLE __aligned(1);
-extern struct floppy_dbt_s diskette_param_table __aligned(1);
-extern u8 BiosChecksum;
-int in_post(void);
-void mathcp_setup(void);
+બાહ્ય પૂર્ણાંક HaveRunPost;
+બાહ્ય સંરચના bios_config_table_s BIOS_CONFIG_TABLE __aligned(1);
+બાહ્ય સંરચના floppy_dbt_s diskette_param_table __aligned(1);
+બાહ્ય u8 BiosChecksum;
+પૂર્ણાંક in_post(શૂન્ય);
+શૂન્ય mathcp_setup(શૂન્ય);
 
 // mouse.c
-void mouse_init(void);
-void process_mouse(u8 data);
+શૂન્ય mouse_init(શૂન્ય);
+શૂન્ય process_mouse(u8 data);
 
 // optionroms.c
-struct rom_header;
-void callrom(struct rom_header *rom, u16 bdf);
-void call_bcv(u16 seg, u16 ip);
-int is_pci_vga(struct pci_device *pci);
-void optionrom_setup(void);
-void vgarom_setup(void);
-void s3_resume_vga(void);
-extern int ScreenAndDebug;
+સંરચના rom_header;
+શૂન્ય callrom(સંરચના rom_header *rom, u16 bdf);
+શૂન્ય call_bcv(u16 seg, u16 ip);
+પૂર્ણાંક is_pci_vga(સંરચના pci_device *pci);
+શૂન્ય optionrom_setup(શૂન્ય);
+શૂન્ય vgarom_setup(શૂન્ય);
+શૂન્ય s3_resume_vga(શૂન્ય);
+બાહ્ય પૂર્ણાંક ScreenAndDebug;
 
 // pcibios.c
-void handle_1ab1(struct bregs *regs);
-void bios32_init(void);
+શૂન્ય handle_1ab1(સંરચના bregs *regs);
+શૂન્ય bios32_init(શૂન્ય);
 
 // pmm.c
-void pmm_init(void);
-void pmm_prepboot(void);
+શૂન્ય pmm_init(શૂન્ય);
+શૂન્ય pmm_prepboot(શૂન્ય);
 
 // pnpbios.c
-u16 get_pnp_offset(void);
-void pnp_init(void);
+u16 get_pnp_offset(શૂન્ય);
+શૂન્ય pnp_init(શૂન્ય);
 
 // post.c
-void interface_init(void);
-void device_hardware_setup(void);
-void prepareboot(void);
-void startBoot(void);
-void reloc_preinit(void *f, void *arg);
-void code_mutable_preinit(void);
+શૂન્ય interface_init(શૂન્ય);
+શૂન્ય device_hardware_setup(શૂન્ય);
+શૂન્ય prepareboot(શૂન્ય);
+શૂન્ય startBoot(શૂન્ય);
+શૂન્ય reloc_preinit(શૂન્ય *f, શૂન્ય *arg);
+શૂન્ય code_mutable_preinit(શૂન્ય);
 
 // sercon.c
-void sercon_setup(void);
-void sercon_check_event(void);
+શૂન્ય sercon_setup(શૂન્ય);
+શૂન્ય sercon_check_event(શૂન્ય);
 
 // serial.c
-void serial_setup(void);
-void lpt_setup(void);
+શૂન્ય serial_setup(શૂન્ય);
+શૂન્ય lpt_setup(શૂન્ય);
 
 // version.c
-extern const char VERSION[], BUILDINFO[];
+બાહ્ય અચલ અક્ષર VERSION[], BUILDINFO[];
 
 // vgahooks.c
-void handle_155f(struct bregs *regs);
-void handle_157f(struct bregs *regs);
-void vgahook_setup(struct pci_device *pci);
+શૂન્ય handle_155f(સંરચના bregs *regs);
+શૂન્ય handle_157f(સંરચના bregs *regs);
+શૂન્ય vgahook_setup(સંરચના pci_device *pci);
 
 #endif // util.h

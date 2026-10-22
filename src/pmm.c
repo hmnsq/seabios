@@ -4,79 +4,79 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // FUNC16
-#include "config.h" // CONFIG_*
-#include "malloc.h" // _malloc
-#include "output.h" // dprintf
-#include "e820map.h" // struct e820entry
-#include "std/pmm.h" // PMM_SIGNATURE
-#include "string.h" // checksum
-#include "util.h" // pmm_init
-#include "x86.h" // __ffs
+#અન્તર્ભાવ "biosvar.h" // FUNC16
+#અન્તર્ભાવ "config.h" // CONFIG_*
+#અન્તર્ભાવ "malloc.h" // _malloc
+#અન્તર્ભાવ "output.h" // dprintf
+#અન્તર્ભાવ "e820map.h" // struct e820entry
+#અન્તર્ભાવ "std/pmm.h" // PMM_SIGNATURE
+#અન્તર્ભાવ "string.h" // checksum
+#અન્તર્ભાવ "util.h" // pmm_init
+#અન્તર્ભાવ "x86.h" // __ffs
 
-extern struct pmmheader PMMHEADER;
+બાહ્ય સંરચના pmmheader PMMHEADER;
 
-#if CONFIG_PMM
-struct pmmheader PMMHEADER __aligned(16) VARFSEG = {
+#જો CONFIG_PMM
+સંરચના pmmheader PMMHEADER __aligned(16) VARFSEG = {
     .signature = PMM_SIGNATURE,
     .version = 0x01,
-    .length = sizeof(PMMHEADER),
+    .length = કદ(PMMHEADER),
 };
 #endif
 
 // PMM - allocate
-static u32
+સ્થિર u32
 handle_pmm00(u16 *args)
 {
     u32 length = *(u32*)&args[1], handle = *(u32*)&args[3];
     u16 flags = args[5];
     dprintf(3, "pmm00: length=%x handle=%x flags=%x\n"
             , length, handle, flags);
-    struct zone_s *lowzone = &ZoneTmpLow, *highzone = &ZoneTmpHigh;
-    if (flags & 8) {
+    સંરચના zone_s *lowzone = &Zone_Tmp_નીચલું, *highzone = &Zone_Tmp_ઉપલું;
+    જો (flags & 8) {
         // Permanent memory request.
-        lowzone = &ZoneLow;
-        highzone = &ZoneHigh;
+        lowzone = &Zone_નીચલું;
+        highzone = &Zone_ઉપલું;
     }
-    if (!length) {
+    જો (!length) {
         // Memory size request
-        switch (flags & 3) {
-        default:
-        case 0:
-            return 0;
-        case 1:
-            return malloc_getspace(lowzone);
-        case 2:
-            return malloc_getspace(highzone);
-        case 3: {
+        પસંદગી (flags & 3) {
+        મૂળભૂત:
+        સ્થિતિ 0:
+            પાછા 0;
+        સ્થિતિ 1:
+            પાછા malloc_getspace(lowzone);
+        સ્થિતિ 2:
+            પાછા malloc_getspace(highzone);
+        સ્થિતિ 3: {
             u32 spacelow = malloc_getspace(lowzone);
             u32 spacehigh = malloc_getspace(highzone);
-            if (spacelow > spacehigh)
-                return spacelow;
-            return spacehigh;
+            જો (spacelow > spacehigh)
+                પાછા spacelow;
+            પાછા spacehigh;
         }
         }
     }
     u32 size = length * 16;
-    if ((s32)size <= 0)
-        return 0;
+    જો ((s32)size <= 0)
+        પાછા 0;
     u32 align = MALLOC_MIN_ALIGN;
-    if (flags & 4) {
+    જો (flags & 4) {
         align = 1<<__ffs(size);
-        if (align < MALLOC_MIN_ALIGN)
+        જો (align < MALLOC_MIN_ALIGN)
             align = MALLOC_MIN_ALIGN;
     }
     u32 data;
-    switch (flags & 3) {
-    default:
-    case 0:
-        return 0;
-    case 1:
+    પસંદગી (flags & 3) {
+    મૂળભૂત:
+    સ્થિતિ 0:
+        પાછા 0;
+    સ્થિતિ 1:
         data = malloc_palloc(lowzone, size, align);
-        break;
-    case 2:
+        તોડો;
+    સ્થિતિ 2:
         data = malloc_palloc(highzone, size, align);
-        if (!data && (flags & 8)) {
+        જો (!data && (flags & 8)) {
             /*
              * We are out of meory.  So go allocate from the (big)
              * ZoneTmpHigh instead and reserve the block in the e820
@@ -84,90 +84,90 @@ handle_pmm00(u16 *args)
              * handle big permanent allocations without needing a big
              * ZoneHigh.
              */
-            data = malloc_palloc(&ZoneTmpHigh, size, align);
-            if (data)
+            data = malloc_palloc(&Zone_Tmp_ઉપલું, size, align);
+            જો (data)
                 e820_add(data, size, E820_RESERVED);
         }
-        break;
-    case 3: {
+        તોડો;
+    સ્થિતિ 3: {
         data = malloc_palloc(lowzone, size, align);
-        if (!data)
+        જો (!data)
             data = malloc_palloc(highzone, size, align);
     }
     }
-    if (data && handle != MALLOC_DEFAULT_HANDLE)
+    જો (data && handle != MALLOC_DEFAULT_HANDLE)
         malloc_sethandle(data, handle);
-    return data;
+    પાછા data;
 }
 
 // PMM - find
-static u32
+સ્થિર u32
 handle_pmm01(u16 *args)
 {
     u32 handle = *(u32*)&args[1];
     dprintf(3, "pmm01: handle=%x\n", handle);
-    if (handle == MALLOC_DEFAULT_HANDLE)
-        return 0;
-    return malloc_findhandle(handle);
+    જો (handle == MALLOC_DEFAULT_HANDLE)
+        પાછા 0;
+    પાછા malloc_findhandle(handle);
 }
 
 // PMM - deallocate
-static u32
+સ્થિર u32
 handle_pmm02(u16 *args)
 {
     u32 buffer = *(u32*)&args[1];
     dprintf(3, "pmm02: buffer=%x\n", buffer);
-    int ret = malloc_pfree(buffer);
-    if (ret)
+    પૂર્ણાંક ret = malloc_pfree(buffer);
+    જો (ret)
         // Error
-        return 1;
-    return 0;
+        પાછા 1;
+    પાછા 0;
 }
 
-static u32
+સ્થિર u32
 handle_pmmXX(u16 *args)
 {
-    return PMM_FUNCTION_NOT_SUPPORTED;
+    પાછા PMM_FUNCTION_NOT_SUPPORTED;
 }
 
 u32 VISIBLE32INIT
 handle_pmm(u16 *args)
 {
     ASSERT32FLAT();
-    if (! CONFIG_PMM)
-        return PMM_FUNCTION_NOT_SUPPORTED;
+    જો (! CONFIG_PMM)
+        પાછા PMM_FUNCTION_NOT_SUPPORTED;
 
     u16 arg1 = args[0];
     dprintf(DEBUG_HDL_pmm, "pmm call arg1=%x\n", arg1);
 
     u32 ret;
-    switch (arg1) {
-    case 0x00: ret = handle_pmm00(args); break;
-    case 0x01: ret = handle_pmm01(args); break;
-    case 0x02: ret = handle_pmm02(args); break;
-    default:   ret = handle_pmmXX(args); break;
+    પસંદગી (arg1) {
+    સ્થિતિ 0x00: ret = handle_pmm00(args); તોડો;
+    સ્થિતિ 0x01: ret = handle_pmm01(args); તોડો;
+    સ્થિતિ 0x02: ret = handle_pmm02(args); તોડો;
+    મૂળભૂત:   ret = handle_pmmXX(args); તોડો;
     }
 
-    return ret;
+    પાછા ret;
 }
 
-void
-pmm_init(void)
+શૂન્ય
+pmm_init(શૂન્ય)
 {
-    if (! CONFIG_PMM)
-        return;
+    જો (! CONFIG_PMM)
+        પાછા;
 
     dprintf(3, "init PMM\n");
 
     PMMHEADER.entry = FUNC16(entry_pmm);
-    PMMHEADER.checksum -= checksum(&PMMHEADER, sizeof(PMMHEADER));
+    PMMHEADER.checksum -= checksum(&PMMHEADER, કદ(PMMHEADER));
 }
 
-void
-pmm_prepboot(void)
+શૂન્ય
+pmm_prepboot(શૂન્ય)
 {
-    if (! CONFIG_PMM)
-        return;
+    જો (! CONFIG_PMM)
+        પાછા;
 
     dprintf(3, "finalize PMM\n");
 

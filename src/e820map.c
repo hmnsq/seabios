@@ -4,10 +4,10 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // BUILD_MAX_E820
-#include "e820map.h" // struct e820entry
-#include "output.h" // dprintf
-#include "string.h" // memmove
+#અન્તર્ભાવ "config.h" // BUILD_MAX_E820
+#અન્તર્ભાવ "e820map.h" // struct e820entry
+#અન્તર્ભાવ "output.h" // dprintf
+#અન્તર્ભાવ "string.h" // memmove
 
 
 /****************************************************************
@@ -15,57 +15,57 @@
  ****************************************************************/
 
 // Info on e820 map location and size.
-struct e820entry e820_list[BUILD_MAX_E820] VARFSEG;
-int e820_count VARFSEG;
+સંરચના e820entry e820_list[BUILD_MAX_E820] VARFSEG;
+પૂર્ણાંક e820_ગણતરી VARFSEG;
 
 // Remove an entry from the e820_list.
-static void
-remove_e820(int i)
+સ્થિર શૂન્ય
+remove_e820(પૂર્ણાંક i)
 {
-    e820_count--;
+    e820_ગણતરી--;
     memmove(&e820_list[i], &e820_list[i+1]
-            , sizeof(e820_list[0]) * (e820_count - i));
+            , કદ(e820_list[0]) * (e820_ગણતરી - i));
 }
 
 // Insert an entry in the e820_list at the given position.
-static void
-insert_e820(int i, u64 start, u64 size, u32 type)
+સ્થિર શૂન્ય
+ઉમેરો_e820(પૂર્ણાંક i, u64 start, u64 size, u32 type)
 {
-    if (e820_count >= BUILD_MAX_E820) {
+    જો (e820_ગણતરી >= BUILD_MAX_E820) {
         warn_noalloc();
-        return;
+        પાછા;
     }
 
     memmove(&e820_list[i+1], &e820_list[i]
-            , sizeof(e820_list[0]) * (e820_count - i));
-    e820_count++;
-    struct e820entry *e = &e820_list[i];
+            , કદ(e820_list[0]) * (e820_ગણતરી - i));
+    e820_ગણતરી++;
+    સંરચના e820entry *e = &e820_list[i];
     e->start = start;
     e->size = size;
     e->type = type;
 }
 
-static const char *
+સ્થિર અચલ અક્ષર *
 e820_type_name(u32 type)
 {
-    switch (type) {
-    case E820_RAM:      return "RAM";
-    case E820_RESERVED: return "RESERVED";
-    case E820_ACPI:     return "ACPI";
-    case E820_NVS:      return "NVS";
-    case E820_UNUSABLE: return "UNUSABLE";
-    default:            return "UNKNOWN";
+    પસંદગી (type) {
+    સ્થિતિ E820_RAM:      પાછા "RAM";
+    સ્થિતિ E820_RESERVED: પાછા "RESERVED";
+    સ્થિતિ E820_ACPI:     પાછા "ACPI";
+    સ્થિતિ E820_NVS:      પાછા "NVS";
+    સ્થિતિ E820_UNUSABLE: પાછા "UNUSABLE";
+    મૂળભૂત:            પાછા "UNKNOWN";
     }
 }
 
 // Show the current e820_list.
-static void
-dump_map(void)
+સ્થિર શૂન્ય
+dump_map(શૂન્ય)
 {
-    dprintf(1, "e820 map has %d items:\n", e820_count);
-    int i;
-    for (i=0; i<e820_count; i++) {
-        struct e820entry *e = &e820_list[i];
+    dprintf(1, "e820 map has %d items:\n", e820_ગણતરી);
+    પૂર્ણાંક i;
+    માટે (i=0; i<e820_ગણતરી; i++) {
+        સંરચના e820entry *e = &e820_list[i];
         u64 e_end = e->start + e->size;
         dprintf(1, "  %d: %016llx - %016llx = %d %s\n", i
                 , e->start, e_end, e->type, e820_type_name(e->type));
@@ -76,92 +76,92 @@ dump_map(void)
 
 // Add a new entry to the list.  This scans for overlaps and keeps the
 // list sorted.
-void
+શૂન્ય
 e820_add(u64 start, u64 size, u32 type)
 {
     dprintf(8, "Add to e820 map: %08llx %08llx %d\n", start, size, type);
 
-    if (! size)
+    જો (! size)
         // Huh?  Nothing to do.
-        return;
+        પાછા;
 
     // Find position of new item (splitting existing item if needed).
     u64 end = start + size;
-    int i;
-    for (i=0; i<e820_count; i++) {
-        struct e820entry *e = &e820_list[i];
+    પૂર્ણાંક i;
+    માટે (i=0; i<e820_ગણતરી; i++) {
+        સંરચના e820entry *e = &e820_list[i];
         u64 e_end = e->start + e->size;
-        if (start > e_end)
-            continue;
+        જો (start > e_end)
+            ચાલુ;
         // Found position - check if an existing item needs to be split.
-        if (start > e->start) {
-            if (type == e->type) {
+        જો (start > e->start) {
+            જો (type == e->type) {
                 // Same type - merge them.
                 size += start - e->start;
                 start = e->start;
-            } else {
+            } નહીંતર {
                 // Split existing item.
                 e->size = start - e->start;
                 i++;
-                if (e_end > end)
-                    insert_e820(i, end, e_end - end, e->type);
+                જો (e_end > end)
+                    ઉમેરો_e820(i, end, e_end - end, e->type);
             }
         }
-        break;
+        તોડો;
     }
     // Remove/adjust existing items that are overlapping.
-    while (i<e820_count) {
-        struct e820entry *e = &e820_list[i];
-        if (end < e->start)
+    જ્યારે (i<e820_ગણતરી) {
+        સંરચના e820entry *e = &e820_list[i];
+        જો (end < e->start)
             // No overlap - done.
-            break;
+            તોડો;
         u64 e_end = e->start + e->size;
-        if (end >= e_end) {
+        જો (end >= e_end) {
             // Existing item completely overlapped - remove it.
             remove_e820(i);
-            continue;
+            ચાલુ;
         }
         // Not completely overlapped - adjust its start.
         e->start = end;
         e->size = e_end - end;
-        if (type == e->type) {
+        જો (type == e->type) {
             // Same type - merge them.
             size += e->size;
             remove_e820(i);
         }
-        break;
+        તોડો;
     }
     // Insert new item.
-    if (type != E820_HOLE)
-        insert_e820(i, start, size, type);
+    જો (type != E820_HOLE)
+        ઉમેરો_e820(i, start, size, type);
     //dump_map();
 }
 
 // Remove any definitions in a memory range (make a memory hole).
-void
+શૂન્ય
 e820_remove(u64 start, u64 size)
 {
     e820_add(start, size, E820_HOLE);
 }
 
 // Report on final memory locations.
-void
-e820_prepboot(void)
+શૂન્ય
+e820_prepboot(શૂન્ય)
 {
     dump_map();
 }
 
-int
+પૂર્ણાંક
 e820_is_used(u64 start, u64 size)
 {
-    int i;
-    for (i=0; i<e820_count; i++) {
-        struct e820entry *e = &e820_list[i];
-        if (start + size <= e->start)
-            continue;
-        if (start >= e->start + e->size)
-            continue;
-        return 1;
+    પૂર્ણાંક i;
+    માટે (i=0; i<e820_ગણતરી; i++) {
+        સંરચના e820entry *e = &e820_list[i];
+        જો (start + size <= e->start)
+            ચાલુ;
+        જો (start >= e->start + e->size)
+            ચાલુ;
+        પાછા 1;
     }
-    return 0;
+    પાછા 0;
 }

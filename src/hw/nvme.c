@@ -4,53 +4,53 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "blockcmd.h"
-#include "malloc.h" // malloc_high
-#include "output.h" // dprintf
-#include "pci.h"
-#include "pci_ids.h" // PCI_CLASS_STORAGE_NVME
-#include "pci_regs.h" // PCI_BASE_ADDRESS_0
-#include "pcidevice.h" // foreachpci
-#include "stacks.h" // yield
-#include "std/disk.h" // DISK_RET_
-#include "string.h" // memset
-#include "util.h" // boot_add_hd
-#include "x86.h" // readl
+#અન્તર્ભાવ "blockcmd.h"
+#અન્તર્ભાવ "malloc.h" // malloc_high
+#અન્તર્ભાવ "output.h" // dprintf
+#અન્તર્ભાવ "pci.h"
+#અન્તર્ભાવ "pci_ids.h" // PCI_CLASS_STORAGE_NVME
+#અન્તર્ભાવ "pci_regs.h" // PCI_BASE_ADDRESS_0
+#અન્તર્ભાવ "pcidevice.h" // foreachpci
+#અન્તર્ભાવ "stacks.h" // yield
+#અન્તર્ભાવ "std/disk.h" // DISK_RET_
+#અન્તર્ભાવ "string.h" // memset
+#અન્તર્ભાવ "util.h" // boot_add_hd
+#અન્તર્ભાવ "x86.h" // readl
 
-#include "nvme.h"
-#include "nvme-int.h"
+#અન્તર્ભાવ "nvme.h"
+#અન્તર્ભાવ "nvme-int.h"
 
 // Page aligned "dma bounce buffer" of size NVME_PAGE_SIZE in high memory
-static void *nvme_dma_buffer;
+સ્થિર શૂન્ય *nvme_dma_buffer;
 
-static void *
-zalloc_page_aligned(struct zone_s *zone, u32 size)
+સ્થિર શૂન્ય *
+zalloc_page_aligned(સંરચના zone_s *zone, u32 size)
 {
-    void *res = _malloc(zone, size, NVME_PAGE_SIZE);
-    if (res) memset(res, 0, size);
-    return res;
+    શૂન્ય *res = _malloc(zone, size, NVME_PAGE_SIZE);
+    જો (res) memset(res, 0, size);
+    પાછા res;
 }
 
-static void
-nvme_init_queue_common(struct nvme_ctrl *ctrl, struct nvme_queue *q, u16 q_idx,
+સ્થિર શૂન્ય
+nvme_init_queue_common(સંરચના nvme_ctrl *ctrl, સંરચના nvme_queue *q, u16 q_idx,
                        u16 length)
 {
-    memset(q, 0, sizeof(*q));
-    q->dbl = (u32 *)((char *)ctrl->reg + 0x1000 + q_idx * ctrl->doorbell_stride);
+    memset(q, 0, કદ(*q));
+    q->dbl = (u32 *)((અક્ષર *)ctrl->reg + 0x1000 + q_idx * ctrl->doorbell_stride);
     dprintf(3, " q %p q_idx %u dbl %p\n", q, q_idx, q->dbl);
     q->mask = length - 1;
 }
 
-static int
-nvme_init_sq(struct nvme_ctrl *ctrl, struct nvme_sq *sq, u16 q_idx, u16 length,
-             struct nvme_cq *cq)
+સ્થિર પૂર્ણાંક
+nvme_init_sq(સંરચના nvme_ctrl *ctrl, સંરચના nvme_sq *sq, u16 q_idx, u16 length,
+             સંરચના nvme_cq *cq)
 {
     nvme_init_queue_common(ctrl, &sq->common, q_idx, length);
-    sq->sqe = zalloc_page_aligned(&ZoneHigh, sizeof(*sq->sqe) * length);
+    sq->sqe = zalloc_page_aligned(&Zone_ઉપલું, કદ(*sq->sqe) * length);
 
-    if (!sq->sqe) {
+    જો (!sq->sqe) {
         warn_noalloc();
-        return -1;
+        પાછા -1;
     }
 
     dprintf(3, "sq %p q_idx %u sqe %p\n", sq, q_idx, sq->sqe);
@@ -58,17 +58,17 @@ nvme_init_sq(struct nvme_ctrl *ctrl, struct nvme_sq *sq, u16 q_idx, u16 length,
     sq->head = 0;
     sq->tail = 0;
 
-    return 0;
+    પાછા 0;
 }
 
-static int
-nvme_init_cq(struct nvme_ctrl *ctrl, struct nvme_cq *cq, u16 q_idx, u16 length)
+સ્થિર પૂર્ણાંક
+nvme_init_cq(સંરચના nvme_ctrl *ctrl, સંરચના nvme_cq *cq, u16 q_idx, u16 length)
 {
     nvme_init_queue_common(ctrl, &cq->common, q_idx, length);
-    cq->cqe = zalloc_page_aligned(&ZoneHigh, sizeof(*cq->cqe) * length);
-    if (!cq->cqe) {
+    cq->cqe = zalloc_page_aligned(&Zone_ઉપલું, કદ(*cq->cqe) * length);
+    જો (!cq->cqe) {
         warn_noalloc();
-        return -1;
+        પાછા -1;
     }
 
     cq->head = 0;
@@ -77,54 +77,54 @@ nvme_init_cq(struct nvme_ctrl *ctrl, struct nvme_cq *cq, u16 q_idx, u16 length)
        for the host controller to set these to 1. */
     cq->phase = 1;
 
-    return 0;
+    પાછા 0;
 }
 
-static int
-nvme_poll_cq(struct nvme_cq *cq)
+સ્થિર પૂર્ણાંક
+nvme_poll_cq(સંરચના nvme_cq *cq)
 {
     u32 dw3 = readl(&cq->cqe[cq->head].dword[3]);
-    return (!!(dw3 & NVME_CQE_DW3_P) == cq->phase);
+    પાછા (!!(dw3 & NVME_CQE_DW3_P) == cq->phase);
 }
 
-static int
-nvme_is_cqe_success(struct nvme_cqe const *cqe)
+સ્થિર પૂર્ણાંક
+nvme_is_cqe_success(સંરચના nvme_cqe અચલ *cqe)
 {
-    return ((cqe->status >> 1) & 0xFF) == 0;
+    પાછા ((cqe->status >> 1) & 0xFF) == 0;
 }
 
-static struct nvme_cqe
-nvme_error_cqe(void)
+સ્થિર સંરચના nvme_cqe
+nvme_error_cqe(શૂન્ય)
 {
-    struct nvme_cqe r;
+    સંરચના nvme_cqe r;
 
     /* 0xFF is a vendor specific status code != success. Should be okay for
        indicating failure. */
-    memset(&r, 0xFF, sizeof(r));
-    return r;
+    memset(&r, 0xFF, કદ(r));
+    પાછા r;
 }
 
-static struct nvme_cqe
-nvme_consume_cqe(struct nvme_sq *sq)
+સ્થિર સંરચના nvme_cqe
+nvme_consume_cqe(સંરચના nvme_sq *sq)
 {
-    struct nvme_cq *cq = sq->cq;
+    સંરચના nvme_cq *cq = sq->cq;
 
-    if (!nvme_poll_cq(cq)) {
+    જો (!nvme_poll_cq(cq)) {
         /* Cannot consume a completion queue entry, if there is none ready. */
-        return nvme_error_cqe();
+        પાછા nvme_error_cqe();
     }
 
-    struct nvme_cqe *cqe = &cq->cqe[cq->head];
+    સંરચના nvme_cqe *cqe = &cq->cqe[cq->head];
     u16 cq_next_head = (cq->head + 1) & cq->common.mask;
     dprintf(4, "cq %p head %u -> %u\n", cq, cq->head, cq_next_head);
-    if (cq_next_head < cq->head) {
+    જો (cq_next_head < cq->head) {
         dprintf(3, "cq %p wrap\n", cq);
         cq->phase = ~cq->phase;
     }
     cq->head = cq_next_head;
 
     /* Update the submission queue head. */
-    if (cqe->sq_head != sq->head) {
+    જો (cqe->sq_head != sq->head) {
         sq->head = cqe->sq_head;
         dprintf(4, "sq %p advanced to %u\n", sq, cqe->sq_head);
     }
@@ -132,51 +132,51 @@ nvme_consume_cqe(struct nvme_sq *sq)
     /* Tell the controller that we consumed the completion. */
     writel(cq->common.dbl, cq->head);
 
-    return *cqe;
+    પાછા *cqe;
 }
 
-static struct nvme_cqe
-nvme_wait(struct nvme_sq *sq)
+સ્થિર સંરચના nvme_cqe
+nvme_wait(સંરચના nvme_sq *sq)
 {
-    static const unsigned nvme_timeout = 5000 /* ms */;
+    સ્થિર અચલ unsigned nvme_timeout = 5000 /* ms */;
     u32 to = timer_calc(nvme_timeout);
-    while (!nvme_poll_cq(sq->cq)) {
+    જ્યારે (!nvme_poll_cq(sq->cq)) {
         yield();
 
-        if (timer_check(to)) {
+        જો (timer_check(to)) {
             warn_timeout();
-            return nvme_error_cqe();
+            પાછા nvme_error_cqe();
         }
     }
 
-    return nvme_consume_cqe(sq);
+    પાછા nvme_consume_cqe(sq);
 }
 
 /* Returns the next submission queue entry (or NULL if the queue is full). It
    also fills out Command Dword 0 and clears the rest. */
-static struct nvme_sqe *
-nvme_get_next_sqe(struct nvme_sq *sq, u8 opc, void *metadata, void *data, void *data2)
+સ્થિર સંરચના nvme_sqe *
+nvme_get_next_sqe(સંરચના nvme_sq *sq, u8 opc, શૂન્ય *metadata, શૂન્ય *data, શૂન્ય *data2)
 {
-    if (((sq->head + 1) & sq->common.mask) == sq->tail) {
+    જો (((sq->head + 1) & sq->common.mask) == sq->tail) {
         dprintf(3, "submission queue is full\n");
-        return NULL;
+        પાછા ખાલી;
     }
 
-    struct nvme_sqe *sqe = &sq->sqe[sq->tail];
+    સંરચના nvme_sqe *sqe = &sq->sqe[sq->tail];
     dprintf(4, "sq %p next_sqe %u\n", sq, sq->tail);
 
-    memset(sqe, 0, sizeof(*sqe));
+    memset(sqe, 0, કદ(*sqe));
     sqe->cdw0 = opc | (sq->tail << 16 /* CID */);
     sqe->mptr = (u32)metadata;
     sqe->dptr_prp1 = (u32)data;
     sqe->dptr_prp2 = (u32)data2;
 
-    return sqe;
+    પાછા sqe;
 }
 
 /* Call this after you've filled out an sqe that you've got from nvme_get_next_sqe. */
-static void
-nvme_commit_sqe(struct nvme_sq *sq)
+સ્થિર શૂન્ય
+nvme_commit_sqe(સંરચના nvme_sq *sq)
 {
     dprintf(4, "sq %p commit_sqe %u\n", sq, sq->tail);
     sq->tail = (sq->tail + 1) & sq->common.mask;
@@ -186,24 +186,24 @@ nvme_commit_sqe(struct nvme_sq *sq)
 /* Perform an identify command on the admin queue and return the resulting
    buffer. This may be a NULL pointer, if something failed. This function
    cannot be used after initialization, because it uses buffers in tmp zone. */
-static union nvme_identify *
-nvme_admin_identify(struct nvme_ctrl *ctrl, u8 cns, u32 nsid)
+સ્થિર સંઘ nvme_identify *
+nvme_admin_identify(સંરચના nvme_ctrl *ctrl, u8 cns, u32 nsid)
 {
-    union nvme_identify *identify_buf = zalloc_page_aligned(&ZoneTmpHigh, 4096);
-    if (!identify_buf) {
+    સંઘ nvme_identify *identify_buf = zalloc_page_aligned(&Zone_Tmp_ઉપલું, 4096);
+    જો (!identify_buf) {
         /* Could not allocate identify buffer. */
         warn_internalerror();
-        return NULL;
+        પાછા ખાલી;
     }
 
-    struct nvme_sqe *cmd_identify;
+    સંરચના nvme_sqe *cmd_identify;
     cmd_identify = nvme_get_next_sqe(&ctrl->admin_sq,
-                                     NVME_SQE_OPC_ADMIN_IDENTIFY, NULL,
-                                     identify_buf, NULL);
+                                     NVME_SQE_OPC_ADMIN_IDENTIFY, ખાલી,
+                                     identify_buf, ખાલી);
 
-    if (!cmd_identify) {
+    જો (!cmd_identify) {
         warn_internalerror();
-        goto error;
+        જાઓ error;
     }
 
     cmd_identify->nsid = nsid;
@@ -211,149 +211,149 @@ nvme_admin_identify(struct nvme_ctrl *ctrl, u8 cns, u32 nsid)
 
     nvme_commit_sqe(&ctrl->admin_sq);
 
-    struct nvme_cqe cqe = nvme_wait(&ctrl->admin_sq);
+    સંરચના nvme_cqe cqe = nvme_wait(&ctrl->admin_sq);
 
-    if (!nvme_is_cqe_success(&cqe)) {
-        goto error;
+    જો (!nvme_is_cqe_success(&cqe)) {
+        જાઓ error;
     }
 
-    return identify_buf;
+    પાછા identify_buf;
  error:
-    free(identify_buf);
-    return NULL;
+    મુક્ત(identify_buf);
+    પાછા ખાલી;
 }
 
-static struct nvme_identify_ctrl *
-nvme_admin_identify_ctrl(struct nvme_ctrl *ctrl)
+સ્થિર સંરચના nvme_identify_ctrl *
+nvme_admin_identify_ctrl(સંરચના nvme_ctrl *ctrl)
 {
-    return &nvme_admin_identify(ctrl, NVME_ADMIN_IDENTIFY_CNS_ID_CTRL, 0)->ctrl;
+    પાછા &nvme_admin_identify(ctrl, NVME_ADMIN_IDENTIFY_CNS_ID_CTRL, 0)->ctrl;
 }
 
-static struct nvme_identify_ns *
-nvme_admin_identify_ns(struct nvme_ctrl *ctrl, u32 ns_id)
+સ્થિર સંરચના nvme_identify_ns *
+nvme_admin_identify_ns(સંરચના nvme_ctrl *ctrl, u32 ns_id)
 {
-    return &nvme_admin_identify(ctrl, NVME_ADMIN_IDENTIFY_CNS_ID_NS,
+    પાછા &nvme_admin_identify(ctrl, NVME_ADMIN_IDENTIFY_CNS_ID_NS,
                                 ns_id)->ns;
 }
 
-static void
-nvme_probe_ns(struct nvme_ctrl *ctrl, u32 ns_idx, u8 mdts)
+સ્થિર શૂન્ય
+nvme_probe_ns(સંરચના nvme_ctrl *ctrl, u32 ns_idx, u8 mdts)
 {
     u32 ns_id = ns_idx + 1;
 
-    struct nvme_identify_ns *id = nvme_admin_identify_ns(ctrl, ns_id);
-    if (!id) {
+    સંરચના nvme_identify_ns *id = nvme_admin_identify_ns(ctrl, ns_id);
+    જો (!id) {
         dprintf(2, "NVMe couldn't identify namespace %u.\n", ns_id);
-        goto free_buffer;
+        જાઓ free_buffer;
     }
 
     u8 current_lba_format = id->flbas & 0xF;
-    if (current_lba_format > id->nlbaf) {
+    જો (current_lba_format > id->nlbaf) {
         dprintf(2, "NVMe NS %u: current LBA format %u is beyond what the "
                 " namespace supports (%u)?\n",
                 ns_id, current_lba_format, id->nlbaf + 1);
-        goto free_buffer;
+        જાઓ free_buffer;
     }
 
-    if (!id->nsze) {
+    જો (!id->nsze) {
         dprintf(2, "NVMe NS %u is inactive.\n", ns_id);
-        goto free_buffer;
+        જાઓ free_buffer;
     }
 
-    if (!nvme_dma_buffer) {
-        nvme_dma_buffer = zalloc_page_aligned(&ZoneHigh, NVME_PAGE_SIZE);
-        if (!nvme_dma_buffer) {
+    જો (!nvme_dma_buffer) {
+        nvme_dma_buffer = zalloc_page_aligned(&Zone_ઉપલું, NVME_PAGE_SIZE);
+        જો (!nvme_dma_buffer) {
             warn_noalloc();
-            goto free_buffer;
+            જાઓ free_buffer;
         }
     }
 
-    struct nvme_namespace *ns = malloc_fseg(sizeof(*ns));
-    if (!ns) {
+    સંરચના nvme_namespace *ns = malloc_fseg(કદ(*ns));
+    જો (!ns) {
         warn_noalloc();
-        goto free_buffer;
+        જાઓ free_buffer;
     }
-    memset(ns, 0, sizeof(*ns));
+    memset(ns, 0, કદ(*ns));
     ns->ctrl  = ctrl;
     ns->ns_id = ns_id;
-    ns->lba_count = id->nsze;
+    ns->lba_ગણતરી = id->nsze;
 
-    struct nvme_lba_format *fmt = &id->lbaf[current_lba_format];
+    સંરચના nvme_lba_format *fmt = &id->lbaf[current_lba_format];
 
     ns->block_size    = 1U << fmt->lbads;
     ns->metadata_size = fmt->ms;
 
-    if (ns->block_size > NVME_PAGE_SIZE) {
+    જો (ns->block_size > NVME_PAGE_SIZE) {
         /* If we see devices that trigger this path, we need to increase our
            buffer size. */
         warn_internalerror();
-        free(ns);
-        goto free_buffer;
+        મુક્ત(ns);
+        જાઓ free_buffer;
     }
 
     ns->drive.cntl_id   = ns_idx;
     ns->drive.removable = 0;
     ns->drive.type      = DTYPE_NVME;
     ns->drive.blksize   = ns->block_size;
-    ns->drive.sectors   = ns->lba_count;
+    ns->drive.sectors   = ns->lba_ગણતરી;
 
-    if (mdts) {
+    જો (mdts) {
         ns->max_req_size = ((1U << mdts) * NVME_PAGE_SIZE) / ns->block_size;
         dprintf(3, "NVME NS %u max request size: %d sectors\n",
                 ns_id, ns->max_req_size);
-    } else {
+    } નહીંતર {
         ns->max_req_size = -1U;
     }
 
-    char *desc = znprintf(MAXDESCSIZE, "NVMe NS %u: %llu MiB (%llu %u-byte "
+    અક્ષર *desc = znprintf(MAXDESCSIZE, "NVMe NS %u: %llu MiB (%llu %u-byte "
                           "blocks + %u-byte metadata)",
-                          ns_id, (ns->lba_count * ns->block_size) >> 20,
-                          ns->lba_count, ns->block_size, ns->metadata_size);
+                          ns_id, (ns->lba_ગણતરી * ns->block_size) >> 20,
+                          ns->lba_ગણતરી, ns->block_size, ns->metadata_size);
 
     dprintf(3, "%s\n", desc);
     boot_add_hd(&ns->drive, desc, bootprio_find_pci_device(ctrl->pci));
 
 free_buffer:
-    free (id);
+    મુક્ત (id);
 }
 
 
 /* Release memory allocated for a completion queue */
-static void
-nvme_destroy_cq(struct nvme_cq *cq)
+સ્થિર શૂન્ય
+nvme_destroy_cq(સંરચના nvme_cq *cq)
 {
-    free(cq->cqe);
-    cq->cqe = NULL;
+    મુક્ત(cq->cqe);
+    cq->cqe = ખાલી;
 }
 
 /* Release memory allocated for a submission queue */
-static void
-nvme_destroy_sq(struct nvme_sq *sq)
+સ્થિર શૂન્ય
+nvme_destroy_sq(સંરચના nvme_sq *sq)
 {
-    free(sq->sqe);
-    sq->sqe = NULL;
+    મુક્ત(sq->sqe);
+    sq->sqe = ખાલી;
 }
 
 /* Returns 0 on success. */
-static int
-nvme_create_io_cq(struct nvme_ctrl *ctrl, struct nvme_cq *cq, u16 q_idx)
+સ્થિર પૂર્ણાંક
+nvme_create_io_cq(સંરચના nvme_ctrl *ctrl, સંરચના nvme_cq *cq, u16 q_idx)
 {
-    int rc;
-    struct nvme_sqe *cmd_create_cq;
+    પૂર્ણાંક rc;
+    સંરચના nvme_sqe *cmd_create_cq;
     u32 length = 1 + (ctrl->reg->cap & 0xffff);
-    if (length > NVME_PAGE_SIZE / sizeof(struct nvme_cqe))
-        length = NVME_PAGE_SIZE / sizeof(struct nvme_cqe);
+    જો (length > NVME_PAGE_SIZE / કદ(સંરચના nvme_cqe))
+        length = NVME_PAGE_SIZE / કદ(સંરચના nvme_cqe);
 
     rc = nvme_init_cq(ctrl, cq, q_idx, length);
-    if (rc) {
-        goto err;
+    જો (rc) {
+        જાઓ err;
     }
 
     cmd_create_cq = nvme_get_next_sqe(&ctrl->admin_sq,
-                                      NVME_SQE_OPC_ADMIN_CREATE_IO_CQ, NULL,
-                                      cq->cqe, NULL);
-    if (!cmd_create_cq) {
-        goto err_destroy_cq;
+                                      NVME_SQE_OPC_ADMIN_CREATE_IO_CQ, ખાલી,
+                                      cq->cqe, ખાલી);
+    જો (!cmd_create_cq) {
+        જાઓ err_destroy_cq;
     }
 
     cmd_create_cq->dword[10] = (cq->common.mask << 16) | (q_idx >> 1);
@@ -361,43 +361,43 @@ nvme_create_io_cq(struct nvme_ctrl *ctrl, struct nvme_cq *cq, u16 q_idx)
 
     nvme_commit_sqe(&ctrl->admin_sq);
 
-    struct nvme_cqe cqe = nvme_wait(&ctrl->admin_sq);
+    સંરચના nvme_cqe cqe = nvme_wait(&ctrl->admin_sq);
 
-    if (!nvme_is_cqe_success(&cqe)) {
+    જો (!nvme_is_cqe_success(&cqe)) {
         dprintf(2, "create io cq failed: %08x %08x %08x %08x\n",
                 cqe.dword[0], cqe.dword[1], cqe.dword[2], cqe.dword[3]);
 
-        goto err_destroy_cq;
+        જાઓ err_destroy_cq;
     }
 
-    return 0;
+    પાછા 0;
 
 err_destroy_cq:
     nvme_destroy_cq(cq);
 err:
-    return -1;
+    પાછા -1;
 }
 
 /* Returns 0 on success. */
-static int
-nvme_create_io_sq(struct nvme_ctrl *ctrl, struct nvme_sq *sq, u16 q_idx, struct nvme_cq *cq)
+સ્થિર પૂર્ણાંક
+nvme_create_io_sq(સંરચના nvme_ctrl *ctrl, સંરચના nvme_sq *sq, u16 q_idx, સંરચના nvme_cq *cq)
 {
-    int rc;
-    struct nvme_sqe *cmd_create_sq;
+    પૂર્ણાંક rc;
+    સંરચના nvme_sqe *cmd_create_sq;
     u32 length = 1 + (ctrl->reg->cap & 0xffff);
-    if (length > NVME_PAGE_SIZE / sizeof(struct nvme_cqe))
-        length = NVME_PAGE_SIZE / sizeof(struct nvme_cqe);
+    જો (length > NVME_PAGE_SIZE / કદ(સંરચના nvme_cqe))
+        length = NVME_PAGE_SIZE / કદ(સંરચના nvme_cqe);
 
     rc = nvme_init_sq(ctrl, sq, q_idx, length, cq);
-    if (rc) {
-        goto err;
+    જો (rc) {
+        જાઓ err;
     }
 
     cmd_create_sq = nvme_get_next_sqe(&ctrl->admin_sq,
-                                      NVME_SQE_OPC_ADMIN_CREATE_IO_SQ, NULL,
-                                      sq->sqe, NULL);
-    if (!cmd_create_sq) {
-        goto err_destroy_sq;
+                                      NVME_SQE_OPC_ADMIN_CREATE_IO_SQ, ખાલી,
+                                      sq->sqe, ખાલી);
+    જો (!cmd_create_sq) {
+        જાઓ err_destroy_sq;
     }
 
     cmd_create_sq->dword[10] = (sq->common.mask << 16) | (q_idx >> 1);
@@ -407,203 +407,203 @@ nvme_create_io_sq(struct nvme_ctrl *ctrl, struct nvme_sq *sq, u16 q_idx, struct 
 
     nvme_commit_sqe(&ctrl->admin_sq);
 
-    struct nvme_cqe cqe = nvme_wait(&ctrl->admin_sq);
+    સંરચના nvme_cqe cqe = nvme_wait(&ctrl->admin_sq);
 
-    if (!nvme_is_cqe_success(&cqe)) {
+    જો (!nvme_is_cqe_success(&cqe)) {
         dprintf(2, "create io sq failed: %08x %08x %08x %08x\n",
                 cqe.dword[0], cqe.dword[1], cqe.dword[2], cqe.dword[3]);
-        goto err_destroy_sq;
+        જાઓ err_destroy_sq;
     }
 
-    return 0;
+    પાછા 0;
 
 err_destroy_sq:
     nvme_destroy_sq(sq);
 err:
-    return -1;
+    પાછા -1;
 }
 
 /* Reads count sectors into buf. The buffer cannot cross page boundaries. */
-static int
-nvme_io_xfer(struct nvme_namespace *ns, u64 lba, void *prp1, void *prp2,
-             u16 count, int write)
+સ્થિર પૂર્ણાંક
+nvme_io_xfer(સંરચના nvme_namespace *ns, u64 lba, શૂન્ય *prp1, શૂન્ય *prp2,
+             u16 ગણતરી, પૂર્ણાંક લિખ)
 {
-    if (((u32)prp1 & 0x3) || ((u32)prp2 & 0x3)) {
+    જો (((u32)prp1 & 0x3) || ((u32)prp2 & 0x3)) {
         /* Buffer is misaligned */
         warn_internalerror();
-        return -1;
+        પાછા -1;
     }
 
-    struct nvme_sqe *io_read = nvme_get_next_sqe(&ns->ctrl->io_sq,
-                                                 write ? NVME_SQE_OPC_IO_WRITE
+    સંરચના nvme_sqe *io_read = nvme_get_next_sqe(&ns->ctrl->io_sq,
+                                                 લિખ ? NVME_SQE_OPC_IO_WRITE
                                                        : NVME_SQE_OPC_IO_READ,
-                                                 NULL, prp1, prp2);
+                                                 ખાલી, prp1, prp2);
     io_read->nsid = ns->ns_id;
     io_read->dword[10] = (u32)lba;
     io_read->dword[11] = (u32)(lba >> 32);
-    io_read->dword[12] = (1U << 31 /* limited retry */) | (count - 1);
+    io_read->dword[12] = (1U << 31 /* limited retry */) | (ગણતરી - 1);
 
     nvme_commit_sqe(&ns->ctrl->io_sq);
 
-    struct nvme_cqe cqe = nvme_wait(&ns->ctrl->io_sq);
+    સંરચના nvme_cqe cqe = nvme_wait(&ns->ctrl->io_sq);
 
-    if (!nvme_is_cqe_success(&cqe)) {
+    જો (!nvme_is_cqe_success(&cqe)) {
         dprintf(2, "read io: %08x %08x %08x %08x\n",
                 cqe.dword[0], cqe.dword[1], cqe.dword[2], cqe.dword[3]);
 
-        return -1;
+        પાછા -1;
     }
 
-    dprintf(5, "ns %u %s lba %llu+%u\n", ns->ns_id, write ? "write" : "read",
-            lba, count);
-    return count;
+    dprintf(5, "ns %u %s lba %llu+%u\n", ns->ns_id, લિખ ? "write" : "read",
+            lba, ગણતરી);
+    પાછા ગણતરી;
 }
 
 // Transfer up to one page of data using the internal dma bounce buffer
-static int
-nvme_bounce_xfer(struct nvme_namespace *ns, u64 lba, void *buf, u16 count,
-                 int write)
+સ્થિર પૂર્ણાંક
+nvme_bounce_xfer(સંરચના nvme_namespace *ns, u64 lba, શૂન્ય *buf, u16 ગણતરી,
+                 પૂર્ણાંક લિખ)
 {
-    u16 const max_blocks = NVME_PAGE_SIZE / ns->block_size;
-    u16 blocks = count < max_blocks ? count : max_blocks;
+    u16 અચલ max_blocks = NVME_PAGE_SIZE / ns->block_size;
+    u16 blocks = ગણતરી < max_blocks ? ગણતરી : max_blocks;
 
-    if (write)
+    જો (લિખ)
         memcpy(nvme_dma_buffer, buf, blocks * ns->block_size);
 
-    int res = nvme_io_xfer(ns, lba, nvme_dma_buffer, NULL, blocks, write);
+    પૂર્ણાંક res = nvme_io_xfer(ns, lba, nvme_dma_buffer, ખાલી, blocks, લિખ);
 
-    if (!write && res >= 0)
+    જો (!લિખ && res >= 0)
         memcpy(buf, nvme_dma_buffer, res * ns->block_size);
 
-    return res;
+    પાછા res;
 }
 
 #define NVME_MAX_PRPL_ENTRIES 15 /* Allows requests up to 64kb */
 
 // Transfer data using page list (if applicable)
-static int
-nvme_prpl_xfer(struct nvme_namespace *ns, u64 lba, void *buf, u16 count,
-               int write)
+સ્થિર પૂર્ણાંક
+nvme_prpl_xfer(સંરચના nvme_namespace *ns, u64 lba, શૂન્ય *buf, u16 ગણતરી,
+               પૂર્ણાંક લિખ)
 {
     u32 base = (long)buf;
     s32 size;
 
-    if (count > ns->max_req_size)
-        count = ns->max_req_size;
+    જો (ગણતરી > ns->max_req_size)
+        ગણતરી = ns->max_req_size;
 
-    size = count * ns->block_size;
+    size = ગણતરી * ns->block_size;
     /* Special case for transfers that fit into PRP1, but are unaligned */
-    if (((size + (base & ~NVME_PAGE_MASK)) <= NVME_PAGE_SIZE))
-        goto single;
+    જો (((size + (base & ~NVME_PAGE_MASK)) <= NVME_PAGE_SIZE))
+        જાઓ single;
 
     /* Every request has to be page aligned */
-    if (base & ~NVME_PAGE_MASK)
-        goto bounce;
+    જો (base & ~NVME_PAGE_MASK)
+        જાઓ bounce;
 
     /* Make sure a full block fits into the last chunk */
-    if (size & (ns->block_size - 1ULL))
-        goto bounce;
+    જો (size & (ns->block_size - 1ULL))
+        જાઓ bounce;
 
     /* Build PRP list if we need to describe more than 2 pages */
-    if ((ns->block_size * count) > (NVME_PAGE_SIZE * 2)) {
+    જો ((ns->block_size * ગણતરી) > (NVME_PAGE_SIZE * 2)) {
         u32 prpl_len = 0;
         u64 *prpl = nvme_dma_buffer;
-        int first_page = 1;
-        for (; size > 0; base += NVME_PAGE_SIZE, size -= NVME_PAGE_SIZE) {
-            if (first_page) {
+        પૂર્ણાંક first_page = 1;
+        માટે (; size > 0; base += NVME_PAGE_SIZE, size -= NVME_PAGE_SIZE) {
+            જો (first_page) {
                 /* First page is special */
                 first_page = 0;
-                continue;
+                ચાલુ;
             }
-            if (prpl_len >= NVME_MAX_PRPL_ENTRIES)
-                goto bounce;
+            જો (prpl_len >= NVME_MAX_PRPL_ENTRIES)
+                જાઓ bounce;
             prpl[prpl_len++] = base;
         }
-        return nvme_io_xfer(ns, lba, buf, prpl, count, write);
+        પાછા nvme_io_xfer(ns, lba, buf, prpl, ગણતરી, લિખ);
     }
 
     /* Directly embed the 2nd page if we only need 2 pages */
-    if ((ns->block_size * count) > NVME_PAGE_SIZE)
-        return nvme_io_xfer(ns, lba, buf, buf + NVME_PAGE_SIZE, count, write);
+    જો ((ns->block_size * ગણતરી) > NVME_PAGE_SIZE)
+        પાછા nvme_io_xfer(ns, lba, buf, buf + NVME_PAGE_SIZE, ગણતરી, લિખ);
 
 single:
     /* One page is enough, don't expose anything else */
-    return nvme_io_xfer(ns, lba, buf, NULL, count, write);
+    પાછા nvme_io_xfer(ns, lba, buf, ખાલી, ગણતરી, લિખ);
 
 bounce:
     /* Use bounce buffer to make transfer */
-    return nvme_bounce_xfer(ns, lba, buf, count, write);
+    પાછા nvme_bounce_xfer(ns, lba, buf, ગણતરી, લિખ);
 }
 
-static int
-nvme_create_io_queues(struct nvme_ctrl *ctrl)
+સ્થિર પૂર્ણાંક
+nvme_create_io_queues(સંરચના nvme_ctrl *ctrl)
 {
-    if (nvme_create_io_cq(ctrl, &ctrl->io_cq, 3))
-        goto err;
+    જો (nvme_create_io_cq(ctrl, &ctrl->io_cq, 3))
+        જાઓ err;
 
-    if (nvme_create_io_sq(ctrl, &ctrl->io_sq, 2, &ctrl->io_cq))
-        goto err_free_cq;
+    જો (nvme_create_io_sq(ctrl, &ctrl->io_sq, 2, &ctrl->io_cq))
+        જાઓ err_free_cq;
 
-    return 0;
+    પાછા 0;
 
  err_free_cq:
     nvme_destroy_cq(&ctrl->io_cq);
  err:
-    return -1;
+    પાછા -1;
 }
 
 /* Waits for CSTS.RDY to match rdy. Returns 0 on success. */
-static int
-nvme_wait_csts_rdy(struct nvme_ctrl *ctrl, unsigned rdy)
+સ્થિર પૂર્ણાંક
+nvme_wait_csts_rdy(સંરચના nvme_ctrl *ctrl, unsigned rdy)
 {
-    u32 const max_to = 500 /* ms */ * ((ctrl->reg->cap >> 24) & 0xFFU);
+    u32 અચલ max_to = 500 /* ms */ * ((ctrl->reg->cap >> 24) & 0xFFU);
     u32 to = timer_calc(max_to);
     u32 csts;
 
-    while (rdy != ((csts = ctrl->reg->csts) & NVME_CSTS_RDY)) {
+    જ્યારે (rdy != ((csts = ctrl->reg->csts) & NVME_CSTS_RDY)) {
         yield();
 
-        if (csts & NVME_CSTS_FATAL) {
+        જો (csts & NVME_CSTS_FATAL) {
             dprintf(3, "NVMe fatal error during controller shutdown\n");
-            return -1;
+            પાછા -1;
         }
 
-        if (timer_check(to)) {
+        જો (timer_check(to)) {
             warn_timeout();
-            return -1;
+            પાછા -1;
         }
     }
 
-    return 0;
+    પાછા 0;
 }
 
 /* Returns 0 on success. */
-static int
-nvme_controller_enable(struct nvme_ctrl *ctrl)
+સ્થિર પૂર્ણાંક
+nvme_controller_enable(સંરચના nvme_ctrl *ctrl)
 {
-    int rc;
+    પૂર્ણાંક rc;
 
     pci_enable_busmaster(ctrl->pci);
 
     /* Turn the controller off. */
     ctrl->reg->cc = 0;
-    if (nvme_wait_csts_rdy(ctrl, 0)) {
+    જો (nvme_wait_csts_rdy(ctrl, 0)) {
         dprintf(2, "NVMe fatal error during controller shutdown\n");
-        return -1;
+        પાછા -1;
     }
 
     ctrl->doorbell_stride = 4U << ((ctrl->reg->cap >> 32) & 0xF);
 
     rc = nvme_init_cq(ctrl, &ctrl->admin_cq, 1,
-                      NVME_PAGE_SIZE / sizeof(struct nvme_cqe));
-    if (rc) {
-        return -1;
+                      NVME_PAGE_SIZE / કદ(સંરચના nvme_cqe));
+    જો (rc) {
+        પાછા -1;
     }
 
     rc = nvme_init_sq(ctrl, &ctrl->admin_sq, 0,
-                      NVME_PAGE_SIZE / sizeof(struct nvme_sqe), &ctrl->admin_cq);
-    if (rc) {
-        goto err_destroy_admin_cq;
+                      NVME_PAGE_SIZE / કદ(સંરચના nvme_sqe), &ctrl->admin_cq);
+    જો (rc) {
+        જાઓ err_destroy_admin_cq;
     }
 
     ctrl->reg->aqa = ctrl->admin_cq.common.mask << 16
@@ -618,160 +618,160 @@ nvme_controller_enable(struct nvme_ctrl *ctrl)
     ctrl->reg->cc = NVME_CC_EN | (NVME_CQE_SIZE_LOG << 20)
         | (NVME_SQE_SIZE_LOG << 16 /* IOSQES */);
 
-    if (nvme_wait_csts_rdy(ctrl, 1)) {
+    જો (nvme_wait_csts_rdy(ctrl, 1)) {
         dprintf(2, "NVMe fatal error while enabling controller\n");
-        goto err_destroy_admin_sq;
+        જાઓ err_destroy_admin_sq;
     }
 
     /* The admin queue is set up and the controller is ready. Let's figure out
        what namespaces we have. */
 
-    struct nvme_identify_ctrl *identify = nvme_admin_identify_ctrl(ctrl);
+    સંરચના nvme_identify_ctrl *identify = nvme_admin_identify_ctrl(ctrl);
 
-    if (!identify) {
+    જો (!identify) {
         dprintf(2, "NVMe couldn't identify controller.\n");
-        goto err_destroy_admin_sq;
+        જાઓ err_destroy_admin_sq;
     }
 
     dprintf(3, "NVMe has %u namespace%s.\n",
             identify->nn, (identify->nn == 1) ? "" : "s");
 
-    ctrl->ns_count = identify->nn;
+    ctrl->ns_ગણતરી = identify->nn;
     u8 mdts = identify->mdts;
-    free(identify);
+    મુક્ત(identify);
 
-    if ((ctrl->ns_count == 0) || nvme_create_io_queues(ctrl)) {
+    જો ((ctrl->ns_ગણતરી == 0) || nvme_create_io_queues(ctrl)) {
         /* No point to continue, if the controller says it doesn't have
            namespaces or we couldn't create I/O queues. */
-        goto err_destroy_admin_sq;
+        જાઓ err_destroy_admin_sq;
     }
 
     /* Populate namespace IDs */
-    int ns_idx;
-    for (ns_idx = 0; ns_idx < ctrl->ns_count; ns_idx++) {
+    પૂર્ણાંક ns_idx;
+    માટે (ns_idx = 0; ns_idx < ctrl->ns_ગણતરી; ns_idx++) {
         nvme_probe_ns(ctrl, ns_idx, mdts);
     }
 
     dprintf(3, "NVMe initialization complete!\n");
-    return 0;
+    પાછા 0;
 
  err_destroy_admin_sq:
     nvme_destroy_sq(&ctrl->admin_sq);
  err_destroy_admin_cq:
     nvme_destroy_cq(&ctrl->admin_cq);
-    return -1;
+    પાછા -1;
 }
 
 /* Initialize an NVMe controller and detect its drives. */
-static void
-nvme_controller_setup(void *opaque)
+સ્થિર શૂન્ય
+nvme_controller_setup(શૂન્ય *opaque)
 {
     u8 skip_nonbootable = is_bootprio_strict();
-    struct pci_device *pci = opaque;
+    સંરચના pci_device *pci = opaque;
 
-    if (skip_nonbootable && bootprio_find_pci_device(pci) < 0) {
+    જો (skip_nonbootable && bootprio_find_pci_device(pci) < 0) {
         dprintf(1, "skipping init of a non-bootable NVMe at %pP\n",
                 pci);
-        goto err;
+        જાઓ err;
     }
 
-    struct nvme_reg volatile *reg = pci_enable_membar(pci, PCI_BASE_ADDRESS_0);
-    if (!reg)
-        return;
+    સંરચના nvme_reg અસ્થિર *reg = pci_enable_membar(pci, PCI_BASE_ADDRESS_0);
+    જો (!reg)
+        પાછા;
 
     u32 version = reg->vs;
     dprintf(3, "Found NVMe controller with version %u.%u.%u.\n",
             version >> 16, (version >> 8) & 0xFF, version & 0xFF);
     dprintf(3, "  Capabilities %016llx\n", reg->cap);
 
-    if (~reg->cap & NVME_CAP_CSS_NVME) {
+    જો (~reg->cap & NVME_CAP_CSS_NVME) {
         dprintf(3, "Controller doesn't speak NVMe command set. Skipping.\n");
-        goto err;
+        જાઓ err;
     }
 
-    struct nvme_ctrl *ctrl = malloc_high(sizeof(*ctrl));
-    if (!ctrl) {
+    સંરચના nvme_ctrl *ctrl = malloc_ઉપલું(કદ(*ctrl));
+    જો (!ctrl) {
         warn_noalloc();
-        goto err;
+        જાઓ err;
     }
 
-    memset(ctrl, 0, sizeof(*ctrl));
+    memset(ctrl, 0, કદ(*ctrl));
 
     ctrl->reg = reg;
     ctrl->pci = pci;
 
-    if (nvme_controller_enable(ctrl)) {
-        goto err_free_ctrl;
+    જો (nvme_controller_enable(ctrl)) {
+        જાઓ err_free_ctrl;
     }
 
-    return;
+    પાછા;
 
  err_free_ctrl:
-    free(ctrl);
+    મુક્ત(ctrl);
  err:
     dprintf(2, "Failed to enable NVMe controller.\n");
 }
 
 // Locate and init NVMe controllers
-static void
-nvme_scan(void)
+સ્થિર શૂન્ય
+nvme_scan(શૂન્ય)
 {
     // Scan PCI bus for NVMe adapters
-    struct pci_device *pci;
+    સંરચના pci_device *pci;
 
     foreachpci(pci) {
-        if (pci->class != PCI_CLASS_STORAGE_NVME)
-            continue;
-        if (pci->prog_if != 2 /* as of NVM 1.0e */) {
+        જો (pci->class != PCI_CLASS_STORAGE_NVME)
+            ચાલુ;
+        જો (pci->prog_if != 2 /* as of NVM 1.0e */) {
             dprintf(3, "Found incompatble NVMe: prog-if=%02x\n", pci->prog_if);
-            continue;
+            ચાલુ;
         }
 
         run_thread(nvme_controller_setup, pci);
     }
 }
 
-static int
-nvme_cmd_readwrite(struct nvme_namespace *ns, struct disk_op_s *op, int write)
+સ્થિર પૂર્ણાંક
+nvme_cmd_readwrite(સંરચના nvme_namespace *ns, સંરચના disk_op_s *op, પૂર્ણાંક લિખ)
 {
-    int i;
-    for (i = 0; i < op->count;) {
-        u16 blocks_remaining = op->count - i;
-        char *op_buf = op->buf_fl + i * ns->block_size;
-        int blocks = nvme_prpl_xfer(ns, op->lba + i, op_buf,
-                                    blocks_remaining, write);
-        if (blocks < 0)
-            return DISK_RET_EBADTRACK;
+    પૂર્ણાંક i;
+    માટે (i = 0; i < op->ગણતરી;) {
+        u16 blocks_remaining = op->ગણતરી - i;
+        અક્ષર *op_buf = op->buf_fl + i * ns->block_size;
+        પૂર્ણાંક blocks = nvme_prpl_xfer(ns, op->lba + i, op_buf,
+                                    blocks_remaining, લિખ);
+        જો (blocks < 0)
+            પાછા DISK_RET_EBADTRACK;
         i += blocks;
     }
 
-    return DISK_RET_SUCCESS;
+    પાછા DISK_RET_SUCCESS;
 }
 
-int
-nvme_process_op(struct disk_op_s *op)
+પૂર્ણાંક
+nvme_process_op(સંરચના disk_op_s *op)
 {
-    if (!CONFIG_NVME)
-        return DISK_RET_SUCCESS;
+    જો (!CONFIG_NVME)
+        પાછા DISK_RET_SUCCESS;
 
-    struct nvme_namespace *ns = container_of(op->drive_fl, struct nvme_namespace,
+    સંરચના nvme_namespace *ns = container_of(op->drive_fl, સંરચના nvme_namespace,
                                              drive);
 
-    switch (op->command) {
-    case CMD_READ:
-    case CMD_WRITE:
-        return nvme_cmd_readwrite(ns, op, op->command == CMD_WRITE);
-    default:
-        return default_process_op(op);
+    પસંદગી (op->command) {
+    સ્થિતિ CMD_READ:
+    સ્થિતિ CMD_WRITE:
+        પાછા nvme_cmd_readwrite(ns, op, op->command == CMD_WRITE);
+    મૂળભૂત:
+        પાછા default_process_op(op);
     }
 }
 
-void
-nvme_setup(void)
+શૂન્ય
+nvme_setup(શૂન્ય)
 {
     ASSERT32FLAT();
-    if (!CONFIG_NVME)
-        return;
+    જો (!CONFIG_NVME)
+        પાછા;
 
     dprintf(3, "init nvme\n");
     nvme_scan();

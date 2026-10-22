@@ -1,12 +1,12 @@
 // Generate assembler offsets.
 
-#include "gen-defs.h" // OFFSET
-#include "bregs.h" // struct bregs
+#અન્તર્ભાવ "gen-defs.h" // OFFSET
+#અન્તર્ભાવ "bregs.h" // struct bregs
 
 /* workaround for a warning with -Wmissing-prototypes */
-void foo(void) VISIBLE16;
+શૂન્ય foo(શૂન્ય) VISIBLE16;
 
-void foo(void)
+શૂન્ય foo(શૂન્ય)
 {
     COMMENT("BREGS");
     OFFSET(BREGS_es, bregs, es);

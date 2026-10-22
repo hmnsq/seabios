@@ -4,12 +4,12 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_LOW
-#include "config.h" // CONFIG_*
-#include "output.h" // dprintf
-#include "stacks.h" // yield
-#include "util.h" // timer_setup
-#include "x86.h" // cpuid
+#અન્તર્ભાવ "biosvar.h" // GET_LOW
+#અન્તર્ભાવ "config.h" // CONFIG_*
+#અન્તર્ભાવ "output.h" // dprintf
+#અન્તર્ભાવ "stacks.h" // yield
+#અન્તર્ભાવ "util.h" // timer_setup
+#અન્તર્ભાવ "x86.h" // cpuid
 
 #define PORT_PIT_COUNTER0      0x0040
 #define PORT_PIT_COUNTER1      0x0041
@@ -32,13 +32,13 @@
 #define PM_MODE3 (3<<1)
 #define PM_MODE4 (4<<1)
 #define PM_MODE5 (5<<1)
-#define PM_CNT_BINARY (0<<0)
+#define PM_CNT_દ્વિઅંકી (0<<0)
 #define PM_CNT_BCD    (1<<0)
 #define PM_READ_COUNTER0 (1<<1)
 #define PM_READ_COUNTER1 (1<<2)
 #define PM_READ_COUNTER2 (1<<3)
 #define PM_READ_STATUSVALUE (0<<4)
-#define PM_READ_VALUE       (1<<4)
+#define PM_READ_કિંમત       (1<<4)
 #define PM_READ_STATUS      (2<<4)
 
 // Bits for PORT_PS2_CTRLB
@@ -58,24 +58,24 @@ u8 ShiftTSC VARFSEG;
  * Internal timer setup
  ****************************************************************/
 
-#define CALIBRATE_COUNT 0x800   // Approx 1.7ms
+#define CALIBRATE_ગણતરી 0x800   // Approx 1.7ms
 
 // Calibrate the CPU time-stamp-counter
-static void
-tsctimer_setup(void)
+સ્થિર શૂન્ય
+tsctimer_setup(શૂન્ય)
 {
     // Setup "timer2"
     u8 orig = inb(PORT_PS2_CTRLB);
     outb((orig & ~PPCB_SPKR) | PPCB_T2GATE, PORT_PS2_CTRLB);
     /* binary, mode 0, LSB/MSB, Ch 2 */
-    outb(PM_SEL_TIMER2|PM_ACCESS_WORD|PM_MODE0|PM_CNT_BINARY, PORT_PIT_MODE);
+    outb(PM_SEL_TIMER2|PM_ACCESS_WORD|PM_MODE0|PM_CNT_દ્વિઅંકી, PORT_PIT_MODE);
     /* LSB of ticks */
-    outb(CALIBRATE_COUNT & 0xFF, PORT_PIT_COUNTER2);
+    outb(CALIBRATE_ગણતરી & 0xFF, PORT_PIT_COUNTER2);
     /* MSB of ticks */
-    outb(CALIBRATE_COUNT >> 8, PORT_PIT_COUNTER2);
+    outb(CALIBRATE_ગણતરી >> 8, PORT_PIT_COUNTER2);
 
     u64 start = rdtscll();
-    while ((inb(PORT_PS2_CTRLB) & PPCB_T2OUT) == 0)
+    જ્યારે ((inb(PORT_PS2_CTRLB) & PPCB_T2OUT) == 0)
         ;
     u64 end = rdtscll();
 
@@ -86,8 +86,8 @@ tsctimer_setup(void)
     u64 diff = end - start;
     dprintf(6, "tsc calibrate start=%u end=%u diff=%u\n"
             , (u32)start, (u32)end, (u32)diff);
-    u64 t = DIV_ROUND_UP(diff * PMTIMER_HZ, CALIBRATE_COUNT);
-    while (t >= (1<<24)) {
+    u64 t = DIV_ROUND_UP(diff * PMTIMER_HZ, CALIBRATE_ગણતરી);
+    જ્યારે (t >= (1<<24)) {
         ShiftTSC++;
         t = (t + 1) >> 1;
     }
@@ -98,34 +98,34 @@ tsctimer_setup(void)
 }
 
 // Setup internal timers.
-void
-timer_setup(void)
+શૂન્ય
+timer_setup(શૂન્ય)
 {
-    if (!CONFIG_TSC_TIMER)
-        return;
-    if (TimerPort != PORT_PIT_COUNTER0)
-        return; // have timer already
+    જો (!CONFIG_TSC_TIMER)
+        પાછા;
+    જો (TimerPort != PORT_PIT_COUNTER0)
+        પાછા; // have timer already
 
     // Check if CPU has a timestamp counter
     u32 eax, ebx, ecx, edx, cpuid_features = 0;
     cpuid(0, &eax, &ebx, &ecx, &edx);
-    if (eax > 0)
+    જો (eax > 0)
         cpuid(1, &eax, &ebx, &ecx, &cpuid_features);
-    if (cpuid_features & CPUID_TSC)
+    જો (cpuid_features & CPUID_TSC)
         tsctimer_setup();
 }
 
-void
-tsctimer_setfreq(u32 khz, const char *src)
+શૂન્ય
+tsctimer_setfreq(u32 khz, અચલ અક્ષર *src)
 {
-    if (!CONFIG_TSC_TIMER)
-        return;
-    if (TimerPort != PORT_PIT_COUNTER0)
-        return; // have timer already
+    જો (!CONFIG_TSC_TIMER)
+        પાછા;
+    જો (TimerPort != PORT_PIT_COUNTER0)
+        પાછા; // have timer already
 
     TimerKHz = khz;
     ShiftTSC = 0;
-    while (TimerKHz >= 6000) {
+    જ્યારે (TimerKHz >= 6000) {
         ShiftTSC++;
         TimerKHz = (TimerKHz + 1) >> 1;
     }
@@ -134,13 +134,13 @@ tsctimer_setfreq(u32 khz, const char *src)
     dprintf(1, "CPU Mhz=%u (%s)\n", (TimerKHz << ShiftTSC) / 1000, src);
 }
 
-void
+શૂન્ય
 pmtimer_setup(u16 ioport)
 {
-    if (!CONFIG_PMTIMER)
-        return;
-    if (TimerPort != PORT_PIT_COUNTER0)
-        return; // have timer already
+    જો (!CONFIG_PMTIMER)
+        પાછા;
+    જો (TimerPort != PORT_PIT_COUNTER0)
+        પાછા; // have timer already
 
     dprintf(1, "Using pmtimer, ioport 0x%x\n", ioport);
     TimerPort = ioport;
@@ -155,96 +155,96 @@ pmtimer_setup(u16 ioport)
 u32 TimerLast VARLOW;
 
 // Add extra high bits to timers that have less than 32bits of precision.
-static u32
-timer_adjust_bits(u32 value, u32 validbits)
+સ્થિર u32
+timer_adjust_bits(u32 કિંમત, u32 validbits)
 {
-    u32 last = GET_LOW(TimerLast);
-    value = (last & ~validbits) | (value & validbits);
-    if (value < last)
-        value += validbits + 1;
-    SET_LOW(TimerLast, value);
-    return value;
+    u32 last = GET_નીચલું(TimerLast);
+    કિંમત = (last & ~validbits) | (કિંમત & validbits);
+    જો (કિંમત < last)
+        કિંમત += validbits + 1;
+    SET_નીચલું(TimerLast, કિંમત);
+    પાછા કિંમત;
 }
 
 // Sample the current timer value.
-static u32
-timer_read(void)
+સ્થિર u32
+timer_read(શૂન્ય)
 {
     u16 port = GET_GLOBAL(TimerPort);
-    if (CONFIG_TSC_TIMER && !port)
+    જો (CONFIG_TSC_TIMER && !port)
         // Read from CPU TSC
-        return rdtscll() >> GET_GLOBAL(ShiftTSC);
-    if (CONFIG_PMTIMER && port != PORT_PIT_COUNTER0)
+        પાછા rdtscll() >> GET_GLOBAL(ShiftTSC);
+    જો (CONFIG_PMTIMER && port != PORT_PIT_COUNTER0)
         // Read from PMTIMER
-        return timer_adjust_bits(inl(port), 0xffffff);
+        પાછા timer_adjust_bits(inl(port), 0xffffff);
     // Read from PIT.
-    outb(PM_SEL_READBACK | PM_READ_VALUE | PM_READ_COUNTER0, PORT_PIT_MODE);
+    outb(PM_SEL_READBACK | PM_READ_કિંમત | PM_READ_COUNTER0, PORT_PIT_MODE);
     u16 v = inb(PORT_PIT_COUNTER0) | (inb(PORT_PIT_COUNTER0) << 8);
-    return timer_adjust_bits(-v, 0xffff);
+    પાછા timer_adjust_bits(-v, 0xffff);
 }
 
 // Return the TSC value that is 'msecs' time in the future.
 u32
 timer_calc(u32 msecs)
 {
-    return timer_read() + (GET_GLOBAL(TimerKHz) * msecs);
+    પાછા timer_read() + (GET_GLOBAL(TimerKHz) * msecs);
 }
 u32
 timer_calc_usec(u32 usecs)
 {
     u32 cur = timer_read(), khz = GET_GLOBAL(TimerKHz);
-    if (usecs > 500000)
-        return cur + DIV_ROUND_UP(usecs, 1000) * khz;
-    return cur + DIV_ROUND_UP(usecs * khz, 1000);
+    જો (usecs > 500000)
+        પાછા cur + DIV_ROUND_UP(usecs, 1000) * khz;
+    પાછા cur + DIV_ROUND_UP(usecs * khz, 1000);
 }
-static u32
+સ્થિર u32
 timer_calc_nsec(u32 nsecs)
 {
     u32 cur = timer_read(), khz = GET_GLOBAL(TimerKHz);
-    if (nsecs > 500000)
-        return cur + DIV_ROUND_UP(nsecs, 1000000) * khz;
-    return cur + DIV_ROUND_UP(nsecs * khz, 1000000);
+    જો (nsecs > 500000)
+        પાછા cur + DIV_ROUND_UP(nsecs, 1000000) * khz;
+    પાછા cur + DIV_ROUND_UP(nsecs * khz, 1000000);
 }
 
 // Check if the current time is past a previously calculated end time.
-int
+પૂર્ણાંક
 timer_check(u32 end)
 {
-    return (s32)(timer_read() - end) > 0;
+    પાછા (s32)(timer_read() - end) > 0;
 }
 
-static void
+સ્થિર શૂન્ય
 timer_delay(u32 end)
 {
-    while (!timer_check(end))
+    જ્યારે (!timer_check(end))
         cpu_relax();
 }
 
-static void
+સ્થિર શૂન્ય
 timer_sleep(u32 end)
 {
-    while (!timer_check(end))
+    જ્યારે (!timer_check(end))
         yield();
 }
 
-void ndelay(u32 count) {
-    timer_delay(timer_calc_nsec(count));
+શૂન્ય ndelay(u32 ગણતરી) {
+    timer_delay(timer_calc_nsec(ગણતરી));
 }
-void udelay(u32 count) {
-    timer_delay(timer_calc_usec(count));
+શૂન્ય udelay(u32 ગણતરી) {
+    timer_delay(timer_calc_usec(ગણતરી));
 }
-void mdelay(u32 count) {
-    timer_delay(timer_calc(count));
+શૂન્ય mdelay(u32 ગણતરી) {
+    timer_delay(timer_calc(ગણતરી));
 }
 
-void nsleep(u32 count) {
-    timer_sleep(timer_calc_nsec(count));
+શૂન્ય nsleep(u32 ગણતરી) {
+    timer_sleep(timer_calc_nsec(ગણતરી));
 }
-void usleep(u32 count) {
-    timer_sleep(timer_calc_usec(count));
+શૂન્ય usleep(u32 ગણતરી) {
+    timer_sleep(timer_calc_usec(ગણતરી));
 }
-void msleep(u32 count) {
-    timer_sleep(timer_calc(count));
+શૂન્ય msleep(u32 ગણતરી) {
+    timer_sleep(timer_calc(ગણતરી));
 }
 
 
@@ -259,7 +259,7 @@ u32
 ticks_to_ms(u32 ticks)
 {
     u32 t = PIT_TICK_INTERVAL * 1000 * PMTIMER_TO_PIT * ticks;
-    return DIV_ROUND_UP(t, PMTIMER_HZ);
+    પાછા DIV_ROUND_UP(t, PMTIMER_HZ);
 }
 
 // Return the number of timer irqs in 'ms' number of milliseconds.
@@ -267,16 +267,16 @@ u32
 ticks_from_ms(u32 ms)
 {
     u32 t = DIV_ROUND_UP((u64)ms * PMTIMER_HZ, PIT_TICK_INTERVAL);
-    return DIV_ROUND_UP(t, 1000 * PMTIMER_TO_PIT);
+    પાછા DIV_ROUND_UP(t, 1000 * PMTIMER_TO_PIT);
 }
 
-void
-pit_setup(void)
+શૂન્ય
+pit_setup(શૂન્ય)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return;
+    જો (!CONFIG_HARDWARE_IRQ)
+        પાછા;
     // timer0: binary count, 16bit count, mode 2
-    outb(PM_SEL_TIMER0|PM_ACCESS_WORD|PM_MODE2|PM_CNT_BINARY, PORT_PIT_MODE);
+    outb(PM_SEL_TIMER0|PM_ACCESS_WORD|PM_MODE2|PM_CNT_દ્વિઅંકી, PORT_PIT_MODE);
     // maximum count of 0000H = 18.2Hz
     outb(0x0, PORT_PIT_COUNTER0);
     outb(0x0, PORT_PIT_COUNTER0);

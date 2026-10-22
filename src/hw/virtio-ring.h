@@ -1,8 +1,8 @@
 #ifndef _VIRTIO_RING_H
 #define _VIRTIO_RING_H
 
-#include "types.h" // u64
-#include "memmap.h" // PAGE_SIZE
+#અન્તર્ભાવ "types.h" // u64
+#અન્તર્ભાવ "memmap.h" // PAGE_SIZE
 
 /* Status byte for guest to report progress, and synchronize features. */
 /* We have seen device and processed generic fields (VIRTIO_CONFIG_F_VIRTIO) */
@@ -20,7 +20,7 @@
 #define VIRTIO_F_VERSION_1              32
 #define VIRTIO_F_IOMMU_PLATFORM         33
 
-#define MAX_QUEUE_NUM      (256)
+#define MAX_QUEUE_અંક      (256)
 
 #define VRING_DESC_F_NEXT  1
 #define VRING_DESC_F_WRITE 2
@@ -29,7 +29,7 @@
 
 #define VRING_USED_F_NO_NOTIFY     1
 
-struct vring_desc
+સંરચના vring_desc
 {
    u64 addr;
    u32 len;
@@ -37,85 +37,85 @@ struct vring_desc
    u16 next;
 };
 
-struct vring_avail
+સંરચના vring_avail
 {
    u16 flags;
    u16 idx;
    u16 ring[0];
 };
 
-struct vring_used_elem
+સંરચના vring_used_elem
 {
    u32 id;
    u32 len;
 };
 
-struct vring_used
+સંરચના vring_used
 {
    u16 flags;
    u16 idx;
-   struct vring_used_elem ring[];
+   સંરચના vring_used_elem ring[];
 };
 
-struct vring {
-   unsigned int num;
-   struct vring_desc *desc;
-   struct vring_avail *avail;
-   struct vring_used *used;
+સંરચના vring {
+   unsigned પૂર્ણાંક અંક;
+   સંરચના vring_desc *desc;
+   સંરચના vring_avail *avail;
+   સંરચના vring_used *used;
 };
 
-#define vring_size(num) \
-    (ALIGN(sizeof(struct vring_desc) * num + sizeof(struct vring_avail) \
-           + sizeof(u16) * num, PAGE_SIZE)                              \
-     + sizeof(struct vring_used) + sizeof(struct vring_used_elem) * num)
+#define vring_size(અંક) \
+    (ALIGN(કદ(સંરચના vring_desc) * અંક + કદ(સંરચના vring_avail) \
+           + કદ(u16) * અંક, PAGE_SIZE)                              \
+     + કદ(સંરચના vring_used) + કદ(સંરચના vring_used_elem) * અંક)
 
-typedef unsigned char virtio_queue_t[vring_size(MAX_QUEUE_NUM)];
+પ્રકારવ્યાખ્યા unsigned અક્ષર virtio_queue_t[vring_size(MAX_QUEUE_અંક)];
 
-struct vring_virtqueue {
+સંરચના vring_virtqueue {
    virtio_queue_t queue;
-   struct vring vring;
+   સંરચના vring vring;
    u16 free_head;
    u16 last_used_idx;
-   u16 vdata[MAX_QUEUE_NUM];
+   u16 vdata[MAX_QUEUE_અંક];
    /* PCI */
-   int queue_index;
-   int queue_notify_off;
+   પૂર્ણાંક queue_index;
+   પૂર્ણાંક queue_notify_off;
 };
 
-struct vring_list {
-  char *addr;
-  unsigned int length;
+સંરચના vring_list {
+  અક્ષર *addr;
+  unsigned પૂર્ણાંક length;
 };
 
-static inline void
-vring_init(struct vring *vr, unsigned int num, unsigned char *queue)
+સ્થિર અંતઃરેખ શૂન્ય
+vring_init(સંરચના vring *vr, unsigned પૂર્ણાંક અંક, unsigned અક્ષર *queue)
 {
    ASSERT32FLAT();
-   vr->num = num;
+   vr->અંક = અંક;
 
    /* physical address of desc must be page aligned */
-   vr->desc = (void*)ALIGN((u32)queue, PAGE_SIZE);
+   vr->desc = (શૂન્ય*)ALIGN((u32)queue, PAGE_SIZE);
 
-   vr->avail = (struct vring_avail *)&vr->desc[num];
+   vr->avail = (સંરચના vring_avail *)&vr->desc[અંક];
    /* disable interrupts */
    vr->avail->flags |= VRING_AVAIL_F_NO_INTERRUPT;
 
    /* physical address of used must be page aligned */
-   vr->used = (void*)ALIGN((u32)&vr->avail->ring[num], PAGE_SIZE);
+   vr->used = (શૂન્ય*)ALIGN((u32)&vr->avail->ring[અંક], PAGE_SIZE);
 
-   int i;
-   for (i = 0; i < num - 1; i++)
+   પૂર્ણાંક i;
+   માટે (i = 0; i < અંક - 1; i++)
        vr->desc[i].next = i + 1;
    vr->desc[i].next = 0;
 }
 
-struct vp_device;
-int vring_more_used(struct vring_virtqueue *vq);
-void vring_detach(struct vring_virtqueue *vq, unsigned int head);
-int vring_get_buf(struct vring_virtqueue *vq, unsigned int *len);
-void vring_add_buf(struct vring_virtqueue *vq, struct vring_list list[],
-                   unsigned int out, unsigned int in,
-                   int index, int num_added);
-void vring_kick(struct vp_device *vp, struct vring_virtqueue *vq, int num_added);
+સંરચના vp_device;
+પૂર્ણાંક vring_more_used(સંરચના vring_virtqueue *vq);
+શૂન્ય vring_detach(સંરચના vring_virtqueue *vq, unsigned પૂર્ણાંક head);
+પૂર્ણાંક vring_get_buf(સંરચના vring_virtqueue *vq, unsigned પૂર્ણાંક *len);
+શૂન્ય vring_add_buf(સંરચના vring_virtqueue *vq, સંરચના vring_list list[],
+                   unsigned પૂર્ણાંક out, unsigned પૂર્ણાંક in,
+                   પૂર્ણાંક index, પૂર્ણાંક અંક_added);
+શૂન્ય vring_kick(સંરચના vp_device *vp, સંરચના vring_virtqueue *vq, પૂર્ણાંક અંક_added);
 
 #endif /* _VIRTIO_RING_H_ */

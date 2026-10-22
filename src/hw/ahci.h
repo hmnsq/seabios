@@ -1,18 +1,18 @@
 #ifndef __AHCI_H
 #define __AHCI_H
 
-#include "block.h" // struct drive_s
-#include "types.h" // u32
+#અન્તર્ભાવ "block.h" // struct drive_s
+#અન્તર્ભાવ "types.h" // u32
 
-struct sata_cmd_fis {
+સંરચના sata_cmd_fis {
     u8 reg;
     u8 pmp_type;
     u8 command;
     u8 feature;
 
-    u8 lba_low;
+    u8 lba_નીચલું;
     u8 lba_mid;
-    u8 lba_high;
+    u8 lba_ઉપલું;
     u8 device;
 
     u8 lba_low2;
@@ -20,7 +20,7 @@ struct sata_cmd_fis {
     u8 lba_high2;
     u8 feature2;
 
-    u8 sector_count;
+    u8 sector_ગણતરી;
     u8 sector_count2;
     u8 res_1;
     u8 control;
@@ -28,19 +28,19 @@ struct sata_cmd_fis {
     u8 res_2[64 - 16];
 };
 
-struct ahci_ctrl_s {
-    struct pci_device *pci_tmp;
+સંરચના ahci_ctrl_s {
+    સંરચના pci_device *pci_tmp;
     u8  irq;
-    void *iobase;
+    શૂન્ય *iobase;
     u32 caps;
     u32 ports;
 };
 
-struct ahci_cmd_s {
-    struct sata_cmd_fis fis;
+સંરચના ahci_cmd_s {
+    સંરચના sata_cmd_fis fis;
     u8 atapi[0x20];
     u8 res[0x20];
-    struct {
+    સંરચના {
         u32 base;
         u32 baseu;
         u32 res;
@@ -49,7 +49,7 @@ struct ahci_cmd_s {
 };
 
 /* command list */
-struct ahci_list_s {
+સંરચના ahci_list_s {
     u32 flags;
     u32 bytes;
     u32 base;
@@ -57,7 +57,7 @@ struct ahci_list_s {
     u32 res[4];
 };
 
-struct ahci_fis_s {
+સંરચના ahci_fis_s {
     u8 dsfis[0x1c];  /* dma setup */
     u8 res_1[0x04];
     u8 psfis[0x14];  /* pio setup */
@@ -69,21 +69,21 @@ struct ahci_fis_s {
     u8 res_4[0x60];
 };
 
-struct ahci_port_s {
-    struct drive_s     drive;
-    struct ahci_ctrl_s *ctrl;
-    struct ahci_list_s *list;
-    struct ahci_fis_s  *fis;
-    struct ahci_cmd_s  *cmd;
+સંરચના ahci_port_s {
+    સંરચના drive_s     drive;
+    સંરચના ahci_ctrl_s *ctrl;
+    સંરચના ahci_list_s *list;
+    સંરચના ahci_fis_s  *fis;
+    સંરચના ahci_cmd_s  *cmd;
     u32                pnr;
     u32                atapi;
-    char               *desc;
-    int                prio;
+    અક્ષર               *desc;
+    પૂર્ણાંક                prio;
 };
 
-void ahci_setup(void);
-int ahci_process_op(struct disk_op_s *op);
-int ahci_atapi_process_op(struct disk_op_s *op);
+શૂન્ય ahci_setup(શૂન્ય);
+પૂર્ણાંક ahci_process_op(સંરચના disk_op_s *op);
+પૂર્ણાંક ahci_atapi_process_op(સંરચના disk_op_s *op);
 
 #define AHCI_IRQ_ON_SG            (1 << 31)
 #define AHCI_CMD_ATAPI            (1 << 5)

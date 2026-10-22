@@ -5,25 +5,25 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "bregs.h" // struct bregs
-#include "config.h" // CONFIG_*
-#include "farptr.h" // FLATPTR_TO_SEG
-#include "biosvar.h" // GET_IVT
-#include "hw/pci.h" // pci_config_readl
-#include "hw/pcidevice.h" // foreachpci
-#include "hw/pci_ids.h" // PCI_CLASS_DISPLAY_VGA
-#include "hw/pci_regs.h" // PCI_ROM_ADDRESS
-#include "malloc.h" // rom_confirm
-#include "output.h" // dprintf
-#include "romfile.h" // romfile_loadint
-#include "stacks.h" // farcall16big
-#include "std/optionrom.h" // struct rom_header
-#include "std/pnpbios.h" // PNP_SIGNATURE
-#include "string.h" // memset
-#include "util.h" // get_pnp_offset
-#include "tcgbios.h" // tpm_*
+#અન્તર્ભાવ "bregs.h" // struct bregs
+#અન્તર્ભાવ "config.h" // CONFIG_*
+#અન્તર્ભાવ "farptr.h" // FLATPTR_TO_SEG
+#અન્તર્ભાવ "biosvar.h" // GET_IVT
+#અન્તર્ભાવ "hw/pci.h" // pci_config_readl
+#અન્તર્ભાવ "hw/pcidevice.h" // foreachpci
+#અન્તર્ભાવ "hw/pci_ids.h" // PCI_CLASS_DISPLAY_VGA
+#અન્તર્ભાવ "hw/pci_regs.h" // PCI_ROM_ADDRESS
+#અન્તર્ભાવ "malloc.h" // rom_confirm
+#અન્તર્ભાવ "output.h" // dprintf
+#અન્તર્ભાવ "romfile.h" // romfile_loadint
+#અન્તર્ભાવ "stacks.h" // farcall16big
+#અન્તર્ભાવ "std/optionrom.h" // struct rom_header
+#અન્તર્ભાવ "std/pnpbios.h" // PNP_SIGNATURE
+#અન્તર્ભાવ "string.h" // memset
+#અન્તર્ભાવ "util.h" // get_pnp_offset
+#અન્તર્ભાવ "tcgbios.h" // tpm_*
 
-static int EnforceChecksum, S3ResumeVga, RunPCIroms;
+સ્થિર પૂર્ણાંક EnforceChecksum, S3ResumeVga, RunPCIroms;
 
 
 /****************************************************************
@@ -31,14 +31,14 @@ static int EnforceChecksum, S3ResumeVga, RunPCIroms;
  ****************************************************************/
 
 // Execute a given option rom.
-static void
-__callrom(struct rom_header *rom, u16 offset, u16 bdf)
+સ્થિર શૂન્ય
+__callrom(સંરચના rom_header *rom, u16 offset, u16 bdf)
 {
     u16 seg = FLATPTR_TO_SEG(rom);
     dprintf(1, "Running option rom at %04x:%04x\n", seg, offset);
 
-    struct bregs br;
-    memset(&br, 0, sizeof(br));
+    સંરચના bregs br;
+    memset(&br, 0, કદ(br));
     br.flags = F_IF;
     br.ax = bdf;
     br.bx = 0xffff;
@@ -52,117 +52,117 @@ __callrom(struct rom_header *rom, u16 offset, u16 bdf)
 }
 
 // Execute a given option rom at the standard entry vector.
-void
-callrom(struct rom_header *rom, u16 bdf)
+શૂન્ય
+callrom(સંરચના rom_header *rom, u16 bdf)
 {
     __callrom(rom, OPTION_ROM_INITVECTOR, bdf);
 }
 
 // Execute a BCV option rom registered via add_bcv().
-void
+શૂન્ય
 call_bcv(u16 seg, u16 ip)
 {
     __callrom(MAKE_FLATPTR(seg, 0), ip, 0);
 }
 
 // Verify that an option rom looks valid
-static int
-is_valid_rom(struct rom_header *rom)
+સ્થિર પૂર્ણાંક
+is_valid_rom(સંરચના rom_header *rom)
 {
     dprintf(6, "Checking rom %p (sig %x size %d)\n"
             , rom, rom->signature, rom->size);
-    if (rom->signature != OPTION_ROM_SIGNATURE)
-        return 0;
-    if (! rom->size)
-        return 0;
+    જો (rom->signature != OPTION_ROM_SIGNATURE)
+        પાછા 0;
+    જો (! rom->size)
+        પાછા 0;
     u32 len = rom->size * 512;
     u8 sum = checksum(rom, len);
-    if (sum != 0) {
+    જો (sum != 0) {
         dprintf(1, "Found option rom with bad checksum: loc=%p len=%d sum=%x\n"
                 , rom, len, sum);
-        if (EnforceChecksum)
-            return 0;
+        જો (EnforceChecksum)
+            પાછા 0;
     }
-    return 1;
+    પાછા 1;
 }
 
 // Check if a valid option rom has a pnp struct; return it if so.
-static struct pnp_data *
-get_pnp_rom(struct rom_header *rom)
+સ્થિર સંરચના pnp_data *
+get_pnp_rom(સંરચના rom_header *rom)
 {
-    struct pnp_data *pnp = (void*)((u8*)rom + rom->pnpoffset);
-    if (pnp->signature != PNP_SIGNATURE)
-        return NULL;
-    return pnp;
+    સંરચના pnp_data *pnp = (શૂન્ય*)((u8*)rom + rom->pnpoffset);
+    જો (pnp->signature != PNP_SIGNATURE)
+        પાછા ખાલી;
+    પાછા pnp;
 }
 
 // Check for multiple pnp option rom headers.
-static struct pnp_data *
-get_pnp_next(struct rom_header *rom, struct pnp_data *pnp)
+સ્થિર સંરચના pnp_data *
+get_pnp_next(સંરચના rom_header *rom, સંરચના pnp_data *pnp)
 {
-    if (! pnp->nextoffset)
-        return NULL;
-    pnp = (void*)((u8*)rom + pnp->nextoffset);
-    if (pnp->signature != PNP_SIGNATURE)
-        return NULL;
-    return pnp;
+    જો (! pnp->nextoffset)
+        પાછા ખાલી;
+    pnp = (શૂન્ય*)((u8*)rom + pnp->nextoffset);
+    જો (pnp->signature != PNP_SIGNATURE)
+        પાછા ખાલી;
+    પાછા pnp;
 }
 
 // Check if a valid option rom has a pci struct; return it if so.
-static struct pci_data *
-get_pci_rom(struct rom_header *rom)
+સ્થિર સંરચના pci_data *
+get_pci_rom(સંરચના rom_header *rom)
 {
-    struct pci_data *pd = (void*)((u32)rom + rom->pcioffset);
-    if (pd->signature != PCI_ROM_SIGNATURE)
-        return NULL;
-    if (rom->pcioffset & 3)
+    સંરચના pci_data *pd = (શૂન્ય*)((u32)rom + rom->pcioffset);
+    જો (pd->signature != PCI_ROM_SIGNATURE)
+        પાછા ખાલી;
+    જો (rom->pcioffset & 3)
         dprintf(1, "WARNING! Found unaligned PCI rom (vd=%04x:%04x)\n"
                 , pd->vendor, pd->device);
-    return pd;
+    પાછા pd;
 }
 
 // Run rom init code and note rom size.
-static int
-init_optionrom(struct rom_header *rom, u16 bdf, int isvga)
+સ્થિર પૂર્ણાંક
+init_optionrom(સંરચના rom_header *rom, u16 bdf, પૂર્ણાંક isvga)
 {
-    if (! is_valid_rom(rom))
-        return -1;
-    struct rom_header *newrom = rom_reserve(rom->size * 512);
-    if (!newrom) {
+    જો (! is_valid_rom(rom))
+        પાછા -1;
+    સંરચના rom_header *newrom = rom_reserve(rom->size * 512);
+    જો (!newrom) {
         warn_noalloc();
-        return -1;
+        પાછા -1;
     }
-    if (newrom != rom)
+    જો (newrom != rom)
         memmove(newrom, rom, rom->size * 512);
 
     tpm_option_rom(newrom, rom->size * 512);
 
-    if (isvga || get_pnp_rom(newrom))
+    જો (isvga || get_pnp_rom(newrom))
         // Only init vga and PnP roms here.
         callrom(newrom, bdf);
 
-    return rom_confirm(newrom->size * 512);
+    પાછા rom_confirm(newrom->size * 512);
 }
 
 #define RS_PCIROM (1LL<<33)
 
-static void
-setRomSource(u64 *sources, struct rom_header *rom, u64 source)
+સ્થિર શૂન્ય
+setRomSource(u64 *sources, સંરચના rom_header *rom, u64 source)
 {
-    if (sources)
+    જો (sources)
         sources[((u32)rom - BUILD_ROM_START) / OPTION_ROM_ALIGN] = source;
 }
 
-static int
-getRomPriority(u64 *sources, struct rom_header *rom, int instance)
+સ્થિર પૂર્ણાંક
+getRomPriority(u64 *sources, સંરચના rom_header *rom, પૂર્ણાંક instance)
 {
     u64 source = sources[((u32)rom - BUILD_ROM_START) / OPTION_ROM_ALIGN];
-    if (!source)
-        return -1;
-    if (source & RS_PCIROM)
-        return bootprio_find_pci_rom((void*)(u32)source, instance);
-    struct romfile_s *file = (void*)(u32)source;
-    return bootprio_find_named_rom(file->name, instance);
+    જો (!source)
+        પાછા -1;
+    જો (source & RS_PCIROM)
+        પાછા bootprio_find_pci_rom((શૂન્ય*)(u32)source, instance);
+    સંરચના romfile_s *file = (શૂન્ય*)(u32)source;
+    પાછા bootprio_find_named_rom(file->name, instance);
 }
 
 
@@ -170,32 +170,32 @@ getRomPriority(u64 *sources, struct rom_header *rom, int instance)
  * Roms in CBFS
  ****************************************************************/
 
-static struct rom_header *
-deploy_romfile(struct romfile_s *file)
+સ્થિર સંરચના rom_header *
+deploy_romfile(સંરચના romfile_s *file)
 {
     u32 size = file->size;
-    struct rom_header *rom = rom_reserve(size);
-    if (!rom) {
+    સંરચના rom_header *rom = rom_reserve(size);
+    જો (!rom) {
         warn_noalloc();
-        return NULL;
+        પાછા ખાલી;
     }
-    int ret = file->copy(file, rom, size);
-    if (ret <= 0)
-        return NULL;
-    return rom;
+    પૂર્ણાંક ret = file->copy(file, rom, size);
+    જો (ret <= 0)
+        પાછા ખાલી;
+    પાછા rom;
 }
 
 // Run all roms in a given CBFS directory.
-static void
-run_file_roms(const char *prefix, int isvga, u64 *sources)
+સ્થિર શૂન્ય
+run_file_roms(અચલ અક્ષર *prefix, પૂર્ણાંક isvga, u64 *sources)
 {
-    struct romfile_s *file = NULL;
-    for (;;) {
+    સંરચના romfile_s *file = ખાલી;
+    માટે (;;) {
         file = romfile_findprefix(prefix, file);
-        if (!file)
-            break;
-        struct rom_header *rom = deploy_romfile(file);
-        if (rom) {
+        જો (!file)
+            તોડો;
+        સંરચના rom_header *rom = deploy_romfile(file);
+        જો (rom) {
             setRomSource(sources, rom, (u32)file);
             init_optionrom(rom, 0, isvga);
         }
@@ -208,49 +208,49 @@ run_file_roms(const char *prefix, int isvga, u64 *sources)
  ****************************************************************/
 
 // Verify device is a vga device with legacy address decoding enabled.
-int
-is_pci_vga(struct pci_device *pci)
+પૂર્ણાંક
+is_pci_vga(સંરચના pci_device *pci)
 {
-    if (pci->class != PCI_CLASS_DISPLAY_VGA)
-        return 0;
+    જો (pci->class != PCI_CLASS_DISPLAY_VGA)
+        પાછા 0;
     u16 cmd = pci_config_readw(pci->bdf, PCI_COMMAND);
-    if (!(cmd & PCI_COMMAND_IO && cmd & PCI_COMMAND_MEMORY))
-        return 0;
-    while (pci->parent) {
+    જો (!(cmd & PCI_COMMAND_IO && cmd & PCI_COMMAND_MEMORY))
+        પાછા 0;
+    જ્યારે (pci->parent) {
         pci = pci->parent;
         u32 ctrl = pci_config_readb(pci->bdf, PCI_BRIDGE_CONTROL);
-        if (!(ctrl & PCI_BRIDGE_CTL_VGA))
-            return 0;
+        જો (!(ctrl & PCI_BRIDGE_CTL_VGA))
+            પાછા 0;
     }
-    return 1;
+    પાછા 1;
 }
 
 // Copy a rom to its permanent location below 1MiB
-static struct rom_header *
-copy_rom(struct rom_header *rom)
+સ્થિર સંરચના rom_header *
+copy_rom(સંરચના rom_header *rom)
 {
     u32 romsize = rom->size * 512;
-    struct rom_header *newrom = rom_reserve(romsize);
-    if (!newrom) {
+    સંરચના rom_header *newrom = rom_reserve(romsize);
+    જો (!newrom) {
         warn_noalloc();
-        return NULL;
+        પાછા ખાલી;
     }
     dprintf(4, "Copying option rom (size %d) from %p to %p\n"
             , romsize, rom, newrom);
     iomemcpy(newrom, rom, romsize);
-    return newrom;
+    પાછા newrom;
 }
 
 // Map the option rom of a given PCI device.
-static struct rom_header *
-map_pcirom(struct pci_device *pci)
+સ્થિર સંરચના rom_header *
+map_pcirom(સંરચના pci_device *pci)
 {
     dprintf(6, "Attempting to map option rom on dev %pP\n", pci);
 
-    if ((pci->header_type & 0x7f) != PCI_HEADER_TYPE_NORMAL) {
+    જો ((pci->header_type & 0x7f) != PCI_HEADER_TYPE_NORMAL) {
         dprintf(6, "Skipping non-normal pci device (type=%x)\n"
                 , pci->header_type);
-        return NULL;
+        પાછા ખાલી;
     }
 
     u16 bdf = pci->bdf;
@@ -260,95 +260,95 @@ map_pcirom(struct pci_device *pci)
 
     dprintf(6, "Option rom sizing returned %x %x\n", orig, sz);
     orig &= ~PCI_ROM_ADDRESS_ENABLE;
-    if (!sz || sz == 0xffffffff)
-        goto fail;
+    જો (!sz || sz == 0xffffffff)
+        જાઓ fail;
 
-    if (orig == sz || (u32)(orig + 4*1024*1024) < 20*1024*1024) {
+    જો (orig == sz || (u32)(orig + 4*1024*1024) < 20*1024*1024) {
         // Don't try to map to a pci addresses at its max, in the last
         // 4MiB of ram, or the first 16MiB of ram.
         dprintf(6, "Preset rom address doesn't look valid\n");
-        goto fail;
+        જાઓ fail;
     }
 
     // Looks like a rom - enable it.
     pci_config_writel(bdf, PCI_ROM_ADDRESS, orig | PCI_ROM_ADDRESS_ENABLE);
 
-    struct rom_header *rom = (void*)orig;
-    for (;;) {
+    સંરચના rom_header *rom = (શૂન્ય*)orig;
+    માટે (;;) {
         dprintf(5, "Inspecting possible rom at %p (vd=%04x:%04x bdf=%pP)\n"
                 , rom, pci->vendor, pci->device, pci);
-        if (rom->signature != OPTION_ROM_SIGNATURE) {
+        જો (rom->signature != OPTION_ROM_SIGNATURE) {
             dprintf(6, "No option rom signature (got %x)\n", rom->signature);
-            goto fail;
+            જાઓ fail;
         }
-        struct pci_data *pd = get_pci_rom(rom);
-        if (! pd) {
+        સંરચના pci_data *pd = get_pci_rom(rom);
+        જો (! pd) {
             dprintf(6, "No valid pci signature found\n");
-            goto fail;
+            જાઓ fail;
         }
 
-        if (pd->vendor == pci->vendor && pd->device == pci->device
+        જો (pd->vendor == pci->vendor && pd->device == pci->device
             && pd->type == PCIROM_CODETYPE_X86)
             // A match
-            break;
+            તોડો;
         dprintf(6, "Didn't match dev/ven (got %04x:%04x) or type (got %d)\n"
                 , pd->vendor, pd->device, pd->type);
-        if (pd->indicator & 0x80) {
+        જો (pd->indicator & 0x80) {
             dprintf(6, "No more images left\n");
-            goto fail;
+            જાઓ fail;
         }
-        rom = (void*)((u32)rom + pd->ilen * 512);
+        rom = (શૂન્ય*)((u32)rom + pd->ilen * 512);
     }
 
     rom = copy_rom(rom);
     pci_config_writel(bdf, PCI_ROM_ADDRESS, orig);
-    return rom;
+    પાછા rom;
 fail:
     // Not valid - restore original and exit.
     pci_config_writel(bdf, PCI_ROM_ADDRESS, orig);
-    return NULL;
+    પાછા ખાલી;
 }
 
-static int boot_irq_captured(void)
+સ્થિર પૂર્ણાંક boot_irq_captured(શૂન્ય)
 {
-    return GET_IVT(0x19).segoff != FUNC16(entry_19_official).segoff;
+    પાછા GET_IVT(0x19).segoff != FUNC16(entry_19_official).segoff;
 }
 
-static void boot_irq_restore(void)
+સ્થિર શૂન્ય boot_irq_restore(શૂન્ય)
 {
-    struct segoff_s seabios;
+    સંરચના segoff_s seabios;
 
     seabios = FUNC16(entry_19_official);
     SET_IVT(0x19, seabios);
 }
 
 // Attempt to map and initialize the option rom on a given PCI device.
-static void
-init_pcirom(struct pci_device *pci, int isvga, u64 *sources)
+સ્થિર શૂન્ય
+init_pcirom(સંરચના pci_device *pci, પૂર્ણાંક isvga, u64 *sources)
 {
     dprintf(4, "Attempting to init PCI bdf %pP (vd %04x:%04x)\n"
             , pci, pci->vendor, pci->device);
 
-    char fname[17];
-    snprintf(fname, sizeof(fname), "pci%04x,%04x.rom"
+    અક્ષર fname[17];
+    snprintf(fname, કદ(fname), "pci%04x,%04x.rom"
              , pci->vendor, pci->device);
-    struct romfile_s *file = romfile_find(fname);
-    struct rom_header *rom = NULL;
-    if (file)
+    સંરચના romfile_s *file = romfile_find(fname);
+    સંરચના rom_header *rom = ખાલી;
+    જો (file)
         rom = deploy_romfile(file);
-    else if (RunPCIroms > 1 || (RunPCIroms == 1 && isvga))
+    નહીંતર જો (RunPCIroms > 1 || (RunPCIroms == 1 && isvga))
         rom = map_pcirom(pci);
-    if (! rom)
+    જો (! rom)
         // No ROM present.
-        return;
-    int irq_was_captured = boot_irq_captured();
-    struct pnp_data *pnp = get_pnp_rom(rom);
+        પાછા;
+    પૂર્ણાંક irq_was_captured = boot_irq_captured();
+    સંરચના pnp_data *pnp = get_pnp_rom(rom);
     setRomSource(sources, rom, RS_PCIROM | (u32)pci);
     init_optionrom(rom, pci->bdf, isvga);
-    if (boot_irq_captured() && !irq_was_captured &&
+    જો (boot_irq_captured() && !irq_was_captured &&
         !file && !isvga && pnp) {
         // This PCI rom is misbehaving - recapture the boot irqs
-        char *desc = MAKE_FLATPTR(FLATPTR_TO_SEG(rom), pnp->productname);
+        અક્ષર *desc = MAKE_FLATPTR(FLATPTR_TO_SEG(rom), pnp->productname);
         dprintf(1, "PnP optionrom \"%s\" (bdf %pP) captured int19, restoring\n",
                 desc, pci);
         boot_irq_restore();
@@ -360,24 +360,24 @@ init_pcirom(struct pci_device *pci, int isvga, u64 *sources)
  * Non-VGA option rom init
  ****************************************************************/
 
-void
-optionrom_setup(void)
+શૂન્ય
+optionrom_setup(શૂન્ય)
 {
-    if (! CONFIG_OPTIONROMS)
-        return;
+    જો (! CONFIG_OPTIONROMS)
+        પાછા;
 
     dprintf(1, "Scan for option roms\n");
     u64 sources[(BUILD_BIOS_ADDR - BUILD_ROM_START) / OPTION_ROM_ALIGN];
-    memset(sources, 0, sizeof(sources));
+    memset(sources, 0, કદ(sources));
     u32 post_vga = rom_get_last();
 
     // Find and deploy PCI roms.
-    struct pci_device *pci;
+    સંરચના pci_device *pci;
     foreachpci(pci) {
-        if (pci->class == PCI_CLASS_DISPLAY_VGA ||
+        જો (pci->class == PCI_CLASS_DISPLAY_VGA ||
             pci->class == PCI_CLASS_DISPLAY_OTHER ||
             pci->have_driver)
-            continue;
+            ચાલુ;
         init_pcirom(pci, 0, sources);
     }
 
@@ -388,31 +388,31 @@ optionrom_setup(void)
     // All option roms found and deployed - now build BEV/BCV vectors.
 
     u32 pos = post_vga;
-    while (pos < rom_get_last()) {
-        struct rom_header *rom = (void*)pos;
-        if (! is_valid_rom(rom)) {
+    જ્યારે (pos < rom_get_last()) {
+        સંરચના rom_header *rom = (શૂન્ય*)pos;
+        જો (! is_valid_rom(rom)) {
             pos += OPTION_ROM_ALIGN;
-            continue;
+            ચાલુ;
         }
         pos += ALIGN(rom->size * 512, OPTION_ROM_ALIGN);
-        struct pnp_data *pnp = get_pnp_rom(rom);
-        if (! pnp) {
+        સંરચના pnp_data *pnp = get_pnp_rom(rom);
+        જો (! pnp) {
             // Legacy rom.
             boot_add_bcv(FLATPTR_TO_SEG(rom), OPTION_ROM_INITVECTOR, 0
                          , getRomPriority(sources, rom, 0));
-            continue;
+            ચાલુ;
         }
         // PnP rom - check for BEV and BCV boot capabilities.
-        int instance = 0;
-        while (pnp) {
-            if (pnp->bev)
+        પૂર્ણાંક instance = 0;
+        જ્યારે (pnp) {
+            જો (pnp->bev)
                 boot_add_bev(FLATPTR_TO_SEG(rom), pnp->bev, pnp->productname
                              , getRomPriority(sources, rom, instance++));
-            else if (pnp->bcv)
+            નહીંતર જો (pnp->bcv)
                 boot_add_bcv(FLATPTR_TO_SEG(rom), pnp->bcv, pnp->productname
                              , getRomPriority(sources, rom, instance++));
-            else
-                break;
+            નહીંતર
+                તોડો;
             pnp = get_pnp_next(rom, pnp);
         }
     }
@@ -423,37 +423,37 @@ optionrom_setup(void)
  * VGA init
  ****************************************************************/
 
-int ScreenAndDebug;
-struct rom_header *VgaROM;
+પૂર્ણાંક ScreenAndDebug;
+સંરચના rom_header *VgaROM;
 
-static void try_setup_display_other(void)
+સ્થિર શૂન્ય try_setup_display_other(શૂન્ય)
 {
-    struct pci_device *pci;
+    સંરચના pci_device *pci;
 
     dprintf(1, "No VGA found, scan for other display\n");
 
     foreachpci(pci) {
-        if (pci->class != PCI_CLASS_DISPLAY_OTHER)
-            continue;
-        struct rom_header *rom = map_pcirom(pci);
-        if (!rom)
-            continue;
+        જો (pci->class != PCI_CLASS_DISPLAY_OTHER)
+            ચાલુ;
+        સંરચના rom_header *rom = map_pcirom(pci);
+        જો (!rom)
+            ચાલુ;
         dprintf(1, "Other display found at %pP\n", pci);
         pci_config_maskw(pci->bdf, PCI_COMMAND, 0,
                          PCI_COMMAND_IO | PCI_COMMAND_MEMORY);
         init_optionrom(rom, pci->bdf, 1);
-        return;
+        પાછા;
     }
 }
 
 // Call into vga code to turn on console.
-void
-vgarom_setup(void)
+શૂન્ય
+vgarom_setup(શૂન્ય)
 {
-    int have_vga = 0;
+    પૂર્ણાંક have_vga = 0;
 
-    if (! CONFIG_OPTIONROMS)
-        return;
+    જો (! CONFIG_OPTIONROMS)
+        પાછા;
 
     dprintf(1, "Scan for VGA option rom\n");
 
@@ -464,36 +464,36 @@ vgarom_setup(void)
     ScreenAndDebug = romfile_loadint("etc/screen-and-debug", 1);
 
     // Clear option rom memory
-    memset((void*)BUILD_ROM_START, 0, rom_get_max() - BUILD_ROM_START);
+    memset((શૂન્ય*)BUILD_ROM_START, 0, rom_get_max() - BUILD_ROM_START);
 
     // Find and deploy PCI VGA rom.
-    struct pci_device *pci;
+    સંરચના pci_device *pci;
     foreachpci(pci) {
-        if (!is_pci_vga(pci))
-            continue;
+        જો (!is_pci_vga(pci))
+            ચાલુ;
         vgahook_setup(pci);
-        init_pcirom(pci, 1, NULL);
+        init_pcirom(pci, 1, ખાલી);
         have_vga = 1;
-        break;
+        તોડો;
     }
-    if (!have_vga)
+    જો (!have_vga)
         try_setup_display_other();
 
     // Find and deploy CBFS vga-style roms not associated with a device.
-    run_file_roms("vgaroms/", 1, NULL);
+    run_file_roms("vgaroms/", 1, ખાલી);
     rom_reserve(0);
 
-    if (rom_get_last() != BUILD_ROM_START)
+    જો (rom_get_last() != BUILD_ROM_START)
         // VGA rom found
-        VgaROM = (void*)BUILD_ROM_START;
+        VgaROM = (શૂન્ય*)BUILD_ROM_START;
 }
 
-void
-s3_resume_vga(void)
+શૂન્ય
+s3_resume_vga(શૂન્ય)
 {
-    if (!S3ResumeVga)
-        return;
-    if (!VgaROM || ! is_valid_rom(VgaROM))
-        return;
+    જો (!S3ResumeVga)
+        પાછા;
+    જો (!VgaROM || ! is_valid_rom(VgaROM))
+        પાછા;
     callrom(VgaROM, 0);
 }
