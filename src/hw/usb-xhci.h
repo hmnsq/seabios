@@ -1,26 +1,26 @@
-#ifndef __USB_XHCI_H
-#define __USB_XHCI_H
+#جيڪڏهن_وصف_نه_ٿيل __USB_XHCI_H
+#وصف_ڪريو __USB_XHCI_H
 
-struct usbdevice_s;
-struct usb_endpoint_descriptor;
-struct usb_pipe;
+بنية usbdevice_s;
+بنية usb_endpoint_descriptor;
+بنية usb_pipe;
 
 // --------------------------------------------------------------
 
 // usb-xhci.c
-void xhci_setup(void);
-struct usb_pipe *xhci_realloc_pipe(struct usbdevice_s *usbdev
-                                   , struct usb_pipe *upipe
-                                   , struct usb_endpoint_descriptor *epdesc);
-int xhci_send_pipe(struct usb_pipe *p, int dir, const void *cmd
-                   , void *data, int datasize);
-int xhci_poll_intr(struct usb_pipe *p, void *data);
+فراغ xhci_تياري(فراغ);
+بنية usb_pipe *xhci_realloc_pipe(بنية usbdevice_s *usbdev
+                                   , بنية usb_pipe *upipe
+                                   , بنية usb_endpoint_descriptor *epdesc);
+صحيح xhci_send_pipe(بنية usb_pipe *p, صحيح dir, ثابت فراغ *cmd
+                   , فراغ *معلومات, صحيح datasize);
+صحيح xhci_poll_intr(بنية usb_pipe *p, فراغ *معلومات);
 
 // --------------------------------------------------------------
 // register interface
 
 // capabilities
-struct xhci_caps {
+بنية xhci_caps {
     u8  caplength;
     u8  reserved_01;
     u16 hciversion;
@@ -33,28 +33,28 @@ struct xhci_caps {
 } PACKED;
 
 // extended capabilities
-struct xhci_xcap {
+بنية xhci_xcap {
     u32 cap;
-    u32 data[];
+    u32 معلومات[];
 } PACKED;
 
 // operational registers
-struct xhci_op {
+بنية xhci_op {
     u32 usbcmd;
     u32 usbsts;
     u32 pagesize;
     u32 reserved_01[2];
     u32 dnctl;
-    u32 crcr_low;
-    u32 crcr_high;
+    u32 crcr_هيٺيون;
+    u32 crcr_مٿاهون;
     u32 reserved_02[4];
-    u32 dcbaap_low;
-    u32 dcbaap_high;
+    u32 dcbaap_هيٺيون;
+    u32 dcbaap_مٿاهون;
     u32 config;
 } PACKED;
 
 // port registers
-struct xhci_pr {
+بنية xhci_pr {
     u32 portsc;
     u32 portpmsc;
     u32 portli;
@@ -62,72 +62,72 @@ struct xhci_pr {
 } PACKED;
 
 // doorbell registers
-struct xhci_db {
+بنية xhci_db {
     u32 doorbell;
 } PACKED;
 
 // runtime registers
-struct xhci_rts {
+بنية xhci_rts {
     u32 mfindex;
 } PACKED;
 
 // interrupter registers
-struct xhci_ir {
+بنية xhci_ir {
     u32 iman;
     u32 imod;
     u32 erstsz;
     u32 reserved_01;
-    u32 erstba_low;
-    u32 erstba_high;
-    u32 erdp_low;
-    u32 erdp_high;
+    u32 erstba_هيٺيون;
+    u32 erstba_مٿاهون;
+    u32 erdp_هيٺيون;
+    u32 erdp_مٿاهون;
 } PACKED;
 
 // --------------------------------------------------------------
 // memory data structs
 
 // slot context
-struct xhci_slotctx {
+بنية xhci_slotctx {
     u32 ctx[4];
     u32 reserved_01[4];
 } PACKED;
 
 // endpoint context
-struct xhci_epctx {
+بنية xhci_epctx {
     u32 ctx[2];
-    u32 deq_low;
-    u32 deq_high;
-    u32 length;
+    u32 deq_هيٺيون;
+    u32 deq_مٿاهون;
+    u32 ڊيگهائي;
     u32 reserved_01[3];
 } PACKED;
 
 // device context array element
-struct xhci_devlist {
-    u32 ptr_low;
-    u32 ptr_high;
+بنية xhci_devlist {
+    u32 ptr_هيٺيون;
+    u32 ptr_مٿاهون;
 } PACKED;
 
 // input context
-struct xhci_inctx {
+بنية xhci_inctx {
     u32 del;
-    u32 add;
+    u32 جوڙيو;
     u32 reserved_01[6];
 } PACKED;
 
 // transfer block (ring element)
-struct xhci_trb {
-    u32 ptr_low;
-    u32 ptr_high;
-    u32 status;
+بنية xhci_trb {
+    u32 ptr_هيٺيون;
+    u32 ptr_مٿاهون;
+    u32 حالت;
     u32 control;
 } PACKED;
 
 // event ring segment
-struct xhci_er_seg {
-    u32 ptr_low;
-    u32 ptr_high;
-    u32 size;
+بنية xhci_er_seg {
+    u32 ptr_هيٺيون;
+    u32 ptr_مٿاهون;
+    u32 سائيز;
     u32 reserved_01;
 } PACKED;
 
-#endif // usb-xhci.h
+#جيڪڏهن_پورو // usb-xhci.h

@@ -14,51 +14,51 @@
  *  See: NIST standard for SHA-512 and SHA-384 in FIPS PUB 180-4 & RFC 6234
  */
 
-#include "config.h"
-#include "byteorder.h"
-#include "sha.h"
-#include "string.h"
+#ضمن "config.h"
+#ضمن "byteorder.h"
+#ضمن "sha.h"
+#ضمن "string.h"
 
-typedef struct _sha512_ctx {
+تعريفنوع بنية _sha512_ctx {
     u64 h[8];
 } sha512_ctx;
 
-static inline u64 ror64(u64 x, u8 n)
+ساكن مضمن u64 ror64(u64 x, u8 n)
 {
-    return (x >> n) | (x << (64 - n));
+    أرجع (x >> n) | (x << (64 - n));
 }
 
-static inline u64 Ch64(u64 x, u64 y, u64 z)
+ساكن مضمن u64 Ch64(u64 x, u64 y, u64 z)
 {
-    return (x & y) ^ ((x ^ 0xffffffffffffffffULL) & z);
+    أرجع (x & y) ^ ((x ^ 0xffffffffffffffffULL) & z);
 }
 
-static inline u64 Maj64(u64 x, u64 y, u64 z)
+ساكن مضمن u64 Maj64(u64 x, u64 y, u64 z)
 {
-    return (x & y) ^ (x & z) ^ (y & z);
+    أرجع (x & y) ^ (x & z) ^ (y & z);
 }
 
-static inline u64 sum0_64(u64 x)
+ساكن مضمن u64 sum0_64(u64 x)
 {
-    return ror64(x, 28) ^ ror64(x, 34) ^ ror64(x, 39);
+    أرجع ror64(x, 28) ^ ror64(x, 34) ^ ror64(x, 39);
 }
 
-static inline u64 sum1_64(u64 x)
+ساكن مضمن u64 sum1_64(u64 x)
 {
-    return ror64(x, 14) ^ ror64(x, 18) ^ ror64(x, 41);
+    أرجع ror64(x, 14) ^ ror64(x, 18) ^ ror64(x, 41);
 }
 
-static inline u64 sigma0_64(u64 x)
+ساكن مضمن u64 sigma0_64(u64 x)
 {
-    return ror64(x, 1) ^ ror64(x, 8) ^ (x >> 7);
+    أرجع ror64(x, 1) ^ ror64(x, 8) ^ (x >> 7);
 }
 
-static inline u64 sigma1_64(u64 x)
+ساكن مضمن u64 sigma1_64(u64 x)
 {
-    return ror64(x, 19) ^ ror64(x, 61) ^ (x >> 6);
+    أرجع ror64(x, 19) ^ ror64(x, 61) ^ (x >> 6);
 }
 
-static void sha512_block(u64 *w, sha512_ctx *ctx)
+ساكن فراغ sha512_بلاڪ(u64 *w, sha512_ctx *ctx)
 {
     u32 t;
     u64 a, b, c, d, e, f, g, h;
@@ -67,7 +67,7 @@ static void sha512_block(u64 *w, sha512_ctx *ctx)
     /*
      * FIPS 180-4 4.2.2: SHA512 Constants
      */
-    static const u64 sha_ko[80] = {
+    ساكن ثابت u64 sha_ko[80] = {
         0x428a2f98d728ae22, 0x7137449123ef65cd, 0xb5c0fbcfec4d3b2f, 0xe9b5dba58189dbbc,
         0x3956c25bf348b538, 0x59f111f1b605d019, 0x923f82a4af194f9b, 0xab1c5ed5da6d8118,
         0xd807aa98a3030242, 0x12835b0145706fbe, 0x243185be4ee4b28c, 0x550c7dc3d5ffb4e2,
@@ -100,10 +100,10 @@ static void sha512_block(u64 *w, sha512_ctx *ctx)
      */
 
     /* w(0)..w(15) are in big endian format */
-    for (t = 0; t <= 15; t++)
-        w[t] = be64_to_cpu(w[t]);
+    لكل (t = 0; t <= 15; t++)
+        w[t] = be64_منزل_cpu(w[t]);
 
-    for (t = 16; t <= 79; t++)
+    لكل (t = 16; t <= 79; t++)
         w[t] = sigma1_64(w[t-2]) + w[t-7] + sigma0_64(w[t-15]) + w[t-16];
 
     /*
@@ -124,7 +124,7 @@ static void sha512_block(u64 *w, sha512_ctx *ctx)
      *    T2 = sum0(a) + Maj(a,b,c)
      *    h = g; g = f; f = e; e = d + T1; d = c; c = b; b = a; a + T1 + T2
      */
-    for (t = 0; t <= 79; t++) {
+    لكل (t = 0; t <= 79; t++) {
         T1 = h + sum1_64(e) + Ch64(e, f, g) + sha_ko[t] + w[t];
         T2 = sum0_64(a) + Maj64(a, b, c);
         h = g;
@@ -151,53 +151,53 @@ static void sha512_block(u64 *w, sha512_ctx *ctx)
     ctx->h[7] += h;
 }
 
-static void sha512_do(sha512_ctx *ctx, const u8 *data32, u32 length)
+ساكن فراغ sha512_do(sha512_ctx *ctx, ثابت u8 *data32, u32 ڊيگهائي)
 {
-    u32 offset;
-    u16 num;
-    u64 bits = 0;
+    u32 وٿي_2;
+    u16 انگ;
+    u64 بٽ = 0;
     u64 w[80];
     u64 tmp;
 
     /* treat data in 128-byte/1024 bit chunks */
-    for (offset = 0; length - offset >= 128; offset += 128) {
-        memcpy(w, data32 + offset, 128);
-        sha512_block(w, ctx);
-        bits += (128 * 8);
+    لكل (وٿي_2 = 0; ڊيگهائي - وٿي_2 >= 128; وٿي_2 += 128) {
+        يادگيري_نقل(w, data32 + وٿي_2, 128);
+        sha512_بلاڪ(w, ctx);
+        بٽ += (128 * 8);
     }
 
     /* last block with less than 128 bytes */
-    num = length - offset;
-    bits += (num << 3);
+    انگ = ڊيگهائي - وٿي_2;
+    بٽ += (انگ << 3);
 
-    memcpy(w, data32 + offset, num);
+    يادگيري_نقل(w, data32 + وٿي_2, انگ);
     /*
      * FIPS 180-4 5.1: Padding the Message
      */
-    ((u8 *)w)[num] = 0x80;
-    if (128 - (num + 1) > 0)
-        memset( &((u8 *)w)[num + 1], 0, 128 - (num + 1));
+    ((u8 *)w)[انگ] = 0x80;
+    إذا (128 - (انگ + 1) > 0)
+        memset( &((u8 *)w)[انگ + 1], 0, 128 - (انگ + 1));
 
-    if (num >= 112) {
+    إذا (انگ >= 112) {
         /* cannot append number of bits here;
          * need space for 128 bits (16 bytes)
          */
-        sha512_block((u64 *)w, ctx);
+        sha512_بلاڪ((u64 *)w, ctx);
         memset(w, 0, 128);
     }
 
     /* write number of bits to end of the block; we write 64 bits */
-    tmp = cpu_to_be64(bits);
-    memcpy(&w[15], &tmp, 8);
+    tmp = cpu_منزل_be64(بٽ);
+    يادگيري_نقل(&w[15], &tmp, 8);
 
-    sha512_block(w, ctx);
+    sha512_بلاڪ(w, ctx);
 
     /* need to switch result's endianness */
-    for (num = 0; num < 8; num++)
-        ctx->h[num] = cpu_to_be64(ctx->h[num]);
+    لكل (انگ = 0; انگ < 8; انگ++)
+        ctx->h[انگ] = cpu_منزل_be64(ctx->h[انگ]);
 }
 
-void sha384(const u8 *data, u32 length, u8 *hash)
+فراغ sha384(ثابت u8 *معلومات, u32 ڊيگهائي, u8 *hash)
 {
     sha512_ctx ctx = {
         .h = {
@@ -216,11 +216,11 @@ void sha384(const u8 *data, u32 length, u8 *hash)
         }
     };
 
-    sha512_do(&ctx, data, length);
-    memcpy(hash, ctx.h, 384/8);
+    sha512_do(&ctx, معلومات, ڊيگهائي);
+    يادگيري_نقل(hash, ctx.h, 384/8);
 }
 
-void sha512(const u8 *data, u32 length, u8 *hash)
+فراغ sha512(ثابت u8 *معلومات, u32 ڊيگهائي, u8 *hash)
 {
     sha512_ctx ctx = {
         .h = {
@@ -239,6 +239,6 @@ void sha512(const u8 *data, u32 length, u8 *hash)
         }
     };
 
-    sha512_do(&ctx, data, length);
-    memcpy(hash, ctx.h, sizeof(ctx.h));
+    sha512_do(&ctx, معلومات, ڊيگهائي);
+    يادگيري_نقل(hash, ctx.h, حجم(ctx.h));
 }

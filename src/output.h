@@ -1,68 +1,68 @@
-#ifndef __OUTPUT_H
-#define __OUTPUT_H
+#جيڪڏهن_وصف_نه_ٿيل __OUTPUT_H
+#وصف_ڪريو __OUTPUT_H
 
-#include "config.h" // CONFIG_DEBUG_LEVEL
-#include "types.h" // u32
+#ضمن "config.h" // CONFIG_DEBUG_LEVEL
+#ضمن "types.h" // u32
 
 // output.c
-void debug_banner(void);
-void panic(const char *fmt, ...)
-    __attribute__ ((format (printf, 1, 2))) __noreturn;
-void printf(const char *fmt, ...)
-    __attribute__ ((format (printf, 1, 2)));
-int snprintf(char *str, size_t size, const char *fmt, ...)
-    __attribute__ ((format (printf, 3, 4)));
-char * znprintf(size_t size, const char *fmt, ...)
-    __attribute__ ((format (printf, 2, 3)));
-void __dprintf(const char *fmt, ...)
-    __attribute__ ((format (printf, 1, 2)));
-struct bregs;
-void __debug_enter(struct bregs *regs, const char *fname);
-void __debug_isr(const char *fname);
-void __debug_stub(struct bregs *regs, int lineno, const char *fname);
-void __warn_invalid(struct bregs *regs, int lineno, const char *fname);
-void __warn_unimplemented(struct bregs *regs, int lineno, const char *fname);
-void __warn_internalerror(int lineno, const char *fname);
-void __warn_noalloc(int lineno, const char *fname);
-void __warn_timeout(int lineno, const char *fname);
-void __set_invalid(struct bregs *regs, int lineno, const char *fname);
-void __set_unimplemented(struct bregs *regs, int lineno, const char *fname);
-void __set_code_invalid(struct bregs *regs, u32 linecode, const char *fname);
-void __set_code_unimplemented(struct bregs *regs, u32 linecode
-                              , const char *fname);
-void hexdump(const void *d, int len);
+فراغ debug_banner(فراغ);
+فراغ panic(ثابت حرف *fmt, ...)
+    __attribute__ ((format (لکو, 1, 2))) __noreturn;
+فراغ لکو(ثابت حرف *fmt, ...)
+    __attribute__ ((format (لکو, 1, 2)));
+صحيح snprintf(حرف *str, سائيز_t سائيز, ثابت حرف *fmt, ...)
+    __attribute__ ((format (لکو, 3, 4)));
+حرف * znprintf(سائيز_t سائيز, ثابت حرف *fmt, ...)
+    __attribute__ ((format (لکو, 2, 3)));
+فراغ __dprintf(ثابت حرف *fmt, ...)
+    __attribute__ ((format (لکو, 1, 2)));
+بنية bregs;
+فراغ __debug_enter(بنية bregs *regs, ثابت حرف *fname);
+فراغ __debug_isr(ثابت حرف *fname);
+فراغ __debug_stub(بنية bregs *regs, صحيح lineno, ثابت حرف *fname);
+فراغ __warn_invalid(بنية bregs *regs, صحيح lineno, ثابت حرف *fname);
+فراغ __warn_unimplemented(بنية bregs *regs, صحيح lineno, ثابت حرف *fname);
+فراغ __warn_internalerror(صحيح lineno, ثابت حرف *fname);
+فراغ __warn_noalloc(صحيح lineno, ثابت حرف *fname);
+فراغ __warn_timeout(صحيح lineno, ثابت حرف *fname);
+فراغ __set_invalid(بنية bregs *regs, صحيح lineno, ثابت حرف *fname);
+فراغ __set_unimplemented(بنية bregs *regs, صحيح lineno, ثابت حرف *fname);
+فراغ __set_code_invalid(بنية bregs *regs, u32 linecode, ثابت حرف *fname);
+فراغ __set_code_unimplemented(بنية bregs *regs, u32 linecode
+                              , ثابت حرف *fname);
+فراغ hexdump(ثابت فراغ *d, صحيح len);
 
-#define dprintf(lvl, fmt, args...) do {                         \
-        if (CONFIG_DEBUG_LEVEL && (lvl) <= CONFIG_DEBUG_LEVEL)  \
+#وصف_ڪريو dprintf(lvl, fmt, دليلون...) افعل {                         \
+        إذا (CONFIG_DEBUG_LEVEL && (lvl) <= CONFIG_DEBUG_LEVEL)  \
             __dprintf((fmt) , ##args );                         \
-    } while (0)
-#define debug_enter(regs, lvl) do {                     \
-        if ((lvl) && (lvl) <= CONFIG_DEBUG_LEVEL)       \
+    } طالما (0)
+#وصف_ڪريو debug_enter(regs, lvl) افعل {                     \
+        إذا ((lvl) && (lvl) <= CONFIG_DEBUG_LEVEL)       \
             __debug_enter((regs), __func__);            \
-    } while (0)
-#define debug_isr(lvl) do {                             \
-        if ((lvl) && (lvl) <= CONFIG_DEBUG_LEVEL)       \
+    } طالما (0)
+#وصف_ڪريو debug_isr(lvl) افعل {                             \
+        إذا ((lvl) && (lvl) <= CONFIG_DEBUG_LEVEL)       \
             __debug_isr(__func__);                      \
-    } while (0)
-#define debug_stub(regs)                        \
+    } طالما (0)
+#وصف_ڪريو debug_stub(regs)                        \
     __debug_stub((regs), __LINE__, __func__)
-#define warn_invalid(regs)                      \
+#وصف_ڪريو warn_invalid(regs)                      \
     __warn_invalid((regs), __LINE__, __func__)
-#define warn_unimplemented(regs)                        \
+#وصف_ڪريو warn_unimplemented(regs)                        \
     __warn_unimplemented((regs), __LINE__, __func__)
-#define warn_internalerror()                    \
+#وصف_ڪريو warn_internalerror()                    \
     __warn_internalerror(__LINE__, __func__)
-#define warn_noalloc()                          \
+#وصف_ڪريو warn_noalloc()                          \
     __warn_noalloc(__LINE__, __func__)
-#define warn_timeout()                          \
+#وصف_ڪريو warn_timeout()                          \
     __warn_timeout(__LINE__, __func__)
-#define set_invalid(regs)                       \
+#وصف_ڪريو سيٽ_invalid(regs)                       \
     __set_invalid((regs), __LINE__, __func__)
-#define set_code_invalid(regs, code)                                    \
-    __set_code_invalid((regs), (code) | (__LINE__ << 8), __func__)
-#define set_unimplemented(regs)                         \
+#وصف_ڪريو سيٽ_ڪوڊ_invalid(regs, ڪوڊ)                                    \
+    __set_code_invalid((regs), (ڪوڊ) | (__LINE__ << 8), __func__)
+#وصف_ڪريو سيٽ_unimplemented(regs)                         \
     __set_unimplemented((regs), __LINE__, __func__)
-#define set_code_unimplemented(regs, code)                              \
-    __set_code_unimplemented((regs), (code) | (__LINE__ << 8), __func__)
+#وصف_ڪريو سيٽ_ڪوڊ_unimplemented(regs, ڪوڊ)                              \
+    __set_code_unimplemented((regs), (ڪوڊ) | (__LINE__ << 8), __func__)
 
-#endif // output.h
+#جيڪڏهن_پورو // output.h

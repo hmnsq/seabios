@@ -1,16 +1,16 @@
-#ifndef STD_TCG_H
-#define STD_TCG_H
+#جيڪڏهن_وصف_نه_ٿيل STD_TCG_H
+#وصف_ڪريو STD_TCG_H
 
-#include "types.h"
+#ضمن "types.h"
 
-#define SHA1_BUFSIZE                20
-#define SHA256_BUFSIZE              32
-#define SHA384_BUFSIZE              48
-#define SHA512_BUFSIZE              64
-#define SM3_256_BUFSIZE             32
-#define SHA3_256_BUFSIZE            32
-#define SHA3_384_BUFSIZE            48
-#define SHA3_512_BUFSIZE            64
+#وصف_ڪريو SHA1_BUFSIZE                20
+#وصف_ڪريو SHA256_BUFSIZE              32
+#وصف_ڪريو SHA384_BUFSIZE              48
+#وصف_ڪريو SHA512_BUFSIZE              64
+#وصف_ڪريو SM3_256_BUFSIZE             32
+#وصف_ڪريو SHA3_256_BUFSIZE            32
+#وصف_ڪريو SHA3_384_BUFSIZE            48
+#وصف_ڪريو SHA3_512_BUFSIZE            64
 
 
 /****************************************************************
@@ -18,55 +18,55 @@
  ****************************************************************/
 
 /* Define for section 12.3 */
-#define TCG_PC_OK                       0x0
-#define TCG_PC_TPMERROR                 0x1
-#define TCG_PC_LOGOVERFLOW              0x2
-#define TCG_PC_UNSUPPORTED              0x3
+#وصف_ڪريو TCG_PC_OK                       0x0
+#وصف_ڪريو TCG_PC_TPMERROR                 0x1
+#وصف_ڪريو TCG_PC_LOGOVERFLOW              0x2
+#وصف_ڪريو TCG_PC_UNSUPPORTED              0x3
 
-#define TPM_ALG_SHA                     0x4
+#وصف_ڪريو TPM_ALG_SHA                     0x4
 
-#define TCG_MAGIC                       0x41504354L
-#define TCG_VERSION_MAJOR               1
-#define TCG_VERSION_MINOR               2
+#وصف_ڪريو TCG_MAGIC                       0x41504354L
+#وصف_ڪريو TCG_نسخو_MAJOR               1
+#وصف_ڪريو TCG_نسخو_MINOR               2
 
-#define TPM_OK                          0x0
-#define TPM_RET_BASE                    0x1
-#define TCG_GENERAL_ERROR               (TPM_RET_BASE + 0x0)
-#define TCG_TPM_IS_LOCKED               (TPM_RET_BASE + 0x1)
-#define TCG_NO_RESPONSE                 (TPM_RET_BASE + 0x2)
-#define TCG_INVALID_RESPONSE            (TPM_RET_BASE + 0x3)
-#define TCG_INVALID_ACCESS_REQUEST      (TPM_RET_BASE + 0x4)
-#define TCG_FIRMWARE_ERROR              (TPM_RET_BASE + 0x5)
-#define TCG_INTEGRITY_CHECK_FAILED      (TPM_RET_BASE + 0x6)
-#define TCG_INVALID_DEVICE_ID           (TPM_RET_BASE + 0x7)
-#define TCG_INVALID_VENDOR_ID           (TPM_RET_BASE + 0x8)
-#define TCG_UNABLE_TO_OPEN              (TPM_RET_BASE + 0x9)
-#define TCG_UNABLE_TO_CLOSE             (TPM_RET_BASE + 0xa)
-#define TCG_RESPONSE_TIMEOUT            (TPM_RET_BASE + 0xb)
-#define TCG_INVALID_COM_REQUEST         (TPM_RET_BASE + 0xc)
-#define TCG_INVALID_ADR_REQUEST         (TPM_RET_BASE + 0xd)
-#define TCG_WRITE_BYTE_ERROR            (TPM_RET_BASE + 0xe)
-#define TCG_READ_BYTE_ERROR             (TPM_RET_BASE + 0xf)
-#define TCG_BLOCK_WRITE_TIMEOUT         (TPM_RET_BASE + 0x10)
-#define TCG_CHAR_WRITE_TIMEOUT          (TPM_RET_BASE + 0x11)
-#define TCG_CHAR_READ_TIMEOUT           (TPM_RET_BASE + 0x12)
-#define TCG_BLOCK_READ_TIMEOUT          (TPM_RET_BASE + 0x13)
-#define TCG_TRANSFER_ABORT              (TPM_RET_BASE + 0x14)
-#define TCG_INVALID_DRV_FUNCTION        (TPM_RET_BASE + 0x15)
-#define TCG_OUTPUT_BUFFER_TOO_SHORT     (TPM_RET_BASE + 0x16)
-#define TCG_FATAL_COM_ERROR             (TPM_RET_BASE + 0x17)
-#define TCG_INVALID_INPUT_PARA          (TPM_RET_BASE + 0x18)
-#define TCG_TCG_COMMAND_ERROR           (TPM_RET_BASE + 0x19)
-#define TCG_INTERFACE_SHUTDOWN          (TPM_RET_BASE + 0x20)
+#وصف_ڪريو TPM_OK                          0x0
+#وصف_ڪريو TPM_RET_بنياد                    0x1
+#وصف_ڪريو TCG_GENERAL_ERROR               (TPM_RET_بنياد + 0x0)
+#وصف_ڪريو TCG_TPM_IS_LOCKED               (TPM_RET_بنياد + 0x1)
+#وصف_ڪريو TCG_NO_RESPONSE                 (TPM_RET_بنياد + 0x2)
+#وصف_ڪريو TCG_INVALID_RESPONSE            (TPM_RET_بنياد + 0x3)
+#وصف_ڪريو TCG_INVALID_ACCESS_REQUEST      (TPM_RET_بنياد + 0x4)
+#وصف_ڪريو TCG_FIRMWARE_ERROR              (TPM_RET_بنياد + 0x5)
+#وصف_ڪريو TCG_INTEGRITY_CHECK_FAILED      (TPM_RET_بنياد + 0x6)
+#وصف_ڪريو TCG_INVALID_DEVICE_ID           (TPM_RET_بنياد + 0x7)
+#وصف_ڪريو TCG_INVALID_VENDOR_ID           (TPM_RET_بنياد + 0x8)
+#وصف_ڪريو TCG_UNABLE_منزل_OPEN              (TPM_RET_بنياد + 0x9)
+#وصف_ڪريو TCG_UNABLE_منزل_CLOSE             (TPM_RET_بنياد + 0xa)
+#وصف_ڪريو TCG_RESPONSE_TIMEOUT            (TPM_RET_بنياد + 0xb)
+#وصف_ڪريو TCG_INVALID_COM_REQUEST         (TPM_RET_بنياد + 0xc)
+#وصف_ڪريو TCG_INVALID_ADR_REQUEST         (TPM_RET_بنياد + 0xd)
+#وصف_ڪريو TCG_WRITE_BYTE_ERROR            (TPM_RET_بنياد + 0xe)
+#وصف_ڪريو TCG_READ_BYTE_ERROR             (TPM_RET_بنياد + 0xf)
+#وصف_ڪريو TCG_بلاڪ_WRITE_TIMEOUT         (TPM_RET_بنياد + 0x10)
+#وصف_ڪريو TCG_CHAR_WRITE_TIMEOUT          (TPM_RET_بنياد + 0x11)
+#وصف_ڪريو TCG_CHAR_READ_TIMEOUT           (TPM_RET_بنياد + 0x12)
+#وصف_ڪريو TCG_بلاڪ_READ_TIMEOUT          (TPM_RET_بنياد + 0x13)
+#وصف_ڪريو TCG_TRANSFER_ABORT              (TPM_RET_بنياد + 0x14)
+#وصف_ڪريو TCG_INVALID_DRV_FUNCTION        (TPM_RET_بنياد + 0x15)
+#وصف_ڪريو TCG_OUTPUT_بفر_TOO_SHORT     (TPM_RET_بنياد + 0x16)
+#وصف_ڪريو TCG_FATAL_COM_ERROR             (TPM_RET_بنياد + 0x17)
+#وصف_ڪريو TCG_INVALID_داخلا_PARA          (TPM_RET_بنياد + 0x18)
+#وصف_ڪريو TCG_TCG_COMMAND_ERROR           (TPM_RET_بنياد + 0x19)
+#وصف_ڪريو TCG_INTERFACE_SHUTDOWN          (TPM_RET_بنياد + 0x20)
 //define TCG_PC_UNSUPPORTED             (TPM_RET_BASE + 0x21)
-#define TCG_PC_TPM_NOT_PRESENT          (TPM_RET_BASE + 0x22)
-#define TCG_PC_TPM_DEACTIVATED          (TPM_RET_BASE + 0x23)
+#وصف_ڪريو TCG_PC_TPM_NOT_PRESENT          (TPM_RET_بنياد + 0x22)
+#وصف_ڪريو TCG_PC_TPM_DEACTIVATED          (TPM_RET_بنياد + 0x23)
 
 /* interrupt identifiers (al register) */
-enum irq_ids {
-    TCG_StatusCheck = 0,
+تعداد irq_ids {
+    TCG_حالت_Check = 0,
     TCG_HashLogExtendEvent = 1,
-    TCG_PassThroughToTPM = 2,
+    TCG_Pass_Through_منزل_TPM = 2,
     TCG_ShutdownPreBootInterface = 3,
     TCG_HashLogEvent = 4,
     TCG_HashAll = 5,
@@ -76,30 +76,30 @@ enum irq_ids {
 
 /* Input and Output blocks for the TCG BIOS commands */
 
-struct hleei_short
+بنية hleei_short
 {
     u16   ipblength;
     u16   reserved;
-    const void *hashdataptr;
+    ثابت فراغ *hashdataptr;
     u32   hashdatalen;
     u32   pcrindex;
-    const void *logdataptr;
+    ثابت فراغ *logdataptr;
     u32   logdatalen;
 } PACKED;
 
-struct hleei_long
+بنية hleei_long
 {
     u16   ipblength;
     u16   reserved;
-    void *hashdataptr;
+    فراغ *hashdataptr;
     u32   hashdatalen;
     u32   pcrindex;
     u32   reserved2;
-    void *logdataptr;
+    فراغ *logdataptr;
     u32   logdatalen;
 } PACKED;
 
-struct hleeo
+بنية hleeo
 {
     u16    opblength;
     u16    reserved;
@@ -107,7 +107,7 @@ struct hleeo
     u8     digest[SHA1_BUFSIZE];
 } PACKED;
 
-struct pttti
+بنية pttti
 {
     u16    ipblength;
     u16    reserved;
@@ -116,42 +116,42 @@ struct pttti
     u8     tpmopin[0];
 } PACKED;
 
-struct pttto
+بنية pttto
 {
     u16    opblength;
     u16    reserved;
     u8     tpmopout[0];
 };
 
-struct hlei
+بنية hlei
 {
     u16    ipblength;
     u16    reserved;
-    const void  *hashdataptr;
+    ثابت فراغ  *hashdataptr;
     u32    hashdatalen;
     u32    pcrindex;
     u32    logeventtype;
-    const void  *logdataptr;
+    ثابت فراغ  *logdataptr;
     u32    logdatalen;
 } PACKED;
 
-struct hleo
+بنية hleo
 {
     u16    opblength;
     u16    reserved;
     u32    eventnumber;
 } PACKED;
 
-struct hai
+بنية hai
 {
     u16    ipblength;
     u16    reserved;
-    const void  *hashdataptr;
+    ثابت فراغ  *hashdataptr;
     u32    hashdatalen;
     u32    algorithmid;
 } PACKED;
 
-struct ti
+بنية ti
 {
     u16    ipblength;
     u16    reserved;
@@ -160,14 +160,14 @@ struct ti
     u8     tssoperandin[0];
 } PACKED;
 
-struct to
+بنية منزل
 {
     u16    opblength;
     u16    reserved;
     u8     tssoperandout[0];
 } PACKED;
 
-struct pcpes
+بنية pcpes
 {
     u32    pcrindex;
     u32    eventtype;
@@ -181,139 +181,139 @@ struct pcpes
  * TPM v1.2 hardware commands
  ****************************************************************/
 
-#define TPM_ORD_SelfTestFull             0x00000050
-#define TPM_ORD_ForceClear               0x0000005d
-#define TPM_ORD_GetCapability            0x00000065
-#define TPM_ORD_PhysicalEnable           0x0000006f
-#define TPM_ORD_PhysicalDisable          0x00000070
-#define TPM_ORD_SetOwnerInstall          0x00000071
-#define TPM_ORD_PhysicalSetDeactivated   0x00000072
-#define TPM_ORD_SetTempDeactivated       0x00000073
-#define TPM_ORD_Startup                  0x00000099
-#define TPM_ORD_PhysicalPresence         0x4000000a
-#define TPM_ORD_Extend                   0x00000014
-#define TSC_ORD_ResetEstablishmentBit    0x4000000b
+#وصف_ڪريو TPM_ORD_Self_Test_ڀريل             0x00000050
+#وصف_ڪريو TPM_ORD_ForceClear               0x0000005d
+#وصف_ڪريو TPM_ORD_GetCapability            0x00000065
+#وصف_ڪريو TPM_ORD_PhysicalEnable           0x0000006f
+#وصف_ڪريو TPM_ORD_PhysicalDisable          0x00000070
+#وصف_ڪريو TPM_ORD_سيٽ_Owner_Install          0x00000071
+#وصف_ڪريو TPM_ORD_Physical_سيٽ_Deactivated   0x00000072
+#وصف_ڪريو TPM_ORD_سيٽ_عارضي_Deactivated       0x00000073
+#وصف_ڪريو TPM_ORD_Startup                  0x00000099
+#وصف_ڪريو TPM_ORD_PhysicalPresence         0x4000000a
+#وصف_ڪريو TPM_ORD_Extend                   0x00000014
+#وصف_ڪريو TSC_ORD_Reset_Establishment_ٻٽو_انگ    0x4000000b
 
-#define TPM_ST_CLEAR                     0x0001
-#define TPM_ST_STATE                     0x0002
-#define TPM_ST_DEACTIVATED               0x0003
+#وصف_ڪريو TPM_ST_CLEAR                     0x0001
+#وصف_ڪريو TPM_ST_STATE                     0x0002
+#وصف_ڪريو TPM_ST_DEACTIVATED               0x0003
 
-#define TPM_PP_CMD_ENABLE                0x0020
-#define TPM_PP_PRESENT                   0x0008
-#define TPM_PP_NOT_PRESENT_LOCK          0x0014
+#وصف_ڪريو TPM_PP_CMD_ENABLE                0x0020
+#وصف_ڪريو TPM_PP_PRESENT                   0x0008
+#وصف_ڪريو TPM_PP_NOT_PRESENT_تالو          0x0014
 
 /* TPM command error codes */
-#define TPM_INVALID_POSTINIT             0x26
-#define TPM_BAD_LOCALITY                 0x3d
+#وصف_ڪريو TPM_INVALID_POSTINIT             0x26
+#وصف_ڪريو TPM_BAD_LOCALITY                 0x3d
 
 /* TPM command tags */
-#define TPM_TAG_RQU_CMD                  0x00c1
-#define TPM_TAG_RQU_AUTH1_CMD            0x00c2
-#define TPM_TAG_RQU_AUTH2_CMD            0x00c3
+#وصف_ڪريو TPM_ٽيگ_RQU_CMD                  0x00c1
+#وصف_ڪريو TPM_ٽيگ_RQU_AUTH1_CMD            0x00c2
+#وصف_ڪريو TPM_ٽيگ_RQU_AUTH2_CMD            0x00c3
 
-struct tpm_req_header {
-    u16    tag;
+بنية tpm_req_سرو {
+    u16    ٽيگ;
     u32    totlen;
     u32    ordinal;
 } PACKED;
 
-struct tpm_rsp_header {
-    u16    tag;
+بنية tpm_rsp_سرو {
+    u16    ٽيگ;
     u32    totlen;
     u32    errcode;
 } PACKED;
 
-struct tpm_req_extend {
-    struct tpm_req_header hdr;
+بنية tpm_req_extend {
+    بنية tpm_req_سرو hdr;
     u32    pcrindex;
     u8     digest[SHA1_BUFSIZE];
 } PACKED;
 
-struct tpm_rsp_extend {
-    struct tpm_rsp_header hdr;
+بنية tpm_rsp_extend {
+    بنية tpm_rsp_سرو hdr;
     u8     digest[SHA1_BUFSIZE];
 } PACKED;
 
-struct tpm_req_getcap {
-    struct tpm_req_header hdr;
+بنية tpm_req_getcap {
+    بنية tpm_req_سرو hdr;
     u32    capArea;
-    u32    subCapSize;
+    u32    sub_Cap_سائيز;
     u32    subCap;
 } PACKED;
 
-#define TPM_CAP_FLAG     0x04
-#define TPM_CAP_PROPERTY 0x05
-#define TPM_CAP_FLAG_PERMANENT   0x108
-#define TPM_CAP_FLAG_VOLATILE    0x109
-#define TPM_CAP_PROP_OWNER       0x111
-#define TPM_CAP_PROP_TIS_TIMEOUT 0x115
-#define TPM_CAP_PROP_DURATION    0x120
+#وصف_ڪريو TPM_CAP_FLAG     0x04
+#وصف_ڪريو TPM_CAP_PROPERTY 0x05
+#وصف_ڪريو TPM_CAP_FLAG_PERMANENT   0x108
+#وصف_ڪريو TPM_CAP_FLAG_VOLATILE    0x109
+#وصف_ڪريو TPM_CAP_PROP_OWNER       0x111
+#وصف_ڪريو TPM_CAP_PROP_TIS_TIMEOUT 0x115
+#وصف_ڪريو TPM_CAP_PROP_DURATION    0x120
 
-struct tpm_permanent_flags {
-    u16    tag;
+بنية tpm_permanent_flags {
+    u16    ٽيگ;
     u8     flags[20];
 } PACKED;
 
-enum permFlagsIndex {
+تعداد perm_Flags_اشاريو {
     PERM_FLAG_IDX_DISABLE = 0,
     PERM_FLAG_IDX_OWNERSHIP,
     PERM_FLAG_IDX_DEACTIVATED,
     PERM_FLAG_IDX_READPUBEK,
     PERM_FLAG_IDX_DISABLEOWNERCLEAR,
     PERM_FLAG_IDX_ALLOW_MAINTENANCE,
-    PERM_FLAG_IDX_PHYSICAL_PRESENCE_LIFETIME_LOCK,
+    PERM_FLAG_IDX_PHYSICAL_PRESENCE_LIFETIME_تالو,
     PERM_FLAG_IDX_PHYSICAL_PRESENCE_HW_ENABLE,
     PERM_FLAG_IDX_PHYSICAL_PRESENCE_CMD_ENABLE,
 };
 
-struct tpm_res_getcap_perm_flags {
-    struct tpm_rsp_header hdr;
-    u32    size;
-    struct tpm_permanent_flags perm_flags;
+بنية tpm_res_getcap_perm_flags {
+    بنية tpm_rsp_سرو hdr;
+    u32    سائيز;
+    بنية tpm_permanent_flags perm_flags;
 } PACKED;
 
-struct tpm_stclear_flags {
-    u16    tag;
+بنية tpm_stclear_flags {
+    u16    ٽيگ;
     u8     flags[5];
 } PACKED;
 
-#define STCLEAR_FLAG_IDX_DEACTIVATED 0
-#define STCLEAR_FLAG_IDX_DISABLE_FORCE_CLEAR 1
-#define STCLEAR_FLAG_IDX_PHYSICAL_PRESENCE 2
-#define STCLEAR_FLAG_IDX_PHYSICAL_PRESENCE_LOCK 3
-#define STCLEAR_FLAG_IDX_GLOBAL_LOCK 4
+#وصف_ڪريو STCLEAR_FLAG_IDX_DEACTIVATED 0
+#وصف_ڪريو STCLEAR_FLAG_IDX_DISABLE_FORCE_CLEAR 1
+#وصف_ڪريو STCLEAR_FLAG_IDX_PHYSICAL_PRESENCE 2
+#وصف_ڪريو STCLEAR_FLAG_IDX_PHYSICAL_PRESENCE_تالو 3
+#وصف_ڪريو STCLEAR_FLAG_IDX_GLOBAL_تالو 4
 
-struct tpm_res_getcap_stclear_flags {
-    struct tpm_rsp_header hdr;
-    u32    size;
-    struct tpm_stclear_flags stclear_flags;
+بنية tpm_res_getcap_stclear_flags {
+    بنية tpm_rsp_سرو hdr;
+    u32    سائيز;
+    بنية tpm_stclear_flags stclear_flags;
 } PACKED;
 
-struct tpm_res_getcap_ownerauth {
-    struct tpm_rsp_header hdr;
-    u32    size;
+بنية tpm_res_getcap_ownerauth {
+    بنية tpm_rsp_سرو hdr;
+    u32    سائيز;
     u8     flag;
 } PACKED;
 
-struct tpm_res_getcap_timeouts {
-    struct tpm_rsp_header hdr;
-    u32    size;
+بنية tpm_res_getcap_timeouts {
+    بنية tpm_rsp_سرو hdr;
+    u32    سائيز;
     u32    timeouts[4];
 } PACKED;
 
-struct tpm_res_getcap_durations {
-    struct tpm_rsp_header hdr;
-    u32    size;
+بنية tpm_res_getcap_durations {
+    بنية tpm_rsp_سرو hdr;
+    u32    سائيز;
     u32    durations[3];
 } PACKED;
 
-struct tpm_res_sha1start {
-    struct tpm_rsp_header hdr;
-    u32    max_num_bytes;
+بنية tpm_res_sha1start {
+    بنية tpm_rsp_سرو hdr;
+    u32    max_انگ_بائيٽون;
 } PACKED;
 
-struct tpm_res_sha1complete {
-    struct tpm_rsp_header hdr;
+بنية tpm_res_sha1complete {
+    بنية tpm_rsp_سرو hdr;
     u8     hash[20];
 } PACKED;
 
@@ -322,161 +322,161 @@ struct tpm_res_sha1complete {
  * TPM v2.0 hardware commands
  ****************************************************************/
 
-#define TPM2_NO                     0
-#define TPM2_YES                    1
+#وصف_ڪريو TPM2_NO                     0
+#وصف_ڪريو TPM2_YES                    1
 
-#define TPM2_SU_CLEAR               0x0000
-#define TPM2_SU_STATE               0x0001
+#وصف_ڪريو TPM2_SU_CLEAR               0x0000
+#وصف_ڪريو TPM2_SU_STATE               0x0001
 
-#define TPM2_RH_OWNER               0x40000001
-#define TPM2_RS_PW                  0x40000009
-#define TPM2_RH_ENDORSEMENT         0x4000000b
-#define TPM2_RH_PLATFORM            0x4000000c
+#وصف_ڪريو TPM2_RH_OWNER               0x40000001
+#وصف_ڪريو TPM2_RS_PW                  0x40000009
+#وصف_ڪريو TPM2_RH_ENDORSEMENT         0x4000000b
+#وصف_ڪريو TPM2_RH_PLATFORM            0x4000000c
 
-#define TPM2_ALG_SHA1               0x0004
-#define TPM2_ALG_SHA256             0x000b
-#define TPM2_ALG_SHA384             0x000c
-#define TPM2_ALG_SHA512             0x000d
-#define TPM2_ALG_SM3_256            0x0012
-#define TPM2_ALG_SHA3_256           0x0027
-#define TPM2_ALG_SHA3_384           0x0028
-#define TPM2_ALG_SHA3_512           0x0029
+#وصف_ڪريو TPM2_ALG_SHA1               0x0004
+#وصف_ڪريو TPM2_ALG_SHA256             0x000b
+#وصف_ڪريو TPM2_ALG_SHA384             0x000c
+#وصف_ڪريو TPM2_ALG_SHA512             0x000d
+#وصف_ڪريو TPM2_ALG_SM3_256            0x0012
+#وصف_ڪريو TPM2_ALG_SHA3_256           0x0027
+#وصف_ڪريو TPM2_ALG_SHA3_384           0x0028
+#وصف_ڪريو TPM2_ALG_SHA3_512           0x0029
 
-#define TPM2_ALG_SHA1_FLAG          (1 << 0)
-#define TPM2_ALG_SHA256_FLAG        (1 << 1)
-#define TPM2_ALG_SHA384_FLAG        (1 << 2)
-#define TPM2_ALG_SHA512_FLAG        (1 << 3)
-#define TPM2_ALG_SM3_256_FLAG       (1 << 4)
-#define TPM2_ALG_SHA3_256_FLAG      (1 << 5)
-#define TPM2_ALG_SHA3_384_FLAG      (1 << 6)
-#define TPM2_ALG_SHA3_512_FLAG      (1 << 7)
+#وصف_ڪريو TPM2_ALG_SHA1_FLAG          (1 << 0)
+#وصف_ڪريو TPM2_ALG_SHA256_FLAG        (1 << 1)
+#وصف_ڪريو TPM2_ALG_SHA384_FLAG        (1 << 2)
+#وصف_ڪريو TPM2_ALG_SHA512_FLAG        (1 << 3)
+#وصف_ڪريو TPM2_ALG_SM3_256_FLAG       (1 << 4)
+#وصف_ڪريو TPM2_ALG_SHA3_256_FLAG      (1 << 5)
+#وصف_ڪريو TPM2_ALG_SHA3_384_FLAG      (1 << 6)
+#وصف_ڪريو TPM2_ALG_SHA3_512_FLAG      (1 << 7)
 
 /* TPM 2 command tags */
-#define TPM2_ST_NO_SESSIONS         0x8001
-#define TPM2_ST_SESSIONS            0x8002
+#وصف_ڪريو TPM2_ST_NO_SESSIONS         0x8001
+#وصف_ڪريو TPM2_ST_SESSIONS            0x8002
 
 /* TPM 2 commands */
-#define TPM2_CC_HierarchyControl    0x121
-#define TPM2_CC_Clear               0x126
-#define TPM2_CC_ClearControl        0x127
-#define TPM2_CC_HierarchyChangeAuth 0x129
-#define TPM2_CC_PCR_Allocate        0x12b
-#define TPM2_CC_SelfTest            0x143
-#define TPM2_CC_Startup             0x144
-#define TPM2_CC_Shutdown            0x145
-#define TPM2_CC_StirRandom          0x146
-#define TPM2_CC_GetCapability       0x17a
-#define TPM2_CC_GetRandom           0x17b
-#define TPM2_CC_PCR_Extend          0x182
+#وصف_ڪريو TPM2_CC_HierarchyControl    0x121
+#وصف_ڪريو TPM2_CC_Clear               0x126
+#وصف_ڪريو TPM2_CC_ClearControl        0x127
+#وصف_ڪريو TPM2_CC_HierarchyChangeAuth 0x129
+#وصف_ڪريو TPM2_CC_PCR_Allocate        0x12b
+#وصف_ڪريو TPM2_CC_SelfTest            0x143
+#وصف_ڪريو TPM2_CC_Startup             0x144
+#وصف_ڪريو TPM2_CC_Shutdown            0x145
+#وصف_ڪريو TPM2_CC_StirRandom          0x146
+#وصف_ڪريو TPM2_CC_GetCapability       0x17a
+#وصف_ڪريو TPM2_CC_GetRandom           0x17b
+#وصف_ڪريو TPM2_CC_PCR_Extend          0x182
 
 /* TPM 2 error codes */
-#define TPM2_RC_INITIALIZE          0x100
+#وصف_ڪريو TPM2_RC_INITIALIZE          0x100
 
 /* TPM 2 Capabilities */
-#define TPM2_CAP_PCRS               0x00000005
+#وصف_ڪريو TPM2_CAP_PCRS               0x00000005
 
 /* TPM 2 data structures */
 
-struct tpm2_req_stirrandom {
-    struct tpm_req_header hdr;
-    u16 size;
+بنية tpm2_req_stirrandom {
+    بنية tpm_req_سرو hdr;
+    u16 سائيز;
     u64 stir;
 } PACKED;
 
-struct tpm2_req_getrandom {
-    struct tpm_req_header hdr;
-    u16 bytesRequested;
+بنية tpm2_req_getrandom {
+    بنية tpm_req_سرو hdr;
+    u16 بائيٽون_Requested;
 } PACKED;
 
-struct tpm2b_20 {
-    u16 size;
-    u8 buffer[20];
+بنية tpm2b_20 {
+    u16 سائيز;
+    u8 بفر[20];
 } PACKED;
 
-struct tpm2_res_getrandom {
-    struct tpm_rsp_header hdr;
-    struct tpm2b_20 rnd;
+بنية tpm2_res_getrandom {
+    بنية tpm_rsp_سرو hdr;
+    بنية tpm2b_20 rnd;
 } PACKED;
 
-struct tpm2_authblock {
+بنية tpm2_authblock {
     u32 handle;
     u16 noncesize;  /* always 0 */
     u8 contsession; /* always TPM2_YES */
     u16 pwdsize;    /* always 0 */
 } PACKED;
 
-struct tpm2_req_hierarchychangeauth {
-    struct tpm_req_header hdr;
+بنية tpm2_req_hierarchychangeauth {
+    بنية tpm_req_سرو hdr;
     u32 authhandle;
     u32 authblocksize;
-    struct tpm2_authblock authblock;
-    struct tpm2b_20 newAuth;
+    بنية tpm2_authblock authblock;
+    بنية tpm2b_20 newAuth;
 } PACKED;
 
-struct tpm2_req_extend {
-    struct tpm_req_header hdr;
+بنية tpm2_req_extend {
+    بنية tpm_req_سرو hdr;
     u32 pcrindex;
     u32 authblocksize;
-    struct tpm2_authblock authblock;
+    بنية tpm2_authblock authblock;
     u8 digest[0];
 } PACKED;
 
-struct tpm2_req_clearcontrol {
-    struct tpm_req_header hdr;
+بنية tpm2_req_clearcontrol {
+    بنية tpm_req_سرو hdr;
     u32 authhandle;
     u32 authblocksize;
-    struct tpm2_authblock authblock;
+    بنية tpm2_authblock authblock;
     u8 disable;
 } PACKED;
 
-struct tpm2_req_clear {
-    struct tpm_req_header hdr;
+بنية tpm2_req_clear {
+    بنية tpm_req_سرو hdr;
     u32 authhandle;
     u32 authblocksize;
-    struct tpm2_authblock authblock;
+    بنية tpm2_authblock authblock;
 } PACKED;
 
-struct tpm2_req_hierarchycontrol {
-    struct tpm_req_header hdr;
+بنية tpm2_req_hierarchycontrol {
+    بنية tpm_req_سرو hdr;
     u32 authhandle;
     u32 authblocksize;
-    struct tpm2_authblock authblock;
+    بنية tpm2_authblock authblock;
     u32 enable;
     u8 state;
 } PACKED;
 
-struct tpm2_req_getcapability {
-    struct tpm_req_header hdr;
+بنية tpm2_req_getcapability {
+    بنية tpm_req_سرو hdr;
     u32 capability;
     u32 property;
     u32 propertycount;
 } PACKED;
 
-struct tpm2_res_getcapability {
-    struct tpm_rsp_header hdr;
-    u8 moreData;
+بنية tpm2_res_getcapability {
+    بنية tpm_rsp_سرو hdr;
+    u8 وڌيڪ_معلومات;
     u32 capability;
-    u8 data[0]; /* capability dependent data */
+    u8 معلومات[0]; /* capability dependent data */
 } PACKED;
 
-struct tpm2_req_pcr_allocate {
-    struct tpm_req_header hdr;
+بنية tpm2_req_pcr_allocate {
+    بنية tpm_req_سرو hdr;
     u32 authhandle;
     u32 authblocksize;
-    struct tpm2_authblock authblock;
-    u32 count;
+    بنية tpm2_authblock authblock;
+    u32 ڳڻپ;
     u8 tpms_pcr_selections[4];
 } PACKED;
 
-struct tpms_pcr_selection {
+بنية tpms_pcr_selection {
     u16 hashAlg;
-    u8 sizeOfSelect;
+    u8 سائيز_جو_Select;
     u8 pcrSelect[0];
 } PACKED;
 
-struct tpml_pcr_selection {
-    u32 count;
-    struct tpms_pcr_selection selections[0];
+بنية tpml_pcr_selection {
+    u32 ڳڻپ;
+    بنية tpms_pcr_selection selections[0];
 } PACKED;
 
 
@@ -485,23 +485,23 @@ struct tpml_pcr_selection {
  ****************************************************************/
 
 /* event types: 10.4.1 / table 11 */
-#define EV_POST_CODE             1
-#define EV_NO_ACTION             3
-#define EV_SEPARATOR             4
-#define EV_ACTION                5
-#define EV_EVENT_TAG             6
-#define EV_COMPACT_HASH         12
-#define EV_IPL                  13
-#define EV_IPL_PARTITION_DATA   14
+#وصف_ڪريو EV_POST_ڪوڊ             1
+#وصف_ڪريو EV_NO_ACTION             3
+#وصف_ڪريو EV_SEPARATOR             4
+#وصف_ڪريو EV_ACTION                5
+#وصف_ڪريو EV_EVENT_ٽيگ             6
+#وصف_ڪريو EV_COMPACT_HASH         12
+#وصف_ڪريو EV_IPL                  13
+#وصف_ڪريو EV_IPL_حصا_ڪريو_معلومات   14
 
-struct tpm2_digest_value {
+بنية tpm2_digest_قدر {
     u16 hashAlg;
     u8 hash[0]; /* size depends on hashAlg */
 } PACKED;
 
-struct tpm2_digest_values {
-    u32 count;
-    struct tpm2_digest_value digest[0];
+بنية tpm2_digest_قدرون {
+    u32 ڳڻپ;
+    بنية tpm2_digest_قدر digest[0];
 } PACKED;
 
 // Each entry in the TPM log contains: a tpm_log_header, a variable
@@ -511,28 +511,28 @@ struct tpm2_digest_values {
 // contains a tpm2_digest_values struct followed by a variable number
 // of tpm2_digest_value structs (as specified by the hardware via the
 // TPM2_CAP_PCRS request).
-struct tpm_log_header {
+بنية tpm_log_سرو {
     u32 pcrindex;
     u32 eventtype;
     u8 digest[0];
 } PACKED;
 
-struct tpm_log_trailer {
+بنية tpm_log_trailer {
     u32 eventdatasize;
     u8 event[0];
 } PACKED;
 
-struct TCG_EfiSpecIdEventStruct {
+بنية TCG_EfiSpecIdEventStruct {
     u8 signature[16];
     u32 platformClass;
-    u8 specVersionMinor;
-    u8 specVersionMajor;
+    u8 spec_نسخو_Minor;
+    u8 spec_نسخو_Major;
     u8 specErrata;
-    u8 uintnSize;
-    u32 numberOfAlgorithms;
-    struct TCG_EfiSpecIdEventAlgorithmSize {
+    u8 uintn_سائيز;
+    u32 عدد_جو_Algorithms;
+    بنية TCG_Efi_Spec_Id_Event_Algorithm_سائيز {
         u16 algorithmId;
-        u16 digestSize;
+        u16 digest_سائيز;
     } digestSizes[];
     /*
     u8 vendorInfoSize;
@@ -540,16 +540,16 @@ struct TCG_EfiSpecIdEventStruct {
     */
 } PACKED;
 
-#define TPM_TCPA_ACPI_CLASS_CLIENT 0
+#وصف_ڪريو TPM_TCPA_ACPI_CLASS_CLIENT 0
 
-struct pcctes
+بنية pcctes
 {
     u32 eventid;
     u32 eventdatasize;
     u8  digest[SHA1_BUFSIZE];
 } PACKED;
 
-struct pcctes_romex
+بنية pcctes_romex
 {
     u32 eventid;
     u32 eventdatasize;
@@ -563,18 +563,18 @@ struct pcctes_romex
  * Physical presence interface
  ****************************************************************/
 
-#define TPM_STATE_ENABLED 1
-#define TPM_STATE_ACTIVE 2
-#define TPM_STATE_OWNED 4
-#define TPM_STATE_OWNERINSTALL 8
+#وصف_ڪريو TPM_STATE_ENABLED 1
+#وصف_ڪريو TPM_STATE_سرگرم 2
+#وصف_ڪريو TPM_STATE_OWNED 4
+#وصف_ڪريو TPM_STATE_OWNERINSTALL 8
 
-#define TPM_PPI_OP_NOOP 0
-#define TPM_PPI_OP_ENABLE 1
-#define TPM_PPI_OP_DISABLE 2
-#define TPM_PPI_OP_ACTIVATE 3
-#define TPM_PPI_OP_DEACTIVATE 4
-#define TPM_PPI_OP_CLEAR 5
-#define TPM_PPI_OP_SET_OWNERINSTALL_TRUE 8
-#define TPM_PPI_OP_SET_OWNERINSTALL_FALSE 9
+#وصف_ڪريو TPM_PPI_OP_NOOP 0
+#وصف_ڪريو TPM_PPI_OP_ENABLE 1
+#وصف_ڪريو TPM_PPI_OP_DISABLE 2
+#وصف_ڪريو TPM_PPI_OP_ACTIVATE 3
+#وصف_ڪريو TPM_PPI_OP_DEACTIVATE 4
+#وصف_ڪريو TPM_PPI_OP_CLEAR 5
+#وصف_ڪريو TPM_PPI_OP_سيٽ_OWNERINSTALL_TRUE 8
+#وصف_ڪريو TPM_PPI_OP_سيٽ_OWNERINSTALL_FALSE 9
 
-#endif // tcg.h
+#جيڪڏهن_پورو // tcg.h

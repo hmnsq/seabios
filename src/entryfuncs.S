@@ -72,8 +72,8 @@
  ****************************************************************/
 
         // Call a C function - this does the minimal work necessary to
-        // call into C.  It sets up %ds, backs up %es, and backs up
-        // those registers that are call clobbered by the C compiler.
+        // نادي into C.  It sets up %ds, backs up %es, and backs up
+        // those registers that are نادي clobbered by the C compiler.
         .macro ENTRY cfunc
         cli         // In case something far-calls instead of using "int"
         cld
@@ -149,7 +149,7 @@
         POPBREGS
         .endm
 
-        // Reset stack, transition to 32bit mode, and call a C function.
+        // Reset stack, transition to 32bit mode, and نادي a C function.
         .macro ENTRY_INTO32 cfunc
         xorw %dx, %dx
         movw %dx, %ss

@@ -8,145 +8,145 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "byteorder.h" // be32_to_cpu
-#include "config.h" // CONFIG_QEMU
-#include "e820map.h" // e820_add
-#include "hw/pci.h" // pci_config_readw
-#include "hw/pcidevice.h" // pci_probe_devices
-#include "hw/pci_regs.h" // PCI_DEVICE_ID
-#include "hw/serialio.h" // PORT_SERIAL1
-#include "hw/rtc.h" // CMOS_*
-#include "hw/virtio-mmio.h" // virtio_mmio_acpi
-#include "malloc.h" // malloc_tmp
-#include "output.h" // dprintf
-#include "paravirt.h" // qemu_cfg_preinit
-#include "romfile.h" // romfile_loadint
-#include "romfile_loader.h" // romfile_loader_execute
-#include "string.h" // memset
-#include "util.h" // pci_setup
-#include "x86.h" // cpuid
-#include "xen.h" // xen_biostable_setup
-#include "stacks.h" // yield
+#ضمن "byteorder.h" // be32_to_cpu
+#ضمن "config.h" // CONFIG_QEMU
+#ضمن "e820map.h" // e820_add
+#ضمن "hw/pci.h" // pci_config_readw
+#ضمن "hw/pcidevice.h" // pci_probe_devices
+#ضمن "hw/pci_regs.h" // PCI_DEVICE_ID
+#ضمن "hw/serialio.h" // PORT_SERIAL1
+#ضمن "hw/rtc.h" // CMOS_*
+#ضمن "hw/virtio-mmio.h" // virtio_mmio_acpi
+#ضمن "malloc.h" // malloc_tmp
+#ضمن "output.h" // dprintf
+#ضمن "paravirt.h" // qemu_cfg_preinit
+#ضمن "romfile.h" // romfile_loadint
+#ضمن "romfile_loader.h" // romfile_loader_execute
+#ضمن "string.h" // memset
+#ضمن "util.h" // pci_setup
+#ضمن "x86.h" // cpuid
+#ضمن "xen.h" // xen_biostable_setup
+#ضمن "stacks.h" // yield
 
 // Amount of continuous ram under 4Gig
-u32 RamSize;
+u32 Ram_سائيز;
 // Amount of continuous ram >4Gig
-u64 RamSizeOver4G;
+u64 Ram_سائيز_Over4_G;
 // physical address space bits
-u8 CPUPhysBits;
+u8 CPUPhys_بٽ;
 // 64bit processor
-u8 CPULongMode;
+u8 CPULong_گهڻائي;
 // Type of emulator platform.
-int PlatformRunningOn VARFSEG;
+صحيح PlatformRunningOn VARFSEG;
 // cfg enabled
-int cfg_enabled = 0;
+صحيح cfg_enabled = 0;
 // cfg_dma enabled
-int cfg_dma_enabled = 0;
+صحيح cfg_dma_enabled = 0;
 
-inline int qemu_cfg_enabled(void)
+مضمن صحيح qemu_cfg_enabled(فراغ)
 {
-    return cfg_enabled;
+    أرجع cfg_enabled;
 }
 
-inline int qemu_cfg_dma_enabled(void)
+مضمن صحيح qemu_cfg_dma_enabled(فراغ)
 {
-    return cfg_dma_enabled;
+    أرجع cfg_dma_enabled;
 }
 
 /* This CPUID returns the signature 'KVMKVMKVM' in ebx, ecx, and edx.  It
  * should be used to determine that a VM is running under KVM.
  */
-#define KVM_CPUID_SIGNATURE     0x40000000
-static unsigned int kvm_cpuid_base = 0;
+#وصف_ڪريو KVM_CPUID_SIGNATURE     0x40000000
+ساكن بنانشان صحيح kvm_cpuid_بنياد = 0;
 
-static void kvm_detect(void)
+ساكن فراغ kvm_detect(فراغ)
 {
-    unsigned int i, max = 0;
-    unsigned int eax, ebx, ecx, edx;
-    char signature[13];
+    بنانشان صحيح i, max = 0;
+    بنانشان صحيح eax, ebx, ecx, edx;
+    حرف signature[13];
 
-    for (i = KVM_CPUID_SIGNATURE;; i += 0x100) {
+    لكل (i = KVM_CPUID_SIGNATURE;; i += 0x100) {
         eax = 0;
         cpuid(i, &eax, &ebx, &ecx, &edx);
-        if (eax < i)
-            break;
-        memcpy(signature + 0, &ebx, 4);
-        memcpy(signature + 4, &ecx, 4);
-        memcpy(signature + 8, &edx, 4);
+        إذا (eax < i)
+            اكسر;
+        يادگيري_نقل(signature + 0, &ebx, 4);
+        يادگيري_نقل(signature + 4, &ecx, 4);
+        يادگيري_نقل(signature + 8, &edx, 4);
         signature[12] = 0;
         dprintf(1, "cpuid 0x%x: eax %x, signature '%s'\n", i, eax, signature);
-        if (strcmp(signature, "KVMKVMKVM") == 0) {
-            kvm_cpuid_base = i;
+        إذا (strcmp(signature, "KVMKVMKVM") == 0) {
+            kvm_cpuid_بنياد = i;
             max = eax;
         }
     }
 
-    if (kvm_cpuid_base) {
+    إذا (kvm_cpuid_بنياد) {
         dprintf(1, "Running on KVM\n");
         PlatformRunningOn |= PF_KVM;
-        if (max >= kvm_cpuid_base + 0x10) {
-            cpuid(kvm_cpuid_base + 0x10, &eax, &ebx, &ecx, &edx);
+        إذا (max >= kvm_cpuid_بنياد + 0x10) {
+            cpuid(kvm_cpuid_بنياد + 0x10, &eax, &ebx, &ecx, &edx);
             dprintf(1, "kvm: have invtsc, freq %u kHz\n", eax);
             tsctimer_setfreq(eax, "invtsc");
         }
     }
 }
 
-#define KVM_FEATURE_CLOCKSOURCE           0
-#define KVM_FEATURE_CLOCKSOURCE2          3
+#وصف_ڪريو KVM_FEATURE_CLOCKSOURCE           0
+#وصف_ڪريو KVM_FEATURE_CLOCKSOURCE2          3
 
-#define MSR_KVM_SYSTEM_TIME            0x12
-#define MSR_KVM_SYSTEM_TIME_NEW  0x4b564d01
+#وصف_ڪريو MSR_KVM_SYSTEM_وقت            0x12
+#وصف_ڪريو MSR_KVM_SYSTEM_وقت_NEW  0x4b564d01
 
-#define PVCLOCK_TSC_STABLE_BIT     (1 << 0)
+#وصف_ڪريو PVCLOCK_TSC_STABLE_ٻٽو_انگ     (1 << 0)
 
-struct pvclock_vcpu_time_info *kvmclock;
+بنية pvclock_vcpu_وقت_info *kvmclock;
 
-static void kvmclock_init(void)
+ساكن فراغ kvmclock_init(فراغ)
 {
-    unsigned int eax, ebx, ecx, edx, msr;
+    بنانشان صحيح eax, ebx, ecx, edx, msr;
 
-    if (!runningOnKVM())
-        return;
+    إذا (!runningOnKVM())
+        أرجع;
 
-    cpuid(kvm_cpuid_base + 0x01, &eax, &ebx, &ecx, &edx);
-    if (eax & (1 <<  KVM_FEATURE_CLOCKSOURCE2))
-        msr = MSR_KVM_SYSTEM_TIME_NEW;
-    else if (eax & (1 <<  KVM_FEATURE_CLOCKSOURCE))
-        msr = MSR_KVM_SYSTEM_TIME;
-    else
-        return;
+    cpuid(kvm_cpuid_بنياد + 0x01, &eax, &ebx, &ecx, &edx);
+    إذا (eax & (1 <<  KVM_FEATURE_CLOCKSOURCE2))
+        msr = MSR_KVM_SYSTEM_وقت_NEW;
+    وإلا إذا (eax & (1 <<  KVM_FEATURE_CLOCKSOURCE))
+        msr = MSR_KVM_SYSTEM_وقت;
+    وإلا
+        أرجع;
 
-    kvmclock = memalign_low(sizeof(*kvmclock), 32);
-    memset(kvmclock, 0, sizeof(*kvmclock));
-    u32 value = (u32)(kvmclock);
-    dprintf(1, "kvmclock: at 0x%x (msr 0x%x)\n", value, msr);
-    wrmsr(msr, value | 0x01);
+    kvmclock = memalign_هيٺيون(حجم(*kvmclock), 32);
+    memset(kvmclock, 0, حجم(*kvmclock));
+    u32 قدر = (u32)(kvmclock);
+    dprintf(1, "kvmclock: at 0x%x (msr 0x%x)\n", قدر, msr);
+    wrmsr(msr, قدر | 0x01);
 
-    if (!(kvmclock->flags & PVCLOCK_TSC_STABLE_BIT))
-        return;
-    u32 MHz = (1000 << 16) / (kvmclock->tsc_to_system_mul >> 16);
-    if (kvmclock->tsc_shift < 0)
-        MHz <<= -kvmclock->tsc_shift;
-    else
-        MHz >>= kvmclock->tsc_shift;
+    إذا (!(kvmclock->flags & PVCLOCK_TSC_STABLE_ٻٽو_انگ))
+        أرجع;
+    u32 MHz = (1000 << 16) / (kvmclock->tsc_منزل_system_mul >> 16);
+    إذا (kvmclock->tsc_سرڪايو < 0)
+        MHz <<= -kvmclock->tsc_سرڪايو;
+    وإلا
+        MHz >>= kvmclock->tsc_سرڪايو;
     dprintf(1, "kvmclock: stable tsc, %d MHz\n", MHz);
     tsctimer_setfreq(MHz * 1000, "kvmclock");
 }
 
-static void physbits(int qemu_quirk)
+ساكن فراغ physbits(صحيح qemu_quirk)
 {
-    unsigned int max, eax, ebx, ecx, edx;
-    unsigned int physbits;
-    char signature[13];
-    int pae = 0, valid = 0;
+    بنانشان صحيح max, eax, ebx, ecx, edx;
+    بنانشان صحيح physbits;
+    حرف signature[13];
+    صحيح pae = 0, valid = 0;
 
     cpuid(0, &eax, &ebx, &ecx, &edx);
-    memcpy(signature + 0, &ebx, 4);
-    memcpy(signature + 4, &edx, 4);
-    memcpy(signature + 8, &ecx, 4);
+    يادگيري_نقل(signature + 0, &ebx, 4);
+    يادگيري_نقل(signature + 4, &edx, 4);
+    يادگيري_نقل(signature + 8, &ecx, 4);
     signature[12] = 0;
-    if (eax >= 1) {
+    إذا (eax >= 1) {
         cpuid(1, &eax, &ebx, &ecx, &edx);
         pae = (edx & (1 << 6));
     }
@@ -154,173 +154,173 @@ static void physbits(int qemu_quirk)
     cpuid(0x80000000, &eax, &ebx, &ecx, &edx);
     max = eax;
 
-    if (max >= 0x80000001) {
+    إذا (max >= 0x80000001) {
         cpuid(0x80000001, &eax, &ebx, &ecx, &edx);
-        CPULongMode = !!(edx & (1 << 29));
+        CPULong_گهڻائي = !!(edx & (1 << 29));
     }
 
-    if (pae && CPULongMode && max >= 0x80000008) {
+    إذا (pae && CPULong_گهڻائي && max >= 0x80000008) {
         cpuid(0x80000008, &eax, &ebx, &ecx, &edx);
         physbits = (u8)eax;
-        if (!qemu_quirk) {
+        إذا (!qemu_quirk) {
             valid = 1;
-        } else if (physbits >= 41) {
+        } وإلا إذا (physbits >= 41) {
             valid = 1;
-        } else if (strcmp(signature, "GenuineIntel") == 0) {
-            if ((physbits == 36) || (physbits == 39))
+        } وإلا إذا (strcmp(signature, "GenuineIntel") == 0) {
+            إذا ((physbits == 36) || (physbits == 39))
                 valid = 1;
-        } else if (strcmp(signature, "AuthenticAMD") == 0) {
-            if (physbits == 40)
+        } وإلا إذا (strcmp(signature, "AuthenticAMD") == 0) {
+            إذا (physbits == 40)
                 valid = 1;
         }
-    } else {
+    } وإلا {
         physbits = pae ? 36 : 32;
         valid = 1;
     }
 
     dprintf(1, "%s: signature=\"%s\", pae=%s, lm=%s, phys-bits=%d, valid=%s\n",
-            __func__, signature, pae ? "yes" : "no", CPULongMode ? "yes" : "no",
+            __func__, signature, pae ? "yes" : "no", CPULong_گهڻائي ? "yes" : "no",
             physbits, valid ? "yes" : "no");
 
-    if (valid)
-        CPUPhysBits = physbits;
+    إذا (valid)
+        CPUPhys_بٽ = physbits;
 }
 
-static void qemu_detect(void)
+ساكن فراغ qemu_detect(فراغ)
 {
-    if (!CONFIG_QEMU_HARDWARE)
-        return;
+    إذا (!CONFIG_QEMU_HARDWARE)
+        أرجع;
 
     // Setup QEMU debug output port
     qemu_debug_preinit();
 
     // check northbridge @ 00:00.0
     u16 v = pci_config_readw(0, PCI_VENDOR_ID);
-    if (v == 0x0000 || v == 0xffff)
-        return;
+    إذا (v == 0x0000 || v == 0xffff)
+        أرجع;
     u16 d = pci_config_readw(0, PCI_DEVICE_ID);
     u16 sv = pci_config_readw(0, PCI_SUBSYSTEM_VENDOR_ID);
     u16 sd = pci_config_readw(0, PCI_SUBSYSTEM_ID);
 
-    if (sv != 0x1af4 || /* Red Hat, Inc */
+    إذا (sv != 0x1af4 || /* Red Hat, Inc */
         sd != 0x1100)   /* Qemu virtual machine */
-        return;
+        أرجع;
 
     PlatformRunningOn |= PF_QEMU;
-    switch (d) {
-    case 0x1237:
+    بدل (d) {
+    حالة 0x1237:
         dprintf(1, "Running on QEMU (i440fx)\n");
-        break;
-    case 0x29c0:
+        اكسر;
+    حالة 0x29c0:
         dprintf(1, "Running on QEMU (q35)\n");
-        break;
-    default:
+        اكسر;
+    افتراضي:
         dprintf(1, "Running on QEMU (unknown nb: %04x:%04x)\n", v, d);
-        break;
+        اكسر;
     }
     physbits(1);
 }
 
-static int qemu_early_e820(void);
+ساكن صحيح qemu_early_e820(فراغ);
 
-void
-qemu_preinit(void)
+فراغ
+qemu_preinit(فراغ)
 {
     qemu_detect();
     kvm_detect();
 
-    if (!CONFIG_QEMU)
-        return;
+    إذا (!CONFIG_QEMU)
+        أرجع;
 
-    if (runningOnXen()) {
+    إذا (runningOnXen()) {
         xen_ramsize_preinit();
-        return;
+        أرجع;
     }
 
     // try read e820 table first
-    if (!qemu_early_e820()) {
+    إذا (!qemu_early_e820()) {
         // when it fails get memory size from nvram.
-        u32 rs = ((rtc_read(CMOS_MEM_EXTMEM2_LOW) << 16)
-                  | (rtc_read(CMOS_MEM_EXTMEM2_HIGH) << 24));
-        if (rs)
+        u32 rs = ((rtc_read(CMOS_MEM_EXTMEM2_هيٺيون) << 16)
+                  | (rtc_read(CMOS_MEM_EXTMEM2_مٿاهون) << 24));
+        إذا (rs)
             rs += 16 * 1024 * 1024;
-        else
-            rs = (((rtc_read(CMOS_MEM_EXTMEM_LOW) << 10)
-                   | (rtc_read(CMOS_MEM_EXTMEM_HIGH) << 18))
+        وإلا
+            rs = (((rtc_read(CMOS_MEM_EXTMEM_هيٺيون) << 10)
+                   | (rtc_read(CMOS_MEM_EXTMEM_مٿاهون) << 18))
                   + 1 * 1024 * 1024);
-        RamSize = rs;
-        e820_add(0, rs, E820_RAM);
-        dprintf(1, "RamSize: 0x%08x [cmos]\n", RamSize);
+        Ram_سائيز = rs;
+        e820_جوڙيو(0, rs, E820_RAM);
+        dprintf(1, "RamSize: 0x%08x [cmos]\n", Ram_سائيز);
     }
 
     /* reserve 256KB BIOS area at the end of 4 GB */
-    e820_add(0xfffc0000, 256*1024, E820_RESERVED);
+    e820_جوڙيو(0xfffc0000, 256*1024, E820_RESERVED);
 }
 
-#define MSR_IA32_FEATURE_CONTROL 0x0000003a
+#وصف_ڪريو MSR_IA32_FEATURE_CONTROL 0x0000003a
 
-static void msr_feature_control_setup(void)
+ساكن فراغ msr_feature_control_تياري(فراغ)
 {
-    u64 feature_control_bits = romfile_loadint("etc/msr_feature_control", 0);
-    if (feature_control_bits)
-        wrmsr_smp(MSR_IA32_FEATURE_CONTROL, feature_control_bits);
+    u64 feature_control_بٽ = romfile_loadint("etc/msr_feature_control", 0);
+    إذا (feature_control_بٽ)
+        wrmsr_smp(MSR_IA32_FEATURE_CONTROL, feature_control_بٽ);
 }
 
-void
-qemu_platform_setup(void)
+فراغ
+qemu_platform_تياري(فراغ)
 {
-    if (!CONFIG_QEMU)
-        return;
+    إذا (!CONFIG_QEMU)
+        أرجع;
 
-    if (runningOnXen()) {
+    إذا (runningOnXen()) {
         pci_probe_devices();
-        xen_hypercall_setup();
-        xen_biostable_setup();
-        return;
+        xen_hypercall_تياري();
+        xen_biostable_تياري();
+        أرجع;
     }
 
     kvmclock_init();
 
     // Initialize pci
-    pci_setup();
-    smm_device_setup();
-    smm_setup();
+    pci_تياري();
+    smm_device_تياري();
+    smm_تياري();
 
     // Initialize mtrr, msr_feature_control and smp
-    mtrr_setup();
-    msr_feature_control_setup();
-    smp_setup();
+    mtrr_تياري();
+    msr_feature_control_تياري();
+    smp_تياري();
 
     // Create bios tables
-    if (MaxCountCPUs <= 255) {
-        pirtable_setup();
-        mptable_setup();
+    إذا (Max_ڳڻپ_CPUs <= 255) {
+        pirtable_تياري();
+        mptable_تياري();
     }
-    smbios_setup();
+    smbios_تياري();
 
-    if (CONFIG_FW_ROMFILE_LOAD) {
-        int loader_err;
+    إذا (CONFIG_FW_ROMFILE_ڀريو) {
+        صحيح loader_err;
 
         dprintf(3, "load ACPI tables\n");
 
         loader_err = romfile_loader_execute("etc/table-loader");
 
-        RsdpAddr = find_acpi_rsdp();
+        RsdpAddr = ڳوليو_acpi_rsdp();
 
-        if (RsdpAddr) {
+        إذا (RsdpAddr) {
             acpi_dsdt_parse();
-            virtio_mmio_setup_acpi();
-            return;
+            virtio_mmio_تياري_acpi();
+            أرجع;
         }
         /* If present, loader should have installed an RSDP.
          * Not installed? We might still be able to continue
          * using the builtin RSDP.
          */
-        if (!loader_err)
+        إذا (!loader_err)
             warn_internalerror();
     }
 
-    acpi_setup();
+    acpi_تياري();
 }
 
 
@@ -330,466 +330,466 @@ qemu_platform_setup(void)
 
 // List of QEMU fw_cfg entries.  DO NOT ADD MORE.  (All new content
 // should be passed via the fw_cfg "file" interface.)
-#define QEMU_CFG_SIGNATURE              0x00
-#define QEMU_CFG_ID                     0x01
-#define QEMU_CFG_UUID                   0x02
-#define QEMU_CFG_NOGRAPHIC              0x04
-#define QEMU_CFG_NUMA                   0x0d
-#define QEMU_CFG_BOOT_MENU              0x0e
-#define QEMU_CFG_NB_CPUS                0x05
-#define QEMU_CFG_MAX_CPUS               0x0f
-#define QEMU_CFG_FILE_DIR               0x19
-#define QEMU_CFG_ARCH_LOCAL             0x8000
-#define QEMU_CFG_ACPI_TABLES            (QEMU_CFG_ARCH_LOCAL + 0)
-#define QEMU_CFG_SMBIOS_ENTRIES         (QEMU_CFG_ARCH_LOCAL + 1)
-#define QEMU_CFG_IRQ0_OVERRIDE          (QEMU_CFG_ARCH_LOCAL + 2)
-#define QEMU_CFG_E820_TABLE             (QEMU_CFG_ARCH_LOCAL + 3)
+#وصف_ڪريو QEMU_CFG_SIGNATURE              0x00
+#وصف_ڪريو QEMU_CFG_ID                     0x01
+#وصف_ڪريو QEMU_CFG_UUID                   0x02
+#وصف_ڪريو QEMU_CFG_NOGRAPHIC              0x04
+#وصف_ڪريو QEMU_CFG_NUMA                   0x0d
+#وصف_ڪريو QEMU_CFG_BOOT_MENU              0x0e
+#وصف_ڪريو QEMU_CFG_NB_CPUS                0x05
+#وصف_ڪريو QEMU_CFG_MAX_CPUS               0x0f
+#وصف_ڪريو QEMU_CFG_FILE_DIR               0x19
+#وصف_ڪريو QEMU_CFG_ARCH_LOCAL             0x8000
+#وصف_ڪريو QEMU_CFG_ACPI_TABLES            (QEMU_CFG_ARCH_LOCAL + 0)
+#وصف_ڪريو QEMU_CFG_SMBIOS_ENTRIES         (QEMU_CFG_ARCH_LOCAL + 1)
+#وصف_ڪريو QEMU_CFG_IRQ0_OVERRIDE          (QEMU_CFG_ARCH_LOCAL + 2)
+#وصف_ڪريو QEMU_CFG_E820_جدول             (QEMU_CFG_ARCH_LOCAL + 3)
 
-static void
+ساكن فراغ
 qemu_cfg_select(u16 f)
 {
-    outw(f, PORT_QEMU_CFG_CTL);
+    outw(f, پورٽ_QEMU_CFG_CTL);
 }
 
-static void
-qemu_cfg_dma_transfer(void *address, u32 length, u32 control)
+ساكن فراغ
+qemu_cfg_dma_transfer(فراغ *پتو, u32 ڊيگهائي, u32 control)
 {
     QemuCfgDmaAccess access;
 
-    access.address = cpu_to_be64((u64)(u32)address);
-    access.length = cpu_to_be32(length);
-    access.control = cpu_to_be32(control);
+    access.پتو = cpu_منزل_be64((u64)(u32)پتو);
+    access.ڊيگهائي = cpu_منزل_be32(ڊيگهائي);
+    access.control = cpu_منزل_be32(control);
 
     barrier();
 
-    outl(cpu_to_be32((u32)&access), PORT_QEMU_CFG_DMA_ADDR_LOW);
+    outl(cpu_منزل_be32((u32)&access), پورٽ_QEMU_CFG_DMA_ADDR_هيٺيون);
 
-    while(be32_to_cpu(access.control) & ~QEMU_CFG_DMA_CTL_ERROR) {
+    طالما(be32_منزل_cpu(access.control) & ~QEMU_CFG_DMA_CTL_ERROR) {
         yield();
     }
 }
 
-static void
-qemu_cfg_read(void *buf, int len)
+ساكن فراغ
+qemu_cfg_read(فراغ *buf, صحيح len)
 {
-    if (len == 0) {
-        return;
+    إذا (len == 0) {
+        أرجع;
     }
 
-    if (qemu_cfg_dma_enabled()) {
+    إذا (qemu_cfg_dma_enabled()) {
         qemu_cfg_dma_transfer(buf, len, QEMU_CFG_DMA_CTL_READ);
-    } else {
-        insb(PORT_QEMU_CFG_DATA, buf, len);
+    } وإلا {
+        insb(پورٽ_QEMU_CFG_معلومات, buf, len);
     }
 }
 
-static void
-qemu_cfg_write(void *buf, int len)
+ساكن فراغ
+qemu_cfg_write(فراغ *buf, صحيح len)
 {
-    if (len == 0) {
-        return;
+    إذا (len == 0) {
+        أرجع;
     }
 
-    if (qemu_cfg_dma_enabled()) {
+    إذا (qemu_cfg_dma_enabled()) {
         qemu_cfg_dma_transfer(buf, len, QEMU_CFG_DMA_CTL_WRITE);
-    } else {
+    } وإلا {
         warn_internalerror();
     }
 }
 
-static void
-qemu_cfg_skip(int len)
+ساكن فراغ
+qemu_cfg_skip(صحيح len)
 {
-    if (len == 0) {
-        return;
+    إذا (len == 0) {
+        أرجع;
     }
 
-    if (qemu_cfg_dma_enabled()) {
+    إذا (qemu_cfg_dma_enabled()) {
         qemu_cfg_dma_transfer(0, len, QEMU_CFG_DMA_CTL_SKIP);
-    } else {
-        while (len--)
-            inb(PORT_QEMU_CFG_DATA);
+    } وإلا {
+        طالما (len--)
+            inb(پورٽ_QEMU_CFG_معلومات);
     }
 }
 
-static void
-qemu_cfg_read_entry(void *buf, int e, int len)
+ساكن فراغ
+qemu_cfg_read_داخلا(فراغ *buf, صحيح e, صحيح len)
 {
-    if (qemu_cfg_dma_enabled()) {
+    إذا (qemu_cfg_dma_enabled()) {
         u32 control = (e << 16) | QEMU_CFG_DMA_CTL_SELECT
                         | QEMU_CFG_DMA_CTL_READ;
         qemu_cfg_dma_transfer(buf, len, control);
-    } else {
+    } وإلا {
         qemu_cfg_select(e);
         qemu_cfg_read(buf, len);
     }
 }
 
-static void
-qemu_cfg_write_entry(void *buf, int e, int len)
+ساكن فراغ
+qemu_cfg_write_داخلا(فراغ *buf, صحيح e, صحيح len)
 {
-    if (qemu_cfg_dma_enabled()) {
+    إذا (qemu_cfg_dma_enabled()) {
         u32 control = (e << 16) | QEMU_CFG_DMA_CTL_SELECT
                         | QEMU_CFG_DMA_CTL_WRITE;
         qemu_cfg_dma_transfer(buf, len, control);
-    } else {
+    } وإلا {
         warn_internalerror();
     }
 }
 
-struct qemu_romfile_s {
-    struct romfile_s file;
-    int select, skip;
+بنية qemu_romfile_s {
+    بنية romfile_s file;
+    صحيح select, skip;
 };
 
-static int
-qemu_cfg_read_file(struct romfile_s *file, void *dst, u32 maxlen)
+ساكن صحيح
+qemu_cfg_read_file(بنية romfile_s *file, فراغ *dst, u32 maxlen)
 {
-    if (file->size > maxlen)
-        return -1;
-    struct qemu_romfile_s *qfile;
-    qfile = container_of(file, struct qemu_romfile_s, file);
-    if (qfile->skip == 0) {
+    إذا (file->سائيز > maxlen)
+        أرجع -1;
+    بنية qemu_romfile_s *qfile;
+    qfile = container_جو(file, بنية qemu_romfile_s, file);
+    إذا (qfile->skip == 0) {
         /* Do it in one transfer */
-        qemu_cfg_read_entry(dst, qfile->select, file->size);
-    } else {
+        qemu_cfg_read_داخلا(dst, qfile->select, file->سائيز);
+    } وإلا {
         qemu_cfg_select(qfile->select);
         qemu_cfg_skip(qfile->skip);
-        qemu_cfg_read(dst, file->size);
+        qemu_cfg_read(dst, file->سائيز);
     }
-    return file->size;
+    أرجع file->سائيز;
 }
 
 // Bare-bones function for writing a file knowing only its unique
 // identifying key (select)
-int
-qemu_cfg_write_file_simple(void *src, u16 key, u32 offset, u32 len)
+صحيح
+qemu_cfg_write_file_simple(فراغ *src, u16 ڪنجي, u32 وٿي_2, u32 len)
 {
-    if (offset == 0) {
+    إذا (وٿي_2 == 0) {
         /* Do it in one transfer */
-        qemu_cfg_write_entry(src, key, len);
-    } else {
-        qemu_cfg_select(key);
-        qemu_cfg_skip(offset);
+        qemu_cfg_write_داخلا(src, ڪنجي, len);
+    } وإلا {
+        qemu_cfg_select(ڪنجي);
+        qemu_cfg_skip(وٿي_2);
         qemu_cfg_write(src, len);
     }
-    return len;
+    أرجع len;
 }
 
-int
-qemu_cfg_write_file(void *src, struct romfile_s *file, u32 offset, u32 len)
+صحيح
+qemu_cfg_write_file(فراغ *src, بنية romfile_s *file, u32 وٿي_2, u32 len)
 {
-    if ((offset + len) > file->size)
-        return -1;
+    إذا ((وٿي_2 + len) > file->سائيز)
+        أرجع -1;
 
-    if (!qemu_cfg_dma_enabled() || (file->copy != qemu_cfg_read_file)) {
+    إذا (!qemu_cfg_dma_enabled() || (file->copy != qemu_cfg_read_file)) {
         warn_internalerror();
-        return -1;
+        أرجع -1;
     }
-    return qemu_cfg_write_file_simple(src, qemu_get_romfile_key(file),
-                                      offset, len);
+    أرجع qemu_cfg_write_file_simple(src, qemu_get_romfile_ڪنجي(file),
+                                      وٿي_2, len);
 }
 
-static void
-qemu_romfile_add(char *name, int select, int skip, int size)
+ساكن فراغ
+qemu_romfile_جوڙيو(حرف *name, صحيح select, صحيح skip, صحيح سائيز)
 {
-    struct qemu_romfile_s *qfile = malloc_tmp(sizeof(*qfile));
-    if (!qfile) {
+    بنية qemu_romfile_s *qfile = malloc_tmp(حجم(*qfile));
+    إذا (!qfile) {
         warn_noalloc();
-        return;
+        أرجع;
     }
-    memset(qfile, 0, sizeof(*qfile));
-    strtcpy(qfile->file.name, name, sizeof(qfile->file.name));
-    qfile->file.size = size;
+    memset(qfile, 0, حجم(*qfile));
+    strtcpy(qfile->file.name, name, حجم(qfile->file.name));
+    qfile->file.سائيز = سائيز;
     qfile->select = select;
     qfile->skip = skip;
     qfile->file.copy = qemu_cfg_read_file;
-    romfile_add(&qfile->file);
+    romfile_جوڙيو(&qfile->file);
 }
 
 u16
-qemu_get_romfile_key(struct romfile_s *file)
+qemu_get_romfile_ڪنجي(بنية romfile_s *file)
 {
-    struct qemu_romfile_s *qfile;
-    if (file->copy != qemu_cfg_read_file) {
+    بنية qemu_romfile_s *qfile;
+    إذا (file->copy != qemu_cfg_read_file) {
         warn_internalerror();
-        return 0;
+        أرجع 0;
     }
-    qfile = container_of(file, struct qemu_romfile_s, file);
-    return qfile->select;
+    qfile = container_جو(file, بنية qemu_romfile_s, file);
+    أرجع qfile->select;
 }
 
-static int rtc_present(void)
+ساكن صحيح rtc_present(فراغ)
 {
-    return rtc_read(CMOS_RTC_MONTH) != 0xff;
+    أرجع rtc_read(CMOS_RTC_MONTH) != 0xff;
 }
 
 u16
-qemu_get_present_cpus_count(void)
+qemu_get_present_cpus_ڳڻپ(فراغ)
 {
-    u16 smp_count = 0;
-    if (qemu_cfg_enabled()) {
-        qemu_cfg_read_entry(&smp_count, QEMU_CFG_NB_CPUS, sizeof(smp_count));
+    u16 smp_ڳڻپ = 0;
+    إذا (qemu_cfg_enabled()) {
+        qemu_cfg_read_داخلا(&smp_ڳڻپ, QEMU_CFG_NB_CPUS, حجم(smp_ڳڻپ));
     }
-    if (rtc_present()) {
-        u16 cmos_cpu_count = rtc_read(CMOS_BIOS_SMP_COUNT) + 1;
-        if (smp_count < cmos_cpu_count) {
-            smp_count = cmos_cpu_count;
+    إذا (rtc_present()) {
+        u16 cmos_cpu_ڳڻپ = rtc_read(CMOS_BIOS_SMP_ڳڻپ) + 1;
+        إذا (smp_ڳڻپ < cmos_cpu_ڳڻپ) {
+            smp_ڳڻپ = cmos_cpu_ڳڻپ;
         }
     }
-    return smp_count;
+    أرجع smp_ڳڻپ;
 }
 
-struct e820_reservation {
-    u64 address;
-    u64 length;
+بنية e820_reservation {
+    u64 پتو;
+    u64 ڊيگهائي;
     u32 type;
 };
 
-#define SMBIOS_FIELD_ENTRY 0
-#define SMBIOS_TABLE_ENTRY 1
+#وصف_ڪريو SMBIOS_ميدان_داخلا 0
+#وصف_ڪريو SMBIOS_جدول_داخلا 1
 
-struct qemu_smbios_header {
-    u16 length;
+بنية qemu_smbios_سرو {
+    u16 ڊيگهائي;
     u8 headertype;
     u8 tabletype;
     u16 fieldoffset;
 } PACKED;
 
-static void
-qemu_cfg_e820(void)
+ساكن فراغ
+qemu_cfg_e820(فراغ)
 {
-    if (!CONFIG_QEMU)
-        return;
+    إذا (!CONFIG_QEMU)
+        أرجع;
 
-    if (romfile_find("etc/e820")) {
+    إذا (romfile_ڳوليو("etc/e820")) {
         // qemu_early_e820() has handled everything
-        return;
+        أرجع;
     }
 
     // QEMU_CFG_E820_TABLE has reservations only
     u32 count32;
-    qemu_cfg_read_entry(&count32, QEMU_CFG_E820_TABLE, sizeof(count32));
-    if (count32) {
-        struct e820_reservation entry;
-        int i;
-        for (i = 0; i < count32; i++) {
-            qemu_cfg_read(&entry, sizeof(entry));
-            e820_add(entry.address, entry.length, entry.type);
+    qemu_cfg_read_داخلا(&count32, QEMU_CFG_E820_جدول, حجم(count32));
+    إذا (count32) {
+        بنية e820_reservation داخلا;
+        صحيح i;
+        لكل (i = 0; i < count32; i++) {
+            qemu_cfg_read(&داخلا, حجم(داخلا));
+            e820_جوڙيو(داخلا.پتو, داخلا.ڊيگهائي, داخلا.type);
         }
-    } else if (runningOnKVM()) {
+    } وإلا إذا (runningOnKVM()) {
         // Backwards compatibility - provide hard coded range.
         // 4 pages before the bios, 3 pages for vmx tss pages, the
         // other page for EPT real mode pagetable
-        e820_add(0xfffbc000, 4*4096, E820_RESERVED);
+        e820_جوڙيو(0xfffbc000, 4*4096, E820_RESERVED);
     }
 
     // Check for memory over 4Gig in cmos
-    u64 high = ((rtc_read(CMOS_MEM_HIGHMEM_LOW) << 16)
+    u64 مٿاهون = ((rtc_read(CMOS_MEM_HIGHMEM_هيٺيون) << 16)
                 | ((u32)rtc_read(CMOS_MEM_HIGHMEM_MID) << 24)
-                | ((u64)rtc_read(CMOS_MEM_HIGHMEM_HIGH) << 32));
-    RamSizeOver4G = high;
-    e820_add(0x100000000ull, high, E820_RAM);
-    dprintf(1, "RamSizeOver4G: 0x%016llx [cmos]\n", RamSizeOver4G);
+                | ((u64)rtc_read(CMOS_MEM_HIGHMEM_مٿاهون) << 32));
+    Ram_سائيز_Over4_G = مٿاهون;
+    e820_جوڙيو(0x100000000ull, مٿاهون, E820_RAM);
+    dprintf(1, "RamSizeOver4G: 0x%016llx [cmos]\n", Ram_سائيز_Over4_G);
 }
 
 // Populate romfile entries for legacy fw_cfg ports (that predate the
 // "file" interface).
-static void
-qemu_cfg_legacy(void)
+ساكن فراغ
+qemu_cfg_legacy(فراغ)
 {
-    if (!CONFIG_QEMU)
-        return;
+    إذا (!CONFIG_QEMU)
+        أرجع;
 
     // Misc config items.
-    qemu_romfile_add("etc/show-boot-menu", QEMU_CFG_BOOT_MENU, 0, 2);
-    qemu_romfile_add("etc/irq0-override", QEMU_CFG_IRQ0_OVERRIDE, 0, 1);
-    qemu_romfile_add("etc/max-cpus", QEMU_CFG_MAX_CPUS, 0, 2);
+    qemu_romfile_جوڙيو("etc/show-boot-menu", QEMU_CFG_BOOT_MENU, 0, 2);
+    qemu_romfile_جوڙيو("etc/irq0-override", QEMU_CFG_IRQ0_OVERRIDE, 0, 1);
+    qemu_romfile_جوڙيو("etc/max-cpus", QEMU_CFG_MAX_CPUS, 0, 2);
 
     // NUMA data
     u64 numacount;
-    qemu_cfg_read_entry(&numacount, QEMU_CFG_NUMA, sizeof(numacount));
-    int max_cpu = romfile_loadint("etc/max-cpus", 0);
-    qemu_romfile_add("etc/numa-cpu-map", QEMU_CFG_NUMA, sizeof(numacount)
-                     , max_cpu*sizeof(u64));
-    qemu_romfile_add("etc/numa-nodes", QEMU_CFG_NUMA
-                     , sizeof(numacount) + max_cpu*sizeof(u64)
-                     , numacount*sizeof(u64));
+    qemu_cfg_read_داخلا(&numacount, QEMU_CFG_NUMA, حجم(numacount));
+    صحيح max_cpu = romfile_loadint("etc/max-cpus", 0);
+    qemu_romfile_جوڙيو("etc/numa-cpu-map", QEMU_CFG_NUMA, حجم(numacount)
+                     , max_cpu*حجم(u64));
+    qemu_romfile_جوڙيو("etc/numa-nodes", QEMU_CFG_NUMA
+                     , حجم(numacount) + max_cpu*حجم(u64)
+                     , numacount*حجم(u64));
 
     // ACPI tables
-    char name[128];
+    حرف name[128];
     u16 cnt;
-    qemu_cfg_read_entry(&cnt, QEMU_CFG_ACPI_TABLES, sizeof(cnt));
-    int i, offset = sizeof(cnt);
-    for (i = 0; i < cnt; i++) {
+    qemu_cfg_read_داخلا(&cnt, QEMU_CFG_ACPI_TABLES, حجم(cnt));
+    صحيح i, وٿي_2 = حجم(cnt);
+    لكل (i = 0; i < cnt; i++) {
         u16 len;
-        qemu_cfg_read(&len, sizeof(len));
-        offset += sizeof(len);
-        snprintf(name, sizeof(name), "acpi/table%d", i);
-        qemu_romfile_add(name, QEMU_CFG_ACPI_TABLES, offset, len);
+        qemu_cfg_read(&len, حجم(len));
+        وٿي_2 += حجم(len);
+        snprintf(name, حجم(name), "acpi/table%d", i);
+        qemu_romfile_جوڙيو(name, QEMU_CFG_ACPI_TABLES, وٿي_2, len);
         qemu_cfg_skip(len);
-        offset += len;
+        وٿي_2 += len;
     }
 
     // SMBIOS info
-    qemu_cfg_read_entry(&cnt, QEMU_CFG_SMBIOS_ENTRIES, sizeof(cnt));
-    offset = sizeof(cnt);
-    for (i = 0; i < cnt; i++) {
-        struct qemu_smbios_header header;
-        qemu_cfg_read(&header, sizeof(header));
-        if (header.headertype == SMBIOS_FIELD_ENTRY) {
-            snprintf(name, sizeof(name), "smbios/field%d-%d"
-                     , header.tabletype, header.fieldoffset);
-            qemu_romfile_add(name, QEMU_CFG_SMBIOS_ENTRIES
-                             , offset + sizeof(header)
-                             , header.length - sizeof(header));
-        } else {
-            snprintf(name, sizeof(name), "smbios/table%d-%d"
-                     , header.tabletype, i);
-            qemu_romfile_add(name, QEMU_CFG_SMBIOS_ENTRIES
-                             , offset + 3, header.length - 3);
+    qemu_cfg_read_داخلا(&cnt, QEMU_CFG_SMBIOS_ENTRIES, حجم(cnt));
+    وٿي_2 = حجم(cnt);
+    لكل (i = 0; i < cnt; i++) {
+        بنية qemu_smbios_سرو سرو;
+        qemu_cfg_read(&سرو, حجم(سرو));
+        إذا (سرو.headertype == SMBIOS_ميدان_داخلا) {
+            snprintf(name, حجم(name), "smbios/field%d-%d"
+                     , سرو.tabletype, سرو.fieldoffset);
+            qemu_romfile_جوڙيو(name, QEMU_CFG_SMBIOS_ENTRIES
+                             , وٿي_2 + حجم(سرو)
+                             , سرو.ڊيگهائي - حجم(سرو));
+        } وإلا {
+            snprintf(name, حجم(name), "smbios/table%d-%d"
+                     , سرو.tabletype, i);
+            qemu_romfile_جوڙيو(name, QEMU_CFG_SMBIOS_ENTRIES
+                             , وٿي_2 + 3, سرو.ڊيگهائي - 3);
         }
-        qemu_cfg_skip(header.length - sizeof(header));
-        offset += header.length;
+        qemu_cfg_skip(سرو.ڊيگهائي - حجم(سرو));
+        وٿي_2 += سرو.ڊيگهائي;
     }
 }
 
-struct QemuCfgFile {
-    u32  size;        /* file size */
+بنية QemuCfgFile {
+    u32  سائيز;        /* file size */
     u16  select;      /* write this to 0x510 to read it */
     u16  reserved;
-    char name[56];
+    حرف name[56];
 };
 
-static int qemu_cfg_detect(void)
+ساكن صحيح qemu_cfg_detect(فراغ)
 {
-    if (cfg_enabled)
-        return 1;
+    إذا (cfg_enabled)
+        أرجع 1;
 
     // Detect fw_cfg interface.
     qemu_cfg_select(QEMU_CFG_SIGNATURE);
-    char *sig = "QEMU";
-    int i;
-    for (i = 0; i < 4; i++)
-        if (inb(PORT_QEMU_CFG_DATA) != sig[i])
-            return 0;
+    حرف *sig = "QEMU";
+    صحيح i;
+    لكل (i = 0; i < 4; i++)
+        إذا (inb(پورٽ_QEMU_CFG_معلومات) != sig[i])
+            أرجع 0;
 
     dprintf(1, "Found QEMU fw_cfg\n");
     cfg_enabled = 1;
 
     // Detect DMA interface.
     u32 id;
-    qemu_cfg_read_entry(&id, QEMU_CFG_ID, sizeof(id));
+    qemu_cfg_read_داخلا(&id, QEMU_CFG_ID, حجم(id));
 
-    if (id & QEMU_CFG_VERSION_DMA) {
+    إذا (id & QEMU_CFG_نسخو_DMA) {
         dprintf(1, "QEMU fw_cfg DMA interface supported\n");
         cfg_dma_enabled = 1;
     }
-    return 1;
+    أرجع 1;
 }
 
-void qemu_cfg_init(void)
+فراغ qemu_cfg_init(فراغ)
 {
-    if (!runningOnQEMU())
-        return;
+    إذا (!runningOnQEMU())
+        أرجع;
 
-    if (!qemu_cfg_detect())
-        return;
+    إذا (!qemu_cfg_detect())
+        أرجع;
 
     // Populate romfiles for legacy fw_cfg entries
     qemu_cfg_legacy();
 
     // Load files found in the fw_cfg file directory
-    u32 count;
-    qemu_cfg_read_entry(&count, QEMU_CFG_FILE_DIR, sizeof(count));
-    count = be32_to_cpu(count);
+    u32 ڳڻپ;
+    qemu_cfg_read_داخلا(&ڳڻپ, QEMU_CFG_FILE_DIR, حجم(ڳڻپ));
+    ڳڻپ = be32_منزل_cpu(ڳڻپ);
     u32 e;
-    for (e = 0; e < count; e++) {
-        struct QemuCfgFile qfile;
-        qemu_cfg_read(&qfile, sizeof(qfile));
-        qemu_romfile_add(qfile.name, be16_to_cpu(qfile.select)
-                         , 0, be32_to_cpu(qfile.size));
+    لكل (e = 0; e < ڳڻپ; e++) {
+        بنية QemuCfgFile qfile;
+        qemu_cfg_read(&qfile, حجم(qfile));
+        qemu_romfile_جوڙيو(qfile.name, be16_منزل_cpu(qfile.select)
+                         , 0, be32_منزل_cpu(qfile.سائيز));
     }
 
     qemu_cfg_e820();
 
-    if (romfile_find("etc/table-loader")) {
-        acpi_pm_base = 0x0600;
-        dprintf(1, "Moving pm_base to 0x%x\n", acpi_pm_base);
+    إذا (romfile_ڳوليو("etc/table-loader")) {
+        acpi_pm_بنياد = 0x0600;
+        dprintf(1, "Moving pm_base to 0x%x\n", acpi_pm_بنياد);
     }
 
     // serial console
     u16 nogfx = 0;
-    qemu_cfg_read_entry(&nogfx, QEMU_CFG_NOGRAPHIC, sizeof(nogfx));
-    if (nogfx && !romfile_find("etc/sercon-port")
-        && !romfile_find("vgaroms/sgabios.bin"))
-        const_romfile_add_int("etc/sercon-port", PORT_SERIAL1);
+    qemu_cfg_read_داخلا(&nogfx, QEMU_CFG_NOGRAPHIC, حجم(nogfx));
+    إذا (nogfx && !romfile_ڳوليو("etc/sercon-port")
+        && !romfile_ڳوليو("vgaroms/sgabios.bin"))
+        const_romfile_جوڙيو_int("etc/sercon-port", پورٽ_SERIAL1);
 }
 
 /*
  * This runs before malloc and romfile are ready, so we have to work
  * with stack allocations and read from fw_cfg in chunks.
  */
-static int qemu_early_e820(void)
+ساكن صحيح qemu_early_e820(فراغ)
 {
-    struct e820_reservation table;
-    struct QemuCfgFile qfile;
-    u32 select = 0, size = 0;
-    u32 count, i;
+    بنية e820_reservation جدول;
+    بنية QemuCfgFile qfile;
+    u32 select = 0, سائيز = 0;
+    u32 ڳڻپ, i;
 
-    if (!qemu_cfg_detect())
-        return 0;
+    إذا (!qemu_cfg_detect())
+        أرجع 0;
 
     // find e820 table
-    qemu_cfg_read_entry(&count, QEMU_CFG_FILE_DIR, sizeof(count));
-    count = be32_to_cpu(count);
-    for (i = 0; i < count; i++) {
-        qemu_cfg_read(&qfile, sizeof(qfile));
-        if (memcmp(qfile.name, "etc/e820", 9) != 0)
-            continue;
-        select = be16_to_cpu(qfile.select);
-        size = be32_to_cpu(qfile.size);
-        break;
+    qemu_cfg_read_داخلا(&ڳڻپ, QEMU_CFG_FILE_DIR, حجم(ڳڻپ));
+    ڳڻپ = be32_منزل_cpu(ڳڻپ);
+    لكل (i = 0; i < ڳڻپ; i++) {
+        qemu_cfg_read(&qfile, حجم(qfile));
+        إذا (memcmp(qfile.name, "etc/e820", 9) != 0)
+            استمر;
+        select = be16_منزل_cpu(qfile.select);
+        سائيز = be32_منزل_cpu(qfile.سائيز);
+        اكسر;
     }
-    if (select == 0) {
+    إذا (select == 0) {
         // may happen on old qemu
         dprintf(1, "qemu/e820: fw_cfg file etc/e820 not found\n");
-        return 0;
+        أرجع 0;
     }
 
     // walk e820 table
     qemu_cfg_select(select);
-    count = size/sizeof(table);
-    for (i = 0, select = 0; i < count; i++) {
-        qemu_cfg_read(&table, sizeof(table));
-        switch (table.type) {
-        case E820_RESERVED:
-            e820_add(table.address, table.length, table.type);
+    ڳڻپ = سائيز/حجم(جدول);
+    لكل (i = 0, select = 0; i < ڳڻپ; i++) {
+        qemu_cfg_read(&جدول, حجم(جدول));
+        بدل (جدول.type) {
+        حالة E820_RESERVED:
+            e820_جوڙيو(جدول.پتو, جدول.ڊيگهائي, جدول.type);
             dprintf(1, "qemu/e820: addr 0x%016llx len 0x%016llx [reserved]\n",
-                    table.address, table.length);
-            break;
-        case E820_SOFT_RESERVED:
-            e820_add(table.address, table.length, table.type);
+                    جدول.پتو, جدول.ڊيگهائي);
+            اكسر;
+        حالة E820_SOFT_RESERVED:
+            e820_جوڙيو(جدول.پتو, جدول.ڊيگهائي, جدول.type);
             dprintf(1, "qemu/e820: addr 0x%016llx len 0x%016llx [soft-reserved]\n",
-                    table.address, table.length);
-            break;
-        case E820_RAM:
-            e820_add(table.address, table.length, table.type);
+                    جدول.پتو, جدول.ڊيگهائي);
+            اكسر;
+        حالة E820_RAM:
+            e820_جوڙيو(جدول.پتو, جدول.ڊيگهائي, جدول.type);
             dprintf(1, "qemu/e820: addr 0x%016llx len 0x%016llx [RAM]\n",
-                    table.address, table.length);
-            if (table.address < 0x100000000LL) {
+                    جدول.پتو, جدول.ڊيگهائي);
+            إذا (جدول.پتو < 0x100000000LL) {
                 // below 4g
-                if (RamSize < table.address + table.length)
-                    RamSize = table.address + table.length;
-            } else {
+                إذا (Ram_سائيز < جدول.پتو + جدول.ڊيگهائي)
+                    Ram_سائيز = جدول.پتو + جدول.ڊيگهائي;
+            } وإلا {
                 // above 4g
-                if (RamSizeOver4G < table.address + table.length - 0x100000000LL)
-                    RamSizeOver4G = table.address + table.length - 0x100000000LL;
+                إذا (Ram_سائيز_Over4_G < جدول.پتو + جدول.ڊيگهائي - 0x100000000LL)
+                    Ram_سائيز_Over4_G = جدول.پتو + جدول.ڊيگهائي - 0x100000000LL;
             }
         }
     }
 
-    dprintf(3, "qemu/e820: RamSize: 0x%08x\n", RamSize);
-    dprintf(3, "qemu/e820: RamSizeOver4G: 0x%016llx\n", RamSizeOver4G);
-    return 1;
+    dprintf(3, "qemu/e820: RamSize: 0x%08x\n", Ram_سائيز);
+    dprintf(3, "qemu/e820: RamSizeOver4G: 0x%016llx\n", Ram_سائيز_Over4_G);
+    أرجع 1;
 }

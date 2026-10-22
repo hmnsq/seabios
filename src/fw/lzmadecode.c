@@ -19,105 +19,105 @@
   to this file, however, are subject to the LGPL or CPL terms.
 */
 
-#include "lzmadecode.h"
+#ضمن "lzmadecode.h"
 
-#define kNumTopBits 24
-#define kTopValue ((UInt32)1 << kNumTopBits)
+#وصف_ڪريو k_انگ_چوٽي_بٽ 24
+#وصف_ڪريو k_چوٽي_قدر ((UInt32)1 << k_انگ_چوٽي_بٽ)
 
-#define kNumBitModelTotalBits 11
-#define kBitModelTotal (1 << kNumBitModelTotalBits)
-#define kNumMoveBits 5
+#وصف_ڪريو k_انگ_ٻٽو_انگ_Model_ڪل_بٽ 11
+#وصف_ڪريو k_ٻٽو_انگ_Model_ڪل (1 << k_انگ_ٻٽو_انگ_Model_ڪل_بٽ)
+#وصف_ڪريو k_انگ_Move_بٽ 5
 
-#define RC_READ_BYTE (*Buffer++)
+#وصف_ڪريو RC_READ_BYTE (*بفر_2++)
 
-#define RC_INIT2 Code = 0; Range = 0xFFFFFFFF; \
-  { int i; for(i = 0; i < 5; i++) { RC_TEST; Code = (Code << 8) | RC_READ_BYTE; }}
+#وصف_ڪريو RC_INIT2 ڪوڊ_2 = 0; Range = 0xFFFFFFFF; \
+  { صحيح i; لكل(i = 0; i < 5; i++) { RC_TEST; ڪوڊ_2 = (ڪوڊ_2 << 8) | RC_READ_BYTE; }}
 
 
-#define RC_TEST { if (Buffer == BufferLim) return LZMA_RESULT_DATA_ERROR; }
+#وصف_ڪريو RC_TEST { إذا (بفر_2 == بفر_Lim) أرجع LZMA_نتيجو_معلومات_ERROR; }
 
-#define RC_INIT(buffer, bufferSize) Buffer = buffer; BufferLim = buffer + bufferSize; RC_INIT2
+#وصف_ڪريو RC_INIT(بفر, بفر_سائيز) بفر_2 = بفر; بفر_Lim = بفر + بفر_سائيز; RC_INIT2
  
 
-#define RC_NORMALIZE if (Range < kTopValue) { RC_TEST; Range <<= 8; Code = (Code << 8) | RC_READ_BYTE; }
+#وصف_ڪريو RC_NORMALIZE إذا (Range < k_چوٽي_قدر) { RC_TEST; Range <<= 8; ڪوڊ_2 = (ڪوڊ_2 << 8) | RC_READ_BYTE; }
 
-#define IfBit0(p) RC_NORMALIZE; bound = (Range >> kNumBitModelTotalBits) * *(p); if (Code < bound)
-#define UpdateBit0(p) Range = bound; *(p) += (kBitModelTotal - *(p)) >> kNumMoveBits;
-#define UpdateBit1(p) Range -= bound; Code -= bound; *(p) -= (*(p)) >> kNumMoveBits;
+#وصف_ڪريو IfBit0(p) RC_NORMALIZE; bound = (Range >> k_انگ_ٻٽو_انگ_Model_ڪل_بٽ) * *(p); إذا (ڪوڊ_2 < bound)
+#وصف_ڪريو UpdateBit0(p) Range = bound; *(p) += (k_ٻٽو_انگ_Model_ڪل - *(p)) >> k_انگ_Move_بٽ;
+#وصف_ڪريو UpdateBit1(p) Range -= bound; ڪوڊ_2 -= bound; *(p) -= (*(p)) >> k_انگ_Move_بٽ;
 
-#define RC_GET_BIT2(p, mi, A0, A1) IfBit0(p) \
-  { UpdateBit0(p); mi <<= 1; A0; } else \
+#وصف_ڪريو RC_GET_BIT2(p, mi, A0, A1) IfBit0(p) \
+  { UpdateBit0(p); mi <<= 1; A0; } وإلا \
   { UpdateBit1(p); mi = (mi + mi) + 1; A1; } 
   
-#define RC_GET_BIT(p, mi) RC_GET_BIT2(p, mi, ; , ;)               
+#وصف_ڪريو RC_GET_ٻٽو_انگ(p, mi) RC_GET_BIT2(p, mi, ; , ;)               
 
-#define RangeDecoderBitTreeDecode(probs, numLevels, res) \
-  { int i = numLevels; res = 1; \
-  do { CProb *cp = probs + res; RC_GET_BIT(cp, res) } while(--i != 0); \
-  res -= (1 << numLevels); }
-
-
-#define kNumPosBitsMax 4
-#define kNumPosStatesMax (1 << kNumPosBitsMax)
-
-#define kLenNumLowBits 3
-#define kLenNumLowSymbols (1 << kLenNumLowBits)
-#define kLenNumMidBits 3
-#define kLenNumMidSymbols (1 << kLenNumMidBits)
-#define kLenNumHighBits 8
-#define kLenNumHighSymbols (1 << kLenNumHighBits)
-
-#define LenChoice 0
-#define LenChoice2 (LenChoice + 1)
-#define LenLow (LenChoice2 + 1)
-#define LenMid (LenLow + (kNumPosStatesMax << kLenNumLowBits))
-#define LenHigh (LenMid + (kNumPosStatesMax << kLenNumMidBits))
-#define kNumLenProbs (LenHigh + kLenNumHighSymbols) 
+#وصف_ڪريو Range_Decoder_ٻٽو_انگ_وڻ_Decode(probs, انگ_سطحون, res) \
+  { صحيح i = انگ_سطحون; res = 1; \
+  افعل { CProb *cp = probs + res; RC_GET_ٻٽو_انگ(cp, res) } طالما(--i != 0); \
+  res -= (1 << انگ_سطحون); }
 
 
-#define kNumStates 12
-#define kNumLitStates 7
+#وصف_ڪريو k_انگ_Pos_بٽ_Max 4
+#وصف_ڪريو k_انگ_Pos_حالتون_Max (1 << k_انگ_Pos_بٽ_Max)
 
-#define kStartPosModelIndex 4
-#define kEndPosModelIndex 14
-#define kNumFullDistances (1 << (kEndPosModelIndex >> 1))
+#وصف_ڪريو k_Len_انگ_هيٺيون_بٽ 3
+#وصف_ڪريو k_Len_انگ_هيٺيون_Symbols (1 << k_Len_انگ_هيٺيون_بٽ)
+#وصف_ڪريو k_Len_انگ_Mid_بٽ 3
+#وصف_ڪريو k_Len_انگ_Mid_Symbols (1 << k_Len_انگ_Mid_بٽ)
+#وصف_ڪريو k_Len_انگ_مٿاهون_بٽ 8
+#وصف_ڪريو k_Len_انگ_مٿاهون_Symbols (1 << k_Len_انگ_مٿاهون_بٽ)
 
-#define kNumPosSlotBits 6
-#define kNumLenToPosStates 4
+#وصف_ڪريو LenChoice 0
+#وصف_ڪريو LenChoice2 (LenChoice + 1)
+#وصف_ڪريو Len_هيٺيون (LenChoice2 + 1)
+#وصف_ڪريو LenMid (Len_هيٺيون + (k_انگ_Pos_حالتون_Max << k_Len_انگ_هيٺيون_بٽ))
+#وصف_ڪريو Len_مٿاهون (LenMid + (k_انگ_Pos_حالتون_Max << k_Len_انگ_Mid_بٽ))
+#وصف_ڪريو k_انگ_Len_Probs (Len_مٿاهون + k_Len_انگ_مٿاهون_Symbols) 
 
-#define kNumAlignBits 4
-#define kAlignTableSize (1 << kNumAlignBits)
 
-#define kMatchMinLen 2
+#وصف_ڪريو k_انگ_حالتون 12
+#وصف_ڪريو k_انگ_Lit_حالتون 7
 
-#define IsMatch 0
-#define IsRep (IsMatch + (kNumStates << kNumPosBitsMax))
-#define IsRepG0 (IsRep + kNumStates)
-#define IsRepG1 (IsRepG0 + kNumStates)
-#define IsRepG2 (IsRepG1 + kNumStates)
-#define IsRep0Long (IsRepG2 + kNumStates)
-#define PosSlot (IsRep0Long + (kNumStates << kNumPosBitsMax))
-#define SpecPos (PosSlot + (kNumLenToPosStates << kNumPosSlotBits))
-#define Align (SpecPos + kNumFullDistances - kEndPosModelIndex)
-#define LenCoder (Align + kAlignTableSize)
-#define RepLenCoder (LenCoder + kNumLenProbs)
-#define Literal (RepLenCoder + kNumLenProbs)
+#وصف_ڪريو k_شروعات_Pos_Model_اشاريو 4
+#وصف_ڪريو k_پڇاڙي_Pos_Model_اشاريو 14
+#وصف_ڪريو k_انگ_ڀريل_Distances (1 << (k_پڇاڙي_Pos_Model_اشاريو >> 1))
 
-#if Literal != LZMA_BASE_SIZE
+#وصف_ڪريو k_انگ_Pos_جڳهه_بٽ 6
+#وصف_ڪريو k_انگ_Len_منزل_Pos_حالتون 4
+
+#وصف_ڪريو k_انگ_Align_بٽ 4
+#وصف_ڪريو k_Align_جدول_سائيز (1 << k_انگ_Align_بٽ)
+
+#وصف_ڪريو k_ميلاپ_Min_Len 2
+
+#وصف_ڪريو Is_ميلاپ 0
+#وصف_ڪريو IsRep (Is_ميلاپ + (k_انگ_حالتون << k_انگ_Pos_بٽ_Max))
+#وصف_ڪريو IsRepG0 (IsRep + k_انگ_حالتون)
+#وصف_ڪريو IsRepG1 (IsRepG0 + k_انگ_حالتون)
+#وصف_ڪريو IsRepG2 (IsRepG1 + k_انگ_حالتون)
+#وصف_ڪريو IsRep0Long (IsRepG2 + k_انگ_حالتون)
+#وصف_ڪريو Pos_جڳهه (IsRep0Long + (k_انگ_حالتون << k_انگ_Pos_بٽ_Max))
+#وصف_ڪريو SpecPos (Pos_جڳهه + (k_انگ_Len_منزل_Pos_حالتون << k_انگ_Pos_جڳهه_بٽ))
+#وصف_ڪريو Align (SpecPos + k_انگ_ڀريل_Distances - k_پڇاڙي_Pos_Model_اشاريو)
+#وصف_ڪريو LenCoder (Align + k_Align_جدول_سائيز)
+#وصف_ڪريو RepLenCoder (LenCoder + k_انگ_Len_Probs)
+#وصف_ڪريو Literal (RepLenCoder + k_انگ_Len_Probs)
+
+#إذا Literal != LZMA_بنياد_سائيز
 StopCompilingDueBUG
-#endif
+#جيڪڏهن_پورو
 
-int LzmaDecodeProperties(CLzmaProperties *propsRes, const unsigned char *propsData, int size)
+صحيح LzmaDecodeProperties(CLzmaProperties *propsRes, ثابت بنانشان حرف *props_معلومات, صحيح سائيز)
 {
-  unsigned char prop0;
-  if (size < LZMA_PROPERTIES_SIZE)
-    return LZMA_RESULT_DATA_ERROR;
-  prop0 = propsData[0];
-  if (prop0 >= (9 * 5 * 5))
-    return LZMA_RESULT_DATA_ERROR;
+  بنانشان حرف prop0;
+  إذا (سائيز < LZMA_PROPERTIES_سائيز)
+    أرجع LZMA_نتيجو_معلومات_ERROR;
+  prop0 = props_معلومات[0];
+  إذا (prop0 >= (9 * 5 * 5))
+    أرجع LZMA_نتيجو_معلومات_ERROR;
   {
-    for (propsRes->pb = 0; prop0 >= (9 * 5); propsRes->pb++, prop0 -= (9 * 5));
-    for (propsRes->lp = 0; prop0 >= 9; propsRes->lp++, prop0 -= 9);
+    لكل (propsRes->pb = 0; prop0 >= (9 * 5); propsRes->pb++, prop0 -= (9 * 5));
+    لكل (propsRes->lp = 0; prop0 >= 9; propsRes->lp++, prop0 -= 9);
     propsRes->lc = prop0;
     /*
     unsigned char remainder = (unsigned char)(prop0 / 9);
@@ -127,92 +127,92 @@ int LzmaDecodeProperties(CLzmaProperties *propsRes, const unsigned char *propsDa
     */
   }
 
-  return LZMA_RESULT_OK;
+  أرجع LZMA_نتيجو_OK;
 }
 
-#define kLzmaStreamWasFinishedId (-1)
+#وصف_ڪريو k_Lzma_وهڪرو_Was_ختم_Id (-1)
 
-int LzmaDecode(CLzmaDecoderState *vs,
-    const unsigned char *inStream, SizeT inSize, SizeT *inSizeProcessed,
-    unsigned char *outStream, SizeT outSize, SizeT *outSizeProcessed)
+صحيح LzmaDecode(CLzmaDecoderState *vs,
+    ثابت بنانشان حرف *اندريون_وهڪرو, سائيز_T اندريون_سائيز, سائيز_T *اندريون_سائيز_Processed,
+    بنانشان حرف *ٻاهريون_وهڪرو, سائيز_T ٻاهريون_سائيز, سائيز_T *ٻاهريون_سائيز_Processed)
 {
   CProb *p = vs->Probs;
-  SizeT nowPos = 0;
-  Byte previousByte = 0;
-  UInt32 posStateMask = (1 << (vs->Properties.pb)) - 1;
-  UInt32 literalPosMask = (1 << (vs->Properties.lp)) - 1;
-  int lc = vs->Properties.lc;
+  سائيز_T nowPos = 0;
+  Byte اڳيون_Byte = 0;
+  UInt32 pos_State_نقاب = (1 << (vs->Properties.pb)) - 1;
+  UInt32 literal_Pos_نقاب = (1 << (vs->Properties.lp)) - 1;
+  صحيح lc = vs->Properties.lc;
 
 
-  int state = 0;
+  صحيح state = 0;
   UInt32 rep0 = 1, rep1 = 1, rep2 = 1, rep3 = 1;
-  int len = 0;
-  const Byte *Buffer;
-  const Byte *BufferLim;
+  صحيح len = 0;
+  ثابت Byte *بفر_2;
+  ثابت Byte *بفر_Lim;
   UInt32 Range;
-  UInt32 Code;
+  UInt32 ڪوڊ_2;
 
-  *inSizeProcessed = 0;
-  *outSizeProcessed = 0;
+  *اندريون_سائيز_Processed = 0;
+  *ٻاهريون_سائيز_Processed = 0;
 
   {
     UInt32 i;
-    UInt32 numProbs = Literal + ((UInt32)LZMA_LIT_SIZE << (lc + vs->Properties.lp));
-    for (i = 0; i < numProbs; i++)
-      p[i] = kBitModelTotal >> 1;
+    UInt32 انگ_Probs = Literal + ((UInt32)LZMA_LIT_سائيز << (lc + vs->Properties.lp));
+    لكل (i = 0; i < انگ_Probs; i++)
+      p[i] = k_ٻٽو_انگ_Model_ڪل >> 1;
   }
   
-  RC_INIT(inStream, inSize);
+  RC_INIT(اندريون_وهڪرو, اندريون_سائيز);
 
 
-  while(nowPos < outSize)
+  طالما(nowPos < ٻاهريون_سائيز)
   {
     CProb *prob;
     UInt32 bound;
-    int posState = (int)(
+    صحيح posState = (صحيح)(
         (nowPos 
         )
-        & posStateMask);
+        & pos_State_نقاب);
 
-    prob = p + IsMatch + (state << kNumPosBitsMax) + posState;
+    prob = p + Is_ميلاپ + (state << k_انگ_Pos_بٽ_Max) + posState;
     IfBit0(prob)
     {
-      int symbol = 1;
+      صحيح نشان_2 = 1;
       UpdateBit0(prob)
-      prob = p + Literal + (LZMA_LIT_SIZE * 
+      prob = p + Literal + (LZMA_LIT_سائيز * 
         (((
         (nowPos 
         )
-        & literalPosMask) << lc) + (previousByte >> (8 - lc))));
+        & literal_Pos_نقاب) << lc) + (اڳيون_Byte >> (8 - lc))));
 
-      if (state >= kNumLitStates)
+      إذا (state >= k_انگ_Lit_حالتون)
       {
-        int matchByte;
-        matchByte = outStream[nowPos - rep0];
-        do
+        صحيح ميلاپ_Byte;
+        ميلاپ_Byte = ٻاهريون_وهڪرو[nowPos - rep0];
+        افعل
         {
-          int bit;
+          صحيح ٻٽو_انگ;
           CProb *probLit;
-          matchByte <<= 1;
-          bit = (matchByte & 0x100);
-          probLit = prob + 0x100 + bit + symbol;
-          RC_GET_BIT2(probLit, symbol, if (bit != 0) break, if (bit == 0) break)
+          ميلاپ_Byte <<= 1;
+          ٻٽو_انگ = (ميلاپ_Byte & 0x100);
+          probLit = prob + 0x100 + ٻٽو_انگ + نشان_2;
+          RC_GET_BIT2(probLit, نشان_2, إذا (ٻٽو_انگ != 0) اكسر, إذا (ٻٽو_انگ == 0) اكسر)
         }
-        while (symbol < 0x100);
+        طالما (نشان_2 < 0x100);
       }
-      while (symbol < 0x100)
+      طالما (نشان_2 < 0x100)
       {
-        CProb *probLit = prob + symbol;
-        RC_GET_BIT(probLit, symbol)
+        CProb *probLit = prob + نشان_2;
+        RC_GET_ٻٽو_انگ(probLit, نشان_2)
       }
-      previousByte = (Byte)symbol;
+      اڳيون_Byte = (Byte)نشان_2;
 
-      outStream[nowPos++] = previousByte;
-      if (state < 4) state = 0;
-      else if (state < 10) state -= 3;
-      else state -= 6;
+      ٻاهريون_وهڪرو[nowPos++] = اڳيون_Byte;
+      إذا (state < 4) state = 0;
+      وإلا إذا (state < 10) state -= 3;
+      وإلا state -= 6;
     }
-    else             
+    وإلا             
     {
       UpdateBit1(prob);
       prob = p + IsRep + state;
@@ -222,177 +222,177 @@ int LzmaDecode(CLzmaDecoderState *vs,
         rep3 = rep2;
         rep2 = rep1;
         rep1 = rep0;
-        state = state < kNumLitStates ? 0 : 3;
+        state = state < k_انگ_Lit_حالتون ? 0 : 3;
         prob = p + LenCoder;
       }
-      else
+      وإلا
       {
         UpdateBit1(prob);
         prob = p + IsRepG0 + state;
         IfBit0(prob)
         {
           UpdateBit0(prob);
-          prob = p + IsRep0Long + (state << kNumPosBitsMax) + posState;
+          prob = p + IsRep0Long + (state << k_انگ_Pos_بٽ_Max) + posState;
           IfBit0(prob)
           {
             UpdateBit0(prob);
             
-            if (nowPos == 0)
-              return LZMA_RESULT_DATA_ERROR;
+            إذا (nowPos == 0)
+              أرجع LZMA_نتيجو_معلومات_ERROR;
             
-            state = state < kNumLitStates ? 9 : 11;
-            previousByte = outStream[nowPos - rep0];
-            outStream[nowPos++] = previousByte;
+            state = state < k_انگ_Lit_حالتون ? 9 : 11;
+            اڳيون_Byte = ٻاهريون_وهڪرو[nowPos - rep0];
+            ٻاهريون_وهڪرو[nowPos++] = اڳيون_Byte;
 
-            continue;
+            استمر;
           }
-          else
+          وإلا
           {
             UpdateBit1(prob);
           }
         }
-        else
+        وإلا
         {
-          UInt32 distance;
+          UInt32 مفاصلو;
           UpdateBit1(prob);
           prob = p + IsRepG1 + state;
           IfBit0(prob)
           {
             UpdateBit0(prob);
-            distance = rep1;
+            مفاصلو = rep1;
           }
-          else 
+          وإلا 
           {
             UpdateBit1(prob);
             prob = p + IsRepG2 + state;
             IfBit0(prob)
             {
               UpdateBit0(prob);
-              distance = rep2;
+              مفاصلو = rep2;
             }
-            else
+            وإلا
             {
               UpdateBit1(prob);
-              distance = rep3;
+              مفاصلو = rep3;
               rep3 = rep2;
             }
             rep2 = rep1;
           }
           rep1 = rep0;
-          rep0 = distance;
+          rep0 = مفاصلو;
         }
-        state = state < kNumLitStates ? 8 : 11;
+        state = state < k_انگ_Lit_حالتون ? 8 : 11;
         prob = p + RepLenCoder;
       }
       {
-        int numBits, offset;
+        صحيح انگ_بٽ, وٿي_2;
         CProb *probLen = prob + LenChoice;
         IfBit0(probLen)
         {
           UpdateBit0(probLen);
-          probLen = prob + LenLow + (posState << kLenNumLowBits);
-          offset = 0;
-          numBits = kLenNumLowBits;
+          probLen = prob + Len_هيٺيون + (posState << k_Len_انگ_هيٺيون_بٽ);
+          وٿي_2 = 0;
+          انگ_بٽ = k_Len_انگ_هيٺيون_بٽ;
         }
-        else
+        وإلا
         {
           UpdateBit1(probLen);
           probLen = prob + LenChoice2;
           IfBit0(probLen)
           {
             UpdateBit0(probLen);
-            probLen = prob + LenMid + (posState << kLenNumMidBits);
-            offset = kLenNumLowSymbols;
-            numBits = kLenNumMidBits;
+            probLen = prob + LenMid + (posState << k_Len_انگ_Mid_بٽ);
+            وٿي_2 = k_Len_انگ_هيٺيون_Symbols;
+            انگ_بٽ = k_Len_انگ_Mid_بٽ;
           }
-          else
+          وإلا
           {
             UpdateBit1(probLen);
-            probLen = prob + LenHigh;
-            offset = kLenNumLowSymbols + kLenNumMidSymbols;
-            numBits = kLenNumHighBits;
+            probLen = prob + Len_مٿاهون;
+            وٿي_2 = k_Len_انگ_هيٺيون_Symbols + k_Len_انگ_Mid_Symbols;
+            انگ_بٽ = k_Len_انگ_مٿاهون_بٽ;
           }
         }
-        RangeDecoderBitTreeDecode(probLen, numBits, len);
-        len += offset;
+        Range_Decoder_ٻٽو_انگ_وڻ_Decode(probLen, انگ_بٽ, len);
+        len += وٿي_2;
       }
 
-      if (state < 4)
+      إذا (state < 4)
       {
-        int posSlot;
-        state += kNumLitStates;
-        prob = p + PosSlot +
-            ((len < kNumLenToPosStates ? len : kNumLenToPosStates - 1) << 
-            kNumPosSlotBits);
-        RangeDecoderBitTreeDecode(prob, kNumPosSlotBits, posSlot);
-        if (posSlot >= kStartPosModelIndex)
+        صحيح pos_جڳهه;
+        state += k_انگ_Lit_حالتون;
+        prob = p + Pos_جڳهه +
+            ((len < k_انگ_Len_منزل_Pos_حالتون ? len : k_انگ_Len_منزل_Pos_حالتون - 1) << 
+            k_انگ_Pos_جڳهه_بٽ);
+        Range_Decoder_ٻٽو_انگ_وڻ_Decode(prob, k_انگ_Pos_جڳهه_بٽ, pos_جڳهه);
+        إذا (pos_جڳهه >= k_شروعات_Pos_Model_اشاريو)
         {
-          int numDirectBits = ((posSlot >> 1) - 1);
-          rep0 = (2 | ((UInt32)posSlot & 1));
-          if (posSlot < kEndPosModelIndex)
+          صحيح انگ_سڌو_بٽ = ((pos_جڳهه >> 1) - 1);
+          rep0 = (2 | ((UInt32)pos_جڳهه & 1));
+          إذا (pos_جڳهه < k_پڇاڙي_Pos_Model_اشاريو)
           {
-            rep0 <<= numDirectBits;
-            prob = p + SpecPos + rep0 - posSlot - 1;
+            rep0 <<= انگ_سڌو_بٽ;
+            prob = p + SpecPos + rep0 - pos_جڳهه - 1;
           }
-          else
+          وإلا
           {
-            numDirectBits -= kNumAlignBits;
-            do
+            انگ_سڌو_بٽ -= k_انگ_Align_بٽ;
+            افعل
             {
               RC_NORMALIZE
               Range >>= 1;
               rep0 <<= 1;
-              if (Code >= Range)
+              إذا (ڪوڊ_2 >= Range)
               {
-                Code -= Range;
+                ڪوڊ_2 -= Range;
                 rep0 |= 1;
               }
             }
-            while (--numDirectBits != 0);
+            طالما (--انگ_سڌو_بٽ != 0);
             prob = p + Align;
-            rep0 <<= kNumAlignBits;
-            numDirectBits = kNumAlignBits;
+            rep0 <<= k_انگ_Align_بٽ;
+            انگ_سڌو_بٽ = k_انگ_Align_بٽ;
           }
           {
-            int i = 1;
-            int mi = 1;
-            do
+            صحيح i = 1;
+            صحيح mi = 1;
+            افعل
             {
               CProb *prob3 = prob + mi;
               RC_GET_BIT2(prob3, mi, ; , rep0 |= i);
               i <<= 1;
             }
-            while(--numDirectBits != 0);
+            طالما(--انگ_سڌو_بٽ != 0);
           }
         }
-        else
-          rep0 = posSlot;
-        if (++rep0 == (UInt32)(0))
+        وإلا
+          rep0 = pos_جڳهه;
+        إذا (++rep0 == (UInt32)(0))
         {
           /* it's for stream version */
-          len = kLzmaStreamWasFinishedId;
-          break;
+          len = k_Lzma_وهڪرو_Was_ختم_Id;
+          اكسر;
         }
       }
 
-      len += kMatchMinLen;
-      if (rep0 > nowPos)
-        return LZMA_RESULT_DATA_ERROR;
+      len += k_ميلاپ_Min_Len;
+      إذا (rep0 > nowPos)
+        أرجع LZMA_نتيجو_معلومات_ERROR;
 
 
-      do
+      افعل
       {
-        previousByte = outStream[nowPos - rep0];
+        اڳيون_Byte = ٻاهريون_وهڪرو[nowPos - rep0];
         len--;
-        outStream[nowPos++] = previousByte;
+        ٻاهريون_وهڪرو[nowPos++] = اڳيون_Byte;
       }
-      while(len != 0 && nowPos < outSize);
+      طالما(len != 0 && nowPos < ٻاهريون_سائيز);
     }
   }
   RC_NORMALIZE;
 
 
-  *inSizeProcessed = (SizeT)(Buffer - inStream);
-  *outSizeProcessed = nowPos;
-  return LZMA_RESULT_OK;
+  *اندريون_سائيز_Processed = (سائيز_T)(بفر_2 - اندريون_وهڪرو);
+  *ٻاهريون_سائيز_Processed = nowPos;
+  أرجع LZMA_نتيجو_OK;
 }

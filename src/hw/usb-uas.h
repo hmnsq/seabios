@@ -1,9 +1,9 @@
-#ifndef __USB_UAS_H
-#define __USB_UAS_H
+#جيڪڏهن_وصف_نه_ٿيل __USB_UAS_H
+#وصف_ڪريو __USB_UAS_H
 
-struct disk_op_s;
-int uas_process_op(struct disk_op_s *op);
-struct usbdevice_s;
-int usb_uas_setup(struct usbdevice_s *usbdev);
+بنية disk_op_s;
+صحيح uas_process_op(بنية disk_op_s *op);
+بنية usbdevice_s;
+صحيح usb_uas_تياري(بنية usbdevice_s *usbdev);
 
-#endif /* __USB_UAS_H */
+#جيڪڏهن_پورو /* __USB_UAS_H */

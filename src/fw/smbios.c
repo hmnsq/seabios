@@ -6,320 +6,320 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_*
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "paravirt.h" // RamSize
-#include "romfile.h" // romfile_findprefix
-#include "std/smbios.h" // struct smbios_21_entry_point
-#include "string.h" // memset
-#include "util.h" // MaxCountCPUs
-#include "x86.h" // cpuid
+#ضمن "config.h" // CONFIG_*
+#ضمن "malloc.h" // free
+#ضمن "output.h" // dprintf
+#ضمن "paravirt.h" // RamSize
+#ضمن "romfile.h" // romfile_findprefix
+#ضمن "std/smbios.h" // struct smbios_21_entry_point
+#ضمن "string.h" // memset
+#ضمن "util.h" // MaxCountCPUs
+#ضمن "x86.h" // cpuid
 
-static void
-smbios_21_entry_point_setup(u16 max_structure_size,
-                         u16 structure_table_length,
-                         void *structure_table_address,
-                         u16 number_of_structures)
+ساكن فراغ
+smbios_21_داخلا_نقطو_تياري(u16 max_structure_سائيز,
+                         u16 structure_جدول_ڊيگهائي,
+                         فراغ *structure_جدول_پتو,
+                         u16 عدد_جو_structures)
 {
-    void *finaltable;
-    if (structure_table_length <= BUILD_MAX_SMBIOS_FSEG)
+    فراغ *finaltable;
+    إذا (structure_جدول_ڊيگهائي <= BUILD_MAX_SMBIOS_FSEG)
         // Table is small enough for f-seg - allocate there.  This
         // works around a bug in JunOS (at least for small SMBIOS tables).
-        finaltable = malloc_fseg(structure_table_length);
-    else
-        finaltable = malloc_high(structure_table_length);
-    if (!finaltable) {
+        finaltable = malloc_fseg(structure_جدول_ڊيگهائي);
+    وإلا
+        finaltable = malloc_مٿاهون(structure_جدول_ڊيگهائي);
+    إذا (!finaltable) {
         warn_noalloc();
-        return;
+        أرجع;
     }
-    memcpy(finaltable, structure_table_address, structure_table_length);
+    يادگيري_نقل(finaltable, structure_جدول_پتو, structure_جدول_ڊيگهائي);
 
-    struct smbios_21_entry_point ep;
-    memset(&ep, 0, sizeof(ep));
+    بنية smbios_21_داخلا_نقطو ep;
+    memset(&ep, 0, حجم(ep));
     ep.signature = SMBIOS_21_SIGNATURE;
-    ep.length = 0x1f;
-    ep.smbios_major_version = 2;
-    ep.smbios_minor_version = 4;
-    ep.max_structure_size = max_structure_size;
-    memcpy(ep.intermediate_anchor_string, "_DMI_", 5);
+    ep.ڊيگهائي = 0x1f;
+    ep.smbios_major_نسخو = 2;
+    ep.smbios_minor_نسخو = 4;
+    ep.max_structure_سائيز = max_structure_سائيز;
+    يادگيري_نقل(ep.intermediate_anchor_string, "_DMI_", 5);
 
-    ep.structure_table_length = structure_table_length;
-    ep.structure_table_address = (u32)finaltable;
-    ep.number_of_structures = number_of_structures;
+    ep.structure_جدول_ڊيگهائي = structure_جدول_ڊيگهائي;
+    ep.structure_جدول_پتو = (u32)finaltable;
+    ep.عدد_جو_structures = عدد_جو_structures;
     ep.smbios_bcd_revision = 0x24;
 
     ep.checksum -= checksum(&ep, 0x10);
 
-    ep.intermediate_checksum -= checksum((void*)&ep + 0x10, ep.length - 0x10);
+    ep.intermediate_checksum -= checksum((فراغ*)&ep + 0x10, ep.ڊيگهائي - 0x10);
 
     copy_smbios_21(&ep);
 }
 
-static int
-get_field(int type, int offset, void *dest)
+ساكن صحيح
+get_ميدان(صحيح type, صحيح وٿي_2, فراغ *dest)
 {
-    char name[128];
-    snprintf(name, sizeof(name), "smbios/field%d-%d", type, offset);
-    struct romfile_s *file = romfile_find(name);
-    if (!file)
-        return 0;
-    file->copy(file, dest, file->size);
-    return file->size;
+    حرف name[128];
+    snprintf(name, حجم(name), "smbios/field%d-%d", type, وٿي_2);
+    بنية romfile_s *file = romfile_ڳوليو(name);
+    إذا (!file)
+        أرجع 0;
+    file->copy(file, dest, file->سائيز);
+    أرجع file->سائيز;
 }
 
-static int
-get_external(int type, char **p, unsigned *nr_structs,
-             unsigned *max_struct_size, char *end)
+ساكن صحيح
+get_external(صحيح type, حرف **p, بنانشان *nr_structs,
+             بنانشان *max_struct_سائيز, حرف *پڇاڙي)
 {
-    static u64 used_bitmap[4] = { 0 };
-    char *start = *p;
+    ساكن u64 استعمال_ٿيل_bitmap[4] = { 0 };
+    حرف *شروعات = *p;
 
     /* Check if we've already reported these tables */
-    if (used_bitmap[(type >> 6) & 0x3] & (1ULL << (type & 0x3f)))
-        return 1;
+    إذا (استعمال_ٿيل_bitmap[(type >> 6) & 0x3] & (1ULL << (type & 0x3f)))
+        أرجع 1;
 
     /* Don't introduce spurious end markers */
-    if (type == 127)
-        return 0;
+    إذا (type == 127)
+        أرجع 0;
 
-    char prefix[128];
-    snprintf(prefix, sizeof(prefix), "smbios/table%d-", type);
-    struct romfile_s *file = NULL;
-    for (;;) {
-        file = romfile_findprefix(prefix, file);
-        if (!file)
-            break;
+    حرف اڳياڙي[128];
+    snprintf(اڳياڙي, حجم(اڳياڙي), "smbios/table%d-", type);
+    بنية romfile_s *file = عدم;
+    لكل (;;) {
+        file = romfile_findprefix(اڳياڙي, file);
+        إذا (!file)
+            اكسر;
 
-        if (end - *p < file->size) {
+        إذا (پڇاڙي - *p < file->سائيز) {
             warn_noalloc();
-            break;
+            اكسر;
         }
 
-        struct smbios_structure_header *header = (void*)*p;
-        file->copy(file, header, file->size);
-        *p += file->size;
+        بنية smbios_structure_سرو *سرو = (فراغ*)*p;
+        file->copy(file, سرو, file->سائيز);
+        *p += file->سائيز;
 
         /* Entries end with a double NULL char, if there's a string at
          * the end (length is greater than formatted length), the string
          * terminator provides the first NULL. */
         *((u8*)*p) = 0;
         (*p)++;
-        if (header->length >= file->size) {
+        إذا (سرو->ڊيگهائي >= file->سائيز) {
             *((u8*)*p) = 0;
             (*p)++;
         }
 
         (*nr_structs)++;
-        if (*p - (char*)header > *max_struct_size)
-            *max_struct_size = *p - (char*)header;
+        إذا (*p - (حرف*)سرو > *max_struct_سائيز)
+            *max_struct_سائيز = *p - (حرف*)سرو;
     }
 
-    if (start == *p)
-        return 0;
+    إذا (شروعات == *p)
+        أرجع 0;
 
     /* Mark that we've reported on this type */
-    used_bitmap[(type >> 6) & 0x3] |= (1ULL << (type & 0x3f));
-    return 1;
+    استعمال_ٿيل_bitmap[(type >> 6) & 0x3] |= (1ULL << (type & 0x3f));
+    أرجع 1;
 }
 
-#define load_str_field_with_default(type, field, def)                   \
-    do {                                                                \
-        size = get_field(type, offsetof(struct smbios_type_##type,      \
-                                        field), end);                   \
-        if (size == 1) {                                                \
+#وصف_ڪريو ڀريو_str_ميدان_with_default(type, ميدان, def)                   \
+    افعل {                                                                \
+        سائيز = get_ميدان(type, offsetof(بنية smbios_type_##type,      \
+                                        ميدان), پڇاڙي);                   \
+        إذا (سائيز == 1) {                                                \
             /* zero-length string, skip to avoid bogus end marker */    \
-            p->field = 0;                                               \
-        } else if (size > 1) {                                          \
-            end += size;                                                \
-            p->field = ++str_index;                                     \
-        } else {                                                        \
-            memcpy(end, def, sizeof(def));                              \
-            end += sizeof(def);                                         \
-            p->field = ++str_index;                                     \
+            p->ميدان = 0;                                               \
+        } وإلا إذا (سائيز > 1) {                                          \
+            پڇاڙي += سائيز;                                                \
+            p->ميدان = ++str_اشاريو;                                     \
+        } وإلا {                                                        \
+            يادگيري_نقل(پڇاڙي, def, حجم(def));                              \
+            پڇاڙي += حجم(def);                                         \
+            p->ميدان = ++str_اشاريو;                                     \
         }                                                               \
-    } while (0)
+    } طالما (0)
 
-#define load_str_field_or_skip(type, field)                             \
-    do {                                                                \
-        size = get_field(type, offsetof(struct smbios_type_##type,      \
-                                        field), end);                   \
-        if (size > 1) {                                                 \
-            end += size;                                                \
-            p->field = ++str_index;                                     \
-        } else {                                                        \
-            p->field = 0;                                               \
+#وصف_ڪريو ڀريو_str_ميدان_or_skip(type, ميدان)                             \
+    افعل {                                                                \
+        سائيز = get_ميدان(type, offsetof(بنية smbios_type_##type,      \
+                                        ميدان), پڇاڙي);                   \
+        إذا (سائيز > 1) {                                                 \
+            پڇاڙي += سائيز;                                                \
+            p->ميدان = ++str_اشاريو;                                     \
+        } وإلا {                                                        \
+            p->ميدان = 0;                                               \
         }                                                               \
-    } while (0)
+    } طالما (0)
 
-#define set_field_with_default(type, field, def)                        \
-    do {                                                                \
-        if (!get_field(type, offsetof(struct smbios_type_##type,        \
-                                      field), &p->field)) {             \
-            p->field = def;                                             \
+#وصف_ڪريو سيٽ_ميدان_with_default(type, ميدان, def)                        \
+    افعل {                                                                \
+        إذا (!get_ميدان(type, offsetof(بنية smbios_type_##type,        \
+                                      ميدان), &p->ميدان)) {             \
+            p->ميدان = def;                                             \
         }                                                               \
-    } while (0)
+    } طالما (0)
 
 /* Type 0 -- BIOS Information */
-#define RELEASE_DATE_STR "01/01/2011"
-static void *
-smbios_init_type_0(void *start)
+#وصف_ڪريو RELEASE_DATE_STR "01/01/2011"
+ساكن فراغ *
+smbios_init_type_0(فراغ *شروعات)
 {
-    struct smbios_type_0 *p = (struct smbios_type_0 *)start;
-    char *end = (char *)start + sizeof(struct smbios_type_0);
-    size_t size;
-    int str_index = 0;
+    بنية smbios_type_0 *p = (بنية smbios_type_0 *)شروعات;
+    حرف *پڇاڙي = (حرف *)شروعات + حجم(بنية smbios_type_0);
+    سائيز_t سائيز;
+    صحيح str_اشاريو = 0;
 
-    p->header.type = 0;
-    p->header.length = sizeof(struct smbios_type_0);
-    p->header.handle = 0;
+    p->سرو.type = 0;
+    p->سرو.ڊيگهائي = حجم(بنية smbios_type_0);
+    p->سرو.handle = 0;
 
-    load_str_field_with_default(0, vendor_str, BUILD_APPNAME);
-    load_str_field_with_default(0, bios_version_str, BUILD_APPNAME);
+    ڀريو_str_ميدان_with_default(0, vendor_str, BUILD_APPNAME);
+    ڀريو_str_ميدان_with_default(0, bios_نسخو_str, BUILD_APPNAME);
 
-    p->bios_starting_address_segment = 0xe800;
+    p->bios_starting_پتو_segment = 0xe800;
 
-    load_str_field_with_default(0, bios_release_date_str, RELEASE_DATE_STR);
+    ڀريو_str_ميدان_with_default(0, bios_release_date_str, RELEASE_DATE_STR);
 
-    p->bios_rom_size = 0; /* FIXME */
+    p->bios_rom_سائيز = 0; /* FIXME */
 
-    if (!get_field(0, offsetof(struct smbios_type_0, bios_characteristics),
+    إذا (!get_ميدان(0, offsetof(بنية smbios_type_0, bios_characteristics),
                    &p->bios_characteristics)) {
         memset(p->bios_characteristics, 0, 8);
         /* BIOS characteristics not supported */
         p->bios_characteristics[0] = 0x08;
     }
 
-    if (!get_field(0, offsetof(struct smbios_type_0,
-                               bios_characteristics_extension_bytes),
-                   &p->bios_characteristics_extension_bytes)) {
-        p->bios_characteristics_extension_bytes[0] = 0;
+    إذا (!get_ميدان(0, offsetof(بنية smbios_type_0,
+                               bios_characteristics_extension_بائيٽون),
+                   &p->bios_characteristics_extension_بائيٽون)) {
+        p->bios_characteristics_extension_بائيٽون[0] = 0;
         /* Enable targeted content distribution. Needed for SVVP */
-        p->bios_characteristics_extension_bytes[1] = 4;
+        p->bios_characteristics_extension_بائيٽون[1] = 4;
     }
 
-    set_field_with_default(0, system_bios_major_release, 1);
-    set_field_with_default(0, system_bios_minor_release, 0);
-    set_field_with_default(0, embedded_controller_major_release, 0xff);
-    set_field_with_default(0, embedded_controller_minor_release, 0xff);
+    سيٽ_ميدان_with_default(0, system_bios_major_release, 1);
+    سيٽ_ميدان_with_default(0, system_bios_minor_release, 0);
+    سيٽ_ميدان_with_default(0, embedded_controller_major_release, 0xff);
+    سيٽ_ميدان_with_default(0, embedded_controller_minor_release, 0xff);
 
-    *end = 0;
-    end++;
-    if (!str_index) {
-        *end = 0;
-        end++;
+    *پڇاڙي = 0;
+    پڇاڙي++;
+    إذا (!str_اشاريو) {
+        *پڇاڙي = 0;
+        پڇاڙي++;
     }
 
-    return end;
+    أرجع پڇاڙي;
 }
 
 /* Type 1 -- System Information */
-static void *
-smbios_init_type_1(void *start)
+ساكن فراغ *
+smbios_init_type_1(فراغ *شروعات)
 {
-    struct smbios_type_1 *p = (struct smbios_type_1 *)start;
-    char *end = (char *)start + sizeof(struct smbios_type_1);
-    size_t size;
-    int str_index = 0;
+    بنية smbios_type_1 *p = (بنية smbios_type_1 *)شروعات;
+    حرف *پڇاڙي = (حرف *)شروعات + حجم(بنية smbios_type_1);
+    سائيز_t سائيز;
+    صحيح str_اشاريو = 0;
 
-    p->header.type = 1;
-    p->header.length = sizeof(struct smbios_type_1);
-    p->header.handle = 0x100;
+    p->سرو.type = 1;
+    p->سرو.ڊيگهائي = حجم(بنية smbios_type_1);
+    p->سرو.handle = 0x100;
 
-    load_str_field_with_default(1, manufacturer_str, BUILD_APPNAME);
-    load_str_field_with_default(1, product_name_str, BUILD_APPNAME);
-    load_str_field_or_skip(1, version_str);
-    load_str_field_or_skip(1, serial_number_str);
+    ڀريو_str_ميدان_with_default(1, manufacturer_str, BUILD_APPNAME);
+    ڀريو_str_ميدان_with_default(1, حاصل_ضرب_name_str, BUILD_APPNAME);
+    ڀريو_str_ميدان_or_skip(1, نسخو_str);
+    ڀريو_str_ميدان_or_skip(1, serial_عدد_str);
 
-    if (!get_field(1, offsetof(struct smbios_type_1, uuid), &p->uuid))
+    إذا (!get_ميدان(1, offsetof(بنية smbios_type_1, uuid), &p->uuid))
         memset(p->uuid, 0, 16);
 
-    set_field_with_default(1, wake_up_type, 0x06); /* power switch */
+    سيٽ_ميدان_with_default(1, wake_مٿي_type, 0x06); /* power switch */
 
-    load_str_field_or_skip(1, sku_number_str);
-    load_str_field_or_skip(1, family_str);
+    ڀريو_str_ميدان_or_skip(1, sku_عدد_str);
+    ڀريو_str_ميدان_or_skip(1, family_str);
 
-    *end = 0;
-    end++;
-    if (!str_index) {
-        *end = 0;
-        end++;
+    *پڇاڙي = 0;
+    پڇاڙي++;
+    إذا (!str_اشاريو) {
+        *پڇاڙي = 0;
+        پڇاڙي++;
     }
 
-    return end;
+    أرجع پڇاڙي;
 }
 
 /* Type 3 -- System Enclosure */
-static void *
-smbios_init_type_3(void *start)
+ساكن فراغ *
+smbios_init_type_3(فراغ *شروعات)
 {
-    struct smbios_type_3 *p = (struct smbios_type_3 *)start;
-    char *end = (char *)start + sizeof(struct smbios_type_3);
-    size_t size;
-    int str_index = 0;
+    بنية smbios_type_3 *p = (بنية smbios_type_3 *)شروعات;
+    حرف *پڇاڙي = (حرف *)شروعات + حجم(بنية smbios_type_3);
+    سائيز_t سائيز;
+    صحيح str_اشاريو = 0;
 
-    p->header.type = 3;
-    p->header.length = sizeof(struct smbios_type_3);
-    p->header.handle = 0x300;
+    p->سرو.type = 3;
+    p->سرو.ڊيگهائي = حجم(بنية smbios_type_3);
+    p->سرو.handle = 0x300;
 
-    load_str_field_with_default(3, manufacturer_str, BUILD_APPNAME);
-    set_field_with_default(3, type, 0x01); /* other */
+    ڀريو_str_ميدان_with_default(3, manufacturer_str, BUILD_APPNAME);
+    سيٽ_ميدان_with_default(3, type, 0x01); /* other */
 
-    load_str_field_or_skip(3, version_str);
-    load_str_field_or_skip(3, serial_number_str);
-    load_str_field_or_skip(3, asset_tag_number_str);
+    ڀريو_str_ميدان_or_skip(3, نسخو_str);
+    ڀريو_str_ميدان_or_skip(3, serial_عدد_str);
+    ڀريو_str_ميدان_or_skip(3, asset_ٽيگ_عدد_str);
 
-    set_field_with_default(3, boot_up_state, 0x03); /* safe */
-    set_field_with_default(3, power_supply_state, 0x03); /* safe */
-    set_field_with_default(3, thermal_state, 0x03); /* safe */
-    set_field_with_default(3, security_status, 0x02); /* unknown */
+    سيٽ_ميدان_with_default(3, boot_مٿي_state, 0x03); /*محفوظ*/
+    سيٽ_ميدان_with_default(3, power_supply_state, 0x03); /*محفوظ*/
+    سيٽ_ميدان_with_default(3, thermal_state, 0x03); /*محفوظ*/
+    سيٽ_ميدان_with_default(3, security_حالت, 0x02); /* unknown */
 
-    set_field_with_default(3, oem_defined, 0);
-    set_field_with_default(3, height, 0);
-    set_field_with_default(3, number_of_power_cords, 0);
-    set_field_with_default(3, contained_element_count, 0);
+    سيٽ_ميدان_with_default(3, oem_defined, 0);
+    سيٽ_ميدان_with_default(3, اوچائي, 0);
+    سيٽ_ميدان_with_default(3, عدد_جو_power_cords, 0);
+    سيٽ_ميدان_with_default(3, contained_element_ڳڻپ, 0);
 
-    *end = 0;
-    end++;
-    if (!str_index) {
-        *end = 0;
-        end++;
+    *پڇاڙي = 0;
+    پڇاڙي++;
+    إذا (!str_اشاريو) {
+        *پڇاڙي = 0;
+        پڇاڙي++;
     }
 
-    return end;
+    أرجع پڇاڙي;
 }
 
 /* Type 4 -- Processor Information */
-static void *
-smbios_init_type_4(void *start, unsigned int cpu_number)
+ساكن فراغ *
+smbios_init_type_4(فراغ *شروعات, بنانشان صحيح cpu_عدد)
 {
-    struct smbios_type_4 *p = (struct smbios_type_4 *)start;
-    char *end = (char *)start + sizeof(struct smbios_type_4);
-    size_t size;
-    int str_index = 0;
-    char name[1024];
+    بنية smbios_type_4 *p = (بنية smbios_type_4 *)شروعات;
+    حرف *پڇاڙي = (حرف *)شروعات + حجم(بنية smbios_type_4);
+    سائيز_t سائيز;
+    صحيح str_اشاريو = 0;
+    حرف name[1024];
 
-    p->header.type = 4;
-    p->header.length = sizeof(struct smbios_type_4);
-    p->header.handle = 0x400 + cpu_number;
+    p->سرو.type = 4;
+    p->سرو.ڊيگهائي = حجم(بنية smbios_type_4);
+    p->سرو.handle = 0x400 + cpu_عدد;
 
-    size = get_field(4, offsetof(struct smbios_type_4, socket_designation_str),
+    سائيز = get_ميدان(4, offsetof(بنية smbios_type_4, socket_designation_str),
                      name);
-    if (size)
-        snprintf(name + size - 1, sizeof(name) - size, "%2x", cpu_number);
-    else
-        snprintf(name, sizeof(name), "CPU%2x", cpu_number);
+    إذا (سائيز)
+        snprintf(name + سائيز - 1, حجم(name) - سائيز, "%2x", cpu_عدد);
+    وإلا
+        snprintf(name, حجم(name), "CPU%2x", cpu_عدد);
 
-    memcpy(end, name, strlen(name) + 1);
-    end += strlen(name) + 1;
-    p->socket_designation_str = ++str_index;
+    يادگيري_نقل(پڇاڙي, name, لڙي_ڊيگهه(name) + 1);
+    پڇاڙي += لڙي_ڊيگهه(name) + 1;
+    p->socket_designation_str = ++str_اشاريو;
 
-    set_field_with_default(4, processor_type, 0x03); /* CPU */
-    set_field_with_default(4, processor_family, 0x01); /* other */
+    سيٽ_ميدان_with_default(4, processor_type, 0x03); /* CPU */
+    سيٽ_ميدان_with_default(4, processor_family, 0x01); /* other */
 
-    load_str_field_with_default(4, processor_manufacturer_str, BUILD_APPNAME);
+    ڀريو_str_ميدان_with_default(4, processor_manufacturer_str, BUILD_APPNAME);
 
-    if (!get_field(4, offsetof(struct smbios_type_4, processor_id)
+    إذا (!get_ميدان(4, offsetof(بنية smbios_type_4, processor_id)
                    , p->processor_id)) {
         u32 cpuid_signature, ebx, ecx, cpuid_features;
         cpuid(1, &cpuid_signature, &ebx, &ecx, &cpuid_features);
@@ -327,263 +327,263 @@ smbios_init_type_4(void *start, unsigned int cpu_number)
         p->processor_id[1] = cpuid_features;
     }
 
-    load_str_field_or_skip(4, processor_version_str);
-    set_field_with_default(4, voltage, 0);
-    set_field_with_default(4, external_clock, 0);
+    ڀريو_str_ميدان_or_skip(4, processor_نسخو_str);
+    سيٽ_ميدان_with_default(4, voltage, 0);
+    سيٽ_ميدان_with_default(4, external_clock, 0);
 
-    set_field_with_default(4, max_speed, 2000);
-    set_field_with_default(4, current_speed, 2000);
+    سيٽ_ميدان_with_default(4, max_رفتار, 2000);
+    سيٽ_ميدان_with_default(4, current_رفتار, 2000);
 
-    set_field_with_default(4, status, 0x41); /* socket populated, CPU enabled */
-    set_field_with_default(4, processor_upgrade, 0x01); /* other */
+    سيٽ_ميدان_with_default(4, حالت, 0x41); /* socket populated, CPU enabled */
+    سيٽ_ميدان_with_default(4, processor_upgrade, 0x01); /* other */
 
     /* cache information structure not provided */
     p->l1_cache_handle =  0xffff;
     p->l2_cache_handle =  0xffff;
     p->l3_cache_handle =  0xffff;
 
-    *end = 0;
-    end++;
-    if (!str_index) {
-        *end = 0;
-        end++;
+    *پڇاڙي = 0;
+    پڇاڙي++;
+    إذا (!str_اشاريو) {
+        *پڇاڙي = 0;
+        پڇاڙي++;
     }
 
-    return end;
+    أرجع پڇاڙي;
 }
 
 /* Type 16 -- Physical Memory Array */
-static void *
-smbios_init_type_16(void *start, u32 memory_size_mb, int nr_mem_devs)
+ساكن فراغ *
+smbios_init_type_16(فراغ *شروعات, u32 يادگيري_سائيز_mb, صحيح nr_mem_devs)
 {
-    struct smbios_type_16 *p = (struct smbios_type_16*)start;
+    بنية smbios_type_16 *p = (بنية smbios_type_16*)شروعات;
 
-    p->header.type = 16;
-    p->header.length = sizeof(struct smbios_type_16);
-    p->header.handle = 0x1000;
+    p->سرو.type = 16;
+    p->سرو.ڊيگهائي = حجم(بنية smbios_type_16);
+    p->سرو.handle = 0x1000;
 
-    set_field_with_default(16, location, 0x01); /* other */
-    set_field_with_default(16, use, 0x03); /* system memory */
+    سيٽ_ميدان_with_default(16, location, 0x01); /* other */
+    سيٽ_ميدان_with_default(16, use, 0x03); /* system memory */
     /* Multi-bit ECC to make Microsoft happy */
-    set_field_with_default(16, error_correction, 0x06);
+    سيٽ_ميدان_with_default(16, error_correction, 0x06);
     /* 0x80000000 = unknown, accept sizes < 2TB - TODO multiple arrays */
-    p->maximum_capacity = memory_size_mb < 2 << 20 ?
-                          memory_size_mb << 10 : 0x80000000;
-    p->memory_error_information_handle = 0xfffe; /* none provided */
-    p->number_of_memory_devices = nr_mem_devs;
+    p->وڌ_کان_وڌ_صلاحيت = يادگيري_سائيز_mb < 2 << 20 ?
+                          يادگيري_سائيز_mb << 10 : 0x80000000;
+    p->يادگيري_error_information_handle = 0xfffe; /* none provided */
+    p->عدد_جو_يادگيري_devices = nr_mem_devs;
 
-    start += sizeof(struct smbios_type_16);
-    *((u16 *)start) = 0;
+    شروعات += حجم(بنية smbios_type_16);
+    *((u16 *)شروعات) = 0;
 
-    return start + 2;
+    أرجع شروعات + 2;
 }
 
 /* Type 17 -- Memory Device */
-static void *
-smbios_init_type_17(void *start, u32 size_mb, int instance)
+ساكن فراغ *
+smbios_init_type_17(فراغ *شروعات, u32 سائيز_mb, صحيح instance)
 {
-    struct smbios_type_17 *p = (struct smbios_type_17 *)start;
-    char *end = (char *)start + sizeof(struct smbios_type_17);
-    size_t size;
-    int str_index = 0;
-    char name[1024];
+    بنية smbios_type_17 *p = (بنية smbios_type_17 *)شروعات;
+    حرف *پڇاڙي = (حرف *)شروعات + حجم(بنية smbios_type_17);
+    سائيز_t سائيز;
+    صحيح str_اشاريو = 0;
+    حرف name[1024];
 
-    p->header.type = 17;
-    p->header.length = sizeof(struct smbios_type_17);
-    p->header.handle = 0x1100 + instance;
+    p->سرو.type = 17;
+    p->سرو.ڊيگهائي = حجم(بنية smbios_type_17);
+    p->سرو.handle = 0x1100 + instance;
 
-    p->physical_memory_array_handle = 0x1000;
-    set_field_with_default(17, total_width, 64);
-    set_field_with_default(17, data_width, 64);
+    p->physical_يادگيري_array_handle = 0x1000;
+    سيٽ_ميدان_with_default(17, ڪل_ويڪر, 64);
+    سيٽ_ميدان_with_default(17, معلومات_ويڪر, 64);
 /* TODO: should assert in case something is wrong   ASSERT((memory_size_mb & ~0x7fff) == 0); */
-    p->size = size_mb;
-    set_field_with_default(17, form_factor, 0x09); /* DIMM */
-    p->device_set = 0;
+    p->سائيز = سائيز_mb;
+    سيٽ_ميدان_with_default(17, form_ضرب_ڪندڙ, 0x09); /* DIMM */
+    p->device_سيٽ = 0;
 
-    size = get_field(17, offsetof(struct smbios_type_17, device_locator_str),
+    سائيز = get_ميدان(17, offsetof(بنية smbios_type_17, device_locator_str),
                      name);
-    if (size)
-        snprintf(name + size - 1, sizeof(name) - size, "%d", instance);
-    else
-        snprintf(name, sizeof(name), "DIMM %d", instance);
+    إذا (سائيز)
+        snprintf(name + سائيز - 1, حجم(name) - سائيز, "%d", instance);
+    وإلا
+        snprintf(name, حجم(name), "DIMM %d", instance);
 
-    memcpy(end, name, strlen(name) + 1);
-    end += strlen(name) + 1;
-    p->device_locator_str = ++str_index;
+    يادگيري_نقل(پڇاڙي, name, لڙي_ڊيگهه(name) + 1);
+    پڇاڙي += لڙي_ڊيگهه(name) + 1;
+    p->device_locator_str = ++str_اشاريو;
 
-    load_str_field_or_skip(17, bank_locator_str);
-    set_field_with_default(17, memory_type, 0x07); /* RAM */
-    set_field_with_default(17, type_detail, 0);
+    ڀريو_str_ميدان_or_skip(17, bank_locator_str);
+    سيٽ_ميدان_with_default(17, يادگيري_type, 0x07); /* RAM */
+    سيٽ_ميدان_with_default(17, type_detail, 0);
 
-    *end = 0;
-    end++;
-    if (!str_index) {
-        *end = 0;
-        end++;
+    *پڇاڙي = 0;
+    پڇاڙي++;
+    إذا (!str_اشاريو) {
+        *پڇاڙي = 0;
+        پڇاڙي++;
     }
 
-    return end;
+    أرجع پڇاڙي;
 }
 
 /* Type 19 -- Memory Array Mapped Address */
-static void *
-smbios_init_type_19(void *start, u32 start_mb, u32 size_mb, int instance)
+ساكن فراغ *
+smbios_init_type_19(فراغ *شروعات, u32 شروعات_mb, u32 سائيز_mb, صحيح instance)
 {
-    struct smbios_type_19 *p = (struct smbios_type_19 *)start;
+    بنية smbios_type_19 *p = (بنية smbios_type_19 *)شروعات;
 
-    p->header.type = 19;
-    p->header.length = sizeof(struct smbios_type_19);
-    p->header.handle = 0x1300 + instance;
+    p->سرو.type = 19;
+    p->سرو.ڊيگهائي = حجم(بنية smbios_type_19);
+    p->سرو.handle = 0x1300 + instance;
 
-    p->starting_address = start_mb << 10;
-    p->ending_address = p->starting_address + (size_mb << 10) - 1;
-    p->memory_array_handle = 0x1000;
-    p->partition_width = 1;
+    p->starting_پتو = شروعات_mb << 10;
+    p->ending_پتو = p->starting_پتو + (سائيز_mb << 10) - 1;
+    p->يادگيري_array_handle = 0x1000;
+    p->حصا_ڪريو_ويڪر = 1;
 
-    start += sizeof(struct smbios_type_19);
-    *((u16 *)start) = 0;
+    شروعات += حجم(بنية smbios_type_19);
+    *((u16 *)شروعات) = 0;
 
-    return start + 2;
+    أرجع شروعات + 2;
 }
 
 /* Type 20 -- Memory Device Mapped Address */
-static void *
-smbios_init_type_20(void *start, u32 start_mb, u32 size_mb, int instance,
-                    int dev_handle, int array_handle)
+ساكن فراغ *
+smbios_init_type_20(فراغ *شروعات, u32 شروعات_mb, u32 سائيز_mb, صحيح instance,
+                    صحيح dev_handle, صحيح array_handle)
 {
-    struct smbios_type_20 *p = (struct smbios_type_20 *)start;
+    بنية smbios_type_20 *p = (بنية smbios_type_20 *)شروعات;
 
-    p->header.type = 20;
-    p->header.length = sizeof(struct smbios_type_20);
-    p->header.handle = 0x1400 + instance;
+    p->سرو.type = 20;
+    p->سرو.ڊيگهائي = حجم(بنية smbios_type_20);
+    p->سرو.handle = 0x1400 + instance;
 
-    p->starting_address = start_mb << 10;
-    p->ending_address = p->starting_address + (size_mb << 10) - 1;
-    p->memory_device_handle = 0x1100 + dev_handle;
-    p->memory_array_mapped_address_handle = 0x1300 + array_handle;
-    p->partition_row_position = 1;
+    p->starting_پتو = شروعات_mb << 10;
+    p->ending_پتو = p->starting_پتو + (سائيز_mb << 10) - 1;
+    p->يادگيري_device_handle = 0x1100 + dev_handle;
+    p->يادگيري_array_mapped_پتو_handle = 0x1300 + array_handle;
+    p->حصا_ڪريو_صف_position = 1;
     p->interleave_position = 0;
-    p->interleaved_data_depth = 0;
+    p->interleaved_معلومات_اونهائي = 0;
 
-    start += sizeof(struct smbios_type_20);
+    شروعات += حجم(بنية smbios_type_20);
 
-    *((u16 *)start) = 0;
-    return start+2;
+    *((u16 *)شروعات) = 0;
+    أرجع شروعات+2;
 }
 
 /* Type 32 -- System Boot Information */
-static void *
-smbios_init_type_32(void *start)
+ساكن فراغ *
+smbios_init_type_32(فراغ *شروعات)
 {
-    struct smbios_type_32 *p = (struct smbios_type_32 *)start;
+    بنية smbios_type_32 *p = (بنية smbios_type_32 *)شروعات;
 
-    p->header.type = 32;
-    p->header.length = sizeof(struct smbios_type_32);
-    p->header.handle = 0x2000;
+    p->سرو.type = 32;
+    p->سرو.ڊيگهائي = حجم(بنية smbios_type_32);
+    p->سرو.handle = 0x2000;
     memset(p->reserved, 0, 6);
-    set_field_with_default(32, boot_status, 0); /* no errors detected */
+    سيٽ_ميدان_with_default(32, boot_حالت, 0); /* no errors detected */
 
-    start += sizeof(struct smbios_type_32);
-    *((u16 *)start) = 0;
+    شروعات += حجم(بنية smbios_type_32);
+    *((u16 *)شروعات) = 0;
 
-    return start+2;
+    أرجع شروعات+2;
 }
 
 /* Type 127 -- End of Table */
-static void *
-smbios_init_type_127(void *start)
+ساكن فراغ *
+smbios_init_type_127(فراغ *شروعات)
 {
-    struct smbios_type_127 *p = (struct smbios_type_127 *)start;
+    بنية smbios_type_127 *p = (بنية smbios_type_127 *)شروعات;
 
-    p->header.type = 127;
-    p->header.length = sizeof(struct smbios_type_127);
-    p->header.handle = 0x7f00;
+    p->سرو.type = 127;
+    p->سرو.ڊيگهائي = حجم(بنية smbios_type_127);
+    p->سرو.handle = 0x7f00;
 
-    start += sizeof(struct smbios_type_127);
-    *((u16 *)start) = 0;
+    شروعات += حجم(بنية smbios_type_127);
+    *((u16 *)شروعات) = 0;
 
-    return start + 2;
+    أرجع شروعات + 2;
 }
 
-#define TEMPSMBIOSSIZE (32 * 1024)
+#وصف_ڪريو TEMPSMBIOSSIZE (32 * 1024)
 
-void
-smbios_legacy_setup(void)
+فراغ
+smbios_legacy_تياري(فراغ)
 {
-    if (! CONFIG_SMBIOS)
-        return;
+    إذا (! CONFIG_SMBIOS)
+        أرجع;
 
     dprintf(3, "init SMBIOS tables\n");
 
-    char *start = malloc_tmphigh(TEMPSMBIOSSIZE);
-    if (! start) {
+    حرف *شروعات = malloc_tmphigh(TEMPSMBIOSSIZE);
+    إذا (! شروعات) {
         warn_noalloc();
-        return;
+        أرجع;
     }
-    memset(start, 0, TEMPSMBIOSSIZE);
+    memset(شروعات, 0, TEMPSMBIOSSIZE);
 
-    u32 nr_structs = 0, max_struct_size = 0;
-    char *q, *p = start;
-    char *end = start + TEMPSMBIOSSIZE - sizeof(struct smbios_type_127);
+    u32 nr_structs = 0, max_struct_سائيز = 0;
+    حرف *q, *p = شروعات;
+    حرف *پڇاڙي = شروعات + TEMPSMBIOSSIZE - حجم(بنية smbios_type_127);
 
-#define add_struct(type, args...)                                       \
-    do {                                                                \
-        if (!get_external(type, &p, &nr_structs, &max_struct_size, end)) { \
-            q = smbios_init_type_##type(args);                          \
+#وصف_ڪريو جوڙيو_struct(type, دليلون...)                                       \
+    افعل {                                                                \
+        إذا (!get_external(type, &p, &nr_structs, &max_struct_سائيز, پڇاڙي)) { \
+            q = smbios_init_type_##type(دليلون);                          \
             nr_structs++;                                               \
-            if ((q - p) > max_struct_size)                              \
-                max_struct_size = q - p;                                \
+            إذا ((q - p) > max_struct_سائيز)                              \
+                max_struct_سائيز = q - p;                                \
             p = q;                                                      \
         }                                                               \
-    } while (0)
+    } طالما (0)
 
-    add_struct(0, p);
-    add_struct(1, p);
-    add_struct(3, p);
+    جوڙيو_struct(0, p);
+    جوڙيو_struct(1, p);
+    جوڙيو_struct(3, p);
 
-    int cpu_num;
-    for (cpu_num = 1; cpu_num <= MaxCountCPUs; cpu_num++)
-        add_struct(4, p, cpu_num);
+    صحيح cpu_انگ;
+    لكل (cpu_انگ = 1; cpu_انگ <= Max_ڳڻپ_CPUs; cpu_انگ++)
+        جوڙيو_struct(4, p, cpu_انگ);
 
-    int ram_mb = (RamSize + RamSizeOver4G) >> 20;
-    int nr_mem_devs = (ram_mb + 0x3fff) >> 14;
-    add_struct(16, p, ram_mb, nr_mem_devs);
+    صحيح ram_mb = (Ram_سائيز + Ram_سائيز_Over4_G) >> 20;
+    صحيح nr_mem_devs = (ram_mb + 0x3fff) >> 14;
+    جوڙيو_struct(16, p, ram_mb, nr_mem_devs);
 
-    int i, j;
-    for (i = 0; i < nr_mem_devs; i++) {
+    صحيح i, j;
+    لكل (i = 0; i < nr_mem_devs; i++) {
         u32 dev_mb = ((i == (nr_mem_devs - 1))
                       ? (((ram_mb - 1) & 0x3fff) + 1)
                       : 16384);
-        add_struct(17, p, dev_mb, i);
+        جوڙيو_struct(17, p, dev_mb, i);
     }
 
-    add_struct(19, p, 0, RamSize >> 20, 0);
-    if (RamSizeOver4G)
-        add_struct(19, p, 4096, RamSizeOver4G >> 20, 1);
+    جوڙيو_struct(19, p, 0, Ram_سائيز >> 20, 0);
+    إذا (Ram_سائيز_Over4_G)
+        جوڙيو_struct(19, p, 4096, Ram_سائيز_Over4_G >> 20, 1);
 
-    add_struct(20, p, 0, RamSize >> 20, 0, 0, 0);
-    if (RamSizeOver4G) {
-        u32 start_mb = 4096;
-        for (j = 1, i = 0; i < nr_mem_devs; i++, j++) {
+    جوڙيو_struct(20, p, 0, Ram_سائيز >> 20, 0, 0, 0);
+    إذا (Ram_سائيز_Over4_G) {
+        u32 شروعات_mb = 4096;
+        لكل (j = 1, i = 0; i < nr_mem_devs; i++, j++) {
             u32 dev_mb = ((i == (nr_mem_devs - 1))
                                ? (((ram_mb - 1) & 0x3fff) + 1)
                                : 16384);
-            if (i == 0)
-                dev_mb -= RamSize >> 20;
+            إذا (i == 0)
+                dev_mb -= Ram_سائيز >> 20;
 
-            add_struct(20, p, start_mb, dev_mb, j, i, 1);
-            start_mb += dev_mb;
+            جوڙيو_struct(20, p, شروعات_mb, dev_mb, j, i, 1);
+            شروعات_mb += dev_mb;
         }
     }
 
-    add_struct(32, p);
+    جوڙيو_struct(32, p);
     /* Add any remaining provided entries before the end marker */
-    for (i = 0; i < 256; i++)
-        get_external(i, &p, &nr_structs, &max_struct_size, end);
-    add_struct(127, p);
+    لكل (i = 0; i < 256; i++)
+        get_external(i, &p, &nr_structs, &max_struct_سائيز, پڇاڙي);
+    جوڙيو_struct(127, p);
 
-#undef add_struct
+#وصف_رد جوڙيو_struct
 
-    smbios_21_entry_point_setup(max_struct_size, p - start, start, nr_structs);
-    free(start);
+    smbios_21_داخلا_نقطو_تياري(max_struct_سائيز, p - شروعات, شروعات, nr_structs);
+    حرر(شروعات);
 }

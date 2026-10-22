@@ -1,80 +1,80 @@
-#ifndef __PV_H
-#define __PV_H
+#جيڪڏهن_وصف_نه_ٿيل __PV_H
+#وصف_ڪريو __PV_H
 
-#include "config.h" // CONFIG_*
-#include "biosvar.h" // GET_GLOBAL
-#include "romfile.h" // struct romfile_s
+#ضمن "config.h" // CONFIG_*
+#ضمن "biosvar.h" // GET_GLOBAL
+#ضمن "romfile.h" // struct romfile_s
 
 // kvmclock
-struct pvclock_vcpu_time_info {
-	u32   version;
+بنية pvclock_vcpu_وقت_info {
+	u32   نسخو_2;
 	u32   pad0;
 	u64   tsc_timestamp;
-	u64   system_time;
-	u32   tsc_to_system_mul;
-	s8    tsc_shift;
+	u64   system_وقت;
+	u32   tsc_منزل_system_mul;
+	s8    tsc_سرڪايو;
 	u8    flags;
 	u8    pad[2];
 } __attribute__((__packed__)); /* 32 bytes */
 
 // Types of paravirtualized platforms.
-#define PF_QEMU     (1<<0)
-#define PF_XEN      (1<<1)
-#define PF_KVM      (1<<2)
+#وصف_ڪريو PF_QEMU     (1<<0)
+#وصف_ڪريو PF_XEN      (1<<1)
+#وصف_ڪريو PF_KVM      (1<<2)
 
-typedef struct QemuCfgDmaAccess {
+تعريفنوع بنية QemuCfgDmaAccess {
     u32 control;
-    u32 length;
-    u64 address;
+    u32 ڊيگهائي;
+    u64 پتو;
 } PACKED QemuCfgDmaAccess;
 
-extern u32 RamSize;
-extern u64 RamSizeOver4G;
-extern int PlatformRunningOn;
-extern u8 CPUPhysBits;
-extern u8 CPULongMode;
+خارجي u32 Ram_سائيز;
+خارجي u64 Ram_سائيز_Over4_G;
+خارجي صحيح PlatformRunningOn;
+خارجي u8 CPUPhys_بٽ;
+خارجي u8 CPULong_گهڻائي;
 
-static inline int runningOnQEMU(void) {
-    return CONFIG_QEMU || (
+ساكن مضمن صحيح runningOnQEMU(فراغ) {
+    أرجع CONFIG_QEMU || (
         CONFIG_QEMU_HARDWARE && GET_GLOBAL(PlatformRunningOn) & PF_QEMU);
 }
-static inline int runningOnXen(void) {
-    return CONFIG_XEN && GET_GLOBAL(PlatformRunningOn) & PF_XEN;
+ساكن مضمن صحيح runningOnXen(فراغ) {
+    أرجع CONFIG_XEN && GET_GLOBAL(PlatformRunningOn) & PF_XEN;
 }
-static inline int runningOnKVM(void) {
-    return CONFIG_QEMU && GET_GLOBAL(PlatformRunningOn) & PF_KVM;
+ساكن مضمن صحيح runningOnKVM(فراغ) {
+    أرجع CONFIG_QEMU && GET_GLOBAL(PlatformRunningOn) & PF_KVM;
 }
 
 // Common paravirt ports.
-#define PORT_SMI_CMD                0x00b2
-#define PORT_SMI_STATUS             0x00b3
-#define PORT_QEMU_CFG_CTL           0x0510
-#define PORT_QEMU_CFG_DATA          0x0511
-#define PORT_QEMU_CFG_DMA_ADDR_HIGH 0x0514
-#define PORT_QEMU_CFG_DMA_ADDR_LOW  0x0518
+#وصف_ڪريو پورٽ_SMI_CMD                0x00b2
+#وصف_ڪريو پورٽ_SMI_حالت             0x00b3
+#وصف_ڪريو پورٽ_QEMU_CFG_CTL           0x0510
+#وصف_ڪريو پورٽ_QEMU_CFG_معلومات          0x0511
+#وصف_ڪريو پورٽ_QEMU_CFG_DMA_ADDR_مٿاهون 0x0514
+#وصف_ڪريو پورٽ_QEMU_CFG_DMA_ADDR_هيٺيون  0x0518
 
 // QEMU_CFG_DMA_CONTROL bits
-#define QEMU_CFG_DMA_CTL_ERROR   0x01
-#define QEMU_CFG_DMA_CTL_READ    0x02
-#define QEMU_CFG_DMA_CTL_SKIP    0x04
-#define QEMU_CFG_DMA_CTL_SELECT  0x08
-#define QEMU_CFG_DMA_CTL_WRITE   0x10
+#وصف_ڪريو QEMU_CFG_DMA_CTL_ERROR   0x01
+#وصف_ڪريو QEMU_CFG_DMA_CTL_READ    0x02
+#وصف_ڪريو QEMU_CFG_DMA_CTL_SKIP    0x04
+#وصف_ڪريو QEMU_CFG_DMA_CTL_SELECT  0x08
+#وصف_ڪريو QEMU_CFG_DMA_CTL_WRITE   0x10
 
 // QEMU_CFG_DMA ID bit
-#define QEMU_CFG_VERSION_DMA    2
+#وصف_ڪريو QEMU_CFG_نسخو_DMA    2
 
 // QEMU debugcon read value
-#define QEMU_DEBUGCON_READBACK  0xe9
+#وصف_ڪريو QEMU_DEBUGCON_READBACK  0xe9
 
-int qemu_cfg_enabled(void);
-int qemu_cfg_dma_enabled(void);
-void qemu_preinit(void);
-void qemu_platform_setup(void);
-void qemu_cfg_init(void);
+صحيح qemu_cfg_enabled(فراغ);
+صحيح qemu_cfg_dma_enabled(فراغ);
+فراغ qemu_preinit(فراغ);
+فراغ qemu_platform_تياري(فراغ);
+فراغ qemu_cfg_init(فراغ);
 
-u16 qemu_get_present_cpus_count(void);
-int qemu_cfg_write_file(void *src, struct romfile_s *file, u32 offset, u32 len);
-int qemu_cfg_write_file_simple(void *src, u16 key, u32 offset, u32 len);
-u16 qemu_get_romfile_key(struct romfile_s *file);
+u16 qemu_get_present_cpus_ڳڻپ(فراغ);
+صحيح qemu_cfg_write_file(فراغ *src, بنية romfile_s *file, u32 وٿي_2, u32 len);
+صحيح qemu_cfg_write_file_simple(فراغ *src, u16 ڪنجي, u32 وٿي_2, u32 len);
+u16 qemu_get_romfile_ڪنجي(بنية romfile_s *file);
 
-#endif
+#جيڪڏهن_پورو

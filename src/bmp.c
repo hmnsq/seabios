@@ -6,49 +6,49 @@
 *
 * This work is licensed under the terms of the GNU LGPLv3.
 */
-#include "malloc.h" // malloc_tmphigh
-#include "string.h" // memcpy
-#include "util.h" // struct bmp_decdata
+#ضمن "malloc.h" // malloc_tmphigh
+#ضمن "string.h" // memcpy
+#ضمن "util.h" // struct bmp_decdata
 
-struct bmp_decdata {
-    struct tagRGBQUAD *quadp;
-    unsigned char *datap;
-    int width;
-    int height;
-    int bpp;
+بنية bmp_decdata {
+    بنية ٽيگ_RGBQUAD *quadp;
+    بنانشان حرف *datap;
+    صحيح ويڪر;
+    صحيح اوچائي;
+    صحيح bpp;
 };
 
-#define bmp_load4byte(addr) (*(u32 *)(addr))
-#define bmp_load2byte(addr) (*(u16 *)(addr))
+#وصف_ڪريو bmp_load4byte(addr) (*(u32 *)(addr))
+#وصف_ڪريو bmp_load2byte(addr) (*(u16 *)(addr))
 
-typedef struct tagBITMAPFILEHEADER {
+تعريفنوع بنية ٽيگ_BITMAPFILEHEADER {
     u8 bfType[2];
-    u8 bfSize[4];
+    u8 bf_سائيز[4];
     u8 bfReserved1[2];
     u8 bfReserved2[2];
-    u8 bfOffBits[4];
-} BITMAPFILEHEADER, tagBITMAPFILEHEADER;
+    u8 bf_Off_بٽ[4];
+} BITMAPFILEHEADER, ٽيگ_BITMAPFILEHEADER;
 
-typedef struct tagBITMAPINFOHEADER {
-    u8 biSize[4];
-    u8 biWidth[4];
-    u8 biHeight[4];
+تعريفنوع بنية ٽيگ_BITMAPINFOHEADER {
+    u8 bi_سائيز[4];
+    u8 bi_ويڪر[4];
+    u8 bi_اوچائي[4];
     u8 biPlanes[2];
-    u8 biBitCount[2];
+    u8 bi_ٻٽو_انگ_ڳڻپ[2];
     u8 biCompression[4];
-    u8 biSizeImage[4];
-    u8 biXPelsPerMeter[4];
-    u8 biYPelsPerMeter[4];
-    u8 biClrUsed[4];
+    u8 bi_سائيز_Image[4];
+    u8 bi_XPels_في_Meter[4];
+    u8 bi_YPels_في_Meter[4];
+    u8 bi_Clr_استعمال_ٿيل[4];
     u8 biClrImportant[4];
-} BITMAPINFOHEADER, tagBITMAPINFOHEADER;
+} BITMAPINFOHEADER, ٽيگ_BITMAPINFOHEADER;
 
-typedef struct tagRGBQUAD {
+تعريفنوع بنية ٽيگ_RGBQUAD {
     u8 rgbBlue;
     u8 rgbGreen;
     u8 rgbRed;
     u8 rgbReserved;
-} RGBQUAD, tagRGBQUAD;
+} RGBQUAD, ٽيگ_RGBQUAD;
 
 /* flat picture data adjusting function
 * description:
@@ -56,61 +56,61 @@ typedef struct tagRGBQUAD {
 *   arrange horizontal pixel data, add extra space in the dest buffer
 *       for every line
 */
-static void raw_data_format_adjust(u8 *src, u8 *dest, int width,
-		int height, int bytes_per_line_src, int bytes_per_line_dest)
+ساكن فراغ raw_معلومات_format_adjust(u8 *src, u8 *dest, صحيح ويڪر,
+		صحيح اوچائي, صحيح بائيٽون_في_سٽ_src, صحيح بائيٽون_في_سٽ_dest)
 {
-    int i;
-    for (i = 0 ; i < height ; i++) {
-        memcpy(dest + i * bytes_per_line_dest,
-           src + (height - 1 - i) * bytes_per_line_src, bytes_per_line_src);
+    صحيح i;
+    لكل (i = 0 ; i < اوچائي ; i++) {
+        يادگيري_نقل(dest + i * بائيٽون_في_سٽ_dest,
+           src + (اوچائي - 1 - i) * بائيٽون_في_سٽ_src, بائيٽون_في_سٽ_src);
     }
 }
 
 /* allocate decdata struct */
-struct bmp_decdata *bmp_alloc(void)
+بنية bmp_decdata *bmp_alloc(فراغ)
 {
-    struct bmp_decdata *bmp = malloc_tmphigh(sizeof(*bmp));
-    return bmp;
+    بنية bmp_decdata *bmp = malloc_tmphigh(حجم(*bmp));
+    أرجع bmp;
 }
 
 /* extract information from bmp file data */
-int bmp_decode(struct bmp_decdata *bmp, unsigned char *data, int data_size)
+صحيح bmp_decode(بنية bmp_decdata *bmp, بنانشان حرف *معلومات, صحيح معلومات_سائيز)
 {
-    if (data_size < 54)
-        return 1;
+    إذا (معلومات_سائيز < 54)
+        أرجع 1;
 
-    u16 bmp_filehead = bmp_load2byte(data + 0);
-    if (bmp_filehead != 0x4d42)
-        return 2;
-    u32 bmp_recordsize = bmp_load4byte(data + 2);
-    if (bmp_recordsize != data_size)
-        return 3;
-    u32 bmp_dataoffset = bmp_load4byte(data + 10);
-    bmp->datap = (unsigned char *)data + bmp_dataoffset;
-    bmp->width = bmp_load4byte(data + 18);
-    bmp->height = bmp_load4byte(data + 22);
-    bmp->bpp = bmp_load2byte(data + 28);
-    return 0;
+    u16 bmp_filehead = bmp_load2byte(معلومات + 0);
+    إذا (bmp_filehead != 0x4d42)
+        أرجع 2;
+    u32 bmp_recordsize = bmp_load4byte(معلومات + 2);
+    إذا (bmp_recordsize != معلومات_سائيز)
+        أرجع 3;
+    u32 bmp_dataoffset = bmp_load4byte(معلومات + 10);
+    bmp->datap = (بنانشان حرف *)معلومات + bmp_dataoffset;
+    bmp->ويڪر = bmp_load4byte(معلومات + 18);
+    bmp->اوچائي = bmp_load4byte(معلومات + 22);
+    bmp->bpp = bmp_load2byte(معلومات + 28);
+    أرجع 0;
 }
 
 /* get bmp properties */
-void bmp_get_info(struct bmp_decdata *bmp, int *width, int *height, int *bpp)
+فراغ bmp_get_info(بنية bmp_decdata *bmp, صحيح *ويڪر, صحيح *اوچائي, صحيح *bpp)
 {
-    *width = bmp->width;
-    *height = bmp->height;
+    *ويڪر = bmp->ويڪر;
+    *اوچائي = bmp->اوچائي;
     *bpp = bmp->bpp;
 }
 
 /* flush flat picture data to *pc */
-int bmp_show(struct bmp_decdata *bmp, unsigned char *pic, int width,
-             int height, int depth, int bytes_per_line_dest)
+صحيح bmp_show(بنية bmp_decdata *bmp, بنانشان حرف *pic, صحيح ويڪر,
+             صحيح اوچائي, صحيح اونهائي, صحيح بائيٽون_في_سٽ_dest)
 {
-    if (bmp->datap == pic)
-        return 0;
-    if ((depth == bmp->bpp) && (bmp->bpp%8 == 0)) {
-        raw_data_format_adjust(bmp->datap, pic, width, height,
-			(bmp->bpp/8)*width, bytes_per_line_dest);
-        return 0;
+    إذا (bmp->datap == pic)
+        أرجع 0;
+    إذا ((اونهائي == bmp->bpp) && (bmp->bpp%8 == 0)) {
+        raw_معلومات_format_adjust(bmp->datap, pic, ويڪر, اوچائي,
+			(bmp->bpp/8)*ويڪر, بائيٽون_في_سٽ_dest);
+        أرجع 0;
     }
-    return 1;
+    أرجع 1;
 }

@@ -1,121 +1,121 @@
-#ifndef _VIRTIO_RING_H
-#define _VIRTIO_RING_H
+#جيڪڏهن_وصف_نه_ٿيل _VIRTIO_RING_H
+#وصف_ڪريو _VIRTIO_RING_H
 
-#include "types.h" // u64
-#include "memmap.h" // PAGE_SIZE
+#ضمن "types.h" // u64
+#ضمن "memmap.h" // PAGE_SIZE
 
 /* Status byte for guest to report progress, and synchronize features. */
 /* We have seen device and processed generic fields (VIRTIO_CONFIG_F_VIRTIO) */
-#define VIRTIO_CONFIG_S_ACKNOWLEDGE     1
+#وصف_ڪريو VIRTIO_CONFIG_S_ACKNOWLEDGE     1
 /* We have found a driver for the device. */
-#define VIRTIO_CONFIG_S_DRIVER          2
+#وصف_ڪريو VIRTIO_CONFIG_S_DRIVER          2
 /* Driver has used its parts of the config, and is happy */
-#define VIRTIO_CONFIG_S_DRIVER_OK       4
+#وصف_ڪريو VIRTIO_CONFIG_S_DRIVER_OK       4
 /* Driver has finished configuring features */
-#define VIRTIO_CONFIG_S_FEATURES_OK     8
+#وصف_ڪريو VIRTIO_CONFIG_S_FEATURES_OK     8
 /* We've given up on this device. */
-#define VIRTIO_CONFIG_S_FAILED          0x80
+#وصف_ڪريو VIRTIO_CONFIG_S_FAILED          0x80
 
 /* v1.0 compliant. */
-#define VIRTIO_F_VERSION_1              32
-#define VIRTIO_F_IOMMU_PLATFORM         33
+#وصف_ڪريو VIRTIO_F_نسخو_1              32
+#وصف_ڪريو VIRTIO_F_IOMMU_PLATFORM         33
 
-#define MAX_QUEUE_NUM      (256)
+#وصف_ڪريو MAX_قطار_انگ      (256)
 
-#define VRING_DESC_F_NEXT  1
-#define VRING_DESC_F_WRITE 2
+#وصف_ڪريو VRING_DESC_F_ايندڙ  1
+#وصف_ڪريو VRING_DESC_F_WRITE 2
 
-#define VRING_AVAIL_F_NO_INTERRUPT 1
+#وصف_ڪريو VRING_AVAIL_F_NO_مداخلت 1
 
-#define VRING_USED_F_NO_NOTIFY     1
+#وصف_ڪريو VRING_استعمال_ٿيل_F_NO_NOTIFY     1
 
-struct vring_desc
+بنية vring_desc
 {
    u64 addr;
    u32 len;
    u16 flags;
-   u16 next;
+   u16 ايندڙ;
 };
 
-struct vring_avail
+بنية vring_avail
 {
    u16 flags;
    u16 idx;
    u16 ring[0];
 };
 
-struct vring_used_elem
+بنية vring_استعمال_ٿيل_elem
 {
    u32 id;
    u32 len;
 };
 
-struct vring_used
+بنية vring_استعمال_ٿيل
 {
    u16 flags;
    u16 idx;
-   struct vring_used_elem ring[];
+   بنية vring_استعمال_ٿيل_elem ring[];
 };
 
-struct vring {
-   unsigned int num;
-   struct vring_desc *desc;
-   struct vring_avail *avail;
-   struct vring_used *used;
+بنية vring {
+   بنانشان صحيح انگ;
+   بنية vring_desc *desc;
+   بنية vring_avail *avail;
+   بنية vring_استعمال_ٿيل *استعمال_ٿيل;
 };
 
-#define vring_size(num) \
-    (ALIGN(sizeof(struct vring_desc) * num + sizeof(struct vring_avail) \
-           + sizeof(u16) * num, PAGE_SIZE)                              \
-     + sizeof(struct vring_used) + sizeof(struct vring_used_elem) * num)
+#وصف_ڪريو vring_سائيز(انگ) \
+    (ALIGN(حجم(بنية vring_desc) * انگ + حجم(بنية vring_avail) \
+           + حجم(u16) * انگ, صفحو_سائيز)                              \
+     + حجم(بنية vring_استعمال_ٿيل) + حجم(بنية vring_استعمال_ٿيل_elem) * انگ)
 
-typedef unsigned char virtio_queue_t[vring_size(MAX_QUEUE_NUM)];
+تعريفنوع بنانشان حرف virtio_قطار_t[vring_سائيز(MAX_قطار_انگ)];
 
-struct vring_virtqueue {
-   virtio_queue_t queue;
-   struct vring vring;
-   u16 free_head;
-   u16 last_used_idx;
-   u16 vdata[MAX_QUEUE_NUM];
+بنية vring_virtqueue {
+   virtio_قطار_t قطار;
+   بنية vring vring;
+   u16 free_سر;
+   u16 آخري_استعمال_ٿيل_idx;
+   u16 vdata[MAX_قطار_انگ];
    /* PCI */
-   int queue_index;
-   int queue_notify_off;
+   صحيح قطار_اشاريو;
+   صحيح قطار_notify_off;
 };
 
-struct vring_list {
-  char *addr;
-  unsigned int length;
+بنية vring_list {
+  حرف *addr;
+  بنانشان صحيح ڊيگهائي;
 };
 
-static inline void
-vring_init(struct vring *vr, unsigned int num, unsigned char *queue)
+ساكن مضمن فراغ
+vring_init(بنية vring *vr, بنانشان صحيح انگ, بنانشان حرف *قطار)
 {
    ASSERT32FLAT();
-   vr->num = num;
+   vr->انگ = انگ;
 
    /* physical address of desc must be page aligned */
-   vr->desc = (void*)ALIGN((u32)queue, PAGE_SIZE);
+   vr->desc = (فراغ*)ALIGN((u32)قطار, صفحو_سائيز);
 
-   vr->avail = (struct vring_avail *)&vr->desc[num];
+   vr->avail = (بنية vring_avail *)&vr->desc[انگ];
    /* disable interrupts */
-   vr->avail->flags |= VRING_AVAIL_F_NO_INTERRUPT;
+   vr->avail->flags |= VRING_AVAIL_F_NO_مداخلت;
 
    /* physical address of used must be page aligned */
-   vr->used = (void*)ALIGN((u32)&vr->avail->ring[num], PAGE_SIZE);
+   vr->استعمال_ٿيل = (فراغ*)ALIGN((u32)&vr->avail->ring[انگ], صفحو_سائيز);
 
-   int i;
-   for (i = 0; i < num - 1; i++)
-       vr->desc[i].next = i + 1;
-   vr->desc[i].next = 0;
+   صحيح i;
+   لكل (i = 0; i < انگ - 1; i++)
+       vr->desc[i].ايندڙ = i + 1;
+   vr->desc[i].ايندڙ = 0;
 }
 
-struct vp_device;
-int vring_more_used(struct vring_virtqueue *vq);
-void vring_detach(struct vring_virtqueue *vq, unsigned int head);
-int vring_get_buf(struct vring_virtqueue *vq, unsigned int *len);
-void vring_add_buf(struct vring_virtqueue *vq, struct vring_list list[],
-                   unsigned int out, unsigned int in,
-                   int index, int num_added);
-void vring_kick(struct vp_device *vp, struct vring_virtqueue *vq, int num_added);
+بنية vp_device;
+صحيح vring_وڌيڪ_استعمال_ٿيل(بنية vring_virtqueue *vq);
+فراغ vring_detach(بنية vring_virtqueue *vq, بنانشان صحيح سر);
+صحيح vring_get_buf(بنية vring_virtqueue *vq, بنانشان صحيح *len);
+فراغ vring_جوڙيو_buf(بنية vring_virtqueue *vq, بنية vring_list list[],
+                   بنانشان صحيح ٻاهريون, بنانشان صحيح اندريون,
+                   صحيح اشاريو, صحيح انگ_added);
+فراغ vring_kick(بنية vp_device *vp, بنية vring_virtqueue *vq, صحيح انگ_added);
 
-#endif /* _VIRTIO_RING_H_ */
+#جيڪڏهن_پورو /* _VIRTIO_RING_H_ */

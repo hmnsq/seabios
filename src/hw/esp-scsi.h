@@ -1,8 +1,8 @@
-#ifndef __ESP_SCSI_H
-#define __ESP_SCSI_H
+#جيڪڏهن_وصف_نه_ٿيل __ESP_SCSI_H
+#وصف_ڪريو __ESP_SCSI_H
 
-struct disk_op_s;
-int esp_scsi_process_op(struct disk_op_s *op);
-void esp_scsi_setup(void);
+بنية disk_op_s;
+صحيح esp_scsi_process_op(بنية disk_op_s *op);
+فراغ esp_scsi_تياري(فراغ);
 
-#endif /* __ESP_SCSI_H */
+#جيڪڏهن_پورو /* __ESP_SCSI_H */

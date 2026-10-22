@@ -1,7 +1,7 @@
-#ifndef __CONFIG_H
-#define __CONFIG_H
+#جيڪڏهن_وصف_نه_ٿيل __CONFIG_H
+#وصف_ڪريو __CONFIG_H
 
-#include "autoconf.h"
+#ضمن "autoconf.h"
 
 // Configuration definitions.
 
@@ -9,101 +9,101 @@
 //#define BUILD_CPUNAME8 "QEMUCPU "
 //#define BUILD_APPNAME6 "QEMU  "
 //#define BUILD_APPNAME4 "QEMU"
-#define BUILD_APPNAME  "Bochs"
-#define BUILD_CPUNAME8 "BOCHSCPU"
-#define BUILD_APPNAME6 "BOCHS "
-#define BUILD_APPNAME4 "BXPC"
+#وصف_ڪريو BUILD_APPNAME  "Bochs"
+#وصف_ڪريو BUILD_CPUNAME8 "BOCHSCPU"
+#وصف_ڪريو BUILD_APPNAME6 "BOCHS "
+#وصف_ڪريو BUILD_APPNAME4 "BXPC"
 
 // Maximum number of map entries in the e820 map
-#define BUILD_MAX_E820 128
+#وصف_ڪريو BUILD_MAX_E820 128
 // Space to reserve in high-memory for tables
-#define BUILD_MIN_HIGHTABLE (256*1024)
-#define BUILD_MAX_HIGHTABLE (16*1024*1024)
+#وصف_ڪريو BUILD_MIN_HIGHTABLE (256*1024)
+#وصف_ڪريو BUILD_MAX_HIGHTABLE (16*1024*1024)
 // Largest supported externaly facing drive id
-#define BUILD_MAX_EXTDRIVE 16
+#وصف_ڪريو BUILD_MAX_EXTDRIVE 16
 // Number of bytes the smbios may be and still live in the f-segment
-#define BUILD_MAX_SMBIOS_FSEG     600
+#وصف_ڪريو BUILD_MAX_SMBIOS_FSEG     600
 // Maximum number of bytes the mptable may be and still be copied to f-segment
-#define BUILD_MAX_MPTABLE_FSEG    600
+#وصف_ڪريو BUILD_MAX_MPTABLE_FSEG    600
 
-#define BUILD_MODEL_ID      0xFC
-#define BUILD_SUBMODEL_ID   0x00
-#define BUILD_BIOS_REVISION 0x01
+#وصف_ڪريو BUILD_MODEL_ID      0xFC
+#وصف_ڪريو BUILD_SUBMODEL_ID   0x00
+#وصف_ڪريو BUILD_BIOS_REVISION 0x01
 
 // Various memory addresses used by the code.
-#define BUILD_STACK_ADDR          0x7000
-#define BUILD_S3RESUME_STACK_ADDR 0x1000
-#define BUILD_AP_BOOT_ADDR        0x10000
-#define BUILD_EBDA_MINIMUM        0x90000
-#define BUILD_LOWRAM_END          0xa0000
-#define BUILD_ROM_START           0xc0000
-#define BUILD_BIOS_ADDR           0xf0000
-#define BUILD_BIOS_SIZE           0x10000
-#define BUILD_EXTRA_STACK_SIZE    0x800
-#define BUILD_SMM_INIT_ADDR       0x30000
-#define BUILD_SMM_ADDR            0xa0000
+#وصف_ڪريو BUILD_ڍير_ADDR          0x7000
+#وصف_ڪريو BUILD_S3_RESUME_ڍير_ADDR 0x1000
+#وصف_ڪريو BUILD_AP_BOOT_ADDR        0x10000
+#وصف_ڪريو BUILD_EBDA_MINIMUM        0x90000
+#وصف_ڪريو BUILD_LOWRAM_پڇاڙي          0xa0000
+#وصف_ڪريو BUILD_ROM_شروعات           0xc0000
+#وصف_ڪريو BUILD_BIOS_ADDR           0xf0000
+#وصف_ڪريو BUILD_BIOS_سائيز           0x10000
+#وصف_ڪريو BUILD_EXTRA_ڍير_سائيز    0x800
+#وصف_ڪريو BUILD_SMM_INIT_ADDR       0x30000
+#وصف_ڪريو BUILD_SMM_ADDR            0xa0000
 
-#define BUILD_PCIMEM_START        0xe0000000
-#define BUILD_PCIMEM_END          0xfec00000    /* IOAPIC is mapped at */
-#define BUILD_PCIMEM64_START      0x8000000000ULL
-#define BUILD_PCIMEM64_END        0x10000000000ULL
+#وصف_ڪريو BUILD_PCIMEM_شروعات        0xe0000000
+#وصف_ڪريو BUILD_PCIMEM_پڇاڙي          0xfec00000    /* IOAPIC is mapped at */
+#وصف_ڪريو BUILD_PCIMEM64_شروعات      0x8000000000ULL
+#وصف_ڪريو BUILD_PCIMEM64_پڇاڙي        0x10000000000ULL
 
-#define BUILD_IOAPIC_ADDR         0xfec00000
-#define BUILD_IOAPIC_ID           0
-#define BUILD_HPET_ADDRESS        0xfed00000
-#define BUILD_APIC_ADDR           0xfee00000
+#وصف_ڪريو BUILD_IOAPIC_ADDR         0xfec00000
+#وصف_ڪريو BUILD_IOAPIC_ID           0
+#وصف_ڪريو BUILD_HPET_پتو        0xfed00000
+#وصف_ڪريو BUILD_APIC_ADDR           0xfee00000
 
 // PCI IRQS
-#define BUILD_PCI_IRQS            ((1<<5) | (1<<9) | (1<<10) | (1<<11))
+#وصف_ڪريو BUILD_PCI_IRQS            ((1<<5) | (1<<9) | (1<<10) | (1<<11))
 
 // Important real-mode segments
-#define SEG_IVT      0x0000
-#define SEG_BDA      0x0040
-#define SEG_BIOS     0xf000
+#وصف_ڪريو SEG_IVT      0x0000
+#وصف_ڪريو SEG_BDA      0x0040
+#وصف_ڪريو SEG_BIOS     0xf000
 
 // Segment definitions in protected mode (see rombios32_gdt in misc.c)
-#define SEG32_MODE32_CS    (1 << 3)
-#define SEG32_MODE32_DS    (2 << 3)
-#define SEG32_MODE16_CS    (3 << 3)
-#define SEG32_MODE16_DS    (4 << 3)
-#define SEG32_MODE16BIG_CS (5 << 3)
-#define SEG32_MODE16BIG_DS (6 << 3)
+#وصف_ڪريو SEG32_MODE32_CS    (1 << 3)
+#وصف_ڪريو SEG32_MODE32_DS    (2 << 3)
+#وصف_ڪريو SEG32_MODE16_CS    (3 << 3)
+#وصف_ڪريو SEG32_MODE16_DS    (4 << 3)
+#وصف_ڪريو SEG32_MODE16BIG_CS (5 << 3)
+#وصف_ڪريو SEG32_MODE16BIG_DS (6 << 3)
 
 // Debugging levels.  If non-zero and CONFIG_DEBUG_LEVEL is greater
 // than the specified value, then the corresponding irq handler will
 // report every enter event.
-#define DEBUG_ISR_02 1
-#define DEBUG_HDL_05 1
-#define DEBUG_ISR_08 20
-#define DEBUG_ISR_09 9
-#define DEBUG_ISR_0e 9
-#define DEBUG_HDL_11 2
-#define DEBUG_HDL_12 2
-#define DEBUG_HDL_13 10
-#define DEBUG_HDL_14 2
-#define DEBUG_HDL_15 9
-#define DEBUG_HDL_16 9
-#define DEBUG_HDL_17 2
-#define DEBUG_HDL_18 1
-#define DEBUG_HDL_19 1
-#define DEBUG_HDL_1a 9
-#define DEBUG_HDL_40 1
-#define DEBUG_ISR_70 9
-#define DEBUG_ISR_74 9
-#define DEBUG_ISR_75 1
-#define DEBUG_ISR_76 10
-#define DEBUG_ISR_hwpic1 5
-#define DEBUG_ISR_hwpic2 5
-#define DEBUG_HDL_smi 9
-#define DEBUG_HDL_smp 1
-#define DEBUG_HDL_pnp 1
-#define DEBUG_HDL_pmm 1
-#define DEBUG_HDL_pcibios 9
-#define DEBUG_HDL_apm 9
+#وصف_ڪريو DEBUG_ISR_02 1
+#وصف_ڪريو DEBUG_HDL_05 1
+#وصف_ڪريو DEBUG_ISR_08 20
+#وصف_ڪريو DEBUG_ISR_09 9
+#وصف_ڪريو DEBUG_ISR_0e 9
+#وصف_ڪريو DEBUG_HDL_11 2
+#وصف_ڪريو DEBUG_HDL_12 2
+#وصف_ڪريو DEBUG_HDL_13 10
+#وصف_ڪريو DEBUG_HDL_14 2
+#وصف_ڪريو DEBUG_HDL_15 9
+#وصف_ڪريو DEBUG_HDL_16 9
+#وصف_ڪريو DEBUG_HDL_17 2
+#وصف_ڪريو DEBUG_HDL_18 1
+#وصف_ڪريو DEBUG_HDL_19 1
+#وصف_ڪريو DEBUG_HDL_1a 9
+#وصف_ڪريو DEBUG_HDL_40 1
+#وصف_ڪريو DEBUG_ISR_70 9
+#وصف_ڪريو DEBUG_ISR_74 9
+#وصف_ڪريو DEBUG_ISR_75 1
+#وصف_ڪريو DEBUG_ISR_76 10
+#وصف_ڪريو DEBUG_ISR_hwpic1 5
+#وصف_ڪريو DEBUG_ISR_hwpic2 5
+#وصف_ڪريو DEBUG_HDL_smi 9
+#وصف_ڪريو DEBUG_HDL_smp 1
+#وصف_ڪريو DEBUG_HDL_pnp 1
+#وصف_ڪريو DEBUG_HDL_pmm 1
+#وصف_ڪريو DEBUG_HDL_pcibios 9
+#وصف_ڪريو DEBUG_HDL_apm 9
 
-#define DEBUG_unimplemented 2
-#define DEBUG_invalid 3
-#define DEBUG_thread 2
-#define DEBUG_tcg 20
+#وصف_ڪريو DEBUG_unimplemented 2
+#وصف_ڪريو DEBUG_invalid 3
+#وصف_ڪريو DEBUG_thread 2
+#وصف_ڪريو DEBUG_tcg 20
 
-#endif // config.h
+#جيڪڏهن_پورو // config.h

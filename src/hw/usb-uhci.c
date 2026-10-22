@@ -4,32 +4,32 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_LOWFLAT
-#include "config.h" // CONFIG_*
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "pci.h" // pci_config_writew
-#include "pcidevice.h" // foreachpci
-#include "pci_ids.h" // PCI_CLASS_SERIAL_USB_UHCI
-#include "pci_regs.h" // PCI_BASE_ADDRESS_4
-#include "string.h" // memset
-#include "usb.h" // struct usb_s
-#include "usb-ehci.h" // ehci_wait_controllers
-#include "usb-uhci.h" // USBLEGSUP
-#include "util.h" // msleep
-#include "x86.h" // outw
+#ضمن "biosvar.h" // GET_LOWFLAT
+#ضمن "config.h" // CONFIG_*
+#ضمن "malloc.h" // free
+#ضمن "output.h" // dprintf
+#ضمن "pci.h" // pci_config_writew
+#ضمن "pcidevice.h" // foreachpci
+#ضمن "pci_ids.h" // PCI_CLASS_SERIAL_USB_UHCI
+#ضمن "pci_regs.h" // PCI_BASE_ADDRESS_4
+#ضمن "string.h" // memset
+#ضمن "usb.h" // struct usb_s
+#ضمن "usb-ehci.h" // ehci_wait_controllers
+#ضمن "usb-uhci.h" // USBLEGSUP
+#ضمن "util.h" // msleep
+#ضمن "x86.h" // outw
 
-struct usb_uhci_s {
-    struct usb_s usb;
+بنية usb_uhci_s {
+    بنية usb_s usb;
     u16 iobase;
-    struct uhci_qh *control_qh;
-    struct uhci_framelist *framelist;
+    بنية uhci_qh *control_qh;
+    بنية uhci_framelist *framelist;
 };
 
-struct uhci_pipe {
-    struct uhci_qh qh;
-    struct uhci_td *next_td;
-    struct usb_pipe pipe;
+بنية uhci_pipe {
+    بنية uhci_qh qh;
+    بنية uhci_td *ايندڙ_td;
+    بنية usb_pipe pipe;
     u16 iobase;
     u8 toggle;
 };
@@ -40,72 +40,72 @@ struct uhci_pipe {
  ****************************************************************/
 
 // Check if device attached to a given port
-static int
-uhci_hub_detect(struct usbhub_s *hub, u32 port)
+ساكن صحيح
+uhci_hub_detect(بنية usbhub_s *hub, u32 پورٽ)
 {
-    struct usb_uhci_s *cntl = container_of(hub->cntl, struct usb_uhci_s, usb);
-    u16 ioport = cntl->iobase + USBPORTSC1 + port * 2;
-    u16 status = inw(ioport);
-    if (!(status & USBPORTSC_CCS))
+    بنية usb_uhci_s *cntl = container_جو(hub->cntl, بنية usb_uhci_s, usb);
+    u16 ioport = cntl->iobase + USBPORTSC1 + پورٽ * 2;
+    u16 حالت = inw(ioport);
+    إذا (!(حالت & USBPORTSC_CCS))
         // No device found.
-        return 0;
+        أرجع 0;
 
     // XXX - if just powered up, need to wait for USB_TIME_ATTDB?
 
     // Begin reset on port
     outw(USBPORTSC_PR, ioport);
-    msleep(USB_TIME_DRSTR);
-    return 1;
+    msleep(USB_وقت_DRSTR);
+    أرجع 1;
 }
 
 // Reset device on port
-static int
-uhci_hub_reset(struct usbhub_s *hub, u32 port)
+ساكن صحيح
+uhci_hub_reset(بنية usbhub_s *hub, u32 پورٽ)
 {
-    struct usb_uhci_s *cntl = container_of(hub->cntl, struct usb_uhci_s, usb);
-    u16 ioport = cntl->iobase + USBPORTSC1 + port * 2;
+    بنية usb_uhci_s *cntl = container_جو(hub->cntl, بنية usb_uhci_s, usb);
+    u16 ioport = cntl->iobase + USBPORTSC1 + پورٽ * 2;
 
     // Finish reset on port
     outw(0, ioport);
     udelay(6); // 64 high-speed bit times
-    u16 status = inw(ioport);
-    if (!(status & USBPORTSC_CCS))
+    u16 حالت = inw(ioport);
+    إذا (!(حالت & USBPORTSC_CCS))
         // No longer connected
-        return -1;
+        أرجع -1;
     outw(USBPORTSC_PE, ioport);
-    return !!(status & USBPORTSC_LSDA);
+    أرجع !!(حالت & USBPORTSC_LSDA);
 }
 
 // Disable port
-static void
-uhci_hub_disconnect(struct usbhub_s *hub, u32 port)
+ساكن فراغ
+uhci_hub_disconnect(بنية usbhub_s *hub, u32 پورٽ)
 {
-    struct usb_uhci_s *cntl = container_of(hub->cntl, struct usb_uhci_s, usb);
-    u16 ioport = cntl->iobase + USBPORTSC1 + port * 2;
+    بنية usb_uhci_s *cntl = container_جو(hub->cntl, بنية usb_uhci_s, usb);
+    u16 ioport = cntl->iobase + USBPORTSC1 + پورٽ * 2;
     outw(0, ioport);
 }
 
-static struct usbhub_op_s uhci_HubOp = {
+ساكن بنية usbhub_op_s uhci_HubOp = {
     .detect = uhci_hub_detect,
     .reset = uhci_hub_reset,
     .disconnect = uhci_hub_disconnect,
 };
 
 // Find any devices connected to the root hub.
-static int
-check_uhci_ports(struct usb_uhci_s *cntl)
+ساكن صحيح
+check_uhci_ports(بنية usb_uhci_s *cntl)
 {
     ASSERT32FLAT();
     // Wait for ehci init - in case this is a "companion controller"
     ehci_wait_controllers();
 
-    struct usbhub_s hub;
-    memset(&hub, 0, sizeof(hub));
+    بنية usbhub_s hub;
+    memset(&hub, 0, حجم(hub));
     hub.cntl = &cntl->usb;
     hub.portcount = 2;
     hub.op = &uhci_HubOp;
     usb_enumerate(&hub);
-    return hub.devcount;
+    أرجع hub.devcount;
 }
 
 
@@ -114,53 +114,53 @@ check_uhci_ports(struct usb_uhci_s *cntl)
  ****************************************************************/
 
 // Wait for next USB frame to start - for ensuring safe memory release.
-static void
+ساكن فراغ
 uhci_waittick(u16 iobase)
 {
     barrier();
     u16 startframe = inw(iobase + USBFRNUM);
-    u32 end = timer_calc(1000 * 5);
-    for (;;) {
-        if (inw(iobase + USBFRNUM) != startframe)
-            break;
-        if (timer_check(end)) {
+    u32 پڇاڙي = timer_calc(1000 * 5);
+    لكل (;;) {
+        إذا (inw(iobase + USBFRNUM) != startframe)
+            اكسر;
+        إذا (timer_check(پڇاڙي)) {
             warn_timeout();
-            return;
+            أرجع;
         }
         yield();
     }
 }
 
-static void
-uhci_free_pipes(struct usb_uhci_s *cntl)
+ساكن فراغ
+uhci_free_pipes(بنية usb_uhci_s *cntl)
 {
     dprintf(7, "uhci_free_pipes %p\n", cntl);
 
-    struct uhci_qh *pos = (void*)(cntl->framelist->links[0] & ~UHCI_PTR_BITS);
-    for (;;) {
+    بنية uhci_qh *pos = (فراغ*)(cntl->framelist->links[0] & ~UHCI_PTR_بٽ);
+    لكل (;;) {
         u32 link = pos->link;
-        if (link == UHCI_PTR_TERM)
-            break;
-        struct uhci_qh *next = (void*)(link & ~UHCI_PTR_BITS);
-        struct uhci_pipe *pipe = container_of(next, struct uhci_pipe, qh);
-        if (usb_is_freelist(&cntl->usb, &pipe->pipe))
-            pos->link = next->link;
-        else
-            pos = next;
+        إذا (link == UHCI_PTR_رڪن)
+            اكسر;
+        بنية uhci_qh *ايندڙ = (فراغ*)(link & ~UHCI_PTR_بٽ);
+        بنية uhci_pipe *pipe = container_جو(ايندڙ, بنية uhci_pipe, qh);
+        إذا (usb_is_freelist(&cntl->usb, &pipe->pipe))
+            pos->link = ايندڙ->link;
+        وإلا
+            pos = ايندڙ;
     }
     uhci_waittick(cntl->iobase);
-    for (;;) {
-        struct usb_pipe *usbpipe = cntl->usb.freelist;
-        if (!usbpipe)
-            break;
+    لكل (;;) {
+        بنية usb_pipe *usbpipe = cntl->usb.freelist;
+        إذا (!usbpipe)
+            اكسر;
         cntl->usb.freelist = usbpipe->freenext;
-        struct uhci_pipe *pipe = container_of(usbpipe, struct uhci_pipe, pipe);
-        free(pipe);
+        بنية uhci_pipe *pipe = container_جو(usbpipe, بنية uhci_pipe, pipe);
+        حرر(pipe);
     }
 }
 
-static void
-reset_uhci(struct usb_uhci_s *cntl, u16 bdf)
+ساكن فراغ
+reset_uhci(بنية usb_uhci_s *cntl, u16 bdf)
 {
     // XXX - don't reset if not needed.
 
@@ -176,38 +176,38 @@ reset_uhci(struct usb_uhci_s *cntl, u16 bdf)
     outw(0, cntl->iobase + USBCMD);
 }
 
-static void
-configure_uhci(void *data)
+ساكن فراغ
+configure_uhci(فراغ *معلومات)
 {
-    struct usb_uhci_s *cntl = data;
+    بنية usb_uhci_s *cntl = معلومات;
 
     // Allocate ram for schedule storage
-    struct uhci_td *term_td = malloc_high(sizeof(*term_td));
-    struct uhci_framelist *fl = memalign_high(sizeof(*fl), sizeof(*fl));
-    struct uhci_pipe *intr_pipe = malloc_high(sizeof(*intr_pipe));
-    struct uhci_pipe *term_pipe = malloc_high(sizeof(*term_pipe));
-    if (!term_td || !fl || !intr_pipe || !term_pipe) {
+    بنية uhci_td *رڪن_td = malloc_مٿاهون(حجم(*رڪن_td));
+    بنية uhci_framelist *fl = memalign_مٿاهون(حجم(*fl), حجم(*fl));
+    بنية uhci_pipe *intr_pipe = malloc_مٿاهون(حجم(*intr_pipe));
+    بنية uhci_pipe *رڪن_pipe = malloc_مٿاهون(حجم(*رڪن_pipe));
+    إذا (!رڪن_td || !fl || !intr_pipe || !رڪن_pipe) {
         warn_noalloc();
-        goto fail;
+        اذهب fail;
     }
 
     // Work around for PIIX errata
-    memset(term_td, 0, sizeof(*term_td));
-    term_td->link = UHCI_PTR_TERM;
-    term_td->token = (uhci_explen(0) | (0x7f << TD_TOKEN_DEVADDR_SHIFT)
-                      | USB_PID_IN);
-    memset(term_pipe, 0, sizeof(*term_pipe));
-    term_pipe->qh.element = (u32)term_td;
-    term_pipe->qh.link = UHCI_PTR_TERM;
-    term_pipe->pipe.cntl = &cntl->usb;
+    memset(رڪن_td, 0, حجم(*رڪن_td));
+    رڪن_td->link = UHCI_PTR_رڪن;
+    رڪن_td->token = (uhci_explen(0) | (0x7f << TD_TOKEN_DEVADDR_سرڪايو)
+                      | USB_PID_اندريون);
+    memset(رڪن_pipe, 0, حجم(*رڪن_pipe));
+    رڪن_pipe->qh.element = (u32)رڪن_td;
+    رڪن_pipe->qh.link = UHCI_PTR_رڪن;
+    رڪن_pipe->pipe.cntl = &cntl->usb;
 
     // Set schedule to point to primary intr queue head
-    memset(intr_pipe, 0, sizeof(*intr_pipe));
-    intr_pipe->qh.element = UHCI_PTR_TERM;
-    intr_pipe->qh.link = (u32)&term_pipe->qh | UHCI_PTR_QH;
+    memset(intr_pipe, 0, حجم(*intr_pipe));
+    intr_pipe->qh.element = UHCI_PTR_رڪن;
+    intr_pipe->qh.link = (u32)&رڪن_pipe->qh | UHCI_PTR_QH;
     intr_pipe->pipe.cntl = &cntl->usb;
-    int i;
-    for (i=0; i<ARRAY_SIZE(fl->links); i++)
+    صحيح i;
+    لكل (i=0; i<ARRAY_سائيز(fl->links); i++)
         fl->links[i] = (u32)&intr_pipe->qh | UHCI_PTR_QH;
     cntl->framelist = fl;
     cntl->control_qh = &intr_pipe->qh;
@@ -226,35 +226,35 @@ configure_uhci(void *data)
     outw(USBCMD_RS | USBCMD_CF | USBCMD_MAXP, cntl->iobase + USBCMD);
 
     // Find devices
-    int count = check_uhci_ports(cntl);
+    صحيح ڳڻپ = check_uhci_ports(cntl);
     uhci_free_pipes(cntl);
-    if (count)
+    إذا (ڳڻپ)
         // Success
-        return;
+        أرجع;
 
     // No devices found - shutdown and free controller.
     outw(0, cntl->iobase + USBCMD);
 fail:
-    free(term_td);
-    free(fl);
-    free(intr_pipe);
-    free(term_pipe);
-    free(cntl);
+    حرر(رڪن_td);
+    حرر(fl);
+    حرر(intr_pipe);
+    حرر(رڪن_pipe);
+    حرر(cntl);
 }
 
-static void
-uhci_controller_setup(struct pci_device *pci)
+ساكن فراغ
+uhci_controller_تياري(بنية pci_device *pci)
 {
-    u16 iobase = pci_enable_iobar(pci, PCI_BASE_ADDRESS_4);
-    if (!iobase)
-        return;
+    u16 iobase = pci_enable_iobar(pci, PCI_بنياد_پتو_4);
+    إذا (!iobase)
+        أرجع;
 
-    struct usb_uhci_s *cntl = malloc_tmphigh(sizeof(*cntl));
-    if (!cntl) {
+    بنية usb_uhci_s *cntl = malloc_tmphigh(حجم(*cntl));
+    إذا (!cntl) {
         warn_noalloc();
-        return;
+        أرجع;
     }
-    memset(cntl, 0, sizeof(*cntl));
+    memset(cntl, 0, حجم(*cntl));
     cntl->usb.pci = pci;
     cntl->usb.type = USB_TYPE_UHCI;
     cntl->iobase = iobase;
@@ -265,18 +265,18 @@ uhci_controller_setup(struct pci_device *pci)
 
     reset_uhci(cntl, pci->bdf);
 
-    run_thread(configure_uhci, cntl);
+    لاڳيتو_thread(configure_uhci, cntl);
 }
 
-void
-uhci_setup(void)
+فراغ
+uhci_تياري(فراغ)
 {
-    if (! CONFIG_USB_UHCI)
-        return;
-    struct pci_device *pci;
+    إذا (! CONFIG_USB_UHCI)
+        أرجع;
+    بنية pci_device *pci;
     foreachpci(pci) {
-        if (pci_classprog(pci) == PCI_CLASS_SERIAL_USB_UHCI)
-            uhci_controller_setup(pci);
+        إذا (pci_classprog(pci) == PCI_CLASS_SERIAL_USB_UHCI)
+            uhci_controller_تياري(pci);
     }
 }
 
@@ -285,287 +285,287 @@ uhci_setup(void)
  * End point communication
  ****************************************************************/
 
-static struct usb_pipe *
-uhci_alloc_intr_pipe(struct usbdevice_s *usbdev
-                     , struct usb_endpoint_descriptor *epdesc)
+ساكن بنية usb_pipe *
+uhci_alloc_intr_pipe(بنية usbdevice_s *usbdev
+                     , بنية usb_endpoint_descriptor *epdesc)
 {
-    struct usb_uhci_s *cntl = container_of(
-        usbdev->hub->cntl, struct usb_uhci_s, usb);
-    int frameexp = usb_get_period(usbdev, epdesc);
+    بنية usb_uhci_s *cntl = container_جو(
+        usbdev->hub->cntl, بنية usb_uhci_s, usb);
+    صحيح frameexp = usb_get_period(usbdev, epdesc);
     dprintf(7, "uhci_alloc_intr_pipe %p %d\n", &cntl->usb, frameexp);
 
-    if (frameexp > 10)
+    إذا (frameexp > 10)
         frameexp = 10;
-    int maxpacket = epdesc->wMaxPacketSize;
+    صحيح maxpacket = epdesc->w_Max_Packet_سائيز;
     // Determine number of entries needed for 2 timer ticks.
-    int ms = 1<<frameexp;
-    int count = DIV_ROUND_UP(ticks_to_ms(2), ms);
-    count = ALIGN(count, 2);
-    struct uhci_pipe *pipe = malloc_low(sizeof(*pipe));
-    struct uhci_td *tds = malloc_low(sizeof(*tds) * count);
-    void *data = malloc_low(maxpacket * count);
-    if (!pipe || !tds || !data) {
+    صحيح ms = 1<<frameexp;
+    صحيح ڳڻپ = DIV_ڦيرو_مٿي(ticks_منزل_ms(2), ms);
+    ڳڻپ = ALIGN(ڳڻپ, 2);
+    بنية uhci_pipe *pipe = malloc_هيٺيون(حجم(*pipe));
+    بنية uhci_td *tds = malloc_هيٺيون(حجم(*tds) * ڳڻپ);
+    فراغ *معلومات = malloc_هيٺيون(maxpacket * ڳڻپ);
+    إذا (!pipe || !tds || !معلومات) {
         warn_noalloc();
-        goto fail;
+        اذهب fail;
     }
-    memset(pipe, 0, sizeof(*pipe));
+    memset(pipe, 0, حجم(*pipe));
     usb_desc2pipe(&pipe->pipe, usbdev, epdesc);
-    int lowspeed = pipe->pipe.speed;
-    int devaddr = pipe->pipe.devaddr | (pipe->pipe.ep << 7);
+    صحيح lowspeed = pipe->pipe.رفتار;
+    صحيح devaddr = pipe->pipe.devaddr | (pipe->pipe.ep << 7);
     pipe->qh.element = (u32)tds;
-    pipe->next_td = &tds[0];
+    pipe->ايندڙ_td = &tds[0];
     pipe->iobase = cntl->iobase;
 
-    int toggle = 0;
-    int i;
-    for (i=0; i<count; i++) {
-        tds[i].link = (i==count-1 ? (u32)&tds[0] : (u32)&tds[i+1]);
-        tds[i].status = (uhci_maxerr(3) | (lowspeed ? TD_CTRL_LS : 0)
-                         | TD_CTRL_ACTIVE);
+    صحيح toggle = 0;
+    صحيح i;
+    لكل (i=0; i<ڳڻپ; i++) {
+        tds[i].link = (i==ڳڻپ-1 ? (u32)&tds[0] : (u32)&tds[i+1]);
+        tds[i].حالت = (uhci_maxerr(3) | (lowspeed ? TD_CTRL_LS : 0)
+                         | TD_CTRL_سرگرم);
         tds[i].token = (uhci_explen(maxpacket) | toggle
-                        | (devaddr << TD_TOKEN_DEVADDR_SHIFT)
-                        | USB_PID_IN);
-        tds[i].buffer = data + maxpacket * i;
+                        | (devaddr << TD_TOKEN_DEVADDR_سرڪايو)
+                        | USB_PID_اندريون);
+        tds[i].بفر = معلومات + maxpacket * i;
         toggle ^= TD_TOKEN_TOGGLE;
     }
 
     // Add to interrupt schedule.
-    struct uhci_framelist *fl = cntl->framelist;
-    if (frameexp == 0) {
+    بنية uhci_framelist *fl = cntl->framelist;
+    إذا (frameexp == 0) {
         // Add to existing interrupt entry.
-        struct uhci_qh *intr_qh = (void*)(fl->links[0] & ~UHCI_PTR_BITS);
+        بنية uhci_qh *intr_qh = (فراغ*)(fl->links[0] & ~UHCI_PTR_بٽ);
         pipe->qh.link = intr_qh->link;
         barrier();
         intr_qh->link = (u32)&pipe->qh | UHCI_PTR_QH;
-        if (cntl->control_qh == intr_qh)
+        إذا (cntl->control_qh == intr_qh)
             cntl->control_qh = &pipe->qh;
-    } else {
-        int startpos = 1<<(frameexp-1);
+    } وإلا {
+        صحيح startpos = 1<<(frameexp-1);
         pipe->qh.link = fl->links[startpos];
         barrier();
-        for (i=startpos; i<ARRAY_SIZE(fl->links); i+=ms)
+        لكل (i=startpos; i<ARRAY_سائيز(fl->links); i+=ms)
             fl->links[i] = (u32)&pipe->qh | UHCI_PTR_QH;
     }
 
-    return &pipe->pipe;
+    أرجع &pipe->pipe;
 fail:
-    free(pipe);
-    free(tds);
-    free(data);
-    return NULL;
+    حرر(pipe);
+    حرر(tds);
+    حرر(معلومات);
+    أرجع عدم;
 }
 
-struct usb_pipe *
-uhci_realloc_pipe(struct usbdevice_s *usbdev, struct usb_pipe *upipe
-                  , struct usb_endpoint_descriptor *epdesc)
+بنية usb_pipe *
+uhci_realloc_pipe(بنية usbdevice_s *usbdev, بنية usb_pipe *upipe
+                  , بنية usb_endpoint_descriptor *epdesc)
 {
-    if (! CONFIG_USB_UHCI)
-        return NULL;
-    usb_add_freelist(upipe);
-    if (!epdesc)
-        return NULL;
-    u8 eptype = epdesc->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK;
-    if (eptype == USB_ENDPOINT_XFER_INT)
-        return uhci_alloc_intr_pipe(usbdev, epdesc);
-    struct usb_uhci_s *cntl = container_of(
-        usbdev->hub->cntl, struct usb_uhci_s, usb);
+    إذا (! CONFIG_USB_UHCI)
+        أرجع عدم;
+    usb_جوڙيو_freelist(upipe);
+    إذا (!epdesc)
+        أرجع عدم;
+    u8 eptype = epdesc->bm_خاصيتون & USB_ENDPOINT_XFERTYPE_نقاب;
+    إذا (eptype == USB_ENDPOINT_XFER_INT)
+        أرجع uhci_alloc_intr_pipe(usbdev, epdesc);
+    بنية usb_uhci_s *cntl = container_جو(
+        usbdev->hub->cntl, بنية usb_uhci_s, usb);
     dprintf(7, "uhci_alloc_async_pipe %p %d\n", &cntl->usb, eptype);
 
-    struct usb_pipe *usbpipe = usb_get_freelist(&cntl->usb, eptype);
-    if (usbpipe) {
+    بنية usb_pipe *usbpipe = usb_get_freelist(&cntl->usb, eptype);
+    إذا (usbpipe) {
         // Use previously allocated pipe.
         usb_desc2pipe(usbpipe, usbdev, epdesc);
-        return usbpipe;
+        أرجع usbpipe;
     }
 
     // Allocate a new queue head.
-    struct uhci_pipe *pipe;
-    if (eptype == USB_ENDPOINT_XFER_CONTROL)
-        pipe = malloc_tmphigh(sizeof(*pipe));
-    else
-        pipe = malloc_low(sizeof(*pipe));
-    if (!pipe) {
+    بنية uhci_pipe *pipe;
+    إذا (eptype == USB_ENDPOINT_XFER_CONTROL)
+        pipe = malloc_tmphigh(حجم(*pipe));
+    وإلا
+        pipe = malloc_هيٺيون(حجم(*pipe));
+    إذا (!pipe) {
         warn_noalloc();
-        return NULL;
+        أرجع عدم;
     }
-    memset(pipe, 0, sizeof(*pipe));
+    memset(pipe, 0, حجم(*pipe));
     usb_desc2pipe(&pipe->pipe, usbdev, epdesc);
-    pipe->qh.element = UHCI_PTR_TERM;
+    pipe->qh.element = UHCI_PTR_رڪن;
     pipe->iobase = cntl->iobase;
 
     // Add queue head to controller list.
-    struct uhci_qh *control_qh = cntl->control_qh;
+    بنية uhci_qh *control_qh = cntl->control_qh;
     pipe->qh.link = control_qh->link;
     barrier();
     control_qh->link = (u32)&pipe->qh | UHCI_PTR_QH;
-    if (eptype == USB_ENDPOINT_XFER_CONTROL)
+    إذا (eptype == USB_ENDPOINT_XFER_CONTROL)
         cntl->control_qh = &pipe->qh;
-    return &pipe->pipe;
+    أرجع &pipe->pipe;
 }
 
-static int
-wait_pipe(struct uhci_pipe *pipe, u32 end)
+ساكن صحيح
+wait_pipe(بنية uhci_pipe *pipe, u32 پڇاڙي)
 {
-    for (;;) {
+    لكل (;;) {
         u32 el_link = GET_LOWFLAT(pipe->qh.element);
-        if (el_link & UHCI_PTR_TERM)
-            return 0;
-        if (timer_check(end)) {
+        إذا (el_link & UHCI_PTR_رڪن)
+            أرجع 0;
+        إذا (timer_check(پڇاڙي)) {
             warn_timeout();
             u16 iobase = GET_LOWFLAT(pipe->iobase);
-            struct uhci_td *td = (void*)(el_link & ~UHCI_PTR_BITS);
+            بنية uhci_td *td = (فراغ*)(el_link & ~UHCI_PTR_بٽ);
             dprintf(1, "Timeout on wait_pipe %p (td=%p s=%x c=%x/%x)\n"
-                    , pipe, (void*)el_link, GET_LOWFLAT(td->status)
+                    , pipe, (فراغ*)el_link, GET_LOWFLAT(td->حالت)
                     , inw(iobase + USBCMD)
                     , inw(iobase + USBSTS));
-            SET_LOWFLAT(pipe->qh.element, UHCI_PTR_TERM);
+            سيٽ_LOWFLAT(pipe->qh.element, UHCI_PTR_رڪن);
             uhci_waittick(iobase);
-            return -1;
+            أرجع -1;
         }
         yield();
     }
 }
 
-static int
-wait_td(struct uhci_td *td, u32 end)
+ساكن صحيح
+wait_td(بنية uhci_td *td, u32 پڇاڙي)
 {
-    u32 status;
-    for (;;) {
-        status = td->status;
-        if (!(status & TD_CTRL_ACTIVE))
-            break;
-        if (timer_check(end)) {
+    u32 حالت;
+    لكل (;;) {
+        حالت = td->حالت;
+        إذا (!(حالت & TD_CTRL_سرگرم))
+            اكسر;
+        إذا (timer_check(پڇاڙي)) {
             warn_timeout();
-            return -1;
+            أرجع -1;
         }
         yield();
     }
-    if (status & TD_CTRL_ANY_ERROR) {
-        dprintf(1, "wait_td error - status=%x\n", status);
-        return -2;
+    إذا (حالت & TD_CTRL_ANY_ERROR) {
+        dprintf(1, "wait_td error - status=%x\n", حالت);
+        أرجع -2;
     }
-    return 0;
+    أرجع 0;
 }
 
-#define STACKTDS 16
-#define TDALIGN 16
+#وصف_ڪريو STACKTDS 16
+#وصف_ڪريو TDALIGN 16
 
-int
-uhci_send_pipe(struct usb_pipe *p, int dir, const void *cmd
-               , void *data, int datasize)
+صحيح
+uhci_send_pipe(بنية usb_pipe *p, صحيح dir, ثابت فراغ *cmd
+               , فراغ *معلومات, صحيح datasize)
 {
-    if (! CONFIG_USB_UHCI)
-        return -1;
-    struct uhci_pipe *pipe = container_of(p, struct uhci_pipe, pipe);
+    إذا (! CONFIG_USB_UHCI)
+        أرجع -1;
+    بنية uhci_pipe *pipe = container_جو(p, بنية uhci_pipe, pipe);
     dprintf(7, "uhci_send_pipe qh=%p dir=%d data=%p size=%d\n"
-            , &pipe->qh, dir, data, datasize);
-    int maxpacket = GET_LOWFLAT(pipe->pipe.maxpacket);
-    int lowspeed = GET_LOWFLAT(pipe->pipe.speed);
-    int devaddr = (GET_LOWFLAT(pipe->pipe.devaddr)
+            , &pipe->qh, dir, معلومات, datasize);
+    صحيح maxpacket = GET_LOWFLAT(pipe->pipe.maxpacket);
+    صحيح lowspeed = GET_LOWFLAT(pipe->pipe.رفتار);
+    صحيح devaddr = (GET_LOWFLAT(pipe->pipe.devaddr)
                    | (GET_LOWFLAT(pipe->pipe.ep) << 7));
-    int toggle = GET_LOWFLAT(pipe->toggle) ? TD_TOKEN_TOGGLE : 0;
+    صحيح toggle = GET_LOWFLAT(pipe->toggle) ? TD_TOKEN_TOGGLE : 0;
 
     // Allocate 16 tds on stack (16byte aligned)
-    u8 tdsbuf[sizeof(struct uhci_td) * STACKTDS + TDALIGN - 1];
-    struct uhci_td *tds = (void*)ALIGN((u32)tdsbuf, TDALIGN);
-    memset(tds, 0, sizeof(*tds) * STACKTDS);
-    int tdpos = 0;
+    u8 tdsbuf[حجم(بنية uhci_td) * STACKTDS + TDALIGN - 1];
+    بنية uhci_td *tds = (فراغ*)ALIGN((u32)tdsbuf, TDALIGN);
+    memset(tds, 0, حجم(*tds) * STACKTDS);
+    صحيح tdpos = 0;
 
     // Enable tds
-    u32 end = timer_calc(usb_xfer_time(p, datasize));
+    u32 پڇاڙي = timer_calc(usb_xfer_وقت(p, datasize));
     barrier();
-    SET_LOWFLAT(pipe->qh.element, (u32)MAKE_FLATPTR(GET_SEG(SS), tds));
+    سيٽ_LOWFLAT(pipe->qh.element, (u32)MAKE_FLATPTR(GET_SEG(SS), tds));
 
     // Setup transfer descriptors
-    if (cmd) {
+    إذا (cmd) {
         // Send setup pid on control transfers
-        struct uhci_td *td = &tds[tdpos++ % STACKTDS];
+        بنية uhci_td *td = &tds[tdpos++ % STACKTDS];
         u32 nexttd = (u32)MAKE_FLATPTR(GET_SEG(SS), &tds[tdpos % STACKTDS]);
-        td->link = nexttd | UHCI_PTR_DEPTH;
-        td->token = (uhci_explen(USB_CONTROL_SETUP_SIZE)
-                     | (devaddr << TD_TOKEN_DEVADDR_SHIFT) | USB_PID_SETUP);
-        td->buffer = (void*)cmd;
+        td->link = nexttd | UHCI_PTR_اونهائي;
+        td->token = (uhci_explen(USB_CONTROL_تياري_سائيز)
+                     | (devaddr << TD_TOKEN_DEVADDR_سرڪايو) | USB_PID_تياري);
+        td->بفر = (فراغ*)cmd;
         barrier();
-        td->status = (uhci_maxerr(3) | (lowspeed ? TD_CTRL_LS : 0)
-                      | TD_CTRL_ACTIVE);
+        td->حالت = (uhci_maxerr(3) | (lowspeed ? TD_CTRL_LS : 0)
+                      | TD_CTRL_سرگرم);
         toggle = TD_TOKEN_TOGGLE;
     }
-    while (datasize) {
+    طالما (datasize) {
         // Send data pids
-        struct uhci_td *td = &tds[tdpos++ % STACKTDS];
-        int ret = wait_td(td, end);
-        if (ret)
-            goto fail;
+        بنية uhci_td *td = &tds[tdpos++ % STACKTDS];
+        صحيح ret = wait_td(td, پڇاڙي);
+        إذا (ret)
+            اذهب fail;
 
-        int transfer = datasize;
-        if (transfer > maxpacket)
+        صحيح transfer = datasize;
+        إذا (transfer > maxpacket)
             transfer = maxpacket;
         u32 nexttd = (u32)MAKE_FLATPTR(GET_SEG(SS), &tds[tdpos % STACKTDS]);
         td->link = ((transfer==datasize && !cmd)
-                    ? UHCI_PTR_TERM : (nexttd | UHCI_PTR_DEPTH));
+                    ? UHCI_PTR_رڪن : (nexttd | UHCI_PTR_اونهائي));
         td->token = (uhci_explen(transfer) | toggle
-                     | (devaddr << TD_TOKEN_DEVADDR_SHIFT)
-                     | (dir ? USB_PID_IN : USB_PID_OUT));
-        td->buffer = data;
+                     | (devaddr << TD_TOKEN_DEVADDR_سرڪايو)
+                     | (dir ? USB_PID_اندريون : USB_PID_ٻاهريون));
+        td->بفر = معلومات;
         barrier();
-        td->status = (uhci_maxerr(3) | (lowspeed ? TD_CTRL_LS : 0)
-                      | TD_CTRL_ACTIVE);
+        td->حالت = (uhci_maxerr(3) | (lowspeed ? TD_CTRL_LS : 0)
+                      | TD_CTRL_سرگرم);
         toggle ^= TD_TOKEN_TOGGLE;
 
-        data += transfer;
+        معلومات += transfer;
         datasize -= transfer;
     }
-    if (cmd) {
+    إذا (cmd) {
         // Send status pid on control transfers
-        struct uhci_td *td = &tds[tdpos++ % STACKTDS];
-        int ret = wait_td(td, end);
-        if (ret)
-            goto fail;
-        td->link = UHCI_PTR_TERM;
+        بنية uhci_td *td = &tds[tdpos++ % STACKTDS];
+        صحيح ret = wait_td(td, پڇاڙي);
+        إذا (ret)
+            اذهب fail;
+        td->link = UHCI_PTR_رڪن;
         td->token = (uhci_explen(0) | TD_TOKEN_TOGGLE
-                     | (devaddr << TD_TOKEN_DEVADDR_SHIFT)
-                     | (dir ? USB_PID_OUT : USB_PID_IN));
-        td->buffer = 0;
+                     | (devaddr << TD_TOKEN_DEVADDR_سرڪايو)
+                     | (dir ? USB_PID_ٻاهريون : USB_PID_اندريون));
+        td->بفر = 0;
         barrier();
-        td->status = (uhci_maxerr(0) | (lowspeed ? TD_CTRL_LS : 0)
-                      | TD_CTRL_ACTIVE);
+        td->حالت = (uhci_maxerr(0) | (lowspeed ? TD_CTRL_LS : 0)
+                      | TD_CTRL_سرگرم);
     }
-    SET_LOWFLAT(pipe->toggle, !!toggle);
-    return wait_pipe(pipe, end);
+    سيٽ_LOWFLAT(pipe->toggle, !!toggle);
+    أرجع wait_pipe(pipe, پڇاڙي);
 fail:
     dprintf(1, "uhci_send_bulk failed\n");
-    SET_LOWFLAT(pipe->qh.element, UHCI_PTR_TERM);
+    سيٽ_LOWFLAT(pipe->qh.element, UHCI_PTR_رڪن);
     uhci_waittick(GET_LOWFLAT(pipe->iobase));
-    return -1;
+    أرجع -1;
 }
 
-int
-uhci_poll_intr(struct usb_pipe *p, void *data)
+صحيح
+uhci_poll_intr(بنية usb_pipe *p, فراغ *معلومات)
 {
     ASSERT16();
-    if (! CONFIG_USB_UHCI)
-        return -1;
+    إذا (! CONFIG_USB_UHCI)
+        أرجع -1;
 
-    struct uhci_pipe *pipe = container_of(p, struct uhci_pipe, pipe);
-    struct uhci_td *td = GET_LOWFLAT(pipe->next_td);
-    u32 status = GET_LOWFLAT(td->status);
+    بنية uhci_pipe *pipe = container_جو(p, بنية uhci_pipe, pipe);
+    بنية uhci_td *td = GET_LOWFLAT(pipe->ايندڙ_td);
+    u32 حالت = GET_LOWFLAT(td->حالت);
     u32 token = GET_LOWFLAT(td->token);
-    if (status & TD_CTRL_ACTIVE)
+    إذا (حالت & TD_CTRL_سرگرم)
         // No intrs found.
-        return -1;
+        أرجع -1;
     // XXX - check for errors.
 
     // Copy data.
-    void *tddata = GET_LOWFLAT(td->buffer);
-    memcpy_far(GET_SEG(SS), data, SEG_LOW, LOWFLAT2LOW(tddata)
-               , uhci_expected_length(token));
+    فراغ *tddata = GET_LOWFLAT(td->بفر);
+    memcpy_far(GET_SEG(SS), معلومات, SEG_هيٺيون, LOWFLAT2_هيٺيون(tddata)
+               , uhci_expected_ڊيگهائي(token));
 
     // Reenable this td.
-    struct uhci_td *next = (void*)(GET_LOWFLAT(td->link) & ~UHCI_PTR_BITS);
-    SET_LOWFLAT(pipe->next_td, next);
+    بنية uhci_td *ايندڙ = (فراغ*)(GET_LOWFLAT(td->link) & ~UHCI_PTR_بٽ);
+    سيٽ_LOWFLAT(pipe->ايندڙ_td, ايندڙ);
     barrier();
-    SET_LOWFLAT(td->status, (uhci_maxerr(0) | (status & TD_CTRL_LS)
-                             | TD_CTRL_ACTIVE));
+    سيٽ_LOWFLAT(td->حالت, (uhci_maxerr(0) | (حالت & TD_CTRL_LS)
+                             | TD_CTRL_سرگرم));
 
-    return 0;
+    أرجع 0;
 }

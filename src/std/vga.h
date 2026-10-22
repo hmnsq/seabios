@@ -1,11 +1,11 @@
-#ifndef __VGA_H
-#define __VGA_H
+#جيڪڏهن_وصف_نه_ٿيل __VGA_H
+#وصف_ڪريو __VGA_H
 // Standard structure definitions for vgabios video tables
 
-#include "types.h" // u8
+#ضمن "types.h" // u8
 
 // standard BIOS Video Parameter Table
-struct video_param_s {
+بنية video_param_s {
     u8 twidth;
     u8 theightm1;
     u8 cheight;
@@ -18,41 +18,41 @@ struct video_param_s {
 } PACKED;
 
 // Standard Video Save Pointer Table
-struct video_save_pointer_s {
-    struct segoff_s videoparam;
-    struct segoff_s paramdynamicsave;
-    struct segoff_s textcharset;
-    struct segoff_s graphcharset;
-    struct segoff_s secsavepointer;
+بنية video_save_اشارو_s {
+    بنية segoff_s videoparam;
+    بنية segoff_s paramdynamicsave;
+    بنية segoff_s textcharset;
+    بنية segoff_s graphcharset;
+    بنية segoff_s secsavepointer;
     u8 reserved[8];
 } PACKED;
 
 // Data returned by int101B
-struct video_func_static {
+بنية video_func_static {
     u32 modes;
     u8 reserved_0x04[3];
     u8 scanlines;
     u8 cblocks;
-    u8 active_cblocks;
+    u8 سرگرم_cblocks;
     u16 misc_flags;
     u8 reserved_0x0c[2];
     u8 save_flags;
     u8 reserved_0x0f;
 } PACKED;
 
-struct video_func_info {
-    struct segoff_s static_functionality;
+بنية video_func_info {
+    بنية segoff_s static_functionality;
     u8 bda_0x49[30];
     u8 bda_0x84[3];
-    u8 dcc_index;
+    u8 dcc_اشاريو;
     u8 dcc_alt;
     u16 colors;
-    u8 pages;
-    u8 scan_lines;
+    u8 صفحا;
+    u8 جاچ_سٽون;
     u8 primary_char;
     u8 secondar_char;
     u8 misc;
-    u8 non_vga_mode;
+    u8 non_vga_گهڻائي;
     u8 reserved_2f[2];
     u8 video_mem;
     u8 save_flags;
@@ -60,4 +60,4 @@ struct video_func_info {
     u8 reserved_34[12];
 } PACKED;
 
-#endif // vga.h
+#جيڪڏهن_پورو // vga.h

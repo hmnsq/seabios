@@ -1,10 +1,10 @@
-#ifndef __USB_MSC_H
-#define __USB_MSC_H
+#جيڪڏهن_وصف_نه_ٿيل __USB_MSC_H
+#وصف_ڪريو __USB_MSC_H
 
 // usb-msc.c
-struct disk_op_s;
-int usb_process_op(struct disk_op_s *op);
-struct usbdevice_s;
-int usb_msc_setup(struct usbdevice_s *usbdev);
+بنية disk_op_s;
+صحيح usb_process_op(بنية disk_op_s *op);
+بنية usbdevice_s;
+صحيح usb_msc_تياري(بنية usbdevice_s *usbdev);
 
-#endif // ush-msc.h
+#جيڪڏهن_پورو // ush-msc.h
