@@ -1,272 +1,272 @@
 // Misc function and variable declarations.
-#ifndef __UTIL_H
-#define __UTIL_H
+#اگر_غیر_تعریف_شدہ __UTIL_H
+#تعریف_کرو __UTIL_H
 
-#include "types.h" // u32
+#شامل "types.h" // u32
 
 // apm.c
-void apm_shutdown(void);
-struct bregs;
-void handle_1553(struct bregs *regs);
+خالی apm_shutdown(خالی);
+ساخت bregs;
+خالی handle_1553(ساخت bregs *regs);
 
 // bmp.c
-struct bmp_decdata *bmp_alloc(void);
-int bmp_decode(struct bmp_decdata *bmp, unsigned char *data, int data_size);
-void bmp_get_info(struct bmp_decdata *bmp, int *width, int *height, int *bpp);
-int bmp_show(struct bmp_decdata *bmp, unsigned char *pic, int width
-             , int height, int depth, int bytes_per_line_dest);
+ساخت bmp_decdata *bmp_alloc(خالی);
+صحیح bmp_decode(ساخت bmp_decdata *bmp, غیرعلامتی حرف *ڈیٹا, صحیح ڈیٹا_سائز);
+خالی bmp_get_info(ساخت bmp_decdata *bmp, صحیح *چوڑائی, صحیح *اونچائی, صحیح *bpp);
+صحیح bmp_show(ساخت bmp_decdata *bmp, غیرعلامتی حرف *pic, صحیح چوڑائی
+             , صحیح اونچائی, صحیح گہرائی, صحیح بائٹیں_فی_سطر_dest);
 
 // boot.c
-void boot_init(void);
-void boot_add_bev(u16 seg, u16 bev, u16 desc, int prio);
-void boot_add_bcv(u16 seg, u16 ip, u16 desc, int prio);
-struct drive_s;
-void boot_add_floppy(struct drive_s *drive_g, const char *desc, int prio);
-void boot_add_hd(struct drive_s *drive_g, const char *desc, int prio);
-void boot_add_cd(struct drive_s *drive_g, const char *desc, int prio);
-void boot_add_cbfs(void *data, const char *desc, int prio);
-void interactive_bootmenu(void);
-void bcv_prepboot(void);
-u8 is_bootprio_strict(void);
-struct pci_device;
-int bootprio_find_pci_device(struct pci_device *pci);
-int bootprio_find_mmio_device(void *mmio);
-int bootprio_find_scsi_device(struct pci_device *pci, int target, int lun);
-int bootprio_find_scsi_mmio_device(void *mmio, int target, int lun);
-int bootprio_find_ata_device(struct pci_device *pci, int chanid, int slave);
-int bootprio_find_fdc_device(struct pci_device *pci, int port, int fdid);
-int bootprio_find_pci_rom(struct pci_device *pci, int instance);
-int bootprio_find_named_rom(const char *name, int instance);
-struct usbdevice_s;
-int bootprio_find_usb(struct usbdevice_s *usbdev, int lun);
-int get_keystroke_full(int msec);
-int get_keystroke(int msec);
-struct chs_s;
-int boot_lchs_find_pci_device(struct pci_device *pci, struct chs_s *chs);
-int boot_lchs_find_scsi_device(struct pci_device *pci, int target, int lun,
-                               struct chs_s *chs);
-int boot_lchs_find_ata_device(struct pci_device *pci, int chanid, int slave,
-                              struct chs_s *chs);
+خالی boot_init(خالی);
+خالی boot_جوڑو_bev(u16 seg, u16 bev, u16 desc, صحیح prio);
+خالی boot_جوڑو_bcv(u16 seg, u16 ip, u16 desc, صحیح prio);
+ساخت drive_s;
+خالی boot_جوڑو_floppy(ساخت drive_s *drive_g, ثابت حرف *desc, صحیح prio);
+خالی boot_جوڑو_hd(ساخت drive_s *drive_g, ثابت حرف *desc, صحیح prio);
+خالی boot_جوڑو_cd(ساخت drive_s *drive_g, ثابت حرف *desc, صحیح prio);
+خالی boot_جوڑو_cbfs(خالی *ڈیٹا, ثابت حرف *desc, صحیح prio);
+خالی interactive_bootmenu(خالی);
+خالی bcv_prepboot(خالی);
+u8 is_bootprio_strict(خالی);
+ساخت pci_device;
+صحیح bootprio_ڈھونڈو_pci_device(ساخت pci_device *pci);
+صحیح bootprio_ڈھونڈو_mmio_device(خالی *mmio);
+صحیح bootprio_ڈھونڈو_scsi_device(ساخت pci_device *pci, صحیح ہدف, صحیح lun);
+صحیح bootprio_ڈھونڈو_scsi_mmio_device(خالی *mmio, صحیح ہدف, صحیح lun);
+صحیح bootprio_ڈھونڈو_ata_device(ساخت pci_device *pci, صحیح chanid, صحیح slave);
+صحیح bootprio_ڈھونڈو_fdc_device(ساخت pci_device *pci, صحیح پورٹ, صحیح fdid);
+صحیح bootprio_ڈھونڈو_pci_rom(ساخت pci_device *pci, صحیح instance);
+صحیح bootprio_ڈھونڈو_named_rom(ثابت حرف *name, صحیح instance);
+ساخت usbdevice_s;
+صحیح bootprio_ڈھونڈو_usb(ساخت usbdevice_s *usbdev, صحیح lun);
+صحیح get_keystroke_بھرا(صحیح msec);
+صحیح get_keystroke(صحیح msec);
+ساخت chs_s;
+صحیح boot_lchs_ڈھونڈو_pci_device(ساخت pci_device *pci, ساخت chs_s *chs);
+صحیح boot_lchs_ڈھونڈو_scsi_device(ساخت pci_device *pci, صحیح ہدف, صحیح lun,
+                               ساخت chs_s *chs);
+صحیح boot_lchs_ڈھونڈو_ata_device(ساخت pci_device *pci, صحیح chanid, صحیح slave,
+                              ساخت chs_s *chs);
 
 // bootsplash.c
-void enable_vga_console(void);
-void enable_bootsplash(void);
-void disable_bootsplash(void);
+خالی enable_vga_console(خالی);
+خالی enable_bootsplash(خالی);
+خالی disable_bootsplash(خالی);
 
 // cdrom.c
-extern struct eltorito_s CDEmu;
-extern struct drive_s *cdemu_drive_gf;
-struct disk_op_s;
-int cdemu_process_op(struct disk_op_s *op);
-void cdrom_prepboot(void);
-int cdrom_boot(struct drive_s *drive_g);
-char *cdrom_media_info(struct drive_s *drive_g);
+خارجی ساخت eltorito_s CDEmu;
+خارجی ساخت drive_s *cdemu_drive_gf;
+ساخت disk_op_s;
+صحیح cdemu_process_op(ساخت disk_op_s *op);
+خالی cdrom_prepboot(خالی);
+صحیح cdrom_boot(ساخت drive_s *drive_g);
+حرف *cdrom_media_info(ساخت drive_s *drive_g);
 
 // clock.c
-void clock_setup(void);
-void handle_1583(struct bregs *regs);
-void clock_poll_irq(void);
-u32 irqtimer_calc_ticks(u32 count);
+خالی clock_تیاری(خالی);
+خالی handle_1583(ساخت bregs *regs);
+خالی clock_poll_irq(خالی);
+u32 irqtimer_calc_ticks(u32 گنتی);
 u32 irqtimer_calc(u32 msecs);
-int irqtimer_check(u32 end);
-void handle_1586(struct bregs *regs);
+صحیح irqtimer_check(u32 انتہا);
+خالی handle_1586(ساخت bregs *regs);
 
 // fw/acpi.c
-void acpi_setup(void);
+خالی acpi_تیاری(خالی);
 
 // fw/biostable.c
-void copy_pir(void *pos);
-void copy_mptable(void *pos);
-extern struct pir_header *PirAddr;
-void copy_acpi_rsdp(void *pos);
-extern struct rsdp_descriptor *RsdpAddr;
-extern u32 acpi_pm1a_cnt;
-extern u16 acpi_pm_base;
-void *find_acpi_rsdp(void);
-void *find_acpi_table(u32 signature);
-u32 find_resume_vector(void);
-void acpi_reboot(void);
-void find_acpi_features(void);
-void *smbios_get_tables(u32 *length);
-void copy_smbios_21(void *pos);
-void display_uuid(void);
-void copy_table(void *pos);
-void smbios_setup(void);
+خالی copy_pir(خالی *pos);
+خالی copy_mptable(خالی *pos);
+خارجی ساخت pir_سرخی *PirAddr;
+خالی copy_acpi_rsdp(خالی *pos);
+خارجی ساخت rsdp_descriptor *RsdpAddr;
+خارجی u32 acpi_pm1a_cnt;
+خارجی u16 acpi_pm_بنیاد;
+خالی *ڈھونڈو_acpi_rsdp(خالی);
+خالی *ڈھونڈو_acpi_جدول(u32 signature);
+u32 ڈھونڈو_resume_سمتیہ(خالی);
+خالی acpi_reboot(خالی);
+خالی ڈھونڈو_acpi_features(خالی);
+خالی *smbios_get_tables(u32 *لمبائی);
+خالی copy_smbios_21(خالی *pos);
+خالی display_uuid(خالی);
+خالی copy_جدول(خالی *pos);
+خالی smbios_تیاری(خالی);
 
 // fw/dsdt_parser.c
-struct acpi_device;
-void acpi_dsdt_parse(void);
-struct acpi_device *acpi_dsdt_find_string(struct acpi_device *prev, const char *hid);
-struct acpi_device *acpi_dsdt_find_eisaid(struct acpi_device *prev, u16 eisaid);
-char *acpi_dsdt_name(struct acpi_device *dev);
-int acpi_dsdt_present_eisaid(u16 eisaid);
-int acpi_dsdt_find_io(struct acpi_device *dev, u64 *min, u64 *max);
-int acpi_dsdt_find_mem(struct acpi_device *dev, u64 *min, u64 *max);
-int acpi_dsdt_find_irq(struct acpi_device *dev, u64 *irq);
+ساخت acpi_device;
+خالی acpi_dsdt_parse(خالی);
+ساخت acpi_device *acpi_dsdt_ڈھونڈو_string(ساخت acpi_device *پچھلا, ثابت حرف *hid);
+ساخت acpi_device *acpi_dsdt_ڈھونڈو_eisaid(ساخت acpi_device *پچھلا, u16 eisaid);
+حرف *acpi_dsdt_name(ساخت acpi_device *dev);
+صحیح acpi_dsdt_present_eisaid(u16 eisaid);
+صحیح acpi_dsdt_ڈھونڈو_io(ساخت acpi_device *dev, u64 *min, u64 *max);
+صحیح acpi_dsdt_ڈھونڈو_mem(ساخت acpi_device *dev, u64 *min, u64 *max);
+صحیح acpi_dsdt_ڈھونڈو_irq(ساخت acpi_device *dev, u64 *irq);
 
 // fw/coreboot.c
-extern const char *CBvendor, *CBpart;
-struct cbfs_file;
-void coreboot_debug_putc(char c);
-void cbfs_run_payload(struct cbfs_file *file);
-void coreboot_platform_setup(void);
-void cbfs_payload_setup(void);
-void coreboot_preinit(void);
-void coreboot_cbfs_init(void);
-struct cb_header;
-void *find_cb_subtable(struct cb_header *cbh, u32 tag);
-struct cb_header *find_cb_table(void);
+خارجی ثابت حرف *CBvendor, *CBpart;
+ساخت cbfs_file;
+خالی coreboot_debug_putc(حرف c);
+خالی cbfs_تسلسل_payload(ساخت cbfs_file *file);
+خالی coreboot_platform_تیاری(خالی);
+خالی cbfs_payload_تیاری(خالی);
+خالی coreboot_preinit(خالی);
+خالی coreboot_cbfs_init(خالی);
+ساخت cb_سرخی;
+خالی *ڈھونڈو_cb_subtable(ساخت cb_سرخی *cbh, u32 لیبل);
+ساخت cb_سرخی *ڈھونڈو_cb_جدول(خالی);
 
 // fw/csm.c
-int csm_bootprio_fdc(struct pci_device *pci, int port, int fdid);
-int csm_bootprio_ata(struct pci_device *pci, int chanid, int slave);
-int csm_bootprio_pci(struct pci_device *pci);
+صحیح csm_bootprio_fdc(ساخت pci_device *pci, صحیح پورٹ, صحیح fdid);
+صحیح csm_bootprio_ata(ساخت pci_device *pci, صحیح chanid, صحیح slave);
+صحیح csm_bootprio_pci(ساخت pci_device *pci);
 
 // fw/mptable.c
-void mptable_setup(void);
+خالی mptable_تیاری(خالی);
 
 // fw/mtrr.c
-void mtrr_setup(void);
+خالی mtrr_تیاری(خالی);
 
 // fw/multiboot.c
-void multiboot_init(void);
+خالی multiboot_init(خالی);
 
 // fw/pciinit.c
-extern u64 pcimem_start, pcimem_end;
-extern u64 pcimem64_start, pcimem64_end;
-extern const u8 pci_irqs[4];
-void pci_setup(void);
-void pci_resume(void);
+خارجی u64 pcimem_آغاز, pcimem_انتہا;
+خارجی u64 pcimem64_آغاز, pcimem64_انتہا;
+خارجی ثابت u8 pci_irqs[4];
+خالی pci_تیاری(خالی);
+خالی pci_resume(خالی);
 
 // fw/pirtable.c
-void pirtable_setup(void);
+خالی pirtable_تیاری(خالی);
 
 // fw/shadow.c
-void make_bios_writable(void);
-void make_bios_readonly(void);
-void qemu_reboot(void);
+خالی make_bios_writable(خالی);
+خالی make_bios_readonly(خالی);
+خالی qemu_reboot(خالی);
 
 // fw/smbios.c
-void smbios_legacy_setup(void);
+خالی smbios_legacy_تیاری(خالی);
 
 // fw/smm.c
-void smm_device_setup(void);
-void smm_setup(void);
+خالی smm_device_تیاری(خالی);
+خالی smm_تیاری(خالی);
 
 // fw/smp.c
-extern u32 MaxCountCPUs;
-void wrmsr_smp(u32 index, u64 val);
-void smp_setup(void);
-void smp_resume(void);
-int apic_id_is_present(u8 apic_id);
+خارجی u32 Max_گنتی_CPUs;
+خالی wrmsr_smp(u32 اشاریہ, u64 val);
+خالی smp_تیاری(خالی);
+خالی smp_resume(خالی);
+صحیح apic_id_is_present(u8 apic_id);
 
 // hw/dma.c
-int dma_floppy(u32 addr, int count, int isWrite);
-void dma_setup(void);
+صحیح dma_floppy(u32 addr, صحیح گنتی, صحیح isWrite);
+خالی dma_تیاری(خالی);
 
 // hw/floppy.c
-extern struct floppy_ext_dbt_s diskette_param_table2;
-void floppy_setup(void);
-struct drive_s *init_floppy(int floppyid, int ftype);
-int find_floppy_type(u32 size);
-int floppy_process_op(struct disk_op_s *op);
-void floppy_tick(void);
+خارجی ساخت floppy_ext_dbt_s diskette_param_table2;
+خالی floppy_تیاری(خالی);
+ساخت drive_s *init_floppy(صحیح floppyid, صحیح ftype);
+صحیح ڈھونڈو_floppy_type(u32 سائز);
+صحیح floppy_process_op(ساخت disk_op_s *op);
+خالی floppy_tick(خالی);
 
 // hw/ramdisk.c
-void ramdisk_setup(void);
-int ramdisk_process_op(struct disk_op_s *op);
+خالی ramdisk_تیاری(خالی);
+صحیح ramdisk_process_op(ساخت disk_op_s *op);
 
 // hw/sdcard.c
-int sdcard_process_op(struct disk_op_s *op);
-void sdcard_setup(void);
+صحیح sdcard_process_op(ساخت disk_op_s *op);
+خالی sdcard_تیاری(خالی);
 
 // hw/timer.c
-void timer_setup(void);
-void pmtimer_setup(u16 ioport);
-void tsctimer_setfreq(u32 khz, const char *src);
+خالی timer_تیاری(خالی);
+خالی pmtimer_تیاری(u16 ioport);
+خالی tsctimer_setfreq(u32 khz, ثابت حرف *src);
 u32 timer_calc(u32 msecs);
 u32 timer_calc_usec(u32 usecs);
-int timer_check(u32 end);
-void ndelay(u32 count);
-void udelay(u32 count);
-void mdelay(u32 count);
-void nsleep(u32 count);
-void usleep(u32 count);
-void msleep(u32 count);
-u32 ticks_to_ms(u32 ticks);
+صحیح timer_check(u32 انتہا);
+خالی ndelay(u32 گنتی);
+خالی udelay(u32 گنتی);
+خالی mdelay(u32 گنتی);
+خالی nsleep(u32 گنتی);
+خالی usleep(u32 گنتی);
+خالی msleep(u32 گنتی);
+u32 ticks_مقصد_ms(u32 ticks);
 u32 ticks_from_ms(u32 ms);
-void pit_setup(void);
+خالی pit_تیاری(خالی);
 
 // jpeg.c
-struct jpeg_decdata *jpeg_alloc(void);
-int jpeg_decode(struct jpeg_decdata *jpeg, unsigned char *buf);
-void jpeg_get_size(struct jpeg_decdata *jpeg, int *width, int *height);
-int jpeg_show(struct jpeg_decdata *jpeg, unsigned char *pic, int width
-              , int height, int depth, int bytes_per_line_dest);
+ساخت jpeg_decdata *jpeg_alloc(خالی);
+صحیح jpeg_decode(ساخت jpeg_decdata *jpeg, غیرعلامتی حرف *buf);
+خالی jpeg_get_سائز(ساخت jpeg_decdata *jpeg, صحیح *چوڑائی, صحیح *اونچائی);
+صحیح jpeg_show(ساخت jpeg_decdata *jpeg, غیرعلامتی حرف *pic, صحیح چوڑائی
+              , صحیح اونچائی, صحیح گہرائی, صحیح بائٹیں_فی_سطر_dest);
 
 // kbd.c
-void kbd_init(void);
-void handle_15c2(struct bregs *regs);
-void process_key(u8 key);
-u8 enqueue_key(u16 keycode);
-u16 ascii_to_keycode(u8 ascii);
+خالی kbd_init(خالی);
+خالی handle_15c2(ساخت bregs *regs);
+خالی process_کلید(u8 کلید);
+u8 قطار_میں_ڈالو_کلید(u16 keycode);
+u16 ascii_مقصد_keycode(u8 ascii);
 
 // misc.c
-extern int HaveRunPost;
-extern struct bios_config_table_s BIOS_CONFIG_TABLE __aligned(1);
-extern struct floppy_dbt_s diskette_param_table __aligned(1);
-extern u8 BiosChecksum;
-int in_post(void);
-void mathcp_setup(void);
+خارجی صحیح Have_تسلسل_Post;
+خارجی ساخت bios_config_جدول_s BIOS_CONFIG_جدول __aligned(1);
+خارجی ساخت floppy_dbt_s diskette_param_جدول __aligned(1);
+خارجی u8 BiosChecksum;
+صحیح اندر_post(خالی);
+خالی mathcp_تیاری(خالی);
 
 // mouse.c
-void mouse_init(void);
-void process_mouse(u8 data);
+خالی mouse_init(خالی);
+خالی process_mouse(u8 ڈیٹا);
 
 // optionroms.c
-struct rom_header;
-void callrom(struct rom_header *rom, u16 bdf);
-void call_bcv(u16 seg, u16 ip);
-int is_pci_vga(struct pci_device *pci);
-void optionrom_setup(void);
-void vgarom_setup(void);
-void s3_resume_vga(void);
-extern int ScreenAndDebug;
+ساخت rom_سرخی;
+خالی callrom(ساخت rom_سرخی *rom, u16 bdf);
+خالی call_bcv(u16 seg, u16 ip);
+صحیح is_pci_vga(ساخت pci_device *pci);
+خالی optionrom_تیاری(خالی);
+خالی vgarom_تیاری(خالی);
+خالی s3_resume_vga(خالی);
+خارجی صحیح ScreenAndDebug;
 
 // pcibios.c
-void handle_1ab1(struct bregs *regs);
-void bios32_init(void);
+خالی handle_1ab1(ساخت bregs *regs);
+خالی bios32_init(خالی);
 
 // pmm.c
-void pmm_init(void);
-void pmm_prepboot(void);
+خالی pmm_init(خالی);
+خالی pmm_prepboot(خالی);
 
 // pnpbios.c
-u16 get_pnp_offset(void);
-void pnp_init(void);
+u16 get_pnp_انحراف(خالی);
+خالی pnp_init(خالی);
 
 // post.c
-void interface_init(void);
-void device_hardware_setup(void);
-void prepareboot(void);
-void startBoot(void);
-void reloc_preinit(void *f, void *arg);
-void code_mutable_preinit(void);
+خالی interface_init(خالی);
+خالی device_hardware_تیاری(خالی);
+خالی prepareboot(خالی);
+خالی آغاز_Boot(خالی);
+خالی reloc_preinit(خالی *f, خالی *arg);
+خالی رمز_mutable_preinit(خالی);
 
 // sercon.c
-void sercon_setup(void);
-void sercon_check_event(void);
+خالی sercon_تیاری(خالی);
+خالی sercon_check_event(خالی);
 
 // serial.c
-void serial_setup(void);
-void lpt_setup(void);
+خالی serial_تیاری(خالی);
+خالی lpt_تیاری(خالی);
 
 // version.c
-extern const char VERSION[], BUILDINFO[];
+خارجی ثابت حرف نسخہ[], BUILDINFO[];
 
 // vgahooks.c
-void handle_155f(struct bregs *regs);
-void handle_157f(struct bregs *regs);
-void vgahook_setup(struct pci_device *pci);
+خالی handle_155f(ساخت bregs *regs);
+خالی handle_157f(ساخت bregs *regs);
+خالی vgahook_تیاری(ساخت pci_device *pci);
 
-#endif // util.h
+#اگر_ختم // util.h

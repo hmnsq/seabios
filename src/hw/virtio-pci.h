@@ -1,25 +1,25 @@
-#ifndef _VIRTIO_PCI_H
-#define _VIRTIO_PCI_H
+#اگر_غیر_تعریف_شدہ _VIRTIO_PCI_H
+#تعریف_کرو _VIRTIO_PCI_H
 
-#include "x86.h" // inl
-#include "biosvar.h" // GET_LOWFLAT
+#شامل "x86.h" // inl
+#شامل "biosvar.h" // GET_LOWFLAT
 
 /* The bit of the ISR which indicates a device configuration change. */
-#define VIRTIO_PCI_ISR_CONFIG           0x2
+#تعریف_کرو VIRTIO_PCI_ISR_CONFIG           0x2
 
 /* Virtio ABI version, this must match exactly */
-#define VIRTIO_PCI_ABI_VERSION          0
+#تعریف_کرو VIRTIO_PCI_ABI_نسخہ          0
 
 /* --- virtio 0.9.5 (legacy) struct --------------------------------- */
 
-typedef struct virtio_pci_legacy {
+قسمتعریف ساخت virtio_pci_legacy {
     u32 host_features;
     u32 guest_features;
-    u32 queue_pfn;
-    u16 queue_num;
-    u16 queue_sel;
-    u16 queue_notify;
-    u8  status;
+    u32 قطار_pfn;
+    u16 قطار_عدد;
+    u16 قطار_sel;
+    u16 قطار_notify;
+    u8  حالت_2;
     u8  isr;
     u8  device[];
 } virtio_pci_legacy;
@@ -27,76 +27,76 @@ typedef struct virtio_pci_legacy {
 /* --- virtio 1.0 (modern) structs ---------------------------------- */
 
 /* Common configuration */
-#define VIRTIO_PCI_CAP_COMMON_CFG       1
+#تعریف_کرو VIRTIO_PCI_CAP_COMMON_CFG       1
 /* Notifications */
-#define VIRTIO_PCI_CAP_NOTIFY_CFG       2
+#تعریف_کرو VIRTIO_PCI_CAP_NOTIFY_CFG       2
 /* ISR access */
-#define VIRTIO_PCI_CAP_ISR_CFG          3
+#تعریف_کرو VIRTIO_PCI_CAP_ISR_CFG          3
 /* Device specific configuration */
-#define VIRTIO_PCI_CAP_DEVICE_CFG       4
+#تعریف_کرو VIRTIO_PCI_CAP_DEVICE_CFG       4
 /* PCI configuration access */
-#define VIRTIO_PCI_CAP_PCI_CFG          5
+#تعریف_کرو VIRTIO_PCI_CAP_PCI_CFG          5
 
 /* This is the PCI capability header: */
-struct virtio_pci_cap {
+ساخت virtio_pci_cap {
     u8 cap_vndr;          /* Generic PCI field: PCI_CAP_ID_VNDR */
-    u8 cap_next;          /* Generic PCI field: next ptr. */
+    u8 cap_اگلا;          /* Generic PCI field: next ptr. */
     u8 cap_len;           /* Generic PCI field: capability length */
     u8 cfg_type;          /* Identifies the structure. */
     u8 bar;               /* Where to find it. */
     u8 padding[3];        /* Pad to full dword. */
-    u32 offset;           /* Offset within bar. */
-    u32 length;           /* Length of the structure, in bytes. */
+    u32 انحراف_2;           /* Offset within bar. */
+    u32 لمبائی;           /* Length of the structure, in bytes. */
 };
 
-struct virtio_pci_notify_cap {
-    struct virtio_pci_cap cap;
+ساخت virtio_pci_notify_cap {
+    ساخت virtio_pci_cap cap;
     u32 notify_off_multiplier;   /* Multiplier for queue_notify_off. */
 };
 
-struct virtio_pci_cfg_cap {
-    struct virtio_pci_cap cap;
-    u8 pci_cfg_data[4]; /* Data for BAR access. */
+ساخت virtio_pci_cfg_cap {
+    ساخت virtio_pci_cap cap;
+    u8 pci_cfg_ڈیٹا[4]; /* Data for BAR access. */
 };
 
-typedef struct virtio_pci_common_cfg {
+قسمتعریف ساخت virtio_pci_common_cfg {
     /* About the whole device. */
     u32 device_feature_select;   /* read-write */
     u32 device_feature;          /* read-only */
     u32 guest_feature_select;    /* read-write */
     u32 guest_feature;           /* read-write */
     u16 msix_config;             /* read-write */
-    u16 num_queues;              /* read-only */
-    u8 device_status;            /* read-write */
+    u16 عدد_queues;              /* read-only */
+    u8 device_حالت;            /* read-write */
     u8 config_generation;        /* read-only */
 
     /* About a specific virtqueue. */
-    u16 queue_select;            /* read-write */
-    u16 queue_size;              /* read-write, power of 2. */
-    u16 queue_msix_vector;       /* read-write */
-    u16 queue_enable;            /* read-write */
-    u16 queue_notify_off;        /* read-only */
-    u32 queue_desc_lo;           /* read-write */
-    u32 queue_desc_hi;           /* read-write */
-    u32 queue_avail_lo;          /* read-write */
-    u32 queue_avail_hi;          /* read-write */
-    u32 queue_used_lo;           /* read-write */
-    u32 queue_used_hi;           /* read-write */
+    u16 قطار_select;            /* read-write */
+    u16 قطار_سائز;              /* read-write, power of 2. */
+    u16 قطار_msix_سمتیہ;       /* read-write */
+    u16 قطار_enable;            /* read-write */
+    u16 قطار_notify_off;        /* read-only */
+    u32 قطار_desc_lo;           /* read-write */
+    u32 قطار_desc_hi;           /* read-write */
+    u32 قطار_avail_lo;          /* read-write */
+    u32 قطار_avail_hi;          /* read-write */
+    u32 قطار_مستعمل_lo;           /* read-write */
+    u32 قطار_مستعمل_hi;           /* read-write */
 } virtio_pci_common_cfg;
 
-typedef struct virtio_pci_isr {
+قسمتعریف ساخت virtio_pci_isr {
     u8 isr;
 } virtio_pci_isr;
 
 /* --- driver structs ----------------------------------------------- */
 
-#define VP_ACCESS_IO       1
-#define VP_ACCESS_MMIO     2
-#define VP_ACCESS_PCICFG   3
+#تعریف_کرو VP_ACCESS_IO       1
+#تعریف_کرو VP_ACCESS_MMIO     2
+#تعریف_کرو VP_ACCESS_PCICFG   3
 
-struct vp_cap {
-    union {
-        void *memaddr;
+ساخت vp_cap {
+    اتحاد {
+        خالی *memaddr;
         u32 ioaddr;
         u32 baroff;
     };
@@ -104,49 +104,49 @@ struct vp_cap {
     u8 cap;
     u8 cfg;
     u8 bar;
-    u8 mode;
+    u8 منوال;
 };
 
-struct vp_device {
-    struct vp_cap common, notify, isr, device, legacy;
+ساخت vp_device {
+    ساخت vp_cap common, notify, isr, device, legacy;
     u32 notify_off_multiplier;
     u8 use_modern;
     u8 use_mmio;
 };
 
-u64 _vp_read(struct vp_cap *cap, u32 offset, u8 size);
-void _vp_write(struct vp_cap *cap, u32 offset, u8 size, u64 var);
+u64 _vp_read(ساخت vp_cap *cap, u32 انحراف_2, u8 سائز);
+خالی _vp_write(ساخت vp_cap *cap, u32 انحراف_2, u8 سائز, u64 var);
 
-#define vp_read(_cap, _struct, _field)        \
-    _vp_read(_cap, offsetof(_struct, _field), \
-             sizeof(((_struct *)0)->_field))
+#تعریف_کرو vp_read(_cap, _struct, میدان_2)        \
+    _vp_read(_cap, offsetof(_struct, میدان_2), \
+             حجم(((_struct *)0)->میدان_2))
 
-#define vp_write(_cap, _struct, _field, _var)           \
-    _vp_write(_cap, offsetof(_struct, _field),          \
-             sizeof(((_struct *)0)->_field), _var)
+#تعریف_کرو vp_write(_cap, _struct, میدان_2, _var)           \
+    _vp_write(_cap, offsetof(_struct, میدان_2),          \
+             حجم(((_struct *)0)->میدان_2), _var)
 
-u64 vp_get_features(struct vp_device *vp);
-void vp_set_features(struct vp_device *vp, u64 features);
+u64 vp_get_features(ساخت vp_device *vp);
+خالی vp_سیٹ_features(ساخت vp_device *vp, u64 features);
 
-static inline void vp_get_legacy(struct vp_device *vp, unsigned offset,
-                                 void *buf, unsigned len)
+ساکن اندرونی خالی vp_get_legacy(ساخت vp_device *vp, غیرعلامتی انحراف_2,
+                                 خالی *buf, غیرعلامتی len)
 {
     u8 *ptr = buf;
-    unsigned i;
+    غیرعلامتی i;
 
-    for (i = 0; i < len; i++)
+    برائے (i = 0; i < len; i++)
         ptr[i] = vp_read(&vp->legacy, virtio_pci_legacy, device[i]);
 }
 
-u8 vp_get_status(struct vp_device *vp);
-void vp_set_status(struct vp_device *vp, u8 status);
-u8 vp_get_isr(struct vp_device *vp);
-void vp_reset(struct vp_device *vp);
+u8 vp_get_حالت(ساخت vp_device *vp);
+خالی vp_سیٹ_حالت(ساخت vp_device *vp, u8 حالت_2);
+u8 vp_get_isr(ساخت vp_device *vp);
+خالی vp_reset(ساخت vp_device *vp);
 
-struct pci_device;
-struct vring_virtqueue;
-void vp_init_simple(struct vp_device *vp, struct pci_device *pci);
-void vp_notify(struct vp_device *vp, struct vring_virtqueue *vq);
-int vp_find_vq(struct vp_device *vp, int queue_index,
-               struct vring_virtqueue **p_vq);
-#endif /* _VIRTIO_PCI_H_ */
+ساخت pci_device;
+ساخت vring_virtqueue;
+خالی vp_init_simple(ساخت vp_device *vp, ساخت pci_device *pci);
+خالی vp_notify(ساخت vp_device *vp, ساخت vring_virtqueue *vq);
+صحیح vp_ڈھونڈو_vq(ساخت vp_device *vp, صحیح قطار_اشاریہ,
+               ساخت vring_virtqueue **p_vq);
+#اگر_ختم /* _VIRTIO_PCI_H_ */

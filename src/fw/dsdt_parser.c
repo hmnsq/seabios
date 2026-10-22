@@ -4,674 +4,674 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_*
-#include "list.h"   // hlist_*
-#include "malloc.h" // malloc_*
-#include "output.h" // dprintf
-#include "string.h" // memcpy
-#include "util.h"
-#include "std/acpi.h" // struct rsdp_descriptor
+#شامل "config.h" // CONFIG_*
+#شامل "list.h"   // hlist_*
+#شامل "malloc.h" // malloc_*
+#شامل "output.h" // dprintf
+#شامل "string.h" // memcpy
+#شامل "util.h"
+#شامل "std/acpi.h" // struct rsdp_descriptor
 
 /****************************************************************
  * DSDT parser
  ****************************************************************/
 
-struct acpi_device {
-    struct hlist_node node;
-    char name[16];
+ساخت acpi_device {
+    ساخت hlist_گرہ گرہ;
+    حرف name[16];
     u8 *hid_aml;
     u8 *sta_aml;
-    u8 *crs_data;
-    int crs_size;
+    u8 *crs_ڈیٹا;
+    صحیح crs_سائز;
 };
-static struct hlist_head acpi_devices VARVERIFY32INIT;
-static const int parse_dumpdevs = 0;
+ساکن ساخت hlist_سر acpi_devices VARVERIFY32INIT;
+ساکن ثابت صحیح parse_dumpdevs = 0;
 
-struct parse_state {
-    char name[32];
-    struct acpi_device *dev;
-    int error;
-    int depth;
+ساخت parse_state {
+    حرف name[32];
+    ساخت acpi_device *dev;
+    صحیح error;
+    صحیح گہرائی;
 };
 
-static void parse_termlist(struct parse_state *s,
-                           u8 *ptr, int offset, int pkglength);
+ساکن خالی parse_termlist(ساخت parse_state *s,
+                           u8 *ptr, صحیح انحراف_2, صحیح pkglength);
 
-static void hex(const u8 *ptr, int count, int lvl, const char *item)
+ساکن خالی hex(ثابت u8 *ptr, صحیح گنتی, صحیح lvl, ثابت حرف *شے)
 {
-    int l = 0, i;
+    صحیح l = 0, i;
 
-    do {
-        dprintf(lvl, "%s: %04x:  ", item, l);
-        for (i = l; i < l+16; i += 4)
+    کرو {
+        dprintf(lvl, "%s: %04x:  ", شے, l);
+        برائے (i = l; i < l+16; i += 4)
             dprintf(lvl, "%02x %02x %02x %02x  ",
                     ptr[i+0], ptr[i+1], ptr[i+2], ptr[i+3]);
-        for (i = l; i < l+16; i++)
+        برائے (i = l; i < l+16; i++)
             dprintf(lvl, "%c", (ptr[i] > 0x20 && ptr[i] < 0x80)
                     ? ptr[i] : '.');
         dprintf(lvl, "\n");
         l += 16;
-    } while (l < count);
+    } جب (l < گنتی);
 }
 
-static u64 parse_resource_int(u8 *ptr, int count)
+ساکن u64 parse_resource_int(u8 *ptr, صحیح گنتی)
 {
-    u64 value = 0;
-    int index = 0;
+    u64 قدر = 0;
+    صحیح اشاریہ = 0;
 
-    for (index = 0; index < count; index++)
-        value |= (u64)ptr[index] << (index * 8);
-    return value;
+    برائے (اشاریہ = 0; اشاریہ < گنتی; اشاریہ++)
+        قدر |= (u64)ptr[اشاریہ] << (اشاریہ * 8);
+    واپس قدر;
 }
 
-static int parse_resource_bit(u8 *ptr, int count)
+ساکن صحیح parse_resource_ثنائی_ہندسہ(u8 *ptr, صحیح گنتی)
 {
-    int bit;
+    صحیح ثنائی_ہندسہ;
 
-    for (bit = 0; bit < count*8; bit++)
-        if (ptr[bit/8] & (1 << (bit%8)))
-            return bit;
-    return 0;
+    برائے (ثنائی_ہندسہ = 0; ثنائی_ہندسہ < گنتی*8; ثنائی_ہندسہ++)
+        اگر (ptr[ثنائی_ہندسہ/8] & (1 << (ثنائی_ہندسہ%8)))
+            واپس ثنائی_ہندسہ;
+    واپس 0;
 }
 
-static int parse_resource(u8 *ptr, int length, int *type, u64 *min, u64 *max)
+ساکن صحیح parse_resource(u8 *ptr, صحیح لمبائی, صحیح *type, u64 *min, u64 *max)
 {
-    int rname, rsize;
+    صحیح rname, rsize;
     u64 len;
 
     *type = -1;
     *min = 0;
     *max = 0;
     len = 0;
-    if (!(ptr[0] & 0x80)) {
+    اگر (!(ptr[0] & 0x80)) {
         /* small resource */
         rname = (ptr[0] >> 3) & 0x0f;
         rsize = ptr[0] & 0x07;
         rsize++;
-        switch (rname) {
-        case 0x04: /* irq */
-            *min = parse_resource_bit(ptr + 1, rsize);
+        انتخاب (rname) {
+        حالت 0x04: /* irq */
+            *min = parse_resource_ثنائی_ہندسہ(ptr + 1, rsize);
             *max = *min;
             *type = 3;
-            break;
-        case 0x0f: /* end marker */
-            return 0;
-        case 0x08: /* io */
+            توڑو;
+        حالت 0x0f: /* end marker */
+            واپس 0;
+        حالت 0x08: /* io */
             *min = parse_resource_int(ptr + 2, 2);
             *max = parse_resource_int(ptr + 4, 2);
-            if (*min == *max) {
+            اگر (*min == *max) {
                 *max = *min + ptr[7] - 1;
                 *type = 1;
             }
-            break;
-        case 0x09: /* fixed io */
+            توڑو;
+        حالت 0x09: /* fixed io */
             *min = parse_resource_int(ptr + 2, 2);
             *max = *min + ptr[4] - 1;
             *type = 1;
-            break;
-        default:
+            توڑو;
+        طےشدہ:
             dprintf(3, "%s: small: 0x%x (len %d)\n",
                     __func__, rname, rsize);
-            break;
+            توڑو;
         }
-    } else {
+    } ورنہ {
         /* large resource */
         rname = ptr[0] & 0x7f;
         rsize = ptr[2] << 8 | ptr[1];
         rsize += 3;
-        switch (rname) {
-        case 0x06: /* 32-bit Fixed Location Memory Range Descriptor */
+        انتخاب (rname) {
+        حالت 0x06: /* 32-bit Fixed Location Memory Range Descriptor */
             *min = parse_resource_int(ptr + 4, 4);
             len = parse_resource_int(ptr + 8, 4);
             *max = *min + len - 1;
             *type = 0;
-            break;
-        case 0x07: /* DWORD Address Space Descriptor */
+            توڑو;
+        حالت 0x07: /* DWORD Address Space Descriptor */
             *min = parse_resource_int(ptr + 10, 4);
             *max = parse_resource_int(ptr + 14, 4);
             *type = ptr[3];
-            break;
-        case 0x08: /* WORD Address Space Descriptor */
+            توڑو;
+        حالت 0x08: /* WORD Address Space Descriptor */
             *min = parse_resource_int(ptr +  8, 2);
             *max = parse_resource_int(ptr + 10, 2);
             *type = ptr[3];
-            break;
-        case 0x09: /* irq */
+            توڑو;
+        حالت 0x09: /* irq */
             *min = parse_resource_int(ptr +  5, 4);
             *max = *min;
             *type = 3;
-            break;
-        case 0x0a: /* QWORD Address Space Descriptor */
+            توڑو;
+        حالت 0x0a: /* QWORD Address Space Descriptor */
             *min = parse_resource_int(ptr + 14, 8);
             *max = parse_resource_int(ptr + 22, 8);
             *type = ptr[3];
-            break;
-        default:
+            توڑو;
+        طےشدہ:
             dprintf(3, "%s: large: 0x%x (len %d)\n", __func__, rname, rsize);
-            break;
+            توڑو;
         }
     }
-    return rsize;
+    واپس rsize;
 }
 
-static int find_resource(u8 *ptr, int len, int kind, u64 *min, u64 *max)
+ساکن صحیح ڈھونڈو_resource(u8 *ptr, صحیح len, صحیح قسم_2, u64 *min, u64 *max)
 {
-    int type, size, offset = 0;
+    صحیح type, سائز, انحراف_2 = 0;
 
-    do {
-        size = parse_resource(ptr + offset, len - offset,
+    کرو {
+        سائز = parse_resource(ptr + انحراف_2, len - انحراف_2,
                               &type, min, max);
-        if (kind == type)
-            return 0;
-        offset += size;
-    } while (size > 0 && offset < len);
-    return -1;
+        اگر (قسم_2 == type)
+            واپس 0;
+        انحراف_2 += سائز;
+    } جب (سائز > 0 && انحراف_2 < len);
+    واپس -1;
 }
 
-static int print_resources(const char *prefix, u8 *ptr, int len)
+ساکن صحیح print_resources(ثابت حرف *سابقہ, u8 *ptr, صحیح len)
 {
-    static const char *typename[] = { "mem", "i/o", "bus" };
-    int type, size, offset = 0;
+    ساکن ثابت حرف *typename[] = { "mem", "i/o", "bus" };
+    صحیح type, سائز, انحراف_2 = 0;
     u64 min, max;
 
-    do {
-        size = parse_resource(ptr + offset, len - offset,
+    کرو {
+        سائز = parse_resource(ptr + انحراف_2, len - انحراف_2,
                               &type, &min, &max);
-        switch (type) {
-        case 0:
-        case 1:
-        case 2:
+        انتخاب (type) {
+        حالت 0:
+        حالت 1:
+        حالت 2:
             dprintf(1, "%s%s 0x%llx -> 0x%llx\n",
-                    prefix, typename[type], min, max);
-            break;
-        case 3:
-            dprintf(1, "%sirq %lld\n", prefix, min);
-            break;
+                    سابقہ, typename[type], min, max);
+            توڑو;
+        حالت 3:
+            dprintf(1, "%sirq %lld\n", سابقہ, min);
+            توڑو;
         }
-        offset += size;
-    } while (size > 0 && offset < len);
-    return -1;
+        انحراف_2 += سائز;
+    } جب (سائز > 0 && انحراف_2 < len);
+    واپس -1;
 }
 
-static int parse_nameseg(u8 *ptr, char **dst)
+ساکن صحیح parse_nameseg(u8 *ptr, حرف **dst)
 {
-    if (dst && *dst) {
+    اگر (dst && *dst) {
         *(dst[0]++) = ptr[0];
-        if (ptr[1] != '_')
+        اگر (ptr[1] != '_')
             *(dst[0]++) = ptr[1];
-        if (ptr[2] != '_')
+        اگر (ptr[2] != '_')
             *(dst[0]++) = ptr[2];
-        if (ptr[3] != '_')
+        اگر (ptr[3] != '_')
             *(dst[0]++) = ptr[3];
         *(dst[0]) = 0;
     }
-    return 4;
+    واپس 4;
 }
 
-static int parse_namestring(struct parse_state *s,
-                            u8 *ptr, const char *item)
+ساکن صحیح parse_namestring(ساخت parse_state *s,
+                            u8 *ptr, ثابت حرف *شے)
 {
-    char *dst = s->name;
-    int offset = 0;
-    int i, count;
+    حرف *dst = s->name;
+    صحیح انحراف_2 = 0;
+    صحیح i, گنتی;
 
-    for (;;) {
-        switch (ptr[offset]) {
-        case 0: /* null name */
-            offset++;
+    برائے (;;) {
+        انتخاب (ptr[انحراف_2]) {
+        حالت 0: /* null name */
+            انحراف_2++;
             *(dst++) = 0;
-            break;
-        case 0x2e:
-            offset++;
-            offset += parse_nameseg(ptr + offset, &dst);
+            توڑو;
+        حالت 0x2e:
+            انحراف_2++;
+            انحراف_2 += parse_nameseg(ptr + انحراف_2, &dst);
             *(dst++) = '.';
-            offset += parse_nameseg(ptr + offset, &dst);
-            break;
-        case 0x2f:
-            offset++;
-            count = ptr[offset];
-            offset++;
-            for (i = 0; i < count; i++) {
-                if (i)
+            انحراف_2 += parse_nameseg(ptr + انحراف_2, &dst);
+            توڑو;
+        حالت 0x2f:
+            انحراف_2++;
+            گنتی = ptr[انحراف_2];
+            انحراف_2++;
+            برائے (i = 0; i < گنتی; i++) {
+                اگر (i)
                     *(dst++) = '.';
-                offset += parse_nameseg(ptr + offset, &dst);
+                انحراف_2 += parse_nameseg(ptr + انحراف_2, &dst);
             }
-            break;
-        case '\\':
+            توڑو;
+        حالت '\\':
             *(dst++) = '\\';
-            offset++;
-            continue;
-        case '^':
+            انحراف_2++;
+            جاری;
+        حالت '^':
             *(dst++) = '^';
-            offset++;
-            continue;
-        case 'A' ... 'Z':
-        case '_':
-            offset += parse_nameseg(ptr, &dst);
-            break;
-        default:
+            انحراف_2++;
+            جاری;
+        حالت 'A' ... 'Z':
+        حالت '_':
+            انحراف_2 += parse_nameseg(ptr, &dst);
+            توڑو;
+        طےشدہ:
             hex(ptr, 16, 3, __func__);
             s->error = 1;
-            break;
+            توڑو;
         }
-        break;
+        توڑو;
     }
-    dprintf(5, "%s: %d %s '%s'\n", __func__, s->depth,
-            item, s->name);
-    return offset;
+    dprintf(5, "%s: %d %s '%s'\n", __func__, s->گہرائی,
+            شے, s->name);
+    واپس انحراف_2;
 }
 
-static int parse_termarg_int(u8 *ptr, int *error, u64 *dst)
+ساکن صحیح parse_termarg_int(u8 *ptr, صحیح *error, u64 *dst)
 {
-    u64 value;
-    int offset = 1;
+    u64 قدر;
+    صحیح انحراف_2 = 1;
 
-    switch (ptr[0]) {
-    case 0x00: /* zero */
-        value = 0;
-        break;
-    case 0x01: /* one */
-        value = 1;
-        break;
-    case 0x0a: /* byte prefix */
-        value = ptr[1];
-        offset++;
-        break;
-    case 0x0b: /* word prefix */
-        value = ptr[1] |
-            ((unsigned long)ptr[2] << 8);
-        offset += 2;
-        break;
-    case 0x0c: /* dword prefix */
-        value = ptr[1] |
-            ((unsigned long)ptr[2] << 8) |
-            ((unsigned long)ptr[3] << 16) |
-            ((unsigned long)ptr[4] << 24);
-        offset += 4;
-        break;
-    default:
-        value = 0;
+    انتخاب (ptr[0]) {
+    حالت 0x00: /* zero */
+        قدر = 0;
+        توڑو;
+    حالت 0x01: /* one */
+        قدر = 1;
+        توڑو;
+    حالت 0x0a: /* byte prefix */
+        قدر = ptr[1];
+        انحراف_2++;
+        توڑو;
+    حالت 0x0b: /* word prefix */
+        قدر = ptr[1] |
+            ((غیرعلامتی طویل)ptr[2] << 8);
+        انحراف_2 += 2;
+        توڑو;
+    حالت 0x0c: /* dword prefix */
+        قدر = ptr[1] |
+            ((غیرعلامتی طویل)ptr[2] << 8) |
+            ((غیرعلامتی طویل)ptr[3] << 16) |
+            ((غیرعلامتی طویل)ptr[4] << 24);
+        انحراف_2 += 4;
+        توڑو;
+    طےشدہ:
+        قدر = 0;
         hex(ptr, 16, 3, __func__);
-        if (error)
+        اگر (error)
             *error = 1;
-        break;
+        توڑو;
     }
 
-    if (dst)
-        *dst = value;
-    dprintf(5, "%s: 0x%llx\n", __func__, value);
-    return offset;
+    اگر (dst)
+        *dst = قدر;
+    dprintf(5, "%s: 0x%llx\n", __func__, قدر);
+    واپس انحراف_2;
 }
 
-static int parse_pkglength(u8 *ptr, int *pkglength)
+ساکن صحیح parse_pkglength(u8 *ptr, صحیح *pkglength)
 {
-    int offset = 2;
+    صحیح انحراف_2 = 2;
 
     *pkglength = 0;
-    switch (ptr[0] >> 6) {
-    case 3:
+    انتخاب (ptr[0] >> 6) {
+    حالت 3:
         *pkglength |= ptr[3] << 20;
-        offset++;
-    case 2:
+        انحراف_2++;
+    حالت 2:
         *pkglength |= ptr[2] << 12;
-        offset++;
-    case 1:
+        انحراف_2++;
+    حالت 1:
         *pkglength |= ptr[1] << 4;
         *pkglength |= ptr[0] & 0x0f;
-        return offset;
-    case 0:
-    default:
+        واپس انحراف_2;
+    حالت 0:
+    طےشدہ:
         *pkglength |= ptr[0] & 0x3f;
-        return 1;
+        واپس 1;
     }
 }
 
-static int parse_pkg_common(struct parse_state *s,
-                            u8 *ptr, const char *item, int *pkglength)
+ساکن صحیح parse_pkg_common(ساخت parse_state *s,
+                            u8 *ptr, ثابت حرف *شے, صحیح *pkglength)
 {
-    int offset;
+    صحیح انحراف_2;
 
-    offset = parse_pkglength(ptr, pkglength);
-    offset += parse_namestring(s, ptr + offset, item);
-    return offset;
+    انحراف_2 = parse_pkglength(ptr, pkglength);
+    انحراف_2 += parse_namestring(s, ptr + انحراف_2, شے);
+    واپس انحراف_2;
 }
 
-static int parse_pkg_scope(struct parse_state *s,
+ساکن صحیح parse_pkg_scope(ساخت parse_state *s,
                            u8 *ptr)
 {
-    int offset, pkglength;
+    صحیح انحراف_2, pkglength;
 
-    offset = parse_pkg_common(s, ptr, "scope", &pkglength);
-    parse_termlist(s, ptr, offset, pkglength);
-    return pkglength;
+    انحراف_2 = parse_pkg_common(s, ptr, "scope", &pkglength);
+    parse_termlist(s, ptr, انحراف_2, pkglength);
+    واپس pkglength;
 }
 
-static int parse_pkg_device(struct parse_state *s,
+ساکن صحیح parse_pkg_device(ساخت parse_state *s,
                             u8 *ptr)
 {
-    int offset, pkglength;
+    صحیح انحراف_2, pkglength;
 
-    offset = parse_pkg_common(s, ptr, "device", &pkglength);
+    انحراف_2 = parse_pkg_common(s, ptr, "device", &pkglength);
 
-    s->dev = malloc_tmp(sizeof(struct acpi_device));
-    if (!s->dev) {
+    s->dev = malloc_tmp(حجم(ساخت acpi_device));
+    اگر (!s->dev) {
         warn_noalloc();
         s->error = 1;
-        return pkglength;
+        واپس pkglength;
     }
 
-    memset(s->dev, 0, sizeof(struct acpi_device));
-    hlist_add_head(&s->dev->node, &acpi_devices);
-    strtcpy(s->dev->name, s->name, sizeof(s->name));
-    parse_termlist(s, ptr, offset, pkglength);
-    s->dev = NULL;
+    memset(s->dev, 0, حجم(ساخت acpi_device));
+    hlist_جوڑو_سر(&s->dev->گرہ, &acpi_devices);
+    strtcpy(s->dev->name, s->name, حجم(s->name));
+    parse_termlist(s, ptr, انحراف_2, pkglength);
+    s->dev = تہی;
 
-    return pkglength;
+    واپس pkglength;
 }
 
-static int parse_pkg_buffer(struct parse_state *s,
+ساکن صحیح parse_pkg_بفر(ساخت parse_state *s,
                             u8 *ptr)
 {
     u64 blen;
-    int pkglength, offset;
+    صحیح pkglength, انحراف_2;
 
-    offset = parse_pkglength(ptr, &pkglength);
-    offset += parse_termarg_int(ptr + offset, &s->error, &blen);
-    if (s->dev && strcmp(s->name, "_CRS") == 0) {
-        s->dev->crs_data = ptr + offset;
-        s->dev->crs_size = blen;
+    انحراف_2 = parse_pkglength(ptr, &pkglength);
+    انحراف_2 += parse_termarg_int(ptr + انحراف_2, &s->error, &blen);
+    اگر (s->dev && strcmp(s->name, "_CRS") == 0) {
+        s->dev->crs_ڈیٹا = ptr + انحراف_2;
+        s->dev->crs_سائز = blen;
     }
-    return pkglength;
+    واپس pkglength;
 }
 
-static int parse_pkg_skip(struct parse_state *s,
-                          u8 *ptr, int op, int name)
+ساکن صحیح parse_pkg_skip(ساخت parse_state *s,
+                          u8 *ptr, صحیح op, صحیح name)
 {
-    int pkglength, offset;
-    char item[8];
+    صحیح pkglength, انحراف_2;
+    حرف شے[8];
 
-    snprintf(item, sizeof(item), "op %x", op);
-    offset = parse_pkglength(ptr, &pkglength);
-    if (name) {
-        parse_namestring(s, ptr + offset, item);
-    } else {
-        dprintf(5, "%s: %s (%d)\n", __func__, item, pkglength);
+    snprintf(شے, حجم(شے), "op %x", op);
+    انحراف_2 = parse_pkglength(ptr, &pkglength);
+    اگر (name) {
+        parse_namestring(s, ptr + انحراف_2, شے);
+    } ورنہ {
+        dprintf(5, "%s: %s (%d)\n", __func__, شے, pkglength);
     }
-    return pkglength;
+    واپس pkglength;
 }
 
-static int parse_termobj(struct parse_state *s,
+ساکن صحیح parse_termobj(ساخت parse_state *s,
                          u8 *ptr)
 {
-    int offset = 1;
+    صحیح انحراف_2 = 1;
 
-    if (s->depth == 16) {
+    اگر (s->گہرائی == 16) {
         dprintf(1, "%s: deep recursion\n", __func__);
         s->error = 1;
-        return offset;
+        واپس انحراف_2;
     }
 
-    s->depth++;
-    switch (ptr[0]) {
-    case 0x00: /* zero */
-        break;
-    case 0x01: /* one */
-        break;
-    case 0x06: /* AliasOp */
-        offset += parse_namestring(s, ptr + offset, "SourceObject");
-        offset += parse_namestring(s, ptr + offset, "AliasObject");
-        break;
-    case 0x08: /* name op */
-        offset += parse_namestring(s, ptr + offset, "name");
-        offset += parse_termobj(s, ptr + offset);
-        if (s->dev && strcmp(s->name, "_HID") == 0)
+    s->گہرائی++;
+    انتخاب (ptr[0]) {
+    حالت 0x00: /* zero */
+        توڑو;
+    حالت 0x01: /* one */
+        توڑو;
+    حالت 0x06: /* AliasOp */
+        انحراف_2 += parse_namestring(s, ptr + انحراف_2, "SourceObject");
+        انحراف_2 += parse_namestring(s, ptr + انحراف_2, "AliasObject");
+        توڑو;
+    حالت 0x08: /* name op */
+        انحراف_2 += parse_namestring(s, ptr + انحراف_2, "name");
+        انحراف_2 += parse_termobj(s, ptr + انحراف_2);
+        اگر (s->dev && strcmp(s->name, "_HID") == 0)
             s->dev->hid_aml = ptr;
-        if (s->dev && strcmp(s->name, "_STA") == 0)
+        اگر (s->dev && strcmp(s->name, "_STA") == 0)
             s->dev->sta_aml = ptr;
-        break;
-    case 0x0a: /* byte prefix */
-        offset++;
-        break;
-    case 0x0b: /* word prefix */
-        offset += 2;
-        break;
-    case 0x0c: /* dword prefix */
-        offset += 4;
-        break;
-    case 0x0d: /* string prefix */
-        while (ptr[offset])
-            offset++;
-        offset++;
-        break;
-    case 0x10: /* scope op */
-        offset += parse_pkg_scope(s, ptr + offset);
-        break;
-    case 0x11: /* buffer op */
-        offset += parse_pkg_buffer(s, ptr + offset);
-        break;
-    case 0x12: /* package op */
-    case 0x13: /* var package op */
-        offset += parse_pkg_skip(s, ptr + offset, ptr[0], 0);
-        break;
-    case 0x14: /* method op */
-        offset += parse_pkg_skip(s, ptr + offset, ptr[0], 1);
-        if (s->dev && strcmp(s->name, "_STA") == 0)
+        توڑو;
+    حالت 0x0a: /* byte prefix */
+        انحراف_2++;
+        توڑو;
+    حالت 0x0b: /* word prefix */
+        انحراف_2 += 2;
+        توڑو;
+    حالت 0x0c: /* dword prefix */
+        انحراف_2 += 4;
+        توڑو;
+    حالت 0x0d: /* string prefix */
+        جب (ptr[انحراف_2])
+            انحراف_2++;
+        انحراف_2++;
+        توڑو;
+    حالت 0x10: /* scope op */
+        انحراف_2 += parse_pkg_scope(s, ptr + انحراف_2);
+        توڑو;
+    حالت 0x11: /* buffer op */
+        انحراف_2 += parse_pkg_بفر(s, ptr + انحراف_2);
+        توڑو;
+    حالت 0x12: /* package op */
+    حالت 0x13: /* var package op */
+        انحراف_2 += parse_pkg_skip(s, ptr + انحراف_2, ptr[0], 0);
+        توڑو;
+    حالت 0x14: /* method op */
+        انحراف_2 += parse_pkg_skip(s, ptr + انحراف_2, ptr[0], 1);
+        اگر (s->dev && strcmp(s->name, "_STA") == 0)
             s->dev->sta_aml = ptr;
-        break;
-    case 0x5b: /* ext op prefix */
-        offset++;
-        switch (ptr[1]) {
-        case 0x01: /* mutex op */
-            offset += parse_namestring(s, ptr + offset, "mutex");
-            offset++; /* sync flags */
-            break;
-        case 0x80: /* op region op */
-            offset += parse_namestring(s, ptr + offset, "op region");
-            offset++; /* region space */
-            offset += parse_termarg_int(ptr + offset, &s->error, NULL);
-            offset += parse_termarg_int(ptr + offset, &s->error, NULL);
-            break;
-        case 0x81: /* field op */
-        case 0x83: /* processor op */
-        case 0x84: /* power resource op */
-        case 0x85: /* thermal zone op */
-            offset += parse_pkg_skip(s, ptr + offset, 0x5b00 | ptr[1], 1);
-            break;
-        case 0x82: /* device op */
-            offset += parse_pkg_device(s, ptr + offset);
-            break;
-        default:
+        توڑو;
+    حالت 0x5b: /* ext op prefix */
+        انحراف_2++;
+        انتخاب (ptr[1]) {
+        حالت 0x01: /* mutex op */
+            انحراف_2 += parse_namestring(s, ptr + انحراف_2, "mutex");
+            انحراف_2++; /* sync flags */
+            توڑو;
+        حالت 0x80: /* op region op */
+            انحراف_2 += parse_namestring(s, ptr + انحراف_2, "op region");
+            انحراف_2++; /* region space */
+            انحراف_2 += parse_termarg_int(ptr + انحراف_2, &s->error, تہی);
+            انحراف_2 += parse_termarg_int(ptr + انحراف_2, &s->error, تہی);
+            توڑو;
+        حالت 0x81: /* field op */
+        حالت 0x83: /* processor op */
+        حالت 0x84: /* power resource op */
+        حالت 0x85: /* thermal zone op */
+            انحراف_2 += parse_pkg_skip(s, ptr + انحراف_2, 0x5b00 | ptr[1], 1);
+            توڑو;
+        حالت 0x82: /* device op */
+            انحراف_2 += parse_pkg_device(s, ptr + انحراف_2);
+            توڑو;
+        طےشدہ:
             hex(ptr, 16, 3, __func__);
             s->error = 1;
-            break;
+            توڑو;
         }
-        break;
-    default:
+        توڑو;
+    طےشدہ:
         hex(ptr, 16, 3, __func__);
         s->error = 1;
-        break;
+        توڑو;
     }
-    s->depth--;
+    s->گہرائی--;
 
-    return offset;
+    واپس انحراف_2;
 }
 
-static void parse_termlist(struct parse_state *s,
-                           u8 *ptr, int offset, int pkglength)
+ساکن خالی parse_termlist(ساخت parse_state *s,
+                           u8 *ptr, صحیح انحراف_2, صحیح pkglength)
 {
-    for (;;) {
-        offset += parse_termobj(s, ptr + offset);
-        if (offset == pkglength)
-            return;
-        if (offset > pkglength) {
+    برائے (;;) {
+        انحراف_2 += parse_termobj(s, ptr + انحراف_2);
+        اگر (انحراف_2 == pkglength)
+            واپس;
+        اگر (انحراف_2 > pkglength) {
             dprintf(1, "%s: overrun: %d/%d\n", __func__,
-                    offset, pkglength);
+                    انحراف_2, pkglength);
             s->error = 1;
-            return;
+            واپس;
         }
-        if (s->error) {
+        اگر (s->error) {
             dprintf(1, "%s: parse error, skip from %d/%d\n", __func__,
-                    offset, pkglength);
+                    انحراف_2, pkglength);
             s->error = 0;
-            return;
+            واپس;
         }
     }
 }
 
-static struct acpi_device *acpi_dsdt_find(struct acpi_device *prev,
-                                          const u8 *aml1, int size1,
-                                          const u8 *aml2, int size2)
+ساکن ساخت acpi_device *acpi_dsdt_ڈھونڈو(ساخت acpi_device *پچھلا,
+                                          ثابت u8 *aml1, صحیح size1,
+                                          ثابت u8 *aml2, صحیح size2)
 {
-    struct acpi_device *dev;
-    struct hlist_node *node;
+    ساخت acpi_device *dev;
+    ساخت hlist_گرہ *گرہ;
 
-    if (!prev)
-        node = acpi_devices.first;
-    else
-        node = prev->node.next;
+    اگر (!پچھلا)
+        گرہ = acpi_devices.پہلا;
+    ورنہ
+        گرہ = پچھلا->گرہ.اگلا;
 
-    for (; node != NULL; node = dev->node.next) {
-        dev = container_of(node, struct acpi_device, node);
-        if (!aml1 && !aml2)
-            return dev;
-        if (!dev->hid_aml)
-            continue;
-        if (aml1 && memcmp(dev->hid_aml + 5, aml1, size1) == 0)
-            return dev;
-        if (aml2 && memcmp(dev->hid_aml + 5, aml2, size2) == 0)
-            return dev;
+    برائے (; گرہ != تہی; گرہ = dev->گرہ.اگلا) {
+        dev = container_کا(گرہ, ساخت acpi_device, گرہ);
+        اگر (!aml1 && !aml2)
+            واپس dev;
+        اگر (!dev->hid_aml)
+            جاری;
+        اگر (aml1 && memcmp(dev->hid_aml + 5, aml1, size1) == 0)
+            واپس dev;
+        اگر (aml2 && memcmp(dev->hid_aml + 5, aml2, size2) == 0)
+            واپس dev;
     }
-    return NULL;
+    واپس تہی;
 }
 
-static int acpi_dsdt_present(struct acpi_device *dev)
+ساکن صحیح acpi_dsdt_present(ساخت acpi_device *dev)
 {
-    if (!dev)
-        return 0; /* no */
-    if (!dev->sta_aml)
-        return 1; /* yes */
-    if (dev->sta_aml[0] == 0x14)
-        return -1; /* unknown (can't evaluate method) */
-    if (dev->sta_aml[0] == 0x08) {
-        u64 value = 0;
-        parse_termarg_int(dev->sta_aml + 5, NULL, &value);
-        if (value == 0)
-            return 0; /* no */
-        else
-            return 1; /* yes */
+    اگر (!dev)
+        واپس 0; /* no */
+    اگر (!dev->sta_aml)
+        واپس 1; /* yes */
+    اگر (dev->sta_aml[0] == 0x14)
+        واپس -1; /* unknown (can't evaluate method) */
+    اگر (dev->sta_aml[0] == 0x08) {
+        u64 قدر = 0;
+        parse_termarg_int(dev->sta_aml + 5, تہی, &قدر);
+        اگر (قدر == 0)
+            واپس 0; /* no */
+        ورنہ
+            واپس 1; /* yes */
     }
-    return -1; /* unknown (should not happen) */
+    واپس -1; /* unknown (should not happen) */
 }
 
 /****************************************************************
  * DSDT parser, public interface
  ****************************************************************/
 
-struct acpi_device *acpi_dsdt_find_string(struct acpi_device *prev,
-                                          const char *hid)
+ساخت acpi_device *acpi_dsdt_ڈھونڈو_string(ساخت acpi_device *پچھلا,
+                                          ثابت حرف *hid)
 {
-    if (!CONFIG_ACPI_PARSE)
-        return NULL;
+    اگر (!CONFIG_ACPI_PARSE)
+        واپس تہی;
 
     u8 aml[10];
-    int len = snprintf((char*)aml, sizeof(aml), "\x0d%s", hid);
-    return acpi_dsdt_find(prev, aml, len, NULL, 0);
+    صحیح len = snprintf((حرف*)aml, حجم(aml), "\x0d%s", hid);
+    واپس acpi_dsdt_ڈھونڈو(پچھلا, aml, len, تہی, 0);
 }
 
-struct acpi_device *acpi_dsdt_find_eisaid(struct acpi_device *prev, u16 eisaid)
+ساخت acpi_device *acpi_dsdt_ڈھونڈو_eisaid(ساخت acpi_device *پچھلا, u16 eisaid)
 {
-    if (!CONFIG_ACPI_PARSE)
-        return NULL;
+    اگر (!CONFIG_ACPI_PARSE)
+        واپس تہی;
     u8 aml1[] = {
         0x0c, 0x41, 0xd0,
         eisaid >> 8,
         eisaid & 0xff
     };
     u8 aml2[10];
-    int len2 = snprintf((char*)aml2, sizeof(aml2), "\x0dPNP%04X", eisaid);
-    return acpi_dsdt_find(prev, aml1, 5, aml2, len2);
+    صحیح len2 = snprintf((حرف*)aml2, حجم(aml2), "\x0dPNP%04X", eisaid);
+    واپس acpi_dsdt_ڈھونڈو(پچھلا, aml1, 5, aml2, len2);
 }
 
-char *acpi_dsdt_name(struct acpi_device *dev)
+حرف *acpi_dsdt_name(ساخت acpi_device *dev)
 {
-    if (!CONFIG_ACPI_PARSE || !dev)
-        return NULL;
-    return dev->name;
+    اگر (!CONFIG_ACPI_PARSE || !dev)
+        واپس تہی;
+    واپس dev->name;
 }
 
-int acpi_dsdt_find_io(struct acpi_device *dev, u64 *min, u64 *max)
+صحیح acpi_dsdt_ڈھونڈو_io(ساخت acpi_device *dev, u64 *min, u64 *max)
 {
-    if (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
-        return -1;
-    return find_resource(dev->crs_data, dev->crs_size,
+    اگر (!CONFIG_ACPI_PARSE || !dev || !dev->crs_ڈیٹا)
+        واپس -1;
+    واپس ڈھونڈو_resource(dev->crs_ڈیٹا, dev->crs_سائز,
                          1 /* I/O */, min, max);
 }
 
-int acpi_dsdt_find_mem(struct acpi_device *dev, u64 *min, u64 *max)
+صحیح acpi_dsdt_ڈھونڈو_mem(ساخت acpi_device *dev, u64 *min, u64 *max)
 {
-    if (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
-        return -1;
-    return find_resource(dev->crs_data, dev->crs_size,
+    اگر (!CONFIG_ACPI_PARSE || !dev || !dev->crs_ڈیٹا)
+        واپس -1;
+    واپس ڈھونڈو_resource(dev->crs_ڈیٹا, dev->crs_سائز,
                          0 /* mem */, min, max);
 }
 
-int acpi_dsdt_find_irq(struct acpi_device *dev, u64 *irq)
+صحیح acpi_dsdt_ڈھونڈو_irq(ساخت acpi_device *dev, u64 *irq)
 {
     u64 max;
-    if (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
-        return -1;
-    return find_resource(dev->crs_data, dev->crs_size,
+    اگر (!CONFIG_ACPI_PARSE || !dev || !dev->crs_ڈیٹا)
+        واپس -1;
+    واپس ڈھونڈو_resource(dev->crs_ڈیٹا, dev->crs_سائز,
                          3 /* irq */, irq, &max);
 }
 
-int acpi_dsdt_present_eisaid(u16 eisaid)
+صحیح acpi_dsdt_present_eisaid(u16 eisaid)
 {
-    if (!CONFIG_ACPI_PARSE)
-        return -1; /* unknown */
-    if (hlist_empty(&acpi_devices))
-        return -1; /* unknown (no dsdt table) */
+    اگر (!CONFIG_ACPI_PARSE)
+        واپس -1; /* unknown */
+    اگر (hlist_خالی_خانے(&acpi_devices))
+        واپس -1; /* unknown (no dsdt table) */
 
-    struct acpi_device *dev = acpi_dsdt_find_eisaid(NULL, eisaid);
-    return acpi_dsdt_present(dev);
+    ساخت acpi_device *dev = acpi_dsdt_ڈھونڈو_eisaid(تہی, eisaid);
+    واپس acpi_dsdt_present(dev);
 }
 
-void acpi_dsdt_parse(void)
+خالی acpi_dsdt_parse(خالی)
 {
-    if (!CONFIG_ACPI_PARSE)
-        return;
+    اگر (!CONFIG_ACPI_PARSE)
+        واپس;
 
-    struct fadt_descriptor_rev1 *fadt = find_acpi_table(FACP_SIGNATURE);
-    if (!fadt)
-        return;
-    u8 *dsdt = (void*)(fadt->dsdt);
-    if (!dsdt)
-        return;
+    ساخت fadt_descriptor_rev1 *fadt = ڈھونڈو_acpi_جدول(FACP_SIGNATURE);
+    اگر (!fadt)
+        واپس;
+    u8 *dsdt = (خالی*)(fadt->dsdt);
+    اگر (!dsdt)
+        واپس;
 
-    u32 length = *(u32*)(dsdt + 4);
-    u32 offset = 0x24;
-    dprintf(1, "ACPI: parse DSDT at %p (len %d)\n", dsdt, length);
+    u32 لمبائی = *(u32*)(dsdt + 4);
+    u32 انحراف_2 = 0x24;
+    dprintf(1, "ACPI: parse DSDT at %p (len %d)\n", dsdt, لمبائی);
 
-    struct parse_state s;
-    memset(&s, 0, sizeof(s));
-    parse_termlist(&s, dsdt, offset, length);
+    ساخت parse_state s;
+    memset(&s, 0, حجم(s));
+    parse_termlist(&s, dsdt, انحراف_2, لمبائی);
 
-    if (!parse_dumpdevs)
-        return;
+    اگر (!parse_dumpdevs)
+        واپس;
 
-    struct acpi_device *dev;
+    ساخت acpi_device *dev;
     dprintf(1, "ACPI: dumping dsdt devices\n");
-    for (dev = acpi_dsdt_find(NULL, NULL, 0, NULL, 0);
-         dev != NULL;
-         dev = acpi_dsdt_find(dev, NULL, 0, NULL, 0)) {
+    برائے (dev = acpi_dsdt_ڈھونڈو(تہی, تہی, 0, تہی, 0);
+         dev != تہی;
+         dev = acpi_dsdt_ڈھونڈو(dev, تہی, 0, تہی, 0)) {
         dprintf(1, "    %s", acpi_dsdt_name(dev));
-        if (dev->hid_aml)
+        اگر (dev->hid_aml)
             dprintf(1, ", hid");
-        if (dev->sta_aml)
+        اگر (dev->sta_aml)
             dprintf(1, ", sta (0x%x)", dev->sta_aml[0]);
-        if (dev->crs_data)
+        اگر (dev->crs_ڈیٹا)
             dprintf(1, ", crs");
         dprintf(1, "\n");
-        if (dev->crs_data)
-            print_resources("        ", dev->crs_data, dev->crs_size);
+        اگر (dev->crs_ڈیٹا)
+            print_resources("        ", dev->crs_ڈیٹا, dev->crs_سائز);
     }
 }

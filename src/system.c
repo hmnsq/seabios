@@ -5,76 +5,76 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_GLOBAL
-#include "bregs.h" // struct bregs
-#include "e820map.h" // E820_RAM
-#include "hw/pic.h" // pic_reset
-#include "malloc.h" // LegacyRamSize
-#include "output.h" // debug_enter
-#include "string.h" // memcpy_far
-#include "util.h" // handle_1553
-#include "x86.h" // set_a20
+#شامل "biosvar.h" // GET_GLOBAL
+#شامل "bregs.h" // struct bregs
+#شامل "e820map.h" // E820_RAM
+#شامل "hw/pic.h" // pic_reset
+#شامل "malloc.h" // LegacyRamSize
+#شامل "output.h" // debug_enter
+#شامل "string.h" // memcpy_far
+#شامل "util.h" // handle_1553
+#شامل "x86.h" // set_a20
 
-static void
-handle_152400(struct bregs *regs)
+ساکن خالی
+handle_152400(ساخت bregs *regs)
 {
-    set_a20(0);
-    set_code_success(regs);
+    سیٹ_a20(0);
+    سیٹ_رمز_success(regs);
 }
 
-static void
-handle_152401(struct bregs *regs)
+ساکن خالی
+handle_152401(ساخت bregs *regs)
 {
-    set_a20(1);
-    set_code_success(regs);
+    سیٹ_a20(1);
+    سیٹ_رمز_success(regs);
 }
 
-static void
-handle_152402(struct bregs *regs)
+ساکن خالی
+handle_152402(ساخت bregs *regs)
 {
     regs->al = get_a20();
-    set_code_success(regs);
+    سیٹ_رمز_success(regs);
 }
 
-static void
-handle_152403(struct bregs *regs)
+ساکن خالی
+handle_152403(ساخت bregs *regs)
 {
     regs->bx = 3;
-    set_code_success(regs);
+    سیٹ_رمز_success(regs);
 }
 
-static void
-handle_1524XX(struct bregs *regs)
+ساکن خالی
+handle_1524XX(ساخت bregs *regs)
 {
-    set_code_unimplemented(regs, RET_EUNSUPPORTED);
+    سیٹ_رمز_unimplemented(regs, RET_EUNSUPPORTED);
 }
 
-static void
-handle_1524(struct bregs *regs)
+ساکن خالی
+handle_1524(ساخت bregs *regs)
 {
-    switch (regs->al) {
-    case 0x00: handle_152400(regs); break;
-    case 0x01: handle_152401(regs); break;
-    case 0x02: handle_152402(regs); break;
-    case 0x03: handle_152403(regs); break;
-    default:   handle_1524XX(regs); break;
+    انتخاب (regs->al) {
+    حالت 0x00: handle_152400(regs); توڑو;
+    حالت 0x01: handle_152401(regs); توڑو;
+    حالت 0x02: handle_152402(regs); توڑو;
+    حالت 0x03: handle_152403(regs); توڑو;
+    طےشدہ:   handle_1524XX(regs); توڑو;
     }
 }
 
 // removable media eject
-static void
-handle_1552(struct bregs *regs)
+ساکن خالی
+handle_1552(ساخت bregs *regs)
 {
-    set_code_success(regs);
+    سیٹ_رمز_success(regs);
 }
 
-static void
-handle_1587(struct bregs *regs)
+ساکن خالی
+handle_1587(ساخت bregs *regs)
 {
     // +++ should probably have descriptor checks
     // +++ should have exception handlers
 
-    u8 prev_a20_enable = set_a20(1); // enable A20 line
+    u8 پچھلا_a20_enable = سیٹ_a20(1); // enable A20 line
 
     // 128K max of transfer on 386+ ???
     // source == destination ???
@@ -92,23 +92,23 @@ handle_1587(struct bregs *regs)
 // check for access rights of source & dest here
 
     // Initialize GDT descriptor
-    u64 *gdt_far = (void*)(regs->si + 0);
+    u64 *gdt_far = (خالی*)(regs->si + 0);
     u16 gdt_seg = regs->es;
     u32 loc = (u32)MAKE_FLATPTR(gdt_seg, gdt_far);
-    SET_FARVAR(gdt_seg, gdt_far[1], GDT_DATA | GDT_LIMIT((6*sizeof(u64))-1)
-               | GDT_BASE(loc));
+    سیٹ_FARVAR(gdt_seg, gdt_far[1], GDT_ڈیٹا | GDT_حد_بندی((6*حجم(u64))-1)
+               | GDT_بنیاد(loc));
     // Initialize CS descriptor
-    u64 lim = GDT_LIMIT(0x0ffff);
-    if (in_post())
+    u64 lim = GDT_حد_بندی(0x0ffff);
+    اگر (اندر_post())
         lim = GDT_GRANLIMIT(0xffffffff);
-    SET_FARVAR(gdt_seg, gdt_far[4], GDT_CODE | lim | GDT_BASE(BUILD_BIOS_ADDR));
+    سیٹ_FARVAR(gdt_seg, gdt_far[4], GDT_رمز | lim | GDT_بنیاد(BUILD_BIOS_ADDR));
     // Initialize SS descriptor
     loc = (u32)MAKE_FLATPTR(GET_SEG(SS), 0);
-    SET_FARVAR(gdt_seg, gdt_far[5], GDT_DATA | lim | GDT_BASE(loc));
+    سیٹ_FARVAR(gdt_seg, gdt_far[5], GDT_ڈیٹا | lim | GDT_بنیاد(loc));
 
-    SET_SEG(ES, gdt_seg);
-    u16 count = regs->cx, si = 0, di = 0;
-    asm volatile(
+    سیٹ_SEG(ES, gdt_seg);
+    u16 گنتی = regs->cx, si = 0, di = 0;
+    asm متلون(
         // Load new descriptor tables
         "  lgdtw %%es:(1<<3)(%%eax)\n"
         "  lidtw %%cs:pmode_IDT_info\n"
@@ -156,51 +156,51 @@ handle_1587(struct bregs *regs)
         // Restore %ds (from %ss)
         "  movw %%ss, %%ax\n"
         "  movw %%ax, %%ds\n"
-        : "+a" (gdt_far), "+c"(count), "+m" (__segment_ES)
+        : "+a" (gdt_far), "+c"(گنتی), "+m" (__segment_ES)
         : "S" (si), "D" (di)
         : "cc");
 
-    set_a20(prev_a20_enable);
+    سیٹ_a20(پچھلا_a20_enable);
 
-    set_code_success(regs);
+    سیٹ_رمز_success(regs);
 }
 
 // Get the amount of extended memory (above 1M)
-static void
-handle_1588(struct bregs *regs)
+ساکن خالی
+handle_1588(ساخت bregs *regs)
 {
-    u32 rs = GET_GLOBAL(LegacyRamSize);
+    u32 rs = GET_GLOBAL(Legacy_Ram_سائز);
 
     // According to Ralf Brown's interrupt the limit should be 15M,
     // but real machines mostly return max. 63M.
-    if (rs > 64*1024*1024)
+    اگر (rs > 64*1024*1024)
         regs->ax = 63 * 1024;
-    else
+    ورنہ
         regs->ax = (rs - 1*1024*1024) / 1024;
-    set_success(regs);
+    سیٹ_success(regs);
 }
 
 // Switch to protected mode
-void VISIBLE16
-handle_1589(struct bregs *regs)
+خالی VISIBLE16
+handle_1589(ساخت bregs *regs)
 {
     debug_enter(regs, DEBUG_HDL_15);
-    set_a20(1);
+    سیٹ_a20(1);
 
     pic_reset(regs->bl, regs->bh);
 
-    u64 *gdt_far = (void*)(regs->si + 0);
+    u64 *gdt_far = (خالی*)(regs->si + 0);
     u16 gdt_seg = regs->es;
-    SET_FARVAR(gdt_seg, gdt_far[7], GDT_CODE | GDT_LIMIT(BUILD_BIOS_SIZE-1)
-               | GDT_BASE(BUILD_BIOS_ADDR));
+    سیٹ_FARVAR(gdt_seg, gdt_far[7], GDT_رمز | GDT_حد_بندی(BUILD_BIOS_سائز-1)
+               | GDT_بنیاد(BUILD_BIOS_ADDR));
 
     regs->ds = 3<<3; // 3rd gdt descriptor is %ds
     regs->es = 4<<3; // 4th gdt descriptor is %es
-    regs->code.seg = 6<<3; // 6th gdt descriptor is %cs
+    regs->رمز.seg = 6<<3; // 6th gdt descriptor is %cs
 
-    set_code_success(regs);
+    سیٹ_رمز_success(regs);
 
-    asm volatile(
+    asm متلون(
         // Load new descriptor tables
         "  lgdtw %%es:(1<<3)(%%si)\n"
         "  lidtw %%es:(2<<3)(%%si)\n"
@@ -223,41 +223,41 @@ handle_1589(struct bregs *regs)
 }
 
 // Device busy interrupt.  Called by Int 16h when no key available
-static void
-handle_1590(struct bregs *regs)
+ساکن خالی
+handle_1590(ساخت bregs *regs)
 {
 }
 
 // Interrupt complete.  Called by Int 16h when key becomes available
-static void
-handle_1591(struct bregs *regs)
+ساکن خالی
+handle_1591(ساخت bregs *regs)
 {
 }
 
 // keyboard intercept
-static void
-handle_154f(struct bregs *regs)
+ساکن خالی
+handle_154f(ساخت bregs *regs)
 {
-    set_invalid_silent(regs);
+    سیٹ_invalid_silent(regs);
 }
 
-static void
-handle_15c0(struct bregs *regs)
+ساکن خالی
+handle_15c0(ساخت bregs *regs)
 {
     regs->es = SEG_BIOS;
-    regs->bx = (u32)&BIOS_CONFIG_TABLE;
-    set_code_success(regs);
+    regs->bx = (u32)&BIOS_CONFIG_جدول;
+    سیٹ_رمز_success(regs);
 }
 
-static void
-handle_15c1(struct bregs *regs)
+ساکن خالی
+handle_15c1(ساخت bregs *regs)
 {
     regs->es = get_ebda_seg();
-    set_success(regs);
+    سیٹ_success(regs);
 }
 
-static void
-handle_15e801(struct bregs *regs)
+ساکن خالی
+handle_15e801(ساخت bregs *regs)
 {
     // my real system sets ax and bx to 0
     // this is confirmed by Ralph Brown list
@@ -266,15 +266,15 @@ handle_15e801(struct bregs *regs)
     // regs.u.r16.ax = 0;
     // regs.u.r16.bx = 0;
 
-    u32 rs = GET_GLOBAL(LegacyRamSize);
+    u32 rs = GET_GLOBAL(Legacy_Ram_سائز);
 
     // Get the amount of extended memory (above 1M)
-    if (rs > 16*1024*1024) {
+    اگر (rs > 16*1024*1024) {
         // limit to 15M
         regs->cx = 15*1024;
         // Get the amount of extended memory above 16M in 64k blocks
         regs->dx = (rs - 16*1024*1024) / (64*1024);
-    } else {
+    } ورنہ {
         regs->cx = (rs - 1*1024*1024) / 1024;
         regs->dx = 0;
     }
@@ -283,75 +283,75 @@ handle_15e801(struct bregs *regs)
     regs->ax = regs->cx;
     regs->bx = regs->dx;
 
-    set_success(regs);
+    سیٹ_success(regs);
 }
 
-static void
-handle_15e820(struct bregs *regs)
+ساکن خالی
+handle_15e820(ساخت bregs *regs)
 {
-    int count = GET_GLOBAL(e820_count);
-    if (regs->edx != 0x534D4150 || regs->bx >= count
-        || regs->ecx < sizeof(e820_list[0])) {
-        set_code_invalid(regs, RET_EUNSUPPORTED);
-        return;
+    صحیح گنتی = GET_GLOBAL(e820_گنتی);
+    اگر (regs->edx != 0x534D4150 || regs->bx >= گنتی
+        || regs->ecx < حجم(e820_list[0])) {
+        سیٹ_رمز_invalid(regs, RET_EUNSUPPORTED);
+        واپس;
     }
 
-    memcpy_far(regs->es, (void*)(regs->di+0)
+    memcpy_far(regs->es, (خالی*)(regs->di+0)
                , get_global_seg(), &e820_list[regs->bx]
-               , sizeof(e820_list[0]));
-    if (regs->bx == count-1)
+               , حجم(e820_list[0]));
+    اگر (regs->bx == گنتی-1)
         regs->ebx = 0;
-    else
+    ورنہ
         regs->ebx++;
     regs->eax = 0x534D4150;
-    regs->ecx = sizeof(e820_list[0]);
-    set_success(regs);
+    regs->ecx = حجم(e820_list[0]);
+    سیٹ_success(regs);
 }
 
-static void
-handle_15e8XX(struct bregs *regs)
+ساکن خالی
+handle_15e8XX(ساخت bregs *regs)
 {
-    set_code_unimplemented(regs, RET_EUNSUPPORTED);
+    سیٹ_رمز_unimplemented(regs, RET_EUNSUPPORTED);
 }
 
-static void
-handle_15e8(struct bregs *regs)
+ساکن خالی
+handle_15e8(ساخت bregs *regs)
 {
-    switch (regs->al) {
-    case 0x01: handle_15e801(regs); break;
-    case 0x20: handle_15e820(regs); break;
-    default:   handle_15e8XX(regs); break;
+    انتخاب (regs->al) {
+    حالت 0x01: handle_15e801(regs); توڑو;
+    حالت 0x20: handle_15e820(regs); توڑو;
+    طےشدہ:   handle_15e8XX(regs); توڑو;
     }
 }
 
-static void
-handle_15XX(struct bregs *regs)
+ساکن خالی
+handle_15XX(ساخت bregs *regs)
 {
-    set_code_unimplemented(regs, RET_EUNSUPPORTED);
+    سیٹ_رمز_unimplemented(regs, RET_EUNSUPPORTED);
 }
 
 // INT 15h System Services Entry Point
-void VISIBLE16
-handle_15(struct bregs *regs)
+خالی VISIBLE16
+handle_15(ساخت bregs *regs)
 {
     debug_enter(regs, DEBUG_HDL_15);
-    switch (regs->ah) {
-    case 0x24: handle_1524(regs); break;
-    case 0x4f: handle_154f(regs); break;
-    case 0x52: handle_1552(regs); break;
-    case 0x53: handle_1553(regs); break;
-    case 0x5f: handle_155f(regs); break;
-    case 0x7f: handle_157f(regs); break;
-    case 0x83: handle_1583(regs); break;
-    case 0x86: handle_1586(regs); break;
-    case 0x87: handle_1587(regs); break;
-    case 0x88: handle_1588(regs); break;
-    case 0x90: handle_1590(regs); break;
-    case 0x91: handle_1591(regs); break;
-    case 0xc0: handle_15c0(regs); break;
-    case 0xc1: handle_15c1(regs); break;
-    case 0xc2: handle_15c2(regs); break;
-    case 0xe8: handle_15e8(regs); break;
-    default:   handle_15XX(regs); break;
+    انتخاب (regs->ah) {
+    حالت 0x24: handle_1524(regs); توڑو;
+    حالت 0x4f: handle_154f(regs); توڑو;
+    حالت 0x52: handle_1552(regs); توڑو;
+    حالت 0x53: handle_1553(regs); توڑو;
+    حالت 0x5f: handle_155f(regs); توڑو;
+    حالت 0x7f: handle_157f(regs); توڑو;
+    حالت 0x83: handle_1583(regs); توڑو;
+    حالت 0x86: handle_1586(regs); توڑو;
+    حالت 0x87: handle_1587(regs); توڑو;
+    حالت 0x88: handle_1588(regs); توڑو;
+    حالت 0x90: handle_1590(regs); توڑو;
+    حالت 0x91: handle_1591(regs); توڑو;
+    حالت 0xc0: handle_15c0(regs); توڑو;
+    حالت 0xc1: handle_15c1(regs); توڑو;
+    حالت 0xc2: handle_15c2(regs); توڑو;
+    حالت 0xe8: handle_15e8(regs); توڑو;
+    طےشدہ:   handle_15XX(regs); توڑو;
     }
 }

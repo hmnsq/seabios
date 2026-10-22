@@ -4,26 +4,26 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_XEN
-#include "e820map.h" // e820_add
-#include "hw/serialio.h" // DebugOutputPort
-#include "malloc.h" // memalign_high
-#include "memmap.h" // PAGE_SIZE
-#include "output.h" // dprintf
-#include "paravirt.h" // PlatformRunningOn
-#include "string.h" // memcpy
-#include "util.h" // copy_acpi_rsdp
-#include "x86.h" // cpuid
-#include "xen.h" // xen_extraversion_t
+#شامل "config.h" // CONFIG_XEN
+#شامل "e820map.h" // e820_add
+#شامل "hw/serialio.h" // DebugOutputPort
+#شامل "malloc.h" // memalign_high
+#شامل "memmap.h" // PAGE_SIZE
+#شامل "output.h" // dprintf
+#شامل "paravirt.h" // PlatformRunningOn
+#شامل "string.h" // memcpy
+#شامل "util.h" // copy_acpi_rsdp
+#شامل "x86.h" // cpuid
+#شامل "xen.h" // xen_extraversion_t
 
-#define INFO_PHYSICAL_ADDRESS 0x00001000
+#تعریف_کرو INFO_PHYSICAL_پتہ 0x00001000
 
-u32 xen_cpuid_base = 0;
-unsigned long xen_hypercall_page = 0;
+u32 xen_cpuid_بنیاد = 0;
+غیرعلامتی طویل xen_hypercall_صفحہ = 0;
 
-struct xen_seabios_info {
-    char signature[14]; /* XenHVMSeaBIOS\0 */
-    u8 length;     /* Length of this struct */
+ساخت xen_seabios_info {
+    حرف signature[14]; /* XenHVMSeaBIOS\0 */
+    u8 لمبائی;     /* Length of this struct */
     u8 checksum;   /* Set such that the sum over bytes 0..length == 0 */
     /*
      * Physical address of an array of tables_nr elements.
@@ -40,129 +40,129 @@ struct xen_seabios_info {
     u32 e820_nr;
 } PACKED;
 
-static struct xen_seabios_info *validate_info(void)
+ساکن ساخت xen_seabios_info *validate_info(خالی)
 {
-    struct xen_seabios_info *t = (void *)INFO_PHYSICAL_ADDRESS;
+    ساخت xen_seabios_info *t = (خالی *)INFO_PHYSICAL_پتہ;
 
-    if ( memcmp(t->signature, "XenHVMSeaBIOS", 14) ) {
+    اگر ( memcmp(t->signature, "XenHVMSeaBIOS", 14) ) {
         dprintf(1, "Bad Xen info signature\n");
-        return NULL;
+        واپس تہی;
     }
 
-    if ( t->length < sizeof(struct xen_seabios_info) ) {
+    اگر ( t->لمبائی < حجم(ساخت xen_seabios_info) ) {
         dprintf(1, "Bad Xen info length\n");
-        return NULL;
+        واپس تہی;
     }
 
-    if (checksum(t, t->length) != 0) {
+    اگر (checksum(t, t->لمبائی) != 0) {
         dprintf(1, "Bad Xen info checksum\n");
-        return NULL;
+        واپس تہی;
     }
-    return t;
+    واپس t;
 }
 
-void xen_preinit(void)
+خالی xen_preinit(خالی)
 {
-    u32 base, eax, ebx, ecx, edx;
-    char signature[13];
+    u32 بنیاد, eax, ebx, ecx, edx;
+    حرف signature[13];
 
-    if (!CONFIG_XEN)
-        return;
+    اگر (!CONFIG_XEN)
+        واپس;
 
-    for (base = 0x40000000; base < 0x40010000; base += 0x100) {
-        cpuid(base, &eax, &ebx, &ecx, &edx);
-        memcpy(signature + 0, &ebx, 4);
-        memcpy(signature + 4, &ecx, 4);
-        memcpy(signature + 8, &edx, 4);
+    برائے (بنیاد = 0x40000000; بنیاد < 0x40010000; بنیاد += 0x100) {
+        cpuid(بنیاد, &eax, &ebx, &ecx, &edx);
+        حافظہ_نقل(signature + 0, &ebx, 4);
+        حافظہ_نقل(signature + 4, &ecx, 4);
+        حافظہ_نقل(signature + 8, &edx, 4);
         signature[12] = 0;
 
         dprintf(9, "Found hypervisor signature \"%s\" at %x\n",
-                signature, base);
-        if (strcmp(signature, "XenVMMXenVMM") == 0) {
+                signature, بنیاد);
+        اگر (strcmp(signature, "XenVMMXenVMM") == 0) {
             /* Set debug_io_port first, so the following messages work. */
-            code_mutable_preinit();
-            DebugOutputPort = 0xe9;
+            رمز_mutable_preinit();
+            Debug_Output_پورٹ = 0xe9;
             debug_banner();
-            dprintf(1, "\nFound Xen hypervisor signature at %x\n", base);
-            if ((eax - base) < 2)
+            dprintf(1, "\nFound Xen hypervisor signature at %x\n", بنیاد);
+            اگر ((eax - بنیاد) < 2)
                 panic("Insufficient Xen cpuid leaves. eax=%x at base %x\n",
-                      eax, base);
-            xen_cpuid_base = base;
-            break;
+                      eax, بنیاد);
+            xen_cpuid_بنیاد = بنیاد;
+            توڑو;
         }
     }
-    if (!xen_cpuid_base) {
+    اگر (!xen_cpuid_بنیاد) {
         dprintf(1, "No Xen hypervisor found.\n");
-        return;
+        واپس;
     }
-    if (validate_info())
+    اگر (validate_info())
         PlatformRunningOn = PF_QEMU|PF_XEN;
-    else
+    ورنہ
         dprintf(1, "Not enabling Xen support due to lack of Xen info\n");
 }
 
-static int hypercall_xen_version( int cmd, void *arg)
+ساکن صحیح hypercall_xen_نسخہ( صحیح cmd, خالی *arg)
 {
-    return _hypercall2(int, xen_version, cmd, arg);
+    واپس _hypercall2(صحیح, xen_نسخہ, cmd, arg);
 }
 
 /* Fill in hypercall transfer pages. */
-void xen_hypercall_setup(void)
+خالی xen_hypercall_تیاری(خالی)
 {
     u32 eax, ebx, ecx, edx;
     xen_extraversion_t extraversion;
-    unsigned long i;
+    غیرعلامتی طویل i;
 
-    if (!runningOnXen())
-        return;
+    اگر (!runningOnXen())
+        واپس;
 
-    cpuid(xen_cpuid_base + 2, &eax, &ebx, &ecx, &edx);
+    cpuid(xen_cpuid_بنیاد + 2, &eax, &ebx, &ecx, &edx);
 
-    xen_hypercall_page = (unsigned long)memalign_high(PAGE_SIZE, eax*PAGE_SIZE);
-    if (!xen_hypercall_page)
+    xen_hypercall_صفحہ = (غیرعلامتی طویل)memalign_بلند(صفحہ_سائز, eax*صفحہ_سائز);
+    اگر (!xen_hypercall_صفحہ)
         panic("unable to allocate Xen hypercall page\n");
 
-    dprintf(1, "Allocated Xen hypercall page at %lx\n", xen_hypercall_page);
-    for ( i = 0; i < eax; i++ )
-        wrmsr(ebx, xen_hypercall_page + (i << 12) + i);
+    dprintf(1, "Allocated Xen hypercall page at %lx\n", xen_hypercall_صفحہ);
+    برائے ( i = 0; i < eax; i++ )
+        wrmsr(ebx, xen_hypercall_صفحہ + (i << 12) + i);
 
     /* Print version information. */
-    cpuid(xen_cpuid_base + 1, &eax, &ebx, &ecx, &edx);
-    hypercall_xen_version(XENVER_extraversion, extraversion);
+    cpuid(xen_cpuid_بنیاد + 1, &eax, &ebx, &ecx, &edx);
+    hypercall_xen_نسخہ(XENVER_extraversion, extraversion);
     dprintf(1, "Detected Xen v%u.%u%s\n", eax >> 16, eax & 0xffff, extraversion);
 }
 
-void xen_biostable_setup(void)
+خالی xen_biostable_تیاری(خالی)
 {
-    struct xen_seabios_info *info = validate_info();
-    void **tables;
-    int i;
+    ساخت xen_seabios_info *info = validate_info();
+    خالی **tables;
+    صحیح i;
 
-    if (!info)
+    اگر (!info)
         panic("Xen info corrupted\n");
 
-    tables = (void*)info->tables;
+    tables = (خالی*)info->tables;
     dprintf(1, "xen: copy BIOS tables...\n");
-    for (i=0; i<info->tables_nr; i++)
-        copy_table(tables[i]);
+    برائے (i=0; i<info->tables_nr; i++)
+        copy_جدول(tables[i]);
 
-    find_acpi_features();
+    ڈھونڈو_acpi_features();
 }
 
-void xen_ramsize_preinit(void)
+خالی xen_ramsize_preinit(خالی)
 {
-    int i;
-    struct xen_seabios_info *info = validate_info();
-    struct e820entry *e820;
+    صحیح i;
+    ساخت xen_seabios_info *info = validate_info();
+    ساخت e820entry *e820;
 
-    if (!info)
+    اگر (!info)
         panic("Xen info corrupted\n");
 
     dprintf(1, "xen: copy e820...\n");
 
-    e820 = (struct e820entry *)info->e820;
-    for (i = 0; i < info->e820_nr; i++) {
-        struct e820entry *e = &e820[i];
-        e820_add(e->start, e->size, e->type);
+    e820 = (ساخت e820entry *)info->e820;
+    برائے (i = 0; i < info->e820_nr; i++) {
+        ساخت e820entry *e = &e820[i];
+        e820_جوڑو(e->آغاز, e->سائز, e->type);
     }
 }

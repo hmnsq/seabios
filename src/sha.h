@@ -1,11 +1,11 @@
-#ifndef __SHA_H
-#define __SHA_H
+#اگر_غیر_تعریف_شدہ __SHA_H
+#تعریف_کرو __SHA_H
 
-#include "types.h" // u32
+#شامل "types.h" // u32
 
-void sha1(const u8 *data, u32 length, u8 *hash);
-void sha256(const u8 *data, u32 length, u8 *hash);
-void sha384(const u8 *data, u32 length, u8 *hash);
-void sha512(const u8 *data, u32 length, u8 *hash);
+خالی sha1(ثابت u8 *ڈیٹا, u32 لمبائی, u8 *hash);
+خالی sha256(ثابت u8 *ڈیٹا, u32 لمبائی, u8 *hash);
+خالی sha384(ثابت u8 *ڈیٹا, u32 لمبائی, u8 *hash);
+خالی sha512(ثابت u8 *ڈیٹا, u32 لمبائی, u8 *hash);
 
-#endif // sha.h
+#اگر_ختم // sha.h

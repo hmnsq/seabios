@@ -4,81 +4,81 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "byteorder.h" // le32_to_cpu
-#include "config.h" // CONFIG_*
-#include "hw/pci.h" // pci_config_writeb
-#include "malloc.h" // malloc_fseg
-#include "memmap.h" // SYMBOL
-#include "output.h" // dprintf
-#include "romfile.h" // romfile_find
-#include "std/acpi.h" // struct rsdp_descriptor
-#include "std/mptable.h" // MPTABLE_SIGNATURE
-#include "std/pirtable.h" // struct pir_header
-#include "std/smbios.h" // struct smbios_21_entry_point
-#include "string.h" // memcpy
-#include "util.h" // copy_table
-#include "x86.h" // outb
+#شامل "byteorder.h" // le32_to_cpu
+#شامل "config.h" // CONFIG_*
+#شامل "hw/pci.h" // pci_config_writeb
+#شامل "malloc.h" // malloc_fseg
+#شامل "memmap.h" //علامت
+#شامل "output.h" // dprintf
+#شامل "romfile.h" // romfile_find
+#شامل "std/acpi.h" // struct rsdp_descriptor
+#شامل "std/mptable.h" // MPTABLE_SIGNATURE
+#شامل "std/pirtable.h" // struct pir_header
+#شامل "std/smbios.h" // struct smbios_21_entry_point
+#شامل "string.h" // memcpy
+#شامل "util.h" // copy_table
+#شامل "x86.h" // outb
 
-struct pir_header *PirAddr VARFSEG;
+ساخت pir_سرخی *PirAddr VARFSEG;
 
-static void *
-copy_fseg_table(const char *name, void *pos, u32 size)
+ساکن خالی *
+copy_fseg_جدول(ثابت حرف *name, خالی *pos, u32 سائز)
 {
-    void *newpos = malloc_fseg(size);
-    if (!newpos) {
+    خالی *newpos = malloc_fseg(سائز);
+    اگر (!newpos) {
         warn_noalloc();
-        return NULL;
+        واپس تہی;
     }
     dprintf(1, "Copying %s from %p to %p\n", name, pos, newpos);
-    memcpy(newpos, pos, size);
-    return newpos;
+    حافظہ_نقل(newpos, pos, سائز);
+    واپس newpos;
 }
 
-void
-copy_pir(void *pos)
+خالی
+copy_pir(خالی *pos)
 {
-    struct pir_header *p = pos;
-    if (p->signature != PIR_SIGNATURE)
-        return;
-    if (PirAddr)
-        return;
-    if (p->size < sizeof(*p))
-        return;
-    if (checksum(pos, p->size) != 0)
-        return;
-    PirAddr = copy_fseg_table("PIR", pos, p->size);
+    ساخت pir_سرخی *p = pos;
+    اگر (p->signature != PIR_SIGNATURE)
+        واپس;
+    اگر (PirAddr)
+        واپس;
+    اگر (p->سائز < حجم(*p))
+        واپس;
+    اگر (checksum(pos, p->سائز) != 0)
+        واپس;
+    PirAddr = copy_fseg_جدول("PIR", pos, p->سائز);
 }
 
-void
-copy_mptable(void *pos)
+خالی
+copy_mptable(خالی *pos)
 {
-    struct mptable_floating_s *p = pos;
-    if (p->signature != MPTABLE_SIGNATURE)
-        return;
-    if (!p->physaddr)
-        return;
-    if (checksum(pos, sizeof(*p)) != 0)
-        return;
-    u32 length = p->length * 16;
-    u16 mpclength = ((struct mptable_config_s *)p->physaddr)->length;
-    if (length + mpclength > BUILD_MAX_MPTABLE_FSEG) {
+    ساخت mptable_floating_s *p = pos;
+    اگر (p->signature != MPTABLE_SIGNATURE)
+        واپس;
+    اگر (!p->physaddr)
+        واپس;
+    اگر (checksum(pos, حجم(*p)) != 0)
+        واپس;
+    u32 لمبائی = p->لمبائی * 16;
+    u16 mpclength = ((ساخت mptable_config_s *)p->physaddr)->لمبائی;
+    اگر (لمبائی + mpclength > BUILD_MAX_MPTABLE_FSEG) {
         dprintf(1, "Skipping MPTABLE copy due to large size (%d bytes)\n"
-                , length + mpclength);
-        return;
+                , لمبائی + mpclength);
+        واپس;
     }
     // Allocate final memory location.  (In theory the config
     // structure can go in high memory, but Linux kernels before
     // v2.6.30 crash with that.)
-    struct mptable_floating_s *newpos = malloc_fseg(length + mpclength);
-    if (!newpos) {
+    ساخت mptable_floating_s *newpos = malloc_fseg(لمبائی + mpclength);
+    اگر (!newpos) {
         warn_noalloc();
-        return;
+        واپس;
     }
     dprintf(1, "Copying MPTABLE from %p/%x to %p\n", pos, p->physaddr, newpos);
-    memcpy(newpos, pos, length);
-    newpos->physaddr = (u32)newpos + length;
-    newpos->checksum -= checksum(newpos, sizeof(*newpos));
-    memcpy((void*)newpos + length, (void*)p->physaddr, mpclength);
+    حافظہ_نقل(newpos, pos, لمبائی);
+    newpos->physaddr = (u32)newpos + لمبائی;
+    newpos->checksum -= checksum(newpos, حجم(*newpos));
+    حافظہ_نقل((خالی*)newpos + لمبائی, (خالی*)p->physaddr, mpclength);
 }
 
 
@@ -86,174 +86,174 @@ copy_mptable(void *pos)
  * ACPI
  ****************************************************************/
 
-static int
-get_acpi_rsdp_length(void *pos, unsigned size)
+ساکن صحیح
+get_acpi_rsdp_لمبائی(خالی *pos, غیرعلامتی سائز)
 {
-    struct rsdp_descriptor *p = pos;
-    if (p->signature != RSDP_SIGNATURE)
-        return -1;
-    u32 length = 20;
-    if (length > size)
-        return -1;
-    if (checksum(pos, length) != 0)
-        return -1;
-    if (p->revision > 1) {
-        length = p->length;
-        if (length > size)
-            return -1;
-        if (checksum(pos, length) != 0)
-            return -1;
+    ساخت rsdp_descriptor *p = pos;
+    اگر (p->signature != RSDP_SIGNATURE)
+        واپس -1;
+    u32 لمبائی = 20;
+    اگر (لمبائی > سائز)
+        واپس -1;
+    اگر (checksum(pos, لمبائی) != 0)
+        واپس -1;
+    اگر (p->revision > 1) {
+        لمبائی = p->لمبائی;
+        اگر (لمبائی > سائز)
+            واپس -1;
+        اگر (checksum(pos, لمبائی) != 0)
+            واپس -1;
     }
-    return length;
+    واپس لمبائی;
 }
 
-struct rsdp_descriptor *RsdpAddr;
+ساخت rsdp_descriptor *RsdpAddr;
 
-void
-copy_acpi_rsdp(void *pos)
+خالی
+copy_acpi_rsdp(خالی *pos)
 {
-    if (RsdpAddr)
-        return;
-    int length = get_acpi_rsdp_length(pos, -1);
-    if (length < 0)
-        return;
-    RsdpAddr = copy_fseg_table("ACPI RSDP", pos, length);
+    اگر (RsdpAddr)
+        واپس;
+    صحیح لمبائی = get_acpi_rsdp_لمبائی(pos, -1);
+    اگر (لمبائی < 0)
+        واپس;
+    RsdpAddr = copy_fseg_جدول("ACPI RSDP", pos, لمبائی);
 }
 
-void *find_acpi_rsdp(void)
+خالی *ڈھونڈو_acpi_rsdp(خالی)
 {
-    unsigned long start = SYMBOL(zonefseg_start);
-    unsigned long end = SYMBOL(zonefseg_end);
-    unsigned long pos;
+    غیرعلامتی طویل آغاز = علامت(zonefseg_آغاز);
+    غیرعلامتی طویل انتہا = علامت(zonefseg_انتہا);
+    غیرعلامتی طویل pos;
 
-    for (pos = ALIGN(start, 0x10); pos <= ALIGN_DOWN(end, 0x10); pos += 0x10)
-        if (get_acpi_rsdp_length((void *)pos, end - pos) >= 0)
-            return (void *)pos;
+    برائے (pos = ALIGN(آغاز, 0x10); pos <= ALIGN_نیچے_کو(انتہا, 0x10); pos += 0x10)
+        اگر (get_acpi_rsdp_لمبائی((خالی *)pos, انتہا - pos) >= 0)
+            واپس (خالی *)pos;
 
-    return NULL;
+    واپس تہی;
 }
 
-void *
-find_acpi_table(u32 signature)
+خالی *
+ڈھونڈو_acpi_جدول(u32 signature)
 {
     dprintf(4, "rsdp=%p\n", RsdpAddr);
-    if (!RsdpAddr || RsdpAddr->signature != RSDP_SIGNATURE)
-        return NULL;
-    struct rsdt_descriptor_rev1 *rsdt = (void*)RsdpAddr->rsdt_physical_address;
-    struct xsdt_descriptor_rev2 *xsdt =
-        RsdpAddr->xsdt_physical_address >= 0x100000000
-        ? NULL : (void*)(u32)(RsdpAddr->xsdt_physical_address);
+    اگر (!RsdpAddr || RsdpAddr->signature != RSDP_SIGNATURE)
+        واپس تہی;
+    ساخت rsdt_descriptor_rev1 *rsdt = (خالی*)RsdpAddr->rsdt_physical_پتہ;
+    ساخت xsdt_descriptor_rev2 *xsdt =
+        RsdpAddr->xsdt_physical_پتہ >= 0x100000000
+        ? تہی : (خالی*)(u32)(RsdpAddr->xsdt_physical_پتہ);
     dprintf(4, "rsdt=%p\n", rsdt);
     dprintf(4, "xsdt=%p\n", xsdt);
 
-    if (xsdt && xsdt->signature == XSDT_SIGNATURE) {
-        void *end = (void*)xsdt + xsdt->length;
-        int i;
-        for (i=0; (void*)&xsdt->table_offset_entry[i] < end; i++) {
-            if (xsdt->table_offset_entry[i] >= 0x100000000)
-                continue; /* above 4G */
-            struct acpi_table_header *tbl = (void*)(u32)xsdt->table_offset_entry[i];
-            if (!tbl || tbl->signature != signature)
-                continue;
+    اگر (xsdt && xsdt->signature == XSDT_SIGNATURE) {
+        خالی *انتہا = (خالی*)xsdt + xsdt->لمبائی;
+        صحیح i;
+        برائے (i=0; (خالی*)&xsdt->جدول_انحراف_اندراج[i] < انتہا; i++) {
+            اگر (xsdt->جدول_انحراف_اندراج[i] >= 0x100000000)
+                جاری; /* above 4G */
+            ساخت acpi_جدول_سرخی *tbl = (خالی*)(u32)xsdt->جدول_انحراف_اندراج[i];
+            اگر (!tbl || tbl->signature != signature)
+                جاری;
             dprintf(1, "table(%x)=%p (via xsdt)\n", signature, tbl);
-            return tbl;
+            واپس tbl;
         }
     }
 
-    if (rsdt && rsdt->signature == RSDT_SIGNATURE) {
-        void *end = (void*)rsdt + rsdt->length;
-        int i;
-        for (i=0; (void*)&rsdt->table_offset_entry[i] < end; i++) {
-            struct acpi_table_header *tbl = (void*)rsdt->table_offset_entry[i];
-            if (!tbl || tbl->signature != signature)
-                continue;
+    اگر (rsdt && rsdt->signature == RSDT_SIGNATURE) {
+        خالی *انتہا = (خالی*)rsdt + rsdt->لمبائی;
+        صحیح i;
+        برائے (i=0; (خالی*)&rsdt->جدول_انحراف_اندراج[i] < انتہا; i++) {
+            ساخت acpi_جدول_سرخی *tbl = (خالی*)rsdt->جدول_انحراف_اندراج[i];
+            اگر (!tbl || tbl->signature != signature)
+                جاری;
             dprintf(1, "table(%x)=%p (via rsdt)\n", signature, tbl);
-            return tbl;
+            واپس tbl;
         }
     }
 
     dprintf(4, "no table %x found\n", signature);
-    return NULL;
+    واپس تہی;
 }
 
 u32
-find_resume_vector(void)
+ڈھونڈو_resume_سمتیہ(خالی)
 {
-    struct fadt_descriptor_rev1 *fadt = find_acpi_table(FACP_SIGNATURE);
-    if (!fadt)
-        return 0;
-    struct facs_descriptor_rev1 *facs = (void*)fadt->firmware_ctrl;
+    ساخت fadt_descriptor_rev1 *fadt = ڈھونڈو_acpi_جدول(FACP_SIGNATURE);
+    اگر (!fadt)
+        واپس 0;
+    ساخت facs_descriptor_rev1 *facs = (خالی*)fadt->firmware_ctrl;
     dprintf(4, "facs=%p\n", facs);
-    if (! facs || facs->signature != FACS_SIGNATURE)
-        return 0;
+    اگر (! facs || facs->signature != FACS_SIGNATURE)
+        واپس 0;
     // Found it.
-    dprintf(4, "resume addr=%d\n", facs->firmware_waking_vector);
-    return facs->firmware_waking_vector;
+    dprintf(4, "resume addr=%d\n", facs->firmware_waking_سمتیہ);
+    واپس facs->firmware_waking_سمتیہ;
 }
 
-static struct acpi_20_generic_address acpi_reset_reg;
-static u8 acpi_reset_val;
+ساکن ساخت acpi_20_generic_پتہ acpi_reset_reg;
+ساکن u8 acpi_reset_val;
 u32 acpi_pm1a_cnt VARFSEG;
-u16 acpi_pm_base = 0xb000;
+u16 acpi_pm_بنیاد = 0xb000;
 
-#define acpi_ga_to_bdf(addr) pci_to_bdf(0, (addr >> 32) & 0xffff, (addr >> 16) & 0xffff)
+#تعریف_کرو acpi_ga_مقصد_bdf(addr) pci_مقصد_bdf(0, (addr >> 32) & 0xffff, (addr >> 16) & 0xffff)
 
-void
-acpi_reboot(void)
+خالی
+acpi_reboot(خالی)
 {
     // Check it passed the sanity checks in acpi_set_reset_reg() and was set
-    if (acpi_reset_reg.register_bit_width != 8)
-        return;
+    اگر (acpi_reset_reg.رجسٹر_ثنائی_ہندسہ_چوڑائی != 8)
+        واپس;
 
-    u64 addr = le64_to_cpu(acpi_reset_reg.address);
+    u64 addr = le64_مقصد_cpu(acpi_reset_reg.پتہ);
 
     dprintf(1, "ACPI hard reset %d:%llx (%x)\n",
-            acpi_reset_reg.address_space_id, addr, acpi_reset_val);
+            acpi_reset_reg.پتہ_space_id, addr, acpi_reset_val);
 
-    switch (acpi_reset_reg.address_space_id) {
-    case 0: // System Memory
-        writeb((void *)(u32)addr, acpi_reset_val);
-        break;
-    case 1: // System I/O
+    انتخاب (acpi_reset_reg.پتہ_space_id) {
+    حالت 0: // System Memory
+        writeb((خالی *)(u32)addr, acpi_reset_val);
+        توڑو;
+    حالت 1: // System I/O
         outb(acpi_reset_val, addr);
-        break;
-    case 2: // PCI config space
-        pci_config_writeb(acpi_ga_to_bdf(addr), addr & 0xffff, acpi_reset_val);
-        break;
+        توڑو;
+    حالت 2: // PCI config space
+        pci_config_writeb(acpi_ga_مقصد_bdf(addr), addr & 0xffff, acpi_reset_val);
+        توڑو;
     }
 }
 
-static void
-acpi_set_reset_reg(struct acpi_20_generic_address *reg, u8 val)
+ساکن خالی
+acpi_سیٹ_reset_reg(ساخت acpi_20_generic_پتہ *reg, u8 val)
 {
-    if (!reg || reg->address_space_id > 2 ||
-        reg->register_bit_width != 8 || reg->register_bit_offset)
-        return;
+    اگر (!reg || reg->پتہ_space_id > 2 ||
+        reg->رجسٹر_ثنائی_ہندسہ_چوڑائی != 8 || reg->رجسٹر_ثنائی_ہندسہ_انحراف)
+        واپس;
 
     acpi_reset_reg = *reg;
     acpi_reset_val = val;
 }
 
-void
-find_acpi_features(void)
+خالی
+ڈھونڈو_acpi_features(خالی)
 {
-    struct fadt_descriptor_rev1 *fadt = find_acpi_table(FACP_SIGNATURE);
-    if (!fadt)
-        return;
-    u32 pm_tmr = le32_to_cpu(fadt->pm_tmr_blk);
-    u32 pm1a_cnt = le32_to_cpu(fadt->pm1a_cnt_blk);
+    ساخت fadt_descriptor_rev1 *fadt = ڈھونڈو_acpi_جدول(FACP_SIGNATURE);
+    اگر (!fadt)
+        واپس;
+    u32 pm_tmr = le32_مقصد_cpu(fadt->pm_tmr_blk);
+    u32 pm1a_cnt = le32_مقصد_cpu(fadt->pm1a_cnt_blk);
     dprintf(4, "pm_tmr_blk=%x\n", pm_tmr);
-    if (pm_tmr)
-        pmtimer_setup(pm_tmr);
-    if (pm1a_cnt)
+    اگر (pm_tmr)
+        pmtimer_تیاری(pm_tmr);
+    اگر (pm1a_cnt)
         acpi_pm1a_cnt = pm1a_cnt;
 
     // Theoretically we should check the 'reset_reg_sup' flag, but Windows
     // doesn't and thus nobody seems to *set* it. If the table is large enough
     // to include it, let the sanity checks in acpi_set_reset_reg() suffice.
-    if (fadt->length >= 129) {
-        void *p = fadt;
-        acpi_set_reset_reg(p + 116, *(u8 *)(p + 128));
+    اگر (fadt->لمبائی >= 129) {
+        خالی *p = fadt;
+        acpi_سیٹ_reset_reg(p + 116, *(u8 *)(p + 128));
     }
     acpi_dsdt_parse();
 }
@@ -264,129 +264,129 @@ find_acpi_features(void)
  ****************************************************************/
 
 // Iterator for each sub-table in the smbios blob.
-void *
-smbios_next(void *start, u32 length, void *prev)
+خالی *
+smbios_اگلا(خالی *آغاز, u32 لمبائی, خالی *پچھلا)
 {
-    if (!start)
-        return NULL;
-    void *end = start + length;
+    اگر (!آغاز)
+        واپس تہی;
+    خالی *انتہا = آغاز + لمبائی;
 
-    if (!prev) {
-        prev = start;
-    } else {
-        struct smbios_structure_header *hdr = prev;
-        if (prev + sizeof(*hdr) > end)
-            return NULL;
-        prev += hdr->length + 2;
-        while (prev < end && (*(u8*)(prev-1) != '\0' || *(u8*)(prev-2) != '\0'))
-            prev++;
+    اگر (!پچھلا) {
+        پچھلا = آغاز;
+    } ورنہ {
+        ساخت smbios_structure_سرخی *hdr = پچھلا;
+        اگر (پچھلا + حجم(*hdr) > انتہا)
+            واپس تہی;
+        پچھلا += hdr->لمبائی + 2;
+        جب (پچھلا < انتہا && (*(u8*)(پچھلا-1) != '\0' || *(u8*)(پچھلا-2) != '\0'))
+            پچھلا++;
     }
-    struct smbios_structure_header *hdr = prev;
-    if (prev >= end || prev + sizeof(*hdr) >= end || prev + hdr->length >= end)
-        return NULL;
-    return prev;
+    ساخت smbios_structure_سرخی *hdr = پچھلا;
+    اگر (پچھلا >= انتہا || پچھلا + حجم(*hdr) >= انتہا || پچھلا + hdr->لمبائی >= انتہا)
+        واپس تہی;
+    واپس پچھلا;
 }
 
-void *
-smbios_21_next(struct smbios_21_entry_point *smbios, void *prev)
+خالی *
+smbios_21_اگلا(ساخت smbios_21_اندراج_نقطہ *smbios, خالی *پچھلا)
 {
-    if (!smbios)
-        return NULL;
-    return smbios_next((void*)smbios->structure_table_address,
-                       smbios->structure_table_length, prev);
+    اگر (!smbios)
+        واپس تہی;
+    واپس smbios_اگلا((خالی*)smbios->structure_جدول_پتہ,
+                       smbios->structure_جدول_لمبائی, پچھلا);
 }
 
-static struct smbios_21_entry_point *SMBios21Addr;
+ساکن ساخت smbios_21_اندراج_نقطہ *SMBios21Addr;
 
-void
-copy_smbios_21(void *pos)
+خالی
+copy_smbios_21(خالی *pos)
 {
-    if (SMBios21Addr)
-        return;
-    struct smbios_21_entry_point *p = pos;
-    if (p->signature != SMBIOS_21_SIGNATURE)
-        return;
-    if (checksum(pos, 0x10) != 0)
-        return;
-    if (memcmp(p->intermediate_anchor_string, "_DMI_", 5))
-        return;
-    if (checksum(pos+0x10, p->length-0x10) != 0)
-        return;
-    SMBios21Addr = copy_fseg_table("SMBIOS", pos, p->length);
+    اگر (SMBios21Addr)
+        واپس;
+    ساخت smbios_21_اندراج_نقطہ *p = pos;
+    اگر (p->signature != SMBIOS_21_SIGNATURE)
+        واپس;
+    اگر (checksum(pos, 0x10) != 0)
+        واپس;
+    اگر (memcmp(p->intermediate_anchor_string, "_DMI_", 5))
+        واپس;
+    اگر (checksum(pos+0x10, p->لمبائی-0x10) != 0)
+        واپس;
+    SMBios21Addr = copy_fseg_جدول("SMBIOS", pos, p->لمبائی);
 }
 
-static struct smbios_30_entry_point *SMBios30Addr;
+ساکن ساخت smbios_30_اندراج_نقطہ *SMBios30Addr;
 
-static int
-valid_smbios_30_signature(struct smbios_30_entry_point *p)
+ساکن صحیح
+valid_smbios_30_signature(ساخت smbios_30_اندراج_نقطہ *p)
 {
-    return !memcmp(p->signature, "_SM3_", 5);
+    واپس !memcmp(p->signature, "_SM3_", 5);
 }
 
-void
-copy_smbios_30(void *pos)
+خالی
+copy_smbios_30(خالی *pos)
 {
-    if (SMBios30Addr)
-        return;
-    struct smbios_30_entry_point *p = pos;
-    if (!valid_smbios_30_signature(p))
-        return;
-    if (checksum(pos, p->length) != 0)
-        return;
-    SMBios30Addr = copy_fseg_table("SMBIOS 3.0", pos, p->length);
+    اگر (SMBios30Addr)
+        واپس;
+    ساخت smbios_30_اندراج_نقطہ *p = pos;
+    اگر (!valid_smbios_30_signature(p))
+        واپس;
+    اگر (checksum(pos, p->لمبائی) != 0)
+        واپس;
+    SMBios30Addr = copy_fseg_جدول("SMBIOS 3.0", pos, p->لمبائی);
 }
 
-void *smbios_get_tables(u32 *length)
+خالی *smbios_get_tables(u32 *لمبائی)
 {
-    if (SMBios30Addr) {
-        u32 addr32 = SMBios30Addr->structure_table_address;
-        if (addr32 == SMBios30Addr->structure_table_address) {
-            *length = SMBios30Addr->structure_table_max_size;
-            return (void *)addr32;
+    اگر (SMBios30Addr) {
+        u32 addr32 = SMBios30Addr->structure_جدول_پتہ;
+        اگر (addr32 == SMBios30Addr->structure_جدول_پتہ) {
+            *لمبائی = SMBios30Addr->structure_جدول_max_سائز;
+            واپس (خالی *)addr32;
         }
     }
-    if (SMBios21Addr) {
-        *length = SMBios21Addr->structure_table_length;
-        return (void *)SMBios21Addr->structure_table_address;
+    اگر (SMBios21Addr) {
+        *لمبائی = SMBios21Addr->structure_جدول_لمبائی;
+        واپس (خالی *)SMBios21Addr->structure_جدول_پتہ;
     }
-    return NULL;
+    واپس تہی;
 }
 
-static int
-smbios_major_version(void)
+ساکن صحیح
+smbios_major_نسخہ(خالی)
 {
-    if (SMBios30Addr)
-        return SMBios30Addr->smbios_major_version;
-    else if (SMBios21Addr)
-        return SMBios21Addr->smbios_major_version;
-    else
-        return 0;
+    اگر (SMBios30Addr)
+        واپس SMBios30Addr->smbios_major_نسخہ;
+    ورنہ اگر (SMBios21Addr)
+        واپس SMBios21Addr->smbios_major_نسخہ;
+    ورنہ
+        واپس 0;
 }
 
-static int
-smbios_minor_version(void)
+ساکن صحیح
+smbios_minor_نسخہ(خالی)
 {
-    if (SMBios30Addr)
-        return SMBios30Addr->smbios_minor_version;
-    else if (SMBios21Addr)
-        return SMBios21Addr->smbios_minor_version;
-    else
-        return 0;
+    اگر (SMBios30Addr)
+        واپس SMBios30Addr->smbios_minor_نسخہ;
+    ورنہ اگر (SMBios21Addr)
+        واپس SMBios21Addr->smbios_minor_نسخہ;
+    ورنہ
+        واپس 0;
 }
 
-void
-display_uuid(void)
+خالی
+display_uuid(خالی)
 {
     u32 smbios_len = 0;
-    void *smbios_tables = smbios_get_tables(&smbios_len);
-    struct smbios_type_1 *tbl = smbios_next(smbios_tables, smbios_len, NULL);
-    int minlen = offsetof(struct smbios_type_1, uuid) + sizeof(tbl->uuid);
-    for (; tbl; tbl = smbios_next(smbios_tables, smbios_len, tbl))
-        if (tbl->header.type == 1 && tbl->header.length >= minlen) {
+    خالی *smbios_tables = smbios_get_tables(&smbios_len);
+    ساخت smbios_type_1 *tbl = smbios_اگلا(smbios_tables, smbios_len, تہی);
+    صحیح minlen = offsetof(ساخت smbios_type_1, uuid) + حجم(tbl->uuid);
+    برائے (; tbl; tbl = smbios_اگلا(smbios_tables, smbios_len, tbl))
+        اگر (tbl->سرخی.type == 1 && tbl->سرخی.لمبائی >= minlen) {
             u8 *uuid = tbl->uuid;
-            u8 empty_uuid[sizeof(tbl->uuid)] = { 0 };
-            if (memcmp(uuid, empty_uuid, sizeof(empty_uuid)) == 0)
-                return;
+            u8 خالی_خانے_uuid[حجم(tbl->uuid)] = { 0 };
+            اگر (memcmp(uuid, خالی_خانے_uuid, حجم(خالی_خانے_uuid)) == 0)
+                واپس;
 
             /*
              * According to SMBIOS v2.6 the first three fields are encoded in
@@ -394,10 +394,10 @@ display_uuid(void)
              * the encoding, but we follow dmidecode and assume big-endian
              * encoding.
              */
-            if (smbios_major_version() > 2 ||
-                (smbios_major_version() == 2 &&
-                 smbios_minor_version() >= 6)) {
-                printf("Machine UUID"
+            اگر (smbios_major_نسخہ() > 2 ||
+                (smbios_major_نسخہ() == 2 &&
+                 smbios_minor_نسخہ() >= 6)) {
+                لکھو("Machine UUID"
                        " %02x%02x%02x%02x"
                        "-%02x%02x"
                        "-%02x%02x"
@@ -409,8 +409,8 @@ display_uuid(void)
                        , uuid[ 8], uuid[ 9]
                        , uuid[10], uuid[11], uuid[12]
                        , uuid[13], uuid[14], uuid[15]);
-            } else {
-                printf("Machine UUID"
+            } ورنہ {
+                لکھو("Machine UUID"
                        " %02x%02x%02x%02x"
                        "-%02x%02x"
                        "-%02x%02x"
@@ -424,66 +424,66 @@ display_uuid(void)
                        , uuid[13], uuid[14], uuid[15]);
             }
 
-            return;
+            واپس;
         }
 }
 
-#define set_str_field_or_skip(type, field, value)                       \
-    do {                                                                \
-        int size = (value != NULL) ? strlen(value) + 1 : 0;             \
-        if (size > 1) {                                                 \
-            memcpy(end, value, size);                                   \
-            end += size;                                                \
-            p->field = ++str_index;                                     \
-        } else {                                                        \
-            p->field = 0;                                               \
+#تعریف_کرو سیٹ_str_میدان_or_skip(type, میدان, قدر)                       \
+    کرو {                                                                \
+        صحیح سائز = (قدر != تہی) ? لڑی_لمبائی(قدر) + 1 : 0;             \
+        اگر (سائز > 1) {                                                 \
+            حافظہ_نقل(انتہا, قدر, سائز);                                   \
+            انتہا += سائز;                                                \
+            p->میدان = ++str_اشاریہ;                                     \
+        } ورنہ {                                                        \
+            p->میدان = 0;                                               \
         }                                                               \
-    } while (0)
+    } جب (0)
 
-static void *
-smbios_new_type_0(void *start,
-                  const char *vendor, const char *version, const char *date)
+ساکن خالی *
+smbios_new_type_0(خالی *آغاز,
+                  ثابت حرف *vendor, ثابت حرف *نسخہ_2, ثابت حرف *date)
 {
-    struct smbios_type_0 *p = (struct smbios_type_0 *)start;
-    char *end = (char *)start + sizeof(struct smbios_type_0);
-    int str_index = 0;
+    ساخت smbios_type_0 *p = (ساخت smbios_type_0 *)آغاز;
+    حرف *انتہا = (حرف *)آغاز + حجم(ساخت smbios_type_0);
+    صحیح str_اشاریہ = 0;
 
-    p->header.type = 0;
-    p->header.length = sizeof(struct smbios_type_0);
-    p->header.handle = 0;
+    p->سرخی.type = 0;
+    p->سرخی.لمبائی = حجم(ساخت smbios_type_0);
+    p->سرخی.handle = 0;
 
-    set_str_field_or_skip(0, vendor_str, vendor);
-    set_str_field_or_skip(0, bios_version_str, version);
-    p->bios_starting_address_segment = 0xe800;
-    set_str_field_or_skip(0, bios_release_date_str, date);
+    سیٹ_str_میدان_or_skip(0, vendor_str, vendor);
+    سیٹ_str_میدان_or_skip(0, bios_نسخہ_str, نسخہ_2);
+    p->bios_starting_پتہ_segment = 0xe800;
+    سیٹ_str_میدان_or_skip(0, bios_release_date_str, date);
 
-    p->bios_rom_size = 0; /* FIXME */
+    p->bios_rom_سائز = 0; /* FIXME */
 
     /* BIOS characteristics not supported */
     memset(p->bios_characteristics, 0, 8);
     p->bios_characteristics[0] = 0x08;
 
     /* Enable targeted content distribution (needed for SVVP) */
-    p->bios_characteristics_extension_bytes[0] = 0;
-    p->bios_characteristics_extension_bytes[1] = 4;
+    p->bios_characteristics_extension_بائٹیں[0] = 0;
+    p->bios_characteristics_extension_بائٹیں[1] = 4;
 
     p->system_bios_major_release = 0;
     p->system_bios_minor_release = 0;
     p->embedded_controller_major_release = 0xFF;
     p->embedded_controller_minor_release = 0xFF;
 
-    *end = 0;
-    end++;
-    if (!str_index) {
-        *end = 0;
-        end++;
+    *انتہا = 0;
+    انتہا++;
+    اگر (!str_اشاریہ) {
+        *انتہا = 0;
+        انتہا++;
     }
 
-    return end;
+    واپس انتہا;
 }
 
-#define BIOS_NAME "SeaBIOS"
-#define BIOS_DATE "04/01/2014"
+#تعریف_کرو BIOS_NAME "SeaBIOS"
+#تعریف_کرو BIOS_DATE "04/01/2014"
 
 /*
  * Build tables using qtables as input, adding additional type 0
@@ -492,154 +492,154 @@ smbios_new_type_0(void *start,
  * @address and @length can't be NULL.  @max_structure_size and
  * @number_of_structures are optional and can be NULL.
  */
-static int
-smbios_build_tables(struct romfile_s *f_tables,
-                    u64 *address, u32 *length,
-                    u16 *max_structure_size,
-                    u16 *number_of_structures)
+ساکن صحیح
+smbios_build_tables(ساخت romfile_s *f_tables,
+                    u64 *پتہ, u32 *لمبائی,
+                    u16 *max_structure_سائز,
+                    u16 *نمبر_کا_structures)
 {
-    struct smbios_type_0 *t0;
+    ساخت smbios_type_0 *t0;
     u32 qtables_len, need_t0 = 1;
     u8 *qtables, *tables;
 
-    if (f_tables->size != *length)
-        return 0;
+    اگر (f_tables->سائز != *لمبائی)
+        واپس 0;
 
-    qtables = malloc_tmphigh(f_tables->size);
-    if (!qtables) {
+    qtables = malloc_tmphigh(f_tables->سائز);
+    اگر (!qtables) {
         warn_noalloc();
-        return 0;
+        واپس 0;
     }
-    f_tables->copy(f_tables, qtables, f_tables->size);
-    qtables_len = f_tables->size;
+    f_tables->copy(f_tables, qtables, f_tables->سائز);
+    qtables_len = f_tables->سائز;
 
     /* did we get a type 0 structure ? */
-    for (t0 = smbios_next(qtables, qtables_len, NULL); t0;
-         t0 = smbios_next(qtables, qtables_len, t0)) {
-        if (t0->header.type == 0) {
+    برائے (t0 = smbios_اگلا(qtables, qtables_len, تہی); t0;
+         t0 = smbios_اگلا(qtables, qtables_len, t0)) {
+        اگر (t0->سرخی.type == 0) {
             need_t0 = 0;
-            break;
+            توڑو;
         }
     }
 
-    if (need_t0) {
+    اگر (need_t0) {
         /* common case: add our own type 0, with 3 strings and 4 '\0's */
-        u16 t0_len = sizeof(struct smbios_type_0) + strlen(BIOS_NAME) +
-                     strlen(VERSION) + strlen(BIOS_DATE) + 4;
-        if (t0_len > (0xffff - *length)) {
+        u16 t0_len = حجم(ساخت smbios_type_0) + لڑی_لمبائی(BIOS_NAME) +
+                     لڑی_لمبائی(نسخہ) + لڑی_لمبائی(BIOS_DATE) + 4;
+        اگر (t0_len > (0xffff - *لمبائی)) {
             dprintf(1, "Insufficient space (%d bytes) to add SMBIOS type 0 table (%d bytes)\n",
-                    0xffff - *length, t0_len);
+                    0xffff - *لمبائی, t0_len);
             need_t0 = 0;
-        } else {
-            *length += t0_len;
-            if (max_structure_size && t0_len > *max_structure_size)
-                *max_structure_size = t0_len;
-            if (number_of_structures)
-                (*number_of_structures)++;
+        } ورنہ {
+            *لمبائی += t0_len;
+            اگر (max_structure_سائز && t0_len > *max_structure_سائز)
+                *max_structure_سائز = t0_len;
+            اگر (نمبر_کا_structures)
+                (*نمبر_کا_structures)++;
         }
     }
 
     /* allocate final blob and record its address in the entry point */
-    if (*length > BUILD_MAX_SMBIOS_FSEG)
-        tables = malloc_high(*length);
-    else
-        tables = malloc_fseg(*length);
-    if (!tables) {
+    اگر (*لمبائی > BUILD_MAX_SMBIOS_FSEG)
+        tables = malloc_بلند(*لمبائی);
+    ورنہ
+        tables = malloc_fseg(*لمبائی);
+    اگر (!tables) {
         warn_noalloc();
-        free(qtables);
-        return 0;
+        آزاد(qtables);
+        واپس 0;
     }
-    *address = (u32)tables;
+    *پتہ = (u32)tables;
 
     /* populate final blob */
-    if (need_t0)
-        tables = smbios_new_type_0(tables, BIOS_NAME, VERSION, BIOS_DATE);
-    memcpy(tables, qtables, qtables_len);
-    free(qtables);
-    return 1;
+    اگر (need_t0)
+        tables = smbios_new_type_0(tables, BIOS_NAME, نسخہ, BIOS_DATE);
+    حافظہ_نقل(tables, qtables, qtables_len);
+    آزاد(qtables);
+    واپس 1;
 }
 
-static int
-smbios_21_setup_entry_point(struct romfile_s *f_tables,
-                            struct smbios_21_entry_point *ep)
+ساکن صحیح
+smbios_21_تیاری_اندراج_نقطہ(ساخت romfile_s *f_tables,
+                            ساخت smbios_21_اندراج_نقطہ *ep)
 {
-    u64 address = ep->structure_table_address;
-    u32 length = ep->structure_table_length;
+    u64 پتہ = ep->structure_جدول_پتہ;
+    u32 لمبائی = ep->structure_جدول_لمبائی;
 
-    if (!smbios_build_tables(f_tables,
-                             &address,
-                             &length,
-                             &ep->max_structure_size,
-                             &ep->number_of_structures))
-        return 0;
+    اگر (!smbios_build_tables(f_tables,
+                             &پتہ,
+                             &لمبائی,
+                             &ep->max_structure_سائز,
+                             &ep->نمبر_کا_structures))
+        واپس 0;
 
-    if ((u32)address != address || (u16)length != length) {
+    اگر ((u32)پتہ != پتہ || (u16)لمبائی != لمبائی) {
         warn_internalerror();
-        return 0;
+        واپس 0;
     }
 
     /* finalize entry point */
-    ep->structure_table_address = address;
-    ep->structure_table_length = length;
+    ep->structure_جدول_پتہ = پتہ;
+    ep->structure_جدول_لمبائی = لمبائی;
     ep->checksum -= checksum(ep, 0x10);
-    ep->intermediate_checksum -= checksum((void *)ep + 0x10, ep->length - 0x10);
+    ep->intermediate_checksum -= checksum((خالی *)ep + 0x10, ep->لمبائی - 0x10);
 
     copy_smbios_21(ep);
-    return 1;
+    واپس 1;
 }
 
-static int
-smbios_30_setup_entry_point(struct romfile_s *f_tables,
-                            struct smbios_30_entry_point *ep)
+ساکن صحیح
+smbios_30_تیاری_اندراج_نقطہ(ساخت romfile_s *f_tables,
+                            ساخت smbios_30_اندراج_نقطہ *ep)
 {
-    if (!smbios_build_tables(f_tables,
-                             &ep->structure_table_address,
-                             &ep->structure_table_max_size,
-                             NULL, NULL))
-        return 0;
+    اگر (!smbios_build_tables(f_tables,
+                             &ep->structure_جدول_پتہ,
+                             &ep->structure_جدول_max_سائز,
+                             تہی, تہی))
+        واپس 0;
 
-    ep->checksum -= checksum(ep, sizeof(*ep));
+    ep->checksum -= checksum(ep, حجم(*ep));
     copy_smbios_30(ep);
-    return 1;
+    واپس 1;
 }
 
-static int
-smbios_romfile_setup(void)
+ساکن صحیح
+smbios_romfile_تیاری(خالی)
 {
-    struct romfile_s *f_anchor = romfile_find("etc/smbios/smbios-anchor");
-    struct romfile_s *f_tables = romfile_find("etc/smbios/smbios-tables");
-    union {
-        struct smbios_21_entry_point ep21;
-        struct smbios_30_entry_point ep30;
+    ساخت romfile_s *f_anchor = romfile_ڈھونڈو("etc/smbios/smbios-anchor");
+    ساخت romfile_s *f_tables = romfile_ڈھونڈو("etc/smbios/smbios-tables");
+    اتحاد {
+        ساخت smbios_21_اندراج_نقطہ ep21;
+        ساخت smbios_30_اندراج_نقطہ ep30;
     } ep;
 
-    if (!f_anchor || !f_tables || f_anchor->size > sizeof(ep))
-        return 0;
+    اگر (!f_anchor || !f_tables || f_anchor->سائز > حجم(ep))
+        واپس 0;
 
-    f_anchor->copy(f_anchor, &ep, f_anchor->size);
+    f_anchor->copy(f_anchor, &ep, f_anchor->سائز);
 
-    if (f_anchor->size == sizeof(ep.ep21) &&
+    اگر (f_anchor->سائز == حجم(ep.ep21) &&
         ep.ep21.signature == SMBIOS_21_SIGNATURE) {
-        return smbios_21_setup_entry_point(f_tables, &ep.ep21);
-    } else if (f_anchor->size == sizeof(ep.ep30) &&
+        واپس smbios_21_تیاری_اندراج_نقطہ(f_tables, &ep.ep21);
+    } ورنہ اگر (f_anchor->سائز == حجم(ep.ep30) &&
                valid_smbios_30_signature(&ep.ep30)) {
-        return smbios_30_setup_entry_point(f_tables, &ep.ep30);
-    } else {
+        واپس smbios_30_تیاری_اندراج_نقطہ(f_tables, &ep.ep30);
+    } ورنہ {
         dprintf(1, "Invalid SMBIOS signature at etc/smbios/smbios-anchor\n");
-        return 0;
+        واپس 0;
     }
 }
 
-void
-smbios_setup(void)
+خالی
+smbios_تیاری(خالی)
 {
-    if (smbios_romfile_setup())
-        return;
-    smbios_legacy_setup();
+    اگر (smbios_romfile_تیاری())
+        واپس;
+    smbios_legacy_تیاری();
 }
 
-void
-copy_table(void *pos)
+خالی
+copy_جدول(خالی *pos)
 {
     copy_pir(pos);
     copy_mptable(pos);

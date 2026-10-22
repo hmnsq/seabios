@@ -1,19 +1,19 @@
-#ifndef __PMM_H
-#define __PMM_H
+#اگر_غیر_تعریف_شدہ __PMM_H
+#تعریف_کرو __PMM_H
 
-#include "types.h" // u32
+#شامل "types.h" // u32
 
-#define PMM_SIGNATURE 0x4d4d5024 // $PMM
+#تعریف_کرو PMM_SIGNATURE 0x4d4d5024 // $PMM
 
-struct pmmheader {
+ساخت pmmheader {
     u32 signature;
-    u8 version;
-    u8 length;
+    u8 نسخہ_2;
+    u8 لمبائی;
     u8 checksum;
-    struct segoff_s entry;
+    ساخت segoff_s اندراج_2;
     u8 reserved[5];
 } PACKED;
 
-#define PMM_FUNCTION_NOT_SUPPORTED 0xffffffff
+#تعریف_کرو PMM_FUNCTION_NOT_SUPPORTED 0xffffffff
 
-#endif // pmm.h
+#اگر_ختم // pmm.h

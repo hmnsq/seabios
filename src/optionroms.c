@@ -5,25 +5,25 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "bregs.h" // struct bregs
-#include "config.h" // CONFIG_*
-#include "farptr.h" // FLATPTR_TO_SEG
-#include "biosvar.h" // GET_IVT
-#include "hw/pci.h" // pci_config_readl
-#include "hw/pcidevice.h" // foreachpci
-#include "hw/pci_ids.h" // PCI_CLASS_DISPLAY_VGA
-#include "hw/pci_regs.h" // PCI_ROM_ADDRESS
-#include "malloc.h" // rom_confirm
-#include "output.h" // dprintf
-#include "romfile.h" // romfile_loadint
-#include "stacks.h" // farcall16big
-#include "std/optionrom.h" // struct rom_header
-#include "std/pnpbios.h" // PNP_SIGNATURE
-#include "string.h" // memset
-#include "util.h" // get_pnp_offset
-#include "tcgbios.h" // tpm_*
+#شامل "bregs.h" // struct bregs
+#شامل "config.h" // CONFIG_*
+#شامل "farptr.h" // FLATPTR_TO_SEG
+#شامل "biosvar.h" // GET_IVT
+#شامل "hw/pci.h" // pci_config_readl
+#شامل "hw/pcidevice.h" // foreachpci
+#شامل "hw/pci_ids.h" // PCI_CLASS_DISPLAY_VGA
+#شامل "hw/pci_regs.h" // PCI_ROM_ADDRESS
+#شامل "malloc.h" // rom_confirm
+#شامل "output.h" // dprintf
+#شامل "romfile.h" // romfile_loadint
+#شامل "stacks.h" // farcall16big
+#شامل "std/optionrom.h" // struct rom_header
+#شامل "std/pnpbios.h" // PNP_SIGNATURE
+#شامل "string.h" // memset
+#شامل "util.h" // get_pnp_offset
+#شامل "tcgbios.h" // tpm_*
 
-static int EnforceChecksum, S3ResumeVga, RunPCIroms;
+ساکن صحیح EnforceChecksum, S3ResumeVga, تسلسل_PCIroms;
 
 
 /****************************************************************
@@ -31,138 +31,138 @@ static int EnforceChecksum, S3ResumeVga, RunPCIroms;
  ****************************************************************/
 
 // Execute a given option rom.
-static void
-__callrom(struct rom_header *rom, u16 offset, u16 bdf)
+ساکن خالی
+__callrom(ساخت rom_سرخی *rom, u16 انحراف_2, u16 bdf)
 {
-    u16 seg = FLATPTR_TO_SEG(rom);
-    dprintf(1, "Running option rom at %04x:%04x\n", seg, offset);
+    u16 seg = FLATPTR_مقصد_SEG(rom);
+    dprintf(1, "Running option rom at %04x:%04x\n", seg, انحراف_2);
 
-    struct bregs br;
-    memset(&br, 0, sizeof(br));
+    ساخت bregs br;
+    memset(&br, 0, حجم(br));
     br.flags = F_IF;
     br.ax = bdf;
     br.bx = 0xffff;
     br.dx = 0xffff;
     br.es = SEG_BIOS;
-    br.di = get_pnp_offset();
-    br.code = SEGOFF(seg, offset);
-    start_preempt();
+    br.di = get_pnp_انحراف();
+    br.رمز = SEGOFF(seg, انحراف_2);
+    آغاز_preempt();
     farcall16big(&br);
-    finish_preempt();
+    اختتام_preempt();
 }
 
 // Execute a given option rom at the standard entry vector.
-void
-callrom(struct rom_header *rom, u16 bdf)
+خالی
+callrom(ساخت rom_سرخی *rom, u16 bdf)
 {
     __callrom(rom, OPTION_ROM_INITVECTOR, bdf);
 }
 
 // Execute a BCV option rom registered via add_bcv().
-void
+خالی
 call_bcv(u16 seg, u16 ip)
 {
     __callrom(MAKE_FLATPTR(seg, 0), ip, 0);
 }
 
 // Verify that an option rom looks valid
-static int
-is_valid_rom(struct rom_header *rom)
+ساکن صحیح
+is_valid_rom(ساخت rom_سرخی *rom)
 {
     dprintf(6, "Checking rom %p (sig %x size %d)\n"
-            , rom, rom->signature, rom->size);
-    if (rom->signature != OPTION_ROM_SIGNATURE)
-        return 0;
-    if (! rom->size)
-        return 0;
-    u32 len = rom->size * 512;
-    u8 sum = checksum(rom, len);
-    if (sum != 0) {
+            , rom, rom->signature, rom->سائز);
+    اگر (rom->signature != OPTION_ROM_SIGNATURE)
+        واپس 0;
+    اگر (! rom->سائز)
+        واپس 0;
+    u32 len = rom->سائز * 512;
+    u8 مجموع = checksum(rom, len);
+    اگر (مجموع != 0) {
         dprintf(1, "Found option rom with bad checksum: loc=%p len=%d sum=%x\n"
-                , rom, len, sum);
-        if (EnforceChecksum)
-            return 0;
+                , rom, len, مجموع);
+        اگر (EnforceChecksum)
+            واپس 0;
     }
-    return 1;
+    واپس 1;
 }
 
 // Check if a valid option rom has a pnp struct; return it if so.
-static struct pnp_data *
-get_pnp_rom(struct rom_header *rom)
+ساکن ساخت pnp_ڈیٹا *
+get_pnp_rom(ساخت rom_سرخی *rom)
 {
-    struct pnp_data *pnp = (void*)((u8*)rom + rom->pnpoffset);
-    if (pnp->signature != PNP_SIGNATURE)
-        return NULL;
-    return pnp;
+    ساخت pnp_ڈیٹا *pnp = (خالی*)((u8*)rom + rom->pnpoffset);
+    اگر (pnp->signature != PNP_SIGNATURE)
+        واپس تہی;
+    واپس pnp;
 }
 
 // Check for multiple pnp option rom headers.
-static struct pnp_data *
-get_pnp_next(struct rom_header *rom, struct pnp_data *pnp)
+ساکن ساخت pnp_ڈیٹا *
+get_pnp_اگلا(ساخت rom_سرخی *rom, ساخت pnp_ڈیٹا *pnp)
 {
-    if (! pnp->nextoffset)
-        return NULL;
-    pnp = (void*)((u8*)rom + pnp->nextoffset);
-    if (pnp->signature != PNP_SIGNATURE)
-        return NULL;
-    return pnp;
+    اگر (! pnp->nextoffset)
+        واپس تہی;
+    pnp = (خالی*)((u8*)rom + pnp->nextoffset);
+    اگر (pnp->signature != PNP_SIGNATURE)
+        واپس تہی;
+    واپس pnp;
 }
 
 // Check if a valid option rom has a pci struct; return it if so.
-static struct pci_data *
-get_pci_rom(struct rom_header *rom)
+ساکن ساخت pci_ڈیٹا *
+get_pci_rom(ساخت rom_سرخی *rom)
 {
-    struct pci_data *pd = (void*)((u32)rom + rom->pcioffset);
-    if (pd->signature != PCI_ROM_SIGNATURE)
-        return NULL;
-    if (rom->pcioffset & 3)
+    ساخت pci_ڈیٹا *pd = (خالی*)((u32)rom + rom->pcioffset);
+    اگر (pd->signature != PCI_ROM_SIGNATURE)
+        واپس تہی;
+    اگر (rom->pcioffset & 3)
         dprintf(1, "WARNING! Found unaligned PCI rom (vd=%04x:%04x)\n"
                 , pd->vendor, pd->device);
-    return pd;
+    واپس pd;
 }
 
 // Run rom init code and note rom size.
-static int
-init_optionrom(struct rom_header *rom, u16 bdf, int isvga)
+ساکن صحیح
+init_optionrom(ساخت rom_سرخی *rom, u16 bdf, صحیح isvga)
 {
-    if (! is_valid_rom(rom))
-        return -1;
-    struct rom_header *newrom = rom_reserve(rom->size * 512);
-    if (!newrom) {
+    اگر (! is_valid_rom(rom))
+        واپس -1;
+    ساخت rom_سرخی *newrom = rom_reserve(rom->سائز * 512);
+    اگر (!newrom) {
         warn_noalloc();
-        return -1;
+        واپس -1;
     }
-    if (newrom != rom)
-        memmove(newrom, rom, rom->size * 512);
+    اگر (newrom != rom)
+        memmove(newrom, rom, rom->سائز * 512);
 
-    tpm_option_rom(newrom, rom->size * 512);
+    tpm_option_rom(newrom, rom->سائز * 512);
 
-    if (isvga || get_pnp_rom(newrom))
+    اگر (isvga || get_pnp_rom(newrom))
         // Only init vga and PnP roms here.
         callrom(newrom, bdf);
 
-    return rom_confirm(newrom->size * 512);
+    واپس rom_confirm(newrom->سائز * 512);
 }
 
-#define RS_PCIROM (1LL<<33)
+#تعریف_کرو RS_PCIROM (1LL<<33)
 
-static void
-setRomSource(u64 *sources, struct rom_header *rom, u64 source)
+ساکن خالی
+سیٹ_Rom_ماخذ(u64 *sources, ساخت rom_سرخی *rom, u64 ماخذ)
 {
-    if (sources)
-        sources[((u32)rom - BUILD_ROM_START) / OPTION_ROM_ALIGN] = source;
+    اگر (sources)
+        sources[((u32)rom - BUILD_ROM_آغاز) / OPTION_ROM_ALIGN] = ماخذ;
 }
 
-static int
-getRomPriority(u64 *sources, struct rom_header *rom, int instance)
+ساکن صحیح
+get_Rom_ترجیح(u64 *sources, ساخت rom_سرخی *rom, صحیح instance)
 {
-    u64 source = sources[((u32)rom - BUILD_ROM_START) / OPTION_ROM_ALIGN];
-    if (!source)
-        return -1;
-    if (source & RS_PCIROM)
-        return bootprio_find_pci_rom((void*)(u32)source, instance);
-    struct romfile_s *file = (void*)(u32)source;
-    return bootprio_find_named_rom(file->name, instance);
+    u64 ماخذ = sources[((u32)rom - BUILD_ROM_آغاز) / OPTION_ROM_ALIGN];
+    اگر (!ماخذ)
+        واپس -1;
+    اگر (ماخذ & RS_PCIROM)
+        واپس bootprio_ڈھونڈو_pci_rom((خالی*)(u32)ماخذ, instance);
+    ساخت romfile_s *file = (خالی*)(u32)ماخذ;
+    واپس bootprio_ڈھونڈو_named_rom(file->name, instance);
 }
 
 
@@ -170,33 +170,33 @@ getRomPriority(u64 *sources, struct rom_header *rom, int instance)
  * Roms in CBFS
  ****************************************************************/
 
-static struct rom_header *
-deploy_romfile(struct romfile_s *file)
+ساکن ساخت rom_سرخی *
+deploy_romfile(ساخت romfile_s *file)
 {
-    u32 size = file->size;
-    struct rom_header *rom = rom_reserve(size);
-    if (!rom) {
+    u32 سائز = file->سائز;
+    ساخت rom_سرخی *rom = rom_reserve(سائز);
+    اگر (!rom) {
         warn_noalloc();
-        return NULL;
+        واپس تہی;
     }
-    int ret = file->copy(file, rom, size);
-    if (ret <= 0)
-        return NULL;
-    return rom;
+    صحیح ret = file->copy(file, rom, سائز);
+    اگر (ret <= 0)
+        واپس تہی;
+    واپس rom;
 }
 
 // Run all roms in a given CBFS directory.
-static void
-run_file_roms(const char *prefix, int isvga, u64 *sources)
+ساکن خالی
+تسلسل_file_roms(ثابت حرف *سابقہ, صحیح isvga, u64 *sources)
 {
-    struct romfile_s *file = NULL;
-    for (;;) {
-        file = romfile_findprefix(prefix, file);
-        if (!file)
-            break;
-        struct rom_header *rom = deploy_romfile(file);
-        if (rom) {
-            setRomSource(sources, rom, (u32)file);
+    ساخت romfile_s *file = تہی;
+    برائے (;;) {
+        file = romfile_findprefix(سابقہ, file);
+        اگر (!file)
+            توڑو;
+        ساخت rom_سرخی *rom = deploy_romfile(file);
+        اگر (rom) {
+            سیٹ_Rom_ماخذ(sources, rom, (u32)file);
             init_optionrom(rom, 0, isvga);
         }
     }
@@ -208,147 +208,147 @@ run_file_roms(const char *prefix, int isvga, u64 *sources)
  ****************************************************************/
 
 // Verify device is a vga device with legacy address decoding enabled.
-int
-is_pci_vga(struct pci_device *pci)
+صحیح
+is_pci_vga(ساخت pci_device *pci)
 {
-    if (pci->class != PCI_CLASS_DISPLAY_VGA)
-        return 0;
+    اگر (pci->class != PCI_CLASS_DISPLAY_VGA)
+        واپس 0;
     u16 cmd = pci_config_readw(pci->bdf, PCI_COMMAND);
-    if (!(cmd & PCI_COMMAND_IO && cmd & PCI_COMMAND_MEMORY))
-        return 0;
-    while (pci->parent) {
-        pci = pci->parent;
+    اگر (!(cmd & PCI_COMMAND_IO && cmd & PCI_COMMAND_حافظہ))
+        واپس 0;
+    جب (pci->والد) {
+        pci = pci->والد;
         u32 ctrl = pci_config_readb(pci->bdf, PCI_BRIDGE_CONTROL);
-        if (!(ctrl & PCI_BRIDGE_CTL_VGA))
-            return 0;
+        اگر (!(ctrl & PCI_BRIDGE_CTL_VGA))
+            واپس 0;
     }
-    return 1;
+    واپس 1;
 }
 
 // Copy a rom to its permanent location below 1MiB
-static struct rom_header *
-copy_rom(struct rom_header *rom)
+ساکن ساخت rom_سرخی *
+copy_rom(ساخت rom_سرخی *rom)
 {
-    u32 romsize = rom->size * 512;
-    struct rom_header *newrom = rom_reserve(romsize);
-    if (!newrom) {
+    u32 romsize = rom->سائز * 512;
+    ساخت rom_سرخی *newrom = rom_reserve(romsize);
+    اگر (!newrom) {
         warn_noalloc();
-        return NULL;
+        واپس تہی;
     }
     dprintf(4, "Copying option rom (size %d) from %p to %p\n"
             , romsize, rom, newrom);
     iomemcpy(newrom, rom, romsize);
-    return newrom;
+    واپس newrom;
 }
 
 // Map the option rom of a given PCI device.
-static struct rom_header *
-map_pcirom(struct pci_device *pci)
+ساکن ساخت rom_سرخی *
+map_pcirom(ساخت pci_device *pci)
 {
     dprintf(6, "Attempting to map option rom on dev %pP\n", pci);
 
-    if ((pci->header_type & 0x7f) != PCI_HEADER_TYPE_NORMAL) {
+    اگر ((pci->سرخی_type & 0x7f) != PCI_سرخی_TYPE_معمول) {
         dprintf(6, "Skipping non-normal pci device (type=%x)\n"
-                , pci->header_type);
-        return NULL;
+                , pci->سرخی_type);
+        واپس تہی;
     }
 
     u16 bdf = pci->bdf;
-    u32 orig = pci_config_readl(bdf, PCI_ROM_ADDRESS);
-    pci_config_writel(bdf, PCI_ROM_ADDRESS, ~PCI_ROM_ADDRESS_ENABLE);
-    u32 sz = pci_config_readl(bdf, PCI_ROM_ADDRESS);
+    u32 orig = pci_config_readl(bdf, PCI_ROM_پتہ);
+    pci_config_writel(bdf, PCI_ROM_پتہ, ~PCI_ROM_پتہ_ENABLE);
+    u32 sz = pci_config_readl(bdf, PCI_ROM_پتہ);
 
     dprintf(6, "Option rom sizing returned %x %x\n", orig, sz);
-    orig &= ~PCI_ROM_ADDRESS_ENABLE;
-    if (!sz || sz == 0xffffffff)
-        goto fail;
+    orig &= ~PCI_ROM_پتہ_ENABLE;
+    اگر (!sz || sz == 0xffffffff)
+        جاؤ fail;
 
-    if (orig == sz || (u32)(orig + 4*1024*1024) < 20*1024*1024) {
+    اگر (orig == sz || (u32)(orig + 4*1024*1024) < 20*1024*1024) {
         // Don't try to map to a pci addresses at its max, in the last
         // 4MiB of ram, or the first 16MiB of ram.
         dprintf(6, "Preset rom address doesn't look valid\n");
-        goto fail;
+        جاؤ fail;
     }
 
     // Looks like a rom - enable it.
-    pci_config_writel(bdf, PCI_ROM_ADDRESS, orig | PCI_ROM_ADDRESS_ENABLE);
+    pci_config_writel(bdf, PCI_ROM_پتہ, orig | PCI_ROM_پتہ_ENABLE);
 
-    struct rom_header *rom = (void*)orig;
-    for (;;) {
+    ساخت rom_سرخی *rom = (خالی*)orig;
+    برائے (;;) {
         dprintf(5, "Inspecting possible rom at %p (vd=%04x:%04x bdf=%pP)\n"
                 , rom, pci->vendor, pci->device, pci);
-        if (rom->signature != OPTION_ROM_SIGNATURE) {
+        اگر (rom->signature != OPTION_ROM_SIGNATURE) {
             dprintf(6, "No option rom signature (got %x)\n", rom->signature);
-            goto fail;
+            جاؤ fail;
         }
-        struct pci_data *pd = get_pci_rom(rom);
-        if (! pd) {
+        ساخت pci_ڈیٹا *pd = get_pci_rom(rom);
+        اگر (! pd) {
             dprintf(6, "No valid pci signature found\n");
-            goto fail;
+            جاؤ fail;
         }
 
-        if (pd->vendor == pci->vendor && pd->device == pci->device
+        اگر (pd->vendor == pci->vendor && pd->device == pci->device
             && pd->type == PCIROM_CODETYPE_X86)
             // A match
-            break;
+            توڑو;
         dprintf(6, "Didn't match dev/ven (got %04x:%04x) or type (got %d)\n"
                 , pd->vendor, pd->device, pd->type);
-        if (pd->indicator & 0x80) {
+        اگر (pd->indicator & 0x80) {
             dprintf(6, "No more images left\n");
-            goto fail;
+            جاؤ fail;
         }
-        rom = (void*)((u32)rom + pd->ilen * 512);
+        rom = (خالی*)((u32)rom + pd->ilen * 512);
     }
 
     rom = copy_rom(rom);
-    pci_config_writel(bdf, PCI_ROM_ADDRESS, orig);
-    return rom;
+    pci_config_writel(bdf, PCI_ROM_پتہ, orig);
+    واپس rom;
 fail:
     // Not valid - restore original and exit.
-    pci_config_writel(bdf, PCI_ROM_ADDRESS, orig);
-    return NULL;
+    pci_config_writel(bdf, PCI_ROM_پتہ, orig);
+    واپس تہی;
 }
 
-static int boot_irq_captured(void)
+ساکن صحیح boot_irq_captured(خالی)
 {
-    return GET_IVT(0x19).segoff != FUNC16(entry_19_official).segoff;
+    واپس GET_IVT(0x19).segoff != FUNC16(اندراج_19_official).segoff;
 }
 
-static void boot_irq_restore(void)
+ساکن خالی boot_irq_restore(خالی)
 {
-    struct segoff_s seabios;
+    ساخت segoff_s seabios;
 
-    seabios = FUNC16(entry_19_official);
-    SET_IVT(0x19, seabios);
+    seabios = FUNC16(اندراج_19_official);
+    سیٹ_IVT(0x19, seabios);
 }
 
 // Attempt to map and initialize the option rom on a given PCI device.
-static void
-init_pcirom(struct pci_device *pci, int isvga, u64 *sources)
+ساکن خالی
+init_pcirom(ساخت pci_device *pci, صحیح isvga, u64 *sources)
 {
     dprintf(4, "Attempting to init PCI bdf %pP (vd %04x:%04x)\n"
             , pci, pci->vendor, pci->device);
 
-    char fname[17];
-    snprintf(fname, sizeof(fname), "pci%04x,%04x.rom"
+    حرف fname[17];
+    snprintf(fname, حجم(fname), "pci%04x,%04x.rom"
              , pci->vendor, pci->device);
-    struct romfile_s *file = romfile_find(fname);
-    struct rom_header *rom = NULL;
-    if (file)
+    ساخت romfile_s *file = romfile_ڈھونڈو(fname);
+    ساخت rom_سرخی *rom = تہی;
+    اگر (file)
         rom = deploy_romfile(file);
-    else if (RunPCIroms > 1 || (RunPCIroms == 1 && isvga))
+    ورنہ اگر (تسلسل_PCIroms > 1 || (تسلسل_PCIroms == 1 && isvga))
         rom = map_pcirom(pci);
-    if (! rom)
+    اگر (! rom)
         // No ROM present.
-        return;
-    int irq_was_captured = boot_irq_captured();
-    struct pnp_data *pnp = get_pnp_rom(rom);
-    setRomSource(sources, rom, RS_PCIROM | (u32)pci);
+        واپس;
+    صحیح irq_was_captured = boot_irq_captured();
+    ساخت pnp_ڈیٹا *pnp = get_pnp_rom(rom);
+    سیٹ_Rom_ماخذ(sources, rom, RS_PCIROM | (u32)pci);
     init_optionrom(rom, pci->bdf, isvga);
-    if (boot_irq_captured() && !irq_was_captured &&
+    اگر (boot_irq_captured() && !irq_was_captured &&
         !file && !isvga && pnp) {
         // This PCI rom is misbehaving - recapture the boot irqs
-        char *desc = MAKE_FLATPTR(FLATPTR_TO_SEG(rom), pnp->productname);
+        حرف *desc = MAKE_FLATPTR(FLATPTR_مقصد_SEG(rom), pnp->productname);
         dprintf(1, "PnP optionrom \"%s\" (bdf %pP) captured int19, restoring\n",
                 desc, pci);
         boot_irq_restore();
@@ -360,60 +360,60 @@ init_pcirom(struct pci_device *pci, int isvga, u64 *sources)
  * Non-VGA option rom init
  ****************************************************************/
 
-void
-optionrom_setup(void)
+خالی
+optionrom_تیاری(خالی)
 {
-    if (! CONFIG_OPTIONROMS)
-        return;
+    اگر (! CONFIG_OPTIONROMS)
+        واپس;
 
     dprintf(1, "Scan for option roms\n");
-    u64 sources[(BUILD_BIOS_ADDR - BUILD_ROM_START) / OPTION_ROM_ALIGN];
-    memset(sources, 0, sizeof(sources));
-    u32 post_vga = rom_get_last();
+    u64 sources[(BUILD_BIOS_ADDR - BUILD_ROM_آغاز) / OPTION_ROM_ALIGN];
+    memset(sources, 0, حجم(sources));
+    u32 post_vga = rom_get_آخری();
 
     // Find and deploy PCI roms.
-    struct pci_device *pci;
+    ساخت pci_device *pci;
     foreachpci(pci) {
-        if (pci->class == PCI_CLASS_DISPLAY_VGA ||
+        اگر (pci->class == PCI_CLASS_DISPLAY_VGA ||
             pci->class == PCI_CLASS_DISPLAY_OTHER ||
             pci->have_driver)
-            continue;
+            جاری;
         init_pcirom(pci, 0, sources);
     }
 
     // Find and deploy CBFS roms not associated with a device.
-    run_file_roms("genroms/", 0, sources);
+    تسلسل_file_roms("genroms/", 0, sources);
     rom_reserve(0);
 
     // All option roms found and deployed - now build BEV/BCV vectors.
 
     u32 pos = post_vga;
-    while (pos < rom_get_last()) {
-        struct rom_header *rom = (void*)pos;
-        if (! is_valid_rom(rom)) {
+    جب (pos < rom_get_آخری()) {
+        ساخت rom_سرخی *rom = (خالی*)pos;
+        اگر (! is_valid_rom(rom)) {
             pos += OPTION_ROM_ALIGN;
-            continue;
+            جاری;
         }
-        pos += ALIGN(rom->size * 512, OPTION_ROM_ALIGN);
-        struct pnp_data *pnp = get_pnp_rom(rom);
-        if (! pnp) {
+        pos += ALIGN(rom->سائز * 512, OPTION_ROM_ALIGN);
+        ساخت pnp_ڈیٹا *pnp = get_pnp_rom(rom);
+        اگر (! pnp) {
             // Legacy rom.
-            boot_add_bcv(FLATPTR_TO_SEG(rom), OPTION_ROM_INITVECTOR, 0
-                         , getRomPriority(sources, rom, 0));
-            continue;
+            boot_جوڑو_bcv(FLATPTR_مقصد_SEG(rom), OPTION_ROM_INITVECTOR, 0
+                         , get_Rom_ترجیح(sources, rom, 0));
+            جاری;
         }
         // PnP rom - check for BEV and BCV boot capabilities.
-        int instance = 0;
-        while (pnp) {
-            if (pnp->bev)
-                boot_add_bev(FLATPTR_TO_SEG(rom), pnp->bev, pnp->productname
-                             , getRomPriority(sources, rom, instance++));
-            else if (pnp->bcv)
-                boot_add_bcv(FLATPTR_TO_SEG(rom), pnp->bcv, pnp->productname
-                             , getRomPriority(sources, rom, instance++));
-            else
-                break;
-            pnp = get_pnp_next(rom, pnp);
+        صحیح instance = 0;
+        جب (pnp) {
+            اگر (pnp->bev)
+                boot_جوڑو_bev(FLATPTR_مقصد_SEG(rom), pnp->bev, pnp->productname
+                             , get_Rom_ترجیح(sources, rom, instance++));
+            ورنہ اگر (pnp->bcv)
+                boot_جوڑو_bcv(FLATPTR_مقصد_SEG(rom), pnp->bcv, pnp->productname
+                             , get_Rom_ترجیح(sources, rom, instance++));
+            ورنہ
+                توڑو;
+            pnp = get_pnp_اگلا(rom, pnp);
         }
     }
 }
@@ -423,77 +423,77 @@ optionrom_setup(void)
  * VGA init
  ****************************************************************/
 
-int ScreenAndDebug;
-struct rom_header *VgaROM;
+صحیح ScreenAndDebug;
+ساخت rom_سرخی *VgaROM;
 
-static void try_setup_display_other(void)
+ساکن خالی try_تیاری_display_other(خالی)
 {
-    struct pci_device *pci;
+    ساخت pci_device *pci;
 
     dprintf(1, "No VGA found, scan for other display\n");
 
     foreachpci(pci) {
-        if (pci->class != PCI_CLASS_DISPLAY_OTHER)
-            continue;
-        struct rom_header *rom = map_pcirom(pci);
-        if (!rom)
-            continue;
+        اگر (pci->class != PCI_CLASS_DISPLAY_OTHER)
+            جاری;
+        ساخت rom_سرخی *rom = map_pcirom(pci);
+        اگر (!rom)
+            جاری;
         dprintf(1, "Other display found at %pP\n", pci);
         pci_config_maskw(pci->bdf, PCI_COMMAND, 0,
-                         PCI_COMMAND_IO | PCI_COMMAND_MEMORY);
+                         PCI_COMMAND_IO | PCI_COMMAND_حافظہ);
         init_optionrom(rom, pci->bdf, 1);
-        return;
+        واپس;
     }
 }
 
 // Call into vga code to turn on console.
-void
-vgarom_setup(void)
+خالی
+vgarom_تیاری(خالی)
 {
-    int have_vga = 0;
+    صحیح have_vga = 0;
 
-    if (! CONFIG_OPTIONROMS)
-        return;
+    اگر (! CONFIG_OPTIONROMS)
+        واپس;
 
     dprintf(1, "Scan for VGA option rom\n");
 
     // Load some config settings that impact VGA.
     EnforceChecksum = romfile_loadint("etc/optionroms-checksum", 1);
     S3ResumeVga = romfile_loadint("etc/s3-resume-vga-init", CONFIG_QEMU);
-    RunPCIroms = romfile_loadint("etc/pci-optionrom-exec", 2);
+    تسلسل_PCIroms = romfile_loadint("etc/pci-optionrom-exec", 2);
     ScreenAndDebug = romfile_loadint("etc/screen-and-debug", 1);
 
     // Clear option rom memory
-    memset((void*)BUILD_ROM_START, 0, rom_get_max() - BUILD_ROM_START);
+    memset((خالی*)BUILD_ROM_آغاز, 0, rom_get_max() - BUILD_ROM_آغاز);
 
     // Find and deploy PCI VGA rom.
-    struct pci_device *pci;
+    ساخت pci_device *pci;
     foreachpci(pci) {
-        if (!is_pci_vga(pci))
-            continue;
-        vgahook_setup(pci);
-        init_pcirom(pci, 1, NULL);
+        اگر (!is_pci_vga(pci))
+            جاری;
+        vgahook_تیاری(pci);
+        init_pcirom(pci, 1, تہی);
         have_vga = 1;
-        break;
+        توڑو;
     }
-    if (!have_vga)
-        try_setup_display_other();
+    اگر (!have_vga)
+        try_تیاری_display_other();
 
     // Find and deploy CBFS vga-style roms not associated with a device.
-    run_file_roms("vgaroms/", 1, NULL);
+    تسلسل_file_roms("vgaroms/", 1, تہی);
     rom_reserve(0);
 
-    if (rom_get_last() != BUILD_ROM_START)
+    اگر (rom_get_آخری() != BUILD_ROM_آغاز)
         // VGA rom found
-        VgaROM = (void*)BUILD_ROM_START;
+        VgaROM = (خالی*)BUILD_ROM_آغاز;
 }
 
-void
-s3_resume_vga(void)
+خالی
+s3_resume_vga(خالی)
 {
-    if (!S3ResumeVga)
-        return;
-    if (!VgaROM || ! is_valid_rom(VgaROM))
-        return;
+    اگر (!S3ResumeVga)
+        واپس;
+    اگر (!VgaROM || ! is_valid_rom(VgaROM))
+        واپس;
     callrom(VgaROM, 0);
 }

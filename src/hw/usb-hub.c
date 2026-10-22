@@ -4,194 +4,194 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_USB_HUB
-#include "output.h" // dprintf
-#include "string.h" // memset
-#include "usb.h" // struct usb_s
-#include "usb-hub.h" // struct usb_hub_descriptor
-#include "util.h" // timer_calc
+#شامل "config.h" // CONFIG_USB_HUB
+#شامل "output.h" // dprintf
+#شامل "string.h" // memset
+#شامل "usb.h" // struct usb_s
+#شامل "usb-hub.h" // struct usb_hub_descriptor
+#شامل "util.h" // timer_calc
 
-static int
-get_hub_desc(struct usb_pipe *pipe, struct usb_hub_descriptor *desc)
+ساکن صحیح
+get_hub_desc(ساخت usb_pipe *pipe, ساخت usb_hub_descriptor *desc)
 {
-    struct usb_ctrlrequest req;
-    req.bRequestType = USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_DEVICE;
+    ساخت usb_ctrlrequest req;
+    req.bRequestType = USB_DIR_اندر | USB_TYPE_CLASS | USB_RECIP_DEVICE;
     req.bRequest = USB_REQ_GET_DESCRIPTOR;
-    if (pipe->speed == USB_SUPERSPEED)
-        req.wValue = USB_DT_HUB3<<8;
-    else
-        req.wValue = USB_DT_HUB<<8;
-    req.wIndex = 0;
-    req.wLength = sizeof(*desc);
-    return usb_send_default_control(pipe, &req, desc);
+    اگر (pipe->رفتار == USB_SUPERSPEED)
+        req.w_قدر = USB_DT_HUB3<<8;
+    ورنہ
+        req.w_قدر = USB_DT_HUB<<8;
+    req.w_اشاریہ = 0;
+    req.w_لمبائی = حجم(*desc);
+    واپس usb_send_default_control(pipe, &req, desc);
 }
 
-static int
-set_hub_depth(struct usb_pipe *pipe, u16 depth)
+ساکن صحیح
+سیٹ_hub_گہرائی(ساخت usb_pipe *pipe, u16 گہرائی)
 {
-    struct usb_ctrlrequest req;
-    req.bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_DEVICE;
-    req.bRequest = HUB_REQ_SET_HUB_DEPTH;
-    req.wValue = depth;
-    req.wIndex = 0;
-    req.wLength = 0;
-    return usb_send_default_control(pipe, &req, NULL);
+    ساخت usb_ctrlrequest req;
+    req.bRequestType = USB_DIR_برآمد | USB_TYPE_CLASS | USB_RECIP_DEVICE;
+    req.bRequest = HUB_REQ_سیٹ_HUB_گہرائی;
+    req.w_قدر = گہرائی;
+    req.w_اشاریہ = 0;
+    req.w_لمبائی = 0;
+    واپس usb_send_default_control(pipe, &req, تہی);
 }
 
-static int
-set_port_feature(struct usbhub_s *hub, int port, int feature)
+ساکن صحیح
+سیٹ_پورٹ_feature(ساخت usbhub_s *hub, صحیح پورٹ, صحیح feature)
 {
-    struct usb_ctrlrequest req;
-    req.bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_OTHER;
-    req.bRequest = USB_REQ_SET_FEATURE;
-    req.wValue = feature;
-    req.wIndex = port + 1;
-    req.wLength = 0;
-    mutex_lock(&hub->lock);
-    int ret = usb_send_default_control(hub->usbdev->defpipe, &req, NULL);
-    mutex_unlock(&hub->lock);
-    return ret;
+    ساخت usb_ctrlrequest req;
+    req.bRequestType = USB_DIR_برآمد | USB_TYPE_CLASS | USB_RECIP_OTHER;
+    req.bRequest = USB_REQ_سیٹ_FEATURE;
+    req.w_قدر = feature;
+    req.w_اشاریہ = پورٹ + 1;
+    req.w_لمبائی = 0;
+    mutex_تالا(&hub->تالا_2);
+    صحیح ret = usb_send_default_control(hub->usbdev->defpipe, &req, تہی);
+    mutex_unlock(&hub->تالا_2);
+    واپس ret;
 }
 
-static int
-clear_port_feature(struct usbhub_s *hub, int port, int feature)
+ساکن صحیح
+clear_پورٹ_feature(ساخت usbhub_s *hub, صحیح پورٹ, صحیح feature)
 {
-    struct usb_ctrlrequest req;
-    req.bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_OTHER;
+    ساخت usb_ctrlrequest req;
+    req.bRequestType = USB_DIR_برآمد | USB_TYPE_CLASS | USB_RECIP_OTHER;
     req.bRequest = USB_REQ_CLEAR_FEATURE;
-    req.wValue = feature;
-    req.wIndex = port + 1;
-    req.wLength = 0;
-    mutex_lock(&hub->lock);
-    int ret = usb_send_default_control(hub->usbdev->defpipe, &req, NULL);
-    mutex_unlock(&hub->lock);
-    return ret;
+    req.w_قدر = feature;
+    req.w_اشاریہ = پورٹ + 1;
+    req.w_لمبائی = 0;
+    mutex_تالا(&hub->تالا_2);
+    صحیح ret = usb_send_default_control(hub->usbdev->defpipe, &req, تہی);
+    mutex_unlock(&hub->تالا_2);
+    واپس ret;
 }
 
-static int
-get_port_status(struct usbhub_s *hub, int port, struct usb_port_status *sts)
+ساکن صحیح
+get_پورٹ_حالت(ساخت usbhub_s *hub, صحیح پورٹ, ساخت usb_پورٹ_حالت *sts)
 {
-    struct usb_ctrlrequest req;
-    req.bRequestType = USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_OTHER;
-    req.bRequest = USB_REQ_GET_STATUS;
-    req.wValue = 0;
-    req.wIndex = port + 1;
-    req.wLength = sizeof(*sts);
-    mutex_lock(&hub->lock);
-    int ret = usb_send_default_control(hub->usbdev->defpipe, &req, sts);
-    mutex_unlock(&hub->lock);
-    return ret;
+    ساخت usb_ctrlrequest req;
+    req.bRequestType = USB_DIR_اندر | USB_TYPE_CLASS | USB_RECIP_OTHER;
+    req.bRequest = USB_REQ_GET_حالت;
+    req.w_قدر = 0;
+    req.w_اشاریہ = پورٹ + 1;
+    req.w_لمبائی = حجم(*sts);
+    mutex_تالا(&hub->تالا_2);
+    صحیح ret = usb_send_default_control(hub->usbdev->defpipe, &req, sts);
+    mutex_unlock(&hub->تالا_2);
+    واپس ret;
 }
 
 // Check if device attached to port
-static int
-usb_hub_detect(struct usbhub_s *hub, u32 port)
+ساکن صحیح
+usb_hub_detect(ساخت usbhub_s *hub, u32 پورٹ)
 {
-    struct usb_port_status sts;
-    int ret = get_port_status(hub, port, &sts);
-    if (ret) {
-        dprintf(1, "Failure on hub port %d detect\n", port);
-        return -1;
+    ساخت usb_پورٹ_حالت sts;
+    صحیح ret = get_پورٹ_حالت(hub, پورٹ, &sts);
+    اگر (ret) {
+        dprintf(1, "Failure on hub port %d detect\n", پورٹ);
+        واپس -1;
     }
-    return (sts.wPortStatus & USB_PORT_STAT_CONNECTION) ? 1 : 0;
+    واپس (sts.w_پورٹ_حالت & USB_پورٹ_STAT_CONNECTION) ? 1 : 0;
 }
 
 // Disable port
-static void
-usb_hub_disconnect(struct usbhub_s *hub, u32 port)
+ساکن خالی
+usb_hub_disconnect(ساخت usbhub_s *hub, u32 پورٹ)
 {
-    int ret = clear_port_feature(hub, port, USB_PORT_FEAT_ENABLE);
-    if (ret)
-        dprintf(1, "Failure on hub port %d disconnect\n", port);
+    صحیح ret = clear_پورٹ_feature(hub, پورٹ, USB_پورٹ_FEAT_ENABLE);
+    اگر (ret)
+        dprintf(1, "Failure on hub port %d disconnect\n", پورٹ);
 }
 
 // Reset device on port
-static int
-usb_hub_reset(struct usbhub_s *hub, u32 port)
+ساکن صحیح
+usb_hub_reset(ساخت usbhub_s *hub, u32 پورٹ)
 {
-    int ret = set_port_feature(hub, port, USB_PORT_FEAT_RESET);
-    if (ret)
-        goto fail;
+    صحیح ret = سیٹ_پورٹ_feature(hub, پورٹ, USB_پورٹ_FEAT_RESET);
+    اگر (ret)
+        جاؤ fail;
 
     // Wait for reset to complete.
-    struct usb_port_status sts;
-    u32 end = timer_calc(USB_TIME_DRST * 2);
-    for (;;) {
-        ret = get_port_status(hub, port, &sts);
-        if (ret)
-            goto fail;
-        if (!(sts.wPortStatus & USB_PORT_STAT_RESET)
-            && (hub->usbdev->speed != USB_SUPERSPEED
-                || !(sts.wPortStatus & USB_PORT_STAT_LINK_MASK)))
-            break;
-        if (timer_check(end)) {
+    ساخت usb_پورٹ_حالت sts;
+    u32 انتہا = timer_calc(USB_وقت_DRST * 2);
+    برائے (;;) {
+        ret = get_پورٹ_حالت(hub, پورٹ, &sts);
+        اگر (ret)
+            جاؤ fail;
+        اگر (!(sts.w_پورٹ_حالت & USB_پورٹ_STAT_RESET)
+            && (hub->usbdev->رفتار != USB_SUPERSPEED
+                || !(sts.w_پورٹ_حالت & USB_پورٹ_STAT_LINK_نقاب)))
+            توڑو;
+        اگر (timer_check(انتہا)) {
             warn_timeout();
-            goto fail;
+            جاؤ fail;
         }
         msleep(5);
     }
 
     // Reset complete.
-    if (!(sts.wPortStatus & USB_PORT_STAT_CONNECTION))
+    اگر (!(sts.w_پورٹ_حالت & USB_پورٹ_STAT_CONNECTION))
         // Device no longer present
-        return -1;
+        واپس -1;
 
-    if (hub->usbdev->speed == USB_SUPERSPEED)
-        return USB_SUPERSPEED;
-    return ((sts.wPortStatus & USB_PORT_STAT_SPEED_MASK)
-            >> USB_PORT_STAT_SPEED_SHIFT);
+    اگر (hub->usbdev->رفتار == USB_SUPERSPEED)
+        واپس USB_SUPERSPEED;
+    واپس ((sts.w_پورٹ_حالت & USB_پورٹ_STAT_رفتار_نقاب)
+            >> USB_پورٹ_STAT_رفتار_سرکاؤ);
 
 fail:
-    dprintf(1, "Failure on hub port %d reset\n", port);
-    usb_hub_disconnect(hub, port);
-    return -1;
+    dprintf(1, "Failure on hub port %d reset\n", پورٹ);
+    usb_hub_disconnect(hub, پورٹ);
+    واپس -1;
 }
 
-static struct usbhub_op_s HubOp = {
+ساکن ساخت usbhub_op_s HubOp = {
     .detect = usb_hub_detect,
     .reset = usb_hub_reset,
     .disconnect = usb_hub_disconnect,
 };
 
 // Configure a usb hub and then find devices connected to it.
-int
-usb_hub_setup(struct usbdevice_s *usbdev)
+صحیح
+usb_hub_تیاری(ساخت usbdevice_s *usbdev)
 {
     ASSERT32FLAT();
-    if (!CONFIG_USB_HUB)
-        return -1;
+    اگر (!CONFIG_USB_HUB)
+        واپس -1;
 
-    struct usb_hub_descriptor desc;
-    int ret = get_hub_desc(usbdev->defpipe, &desc);
-    if (ret)
-        return ret;
+    ساخت usb_hub_descriptor desc;
+    صحیح ret = get_hub_desc(usbdev->defpipe, &desc);
+    اگر (ret)
+        واپس ret;
 
-    struct usbhub_s hub;
-    memset(&hub, 0, sizeof(hub));
+    ساخت usbhub_s hub;
+    memset(&hub, 0, حجم(hub));
     hub.usbdev = usbdev;
     hub.cntl = usbdev->defpipe->cntl;
     hub.portcount = desc.bNbrPorts;
     hub.op = &HubOp;
 
-    if (usbdev->speed == USB_SUPERSPEED) {
-        int depth = 0;
-        struct usbdevice_s *parent = usbdev->hub->usbdev;
-        while (parent) {
-            depth++;
-            parent = parent->hub->usbdev;
+    اگر (usbdev->رفتار == USB_SUPERSPEED) {
+        صحیح گہرائی = 0;
+        ساخت usbdevice_s *والد = usbdev->hub->usbdev;
+        جب (والد) {
+            گہرائی++;
+            والد = والد->hub->usbdev;
         }
 
-        ret = set_hub_depth(usbdev->defpipe, depth);
-        if (ret)
-            return ret;
+        ret = سیٹ_hub_گہرائی(usbdev->defpipe, گہرائی);
+        اگر (ret)
+            واپس ret;
     }
 
     // Turn on power to ports.
-    int port;
-    for (port=0; port<desc.bNbrPorts; port++) {
-        ret = set_port_feature(&hub, port, USB_PORT_FEAT_POWER);
-        if (ret)
-            return ret;
+    صحیح پورٹ;
+    برائے (پورٹ=0; پورٹ<desc.bNbrPorts; پورٹ++) {
+        ret = سیٹ_پورٹ_feature(&hub, پورٹ, USB_پورٹ_FEAT_POWER);
+        اگر (ret)
+            واپس ret;
     }
     // Wait for port power to stabilize.
     msleep(desc.bPwrOn2PwrGood * 2);
@@ -199,7 +199,7 @@ usb_hub_setup(struct usbdevice_s *usbdev)
     usb_enumerate(&hub);
 
     dprintf(1, "Initialized USB HUB (%d ports used)\n", hub.devcount);
-    if (hub.devcount)
-        return 0;
-    return -1;
+    اگر (hub.devcount)
+        واپس 0;
+    واپس -1;
 }

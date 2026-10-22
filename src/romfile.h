@@ -1,22 +1,22 @@
-#ifndef __ROMFILE_H
-#define __ROMFILE_H
+#اگر_غیر_تعریف_شدہ __ROMFILE_H
+#تعریف_کرو __ROMFILE_H
 
-#include "types.h" // u32
+#شامل "types.h" // u32
 
 // romfile.c
-struct romfile_s {
-    struct romfile_s *next;
-    char name[128];
-    u32 size;
-    int (*copy)(struct romfile_s *file, void *dest, u32 maxlen);
+ساخت romfile_s {
+    ساخت romfile_s *اگلا;
+    حرف name[128];
+    u32 سائز;
+    صحیح (*copy)(ساخت romfile_s *file, خالی *dest, u32 maxlen);
 };
-void romfile_add(struct romfile_s *file);
-struct romfile_s *romfile_findprefix(const char *prefix, struct romfile_s *prev);
-struct romfile_s *romfile_find(const char *name);
-void *romfile_loadfile(const char *name, int *psize);
-u64 romfile_loadint(const char *name, u64 defval);
-u32 romfile_loadbool(const char *name, u32 defval);
+خالی romfile_جوڑو(ساخت romfile_s *file);
+ساخت romfile_s *romfile_findprefix(ثابت حرف *سابقہ, ساخت romfile_s *پچھلا);
+ساخت romfile_s *romfile_ڈھونڈو(ثابت حرف *name);
+خالی *romfile_loadfile(ثابت حرف *name, صحیح *psize);
+u64 romfile_loadint(ثابت حرف *name, u64 defval);
+u32 romfile_loadbool(ثابت حرف *name, u32 defval);
 
-void const_romfile_add_int(char *name, u32 value);
+خالی const_romfile_جوڑو_int(حرف *name, u32 قدر);
 
-#endif // romfile.h
+#اگر_ختم // romfile.h

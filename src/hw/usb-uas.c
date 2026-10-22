@@ -14,69 +14,69 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_GLOBALFLAT
-#include "block.h" // DTYPE_USB
-#include "blockcmd.h" // cdb_read
-#include "config.h" // CONFIG_USB_UAS
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "std/disk.h" // DISK_RET_SUCCESS
-#include "string.h" // memset
-#include "usb.h" // struct usb_s
-#include "usb-uas.h" // usb_uas_init
-#include "util.h" // bootprio_find_usb
+#شامل "biosvar.h" // GET_GLOBALFLAT
+#شامل "block.h" // DTYPE_USB
+#شامل "blockcmd.h" // cdb_read
+#شامل "config.h" // CONFIG_USB_UAS
+#شامل "malloc.h" // free
+#شامل "output.h" // dprintf
+#شامل "std/disk.h" // DISK_RET_SUCCESS
+#شامل "string.h" // memset
+#شامل "usb.h" // struct usb_s
+#شامل "usb-uas.h" // usb_uas_init
+#شامل "util.h" // bootprio_find_usb
 
-#define UAS_UI_COMMAND              0x01
-#define UAS_UI_SENSE                0x03
-#define UAS_UI_RESPONSE             0x04
-#define UAS_UI_TASK_MGMT            0x05
-#define UAS_UI_READ_READY           0x06
-#define UAS_UI_WRITE_READY          0x07
+#تعریف_کرو UAS_UI_COMMAND              0x01
+#تعریف_کرو UAS_UI_SENSE                0x03
+#تعریف_کرو UAS_UI_RESPONSE             0x04
+#تعریف_کرو UAS_UI_TASK_MGMT            0x05
+#تعریف_کرو UAS_UI_READ_READY           0x06
+#تعریف_کرو UAS_UI_WRITE_READY          0x07
 
-#define UAS_PIPE_ID_COMMAND         0x01
-#define UAS_PIPE_ID_STATUS          0x02
-#define UAS_PIPE_ID_DATA_IN         0x03
-#define UAS_PIPE_ID_DATA_OUT        0x04
+#تعریف_کرو UAS_PIPE_ID_COMMAND         0x01
+#تعریف_کرو UAS_PIPE_ID_حالت          0x02
+#تعریف_کرو UAS_PIPE_ID_ڈیٹا_اندر         0x03
+#تعریف_کرو UAS_PIPE_ID_ڈیٹا_برآمد        0x04
 
-typedef struct {
+قسمتعریف ساخت {
     u8    id;
     u8    reserved;
-    u16   tag;
-} PACKED  uas_ui_header;
+    u16   لیبل;
+} PACKED  uas_ui_سرخی;
 
-typedef struct {
+قسمتعریف ساخت {
     u8    prio_taskattr;   /* 6:3 priority, 2:0 task attribute   */
     u8    reserved_1;
-    u8    add_cdb_length;  /* 7:2 additional adb length (dwords) */
+    u8    جوڑو_cdb_لمبائی;  /* 7:2 additional adb length (dwords) */
     u8    reserved_2;
     u8    lun[8];
     u8    cdb[16];
-    u8    add_cdb[];
+    u8    جوڑو_cdb[];
 } PACKED  uas_ui_command;
 
-typedef struct {
-    u16   status_qualifier;
-    u8    status;
+قسمتعریف ساخت {
+    u16   حالت_qualifier;
+    u8    حالت_2;
     u8    reserved[7];
-    u16   sense_length;
-    u8    sense_data[18];
+    u16   sense_لمبائی;
+    u8    sense_ڈیٹا[18];
 } PACKED  uas_ui_sense;
 
-typedef struct {
-    u16   add_response_info;
-    u8    response_code;
+قسمتعریف ساخت {
+    u16   جوڑو_response_info;
+    u8    response_رمز;
 } PACKED  uas_ui_response;
 
-typedef struct {
+قسمتعریف ساخت {
     u8    function;
     u8    reserved;
-    u16   task_tag;
+    u16   task_لیبل;
     u8    lun[8];
 } PACKED  uas_ui_task_mgmt;
 
-typedef struct {
-    uas_ui_header  hdr;
-    union {
+قسمتعریف ساخت {
+    uas_ui_سرخی  hdr;
+    اتحاد {
         uas_ui_command   command;
         uas_ui_sense     sense;
         uas_ui_task_mgmt task;
@@ -84,206 +84,206 @@ typedef struct {
     };
 } PACKED  uas_ui;
 
-struct uasdrive_s {
-    struct drive_s drive;
-    struct usbdevice_s *usbdev;
-    struct usb_pipe *command, *status, *data_in, *data_out;
+ساخت uasdrive_s {
+    ساخت drive_s drive;
+    ساخت usbdevice_s *usbdev;
+    ساخت usb_pipe *command, *حالت_2, *ڈیٹا_اندر, *ڈیٹا_برآمد;
     u32 lun;
 };
 
-int
-uas_process_op(struct disk_op_s *op)
+صحیح
+uas_process_op(ساخت disk_op_s *op)
 {
-    if (!CONFIG_USB_UAS)
-        return DISK_RET_EBADTRACK;
+    اگر (!CONFIG_USB_UAS)
+        واپس DISK_RET_EBADTRACK;
 
-    struct uasdrive_s *drive_gf = container_of(
-        op->drive_fl, struct uasdrive_s, drive);
+    ساخت uasdrive_s *drive_gf = container_کا(
+        op->drive_fl, ساخت uasdrive_s, drive);
 
     uas_ui ui;
-    memset(&ui, 0, sizeof(ui));
+    memset(&ui, 0, حجم(ui));
     ui.hdr.id = UAS_UI_COMMAND;
-    ui.hdr.tag = 0xdead;
+    ui.hdr.لیبل = 0xdead;
     ui.command.lun[1] = GET_GLOBALFLAT(drive_gf->lun);
-    int blocksize = scsi_fill_cmd(op, ui.command.cdb, sizeof(ui.command.cdb));
-    if (blocksize < 0)
-        return default_process_op(op);
-    int ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->command),
-                            USB_DIR_OUT, MAKE_FLATPTR(GET_SEG(SS), &ui),
-                            sizeof(ui.hdr) + sizeof(ui.command));
-    if (ret) {
+    صحیح blocksize = scsi_fill_cmd(op, ui.command.cdb, حجم(ui.command.cdb));
+    اگر (blocksize < 0)
+        واپس default_process_op(op);
+    صحیح ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->command),
+                            USB_DIR_برآمد, MAKE_FLATPTR(GET_SEG(SS), &ui),
+                            حجم(ui.hdr) + حجم(ui.command));
+    اگر (ret) {
         dprintf(1, "uas: command send fail");
-        goto fail;
+        جاؤ fail;
     }
 
-    memset(&ui, 0xff, sizeof(ui));
-    ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->status),
-                        USB_DIR_IN, MAKE_FLATPTR(GET_SEG(SS), &ui), sizeof(ui));
-    if (ret) {
+    memset(&ui, 0xff, حجم(ui));
+    ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->حالت_2),
+                        USB_DIR_اندر, MAKE_FLATPTR(GET_SEG(SS), &ui), حجم(ui));
+    اگر (ret) {
         dprintf(1, "uas: status recv fail");
-        goto fail;
+        جاؤ fail;
     }
 
-    switch (ui.hdr.id) {
-    case UAS_UI_SENSE:
-        goto have_sense;
-    case UAS_UI_READ_READY:
-        ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->data_in),
-                            USB_DIR_IN, op->buf_fl, op->count * blocksize);
-        if (ret) {
+    انتخاب (ui.hdr.id) {
+    حالت UAS_UI_SENSE:
+        جاؤ have_sense;
+    حالت UAS_UI_READ_READY:
+        ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->ڈیٹا_اندر),
+                            USB_DIR_اندر, op->buf_fl, op->گنتی * blocksize);
+        اگر (ret) {
             dprintf(1, "uas: data read fail");
-            goto fail;
+            جاؤ fail;
         }
-        break;
-    case UAS_UI_WRITE_READY:
-        ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->data_out),
-                            USB_DIR_OUT, op->buf_fl, op->count * blocksize);
-        if (ret) {
+        توڑو;
+    حالت UAS_UI_WRITE_READY:
+        ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->ڈیٹا_برآمد),
+                            USB_DIR_برآمد, op->buf_fl, op->گنتی * blocksize);
+        اگر (ret) {
             dprintf(1, "uas: data write fail");
-            goto fail;
+            جاؤ fail;
         }
-        break;
-    default:
+        توڑو;
+    طےشدہ:
         dprintf(1, "uas: unknown status ui id %d", ui.hdr.id);
-        goto fail;
+        جاؤ fail;
     }
 
-    memset(&ui, 0xff, sizeof(ui));
-    ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->status),
-                        USB_DIR_IN, MAKE_FLATPTR(GET_SEG(SS), &ui), sizeof(ui));
-    if (ret) {
+    memset(&ui, 0xff, حجم(ui));
+    ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->حالت_2),
+                        USB_DIR_اندر, MAKE_FLATPTR(GET_SEG(SS), &ui), حجم(ui));
+    اگر (ret) {
         dprintf(1, "uas: status recv fail");
-        goto fail;
+        جاؤ fail;
     }
-    if (ui.hdr.id != UAS_UI_SENSE) {
+    اگر (ui.hdr.id != UAS_UI_SENSE) {
         dprintf(1, "uas: expected sense ui, got ui id %d", ui.hdr.id);
-        goto fail;
+        جاؤ fail;
     }
 
 have_sense:
-    if (ui.sense.status == 0) {
-        return DISK_RET_SUCCESS;
+    اگر (ui.sense.حالت_2 == 0) {
+        واپس DISK_RET_SUCCESS;
     }
 
 fail:
-    return DISK_RET_EBADTRACK;
+    واپس DISK_RET_EBADTRACK;
 }
 
-static void
-uas_init_lun(struct uasdrive_s *drive, struct usbdevice_s *usbdev,
-             struct usb_pipe *command, struct usb_pipe *status,
-             struct usb_pipe *data_in, struct usb_pipe *data_out,
+ساکن خالی
+uas_init_lun(ساخت uasdrive_s *drive, ساخت usbdevice_s *usbdev,
+             ساخت usb_pipe *command, ساخت usb_pipe *حالت_2,
+             ساخت usb_pipe *ڈیٹا_اندر, ساخت usb_pipe *ڈیٹا_برآمد,
              u32 lun)
 {
-    memset(drive, 0, sizeof(*drive));
-    if (usb_32bit_pipe(data_in))
+    memset(drive, 0, حجم(*drive));
+    اگر (usb_32bit_pipe(ڈیٹا_اندر))
         drive->drive.type = DTYPE_UAS_32;
-    else
+    ورنہ
         drive->drive.type = DTYPE_UAS;
     drive->usbdev = usbdev;
     drive->command = command;
-    drive->status = status;
-    drive->data_in = data_in;
-    drive->data_out = data_out;
+    drive->حالت_2 = حالت_2;
+    drive->ڈیٹا_اندر = ڈیٹا_اندر;
+    drive->ڈیٹا_برآمد = ڈیٹا_برآمد;
     drive->lun = lun;
 }
 
-static int
-uas_add_lun(u32 lun, struct drive_s *tmpl_drv)
+ساکن صحیح
+uas_جوڑو_lun(u32 lun, ساخت drive_s *tmpl_drv)
 {
-    struct uasdrive_s *tmpl_lun =
-        container_of(tmpl_drv, struct uasdrive_s, drive);
-    struct uasdrive_s *drive = malloc_fseg(sizeof(*drive));
-    if (!drive) {
+    ساخت uasdrive_s *tmpl_lun =
+        container_کا(tmpl_drv, ساخت uasdrive_s, drive);
+    ساخت uasdrive_s *drive = malloc_fseg(حجم(*drive));
+    اگر (!drive) {
         warn_noalloc();
-        return -1;
+        واپس -1;
     }
     uas_init_lun(drive, tmpl_lun->usbdev,
-                 tmpl_lun->command, tmpl_lun->status,
-                 tmpl_lun->data_in, tmpl_lun->data_out,
+                 tmpl_lun->command, tmpl_lun->حالت_2,
+                 tmpl_lun->ڈیٹا_اندر, tmpl_lun->ڈیٹا_برآمد,
                  lun);
 
-    int prio = bootprio_find_usb(drive->usbdev, drive->lun);
-    int ret = scsi_drive_setup(&drive->drive, "USB UAS", prio);
-    if (ret) {
-        free(drive);
-        return -1;
+    صحیح prio = bootprio_ڈھونڈو_usb(drive->usbdev, drive->lun);
+    صحیح ret = scsi_drive_تیاری(&drive->drive, "USB UAS", prio);
+    اگر (ret) {
+        آزاد(drive);
+        واپس -1;
     }
-    return 0;
+    واپس 0;
 }
 
-int
-usb_uas_setup(struct usbdevice_s *usbdev)
+صحیح
+usb_uas_تیاری(ساخت usbdevice_s *usbdev)
 {
-    if (!CONFIG_USB_UAS)
-        return -1;
+    اگر (!CONFIG_USB_UAS)
+        واپس -1;
 
     // Verify right kind of device
-    struct usb_interface_descriptor *iface = usbdev->iface;
-    if (iface->bInterfaceSubClass != US_SC_SCSI ||
+    ساخت usb_interface_descriptor *iface = usbdev->iface;
+    اگر (iface->bInterfaceSubClass != US_SC_SCSI ||
         iface->bInterfaceProtocol != US_PR_UAS) {
         dprintf(1, "Unsupported UAS device (subclass=%02x proto=%02x)\n"
                 , iface->bInterfaceSubClass, iface->bInterfaceProtocol);
-        return -1;
+        واپس -1;
     }
 
     /* find & allocate pipes */
-    struct usb_endpoint_descriptor *ep = NULL;
-    struct usb_pipe *command = NULL;
-    struct usb_pipe *status = NULL;
-    struct usb_pipe *data_in = NULL;
-    struct usb_pipe *data_out = NULL;
+    ساخت usb_endpoint_descriptor *ep = تہی;
+    ساخت usb_pipe *command = تہی;
+    ساخت usb_pipe *حالت_2 = تہی;
+    ساخت usb_pipe *ڈیٹا_اندر = تہی;
+    ساخت usb_pipe *ڈیٹا_برآمد = تہی;
     u8 *desc = (u8*)iface;
-    while (desc) {
+    جب (desc) {
         desc += desc[0];
-        switch (desc[1]) {
-        case USB_DT_ENDPOINT:
-            ep = (void*)desc;
-            break;
-        case USB_DT_ENDPOINT_COMPANION:
+        انتخاب (desc[1]) {
+        حالت USB_DT_ENDPOINT:
+            ep = (خالی*)desc;
+            توڑو;
+        حالت USB_DT_ENDPOINT_COMPANION:
             /* No support (yet) for usb3 streams */
             dprintf(1, "Superspeed UAS devices not supported (yet)\n");
-            goto fail;
-        case 0x24:
-            switch (desc[2]) {
-            case UAS_PIPE_ID_COMMAND:
+            جاؤ fail;
+        حالت 0x24:
+            انتخاب (desc[2]) {
+            حالت UAS_PIPE_ID_COMMAND:
                 command = usb_alloc_pipe(usbdev, ep);
-                break;
-            case UAS_PIPE_ID_STATUS:
-                status = usb_alloc_pipe(usbdev, ep);
-                break;
-            case UAS_PIPE_ID_DATA_IN:
-                data_in = usb_alloc_pipe(usbdev, ep);
-                break;
-            case UAS_PIPE_ID_DATA_OUT:
-                data_out = usb_alloc_pipe(usbdev, ep);
-                break;
-            default:
-                goto fail;
+                توڑو;
+            حالت UAS_PIPE_ID_حالت:
+                حالت_2 = usb_alloc_pipe(usbdev, ep);
+                توڑو;
+            حالت UAS_PIPE_ID_ڈیٹا_اندر:
+                ڈیٹا_اندر = usb_alloc_pipe(usbdev, ep);
+                توڑو;
+            حالت UAS_PIPE_ID_ڈیٹا_برآمد:
+                ڈیٹا_برآمد = usb_alloc_pipe(usbdev, ep);
+                توڑو;
+            طےشدہ:
+                جاؤ fail;
             }
-            break;
-        default:
-            desc = NULL;
-            break;
+            توڑو;
+        طےشدہ:
+            desc = تہی;
+            توڑو;
         }
     }
-    if (!command || !status || !data_in || !data_out)
-        goto fail;
+    اگر (!command || !حالت_2 || !ڈیٹا_اندر || !ڈیٹا_برآمد)
+        جاؤ fail;
 
-    struct uasdrive_s lun0;
-    uas_init_lun(&lun0, usbdev, command, status, data_in, data_out, 0);
-    int ret = scsi_rep_luns_scan(&lun0.drive, uas_add_lun);
-    if (ret <= 0) {
+    ساخت uasdrive_s lun0;
+    uas_init_lun(&lun0, usbdev, command, حالت_2, ڈیٹا_اندر, ڈیٹا_برآمد, 0);
+    صحیح ret = scsi_rep_luns_جائزہ(&lun0.drive, uas_جوڑو_lun);
+    اگر (ret <= 0) {
         dprintf(1, "Unable to configure UAS drive.\n");
-        goto fail;
+        جاؤ fail;
     }
 
-    return 0;
+    واپس 0;
 
 fail:
     usb_free_pipe(usbdev, command);
-    usb_free_pipe(usbdev, status);
-    usb_free_pipe(usbdev, data_in);
-    usb_free_pipe(usbdev, data_out);
-    return -1;
+    usb_free_pipe(usbdev, حالت_2);
+    usb_free_pipe(usbdev, ڈیٹا_اندر);
+    usb_free_pipe(usbdev, ڈیٹا_برآمد);
+    واپس -1;
 }

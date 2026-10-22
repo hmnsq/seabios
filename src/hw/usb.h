@@ -1,77 +1,77 @@
 // USB functions and data.
-#ifndef __USB_H
-#define __USB_H
+#اگر_غیر_تعریف_شدہ __USB_H
+#تعریف_کرو __USB_H
 
-#include "stacks.h" // struct mutex_s
+#شامل "stacks.h" // struct mutex_s
 
 // Information on a USB end point.
-struct usb_pipe {
-    union {
-        struct usb_s *cntl;
-        struct usb_pipe *freenext;
+ساخت usb_pipe {
+    اتحاد {
+        ساخت usb_s *cntl;
+        ساخت usb_pipe *freenext;
     };
     u8 type;
     u8 ep;
     u8 devaddr;
-    u8 speed;
+    u8 رفتار;
     u16 maxpacket;
     u8 eptype;
 };
 
 // Common information for usb devices.
-struct usbdevice_s {
-    struct usbhub_s *hub;
-    struct usb_pipe *defpipe;
-    u32 port;
-    struct usb_config_descriptor *config;
-    struct usb_interface_descriptor *iface;
-    int imax;
-    u8 speed;
+ساخت usbdevice_s {
+    ساخت usbhub_s *hub;
+    ساخت usb_pipe *defpipe;
+    u32 پورٹ;
+    ساخت usb_config_descriptor *config;
+    ساخت usb_interface_descriptor *iface;
+    صحیح imax;
+    u8 رفتار;
     u8 devaddr;
 };
 
 // Common information for usb controllers.
-struct usb_s {
-    struct usb_pipe *freelist;
-    struct mutex_s resetlock;
-    struct pci_device *pci;
-    void *mmio;
+ساخت usb_s {
+    ساخت usb_pipe *freelist;
+    ساخت mutex_s resetlock;
+    ساخت pci_device *pci;
+    خالی *mmio;
     u8 type;
     u8 maxaddr;
 };
 
 // Information for enumerating USB hubs
-struct usbhub_s {
-    struct usbhub_op_s *op;
-    struct usbdevice_s *usbdev;
-    struct usb_s *cntl;
-    struct mutex_s lock;
+ساخت usbhub_s {
+    ساخت usbhub_op_s *op;
+    ساخت usbdevice_s *usbdev;
+    ساخت usb_s *cntl;
+    ساخت mutex_s تالا_2;
     u32 detectend;
-    u32 port;
-    u32 threads;
+    u32 پورٹ;
+    u32 دھاگے;
     u32 portcount;
     u32 devcount;
 };
 
 // Hub callback (32bit) info
-struct usbhub_op_s {
-    int (*detect)(struct usbhub_s *hub, u32 port);
-    int (*reset)(struct usbhub_s *hub, u32 port);
-    int (*portmap)(struct usbhub_s *hub, u32 port);
-    void (*disconnect)(struct usbhub_s *hub, u32 port);
+ساخت usbhub_op_s {
+    صحیح (*detect)(ساخت usbhub_s *hub, u32 پورٹ);
+    صحیح (*reset)(ساخت usbhub_s *hub, u32 پورٹ);
+    صحیح (*portmap)(ساخت usbhub_s *hub, u32 پورٹ);
+    خالی (*disconnect)(ساخت usbhub_s *hub, u32 پورٹ);
 };
 
-#define USB_TYPE_UHCI  1
-#define USB_TYPE_OHCI  2
-#define USB_TYPE_EHCI  3
-#define USB_TYPE_XHCI  4
+#تعریف_کرو USB_TYPE_UHCI  1
+#تعریف_کرو USB_TYPE_OHCI  2
+#تعریف_کرو USB_TYPE_EHCI  3
+#تعریف_کرو USB_TYPE_XHCI  4
 
-#define USB_FULLSPEED  0
-#define USB_LOWSPEED   1
-#define USB_HIGHSPEED  2
-#define USB_SUPERSPEED 3
+#تعریف_کرو USB_FULLSPEED  0
+#تعریف_کرو USB_LOWSPEED   1
+#تعریف_کرو USB_HIGHSPEED  2
+#تعریف_کرو USB_SUPERSPEED 3
 
-#define USB_MAXADDR  127
+#تعریف_کرو USB_MAXADDR  127
 
 
 /****************************************************************
@@ -79,68 +79,68 @@ struct usbhub_op_s {
  ****************************************************************/
 
 // USB mandated timings (in ms)
-#define USB_TIME_SIGATT 100
-#define USB_TIME_ATTDB  100
-#define USB_TIME_DRST   10
-#define USB_TIME_DRSTR  50
-#define USB_TIME_RSTRCY 10
+#تعریف_کرو USB_وقت_SIGATT 100
+#تعریف_کرو USB_وقت_ATTDB  100
+#تعریف_کرو USB_وقت_DRST   10
+#تعریف_کرو USB_وقت_DRSTR  50
+#تعریف_کرو USB_وقت_RSTRCY 10
 
-#define USB_TIME_STATUS  50
-#define USB_TIME_DATAIN  500
-#define USB_TIME_COMMAND 5000
+#تعریف_کرو USB_وقت_حالت  50
+#تعریف_کرو USB_وقت_DATAIN  500
+#تعریف_کرو USB_وقت_COMMAND 5000
 
-#define USB_TIME_SETADDR_RECOVERY 2
+#تعریف_کرو USB_وقت_SETADDR_RECOVERY 2
 
-#define USB_PID_OUT                     0xe1
-#define USB_PID_IN                      0x69
-#define USB_PID_SETUP                   0x2d
+#تعریف_کرو USB_PID_برآمد                     0xe1
+#تعریف_کرو USB_PID_اندر                      0x69
+#تعریف_کرو USB_PID_تیاری                   0x2d
 
-#define USB_DIR_OUT                     0               /* to device */
-#define USB_DIR_IN                      0x80            /* to host */
+#تعریف_کرو USB_DIR_برآمد                     0               /* to device */
+#تعریف_کرو USB_DIR_اندر                      0x80            /* to host */
 
-#define USB_TYPE_MASK                   (0x03 << 5)
-#define USB_TYPE_STANDARD               (0x00 << 5)
-#define USB_TYPE_CLASS                  (0x01 << 5)
-#define USB_TYPE_VENDOR                 (0x02 << 5)
-#define USB_TYPE_RESERVED               (0x03 << 5)
+#تعریف_کرو USB_TYPE_نقاب                   (0x03 << 5)
+#تعریف_کرو USB_TYPE_STANDARD               (0x00 << 5)
+#تعریف_کرو USB_TYPE_CLASS                  (0x01 << 5)
+#تعریف_کرو USB_TYPE_VENDOR                 (0x02 << 5)
+#تعریف_کرو USB_TYPE_RESERVED               (0x03 << 5)
 
-#define USB_RECIP_MASK                  0x1f
-#define USB_RECIP_DEVICE                0x00
-#define USB_RECIP_INTERFACE             0x01
-#define USB_RECIP_ENDPOINT              0x02
-#define USB_RECIP_OTHER                 0x03
+#تعریف_کرو USB_RECIP_نقاب                  0x1f
+#تعریف_کرو USB_RECIP_DEVICE                0x00
+#تعریف_کرو USB_RECIP_INTERFACE             0x01
+#تعریف_کرو USB_RECIP_ENDPOINT              0x02
+#تعریف_کرو USB_RECIP_OTHER                 0x03
 
-#define USB_REQ_GET_STATUS              0x00
-#define USB_REQ_CLEAR_FEATURE           0x01
-#define USB_REQ_SET_FEATURE             0x03
-#define USB_REQ_SET_ADDRESS             0x05
-#define USB_REQ_GET_DESCRIPTOR          0x06
-#define USB_REQ_SET_DESCRIPTOR          0x07
-#define USB_REQ_GET_CONFIGURATION       0x08
-#define USB_REQ_SET_CONFIGURATION       0x09
-#define USB_REQ_GET_INTERFACE           0x0A
-#define USB_REQ_SET_INTERFACE           0x0B
-#define USB_REQ_SYNCH_FRAME             0x0C
+#تعریف_کرو USB_REQ_GET_حالت              0x00
+#تعریف_کرو USB_REQ_CLEAR_FEATURE           0x01
+#تعریف_کرو USB_REQ_سیٹ_FEATURE             0x03
+#تعریف_کرو USB_REQ_سیٹ_پتہ             0x05
+#تعریف_کرو USB_REQ_GET_DESCRIPTOR          0x06
+#تعریف_کرو USB_REQ_سیٹ_DESCRIPTOR          0x07
+#تعریف_کرو USB_REQ_GET_CONFIGURATION       0x08
+#تعریف_کرو USB_REQ_سیٹ_CONFIGURATION       0x09
+#تعریف_کرو USB_REQ_GET_INTERFACE           0x0A
+#تعریف_کرو USB_REQ_سیٹ_INTERFACE           0x0B
+#تعریف_کرو USB_REQ_SYNCH_چوکھٹا             0x0C
 
-struct usb_ctrlrequest {
+ساخت usb_ctrlrequest {
     u8 bRequestType;
     u8 bRequest;
-    u16 wValue;
-    u16 wIndex;
-    u16 wLength;
+    u16 w_قدر;
+    u16 w_اشاریہ;
+    u16 w_لمبائی;
 } PACKED;
 
-#define USB_DT_DEVICE                   0x01
-#define USB_DT_CONFIG                   0x02
-#define USB_DT_STRING                   0x03
-#define USB_DT_INTERFACE                0x04
-#define USB_DT_ENDPOINT                 0x05
-#define USB_DT_DEVICE_QUALIFIER         0x06
-#define USB_DT_OTHER_SPEED_CONFIG       0x07
-#define USB_DT_ENDPOINT_COMPANION       0x30
+#تعریف_کرو USB_DT_DEVICE                   0x01
+#تعریف_کرو USB_DT_CONFIG                   0x02
+#تعریف_کرو USB_DT_STRING                   0x03
+#تعریف_کرو USB_DT_INTERFACE                0x04
+#تعریف_کرو USB_DT_ENDPOINT                 0x05
+#تعریف_کرو USB_DT_DEVICE_QUALIFIER         0x06
+#تعریف_کرو USB_DT_OTHER_رفتار_CONFIG       0x07
+#تعریف_کرو USB_DT_ENDPOINT_COMPANION       0x30
 
-struct usb_device_descriptor {
-    u8  bLength;
+ساخت usb_device_descriptor {
+    u8  b_لمبائی;
     u8  bDescriptorType;
 
     u16 bcdUSB;
@@ -149,107 +149,107 @@ struct usb_device_descriptor {
     u8  bDeviceProtocol;
     u8  bMaxPacketSize0;
     u16 idVendor;
-    u16 idProduct;
+    u16 id_حاصل_ضرب;
     u16 bcdDevice;
     u8  iManufacturer;
-    u8  iProduct;
-    u8  iSerialNumber;
-    u8  bNumConfigurations;
+    u8  i_حاصل_ضرب;
+    u8  i_Serial_نمبر;
+    u8  b_عدد_Configurations;
 } PACKED;
 
-#define USB_CLASS_PER_INTERFACE         0       /* for DeviceClass */
-#define USB_CLASS_AUDIO                 1
-#define USB_CLASS_COMM                  2
-#define USB_CLASS_HID                   3
-#define USB_CLASS_PHYSICAL              5
-#define USB_CLASS_STILL_IMAGE           6
-#define USB_CLASS_PRINTER               7
-#define USB_CLASS_MASS_STORAGE          8
-#define USB_CLASS_HUB                   9
+#تعریف_کرو USB_CLASS_فی_INTERFACE         0       /* for DeviceClass */
+#تعریف_کرو USB_CLASS_AUDIO                 1
+#تعریف_کرو USB_CLASS_COMM                  2
+#تعریف_کرو USB_CLASS_HID                   3
+#تعریف_کرو USB_CLASS_PHYSICAL              5
+#تعریف_کرو USB_CLASS_STILL_IMAGE           6
+#تعریف_کرو USB_CLASS_PRINTER               7
+#تعریف_کرو USB_CLASS_MASS_STORAGE          8
+#تعریف_کرو USB_CLASS_HUB                   9
 
-struct usb_config_descriptor {
-    u8  bLength;
+ساخت usb_config_descriptor {
+    u8  b_لمبائی;
     u8  bDescriptorType;
 
-    u16 wTotalLength;
-    u8  bNumInterfaces;
-    u8  bConfigurationValue;
+    u16 w_کل_لمبائی;
+    u8  b_عدد_Interfaces;
+    u8  b_Configuration_قدر;
     u8  iConfiguration;
-    u8  bmAttributes;
+    u8  bm_اوصاف;
     u8  bMaxPower;
 } PACKED;
 
-struct usb_interface_descriptor {
-    u8  bLength;
+ساخت usb_interface_descriptor {
+    u8  b_لمبائی;
     u8  bDescriptorType;
 
-    u8  bInterfaceNumber;
+    u8  b_Interface_نمبر;
     u8  bAlternateSetting;
-    u8  bNumEndpoints;
+    u8  b_عدد_Endpoints;
     u8  bInterfaceClass;
     u8  bInterfaceSubClass;
     u8  bInterfaceProtocol;
     u8  iInterface;
 } PACKED;
 
-struct usb_endpoint_descriptor {
-    u8  bLength;
+ساخت usb_endpoint_descriptor {
+    u8  b_لمبائی;
     u8  bDescriptorType;
 
-    u8  bEndpointAddress;
-    u8  bmAttributes;
-    u16 wMaxPacketSize;
+    u8  b_Endpoint_پتہ;
+    u8  bm_اوصاف;
+    u16 w_Max_Packet_سائز;
     u8  bInterval;
 } PACKED;
 
-#define USB_ENDPOINT_NUMBER_MASK        0x0f    /* in bEndpointAddress */
-#define USB_ENDPOINT_DIR_MASK           0x80
+#تعریف_کرو USB_ENDPOINT_نمبر_نقاب        0x0f    /* in bEndpointAddress */
+#تعریف_کرو USB_ENDPOINT_DIR_نقاب           0x80
 
-#define USB_ENDPOINT_XFERTYPE_MASK      0x03    /* in bmAttributes */
-#define USB_ENDPOINT_XFER_CONTROL       0
-#define USB_ENDPOINT_XFER_ISOC          1
-#define USB_ENDPOINT_XFER_BULK          2
-#define USB_ENDPOINT_XFER_INT           3
-#define USB_ENDPOINT_MAX_ADJUSTABLE     0x80
+#تعریف_کرو USB_ENDPOINT_XFERTYPE_نقاب      0x03    /* in bmAttributes */
+#تعریف_کرو USB_ENDPOINT_XFER_CONTROL       0
+#تعریف_کرو USB_ENDPOINT_XFER_ISOC          1
+#تعریف_کرو USB_ENDPOINT_XFER_BULK          2
+#تعریف_کرو USB_ENDPOINT_XFER_INT           3
+#تعریف_کرو USB_ENDPOINT_MAX_ADJUSTABLE     0x80
 
-#define USB_CONTROL_SETUP_SIZE          8
+#تعریف_کرو USB_CONTROL_تیاری_سائز          8
 
 
 /****************************************************************
  * usb mass storage flags
  ****************************************************************/
 
-#define US_SC_ATAPI_8020   0x02
-#define US_SC_ATAPI_8070   0x05
-#define US_SC_SCSI         0x06
+#تعریف_کرو US_SC_ATAPI_8020   0x02
+#تعریف_کرو US_SC_ATAPI_8070   0x05
+#تعریف_کرو US_SC_SCSI         0x06
 
-#define US_PR_BULK         0x50  /* bulk-only transport */
-#define US_PR_UAS          0x62  /* usb attached scsi   */
+#تعریف_کرو US_PR_BULK         0x50  /* bulk-only transport */
+#تعریف_کرو US_PR_UAS          0x62  /* usb attached scsi   */
 
 /****************************************************************
  * function defs
  ****************************************************************/
 
 // usb.c
-int usb_send_bulk(struct usb_pipe *pipe, int dir, void *data, int datasize);
-int usb_poll_intr(struct usb_pipe *pipe, void *data);
-int usb_32bit_pipe(struct usb_pipe *pipe_fl);
-struct usb_pipe *usb_alloc_pipe(struct usbdevice_s *usbdev
-                                , struct usb_endpoint_descriptor *epdesc);
-void usb_free_pipe(struct usbdevice_s *usbdev, struct usb_pipe *pipe);
-int usb_send_default_control(struct usb_pipe *pipe
-                             , const struct usb_ctrlrequest *req, void *data);
-int usb_is_freelist(struct usb_s *cntl, struct usb_pipe *pipe);
-void usb_add_freelist(struct usb_pipe *pipe);
-struct usb_pipe *usb_get_freelist(struct usb_s *cntl, u8 eptype);
-void usb_desc2pipe(struct usb_pipe *pipe, struct usbdevice_s *usbdev
-                   , struct usb_endpoint_descriptor *epdesc);
-int usb_get_period(struct usbdevice_s *usbdev
-                   , struct usb_endpoint_descriptor *epdesc);
-int usb_xfer_time(struct usb_pipe *pipe, int datalen);
-struct usb_endpoint_descriptor *usb_find_desc(struct usbdevice_s *usbdev
-                                              , int type, int dir);
-void usb_enumerate(struct usbhub_s *hub);
-void usb_setup(void);
+صحیح usb_send_bulk(ساخت usb_pipe *pipe, صحیح dir, خالی *ڈیٹا, صحیح datasize);
+صحیح usb_poll_intr(ساخت usb_pipe *pipe, خالی *ڈیٹا);
+صحیح usb_32bit_pipe(ساخت usb_pipe *pipe_fl);
+ساخت usb_pipe *usb_alloc_pipe(ساخت usbdevice_s *usbdev
+                                , ساخت usb_endpoint_descriptor *epdesc);
+خالی usb_free_pipe(ساخت usbdevice_s *usbdev, ساخت usb_pipe *pipe);
+صحیح usb_send_default_control(ساخت usb_pipe *pipe
+                             , ثابت ساخت usb_ctrlrequest *req, خالی *ڈیٹا);
+صحیح usb_is_freelist(ساخت usb_s *cntl, ساخت usb_pipe *pipe);
+خالی usb_جوڑو_freelist(ساخت usb_pipe *pipe);
+ساخت usb_pipe *usb_get_freelist(ساخت usb_s *cntl, u8 eptype);
+خالی usb_desc2pipe(ساخت usb_pipe *pipe, ساخت usbdevice_s *usbdev
+                   , ساخت usb_endpoint_descriptor *epdesc);
+صحیح usb_get_period(ساخت usbdevice_s *usbdev
+                   , ساخت usb_endpoint_descriptor *epdesc);
+صحیح usb_xfer_وقت(ساخت usb_pipe *pipe, صحیح datalen);
+ساخت usb_endpoint_descriptor *usb_ڈھونڈو_desc(ساخت usbdevice_s *usbdev
+                                              , صحیح type, صحیح dir);
+خالی usb_enumerate(ساخت usbhub_s *hub);
+خالی usb_تیاری(خالی);
 
-#endif // usb.h
+#اگر_ختم // usb.h

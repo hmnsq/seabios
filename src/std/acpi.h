@@ -1,29 +1,29 @@
-#ifndef __ACPI_H
-#define __ACPI_H
+#اگر_غیر_تعریف_شدہ __ACPI_H
+#تعریف_کرو __ACPI_H
 
-#include "types.h" // u32
+#شامل "types.h" // u32
 
 /*
  * ACPI 2.0 Generic Address Space definition.
  */
-struct acpi_20_generic_address {
-    u8  address_space_id;
-    u8  register_bit_width;
-    u8  register_bit_offset;
+ساخت acpi_20_generic_پتہ {
+    u8  پتہ_space_id;
+    u8  رجسٹر_ثنائی_ہندسہ_چوڑائی;
+    u8  رجسٹر_ثنائی_ہندسہ_انحراف;
     u8  reserved;
-    u64 address;
+    u64 پتہ;
 } PACKED;
 
-#define RSDP_SIGNATURE 0x2052545020445352LL // "RSD PTR "
+#تعریف_کرو RSDP_SIGNATURE 0x2052545020445352LL // "RSD PTR "
 
-struct rsdp_descriptor {        /* Root System Descriptor Pointer */
+ساخت rsdp_descriptor {        /* Root System Descriptor Pointer */
     u64 signature;              /* ACPI signature, contains "RSD PTR " */
     u8  checksum;               /* To make sum of struct == 0 */
     u8  oem_id [6];             /* OEM identification */
     u8  revision;               /* Must be 0 for 1.0, 2 for 2.0 */
-    u32 rsdt_physical_address;  /* 32-bit physical address of RSDT */
-    u32 length;                 /* XSDT Length in bytes including hdr */
-    u64 xsdt_physical_address;  /* 64-bit physical address of XSDT */
+    u32 rsdt_physical_پتہ;  /* 32-bit physical address of RSDT */
+    u32 لمبائی;                 /* XSDT Length in bytes including hdr */
+    u64 xsdt_physical_پتہ;  /* 64-bit physical address of XSDT */
     u8  extended_checksum;      /* Checksum of entire table */
     u8  reserved [3];           /* Reserved field must be 0 */
 };
@@ -31,13 +31,13 @@ struct rsdp_descriptor {        /* Root System Descriptor Pointer */
 /* Table structure from Linux kernel (the ACPI tables are under the
    BSD license) */
 
-#define ACPI_TABLE_HEADER_DEF   /* ACPI common table header */ \
+#تعریف_کرو ACPI_جدول_سرخی_DEF   /* ACPI common table header */ \
     u32 signature;          /* ACPI signature (4 ASCII characters) */ \
-    u32 length;                 /* Length of table, in bytes, including header */ \
+    u32 لمبائی;                 /* Length of table, in bytes, including header */ \
     u8  revision;               /* ACPI Specification minor version # */ \
     u8  checksum;               /* To make sum of entire table == 0 */ \
     u8  oem_id [6];             /* OEM identification */ \
-    u8  oem_table_id [8];       /* OEM table identification */ \
+    u8  oem_جدول_id [8];       /* OEM table identification */ \
     u32 oem_revision;           /* OEM revision number */ \
     u8  asl_compiler_id [4];    /* ASL compiler vendor ID */ \
     u32 asl_compiler_revision;  /* ASL compiler revision number */
@@ -45,36 +45,36 @@ struct rsdp_descriptor {        /* Root System Descriptor Pointer */
 /*
  * Fixed ACPI Description Table Fixed Feature Flags
  */
-#define    ACPI_FADT_F_WBINVD            (1 << 0)
-#define    ACPI_FADT_F_WBINVD_FLUSH      (1 << 1)
-#define    ACPI_FADT_F_PROC_C1           (1 << 2)
-#define    ACPI_FADT_F_P_LVL2_UP         (1 << 3)
-#define    ACPI_FADT_F_PWR_BUTTON        (1 << 4)
-#define    ACPI_FADT_F_SLP_BUTTON        (1 << 5)
-#define    ACPI_FADT_F_FIX_RTC           (1 << 6)
-#define    ACPI_FADT_F_RTC_S4            (1 << 7)
-#define    ACPI_FADT_F_TMR_VAL_EXT       (1 << 8)
-#define    ACPI_FADT_F_DCK_CAP           (1 << 9)
-#define    ACPI_FADT_F_RESET_REG_SUP     (1 << 10)
-#define    ACPI_FADT_F_SEALED_CASE       (1 << 11)
-#define    ACPI_FADT_F_HEADLESS          (1 << 12)
-#define    ACPI_FADT_F_CPU_SW_SLP        (1 << 13)
-#define    ACPI_FADT_F_PCI_EXP_WAK       (1 << 14)
-#define    ACPI_FADT_F_USE_PLATFORM_CLOCK (1 << 15)
-#define    ACPI_FADT_F_S4_RTC_STS_VALID   (1 << 16)
-#define    ACPI_FADT_F_REMOTE_POWER_ON_CAPABLE  (1 << 17)
-#define    ACPI_FADT_F_FORCE_APIC_CLUSTER_MODEL  (1 << 18)
-#define    ACPI_FADT_F_FORCE_APIC_PHYSICAL_DESTINATION_MODE  (1 << 19)
-#define    ACPI_FADT_F_HW_REDUCED_ACPI    (1 << 20)
-#define    ACPI_FADT_F_LOW_POWER_S0_IDLE_CAPABLE  (1 << 21)
+#تعریف_کرو    ACPI_FADT_F_WBINVD            (1 << 0)
+#تعریف_کرو    ACPI_FADT_F_WBINVD_FLUSH      (1 << 1)
+#تعریف_کرو    ACPI_FADT_F_PROC_C1           (1 << 2)
+#تعریف_کرو    ACPI_FADT_F_P_LVL2_اوپر         (1 << 3)
+#تعریف_کرو    ACPI_FADT_F_PWR_BUTTON        (1 << 4)
+#تعریف_کرو    ACPI_FADT_F_SLP_BUTTON        (1 << 5)
+#تعریف_کرو    ACPI_FADT_F_FIX_RTC           (1 << 6)
+#تعریف_کرو    ACPI_FADT_F_RTC_S4            (1 << 7)
+#تعریف_کرو    ACPI_FADT_F_TMR_VAL_EXT       (1 << 8)
+#تعریف_کرو    ACPI_FADT_F_DCK_CAP           (1 << 9)
+#تعریف_کرو    ACPI_FADT_F_RESET_REG_SUP     (1 << 10)
+#تعریف_کرو    ACPI_FADT_F_SEALED_CASE       (1 << 11)
+#تعریف_کرو    ACPI_FADT_F_HEADLESS          (1 << 12)
+#تعریف_کرو    ACPI_FADT_F_CPU_SW_SLP        (1 << 13)
+#تعریف_کرو    ACPI_FADT_F_PCI_EXP_WAK       (1 << 14)
+#تعریف_کرو    ACPI_FADT_F_USE_PLATFORM_CLOCK (1 << 15)
+#تعریف_کرو    ACPI_FADT_F_S4_RTC_STS_VALID   (1 << 16)
+#تعریف_کرو    ACPI_FADT_F_REMOTE_POWER_ON_CAPABLE  (1 << 17)
+#تعریف_کرو    ACPI_FADT_F_FORCE_APIC_CLUSTER_MODEL  (1 << 18)
+#تعریف_کرو    ACPI_FADT_F_FORCE_APIC_PHYSICAL_DESTINATION_منوال  (1 << 19)
+#تعریف_کرو    ACPI_FADT_F_HW_REDUCED_ACPI    (1 << 20)
+#تعریف_کرو    ACPI_FADT_F_کم_POWER_S0_IDLE_CAPABLE  (1 << 21)
 
 /*
  * ACPI 1.0 Fixed ACPI Description Table (FADT)
  */
-#define FACP_SIGNATURE 0x50434146 // FACP
-struct fadt_descriptor_rev1
+#تعریف_کرو FACP_SIGNATURE 0x50434146 // FACP
+ساخت fadt_descriptor_rev1
 {
-    ACPI_TABLE_HEADER_DEF     /* ACPI common table header */
+    ACPI_جدول_سرخی_DEF     /* ACPI common table header */
     u32 firmware_ctrl;          /* Physical address of FACS */
     u32 dsdt;                   /* Physical address of DSDT */
     u8  model;                  /* System Interrupt Model */
@@ -99,14 +99,14 @@ struct fadt_descriptor_rev1
     u8  pm_tmr_len;             /* Byte Length of ports at pm_tm_blk */
     u8  gpe0_blk_len;           /* Byte Length of ports at gpe0_blk */
     u8  gpe1_blk_len;           /* Byte Length of ports at gpe1_blk */
-    u8  gpe1_base;              /* Offset in gpe model where gpe1 events start */
+    u8  gpe1_بنیاد;              /* Offset in gpe model where gpe1 events start */
     u8  reserved3;              /* Reserved */
     u16 plvl2_lat;              /* Worst case HW latency to enter/exit C2 state */
     u16 plvl3_lat;              /* Worst case HW latency to enter/exit C3 state */
-    u16 flush_size;             /* Size of area read to flush caches */
+    u16 flush_سائز;             /* Size of area read to flush caches */
     u16 flush_stride;           /* Stride used in flushing caches */
-    u8  duty_offset;            /* Bit location of duty cycle field in p_cnt reg */
-    u8  duty_width;             /* Bit width of duty cycle field in p_cnt reg */
+    u8  duty_انحراف;            /* Bit location of duty cycle field in p_cnt reg */
+    u8  duty_چوڑائی;             /* Bit width of duty cycle field in p_cnt reg */
     u8  day_alrm;               /* Index to day-of-month alarm in RTC CMOS RAM */
     u8  mon_alrm;               /* Index to month-of-year alarm in RTC CMOS RAM */
     u8  century;                /* Index to century in RTC CMOS RAM */
@@ -116,44 +116,44 @@ struct fadt_descriptor_rev1
     u32 flags;
 } PACKED;
 
-struct acpi_table_header         /* ACPI common table header */
+ساخت acpi_جدول_سرخی         /* ACPI common table header */
 {
-    ACPI_TABLE_HEADER_DEF
+    ACPI_جدول_سرخی_DEF
 } PACKED;
 
 /*
  * ACPI 1.0 Root System Description Table (RSDT)
  */
-#define RSDT_SIGNATURE 0x54445352 // RSDT
-struct rsdt_descriptor_rev1
+#تعریف_کرو RSDT_SIGNATURE 0x54445352 // RSDT
+ساخت rsdt_descriptor_rev1
 {
-    ACPI_TABLE_HEADER_DEF       /* ACPI common table header */
-    u32 table_offset_entry[0];  /* Array of pointers to other */
+    ACPI_جدول_سرخی_DEF       /* ACPI common table header */
+    u32 جدول_انحراف_اندراج[0];  /* Array of pointers to other */
     /* ACPI tables */
 } PACKED;
 
 /*
  * ACPI 2.0 eXtended System Description Table (XSDT)
  */
-#define XSDT_SIGNATURE 0x54445358 // XSDT
-struct xsdt_descriptor_rev2
+#تعریف_کرو XSDT_SIGNATURE 0x54445358 // XSDT
+ساخت xsdt_descriptor_rev2
 {
-    ACPI_TABLE_HEADER_DEF       /* ACPI common table header */
-    u64 table_offset_entry[0];  /* Array of pointers to other */
+    ACPI_جدول_سرخی_DEF       /* ACPI common table header */
+    u64 جدول_انحراف_اندراج[0];  /* Array of pointers to other */
     /* ACPI tables */
 } PACKED;
 
 /*
  * ACPI 1.0 Firmware ACPI Control Structure (FACS)
  */
-#define FACS_SIGNATURE 0x53434146 // FACS
-struct facs_descriptor_rev1
+#تعریف_کرو FACS_SIGNATURE 0x53434146 // FACS
+ساخت facs_descriptor_rev1
 {
     u32 signature;           /* ACPI Signature */
-    u32 length;                 /* Length of structure, in bytes */
+    u32 لمبائی;                 /* Length of structure, in bytes */
     u32 hardware_signature;     /* Hardware configuration signature */
-    u32 firmware_waking_vector; /* ACPI OS waking vector */
-    u32 global_lock;            /* Global Lock */
+    u32 firmware_waking_سمتیہ; /* ACPI OS waking vector */
+    u32 global_تالا;            /* Global Lock */
     u32 flags;
     u8  resverved3 [40];        /* Reserved - must be zero */
 } PACKED;
@@ -161,7 +161,7 @@ struct facs_descriptor_rev1
 /*
  * Differentiated System Description Table (DSDT)
  */
-#define DSDT_SIGNATURE 0x54445344 // DSDT
+#تعریف_کرو DSDT_SIGNATURE 0x54445344 // DSDT
 
 /*
  * MADT values and structures
@@ -169,69 +169,69 @@ struct facs_descriptor_rev1
 
 /* Values for MADT PCATCompat */
 
-#define DUAL_PIC                0
-#define MULTIPLE_APIC           1
+#تعریف_کرو DUAL_PIC                0
+#تعریف_کرو مضرب_APIC           1
 
 /* Master MADT */
 
-#define APIC_SIGNATURE 0x43495041 // APIC
-struct multiple_apic_table
+#تعریف_کرو APIC_SIGNATURE 0x43495041 // APIC
+ساخت مضرب_apic_جدول
 {
-    ACPI_TABLE_HEADER_DEF     /* ACPI common table header */
-    u32 local_apic_address;     /* Physical address of local APIC */
+    ACPI_جدول_سرخی_DEF     /* ACPI common table header */
+    u32 local_apic_پتہ;     /* Physical address of local APIC */
     u32 flags;
 } PACKED;
 
 /* Values for Type in APIC sub-headers */
 
-#define APIC_PROCESSOR          0
-#define APIC_IO                 1
-#define APIC_XRUPT_OVERRIDE     2
-#define APIC_NMI                3
-#define APIC_LOCAL_NMI          4
-#define APIC_ADDRESS_OVERRIDE   5
-#define APIC_IO_SAPIC           6
-#define APIC_LOCAL_SAPIC        7
-#define APIC_XRUPT_SOURCE       8
-#define APIC_RESERVED           9           /* 9 and greater are reserved */
+#تعریف_کرو APIC_PROCESSOR          0
+#تعریف_کرو APIC_IO                 1
+#تعریف_کرو APIC_XRUPT_OVERRIDE     2
+#تعریف_کرو APIC_NMI                3
+#تعریف_کرو APIC_LOCAL_NMI          4
+#تعریف_کرو APIC_پتہ_OVERRIDE   5
+#تعریف_کرو APIC_IO_SAPIC           6
+#تعریف_کرو APIC_LOCAL_SAPIC        7
+#تعریف_کرو APIC_XRUPT_ماخذ       8
+#تعریف_کرو APIC_RESERVED           9           /* 9 and greater are reserved */
 
 /*
  * MADT sub-structures (Follow MULTIPLE_APIC_DESCRIPTION_TABLE)
  */
-#define ACPI_SUB_HEADER_DEF   /* Common ACPI sub-structure header */\
+#تعریف_کرو ACPI_SUB_سرخی_DEF   /* Common ACPI sub-structure header */\
     u8  type;                               \
-    u8  length;
+    u8  لمبائی;
 
 /* Sub-structures for MADT */
 
-struct madt_processor_apic
+ساخت madt_processor_apic
 {
-    ACPI_SUB_HEADER_DEF
+    ACPI_SUB_سرخی_DEF
     u8  processor_id;           /* ACPI processor id */
     u8  local_apic_id;          /* Processor's local APIC id */
     u32 flags;
 } PACKED;
 
-struct madt_io_apic
+ساخت madt_io_apic
 {
-    ACPI_SUB_HEADER_DEF
+    ACPI_SUB_سرخی_DEF
     u8  io_apic_id;             /* I/O APIC ID */
     u8  reserved;               /* Reserved - must be zero */
-    u32 address;                /* APIC physical address */
-    u32 interrupt;              /* Global system interrupt where INTI
+    u32 پتہ;                /* APIC physical address */
+    u32 مداخلت;              /* Global system interrupt where INTI
                                  * lines start */
 } PACKED;
 
-struct madt_intsrcovr {
-    ACPI_SUB_HEADER_DEF
+ساخت madt_intsrcovr {
+    ACPI_SUB_سرخی_DEF
     u8  bus;
-    u8  source;
+    u8  ماخذ;
     u32 gsi;
     u16 flags;
 } PACKED;
 
-struct madt_local_nmi {
-    ACPI_SUB_HEADER_DEF
+ساخت madt_local_nmi {
+    ACPI_SUB_سرخی_DEF
     u8  processor_id;           /* ACPI processor id */
     u16 flags;                  /* MPS INTI flags */
     u8  lint;                   /* Local APIC LINT# */
@@ -240,34 +240,34 @@ struct madt_local_nmi {
 /*
  * HPET Description Table
  */
-#define HPET_SIGNATURE 0x54455048 // HPET
-struct acpi_20_hpet {
-    ACPI_TABLE_HEADER_DEF                    /* ACPI common table header */
-    u32           timer_block_id;
-    struct acpi_20_generic_address addr;
-    u8            hpet_number;
+#تعریف_کرو HPET_SIGNATURE 0x54455048 // HPET
+ساخت acpi_20_hpet {
+    ACPI_جدول_سرخی_DEF                    /* ACPI common table header */
+    u32           timer_بلاک_id;
+    ساخت acpi_20_generic_پتہ addr;
+    u8            hpet_نمبر;
     u16           min_tick;
-    u8            page_protect;
+    u8            صفحہ_protect;
 } PACKED;
 
 /*
  * SRAT (NUMA topology description) table
  */
 
-#define SRAT_SIGNATURE 0x54415253 // SRAT
-struct system_resource_affinity_table
+#تعریف_کرو SRAT_SIGNATURE 0x54415253 // SRAT
+ساخت system_resource_affinity_جدول
 {
-    ACPI_TABLE_HEADER_DEF
+    ACPI_جدول_سرخی_DEF
     u32    reserved1;
     u32    reserved2[2];
 } PACKED;
 
-#define SRAT_PROCESSOR          0
-#define SRAT_MEMORY             1
+#تعریف_کرو SRAT_PROCESSOR          0
+#تعریف_کرو SRAT_حافظہ             1
 
-struct srat_processor_affinity
+ساخت srat_processor_affinity
 {
-    ACPI_SUB_HEADER_DEF
+    ACPI_SUB_سرخی_DEF
     u8     proximity_lo;
     u8     local_apic_id;
     u32    flags;
@@ -276,13 +276,13 @@ struct srat_processor_affinity
     u32    reserved;
 } PACKED;
 
-struct srat_memory_affinity
+ساخت srat_حافظہ_affinity
 {
-    ACPI_SUB_HEADER_DEF
+    ACPI_SUB_سرخی_DEF
     u8     proximity[4];
     u16    reserved1;
-    u64    base_addr;
-    u64    range_length;
+    u64    بنیاد_addr;
+    u64    range_لمبائی;
     u32    reserved2;
     u32    flags;
     u32    reserved3[2];
@@ -290,45 +290,45 @@ struct srat_memory_affinity
 
 /* PCI fw r3.0 MCFG table. */
 /* Subtable */
-struct acpi_mcfg_allocation {
-    u64 address;                /* Base address, processor-relative */
+ساخت acpi_mcfg_تخصیص {
+    u64 پتہ;                /* Base address, processor-relative */
     u16 pci_segment;            /* PCI segment group number */
-    u8 start_bus_number;       /* Starting PCI Bus number */
-    u8 end_bus_number;         /* Final PCI Bus number */
+    u8 آغاز_bus_نمبر;       /* Starting PCI Bus number */
+    u8 انتہا_bus_نمبر;         /* Final PCI Bus number */
     u32 reserved;
 } PACKED;
 
-#define MCFG_SIGNATURE 0x4746434d       // MCFG
-struct acpi_table_mcfg {
-    ACPI_TABLE_HEADER_DEF;
+#تعریف_کرو MCFG_SIGNATURE 0x4746434d       // MCFG
+ساخت acpi_جدول_mcfg {
+    ACPI_جدول_سرخی_DEF;
     u8 reserved[8];
-    struct acpi_mcfg_allocation allocation[0];
+    ساخت acpi_mcfg_تخصیص تخصیص[0];
 } PACKED;
 
-#define TCPA_SIGNATURE 0x41504354
-struct tcpa_descriptor_rev2
+#تعریف_کرو TCPA_SIGNATURE 0x41504354
+ساخت tcpa_descriptor_rev2
 {
-    ACPI_TABLE_HEADER_DEF
+    ACPI_جدول_سرخی_DEF
     u16  platform_class;
-    u32  log_area_minimum_length;
-    u64  log_area_start_address;
+    u32  log_area_minimum_لمبائی;
+    u64  log_area_آغاز_پتہ;
 } PACKED;
 
 /* TCPA ACPI definitions */
-#define TCPA_ACPI_CLASS_CLIENT          0
-#define TCPA_ACPI_CLASS_SERVER          1
+#تعریف_کرو TCPA_ACPI_CLASS_CLIENT          0
+#تعریف_کرو TCPA_ACPI_CLASS_SERVER          1
 
-#define TPM2_SIGNATURE 0x324D5054
-struct tpm2_descriptor_rev2
+#تعریف_کرو TPM2_SIGNATURE 0x324D5054
+ساخت tpm2_descriptor_rev2
 {
-    ACPI_TABLE_HEADER_DEF
+    ACPI_جدول_سرخی_DEF
     u16  platform_class;
     u16  reserved;
-    u64  address_of_control_area;
-    u32  start_method;
-    u8   start_method_params[12];
-    u32  log_area_minimum_length;
-    u64  log_area_start_address;
+    u64  پتہ_کا_control_area;
+    u32  آغاز_طریقہ;
+    u8   آغاز_طریقہ_params[12];
+    u32  log_area_minimum_لمبائی;
+    u64  log_area_آغاز_پتہ;
 } PACKED;
 
-#endif // acpi.h
+#اگر_ختم // acpi.h

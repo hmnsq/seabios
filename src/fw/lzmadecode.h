@@ -19,39 +19,39 @@
   to this file, however, are subject to the LGPL or CPL terms.
 */
 
-#ifndef __LZMADECODE_H
-#define __LZMADECODE_H
+#اگر_غیر_تعریف_شدہ __LZMADECODE_H
+#تعریف_کرو __LZMADECODE_H
 
-typedef unsigned char Byte;
-typedef unsigned short UInt16;
-typedef unsigned int UInt32;
-typedef UInt32 SizeT;
+قسمتعریف غیرعلامتی حرف Byte;
+قسمتعریف غیرعلامتی مختصر UInt16;
+قسمتعریف غیرعلامتی صحیح UInt32;
+قسمتعریف UInt32 سائز_T;
 
-#define CProb UInt16
+#تعریف_کرو CProb UInt16
 
-#define LZMA_RESULT_OK 0
-#define LZMA_RESULT_DATA_ERROR 1
+#تعریف_کرو LZMA_نتیجہ_OK 0
+#تعریف_کرو LZMA_نتیجہ_ڈیٹا_ERROR 1
 
 
-#define LZMA_BASE_SIZE 1846
-#define LZMA_LIT_SIZE 768
+#تعریف_کرو LZMA_بنیاد_سائز 1846
+#تعریف_کرو LZMA_LIT_سائز 768
 
-#define LZMA_PROPERTIES_SIZE 5
+#تعریف_کرو LZMA_PROPERTIES_سائز 5
 
-typedef struct _CLzmaProperties
+قسمتعریف ساخت _CLzmaProperties
 {
-  int lc;
-  int lp;
-  int pb;
+  صحیح lc;
+  صحیح lp;
+  صحیح pb;
 }CLzmaProperties;
 
-int LzmaDecodeProperties(CLzmaProperties *propsRes, const unsigned char *propsData, int size);
+صحیح LzmaDecodeProperties(CLzmaProperties *propsRes, ثابت غیرعلامتی حرف *props_ڈیٹا, صحیح سائز);
 
-#define LzmaGetNumProbs(Properties) (LZMA_BASE_SIZE + (LZMA_LIT_SIZE << ((Properties)->lc + (Properties)->lp)))
+#تعریف_کرو Lzma_Get_عدد_Probs(Properties) (LZMA_بنیاد_سائز + (LZMA_LIT_سائز << ((Properties)->lc + (Properties)->lp)))
 
-#define kLzmaNeedInitId (-2)
+#تعریف_کرو kLzmaNeedInitId (-2)
 
-typedef struct _CLzmaDecoderState
+قسمتعریف ساخت _CLzmaDecoderState
 {
   CLzmaProperties Properties;
   CProb *Probs;
@@ -60,8 +60,8 @@ typedef struct _CLzmaDecoderState
 } CLzmaDecoderState;
 
 
-int LzmaDecode(CLzmaDecoderState *vs,
-    const unsigned char *inStream, SizeT inSize, SizeT *inSizeProcessed,
-    unsigned char *outStream, SizeT outSize, SizeT *outSizeProcessed);
+صحیح LzmaDecode(CLzmaDecoderState *vs,
+    ثابت غیرعلامتی حرف *اندر_دھارا, سائز_T اندر_سائز, سائز_T *اندر_سائز_Processed,
+    غیرعلامتی حرف *برآمد_دھارا, سائز_T برآمد_سائز, سائز_T *برآمد_سائز_Processed);
 
-#endif
+#اگر_ختم

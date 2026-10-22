@@ -5,39 +5,39 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_LOW
-#include "rtc.h" // rtc_read
-#include "stacks.h" // yield
-#include "util.h" // timer_calc
-#include "x86.h" // inb
+#شامل "biosvar.h" // GET_LOW
+#شامل "rtc.h" // rtc_read
+#شامل "stacks.h" // yield
+#شامل "util.h" // timer_calc
+#شامل "x86.h" // inb
 
 u8
-rtc_read(u8 index)
+rtc_read(u8 اشاریہ)
 {
-    index |= NMI_DISABLE_BIT;
-    outb(index, PORT_CMOS_INDEX);
-    return inb(PORT_CMOS_DATA);
+    اشاریہ |= NMI_DISABLE_ثنائی_ہندسہ;
+    outb(اشاریہ, پورٹ_CMOS_اشاریہ);
+    واپس inb(پورٹ_CMOS_ڈیٹا);
 }
 
-void
-rtc_write(u8 index, u8 val)
+خالی
+rtc_write(u8 اشاریہ, u8 val)
 {
-    index |= NMI_DISABLE_BIT;
-    outb(index, PORT_CMOS_INDEX);
-    outb(val, PORT_CMOS_DATA);
+    اشاریہ |= NMI_DISABLE_ثنائی_ہندسہ;
+    outb(اشاریہ, پورٹ_CMOS_اشاریہ);
+    outb(val, پورٹ_CMOS_ڈیٹا);
 }
 
-void
-rtc_mask(u8 index, u8 off, u8 on)
+خالی
+rtc_نقاب(u8 اشاریہ, u8 off, u8 on)
 {
-    index |= NMI_DISABLE_BIT;
-    outb(index, PORT_CMOS_INDEX);
-    u8 val = inb(PORT_CMOS_DATA);
-    outb((val & ~off) | on, PORT_CMOS_DATA);
+    اشاریہ |= NMI_DISABLE_ثنائی_ہندسہ;
+    outb(اشاریہ, پورٹ_CMOS_اشاریہ);
+    u8 val = inb(پورٹ_CMOS_ڈیٹا);
+    outb((val & ~off) | on, پورٹ_CMOS_ڈیٹا);
 }
 
-int
-rtc_updating(void)
+صحیح
+rtc_updating(خالی)
 {
     // This function checks to see if the update-in-progress bit
     // is set in CMOS Status Register A.  If not, it returns 0.
@@ -47,54 +47,54 @@ rtc_updating(void)
     // that this bit should be set is constrained to (1984+244)
     // useconds, but we wait for longer just to be sure.
 
-    if ((rtc_read(CMOS_STATUS_A) & RTC_A_UIP) == 0)
-        return 0;
-    u32 end = timer_calc(15);
-    for (;;) {
-        if ((rtc_read(CMOS_STATUS_A) & RTC_A_UIP) == 0)
-            return 0;
-        if (timer_check(end))
+    اگر ((rtc_read(CMOS_حالت_A) & RTC_A_UIP) == 0)
+        واپس 0;
+    u32 انتہا = timer_calc(15);
+    برائے (;;) {
+        اگر ((rtc_read(CMOS_حالت_A) & RTC_A_UIP) == 0)
+            واپس 0;
+        اگر (timer_check(انتہا))
             // update-in-progress never transitioned to 0
-            return -1;
+            واپس -1;
         yield();
     }
 }
 
-void
-rtc_setup(void)
+خالی
+rtc_تیاری(خالی)
 {
-    if (!CONFIG_RTC_TIMER)
-        return;
-    rtc_write(CMOS_STATUS_A, 0x26);    // 32,768Khz src, 976.5625us updates
-    rtc_mask(CMOS_STATUS_B, ~RTC_B_DSE, RTC_B_24HR);
-    rtc_read(CMOS_STATUS_C);
-    rtc_read(CMOS_STATUS_D);
+    اگر (!CONFIG_RTC_TIMER)
+        واپس;
+    rtc_write(CMOS_حالت_A, 0x26);    // 32,768Khz src, 976.5625us updates
+    rtc_نقاب(CMOS_حالت_B, ~RTC_B_DSE, RTC_B_24HR);
+    rtc_read(CMOS_حالت_C);
+    rtc_read(CMOS_حالت_D);
 }
 
-int RTCusers VARLOW;
+صحیح RTCusers VARLOW;
 
-void
-rtc_use(void)
+خالی
+rtc_use(خالی)
 {
-    if (!CONFIG_RTC_TIMER)
-        return;
-    int count = GET_LOW(RTCusers);
-    SET_LOW(RTCusers, count+1);
-    if (count)
-        return;
+    اگر (!CONFIG_RTC_TIMER)
+        واپس;
+    صحیح گنتی = GET_کم(RTCusers);
+    سیٹ_کم(RTCusers, گنتی+1);
+    اگر (گنتی)
+        واپس;
     // Turn on the Periodic Interrupt timer
-    rtc_mask(CMOS_STATUS_B, 0, RTC_B_PIE);
+    rtc_نقاب(CMOS_حالت_B, 0, RTC_B_PIE);
 }
 
-void
-rtc_release(void)
+خالی
+rtc_release(خالی)
 {
-    if (!CONFIG_RTC_TIMER)
-        return;
-    int count = GET_LOW(RTCusers);
-    SET_LOW(RTCusers, count-1);
-    if (count != 1)
-        return;
+    اگر (!CONFIG_RTC_TIMER)
+        واپس;
+    صحیح گنتی = GET_کم(RTCusers);
+    سیٹ_کم(RTCusers, گنتی-1);
+    اگر (گنتی != 1)
+        واپس;
     // Clear the Periodic Interrupt.
-    rtc_mask(CMOS_STATUS_B, RTC_B_PIE, 0);
+    rtc_نقاب(CMOS_حالت_B, RTC_B_PIE, 0);
 }

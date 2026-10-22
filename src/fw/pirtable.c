@@ -6,22 +6,22 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_*
-#include "output.h" // dprintf
-#include "std/pirtable.h" // struct pir_header
-#include "string.h" // checksum
-#include "util.h" // PirAddr
+#شامل "config.h" // CONFIG_*
+#شامل "output.h" // dprintf
+#شامل "std/pirtable.h" // struct pir_header
+#شامل "string.h" // checksum
+#شامل "util.h" // PirAddr
 
-struct pir_table {
-    struct pir_header pir;
-    struct pir_slot slots[6];
+ساخت pir_جدول {
+    ساخت pir_سرخی pir;
+    ساخت pir_خانہ slots[6];
 } PACKED;
 
-static struct pir_table PIR_TABLE = {
+ساکن ساخت pir_جدول PIR_جدول = {
     .pir = {
-        .version = 0x0100,
-        .size = sizeof(struct pir_table),
-        .router_devfunc = 0x08,
+        .نسخہ_2 = 0x0100,
+        .سائز = حجم(ساخت pir_جدول),
+        .رہنما_آلہ_devfunc = 0x08,
         .compatible_devid = 0x122e8086,
     },
     .slots = {
@@ -34,7 +34,7 @@ static struct pir_table PIR_TABLE = {
                 {.link = 0x62, .bitmap = 0xdef8}, // INTC#
                 {.link = 0x63, .bitmap = 0xdef8}, // INTD#
             },
-            .slot_nr = 0, // embedded
+            .خانہ_nr = 0, // embedded
         }, {
             // second slot entry: 1st PCI slot
             .dev = 2<<3,
@@ -44,7 +44,7 @@ static struct pir_table PIR_TABLE = {
                 {.link = 0x63, .bitmap = 0xdef8}, // INTC#
                 {.link = 0x60, .bitmap = 0xdef8}, // INTD#
             },
-            .slot_nr = 1,
+            .خانہ_nr = 1,
         }, {
             // third slot entry: 2nd PCI slot
             .dev = 3<<3,
@@ -54,7 +54,7 @@ static struct pir_table PIR_TABLE = {
                 {.link = 0x60, .bitmap = 0xdef8}, // INTC#
                 {.link = 0x61, .bitmap = 0xdef8}, // INTD#
             },
-            .slot_nr = 2,
+            .خانہ_nr = 2,
         }, {
             // 4th slot entry: 3rd PCI slot
             .dev = 4<<3,
@@ -64,7 +64,7 @@ static struct pir_table PIR_TABLE = {
                 {.link = 0x61, .bitmap = 0xdef8}, // INTC#
                 {.link = 0x62, .bitmap = 0xdef8}, // INTD#
             },
-            .slot_nr = 3,
+            .خانہ_nr = 3,
         }, {
             // 5th slot entry: 4th PCI slot
             .dev = 5<<3,
@@ -74,7 +74,7 @@ static struct pir_table PIR_TABLE = {
                 {.link = 0x62, .bitmap = 0xdef8}, // INTC#
                 {.link = 0x63, .bitmap = 0xdef8}, // INTD#
             },
-            .slot_nr = 4,
+            .خانہ_nr = 4,
         }, {
             // 6th slot entry: 5th PCI slot
             .dev = 6<<3,
@@ -84,20 +84,20 @@ static struct pir_table PIR_TABLE = {
                 {.link = 0x63, .bitmap = 0xdef8}, // INTC#
                 {.link = 0x60, .bitmap = 0xdef8}, // INTD#
             },
-            .slot_nr = 5,
+            .خانہ_nr = 5,
         },
     }
 };
 
-void
-pirtable_setup(void)
+خالی
+pirtable_تیاری(خالی)
 {
-    if (! CONFIG_PIRTABLE)
-        return;
+    اگر (! CONFIG_PIRTABLE)
+        واپس;
 
     dprintf(3, "init PIR table\n");
 
-    PIR_TABLE.pir.signature = PIR_SIGNATURE;
-    PIR_TABLE.pir.checksum -= checksum(&PIR_TABLE, sizeof(PIR_TABLE));
-    copy_pir(&PIR_TABLE);
+    PIR_جدول.pir.signature = PIR_SIGNATURE;
+    PIR_جدول.pir.checksum -= checksum(&PIR_جدول, حجم(PIR_جدول));
+    copy_pir(&PIR_جدول);
 }

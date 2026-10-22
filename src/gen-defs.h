@@ -1,19 +1,19 @@
 // Tool for building defintions accessible from assembler code.  This
 // is based on code from the Linux Kernel.
-#ifndef __GEN_DEFS_H
-#define __GEN_DEFS_H
+#اگر_غیر_تعریف_شدہ __GEN_DEFS_H
+#تعریف_کرو __GEN_DEFS_H
 
 
-#define DEFINE(sym, val) \
-    asm volatile("\n->" #sym " %0 " #val : : "i" (val))
+#تعریف_کرو DEFINE(sym, val) \
+    asm متلون("\n->" #sym " %0 " #val : : "i" (val))
 
-#define BLANK() \
-    asm volatile("\n->" : : )
+#تعریف_کرو BLANK() \
+    asm متلون("\n->" : : )
 
-#define OFFSET(sym, str, mem) \
-    DEFINE(sym, offsetof(struct str, mem))
+#تعریف_کرو انحراف(sym, str, mem) \
+    DEFINE(sym, offsetof(ساخت str, mem))
 
-#define COMMENT(x) \
-    asm volatile("\n->#" x)
+#تعریف_کرو COMMENT(x) \
+    asm متلون("\n->#" x)
 
-#endif // gen-defs.h
+#اگر_ختم // gen-defs.h

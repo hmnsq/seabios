@@ -1,21 +1,21 @@
-#ifndef __MEMMAP_H
-#define __MEMMAP_H
+#اگر_غیر_تعریف_شدہ __MEMMAP_H
+#تعریف_کرو __MEMMAP_H
 
-#include "types.h" // u32
+#شامل "types.h" // u32
 
 // A typical OS page size
-#define PAGE_SIZE 4096
-#define PAGE_SHIFT 12
+#تعریف_کرو صفحہ_سائز 4096
+#تعریف_کرو صفحہ_سرکاؤ 12
 
-static inline u32 virt_to_phys(void *v) {
-    return (u32)v;
+ساکن اندرونی u32 virt_مقصد_phys(خالی *v) {
+    واپس (u32)v;
 }
-static inline void *memremap(u32 addr, u32 len) {
-    return (void*)addr;
+ساکن اندرونی خالی *memremap(u32 addr, u32 len) {
+    واپس (خالی*)addr;
 }
 
 // Return the value of a linker script symbol (see scripts/layoutrom.py)
-#define SYMBOL(SYM) ({ extern char SYM[]; (u32)SYM; })
-#define VSYMBOL(SYM) ((void*)SYMBOL(SYM))
+#تعریف_کرو علامت(SYM) ({ خارجی حرف SYM[]; (u32)SYM; })
+#تعریف_کرو VSYMBOL(SYM) ((خالی*)علامت(SYM))
 
-#endif // memmap.h
+#اگر_ختم // memmap.h

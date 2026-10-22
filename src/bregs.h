@@ -4,23 +4,23 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#ifndef __BREGS_H
-#define __BREGS_H
+#اگر_غیر_تعریف_شدہ __BREGS_H
+#تعریف_کرو __BREGS_H
 
-#include "types.h" // u16
-#include "x86.h" // F_CF
+#شامل "types.h" // u16
+#شامل "x86.h" // F_CF
 
 
 /****************************************************************
  * Registers saved/restored in romlayout.S
  ****************************************************************/
 
-#define UREG(ER, R, RH, RL) union { u32 ER; struct { u16 R; u16 R ## _hi; }; struct { u8 RL; u8 RH; u8 R ## _hilo; u8 R ## _hihi; }; }
+#تعریف_کرو UREG(ER, R, RH, RL) اتحاد { u32 ER; ساخت { u16 R; u16 R ## _hi; }; ساخت { u8 RL; u8 RH; u8 R ## _hilo; u8 R ## _hihi; }; }
 
 // Layout of registers passed in to irq handlers.  Note that this
 // layout corresponds to code in romlayout.S - don't change it here
 // without also updating the assembler code.
-struct bregs {
+ساخت bregs {
     u16 ds;
     u16 es;
     UREG(edi, di, di8u, di8l);
@@ -30,7 +30,7 @@ struct bregs {
     UREG(edx, dx, dh, dl);
     UREG(ecx, cx, ch, cl);
     UREG(eax, ax, ah, al);
-    struct segoff_s code;
+    ساخت segoff_s رمز;
     u16 flags;
 } PACKED;
 
@@ -39,42 +39,42 @@ struct bregs {
  * Helper functions
  ****************************************************************/
 
-static inline void
-set_cf(struct bregs *regs, int cond)
+ساکن اندرونی خالی
+سیٹ_cf(ساخت bregs *regs, صحیح cond)
 {
-    if (cond)
+    اگر (cond)
         regs->flags |= F_CF;
-    else
+    ورنہ
         regs->flags &= ~F_CF;
 }
 
 // Frequently used return codes
-#define RET_EUNSUPPORTED 0x86
+#تعریف_کرو RET_EUNSUPPORTED 0x86
 
-static inline void
-set_success(struct bregs *regs)
+ساکن اندرونی خالی
+سیٹ_success(ساخت bregs *regs)
 {
-    set_cf(regs, 0);
+    سیٹ_cf(regs, 0);
 }
 
-static inline void
-set_code_success(struct bregs *regs)
+ساکن اندرونی خالی
+سیٹ_رمز_success(ساخت bregs *regs)
 {
     regs->ah = 0;
-    set_cf(regs, 0);
+    سیٹ_cf(regs, 0);
 }
 
-static inline void
-set_invalid_silent(struct bregs *regs)
+ساکن اندرونی خالی
+سیٹ_invalid_silent(ساخت bregs *regs)
 {
-    set_cf(regs, 1);
+    سیٹ_cf(regs, 1);
 }
 
-static inline void
-set_code_invalid_silent(struct bregs *regs, u8 code)
+ساکن اندرونی خالی
+سیٹ_رمز_invalid_silent(ساخت bregs *regs, u8 رمز)
 {
-    regs->ah = code;
-    set_cf(regs, 1);
+    regs->ah = رمز;
+    سیٹ_cf(regs, 1);
 }
 
-#endif // bregs.h
+#اگر_ختم // bregs.h

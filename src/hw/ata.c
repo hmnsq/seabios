@@ -5,25 +5,25 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "ata.h" // ATA_CB_STAT
-#include "biosvar.h" // GET_GLOBALFLAT
-#include "block.h" // struct drive_s
-#include "blockcmd.h" // CDB_CMD_READ_10
-#include "byteorder.h" // be16_to_cpu
-#include "malloc.h" // malloc_fseg
-#include "output.h" // dprintf
-#include "pci.h" // pci_config_readb
-#include "pcidevice.h" // foreachpci
-#include "pci_ids.h" // PCI_CLASS_STORAGE_OTHER
-#include "pci_regs.h" // PCI_INTERRUPT_LINE
-#include "pic.h" // enable_hwirq
-#include "stacks.h" // yield
-#include "std/disk.h" // DISK_RET_SUCCESS
-#include "string.h" // memset
-#include "util.h" // timer_calc
-#include "x86.h" // inb
+#شامل "ata.h" // ATA_CB_STAT
+#شامل "biosvar.h" // GET_GLOBALFLAT
+#شامل "block.h" // struct drive_s
+#شامل "blockcmd.h" // CDB_CMD_READ_10
+#شامل "byteorder.h" // be16_to_cpu
+#شامل "malloc.h" // malloc_fseg
+#شامل "output.h" // dprintf
+#شامل "pci.h" // pci_config_readb
+#شامل "pcidevice.h" // foreachpci
+#شامل "pci_ids.h" // PCI_CLASS_STORAGE_OTHER
+#شامل "pci_regs.h" // PCI_INTERRUPT_LINE
+#شامل "pic.h" // enable_hwirq
+#شامل "stacks.h" // yield
+#شامل "std/disk.h" // DISK_RET_SUCCESS
+#شامل "string.h" // memset
+#شامل "util.h" // timer_calc
+#شامل "x86.h" // inb
 
-#define IDE_TIMEOUT 32000 //32 seconds max for IDE ops
+#تعریف_کرو IDE_TIMEOUT 32000 //32 seconds max for IDE ops
 
 
 /****************************************************************
@@ -31,59 +31,59 @@
  ****************************************************************/
 
 // Wait for the specified ide state
-static inline int
-await_ide(u8 mask, u8 flags, u16 base, u16 timeout)
+ساکن اندرونی صحیح
+await_ide(u8 نقاب, u8 flags, u16 بنیاد, u16 timeout)
 {
-    u32 end = timer_calc(timeout);
-    for (;;) {
-        u8 status = inb(base+ATA_CB_STAT);
-        if ((status & mask) == flags)
-            return status;
-        if (timer_check(end)) {
+    u32 انتہا = timer_calc(timeout);
+    برائے (;;) {
+        u8 حالت_2 = inb(بنیاد+ATA_CB_STAT);
+        اگر ((حالت_2 & نقاب) == flags)
+            واپس حالت_2;
+        اگر (timer_check(انتہا)) {
             warn_timeout();
-            return -1;
+            واپس -1;
         }
         yield();
     }
 }
 
 // Wait for the device to be not-busy.
-static int
-await_not_bsy(u16 base)
+ساکن صحیح
+await_not_bsy(u16 بنیاد)
 {
-    return await_ide(ATA_CB_STAT_BSY, 0, base, IDE_TIMEOUT);
+    واپس await_ide(ATA_CB_STAT_BSY, 0, بنیاد, IDE_TIMEOUT);
 }
 
 // Wait for the device to be ready.
-static int
-await_rdy(u16 base)
+ساکن صحیح
+await_rdy(u16 بنیاد)
 {
-    return await_ide(ATA_CB_STAT_RDY, ATA_CB_STAT_RDY, base, IDE_TIMEOUT);
+    واپس await_ide(ATA_CB_STAT_RDY, ATA_CB_STAT_RDY, بنیاد, IDE_TIMEOUT);
 }
 
 // Wait for ide state - pauses for one ata cycle first.
-static inline int
+ساکن اندرونی صحیح
 pause_await_not_bsy(u16 iobase1, u16 iobase2)
 {
     // Wait one PIO transfer cycle.
     inb(iobase2 + ATA_CB_ASTAT);
 
-    return await_not_bsy(iobase1);
+    واپس await_not_bsy(iobase1);
 }
 
 // Wait for ide state - pause for 400ns first.
-static inline int
+ساکن اندرونی صحیح
 ndelay_await_not_bsy(u16 iobase1)
 {
     ndelay(400);
-    return await_not_bsy(iobase1);
+    واپس await_not_bsy(iobase1);
 }
 
 // Reset a drive
-static void
-ata_reset(struct atadrive_s *adrive_gf)
+ساکن خالی
+ata_reset(ساخت atadrive_s *adrive_gf)
 {
-    struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
+    ساخت ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
     u8 slave = GET_GLOBALFLAT(adrive_gf->slave);
     u16 iobase1 = GET_GLOBALFLAT(chan_gf->iobase1);
     u16 iobase2 = GET_GLOBALFLAT(chan_gf->iobase2);
@@ -96,53 +96,53 @@ ata_reset(struct atadrive_s *adrive_gf)
     msleep(2);
 
     // wait for device to become not busy.
-    int status = await_not_bsy(iobase1);
-    if (status < 0)
-        goto done;
-    if (slave) {
+    صحیح حالت_2 = await_not_bsy(iobase1);
+    اگر (حالت_2 < 0)
+        جاؤ مکمل;
+    اگر (slave) {
         // Change device.
-        u32 end = timer_calc(IDE_TIMEOUT);
-        for (;;) {
+        u32 انتہا = timer_calc(IDE_TIMEOUT);
+        برائے (;;) {
             outb(ATA_CB_DH_DEV1, iobase1 + ATA_CB_DH);
-            status = ndelay_await_not_bsy(iobase1);
-            if (status < 0)
-                goto done;
-            if (inb(iobase1 + ATA_CB_DH) == ATA_CB_DH_DEV1)
-                break;
+            حالت_2 = ndelay_await_not_bsy(iobase1);
+            اگر (حالت_2 < 0)
+                جاؤ مکمل;
+            اگر (inb(iobase1 + ATA_CB_DH) == ATA_CB_DH_DEV1)
+                توڑو;
             // Change drive request failed to take effect - retry.
-            if (timer_check(end)) {
+            اگر (timer_check(انتہا)) {
                 warn_timeout();
-                goto done;
+                جاؤ مکمل;
             }
         }
-    } else {
+    } ورنہ {
         // QEMU doesn't reset dh on reset, so set it explicitly.
         outb(ATA_CB_DH_DEV0, iobase1 + ATA_CB_DH);
     }
 
     // On a user-reset request, wait for RDY if it is an ATA device.
     u8 type=GET_GLOBALFLAT(adrive_gf->drive.type);
-    if (type == DTYPE_ATA)
-        status = await_rdy(iobase1);
+    اگر (type == DTYPE_ATA)
+        حالت_2 = await_rdy(iobase1);
 
-done:
+مکمل:
     // Enable interrupts
     outb(ATA_CB_DC_HD15, iobase2+ATA_CB_DC);
 
-    dprintf(6, "ata_reset exit status=%x\n", status);
+    dprintf(6, "ata_reset exit status=%x\n", حالت_2);
 }
 
 // Check for drive RDY for 16bit interface command.
-static int
-isready(struct atadrive_s *adrive_gf)
+ساکن صحیح
+isready(ساخت atadrive_s *adrive_gf)
 {
     // Read the status from controller
-    struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
+    ساخت ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
     u16 iobase1 = GET_GLOBALFLAT(chan_gf->iobase1);
-    u8 status = inb(iobase1 + ATA_CB_STAT);
-    if ((status & (ATA_CB_STAT_BSY|ATA_CB_STAT_RDY)) == ATA_CB_STAT_RDY)
-        return DISK_RET_SUCCESS;
-    return DISK_RET_ENOTREADY;
+    u8 حالت_2 = inb(iobase1 + ATA_CB_STAT);
+    اگر ((حالت_2 & (ATA_CB_STAT_BSY|ATA_CB_STAT_RDY)) == ATA_CB_STAT_RDY)
+        واپس DISK_RET_SUCCESS;
+    واپس DISK_RET_ENOTREADY;
 }
 
 
@@ -150,12 +150,12 @@ isready(struct atadrive_s *adrive_gf)
  * ATA send command
  ****************************************************************/
 
-struct ata_pio_command {
+ساخت ata_pio_command {
     u8 feature;
-    u8 sector_count;
-    u8 lba_low;
+    u8 sector_گنتی;
+    u8 lba_کم;
     u8 lba_mid;
-    u8 lba_high;
+    u8 lba_بلند;
     u8 device;
     u8 command;
 
@@ -167,30 +167,30 @@ struct ata_pio_command {
 };
 
 // Send an ata command to the drive.
-static int
-send_cmd(struct atadrive_s *adrive_gf, struct ata_pio_command *cmd)
+ساکن صحیح
+send_cmd(ساخت atadrive_s *adrive_gf, ساخت ata_pio_command *cmd)
 {
-    struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
+    ساخت ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
     u8 slave = GET_GLOBALFLAT(adrive_gf->slave);
     u16 iobase1 = GET_GLOBALFLAT(chan_gf->iobase1);
 
     // Select device
-    int status = await_not_bsy(iobase1);
-    if (status < 0)
-        return status;
+    صحیح حالت_2 = await_not_bsy(iobase1);
+    اگر (حالت_2 < 0)
+        واپس حالت_2;
     u8 newdh = ((cmd->device & ~ATA_CB_DH_DEV1)
                 | (slave ? ATA_CB_DH_DEV1 : ATA_CB_DH_DEV0));
     u8 olddh = inb(iobase1 + ATA_CB_DH);
     outb(newdh, iobase1 + ATA_CB_DH);
-    if ((olddh ^ newdh) & (1<<4)) {
+    اگر ((olddh ^ newdh) & (1<<4)) {
         // Was a device change - wait for device to become not busy.
-        status = ndelay_await_not_bsy(iobase1);
-        if (status < 0)
-            return status;
+        حالت_2 = ndelay_await_not_bsy(iobase1);
+        اگر (حالت_2 < 0)
+            واپس حالت_2;
     }
 
     // Check for ATA_CMD_(READ|WRITE)_(SECTORS|DMA)_EXT commands.
-    if ((cmd->command & ~0x11) == ATA_CMD_READ_SECTORS_EXT) {
+    اگر ((cmd->command & ~0x11) == ATA_CMD_READ_SECTORS_EXT) {
         outb(cmd->feature2, iobase1 + ATA_CB_FR);
         outb(cmd->sector_count2, iobase1 + ATA_CB_SC);
         outb(cmd->lba_low2, iobase1 + ATA_CB_SN);
@@ -198,71 +198,71 @@ send_cmd(struct atadrive_s *adrive_gf, struct ata_pio_command *cmd)
         outb(cmd->lba_high2, iobase1 + ATA_CB_CH);
     }
     outb(cmd->feature, iobase1 + ATA_CB_FR);
-    outb(cmd->sector_count, iobase1 + ATA_CB_SC);
-    outb(cmd->lba_low, iobase1 + ATA_CB_SN);
+    outb(cmd->sector_گنتی, iobase1 + ATA_CB_SC);
+    outb(cmd->lba_کم, iobase1 + ATA_CB_SN);
     outb(cmd->lba_mid, iobase1 + ATA_CB_CL);
-    outb(cmd->lba_high, iobase1 + ATA_CB_CH);
+    outb(cmd->lba_بلند, iobase1 + ATA_CB_CH);
     outb(cmd->command, iobase1 + ATA_CB_CMD);
 
-    return 0;
+    واپس 0;
 }
 
 // Wait for data after calling 'send_cmd'.
-static int
-ata_wait_data(u16 iobase1)
+ساکن صحیح
+ata_wait_ڈیٹا(u16 iobase1)
 {
-    int status = ndelay_await_not_bsy(iobase1);
-    if (status < 0)
-        return status;
+    صحیح حالت_2 = ndelay_await_not_bsy(iobase1);
+    اگر (حالت_2 < 0)
+        واپس حالت_2;
 
-    if (status & ATA_CB_STAT_ERR) {
+    اگر (حالت_2 & ATA_CB_STAT_ERR) {
         dprintf(6, "send_cmd : read error (status=%02x err=%02x)\n"
-                , status, inb(iobase1 + ATA_CB_ERR));
-        return -4;
+                , حالت_2, inb(iobase1 + ATA_CB_ERR));
+        واپس -4;
     }
-    if (!(status & ATA_CB_STAT_DRQ)) {
-        dprintf(6, "send_cmd : DRQ not set (status %02x)\n", status);
-        return -5;
+    اگر (!(حالت_2 & ATA_CB_STAT_DRQ)) {
+        dprintf(6, "send_cmd : DRQ not set (status %02x)\n", حالت_2);
+        واپس -5;
     }
 
-    return 0;
+    واپس 0;
 }
 
 // Send an ata command that does not transfer any further data.
-int
-ata_cmd_nondata(struct atadrive_s *adrive_gf, struct ata_pio_command *cmd)
+صحیح
+ata_cmd_nondata(ساخت atadrive_s *adrive_gf, ساخت ata_pio_command *cmd)
 {
-    struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
+    ساخت ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
     u16 iobase1 = GET_GLOBALFLAT(chan_gf->iobase1);
     u16 iobase2 = GET_GLOBALFLAT(chan_gf->iobase2);
 
     // Disable interrupts
     outb(ATA_CB_DC_HD15 | ATA_CB_DC_NIEN, iobase2 + ATA_CB_DC);
 
-    int ret = send_cmd(adrive_gf, cmd);
-    if (ret)
-        goto fail;
+    صحیح ret = send_cmd(adrive_gf, cmd);
+    اگر (ret)
+        جاؤ fail;
     ret = ndelay_await_not_bsy(iobase1);
-    if (ret < 0)
-        goto fail;
+    اگر (ret < 0)
+        جاؤ fail;
 
-    if (ret & ATA_CB_STAT_ERR) {
+    اگر (ret & ATA_CB_STAT_ERR) {
         dprintf(6, "nondata cmd : read error (status=%02x err=%02x)\n"
                 , ret, inb(iobase1 + ATA_CB_ERR));
         ret = -4;
-        goto fail;
+        جاؤ fail;
     }
-    if (ret & ATA_CB_STAT_DRQ) {
+    اگر (ret & ATA_CB_STAT_DRQ) {
         dprintf(6, "nondata cmd : DRQ set (status %02x)\n", ret);
         ret = -5;
-        goto fail;
+        جاؤ fail;
     }
 
 fail:
     // Enable interrupts
     outb(ATA_CB_DC_HD15, iobase2+ATA_CB_DC);
 
-    return ret;
+    واپس ret;
 }
 
 
@@ -272,67 +272,67 @@ fail:
 
 // Transfer 'op->count' blocks (of 'blocksize' bytes) to/from drive
 // 'op->drive_fl'.
-static int
-ata_pio_transfer(struct disk_op_s *op, int iswrite, int blocksize)
+ساکن صحیح
+ata_pio_transfer(ساخت disk_op_s *op, صحیح iswrite, صحیح blocksize)
 {
     dprintf(16, "ata_pio_transfer id=%p write=%d count=%d bs=%d buf=%p\n"
-            , op->drive_fl, iswrite, op->count, blocksize, op->buf_fl);
+            , op->drive_fl, iswrite, op->گنتی, blocksize, op->buf_fl);
 
-    struct atadrive_s *adrive_gf = container_of(
-        op->drive_fl, struct atadrive_s, drive);
-    struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
+    ساخت atadrive_s *adrive_gf = container_کا(
+        op->drive_fl, ساخت atadrive_s, drive);
+    ساخت ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
     u16 iobase1 = GET_GLOBALFLAT(chan_gf->iobase1);
     u16 iobase2 = GET_GLOBALFLAT(chan_gf->iobase2);
-    int count = op->count;
-    void *buf_fl = op->buf_fl;
-    int status;
-    for (;;) {
-        if (iswrite) {
+    صحیح گنتی = op->گنتی;
+    خالی *buf_fl = op->buf_fl;
+    صحیح حالت_2;
+    برائے (;;) {
+        اگر (iswrite) {
             // Write data to controller
             dprintf(16, "Write sector id=%p dest=%p\n", op->drive_fl, buf_fl);
-            if (CONFIG_ATA_PIO32)
+            اگر (CONFIG_ATA_PIO32)
                 outsl_fl(iobase1, buf_fl, blocksize / 4);
-            else
+            ورنہ
                 outsw_fl(iobase1, buf_fl, blocksize / 2);
-        } else {
+        } ورنہ {
             // Read data from controller
             dprintf(16, "Read sector id=%p dest=%p\n", op->drive_fl, buf_fl);
-            if (CONFIG_ATA_PIO32)
+            اگر (CONFIG_ATA_PIO32)
                 insl_fl(iobase1, buf_fl, blocksize / 4);
-            else
+            ورنہ
                 insw_fl(iobase1, buf_fl, blocksize / 2);
         }
         buf_fl += blocksize;
 
-        status = pause_await_not_bsy(iobase1, iobase2);
-        if (status < 0) {
+        حالت_2 = pause_await_not_bsy(iobase1, iobase2);
+        اگر (حالت_2 < 0) {
             // Error
-            op->count -= count;
-            return status;
+            op->گنتی -= گنتی;
+            واپس حالت_2;
         }
 
-        count--;
-        if (!count)
-            break;
-        status &= (ATA_CB_STAT_BSY | ATA_CB_STAT_DRQ | ATA_CB_STAT_ERR);
-        if (status != ATA_CB_STAT_DRQ) {
+        گنتی--;
+        اگر (!گنتی)
+            توڑو;
+        حالت_2 &= (ATA_CB_STAT_BSY | ATA_CB_STAT_DRQ | ATA_CB_STAT_ERR);
+        اگر (حالت_2 != ATA_CB_STAT_DRQ) {
             dprintf(6, "ata_pio_transfer : more sectors left (status %02x)\n"
-                    , status);
-            op->count -= count;
-            return -6;
+                    , حالت_2);
+            op->گنتی -= گنتی;
+            واپس -6;
         }
     }
 
-    status &= (ATA_CB_STAT_BSY | ATA_CB_STAT_DF | ATA_CB_STAT_DRQ
+    حالت_2 &= (ATA_CB_STAT_BSY | ATA_CB_STAT_DF | ATA_CB_STAT_DRQ
                | ATA_CB_STAT_ERR);
-    if (!iswrite)
-        status &= ~ATA_CB_STAT_DF;
-    if (status != 0) {
-        dprintf(6, "ata_pio_transfer : no sectors left (status %02x)\n", status);
-        return -7;
+    اگر (!iswrite)
+        حالت_2 &= ~ATA_CB_STAT_DF;
+    اگر (حالت_2 != 0) {
+        dprintf(6, "ata_pio_transfer : no sectors left (status %02x)\n", حالت_2);
+        واپس -7;
     }
 
-    return 0;
+    واپس 0;
 }
 
 
@@ -340,120 +340,120 @@ ata_pio_transfer(struct disk_op_s *op, int iswrite, int blocksize)
  * ATA DMA transfers
  ****************************************************************/
 
-#define BM_CMD    0
-#define  BM_CMD_MEMWRITE  0x08
-#define  BM_CMD_START     0x01
-#define BM_STATUS 2
-#define  BM_STATUS_IRQ    0x04
-#define  BM_STATUS_ERROR  0x02
-#define  BM_STATUS_ACTIVE 0x01
-#define BM_TABLE  4
+#تعریف_کرو BM_CMD    0
+#تعریف_کرو  BM_CMD_MEMWRITE  0x08
+#تعریف_کرو  BM_CMD_آغاز     0x01
+#تعریف_کرو BM_حالت 2
+#تعریف_کرو  BM_حالت_IRQ    0x04
+#تعریف_کرو  BM_حالت_ERROR  0x02
+#تعریف_کرو  BM_حالت_فعال 0x01
+#تعریف_کرو BM_جدول  4
 
-struct sff_dma_prd {
+ساخت sff_dma_prd {
     u32 buf_fl;
-    u32 count;
+    u32 گنتی;
 };
 
 // Check if DMA available and setup transfer if so.
-static int
-ata_try_dma(struct disk_op_s *op, int iswrite, int blocksize)
+ساکن صحیح
+ata_try_dma(ساخت disk_op_s *op, صحیح iswrite, صحیح blocksize)
 {
     ASSERT16();
-    if (! CONFIG_ATA_DMA)
-        return -1;
+    اگر (! CONFIG_ATA_DMA)
+        واپس -1;
     u32 dest = (u32)op->buf_fl;
-    if (dest & 1)
+    اگر (dest & 1)
         // Need minimum alignment of 1.
-        return -1;
-    struct atadrive_s *adrive_gf = container_of(
-        op->drive_fl, struct atadrive_s, drive);
-    struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
+        واپس -1;
+    ساخت atadrive_s *adrive_gf = container_کا(
+        op->drive_fl, ساخت atadrive_s, drive);
+    ساخت ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
     u16 iomaster = GET_GLOBALFLAT(chan_gf->iomaster);
-    if (! iomaster)
-        return -1;
-    u32 bytes = op->count * blocksize;
-    if (! bytes)
-        return -1;
+    اگر (! iomaster)
+        واپس -1;
+    u32 بائٹیں = op->گنتی * blocksize;
+    اگر (! بائٹیں)
+        واپس -1;
 
     // Build PRD dma structure.
-    struct sff_dma_prd *dma = MAKE_FLATPTR(SEG_LOW, ExtraStack);
-    struct sff_dma_prd *origdma = dma;
-    while (bytes) {
-        if (dma >= &origdma[16])
+    ساخت sff_dma_prd *dma = MAKE_FLATPTR(SEG_کم, Extra_ڈھیر);
+    ساخت sff_dma_prd *origdma = dma;
+    جب (بائٹیں) {
+        اگر (dma >= &origdma[16])
             // Too many descriptors..
-            return -1;
-        u32 count = bytes;
+            واپس -1;
+        u32 گنتی = بائٹیں;
         u32 max = 0x10000 - (dest & 0xffff);
-        if (count > max)
-            count = max;
+        اگر (گنتی > max)
+            گنتی = max;
 
-        SET_LOWFLAT(dma->buf_fl, dest);
-        bytes -= count;
-        if (!bytes)
+        سیٹ_LOWFLAT(dma->buf_fl, dest);
+        بائٹیں -= گنتی;
+        اگر (!بائٹیں)
             // Last descriptor.
-            count |= 1<<31;
-        dprintf(16, "dma@%p: %08x %08x\n", dma, dest, count);
-        dest += count;
-        SET_LOWFLAT(dma->count, count);
+            گنتی |= 1<<31;
+        dprintf(16, "dma@%p: %08x %08x\n", dma, dest, گنتی);
+        dest += گنتی;
+        سیٹ_LOWFLAT(dma->گنتی, گنتی);
         dma++;
     }
 
     // Program bus-master controller.
-    outl((u32)origdma, iomaster + BM_TABLE);
-    u8 oldcmd = inb(iomaster + BM_CMD) & ~(BM_CMD_MEMWRITE|BM_CMD_START);
+    outl((u32)origdma, iomaster + BM_جدول);
+    u8 oldcmd = inb(iomaster + BM_CMD) & ~(BM_CMD_MEMWRITE|BM_CMD_آغاز);
     outb(oldcmd | (iswrite ? 0x00 : BM_CMD_MEMWRITE), iomaster + BM_CMD);
-    outb(BM_STATUS_ERROR|BM_STATUS_IRQ, iomaster + BM_STATUS);
+    outb(BM_حالت_ERROR|BM_حالت_IRQ, iomaster + BM_حالت);
 
-    return 0;
+    واپس 0;
 }
 
 // Transfer data using DMA.
-static int
-ata_dma_transfer(struct disk_op_s *op)
+ساکن صحیح
+ata_dma_transfer(ساخت disk_op_s *op)
 {
-    if (! CONFIG_ATA_DMA)
-        return -1;
+    اگر (! CONFIG_ATA_DMA)
+        واپس -1;
     dprintf(16, "ata_dma_transfer id=%p buf=%p\n", op->drive_fl, op->buf_fl);
 
-    struct atadrive_s *adrive_gf = container_of(
-        op->drive_fl, struct atadrive_s, drive);
-    struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
+    ساخت atadrive_s *adrive_gf = container_کا(
+        op->drive_fl, ساخت atadrive_s, drive);
+    ساخت ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
     u16 iomaster = GET_GLOBALFLAT(chan_gf->iomaster);
 
     // Start bus-master controller.
     u8 oldcmd = inb(iomaster + BM_CMD);
-    outb(oldcmd | BM_CMD_START, iomaster + BM_CMD);
+    outb(oldcmd | BM_CMD_آغاز, iomaster + BM_CMD);
 
-    u32 end = timer_calc(IDE_TIMEOUT);
-    u8 status;
-    for (;;) {
-        status = inb(iomaster + BM_STATUS);
-        if (status & BM_STATUS_IRQ)
-            break;
+    u32 انتہا = timer_calc(IDE_TIMEOUT);
+    u8 حالت_2;
+    برائے (;;) {
+        حالت_2 = inb(iomaster + BM_حالت);
+        اگر (حالت_2 & BM_حالت_IRQ)
+            توڑو;
         // Transfer in progress
-        if (timer_check(end)) {
+        اگر (timer_check(انتہا)) {
             // Timeout.
             warn_timeout();
-            break;
+            توڑو;
         }
         yield();
     }
-    outb(oldcmd & ~BM_CMD_START, iomaster + BM_CMD);
+    outb(oldcmd & ~BM_CMD_آغاز, iomaster + BM_CMD);
 
     u16 iobase1 = GET_GLOBALFLAT(chan_gf->iobase1);
     u16 iobase2 = GET_GLOBALFLAT(chan_gf->iobase2);
-    int idestatus = pause_await_not_bsy(iobase1, iobase2);
+    صحیح idestatus = pause_await_not_bsy(iobase1, iobase2);
 
-    if ((status & (BM_STATUS_IRQ|BM_STATUS_ACTIVE)) == BM_STATUS_IRQ
+    اگر ((حالت_2 & (BM_حالت_IRQ|BM_حالت_فعال)) == BM_حالت_IRQ
         && idestatus >= 0x00
         && (idestatus & (ATA_CB_STAT_BSY | ATA_CB_STAT_DF | ATA_CB_STAT_DRQ
                          | ATA_CB_STAT_ERR)) == 0x00)
         // Success.
-        return 0;
+        واپس 0;
 
-    dprintf(6, "IDE DMA error (dma=%x ide=%x/%x/%x)\n", status, idestatus
+    dprintf(6, "IDE DMA error (dma=%x ide=%x/%x/%x)\n", حالت_2, idestatus
             , inb(iobase2 + ATA_CB_ASTAT), inb(iobase1 + ATA_CB_ERR));
-    return -1;
+    واپس -1;
 }
 
 
@@ -462,116 +462,116 @@ ata_dma_transfer(struct disk_op_s *op)
  ****************************************************************/
 
 // Transfer data to harddrive using PIO protocol.
-static int
-ata_pio_cmd_data(struct disk_op_s *op, int iswrite, struct ata_pio_command *cmd)
+ساکن صحیح
+ata_pio_cmd_ڈیٹا(ساخت disk_op_s *op, صحیح iswrite, ساخت ata_pio_command *cmd)
 {
-    struct atadrive_s *adrive_gf = container_of(
-        op->drive_fl, struct atadrive_s, drive);
-    struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
+    ساخت atadrive_s *adrive_gf = container_کا(
+        op->drive_fl, ساخت atadrive_s, drive);
+    ساخت ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
     u16 iobase1 = GET_GLOBALFLAT(chan_gf->iobase1);
     u16 iobase2 = GET_GLOBALFLAT(chan_gf->iobase2);
 
     // Disable interrupts
     outb(ATA_CB_DC_HD15 | ATA_CB_DC_NIEN, iobase2 + ATA_CB_DC);
 
-    int ret = send_cmd(adrive_gf, cmd);
-    if (ret)
-        goto fail;
-    ret = ata_wait_data(iobase1);
-    if (ret)
-        goto fail;
-    ret = ata_pio_transfer(op, iswrite, DISK_SECTOR_SIZE);
+    صحیح ret = send_cmd(adrive_gf, cmd);
+    اگر (ret)
+        جاؤ fail;
+    ret = ata_wait_ڈیٹا(iobase1);
+    اگر (ret)
+        جاؤ fail;
+    ret = ata_pio_transfer(op, iswrite, DISK_SECTOR_سائز);
 
 fail:
     // Enable interrupts
     outb(ATA_CB_DC_HD15, iobase2+ATA_CB_DC);
-    return ret;
+    واپس ret;
 }
 
 // Transfer data to harddrive using DMA protocol.
-static int
-ata_dma_cmd_data(struct disk_op_s *op, struct ata_pio_command *cmd)
+ساکن صحیح
+ata_dma_cmd_ڈیٹا(ساخت disk_op_s *op, ساخت ata_pio_command *cmd)
 {
-    if (! CONFIG_ATA_DMA)
-        return -1;
-    struct atadrive_s *adrive_gf = container_of(
-        op->drive_fl, struct atadrive_s, drive);
-    int ret = send_cmd(adrive_gf, cmd);
-    if (ret)
-        return ret;
-    return ata_dma_transfer(op);
+    اگر (! CONFIG_ATA_DMA)
+        واپس -1;
+    ساخت atadrive_s *adrive_gf = container_کا(
+        op->drive_fl, ساخت atadrive_s, drive);
+    صحیح ret = send_cmd(adrive_gf, cmd);
+    اگر (ret)
+        واپس ret;
+    واپس ata_dma_transfer(op);
 }
 
 // Read/write count blocks from a harddrive.
-static int
-ata_readwrite(struct disk_op_s *op, int iswrite)
+ساکن صحیح
+ata_readwrite(ساخت disk_op_s *op, صحیح iswrite)
 {
     u64 lba = op->lba;
 
-    int usepio = ata_try_dma(op, iswrite, DISK_SECTOR_SIZE);
+    صحیح usepio = ata_try_dma(op, iswrite, DISK_SECTOR_سائز);
 
-    struct ata_pio_command cmd;
-    memset(&cmd, 0, sizeof(cmd));
+    ساخت ata_pio_command cmd;
+    memset(&cmd, 0, حجم(cmd));
 
-    if (op->count >= (1<<8) || lba + op->count >= (1<<28)) {
-        cmd.sector_count2 = op->count >> 8;
+    اگر (op->گنتی >= (1<<8) || lba + op->گنتی >= (1<<28)) {
+        cmd.sector_count2 = op->گنتی >> 8;
         cmd.lba_low2 = lba >> 24;
         cmd.lba_mid2 = lba >> 32;
         cmd.lba_high2 = lba >> 40;
         lba &= 0xffffff;
 
-        if (usepio)
+        اگر (usepio)
             cmd.command = (iswrite ? ATA_CMD_WRITE_SECTORS_EXT
                            : ATA_CMD_READ_SECTORS_EXT);
-        else
+        ورنہ
             cmd.command = (iswrite ? ATA_CMD_WRITE_DMA_EXT
                            : ATA_CMD_READ_DMA_EXT);
-    } else {
-        if (usepio)
+    } ورنہ {
+        اگر (usepio)
             cmd.command = (iswrite ? ATA_CMD_WRITE_SECTORS
                            : ATA_CMD_READ_SECTORS);
-        else
+        ورنہ
             cmd.command = (iswrite ? ATA_CMD_WRITE_DMA
                            : ATA_CMD_READ_DMA);
     }
 
-    cmd.sector_count = op->count;
-    cmd.lba_low = lba;
+    cmd.sector_گنتی = op->گنتی;
+    cmd.lba_کم = lba;
     cmd.lba_mid = lba >> 8;
-    cmd.lba_high = lba >> 16;
+    cmd.lba_بلند = lba >> 16;
     cmd.device = ((lba >> 24) & 0xf) | ATA_CB_DH_LBA;
 
-    int ret;
-    if (usepio)
-        ret = ata_pio_cmd_data(op, iswrite, &cmd);
-    else
-        ret = ata_dma_cmd_data(op, &cmd);
-    if (ret)
-        return DISK_RET_EBADTRACK;
-    return DISK_RET_SUCCESS;
+    صحیح ret;
+    اگر (usepio)
+        ret = ata_pio_cmd_ڈیٹا(op, iswrite, &cmd);
+    ورنہ
+        ret = ata_dma_cmd_ڈیٹا(op, &cmd);
+    اگر (ret)
+        واپس DISK_RET_EBADTRACK;
+    واپس DISK_RET_SUCCESS;
 }
 
 // 16bit command demuxer for ATA harddrives.
-int
-ata_process_op(struct disk_op_s *op)
+صحیح
+ata_process_op(ساخت disk_op_s *op)
 {
-    if (!CONFIG_ATA)
-        return 0;
+    اگر (!CONFIG_ATA)
+        واپس 0;
 
-    struct atadrive_s *adrive_gf = container_of(
-        op->drive_fl, struct atadrive_s, drive);
-    switch (op->command) {
-    case CMD_READ:
-        return ata_readwrite(op, 0);
-    case CMD_WRITE:
-        return ata_readwrite(op, 1);
-    case CMD_RESET:
+    ساخت atadrive_s *adrive_gf = container_کا(
+        op->drive_fl, ساخت atadrive_s, drive);
+    انتخاب (op->command) {
+    حالت CMD_READ:
+        واپس ata_readwrite(op, 0);
+    حالت CMD_WRITE:
+        واپس ata_readwrite(op, 1);
+    حالت CMD_RESET:
         ata_reset(adrive_gf);
-        return DISK_RET_SUCCESS;
-    case CMD_ISREADY:
-        return isready(adrive_gf);
-    default:
-        return default_process_op(op);
+        واپس DISK_RET_SUCCESS;
+    حالت CMD_ISREADY:
+        واپس isready(adrive_gf);
+    طےشدہ:
+        واپس default_process_op(op);
     }
 }
 
@@ -580,67 +580,67 @@ ata_process_op(struct disk_op_s *op)
  * ATAPI functions
  ****************************************************************/
 
-#define CDROM_CDB_SIZE 12
+#تعریف_کرو CDROM_CDB_سائز 12
 
 // Low-level atapi command transmit function.
-int
-ata_atapi_process_op(struct disk_op_s *op)
+صحیح
+ata_atapi_process_op(ساخت disk_op_s *op)
 {
-    if (! CONFIG_ATA)
-        return 0;
+    اگر (! CONFIG_ATA)
+        واپس 0;
 
-    if (op->command == CMD_WRITE || op->command == CMD_FORMAT)
-        return DISK_RET_EWRITEPROTECT;
-    u8 cdbcmd[CDROM_CDB_SIZE];
-    int blocksize = scsi_fill_cmd(op, cdbcmd, sizeof(cdbcmd));
-    if (blocksize < 0)
-        return default_process_op(op);
+    اگر (op->command == CMD_WRITE || op->command == CMD_FORMAT)
+        واپس DISK_RET_EWRITEPROTECT;
+    u8 cdbcmd[CDROM_CDB_سائز];
+    صحیح blocksize = scsi_fill_cmd(op, cdbcmd, حجم(cdbcmd));
+    اگر (blocksize < 0)
+        واپس default_process_op(op);
 
-    struct atadrive_s *adrive_gf = container_of(
-        op->drive_fl, struct atadrive_s, drive);
-    struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
+    ساخت atadrive_s *adrive_gf = container_کا(
+        op->drive_fl, ساخت atadrive_s, drive);
+    ساخت ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
     u16 iobase1 = GET_GLOBALFLAT(chan_gf->iobase1);
     u16 iobase2 = GET_GLOBALFLAT(chan_gf->iobase2);
 
-    struct ata_pio_command cmd;
-    memset(&cmd, 0, sizeof(cmd));
+    ساخت ata_pio_command cmd;
+    memset(&cmd, 0, حجم(cmd));
     cmd.lba_mid = blocksize;
-    cmd.lba_high = blocksize >> 8;
+    cmd.lba_بلند = blocksize >> 8;
     cmd.command = ATA_CMD_PACKET;
 
     // Disable interrupts
     outb(ATA_CB_DC_HD15 | ATA_CB_DC_NIEN, iobase2 + ATA_CB_DC);
 
-    int ret = send_cmd(adrive_gf, &cmd);
-    if (ret)
-        goto fail;
-    ret = ata_wait_data(iobase1);
-    if (ret)
-        goto fail;
+    صحیح ret = send_cmd(adrive_gf, &cmd);
+    اگر (ret)
+        جاؤ fail;
+    ret = ata_wait_ڈیٹا(iobase1);
+    اگر (ret)
+        جاؤ fail;
 
     // Send command to device
-    outsw_fl(iobase1, MAKE_FLATPTR(GET_SEG(SS), cdbcmd), CDROM_CDB_SIZE / 2);
+    outsw_fl(iobase1, MAKE_FLATPTR(GET_SEG(SS), cdbcmd), CDROM_CDB_سائز / 2);
 
-    int status = pause_await_not_bsy(iobase1, iobase2);
-    if (status < 0) {
-        ret = status;
-        goto fail;
+    صحیح حالت_2 = pause_await_not_bsy(iobase1, iobase2);
+    اگر (حالت_2 < 0) {
+        ret = حالت_2;
+        جاؤ fail;
     }
 
-    if (status & ATA_CB_STAT_ERR) {
+    اگر (حالت_2 & ATA_CB_STAT_ERR) {
         u8 err = inb(iobase1 + ATA_CB_ERR);
         // skip "Not Ready"
-        if (err != 0x20)
+        اگر (err != 0x20)
             dprintf(6, "send_atapi_cmd : read error (status=%02x err=%02x)\n"
-                    , status, err);
+                    , حالت_2, err);
         ret = -2;
-        goto fail;
+        جاؤ fail;
     }
-    if (blocksize) {
-        if (!(status & ATA_CB_STAT_DRQ)) {
-            dprintf(6, "send_atapi_cmd : DRQ not set (status %02x)\n", status);
+    اگر (blocksize) {
+        اگر (!(حالت_2 & ATA_CB_STAT_DRQ)) {
+            dprintf(6, "send_atapi_cmd : DRQ not set (status %02x)\n", حالت_2);
             ret = -3;
-            goto fail;
+            جاؤ fail;
         }
 
         ret = ata_pio_transfer(op, 0, blocksize);
@@ -649,9 +649,9 @@ ata_atapi_process_op(struct disk_op_s *op)
 fail:
     // Enable interrupts
     outb(ATA_CB_DC_HD15, iobase2+ATA_CB_DC);
-    if (ret)
-        return DISK_RET_EBADTRACK;
-    return DISK_RET_SUCCESS;
+    اگر (ret)
+        واپس DISK_RET_EBADTRACK;
+    واپس DISK_RET_SUCCESS;
 }
 
 
@@ -660,215 +660,215 @@ fail:
  ****************************************************************/
 
 // Send an identify device or identify device packet command.
-static int
-send_ata_identity(struct atadrive_s *adrive, u16 *buffer, int command)
+ساکن صحیح
+send_ata_شناختی_عنصر(ساخت atadrive_s *adrive, u16 *بفر, صحیح command)
 {
-    memset(buffer, 0, DISK_SECTOR_SIZE);
+    memset(بفر, 0, DISK_SECTOR_سائز);
 
-    struct disk_op_s dop;
-    memset(&dop, 0, sizeof(dop));
+    ساخت disk_op_s dop;
+    memset(&dop, 0, حجم(dop));
     dop.drive_fl = &adrive->drive;
-    dop.count = 1;
+    dop.گنتی = 1;
     dop.lba = 1;
-    dop.buf_fl = MAKE_FLATPTR(GET_SEG(SS), buffer);
+    dop.buf_fl = MAKE_FLATPTR(GET_SEG(SS), بفر);
 
-    struct ata_pio_command cmd;
-    memset(&cmd, 0, sizeof(cmd));
+    ساخت ata_pio_command cmd;
+    memset(&cmd, 0, حجم(cmd));
     cmd.command = command;
 
-    return ata_pio_cmd_data(&dop, 0, &cmd);
+    واپس ata_pio_cmd_ڈیٹا(&dop, 0, &cmd);
 }
 
 // Extract the ATA/ATAPI version info.
-int
-ata_extract_version(u16 *buffer)
+صحیح
+ata_نکالو_نسخہ(u16 *بفر)
 {
     // Extract ATA/ATAPI version.
-    u16 ataversion = buffer[80];
-    u8 version;
-    for (version=15; version>0; version--)
-        if (ataversion & (1<<version))
-            break;
-    return version;
+    u16 ataversion = بفر[80];
+    u8 نسخہ_2;
+    برائے (نسخہ_2=15; نسخہ_2>0; نسخہ_2--)
+        اگر (ataversion & (1<<نسخہ_2))
+            توڑو;
+    واپس نسخہ_2;
 }
 
-#define MAXMODEL 40
+#تعریف_کرو MAXMODEL 40
 
 // Extract the ATA/ATAPI model info.
-char *
-ata_extract_model(char *model, u32 size, u16 *buffer)
+حرف *
+ata_نکالو_model(حرف *model, u32 سائز, u16 *بفر)
 {
     // Read model name
-    int i;
-    for (i=0; i<size/2; i++)
-        *(u16*)&model[i*2] = be16_to_cpu(buffer[27+i]);
-    model[size] = 0x00;
+    صحیح i;
+    برائے (i=0; i<سائز/2; i++)
+        *(u16*)&model[i*2] = be16_مقصد_cpu(بفر[27+i]);
+    model[سائز] = 0x00;
     nullTrailingSpace(model);
-    return model;
+    واپس model;
 }
 
 // Common init code between ata and atapi
-static struct atadrive_s *
-init_atadrive(struct atadrive_s *dummy, u16 *buffer)
+ساکن ساخت atadrive_s *
+init_atadrive(ساخت atadrive_s *dummy, u16 *بفر)
 {
-    struct atadrive_s *adrive = malloc_fseg(sizeof(*adrive));
-    if (!adrive) {
+    ساخت atadrive_s *adrive = malloc_fseg(حجم(*adrive));
+    اگر (!adrive) {
         warn_noalloc();
-        return NULL;
+        واپس تہی;
     }
-    memset(adrive, 0, sizeof(*adrive));
+    memset(adrive, 0, حجم(*adrive));
     adrive->chan_gf = dummy->chan_gf;
     adrive->slave = dummy->slave;
     adrive->drive.cntl_id = adrive->chan_gf->ataid * 2 + dummy->slave;
-    adrive->drive.removable = (buffer[0] & 0x80) ? 1 : 0;
-    return adrive;
+    adrive->drive.removable = (بفر[0] & 0x80) ? 1 : 0;
+    واپس adrive;
 }
 
 // Detect if the given drive is an atapi - initialize it if so.
-static struct atadrive_s *
-init_drive_atapi(struct atadrive_s *dummy, u16 *buffer)
+ساکن ساخت atadrive_s *
+init_drive_atapi(ساخت atadrive_s *dummy, u16 *بفر)
 {
     // Send an IDENTIFY_DEVICE_PACKET command to device
-    int ret = send_ata_identity(dummy, buffer, ATA_CMD_IDENTIFY_PACKET_DEVICE);
-    if (ret)
-        return NULL;
+    صحیح ret = send_ata_شناختی_عنصر(dummy, بفر, ATA_CMD_IDENTIFY_PACKET_DEVICE);
+    اگر (ret)
+        واپس تہی;
 
     // Success - setup as ATAPI.
-    struct atadrive_s *adrive = init_atadrive(dummy, buffer);
-    if (!adrive)
-        return NULL;
+    ساخت atadrive_s *adrive = init_atadrive(dummy, بفر);
+    اگر (!adrive)
+        واپس تہی;
     adrive->drive.type = DTYPE_ATA_ATAPI;
-    adrive->drive.blksize = CDROM_SECTOR_SIZE;
+    adrive->drive.blksize = CDROM_SECTOR_سائز;
     adrive->drive.sectors = (u64)-1;
-    u8 iscd = ((buffer[0] >> 8) & 0x1f) == 0x05;
-    char model[MAXMODEL+1];
-    char *desc = znprintf(MAXDESCSIZE
+    u8 iscd = ((بفر[0] >> 8) & 0x1f) == 0x05;
+    حرف model[MAXMODEL+1];
+    حرف *desc = znprintf(MAXDESCSIZE
                           , "DVD/CD [ata%d-%d: %s ATAPI-%d %s]"
                           , adrive->chan_gf->ataid, adrive->slave
-                          , ata_extract_model(model, MAXMODEL, buffer)
-                          , ata_extract_version(buffer)
+                          , ata_نکالو_model(model, MAXMODEL, بفر)
+                          , ata_نکالو_نسخہ(بفر)
                           , (iscd ? "DVD/CD" : "Device"));
     dprintf(1, "%s\n", desc);
 
     // fill cdidmap
-    if (iscd) {
-        int prio = bootprio_find_ata_device(adrive->chan_gf->pci_tmp,
+    اگر (iscd) {
+        صحیح prio = bootprio_ڈھونڈو_ata_device(adrive->chan_gf->pci_tmp,
                                             adrive->chan_gf->chanid,
                                             adrive->slave);
-        boot_lchs_find_ata_device(adrive->chan_gf->pci_tmp,
+        boot_lchs_ڈھونڈو_ata_device(adrive->chan_gf->pci_tmp,
                                   adrive->chan_gf->chanid,
                                   adrive->slave,
                                   &(adrive->drive.lchs));
-        boot_add_cd(&adrive->drive, desc, prio);
+        boot_جوڑو_cd(&adrive->drive, desc, prio);
     }
 
-    return adrive;
+    واپس adrive;
 }
 
 // Detect if the given drive is a regular ata drive - initialize it if so.
-static struct atadrive_s *
-init_drive_ata(struct atadrive_s *dummy, u16 *buffer)
+ساکن ساخت atadrive_s *
+init_drive_ata(ساخت atadrive_s *dummy, u16 *بفر)
 {
     // Send an IDENTIFY_DEVICE command to device
-    int ret = send_ata_identity(dummy, buffer, ATA_CMD_IDENTIFY_DEVICE);
-    if (ret)
-        return NULL;
+    صحیح ret = send_ata_شناختی_عنصر(dummy, بفر, ATA_CMD_IDENTIFY_DEVICE);
+    اگر (ret)
+        واپس تہی;
 
     // Success - setup as ATA.
-    struct atadrive_s *adrive = init_atadrive(dummy, buffer);
-    if (!adrive)
-        return NULL;
+    ساخت atadrive_s *adrive = init_atadrive(dummy, بفر);
+    اگر (!adrive)
+        واپس تہی;
     adrive->drive.type = DTYPE_ATA;
-    adrive->drive.blksize = DISK_SECTOR_SIZE;
+    adrive->drive.blksize = DISK_SECTOR_سائز;
 
-    adrive->drive.pchs.cylinder = buffer[1];
-    adrive->drive.pchs.head = buffer[3];
-    adrive->drive.pchs.sector = buffer[6];
+    adrive->drive.pchs.cylinder = بفر[1];
+    adrive->drive.pchs.سر = بفر[3];
+    adrive->drive.pchs.sector = بفر[6];
 
     u64 sectors;
-    if (buffer[83] & (1 << 10)) // word 83 - lba48 support
-        sectors = *(u64*)&buffer[100]; // word 100-103
-    else
-        sectors = *(u32*)&buffer[60]; // word 60 and word 61
+    اگر (بفر[83] & (1 << 10)) // word 83 - lba48 support
+        sectors = *(u64*)&بفر[100]; // word 100-103
+    ورنہ
+        sectors = *(u32*)&بفر[60]; // word 60 and word 61
     adrive->drive.sectors = sectors;
     u64 adjsize = sectors >> 11;
-    char adjprefix = 'M';
-    if (adjsize >= (1 << 16)) {
+    حرف adjprefix = 'M';
+    اگر (adjsize >= (1 << 16)) {
         adjsize >>= 10;
         adjprefix = 'G';
     }
-    char model[MAXMODEL+1];
-    char *desc = znprintf(MAXDESCSIZE
+    حرف model[MAXMODEL+1];
+    حرف *desc = znprintf(MAXDESCSIZE
                           , "ata%d-%d: %s ATA-%d Hard-Disk (%u %ciBytes)"
                           , adrive->chan_gf->ataid, adrive->slave
-                          , ata_extract_model(model, MAXMODEL, buffer)
-                          , ata_extract_version(buffer)
+                          , ata_نکالو_model(model, MAXMODEL, بفر)
+                          , ata_نکالو_نسخہ(بفر)
                           , (u32)adjsize, adjprefix);
     dprintf(1, "%s\n", desc);
 
-    int prio = bootprio_find_ata_device(adrive->chan_gf->pci_tmp,
+    صحیح prio = bootprio_ڈھونڈو_ata_device(adrive->chan_gf->pci_tmp,
                                         adrive->chan_gf->chanid,
                                         adrive->slave);
-    boot_lchs_find_ata_device(adrive->chan_gf->pci_tmp,
+    boot_lchs_ڈھونڈو_ata_device(adrive->chan_gf->pci_tmp,
                               adrive->chan_gf->chanid,
                               adrive->slave,
                               &(adrive->drive.lchs));
     // Register with bcv system.
-    boot_add_hd(&adrive->drive, desc, prio);
+    boot_جوڑو_hd(&adrive->drive, desc, prio);
 
-    return adrive;
+    واپس adrive;
 }
 
-static u32 SpinupEnd;
+ساکن u32 Spinup_انتہا;
 
 // Wait for non-busy status and check for "floating bus" condition.
-static int
-powerup_await_non_bsy(u16 base)
+ساکن صحیح
+powerup_await_non_bsy(u16 بنیاد)
 {
     u8 orstatus = 0;
-    u8 status;
-    for (;;) {
-        status = inb(base+ATA_CB_STAT);
-        if (!(status & ATA_CB_STAT_BSY))
-            break;
-        orstatus |= status;
-        if (orstatus == 0xff) {
+    u8 حالت_2;
+    برائے (;;) {
+        حالت_2 = inb(بنیاد+ATA_CB_STAT);
+        اگر (!(حالت_2 & ATA_CB_STAT_BSY))
+            توڑو;
+        orstatus |= حالت_2;
+        اگر (orstatus == 0xff) {
             dprintf(4, "powerup IDE floating\n");
-            return orstatus;
+            واپس orstatus;
         }
-        if (timer_check(SpinupEnd)) {
+        اگر (timer_check(Spinup_انتہا)) {
             warn_timeout();
-            return -1;
+            واپس -1;
         }
         yield();
     }
-    dprintf(6, "powerup iobase=%x st=%x\n", base, status);
-    return status;
+    dprintf(6, "powerup iobase=%x st=%x\n", بنیاد, حالت_2);
+    واپس حالت_2;
 }
 
 // Detect any drives attached to a given controller.
-static void
-ata_detect(void *data)
+ساکن خالی
+ata_detect(خالی *ڈیٹا)
 {
-    struct ata_channel_s *chan_gf = data;
-    struct atadrive_s dummy;
-    memset(&dummy, 0, sizeof(dummy));
+    ساخت ata_channel_s *chan_gf = ڈیٹا;
+    ساخت atadrive_s dummy;
+    memset(&dummy, 0, حجم(dummy));
     dummy.chan_gf = chan_gf;
     // Device detection
-    int didreset = 0;
+    صحیح didreset = 0;
     u8 slave;
-    for (slave=0; slave<=1; slave++) {
+    برائے (slave=0; slave<=1; slave++) {
         // Wait for not-bsy.
         u16 iobase1 = chan_gf->iobase1;
-        int status = powerup_await_non_bsy(iobase1);
-        if (status < 0)
-            continue;
+        صحیح حالت_2 = powerup_await_non_bsy(iobase1);
+        اگر (حالت_2 < 0)
+            جاری;
         u8 newdh = slave ? ATA_CB_DH_DEV1 : ATA_CB_DH_DEV0;
         outb(newdh, iobase1+ATA_CB_DH);
         ndelay(400);
-        status = powerup_await_non_bsy(iobase1);
-        if (status < 0)
-            continue;
+        حالت_2 = powerup_await_non_bsy(iobase1);
+        اگر (حالت_2 < 0)
+            جاری;
 
         // Check if ioport registers look valid.
         outb(newdh, iobase1+ATA_CB_DH);
@@ -879,60 +879,60 @@ ata_detect(void *data)
         u8 sn = inb(iobase1+ATA_CB_SN);
         dprintf(6, "ata_detect ata%d-%d: sc=%x sn=%x dh=%x\n"
                 , chan_gf->ataid, slave, sc, sn, dh);
-        if (sc != 0x55 || sn != 0xaa || dh != newdh)
-            continue;
+        اگر (sc != 0x55 || sn != 0xaa || dh != newdh)
+            جاری;
 
         // Prepare new drive.
         dummy.slave = slave;
 
         // reset the channel
-        if (!didreset) {
+        اگر (!didreset) {
             ata_reset(&dummy);
             didreset = 1;
         }
 
         // check for ATAPI
-        u16 buffer[256];
-        struct atadrive_s *adrive = init_drive_atapi(&dummy, buffer);
-        if (!adrive) {
+        u16 بفر[256];
+        ساخت atadrive_s *adrive = init_drive_atapi(&dummy, بفر);
+        اگر (!adrive) {
             // Didn't find an ATAPI drive - look for ATA drive.
             u8 st = inb(iobase1+ATA_CB_STAT);
-            if (!st)
+            اگر (!st)
                 // Status not set - can't be a valid drive.
-                continue;
+                جاری;
 
             // Wait for RDY.
-            int ret = await_rdy(iobase1);
-            if (ret < 0)
-                continue;
+            صحیح ret = await_rdy(iobase1);
+            اگر (ret < 0)
+                جاری;
 
             // check for ATA.
-            adrive = init_drive_ata(&dummy, buffer);
-            if (!adrive)
+            adrive = init_drive_ata(&dummy, بفر);
+            اگر (!adrive)
                 // No ATA drive found
-                continue;
+                جاری;
         }
 
-        u16 resetresult = buffer[93];
+        u16 resetresult = بفر[93];
         dprintf(6, "ata_detect resetresult=%04x\n", resetresult);
-        if (!slave && (resetresult & 0xdf61) == 0x4041)
+        اگر (!slave && (resetresult & 0xdf61) == 0x4041)
             // resetresult looks valid and device 0 is responding to
             // device 1 requests - device 1 must not be present - skip
             // detection.
-            break;
+            توڑو;
     }
 }
 
 // Initialize an ata controller and detect its drives.
-static void
-init_controller(struct pci_device *pci, int chanid, int irq
+ساکن خالی
+init_controller(ساخت pci_device *pci, صحیح chanid, صحیح irq
                 , u32 port1, u32 port2, u32 master)
 {
-    static int ataid = 0;
-    struct ata_channel_s *chan_gf = malloc_fseg(sizeof(*chan_gf));
-    if (!chan_gf) {
+    ساکن صحیح ataid = 0;
+    ساخت ata_channel_s *chan_gf = malloc_fseg(حجم(*chan_gf));
+    اگر (!chan_gf) {
         warn_noalloc();
-        return;
+        واپس;
     }
     chan_gf->ataid = ataid++;
     chan_gf->chanid = chanid;
@@ -944,111 +944,111 @@ init_controller(struct pci_device *pci, int chanid, int irq
     chan_gf->iomaster = master;
     dprintf(1, "ATA controller %d at %x/%x/%x (irq %d dev %x)\n"
             , ataid, port1, port2, master, irq, chan_gf->pci_bdf);
-    run_thread(ata_detect, chan_gf);
+    تسلسل_thread(ata_detect, chan_gf);
 }
 
-#define IRQ_ATA1 14
-#define IRQ_ATA2 15
+#تعریف_کرو IRQ_ATA1 14
+#تعریف_کرو IRQ_ATA2 15
 
 // Handle controllers on an ATA PCI device.
-static void
-init_pciata(struct pci_device *pci, u8 prog_if)
+ساکن خالی
+init_pciata(ساخت pci_device *pci, u8 prog_if)
 {
-    u8 pciirq = pci_config_readb(pci->bdf, PCI_INTERRUPT_LINE);
-    int master = 0;
-    if (CONFIG_ATA_DMA && prog_if & 0x80) {
+    u8 pciirq = pci_config_readb(pci->bdf, PCI_مداخلت_سطر);
+    صحیح master = 0;
+    اگر (CONFIG_ATA_DMA && prog_if & 0x80) {
         // Check for bus-mastering.
-        u32 bar = pci_config_readl(pci->bdf, PCI_BASE_ADDRESS_4);
-        if (bar & PCI_BASE_ADDRESS_SPACE_IO) {
-            master = pci_enable_iobar(pci, PCI_BASE_ADDRESS_4);
+        u32 bar = pci_config_readl(pci->bdf, PCI_بنیاد_پتہ_4);
+        اگر (bar & PCI_بنیاد_پتہ_SPACE_IO) {
+            master = pci_enable_iobar(pci, PCI_بنیاد_پتہ_4);
             pci_enable_busmaster(pci);
         }
     }
 
     u32 port1, port2, irq;
-    if (prog_if & 1) {
-        port1 = pci_enable_iobar(pci, PCI_BASE_ADDRESS_0);
-        port2 = pci_enable_iobar(pci, PCI_BASE_ADDRESS_1);
-        if (!port1 || !port2)
-            return;
+    اگر (prog_if & 1) {
+        port1 = pci_enable_iobar(pci, PCI_بنیاد_پتہ_0);
+        port2 = pci_enable_iobar(pci, PCI_بنیاد_پتہ_1);
+        اگر (!port1 || !port2)
+            واپس;
         irq = pciirq;
-    } else {
-        port1 = PORT_ATA1_CMD_BASE;
-        port2 = PORT_ATA1_CTRL_BASE;
+    } ورنہ {
+        port1 = پورٹ_ATA1_CMD_بنیاد;
+        port2 = پورٹ_ATA1_CTRL_بنیاد;
         irq = IRQ_ATA1;
     }
     init_controller(pci, 0, irq, port1, port2, master);
 
-    if (prog_if & 4) {
-        port1 = pci_enable_iobar(pci, PCI_BASE_ADDRESS_2);
-        port2 = pci_enable_iobar(pci, PCI_BASE_ADDRESS_3);
-        if (!port1 || !port2)
-            return;
+    اگر (prog_if & 4) {
+        port1 = pci_enable_iobar(pci, PCI_بنیاد_پتہ_2);
+        port2 = pci_enable_iobar(pci, PCI_بنیاد_پتہ_3);
+        اگر (!port1 || !port2)
+            واپس;
         irq = pciirq;
-    } else {
-        port1 = PORT_ATA2_CMD_BASE;
-        port2 = PORT_ATA2_CTRL_BASE;
+    } ورنہ {
+        port1 = پورٹ_ATA2_CMD_بنیاد;
+        port2 = پورٹ_ATA2_CTRL_بنیاد;
         irq = IRQ_ATA2;
     }
     init_controller(pci, 1, irq, port1, port2, master ? master + 8 : 0);
 }
 
-static void
-found_genericata(struct pci_device *pci, void *arg)
+ساکن خالی
+ملا_genericata(ساخت pci_device *pci, خالی *arg)
 {
     init_pciata(pci, pci->prog_if);
 }
 
-static void
-found_compatibleahci(struct pci_device *pci, void *arg)
+ساکن خالی
+ملا_compatibleahci(ساخت pci_device *pci, خالی *arg)
 {
-    if (CONFIG_AHCI)
+    اگر (CONFIG_AHCI)
         // Already handled directly via native ahci interface.
-        return;
+        واپس;
     init_pciata(pci, 0x8f);
 }
 
-static const struct pci_device_id pci_ata_tbl[] = {
+ساکن ثابت ساخت pci_device_id pci_ata_tbl[] = {
     PCI_DEVICE_CLASS(PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_STORAGE_IDE
-                     , found_genericata),
-    PCI_DEVICE(PCI_VENDOR_ID_ATI, 0x4391, found_compatibleahci),
-    PCI_DEVICE_END,
+                     , ملا_genericata),
+    PCI_DEVICE(PCI_VENDOR_ID_ATI, 0x4391, ملا_compatibleahci),
+    PCI_DEVICE_انتہا,
 };
 
 // Locate and init ata controllers.
-static void
-ata_scan(void)
+ساکن خالی
+ata_جائزہ(خالی)
 {
-    if (CONFIG_QEMU && hlist_empty(&PCIDevices)) {
+    اگر (CONFIG_QEMU && hlist_خالی_خانے(&PCIDevices)) {
         // No PCI devices found - probably a QEMU "-M isapc" machine.
         // Try using ISA ports for ATA controllers.
-        init_controller(NULL, 0, IRQ_ATA1
-                        , PORT_ATA1_CMD_BASE, PORT_ATA1_CTRL_BASE, 0);
-        init_controller(NULL, 1, IRQ_ATA2
-                        , PORT_ATA2_CMD_BASE, PORT_ATA2_CTRL_BASE, 0);
-        return;
+        init_controller(تہی, 0, IRQ_ATA1
+                        , پورٹ_ATA1_CMD_بنیاد, پورٹ_ATA1_CTRL_بنیاد, 0);
+        init_controller(تہی, 1, IRQ_ATA2
+                        , پورٹ_ATA2_CMD_بنیاد, پورٹ_ATA2_CTRL_بنیاد, 0);
+        واپس;
     }
 
     // Scan PCI bus for ATA adapters
-    struct pci_device *pci;
+    ساخت pci_device *pci;
     foreachpci(pci) {
-        pci_init_device(pci_ata_tbl, pci, NULL);
+        pci_init_device(pci_ata_tbl, pci, تہی);
     }
 }
 
-void
-ata_setup(void)
+خالی
+ata_تیاری(خالی)
 {
     ASSERT32FLAT();
-    if (!CONFIG_ATA)
-        return;
+    اگر (!CONFIG_ATA)
+        واپس;
 
     dprintf(3, "init hard drives\n");
 
-    SpinupEnd = timer_calc(IDE_TIMEOUT);
-    ata_scan();
+    Spinup_انتہا = timer_calc(IDE_TIMEOUT);
+    ata_جائزہ();
 
-    SET_BDA(disk_control_byte, 0xc0);
+    سیٹ_BDA(disk_control_byte, 0xc0);
 
-    enable_hwirq(14, FUNC16(entry_76));
+    enable_hwirq(14, FUNC16(اندراج_76));
 }

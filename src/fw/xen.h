@@ -1,18 +1,18 @@
-#ifndef __XEN_H
-#define __XEN_H
+#اگر_غیر_تعریف_شدہ __XEN_H
+#تعریف_کرو __XEN_H
 
-void xen_preinit(void);
-void xen_ramsize_preinit(void);
-void xen_hypercall_setup(void);
-void xen_biostable_setup(void);
+خالی xen_preinit(خالی);
+خالی xen_ramsize_preinit(خالی);
+خالی xen_hypercall_تیاری(خالی);
+خالی xen_biostable_تیاری(خالی);
 
-extern unsigned long xen_hypercall_page;
+خارجی غیرعلامتی طویل xen_hypercall_صفحہ;
 
-#define _hypercall0(type, name)                                         \
+#تعریف_کرو _hypercall0(type, name)                                         \
 ({                                                                      \
-    unsigned long __hentry = xen_hypercall_page+__HYPERVISOR_##name*32; \
-    long __res;                                                         \
-    asm volatile (                                                      \
+    غیرعلامتی طویل __hentry = xen_hypercall_صفحہ+__HYPERVISOR_##name*32; \
+    طویل __res;                                                         \
+    asm متلون (                                                      \
         "call *%%eax"                                                   \
         : "=a" (__res)                                                  \
         : "0" (__hentry)                                                \
@@ -20,69 +20,69 @@ extern unsigned long xen_hypercall_page;
     (type)__res;                                                        \
 })
 
-#define _hypercall1(type, name, a1)                                     \
+#تعریف_کرو _hypercall1(type, name, a1)                                     \
 ({                                                                      \
-    unsigned long __hentry = xen_hypercall_page+__HYPERVISOR_##name*32; \
-    long __res, __ign1;                                                 \
-    asm volatile (                                                      \
+    غیرعلامتی طویل __hentry = xen_hypercall_صفحہ+__HYPERVISOR_##name*32; \
+    طویل __res, __ign1;                                                 \
+    asm متلون (                                                      \
         "call *%%eax"                                                   \
         : "=a" (__res), "=b" (__ign1)                                   \
-        : "0" (__hentry), "1" ((long)(a1))                              \
+        : "0" (__hentry), "1" ((طویل)(a1))                              \
         : "memory" );                                                   \
     (type)__res;                                                        \
 })
 
-#define _hypercall2(type, name, a1, a2)                                 \
+#تعریف_کرو _hypercall2(type, name, a1, a2)                                 \
 ({                                                                      \
-    unsigned long __hentry = xen_hypercall_page+__HYPERVISOR_##name*32; \
-    long __res, __ign1, __ign2;                                         \
-    asm volatile (                                                      \
+    غیرعلامتی طویل __hentry = xen_hypercall_صفحہ+__HYPERVISOR_##name*32; \
+    طویل __res, __ign1, __ign2;                                         \
+    asm متلون (                                                      \
         "call *%%eax"                                                   \
         : "=a" (__res), "=b" (__ign1), "=c" (__ign2)                    \
-        : "0" (__hentry), "1" ((long)(a1)), "2" ((long)(a2))            \
+        : "0" (__hentry), "1" ((طویل)(a1)), "2" ((طویل)(a2))            \
         : "memory" );                                                   \
     (type)__res;                                                        \
 })
 
-#define _hypercall3(type, name, a1, a2, a3)                             \
+#تعریف_کرو _hypercall3(type, name, a1, a2, a3)                             \
 ({                                                                      \
-    unsigned long __hentry = xen_hypercall_page+__HYPERVISOR_##name*32; \
-    long __res, __ign1, __ign2, __ign3;                                 \
-    asm volatile (                                                      \
+    غیرعلامتی طویل __hentry = xen_hypercall_صفحہ+__HYPERVISOR_##name*32; \
+    طویل __res, __ign1, __ign2, __ign3;                                 \
+    asm متلون (                                                      \
         "call *%%eax"                                                   \
         : "=a" (__res), "=b" (__ign1), "=c" (__ign2),                   \
           "=d" (__ign3)                                                 \
-        : "0" (__hentry), "1" ((long)(a1)), "2" ((long)(a2)),           \
-          "3" ((long)(a3))                                              \
+        : "0" (__hentry), "1" ((طویل)(a1)), "2" ((طویل)(a2)),           \
+          "3" ((طویل)(a3))                                              \
         : "memory" );                                                   \
     (type)__res;                                                        \
 })
 
-#define _hypercall4(type, name, a1, a2, a3, a4)                         \
+#تعریف_کرو _hypercall4(type, name, a1, a2, a3, a4)                         \
 ({                                                                      \
-    unsigned long __hentry = xen_hypercall_page+__HYPERVISOR_##name*32; \
-    long __res, __ign1, __ign2, __ign3, __ign4;                         \
-    asm volatile (                                                      \
+    غیرعلامتی طویل __hentry = xen_hypercall_صفحہ+__HYPERVISOR_##name*32; \
+    طویل __res, __ign1, __ign2, __ign3, __ign4;                         \
+    asm متلون (                                                      \
         "call *%%eax"                                                   \
         : "=a" (__res), "=b" (__ign1), "=c" (__ign2),                   \
           "=d" (__ign3), "=S" (__ign4)                                  \
-        : "0" (__hentry), "1" ((long)(a1)), "2" ((long)(a2)),           \
-          "3" ((long)(a3)), "4" ((long)(a4))                            \
+        : "0" (__hentry), "1" ((طویل)(a1)), "2" ((طویل)(a2)),           \
+          "3" ((طویل)(a3)), "4" ((طویل)(a4))                            \
         : "memory" );                                                   \
     (type)__res;                                                        \
 })
 
-#define _hypercall5(type, name, a1, a2, a3, a4, a5)                     \
+#تعریف_کرو _hypercall5(type, name, a1, a2, a3, a4, a5)                     \
 ({                                                                      \
-    unsigned long __hentry = xen_hypercall_page+__HYPERVISOR_##name*32; \
-    long __res, __ign1, __ign2, __ign3, __ign4, __ign5;                 \
-    asm volatile (                                                      \
+    غیرعلامتی طویل __hentry = xen_hypercall_صفحہ+__HYPERVISOR_##name*32; \
+    طویل __res, __ign1, __ign2, __ign3, __ign4, __ign5;                 \
+    asm متلون (                                                      \
         "call *%%eax"                                                   \
         : "=a" (__res), "=b" (__ign1), "=c" (__ign2),                   \
           "=d" (__ign3), "=S" (__ign4), "=D" (__ign5)                   \
-        : "0" (__hentry), "1" ((long)(a1)), "2" ((long)(a2)),           \
-          "3" ((long)(a3)), "4" ((long)(a4)),                           \
-          "5" ((long)(a5))                                              \
+        : "0" (__hentry), "1" ((طویل)(a1)), "2" ((طویل)(a2)),           \
+          "3" ((طویل)(a3)), "4" ((طویل)(a4)),                           \
+          "5" ((طویل)(a5))                                              \
         : "memory" );                                                   \
     (type)__res;                                                        \
 })
@@ -113,13 +113,13 @@ extern unsigned long xen_hypercall_page;
 
 /* xen.h */
 
-#define __HYPERVISOR_xen_version          17
+#تعریف_کرو __HYPERVISOR_xen_version          17
 
 /* version.h */
 
 /* arg == xen_extraversion_t. */
-#define XENVER_extraversion 1
-typedef char xen_extraversion_t[16];
-#define XEN_EXTRAVERSION_LEN (sizeof(xen_extraversion_t))
+#تعریف_کرو XENVER_extraversion 1
+قسمتعریف حرف xen_extraversion_t[16];
+#تعریف_کرو XEN_EXTRAVERSION_LEN (حجم(xen_extraversion_t))
 
-#endif
+#اگر_ختم
