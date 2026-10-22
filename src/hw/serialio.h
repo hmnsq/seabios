@@ -1,30 +1,30 @@
-#ifndef __SERIALIO_H
-#define __SERIALIO_H
+#अगर_अघोषित __SERIALIO_H
+#घोषणा __SERIALIO_H
 
-#include "types.h" // u16
+#समावेश "types.h" // u16
 
-#define PORT_LPT2              0x0278
-#define PORT_SERIAL4           0x02e8
-#define PORT_SERIAL2           0x02f8
-#define PORT_LPT1              0x0378
-#define PORT_SERIAL3           0x03e8
-#define PORT_SERIAL1           0x03f8
+#घोषणा PORT_LPT2              0x0278
+#घोषणा PORT_SERIAL4           0x02e8
+#घोषणा PORT_SERIAL2           0x02f8
+#घोषणा PORT_LPT1              0x0378
+#घोषणा PORT_SERIAL3           0x03e8
+#घोषणा PORT_SERIAL1           0x03f8
 
 // Serial port offsets
-#define SEROFF_DATA    0
-#define SEROFF_DLL     0
-#define SEROFF_IER     1
-#define SEROFF_DLH     1
-#define SEROFF_IIR     2
-#define SEROFF_LCR     3
-#define SEROFF_LSR     5
-#define SEROFF_MSR     6
+#घोषणा SEROFF_तथ्य    0
+#घोषणा SEROFF_DLL     0
+#घोषणा SEROFF_IER     1
+#घोषणा SEROFF_DLH     1
+#घोषणा SEROFF_IIR     2
+#घोषणा SEROFF_LCR     3
+#घोषणा SEROFF_LSR     5
+#घोषणा SEROFF_MSR     6
 
-void serial_debug_preinit(void);
-void serial_debug_putc(char c);
-void serial_debug_flush(void);
-extern u16 DebugOutputPort;
-void qemu_debug_preinit(void);
-void qemu_debug_putc(char c);
+व्योम serial_debug_preinit(व्योम);
+व्योम serial_debug_putc(अक्षर c);
+व्योम serial_debug_flush(व्योम);
+बाह्य u16 DebugOutputPort;
+व्योम qemu_debug_preinit(व्योम);
+व्योम qemu_debug_putc(अक्षर c);
 
-#endif // serialio.h
+#पूर्ण_अगर // serialio.h

@@ -19,105 +19,105 @@
   to this file, however, are subject to the LGPL or CPL terms.
 */
 
-#include "lzmadecode.h"
+#समावेश "lzmadecode.h"
 
-#define kNumTopBits 24
-#define kTopValue ((UInt32)1 << kNumTopBits)
+#घोषणा k_अंक_शीर्ष_Bits 24
+#घोषणा k_शीर्ष_मूल्य ((UInt32)1 << k_अंक_शीर्ष_Bits)
 
-#define kNumBitModelTotalBits 11
-#define kBitModelTotal (1 << kNumBitModelTotalBits)
-#define kNumMoveBits 5
+#घोषणा k_अंक_Bit_Model_योग_Bits 11
+#घोषणा k_Bit_Model_योग (1 << k_अंक_Bit_Model_योग_Bits)
+#घोषणा k_अंक_Move_Bits 5
 
-#define RC_READ_BYTE (*Buffer++)
+#घोषणा RC_READ_BYTE (*बफर_2++)
 
-#define RC_INIT2 Code = 0; Range = 0xFFFFFFFF; \
-  { int i; for(i = 0; i < 5; i++) { RC_TEST; Code = (Code << 8) | RC_READ_BYTE; }}
+#घोषणा RC_INIT2 Code = 0; Range = 0xFFFFFFFF; \
+  { पूर्णांक i; क्रम(i = 0; i < 5; i++) { RC_TEST; Code = (Code << 8) | RC_READ_BYTE; }}
 
 
-#define RC_TEST { if (Buffer == BufferLim) return LZMA_RESULT_DATA_ERROR; }
+#घोषणा RC_TEST { अगर (बफर_2 == बफर_Lim) वापस LZMA_परिणाम_तथ्य_ERROR; }
 
-#define RC_INIT(buffer, bufferSize) Buffer = buffer; BufferLim = buffer + bufferSize; RC_INIT2
+#घोषणा RC_INIT(बफर, बफर_आकार) बफर_2 = बफर; बफर_Lim = बफर + बफर_आकार; RC_INIT2
  
 
-#define RC_NORMALIZE if (Range < kTopValue) { RC_TEST; Range <<= 8; Code = (Code << 8) | RC_READ_BYTE; }
+#घोषणा RC_NORMALIZE अगर (Range < k_शीर्ष_मूल्य) { RC_TEST; Range <<= 8; Code = (Code << 8) | RC_READ_BYTE; }
 
-#define IfBit0(p) RC_NORMALIZE; bound = (Range >> kNumBitModelTotalBits) * *(p); if (Code < bound)
-#define UpdateBit0(p) Range = bound; *(p) += (kBitModelTotal - *(p)) >> kNumMoveBits;
-#define UpdateBit1(p) Range -= bound; Code -= bound; *(p) -= (*(p)) >> kNumMoveBits;
+#घोषणा IfBit0(p) RC_NORMALIZE; bound = (Range >> k_अंक_Bit_Model_योग_Bits) * *(p); अगर (Code < bound)
+#घोषणा UpdateBit0(p) Range = bound; *(p) += (k_Bit_Model_योग - *(p)) >> k_अंक_Move_Bits;
+#घोषणा UpdateBit1(p) Range -= bound; Code -= bound; *(p) -= (*(p)) >> k_अंक_Move_Bits;
 
-#define RC_GET_BIT2(p, mi, A0, A1) IfBit0(p) \
-  { UpdateBit0(p); mi <<= 1; A0; } else \
+#घोषणा RC_GET_BIT2(p, mi, A0, A1) IfBit0(p) \
+  { UpdateBit0(p); mi <<= 1; A0; } अन्यथा \
   { UpdateBit1(p); mi = (mi + mi) + 1; A1; } 
   
-#define RC_GET_BIT(p, mi) RC_GET_BIT2(p, mi, ; , ;)               
+#घोषणा RC_GET_BIT(p, mi) RC_GET_BIT2(p, mi, ; , ;)               
 
-#define RangeDecoderBitTreeDecode(probs, numLevels, res) \
-  { int i = numLevels; res = 1; \
-  do { CProb *cp = probs + res; RC_GET_BIT(cp, res) } while(--i != 0); \
-  res -= (1 << numLevels); }
-
-
-#define kNumPosBitsMax 4
-#define kNumPosStatesMax (1 << kNumPosBitsMax)
-
-#define kLenNumLowBits 3
-#define kLenNumLowSymbols (1 << kLenNumLowBits)
-#define kLenNumMidBits 3
-#define kLenNumMidSymbols (1 << kLenNumMidBits)
-#define kLenNumHighBits 8
-#define kLenNumHighSymbols (1 << kLenNumHighBits)
-
-#define LenChoice 0
-#define LenChoice2 (LenChoice + 1)
-#define LenLow (LenChoice2 + 1)
-#define LenMid (LenLow + (kNumPosStatesMax << kLenNumLowBits))
-#define LenHigh (LenMid + (kNumPosStatesMax << kLenNumMidBits))
-#define kNumLenProbs (LenHigh + kLenNumHighSymbols) 
+#घोषणा Range_Decoder_Bit_वृक्ष_Decode(probs, अंक_Levels, res) \
+  { पूर्णांक i = अंक_Levels; res = 1; \
+  करो { CProb *cp = probs + res; RC_GET_BIT(cp, res) } जबतक(--i != 0); \
+  res -= (1 << अंक_Levels); }
 
 
-#define kNumStates 12
-#define kNumLitStates 7
+#घोषणा k_अंक_Pos_Bits_Max 4
+#घोषणा k_अंक_Pos_States_Max (1 << k_अंक_Pos_Bits_Max)
 
-#define kStartPosModelIndex 4
-#define kEndPosModelIndex 14
-#define kNumFullDistances (1 << (kEndPosModelIndex >> 1))
+#घोषणा k_Len_अंक_निचला_Bits 3
+#घोषणा k_Len_अंक_निचला_Symbols (1 << k_Len_अंक_निचला_Bits)
+#घोषणा k_Len_अंक_Mid_Bits 3
+#घोषणा k_Len_अंक_Mid_Symbols (1 << k_Len_अंक_Mid_Bits)
+#घोषणा k_Len_अंक_ऊपरी_Bits 8
+#घोषणा k_Len_अंक_ऊपरी_Symbols (1 << k_Len_अंक_ऊपरी_Bits)
 
-#define kNumPosSlotBits 6
-#define kNumLenToPosStates 4
+#घोषणा LenChoice 0
+#घोषणा LenChoice2 (LenChoice + 1)
+#घोषणा Len_निचला (LenChoice2 + 1)
+#घोषणा LenMid (Len_निचला + (k_अंक_Pos_States_Max << k_Len_अंक_निचला_Bits))
+#घोषणा Len_ऊपरी (LenMid + (k_अंक_Pos_States_Max << k_Len_अंक_Mid_Bits))
+#घोषणा k_अंक_Len_Probs (Len_ऊपरी + k_Len_अंक_ऊपरी_Symbols) 
 
-#define kNumAlignBits 4
-#define kAlignTableSize (1 << kNumAlignBits)
 
-#define kMatchMinLen 2
+#घोषणा k_अंक_States 12
+#घोषणा k_अंक_Lit_States 7
 
-#define IsMatch 0
-#define IsRep (IsMatch + (kNumStates << kNumPosBitsMax))
-#define IsRepG0 (IsRep + kNumStates)
-#define IsRepG1 (IsRepG0 + kNumStates)
-#define IsRepG2 (IsRepG1 + kNumStates)
-#define IsRep0Long (IsRepG2 + kNumStates)
-#define PosSlot (IsRep0Long + (kNumStates << kNumPosBitsMax))
-#define SpecPos (PosSlot + (kNumLenToPosStates << kNumPosSlotBits))
-#define Align (SpecPos + kNumFullDistances - kEndPosModelIndex)
-#define LenCoder (Align + kAlignTableSize)
-#define RepLenCoder (LenCoder + kNumLenProbs)
-#define Literal (RepLenCoder + kNumLenProbs)
+#घोषणा k_Start_Pos_Model_सूचकांक 4
+#घोषणा k_End_Pos_Model_सूचकांक 14
+#घोषणा k_अंक_Full_Distances (1 << (k_End_Pos_Model_सूचकांक >> 1))
 
-#if Literal != LZMA_BASE_SIZE
+#घोषणा k_अंक_Pos_Slot_Bits 6
+#घोषणा k_अंक_Len_To_Pos_States 4
+
+#घोषणा k_अंक_Align_Bits 4
+#घोषणा k_Align_Table_आकार (1 << k_अंक_Align_Bits)
+
+#घोषणा kMatchMinLen 2
+
+#घोषणा IsMatch 0
+#घोषणा IsRep (IsMatch + (k_अंक_States << k_अंक_Pos_Bits_Max))
+#घोषणा IsRepG0 (IsRep + k_अंक_States)
+#घोषणा IsRepG1 (IsRepG0 + k_अंक_States)
+#घोषणा IsRepG2 (IsRepG1 + k_अंक_States)
+#घोषणा IsRep0Long (IsRepG2 + k_अंक_States)
+#घोषणा PosSlot (IsRep0Long + (k_अंक_States << k_अंक_Pos_Bits_Max))
+#घोषणा SpecPos (PosSlot + (k_अंक_Len_To_Pos_States << k_अंक_Pos_Slot_Bits))
+#घोषणा Align (SpecPos + k_अंक_Full_Distances - k_End_Pos_Model_सूचकांक)
+#घोषणा LenCoder (Align + k_Align_Table_आकार)
+#घोषणा RepLenCoder (LenCoder + k_अंक_Len_Probs)
+#घोषणा Literal (RepLenCoder + k_अंक_Len_Probs)
+
+#अगर Literal != LZMA_BASE_आकार
 StopCompilingDueBUG
-#endif
+#पूर्ण_अगर
 
-int LzmaDecodeProperties(CLzmaProperties *propsRes, const unsigned char *propsData, int size)
+पूर्णांक LzmaDecodeProperties(CLzmaProperties *propsRes, स्थिर अचिन्हित अक्षर *props_तथ्य, पूर्णांक आकार)
 {
-  unsigned char prop0;
-  if (size < LZMA_PROPERTIES_SIZE)
-    return LZMA_RESULT_DATA_ERROR;
-  prop0 = propsData[0];
-  if (prop0 >= (9 * 5 * 5))
-    return LZMA_RESULT_DATA_ERROR;
+  अचिन्हित अक्षर prop0;
+  अगर (आकार < LZMA_PROPERTIES_आकार)
+    वापस LZMA_परिणाम_तथ्य_ERROR;
+  prop0 = props_तथ्य[0];
+  अगर (prop0 >= (9 * 5 * 5))
+    वापस LZMA_परिणाम_तथ्य_ERROR;
   {
-    for (propsRes->pb = 0; prop0 >= (9 * 5); propsRes->pb++, prop0 -= (9 * 5));
-    for (propsRes->lp = 0; prop0 >= 9; propsRes->lp++, prop0 -= 9);
+    क्रम (propsRes->pb = 0; prop0 >= (9 * 5); propsRes->pb++, prop0 -= (9 * 5));
+    क्रम (propsRes->lp = 0; prop0 >= 9; propsRes->lp++, prop0 -= 9);
     propsRes->lc = prop0;
     /*
     unsigned char remainder = (unsigned char)(prop0 / 9);
@@ -127,92 +127,92 @@ int LzmaDecodeProperties(CLzmaProperties *propsRes, const unsigned char *propsDa
     */
   }
 
-  return LZMA_RESULT_OK;
+  वापस LZMA_परिणाम_OK;
 }
 
-#define kLzmaStreamWasFinishedId (-1)
+#घोषणा kLzmaStreamWasFinishedId (-1)
 
-int LzmaDecode(CLzmaDecoderState *vs,
-    const unsigned char *inStream, SizeT inSize, SizeT *inSizeProcessed,
-    unsigned char *outStream, SizeT outSize, SizeT *outSizeProcessed)
+पूर्णांक LzmaDecode(CLzmaDecoderState *vs,
+    स्थिर अचिन्हित अक्षर *inStream, आकार_T in_आकार, आकार_T *in_आकार_Processed,
+    अचिन्हित अक्षर *outStream, आकार_T out_आकार, आकार_T *out_आकार_Processed)
 {
   CProb *p = vs->Probs;
-  SizeT nowPos = 0;
+  आकार_T nowPos = 0;
   Byte previousByte = 0;
   UInt32 posStateMask = (1 << (vs->Properties.pb)) - 1;
   UInt32 literalPosMask = (1 << (vs->Properties.lp)) - 1;
-  int lc = vs->Properties.lc;
+  पूर्णांक lc = vs->Properties.lc;
 
 
-  int state = 0;
+  पूर्णांक state = 0;
   UInt32 rep0 = 1, rep1 = 1, rep2 = 1, rep3 = 1;
-  int len = 0;
-  const Byte *Buffer;
-  const Byte *BufferLim;
+  पूर्णांक len = 0;
+  स्थिर Byte *बफर_2;
+  स्थिर Byte *बफर_Lim;
   UInt32 Range;
   UInt32 Code;
 
-  *inSizeProcessed = 0;
-  *outSizeProcessed = 0;
+  *in_आकार_Processed = 0;
+  *out_आकार_Processed = 0;
 
   {
     UInt32 i;
-    UInt32 numProbs = Literal + ((UInt32)LZMA_LIT_SIZE << (lc + vs->Properties.lp));
-    for (i = 0; i < numProbs; i++)
-      p[i] = kBitModelTotal >> 1;
+    UInt32 अंक_Probs = Literal + ((UInt32)LZMA_LIT_आकार << (lc + vs->Properties.lp));
+    क्रम (i = 0; i < अंक_Probs; i++)
+      p[i] = k_Bit_Model_योग >> 1;
   }
   
-  RC_INIT(inStream, inSize);
+  RC_INIT(inStream, in_आकार);
 
 
-  while(nowPos < outSize)
+  जबतक(nowPos < out_आकार)
   {
     CProb *prob;
     UInt32 bound;
-    int posState = (int)(
+    पूर्णांक posState = (पूर्णांक)(
         (nowPos 
         )
         & posStateMask);
 
-    prob = p + IsMatch + (state << kNumPosBitsMax) + posState;
+    prob = p + IsMatch + (state << k_अंक_Pos_Bits_Max) + posState;
     IfBit0(prob)
     {
-      int symbol = 1;
+      पूर्णांक प्रतीक_2 = 1;
       UpdateBit0(prob)
-      prob = p + Literal + (LZMA_LIT_SIZE * 
+      prob = p + Literal + (LZMA_LIT_आकार * 
         (((
         (nowPos 
         )
         & literalPosMask) << lc) + (previousByte >> (8 - lc))));
 
-      if (state >= kNumLitStates)
+      अगर (state >= k_अंक_Lit_States)
       {
-        int matchByte;
+        पूर्णांक matchByte;
         matchByte = outStream[nowPos - rep0];
-        do
+        करो
         {
-          int bit;
+          पूर्णांक bit;
           CProb *probLit;
           matchByte <<= 1;
           bit = (matchByte & 0x100);
-          probLit = prob + 0x100 + bit + symbol;
-          RC_GET_BIT2(probLit, symbol, if (bit != 0) break, if (bit == 0) break)
+          probLit = prob + 0x100 + bit + प्रतीक_2;
+          RC_GET_BIT2(probLit, प्रतीक_2, अगर (bit != 0) अवरोध, अगर (bit == 0) अवरोध)
         }
-        while (symbol < 0x100);
+        जबतक (प्रतीक_2 < 0x100);
       }
-      while (symbol < 0x100)
+      जबतक (प्रतीक_2 < 0x100)
       {
-        CProb *probLit = prob + symbol;
-        RC_GET_BIT(probLit, symbol)
+        CProb *probLit = prob + प्रतीक_2;
+        RC_GET_BIT(probLit, प्रतीक_2)
       }
-      previousByte = (Byte)symbol;
+      previousByte = (Byte)प्रतीक_2;
 
       outStream[nowPos++] = previousByte;
-      if (state < 4) state = 0;
-      else if (state < 10) state -= 3;
-      else state -= 6;
+      अगर (state < 4) state = 0;
+      अन्यथा अगर (state < 10) state -= 3;
+      अन्यथा state -= 6;
     }
-    else             
+    अन्यथा             
     {
       UpdateBit1(prob);
       prob = p + IsRep + state;
@@ -222,36 +222,36 @@ int LzmaDecode(CLzmaDecoderState *vs,
         rep3 = rep2;
         rep2 = rep1;
         rep1 = rep0;
-        state = state < kNumLitStates ? 0 : 3;
+        state = state < k_अंक_Lit_States ? 0 : 3;
         prob = p + LenCoder;
       }
-      else
+      अन्यथा
       {
         UpdateBit1(prob);
         prob = p + IsRepG0 + state;
         IfBit0(prob)
         {
           UpdateBit0(prob);
-          prob = p + IsRep0Long + (state << kNumPosBitsMax) + posState;
+          prob = p + IsRep0Long + (state << k_अंक_Pos_Bits_Max) + posState;
           IfBit0(prob)
           {
             UpdateBit0(prob);
             
-            if (nowPos == 0)
-              return LZMA_RESULT_DATA_ERROR;
+            अगर (nowPos == 0)
+              वापस LZMA_परिणाम_तथ्य_ERROR;
             
-            state = state < kNumLitStates ? 9 : 11;
+            state = state < k_अंक_Lit_States ? 9 : 11;
             previousByte = outStream[nowPos - rep0];
             outStream[nowPos++] = previousByte;
 
-            continue;
+            जारी;
           }
-          else
+          अन्यथा
           {
             UpdateBit1(prob);
           }
         }
-        else
+        अन्यथा
         {
           UInt32 distance;
           UpdateBit1(prob);
@@ -261,7 +261,7 @@ int LzmaDecode(CLzmaDecoderState *vs,
             UpdateBit0(prob);
             distance = rep1;
           }
-          else 
+          अन्यथा 
           {
             UpdateBit1(prob);
             prob = p + IsRepG2 + state;
@@ -270,7 +270,7 @@ int LzmaDecode(CLzmaDecoderState *vs,
               UpdateBit0(prob);
               distance = rep2;
             }
-            else
+            अन्यथा
             {
               UpdateBit1(prob);
               distance = rep3;
@@ -281,118 +281,118 @@ int LzmaDecode(CLzmaDecoderState *vs,
           rep1 = rep0;
           rep0 = distance;
         }
-        state = state < kNumLitStates ? 8 : 11;
+        state = state < k_अंक_Lit_States ? 8 : 11;
         prob = p + RepLenCoder;
       }
       {
-        int numBits, offset;
+        पूर्णांक अंक_Bits, offset;
         CProb *probLen = prob + LenChoice;
         IfBit0(probLen)
         {
           UpdateBit0(probLen);
-          probLen = prob + LenLow + (posState << kLenNumLowBits);
+          probLen = prob + Len_निचला + (posState << k_Len_अंक_निचला_Bits);
           offset = 0;
-          numBits = kLenNumLowBits;
+          अंक_Bits = k_Len_अंक_निचला_Bits;
         }
-        else
+        अन्यथा
         {
           UpdateBit1(probLen);
           probLen = prob + LenChoice2;
           IfBit0(probLen)
           {
             UpdateBit0(probLen);
-            probLen = prob + LenMid + (posState << kLenNumMidBits);
-            offset = kLenNumLowSymbols;
-            numBits = kLenNumMidBits;
+            probLen = prob + LenMid + (posState << k_Len_अंक_Mid_Bits);
+            offset = k_Len_अंक_निचला_Symbols;
+            अंक_Bits = k_Len_अंक_Mid_Bits;
           }
-          else
+          अन्यथा
           {
             UpdateBit1(probLen);
-            probLen = prob + LenHigh;
-            offset = kLenNumLowSymbols + kLenNumMidSymbols;
-            numBits = kLenNumHighBits;
+            probLen = prob + Len_ऊपरी;
+            offset = k_Len_अंक_निचला_Symbols + k_Len_अंक_Mid_Symbols;
+            अंक_Bits = k_Len_अंक_ऊपरी_Bits;
           }
         }
-        RangeDecoderBitTreeDecode(probLen, numBits, len);
+        Range_Decoder_Bit_वृक्ष_Decode(probLen, अंक_Bits, len);
         len += offset;
       }
 
-      if (state < 4)
+      अगर (state < 4)
       {
-        int posSlot;
-        state += kNumLitStates;
+        पूर्णांक posSlot;
+        state += k_अंक_Lit_States;
         prob = p + PosSlot +
-            ((len < kNumLenToPosStates ? len : kNumLenToPosStates - 1) << 
-            kNumPosSlotBits);
-        RangeDecoderBitTreeDecode(prob, kNumPosSlotBits, posSlot);
-        if (posSlot >= kStartPosModelIndex)
+            ((len < k_अंक_Len_To_Pos_States ? len : k_अंक_Len_To_Pos_States - 1) << 
+            k_अंक_Pos_Slot_Bits);
+        Range_Decoder_Bit_वृक्ष_Decode(prob, k_अंक_Pos_Slot_Bits, posSlot);
+        अगर (posSlot >= k_Start_Pos_Model_सूचकांक)
         {
-          int numDirectBits = ((posSlot >> 1) - 1);
+          पूर्णांक अंक_Direct_Bits = ((posSlot >> 1) - 1);
           rep0 = (2 | ((UInt32)posSlot & 1));
-          if (posSlot < kEndPosModelIndex)
+          अगर (posSlot < k_End_Pos_Model_सूचकांक)
           {
-            rep0 <<= numDirectBits;
+            rep0 <<= अंक_Direct_Bits;
             prob = p + SpecPos + rep0 - posSlot - 1;
           }
-          else
+          अन्यथा
           {
-            numDirectBits -= kNumAlignBits;
-            do
+            अंक_Direct_Bits -= k_अंक_Align_Bits;
+            करो
             {
               RC_NORMALIZE
               Range >>= 1;
               rep0 <<= 1;
-              if (Code >= Range)
+              अगर (Code >= Range)
               {
                 Code -= Range;
                 rep0 |= 1;
               }
             }
-            while (--numDirectBits != 0);
+            जबतक (--अंक_Direct_Bits != 0);
             prob = p + Align;
-            rep0 <<= kNumAlignBits;
-            numDirectBits = kNumAlignBits;
+            rep0 <<= k_अंक_Align_Bits;
+            अंक_Direct_Bits = k_अंक_Align_Bits;
           }
           {
-            int i = 1;
-            int mi = 1;
-            do
+            पूर्णांक i = 1;
+            पूर्णांक mi = 1;
+            करो
             {
               CProb *prob3 = prob + mi;
               RC_GET_BIT2(prob3, mi, ; , rep0 |= i);
               i <<= 1;
             }
-            while(--numDirectBits != 0);
+            जबतक(--अंक_Direct_Bits != 0);
           }
         }
-        else
+        अन्यथा
           rep0 = posSlot;
-        if (++rep0 == (UInt32)(0))
+        अगर (++rep0 == (UInt32)(0))
         {
           /* it's for stream version */
           len = kLzmaStreamWasFinishedId;
-          break;
+          अवरोध;
         }
       }
 
       len += kMatchMinLen;
-      if (rep0 > nowPos)
-        return LZMA_RESULT_DATA_ERROR;
+      अगर (rep0 > nowPos)
+        वापस LZMA_परिणाम_तथ्य_ERROR;
 
 
-      do
+      करो
       {
         previousByte = outStream[nowPos - rep0];
         len--;
         outStream[nowPos++] = previousByte;
       }
-      while(len != 0 && nowPos < outSize);
+      जबतक(len != 0 && nowPos < out_आकार);
     }
   }
   RC_NORMALIZE;
 
 
-  *inSizeProcessed = (SizeT)(Buffer - inStream);
-  *outSizeProcessed = nowPos;
-  return LZMA_RESULT_OK;
+  *in_आकार_Processed = (आकार_T)(बफर_2 - inStream);
+  *out_आकार_Processed = nowPos;
+  वापस LZMA_परिणाम_OK;
 }

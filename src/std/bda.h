@@ -1,17 +1,17 @@
 // BIOS Data Area (and similar) definitions
-#ifndef __BDA_H
-#define __BDA_H
+#अगर_अघोषित __BDA_H
+#घोषणा __BDA_H
 
-#include "disk.h" // struct fdpt_s
-#include "types.h" // u8
+#समावेश "disk.h" // struct fdpt_s
+#समावेश "types.h" // u8
 
 
 /****************************************************************
  * Interrupt vector table
  ****************************************************************/
 
-struct rmode_IVT {
-    struct segoff_s ivec[256];
+काष्ठा rmode_IVT {
+    काष्ठा segoff_s ivec[256];
 };
 
 
@@ -19,7 +19,7 @@ struct rmode_IVT {
  * Bios Data Area (BDA)
  ****************************************************************/
 
-struct bios_data_area_s {
+काष्ठा bios_तथ्य_area_s {
     // 40:00
     u16 port_com[4];
     u16 port_lpt[3];
@@ -27,19 +27,19 @@ struct bios_data_area_s {
     // 40:10
     u16 equipment_list_flags;
     u8 pad1;
-    u16 mem_size_kb;
+    u16 mem_आकार_kb;
     u8 pad2;
     u8 ps2_ctrl_flag;
     u16 kbd_flag0;
     u8 alt_keypad;
-    u16 kbd_buf_head;
-    u16 kbd_buf_tail;
+    u16 kbd_buf_शीर्ष;
+    u16 kbd_buf_पुच्छ;
     // 40:1e
     u8 kbd_buf[32];
     u8 floppy_recalibration_status;
     u8 floppy_motor_status;
     // 40:40
-    u8 floppy_motor_counter;
+    u8 floppy_motor_गणक;
     u8 floppy_last_status;
     u8 floppy_return_status[7];
     u8 video_mode;
@@ -54,9 +54,9 @@ struct bios_data_area_s {
     u16 crtc_address;
     u8 video_msr;
     u8 video_pal;
-    struct segoff_s jump;
+    काष्ठा segoff_s jump;
     u8 other_6b;
-    u32 timer_counter;
+    u32 timer_गणक;
     // 40:70
     u8 timer_rollover;
     u8 break_flag;
@@ -75,8 +75,8 @@ struct bios_data_area_s {
     u8 video_ctl;
     u8 video_switches;
     u8 modeset_ctl;
-    u8 dcc_index;
-    u8 floppy_last_data_rate;
+    u8 dcc_सूचकांक;
+    u8 floppy_last_तथ्य_rate;
     u8 disk_status_controller;
     u8 disk_error_controller;
     u8 disk_interrupt_flag;
@@ -86,71 +86,71 @@ struct bios_data_area_s {
     u8 floppy_track[2];
     u8 kbd_flag1;
     u8 kbd_led;
-    struct segoff_s user_wait_complete_flag;
+    काष्ठा segoff_s user_wait_complete_flag;
     u32 user_wait_timeout;
     // 40:A0
     u8 rtc_wait_flag;
     u8 other_a1[7];
-    struct segoff_s video_savetable;
+    काष्ठा segoff_s video_savetable;
     u8 other_ac[4];
     // 40:B0
     u8 other_b0[5*16];
 } PACKED;
 
 // BDA floppy_recalibration_status bitdefs
-#define FRS_IRQ (1<<7)
+#घोषणा FRS_IRQ (1<<7)
 
 // BDA rtc_wait_flag bitdefs
-#define RWS_WAIT_PENDING (1<<0)
-#define RWS_WAIT_ELAPSED (1<<7)
+#घोषणा RWS_WAIT_PENDING (1<<0)
+#घोषणा RWS_WAIT_ELAPSED (1<<7)
 
 // BDA floppy_media_state bitdefs
-#define FMS_DRIVE_STATE_MASK        (0x07)
-#define FMS_MEDIA_DRIVE_ESTABLISHED (1<<4)
-#define FMS_DOUBLE_STEPPING         (1<<5)
-#define FMS_DATA_RATE_MASK          (0xc0)
+#घोषणा FMS_DRIVE_STATE_MASK        (0x07)
+#घोषणा FMS_MEDIA_DRIVE_ESTABLISHED (1<<4)
+#घोषणा FMS_DOUBLE_STEPPING         (1<<5)
+#घोषणा FMS_तथ्य_RATE_MASK          (0xc0)
 
 // BDA kbd_flag[01] bitdefs
-#define KF0_RSHIFT       (1<<0)
-#define KF0_LSHIFT       (1<<1)
-#define KF0_CTRLACTIVE   (1<<2)
-#define KF0_ALTACTIVE    (1<<3)
-#define KF0_SCROLLACTIVE (1<<4)
-#define KF0_NUMACTIVE    (1<<5)
-#define KF0_CAPSACTIVE   (1<<6)
-#define KF0_LCTRL        (1<<8)
-#define KF0_LALT         (1<<9)
-#define KF0_PAUSEACTIVE  (1<<11)
-#define KF0_SCROLL       (1<<12)
-#define KF0_NUM          (1<<13)
-#define KF0_CAPS         (1<<14)
+#घोषणा KF0_RSHIFT       (1<<0)
+#घोषणा KF0_LSHIFT       (1<<1)
+#घोषणा KF0_CTRLACTIVE   (1<<2)
+#घोषणा KF0_ALTACTIVE    (1<<3)
+#घोषणा KF0_SCROLLACTIVE (1<<4)
+#घोषणा KF0_NUMACTIVE    (1<<5)
+#घोषणा KF0_CAPSACTIVE   (1<<6)
+#घोषणा KF0_LCTRL        (1<<8)
+#घोषणा KF0_LALT         (1<<9)
+#घोषणा KF0_PAUSEACTIVE  (1<<11)
+#घोषणा KF0_SCROLL       (1<<12)
+#घोषणा KF0_अंक          (1<<13)
+#घोषणा KF0_CAPS         (1<<14)
 
-#define KF1_LAST_E1    (1<<0)
-#define KF1_LAST_E0    (1<<1)
-#define KF1_RCTRL      (1<<2)
-#define KF1_RALT       (1<<3)
-#define KF1_101KBD     (1<<4)
+#घोषणा KF1_LAST_E1    (1<<0)
+#घोषणा KF1_LAST_E0    (1<<1)
+#घोषणा KF1_RCTRL      (1<<2)
+#घोषणा KF1_RALT       (1<<3)
+#घोषणा KF1_101KBD     (1<<4)
 
 // Limit of BDA timer_counter field
-#define TICKS_PER_DAY 1573040
+#घोषणा TICKS_PER_DAY 1573040
 
 
 /****************************************************************
  * Extended Bios Data Area (EBDA)
  ****************************************************************/
 
-struct extended_bios_data_area_s {
-    u8 size;
+काष्ठा extended_bios_तथ्य_area_s {
+    u8 आकार;
     u8 reserved1[0x21];
-    struct segoff_s far_call_pointer;
+    काष्ठा segoff_s far_call_pointer;
     u8 mouse_flag1;
     u8 mouse_flag2;
-    u8 mouse_data[0x08];
+    u8 mouse_तथ्य[0x08];
     // 0x30
     u8 other1[0x0d];
 
     // 0x3d
-    struct fdpt_s fdpt[2];
+    काष्ठा fdpt_s fdpt[2];
 
     // 0x5d
     u8 other2[0xC4];
@@ -163,12 +163,12 @@ struct extended_bios_data_area_s {
  * Bios Config Table
  ****************************************************************/
 
-struct bios_config_table_s {
-    u16 size;
+काष्ठा bios_config_table_s {
+    u16 आकार;
     u8 model;
     u8 submodel;
     u8 biosrev;
     u8 feature1, feature2, feature3, feature4, feature5;
 } PACKED;
 
-#endif // bda.h
+#पूर्ण_अगर // bda.h

@@ -1,29 +1,29 @@
-#ifndef __USB_HID_H
-#define __USB_HID_H
+#अगर_अघोषित __USB_HID_H
+#घोषणा __USB_HID_H
 
 // usb-hid.c
-struct usbdevice_s;
-int usb_hid_setup(struct usbdevice_s *usbdev);
-int usb_kbd_active(void);
-int usb_kbd_command(int command, u8 *param);
-int usb_mouse_active(void);
-int usb_mouse_command(int command, u8 *param);
-void usb_check_event(void);
+काष्ठा usbdevice_s;
+पूर्णांक usb_hid_setup(काष्ठा usbdevice_s *usbdev);
+पूर्णांक usb_kbd_active(व्योम);
+पूर्णांक usb_kbd_command(पूर्णांक command, u8 *param);
+पूर्णांक usb_mouse_active(व्योम);
+पूर्णांक usb_mouse_command(पूर्णांक command, u8 *param);
+व्योम usb_check_event(व्योम);
 
 
 /****************************************************************
  * hid flags
  ****************************************************************/
 
-#define USB_INTERFACE_SUBCLASS_BOOT     1
-#define USB_INTERFACE_PROTOCOL_KEYBOARD 1
-#define USB_INTERFACE_PROTOCOL_MOUSE    2
+#घोषणा USB_INTERFACE_SUBCLASS_BOOT     1
+#घोषणा USB_INTERFACE_PROTOCOL_KEYBOARD 1
+#घोषणा USB_INTERFACE_PROTOCOL_MOUSE    2
 
-#define HID_REQ_GET_REPORT              0x01
-#define HID_REQ_GET_IDLE                0x02
-#define HID_REQ_GET_PROTOCOL            0x03
-#define HID_REQ_SET_REPORT              0x09
-#define HID_REQ_SET_IDLE                0x0A
-#define HID_REQ_SET_PROTOCOL            0x0B
+#घोषणा HID_REQ_GET_REPORT              0x01
+#घोषणा HID_REQ_GET_IDLE                0x02
+#घोषणा HID_REQ_GET_PROTOCOL            0x03
+#घोषणा HID_REQ_SET_REPORT              0x09
+#घोषणा HID_REQ_SET_IDLE                0x0A
+#घोषणा HID_REQ_SET_PROTOCOL            0x0B
 
-#endif // ush-hid.h
+#पूर्ण_अगर // ush-hid.h

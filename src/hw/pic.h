@@ -4,57 +4,57 @@
 // Copyright (C) 2002  MandrakeSoft S.A.
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
-#ifndef __PIC_H
-#define __PIC_H
+#अगर_अघोषित __PIC_H
+#घोषणा __PIC_H
 
-#include "x86.h" // outb
+#समावेश "x86.h" // outb
 
-#define PORT_PIC1_CMD          0x0020
-#define PORT_PIC1_DATA         0x0021
-#define PORT_PIC2_CMD          0x00a0
-#define PORT_PIC2_DATA         0x00a1
+#घोषणा PORT_PIC1_CMD          0x0020
+#घोषणा PORT_PIC1_तथ्य         0x0021
+#घोषणा PORT_PIC2_CMD          0x00a0
+#घोषणा PORT_PIC2_तथ्य         0x00a1
 
 // PORT_PIC1 bitdefs
-#define PIC1_IRQ0  (1<<0)
-#define PIC1_IRQ1  (1<<1)
-#define PIC1_IRQ2  (1<<2)
-#define PIC1_IRQ5  (1<<5)
-#define PIC1_IRQ6  (1<<6)
+#घोषणा PIC1_IRQ0  (1<<0)
+#घोषणा PIC1_IRQ1  (1<<1)
+#घोषणा PIC1_IRQ2  (1<<2)
+#घोषणा PIC1_IRQ5  (1<<5)
+#घोषणा PIC1_IRQ6  (1<<6)
 // PORT_PIC2 bitdefs
-#define PIC2_IRQ8  (1<<8)
-#define PIC2_IRQ12 (1<<12)
-#define PIC2_IRQ13 (1<<13)
-#define PIC2_IRQ14 (1<<14)
+#घोषणा PIC2_IRQ8  (1<<8)
+#घोषणा PIC2_IRQ12 (1<<12)
+#घोषणा PIC2_IRQ13 (1<<13)
+#घोषणा PIC2_IRQ14 (1<<14)
 
-#define PIC_IRQMASK_DEFAULT ((u16)~PIC1_IRQ2)
+#घोषणा PIC_IRQMASK_DEFAULT ((u16)~PIC1_IRQ2)
 
-#define BIOS_HWIRQ0_VECTOR 0x08
-#define BIOS_HWIRQ8_VECTOR 0x70
+#घोषणा BIOS_HWIRQ0_VECTOR 0x08
+#घोषणा BIOS_HWIRQ8_VECTOR 0x70
 
-static inline void
-pic_eoi1(void)
+अटल अंतरभूत व्योम
+pic_eoi1(व्योम)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return;
+    अगर (!CONFIG_HARDWARE_IRQ)
+        वापस;
     // Send eoi (select OCW2 + eoi)
     outb(0x20, PORT_PIC1_CMD);
 }
 
-static inline void
-pic_eoi2(void)
+अटल अंतरभूत व्योम
+pic_eoi2(व्योम)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return;
+    अगर (!CONFIG_HARDWARE_IRQ)
+        वापस;
     // Send eoi (select OCW2 + eoi)
     outb(0x20, PORT_PIC2_CMD);
     pic_eoi1();
 }
 
-u16 pic_irqmask_read(void);
-void pic_irqmask_write(u16 mask);
-void pic_irqmask_mask(u16 off, u16 on);
-void pic_reset(u8 irq0, u8 irq8);
-void pic_setup(void);
-void enable_hwirq(int hwirq, struct segoff_s func);
+u16 pic_irqmask_read(व्योम);
+व्योम pic_irqmask_write(u16 mask);
+व्योम pic_irqmask_mask(u16 off, u16 on);
+व्योम pic_reset(u8 irq0, u8 irq8);
+व्योम pic_setup(व्योम);
+व्योम enable_hwirq(पूर्णांक hwirq, काष्ठा segoff_s func);
 
-#endif // pic.h
+#पूर्ण_अगर // pic.h

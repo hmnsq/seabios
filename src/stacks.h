@@ -1,57 +1,57 @@
 // Misc function and variable declarations.
-#ifndef __STACKS_H
-#define __STACKS_H
+#अगर_अघोषित __STACKS_H
+#घोषणा __STACKS_H
 
-#include "types.h" // u32
+#समावेश "types.h" // u32
 
-#define CALL32SMM_CMDID    0xb5
-#define CALL32SMM_ENTERID  0x1234
-#define CALL32SMM_RETURNID 0x5678
+#घोषणा CALL32SMM_CMDID    0xb5
+#घोषणा CALL32SMM_ENTERID  0x1234
+#घोषणा CALL32SMM_RETURNID 0x5678
 
 // stacks.c
-extern int HaveSmmCall32;
-u32 __call32(void *func, u32 eax, u32 errret);
-#define call32(func, eax, errret) ({                            \
-        extern void _cfunc32flat_ ##func (void);                \
+बाह्य पूर्णांक HaveSmmCall32;
+u32 __call32(व्योम *func, u32 eax, u32 errret);
+#घोषणा call32(func, eax, errret) ({                            \
+        बाह्य व्योम _cfunc32flat_ ##func (व्योम);                \
         __call32( _cfunc32flat_ ##func , (u32)(eax), (errret)); \
     })
-extern u8 ExtraStack[], *StackPos;
-u32 __stack_hop(u32 eax, u32 edx, void *func);
-#define stack_hop(func, eax, edx)               \
+बाह्य u8 Extra_ढेर[], *ढेर_Pos;
+u32 __stack_hop(u32 eax, u32 edx, व्योम *func);
+#घोषणा ढेर_hop(func, eax, edx)               \
     __stack_hop((u32)(eax), (u32)(edx), (func))
-u32 __stack_hop_back(u32 eax, u32 edx, void *func);
-#define stack_hop_back(func, eax, edx) ({                               \
-        extern void _cfunc16_ ##func (void);                            \
+u32 __stack_hop_back(u32 eax, u32 edx, व्योम *func);
+#घोषणा ढेर_hop_back(func, eax, edx) ({                               \
+        बाह्य व्योम _cfunc16_ ##func (व्योम);                            \
         __stack_hop_back((u32)(eax), (u32)(edx), _cfunc16_ ##func );    \
     })
-int on_extra_stack(void);
-struct bregs;
-void farcall16(struct bregs *callregs);
-void farcall16big(struct bregs *callregs);
-void __call16_int(struct bregs *callregs, u16 offset);
-#define call16_int(nr, callregs) do {                           \
-        extern void irq_trampoline_ ##nr (void);                \
+पूर्णांक on_extra_ढेर(व्योम);
+काष्ठा bregs;
+व्योम farcall16(काष्ठा bregs *callregs);
+व्योम farcall16big(काष्ठा bregs *callregs);
+व्योम __call16_int(काष्ठा bregs *callregs, u16 offset);
+#घोषणा call16_int(nr, callregs) करो {                           \
+        बाह्य व्योम irq_trampoline_ ##nr (व्योम);                \
         __call16_int((callregs), (u32)&irq_trampoline_ ##nr );  \
-    } while (0)
-void reset(void);
-extern struct thread_info MainThread;
-struct thread_info *getCurThread(void);
-void yield(void);
-void yield_toirq(void);
-void thread_setup(void);
-int threads_during_optionroms(void);
-void run_thread(void (*func)(void*), void *data);
-void wait_threads(void);
-struct mutex_s { u32 isLocked; };
-void mutex_lock(struct mutex_s *mutex);
-void mutex_unlock(struct mutex_s *mutex);
-void start_preempt(void);
-void finish_preempt(void);
-int wait_preempt(void);
-void check_preempt(void);
-u32 __call32_params(void *func, u32 eax, u32 edx, u32 ecx, u32 errret);
-#define call32_params(func, eax, edx, ecx, errret) ({                   \
-        extern void _cfunc32flat_ ##func (void);                        \
+    } जबतक (0)
+व्योम reset(व्योम);
+बाह्य काष्ठा thread_info MainThread;
+काष्ठा thread_info *getCurThread(व्योम);
+व्योम yield(व्योम);
+व्योम yield_toirq(व्योम);
+व्योम thread_setup(व्योम);
+पूर्णांक threads_during_optionroms(व्योम);
+व्योम run_thread(व्योम (*func)(व्योम*), व्योम *तथ्य);
+व्योम wait_threads(व्योम);
+काष्ठा mutex_s { u32 isLocked; };
+व्योम mutex_lock(काष्ठा mutex_s *mutex);
+व्योम mutex_unlock(काष्ठा mutex_s *mutex);
+व्योम start_preempt(व्योम);
+व्योम finish_preempt(व्योम);
+पूर्णांक wait_preempt(व्योम);
+व्योम check_preempt(व्योम);
+u32 __call32_params(व्योम *func, u32 eax, u32 edx, u32 ecx, u32 errret);
+#घोषणा call32_params(func, eax, edx, ecx, errret) ({                   \
+        बाह्य व्योम _cfunc32flat_ ##func (व्योम);                        \
         __call32_params( _cfunc32flat_ ##func , (u32)(eax), (u32)(edx)  \
                         , (u32)(ecx), (errret));                        \
     })
@@ -59,10 +59,10 @@ u32 __call32_params(void *func, u32 eax, u32 edx, u32 ecx, u32 errret);
 // Inline functions
 
 // Check if a call to stack_hop_back is needed.
-static inline int
-need_hop_back(void)
+अटल अंतरभूत पूर्णांक
+need_hop_back(व्योम)
 {
-    return !MODESEGMENT || on_extra_stack();
+    वापस !MODESEGMENT || on_extra_ढेर();
 }
 
-#endif // stacks.h
+#पूर्ण_अगर // stacks.h

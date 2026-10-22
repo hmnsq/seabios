@@ -6,17 +6,17 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_GLOBAL
-#include "bregs.h" // struct bregs
-#include "config.h" // CONFIG_*
-#include "output.h" // dprintf
-#include "stacks.h" // yield_toirq
-#include "util.h" // apm_shutdown
-#include "x86.h" // outb
+#समावेश "biosvar.h" // GET_GLOBAL
+#समावेश "bregs.h" // struct bregs
+#समावेश "config.h" // CONFIG_*
+#समावेश "output.h" // dprintf
+#समावेश "stacks.h" // yield_toirq
+#समावेश "util.h" // apm_shutdown
+#समावेश "x86.h" // outb
 
 // APM installation check
-static void
-handle_155300(struct bregs *regs)
+अटल व्योम
+handle_155300(काष्ठा bregs *regs)
 {
     regs->ah = 1; // APM major version
     regs->al = 2; // APM minor version
@@ -29,17 +29,17 @@ handle_155300(struct bregs *regs)
 }
 
 // APM real mode interface connect
-static void
-handle_155301(struct bregs *regs)
+अटल व्योम
+handle_155301(काष्ठा bregs *regs)
 {
     set_success(regs);
 }
 
 // APM 16 bit protected mode interface connect
-static void
-handle_155302(struct bregs *regs)
+अटल व्योम
+handle_155302(काष्ठा bregs *regs)
 {
-    extern void entry_apm16(void);
+    बाह्य व्योम entry_apm16(व्योम);
     regs->bx = (u32)entry_apm16;
     regs->ax = SEG_BIOS; // 16 bit code segment base
     regs->si = 0xfff0;   // 16 bit code segment size
@@ -49,10 +49,10 @@ handle_155302(struct bregs *regs)
 }
 
 // APM 32 bit protected mode interface connect
-static void
-handle_155303(struct bregs *regs)
+अटल व्योम
+handle_155303(काष्ठा bregs *regs)
 {
-    extern void entry_apm32(void);
+    बाह्य व्योम entry_apm32(व्योम);
     regs->ax = SEG_BIOS; // 32 bit code segment base
     regs->ebx = (u32)entry_apm32;
     regs->cx = SEG_BIOS; // 16 bit code segment base
@@ -65,70 +65,70 @@ handle_155303(struct bregs *regs)
 }
 
 // APM interface disconnect
-static void
-handle_155304(struct bregs *regs)
+अटल व्योम
+handle_155304(काष्ठा bregs *regs)
 {
     set_success(regs);
 }
 
 // APM cpu idle
-static void
-handle_155305(struct bregs *regs)
+अटल व्योम
+handle_155305(काष्ठा bregs *regs)
 {
     yield_toirq();
     set_success(regs);
 }
 
 // APM cpu busy
-static void
-handle_155306(struct bregs *regs)
+अटल व्योम
+handle_155306(काष्ठा bregs *regs)
 {
     set_success(regs);
 }
 
-void
-apm_shutdown(void)
+व्योम
+apm_shutdown(व्योम)
 {
     u16 pm1a_cnt = GET_GLOBAL(acpi_pm1a_cnt);
-    if (pm1a_cnt)
+    अगर (pm1a_cnt)
         outw(0x2000, pm1a_cnt);
 
     irq_disable();
-    for (;;)
+    क्रम (;;)
         hlt();
 }
 
 // APM Set Power State
-static void
-handle_155307(struct bregs *regs)
+अटल व्योम
+handle_155307(काष्ठा bregs *regs)
 {
-    if (regs->bx != 1) {
+    अगर (regs->bx != 1) {
         set_success(regs);
-        return;
+        वापस;
     }
-    switch (regs->cx) {
-    case 1:
+    चयन (regs->cx) {
+    हाल 1:
         dprintf(1, "APM standby request\n");
-        break;
-    case 2:
+        अवरोध;
+    हाल 2:
         dprintf(1, "APM suspend request\n");
-        break;
-    case 3:
+        अवरोध;
+    हाल 3:
         apm_shutdown();
-        break;
+        अवरोध;
     }
     set_success(regs);
 }
 
-static void
-handle_155308(struct bregs *regs)
+अटल व्योम
+handle_155308(काष्ठा bregs *regs)
 {
     set_success(regs);
 }
 
 // Get Power Status
-static void
-handle_15530a(struct bregs *regs)
+अटल व्योम
+handle_15530a(काष्ठा bregs *regs)
 {
     regs->bh = 0x01; // on line
     regs->bl = 0xff; // unknown battery status
@@ -139,18 +139,18 @@ handle_15530a(struct bregs *regs)
     set_success(regs);
 }
 
-#define RET_ENOEVENT 0x80
+#घोषणा RET_ENOEVENT 0x80
 
 // Get PM Event
-static void
-handle_15530b(struct bregs *regs)
+अटल व्योम
+handle_15530b(काष्ठा bregs *regs)
 {
     set_code_invalid_silent(regs, RET_ENOEVENT);
 }
 
 // APM Driver Version
-static void
-handle_15530e(struct bregs *regs)
+अटल व्योम
+handle_15530e(काष्ठा bregs *regs)
 {
     regs->ah = 1;
     regs->al = 2;
@@ -158,57 +158,57 @@ handle_15530e(struct bregs *regs)
 }
 
 // APM Engage / Disengage
-static void
-handle_15530f(struct bregs *regs)
+अटल व्योम
+handle_15530f(काष्ठा bregs *regs)
 {
     set_success(regs);
 }
 
 // APM Get Capabilities
-static void
-handle_155310(struct bregs *regs)
+अटल व्योम
+handle_155310(काष्ठा bregs *regs)
 {
     regs->bl = 0;
     regs->cx = 0;
     set_success(regs);
 }
 
-static void
-handle_1553XX(struct bregs *regs)
+अटल व्योम
+handle_1553XX(काष्ठा bregs *regs)
 {
     set_unimplemented(regs);
 }
 
-void
-handle_1553(struct bregs *regs)
+व्योम
+handle_1553(काष्ठा bregs *regs)
 {
-    if (! CONFIG_APMBIOS) {
+    अगर (! CONFIG_APMBIOS) {
         set_code_invalid(regs, RET_EUNSUPPORTED);
-        return;
+        वापस;
     }
 
     //debug_stub(regs);
-    switch (regs->al) {
-    case 0x00: handle_155300(regs); break;
-    case 0x01: handle_155301(regs); break;
-    case 0x02: handle_155302(regs); break;
-    case 0x03: handle_155303(regs); break;
-    case 0x04: handle_155304(regs); break;
-    case 0x05: handle_155305(regs); break;
-    case 0x06: handle_155306(regs); break;
-    case 0x07: handle_155307(regs); break;
-    case 0x08: handle_155308(regs); break;
-    case 0x0a: handle_15530a(regs); break;
-    case 0x0b: handle_15530b(regs); break;
-    case 0x0e: handle_15530e(regs); break;
-    case 0x0f: handle_15530f(regs); break;
-    case 0x10: handle_155310(regs); break;
-    default:   handle_1553XX(regs); break;
+    चयन (regs->al) {
+    हाल 0x00: handle_155300(regs); अवरोध;
+    हाल 0x01: handle_155301(regs); अवरोध;
+    हाल 0x02: handle_155302(regs); अवरोध;
+    हाल 0x03: handle_155303(regs); अवरोध;
+    हाल 0x04: handle_155304(regs); अवरोध;
+    हाल 0x05: handle_155305(regs); अवरोध;
+    हाल 0x06: handle_155306(regs); अवरोध;
+    हाल 0x07: handle_155307(regs); अवरोध;
+    हाल 0x08: handle_155308(regs); अवरोध;
+    हाल 0x0a: handle_15530a(regs); अवरोध;
+    हाल 0x0b: handle_15530b(regs); अवरोध;
+    हाल 0x0e: handle_15530e(regs); अवरोध;
+    हाल 0x0f: handle_15530f(regs); अवरोध;
+    हाल 0x10: handle_155310(regs); अवरोध;
+    शेष:   handle_1553XX(regs); अवरोध;
     }
 }
 
-void VISIBLE16 VISIBLE32SEG
-handle_apm(struct bregs *regs)
+व्योम VISIBLE16 VISIBLE32SEG
+handle_apm(काष्ठा bregs *regs)
 {
     debug_enter(regs, DEBUG_HDL_apm);
     handle_1553(regs);

@@ -1,31 +1,31 @@
 // String manipulation function defs.
-#ifndef __STRING_H
-#define __STRING_H
+#अगर_अघोषित __STRING_H
+#घोषणा __STRING_H
 
-#include "types.h" // u32
+#समावेश "types.h" // u32
 
 // string.c
-u8 checksum_far(u16 buf_seg, void *buf_far, u32 len);
-u8 checksum(void *buf, u32 len);
-size_t strlen(const char *s);
-int memcmp_far(u16 s1seg, const void *s1, u16 s2seg, const void *s2, size_t n);
-int memcmp(const void *s1, const void *s2, size_t n);
-int strcmp(const char *s1, const char *s2);
-void memset_far(u16 d_seg, void *d_far, u8 c, size_t len);
-void memset16_far(u16 d_seg, void *d_far, u16 c, size_t len);
-void *memset(void *s, int c, size_t n);
-void memset_fl(void *ptr, u8 val, size_t size);
-void memcpy_far(u16 d_seg, void *d_far
-                , u16 s_seg, const void *s_far, size_t len);
-void memcpy_fl(void *d_fl, const void *s_fl, size_t len);
-void *memcpy(void *d1, const void *s1, size_t len);
-#if MODESEGMENT == 0
-#define memcpy __builtin_memcpy
-#endif
-void iomemcpy(void *d, const void *s, u32 len);
-void *memmove(void *d, const void *s, size_t len);
-char *strtcpy(char *dest, const char *src, size_t len);
-char *strchr(const char *s, int c);
-char *nullTrailingSpace(char *buf);
+u8 checksum_far(u16 buf_seg, व्योम *buf_far, u32 len);
+u8 checksum(व्योम *buf, u32 len);
+माप_प्रकार म_माप(स्थिर अक्षर *s);
+पूर्णांक memcmp_far(u16 s1seg, स्थिर व्योम *s1, u16 s2seg, स्थिर व्योम *s2, माप_प्रकार n);
+पूर्णांक स_भेद(स्थिर व्योम *s1, स्थिर व्योम *s2, माप_प्रकार n);
+पूर्णांक म_भेद(स्थिर अक्षर *s1, स्थिर अक्षर *s2);
+व्योम memset_far(u16 d_seg, व्योम *d_far, u8 c, माप_प्रकार len);
+व्योम memset16_far(u16 d_seg, व्योम *d_far, u16 c, माप_प्रकार len);
+व्योम *स_रखो(व्योम *s, पूर्णांक c, माप_प्रकार n);
+व्योम memset_fl(व्योम *ptr, u8 val, माप_प्रकार आकार);
+व्योम memcpy_far(u16 d_seg, व्योम *d_far
+                , u16 s_seg, स्थिर व्योम *s_far, माप_प्रकार len);
+व्योम memcpy_fl(व्योम *d_fl, स्थिर व्योम *s_fl, माप_प्रकार len);
+व्योम *स_नकल(व्योम *d1, स्थिर व्योम *s1, माप_प्रकार len);
+#अगर MODESEGMENT == 0
+#घोषणा स_नकल __builtin_memcpy
+#पूर्ण_अगर
+व्योम iomemcpy(व्योम *d, स्थिर व्योम *s, u32 len);
+व्योम *स_हटाओ(व्योम *d, स्थिर व्योम *s, माप_प्रकार len);
+अक्षर *strtcpy(अक्षर *dest, स्थिर अक्षर *src, माप_प्रकार len);
+अक्षर *म_अक्षर(स्थिर अक्षर *s, पूर्णांक c);
+अक्षर *nullTrailingSpace(अक्षर *buf);
 
-#endif // string.h
+#पूर्ण_अगर // string.h

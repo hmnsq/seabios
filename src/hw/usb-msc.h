@@ -1,10 +1,10 @@
-#ifndef __USB_MSC_H
-#define __USB_MSC_H
+#अगर_अघोषित __USB_MSC_H
+#घोषणा __USB_MSC_H
 
 // usb-msc.c
-struct disk_op_s;
-int usb_process_op(struct disk_op_s *op);
-struct usbdevice_s;
-int usb_msc_setup(struct usbdevice_s *usbdev);
+काष्ठा disk_op_s;
+पूर्णांक usb_process_op(काष्ठा disk_op_s *op);
+काष्ठा usbdevice_s;
+पूर्णांक usb_msc_setup(काष्ठा usbdevice_s *usbdev);
 
-#endif // ush-msc.h
+#पूर्ण_अगर // ush-msc.h

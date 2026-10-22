@@ -1,21 +1,21 @@
-#ifndef __MEMMAP_H
-#define __MEMMAP_H
+#अगर_अघोषित __MEMMAP_H
+#घोषणा __MEMMAP_H
 
-#include "types.h" // u32
+#समावेश "types.h" // u32
 
 // A typical OS page size
-#define PAGE_SIZE 4096
-#define PAGE_SHIFT 12
+#घोषणा PAGE_आकार 4096
+#घोषणा PAGE_SHIFT 12
 
-static inline u32 virt_to_phys(void *v) {
-    return (u32)v;
+अटल अंतरभूत u32 virt_to_phys(व्योम *v) {
+    वापस (u32)v;
 }
-static inline void *memremap(u32 addr, u32 len) {
-    return (void*)addr;
+अटल अंतरभूत व्योम *memremap(u32 addr, u32 len) {
+    वापस (व्योम*)addr;
 }
 
 // Return the value of a linker script symbol (see scripts/layoutrom.py)
-#define SYMBOL(SYM) ({ extern char SYM[]; (u32)SYM; })
-#define VSYMBOL(SYM) ((void*)SYMBOL(SYM))
+#घोषणा प्रतीक(SYM) ({ बाह्य अक्षर SYM[]; (u32)SYM; })
+#घोषणा VSYMBOL(SYM) ((व्योम*)प्रतीक(SYM))
 
-#endif // memmap.h
+#पूर्ण_अगर // memmap.h

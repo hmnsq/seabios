@@ -5,44 +5,44 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_GLOBAL
-#include "config.h" // CONFIG_*
-#include "output.h" // dprintf, warn_noalloc
-#include "malloc.h" // malloc_fseg
-#include "ps2port.h" // ATKBD_CMD_GETID
-#include "usb.h" // usb_ctrlrequest
-#include "usb-hid.h" // usb_keyboard_setup
-#include "util.h" // process_key
+#समावेश "biosvar.h" // GET_GLOBAL
+#समावेश "config.h" // CONFIG_*
+#समावेश "output.h" // dprintf, warn_noalloc
+#समावेश "malloc.h" // malloc_fseg
+#समावेश "ps2port.h" // ATKBD_CMD_GETID
+#समावेश "usb.h" // usb_ctrlrequest
+#समावेश "usb-hid.h" // usb_keyboard_setup
+#समावेश "util.h" // process_key
 
-struct pipe_node {
-    struct usb_pipe *pipe;
-    struct pipe_node *next;
+काष्ठा pipe_गाँठ {
+    काष्ठा usb_pipe *pipe;
+    काष्ठा pipe_गाँठ *अग्र;
 };
 
-struct pipe_node *keyboards VARFSEG = NULL;
-struct pipe_node *mice VARFSEG = NULL;
+काष्ठा pipe_गाँठ *keyboards VARFSEG = शून्य;
+काष्ठा pipe_गाँठ *mice VARFSEG = शून्य;
 
-static int
-add_pipe_node(struct pipe_node **list
-              , struct usbdevice_s *usbdev
-              , struct usb_endpoint_descriptor *epdesc)
+अटल पूर्णांक
+add_pipe_गाँठ(काष्ठा pipe_गाँठ **list
+              , काष्ठा usbdevice_s *usbdev
+              , काष्ठा usb_endpoint_descriptor *epdesc)
 {
-    struct usb_pipe *pipe = usb_alloc_pipe(usbdev, epdesc);
-    if (!pipe)
-        return -1;
+    काष्ठा usb_pipe *pipe = usb_alloc_pipe(usbdev, epdesc);
+    अगर (!pipe)
+        वापस -1;
 
-    struct pipe_node *new_node = malloc_fseg(sizeof(struct pipe_node));
-    if (!new_node) {
+    काष्ठा pipe_गाँठ *new_गाँठ = malloc_fseg(माप(काष्ठा pipe_गाँठ));
+    अगर (!new_गाँठ) {
         warn_noalloc();
-        return -1;
+        वापस -1;
     }
 
-    new_node->pipe = pipe;
+    new_गाँठ->pipe = pipe;
 
-    new_node->next = *list;
-    *list = new_node;
+    new_गाँठ->अग्र = *list;
+    *list = new_गाँठ;
 
-    return 0;
+    वापस 0;
 }
 
 /****************************************************************
@@ -50,133 +50,133 @@ add_pipe_node(struct pipe_node **list
  ****************************************************************/
 
 // Send USB HID protocol message.
-static int
-set_protocol(struct usb_pipe *pipe, u16 val, u16 inferface)
+अटल पूर्णांक
+set_protocol(काष्ठा usb_pipe *pipe, u16 val, u16 inferface)
 {
-    struct usb_ctrlrequest req;
+    काष्ठा usb_ctrlrequest req;
     req.bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE;
     req.bRequest = HID_REQ_SET_PROTOCOL;
-    req.wValue = val;
-    req.wIndex = inferface;
-    req.wLength = 0;
-    return usb_send_default_control(pipe, &req, NULL);
+    req.w_मूल्य = val;
+    req.w_सूचकांक = inferface;
+    req.w_लंबाई = 0;
+    वापस usb_send_default_control(pipe, &req, शून्य);
 }
 
 // Send USB HID SetIdle request.
-static int
-set_idle(struct usb_pipe *pipe, int ms)
+अटल पूर्णांक
+set_idle(काष्ठा usb_pipe *pipe, पूर्णांक ms)
 {
-    struct usb_ctrlrequest req;
+    काष्ठा usb_ctrlrequest req;
     req.bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE;
     req.bRequest = HID_REQ_SET_IDLE;
-    req.wValue = (ms/4)<<8;
-    req.wIndex = 0;
-    req.wLength = 0;
-    return usb_send_default_control(pipe, &req, NULL);
+    req.w_मूल्य = (ms/4)<<8;
+    req.w_सूचकांक = 0;
+    req.w_लंबाई = 0;
+    वापस usb_send_default_control(pipe, &req, शून्य);
 }
 
-#define KEYREPEATWAITMS 500
-#define KEYREPEATMS 33
+#घोषणा KEYREPEATWAITMS 500
+#घोषणा KEYREPEATMS 33
 
 // Format of USB keyboard event data
-struct keyevent {
+काष्ठा keyevent {
     u8 modifiers;
     u8 reserved;
-    u8 keys[6];
+    u8 कुंजियाँ[6];
 };
 
-#define MAX_KBD_EVENT 16
+#घोषणा MAX_KBD_EVENT 16
 
-static int
-usb_kbd_setup(struct usbdevice_s *usbdev
-              , struct usb_endpoint_descriptor *epdesc)
+अटल पूर्णांक
+usb_kbd_setup(काष्ठा usbdevice_s *usbdev
+              , काष्ठा usb_endpoint_descriptor *epdesc)
 {
-    if (! CONFIG_USB_KEYBOARD)
-        return -1;
+    अगर (! CONFIG_USB_KEYBOARD)
+        वापस -1;
 
-    if (epdesc->wMaxPacketSize < sizeof(struct keyevent)
-        || epdesc->wMaxPacketSize > MAX_KBD_EVENT) {
+    अगर (epdesc->w_Max_Packet_आकार < माप(काष्ठा keyevent)
+        || epdesc->w_Max_Packet_आकार > MAX_KBD_EVENT) {
         dprintf(1, "USB keyboard wMaxPacketSize=%d; aborting\n"
-                , epdesc->wMaxPacketSize);
-        return -1;
+                , epdesc->w_Max_Packet_आकार);
+        वापस -1;
     }
 
     // Enable "boot" protocol.
-    if (set_protocol(usbdev->defpipe, 0, usbdev->iface->bInterfaceNumber)) {
+    अगर (set_protocol(usbdev->defpipe, 0, usbdev->iface->b_Interface_संख्या)) {
         dprintf(3, "Failed to set boot protocol\n");
-        return -1;
+        वापस -1;
     }
 
     // Periodically send reports to enable key repeat.
-    if (set_idle(usbdev->defpipe, KEYREPEATMS))
+    अगर (set_idle(usbdev->defpipe, KEYREPEATMS))
         dprintf(3, "Warning: Failed to set key repeat rate\n");
 
-    if (add_pipe_node(&keyboards, usbdev, epdesc))
-        return -1;
+    अगर (add_pipe_गाँठ(&keyboards, usbdev, epdesc))
+        वापस -1;
 
     dprintf(1, "USB keyboard initialized\n");
-    return 0;
+    वापस 0;
 }
 
 // Format of USB mouse event data
-struct mouseevent {
+काष्ठा mouseevent {
     u8 buttons;
     u8 x, y;
 };
 
-#define MAX_MOUSE_EVENT 8
+#घोषणा MAX_MOUSE_EVENT 8
 
-static int
-usb_mouse_setup(struct usbdevice_s *usbdev
-                , struct usb_endpoint_descriptor *epdesc)
+अटल पूर्णांक
+usb_mouse_setup(काष्ठा usbdevice_s *usbdev
+                , काष्ठा usb_endpoint_descriptor *epdesc)
 {
-    if (! CONFIG_USB_MOUSE)
-        return -1;
+    अगर (! CONFIG_USB_MOUSE)
+        वापस -1;
 
-    if (epdesc->wMaxPacketSize < sizeof(struct mouseevent)
-        || epdesc->wMaxPacketSize > MAX_MOUSE_EVENT) {
+    अगर (epdesc->w_Max_Packet_आकार < माप(काष्ठा mouseevent)
+        || epdesc->w_Max_Packet_आकार > MAX_MOUSE_EVENT) {
         dprintf(1, "USB mouse wMaxPacketSize=%d; aborting\n"
-                , epdesc->wMaxPacketSize);
-        return -1;
+                , epdesc->w_Max_Packet_आकार);
+        वापस -1;
     }
 
     // Enable "boot" protocol.
-    if (set_protocol(usbdev->defpipe, 0, usbdev->iface->bInterfaceNumber))
-        return -1;
+    अगर (set_protocol(usbdev->defpipe, 0, usbdev->iface->b_Interface_संख्या))
+        वापस -1;
 
-    if (add_pipe_node(&mice, usbdev, epdesc))
-        return -1;
+    अगर (add_pipe_गाँठ(&mice, usbdev, epdesc))
+        वापस -1;
 
     dprintf(1, "USB mouse initialized\n");
-    return 0;
+    वापस 0;
 }
 
 // Initialize a found USB HID device (if applicable).
-int
-usb_hid_setup(struct usbdevice_s *usbdev)
+पूर्णांक
+usb_hid_setup(काष्ठा usbdevice_s *usbdev)
 {
-    if (! CONFIG_USB_KEYBOARD && ! CONFIG_USB_MOUSE)
-        return -1;
+    अगर (! CONFIG_USB_KEYBOARD && ! CONFIG_USB_MOUSE)
+        वापस -1;
     dprintf(2, "usb_hid_setup %p\n", usbdev->defpipe);
 
-    struct usb_interface_descriptor *iface = usbdev->iface;
-    if (iface->bInterfaceSubClass != USB_INTERFACE_SUBCLASS_BOOT)
+    काष्ठा usb_interface_descriptor *iface = usbdev->iface;
+    अगर (iface->bInterfaceSubClass != USB_INTERFACE_SUBCLASS_BOOT)
         // Doesn't support boot protocol.
-        return -1;
+        वापस -1;
 
     // Find intr in endpoint.
-    struct usb_endpoint_descriptor *epdesc = usb_find_desc(
+    काष्ठा usb_endpoint_descriptor *epdesc = usb_find_desc(
         usbdev, USB_ENDPOINT_XFER_INT, USB_DIR_IN);
-    if (!epdesc) {
+    अगर (!epdesc) {
         dprintf(1, "No usb hid intr in?\n");
-        return -1;
+        वापस -1;
     }
 
-    if (iface->bInterfaceProtocol == USB_INTERFACE_PROTOCOL_KEYBOARD)
-        return usb_kbd_setup(usbdev, epdesc);
-    if (iface->bInterfaceProtocol == USB_INTERFACE_PROTOCOL_MOUSE)
-        return usb_mouse_setup(usbdev, epdesc);
-    return -1;
+    अगर (iface->bInterfaceProtocol == USB_INTERFACE_PROTOCOL_KEYBOARD)
+        वापस usb_kbd_setup(usbdev, epdesc);
+    अगर (iface->bInterfaceProtocol == USB_INTERFACE_PROTOCOL_MOUSE)
+        वापस usb_mouse_setup(usbdev, epdesc);
+    वापस -1;
 }
 
 
@@ -185,7 +185,7 @@ usb_hid_setup(struct usbdevice_s *usbdev)
  ****************************************************************/
 
 // Mapping from USB key id to ps2 key sequence.
-static u16 KeyToScanCode[] VAR16 = {
+अटल u16 कुंजी_To_Scan_Code[] VAR16 = {
     0x0000, 0x0000, 0x0000, 0x0000, 0x001e, 0x0030, 0x002e, 0x0020,
     0x0012, 0x0021, 0x0022, 0x0023, 0x0017, 0x0024, 0x0025, 0x0026,
     0x0032, 0x0031, 0x0018, 0x0019, 0x0010, 0x0013, 0x001f, 0x0014,
@@ -202,188 +202,188 @@ static u16 KeyToScanCode[] VAR16 = {
 };
 
 // Mapping from USB modifier id to ps2 key sequence.
-static u16 ModifierToScanCode[] VAR16 = {
+अटल u16 ModifierToScanCode[] VAR16 = {
     //lcntl, lshift, lalt, lgui, rcntl, rshift, ralt, rgui
     0x001d, 0x002a, 0x0038, 0xe05b, 0xe01d, 0x0036, 0xe038, 0xe05c
 };
 
-#define RELEASEBIT 0x80
+#घोषणा RELEASEBIT 0x80
 
 // Translate data from KeyToScanCode[] to calls to process_key().
-static void
-prockeys(u16 scancode, u8 key_release, u8 mods)
+अटल व्योम
+prockeys(u16 scancode, u8 कुंजी_release, u8 mods)
 {
-    if (scancode > 0xff) {
-        if (scancode == 0xe145) {
+    अगर (scancode > 0xff) {
+        अगर (scancode == 0xe145) {
             // XXX - a real AT keyboard would immediately send the key release
-            if (mods & ((1<<0) | (1<<4))) {
+            अगर (mods & ((1<<0) | (1<<4))) {
                 // Cntr+Break key
-                process_key(0xe0);
-                process_key(0x46 | key_release);
-            } else {
+                process_कुंजी(0xe0);
+                process_कुंजी(0x46 | कुंजी_release);
+            } अन्यथा {
                 // Pause key
-                process_key(0xe1);
-                process_key(0x1d | key_release);
-                process_key(0x45 | key_release);
+                process_कुंजी(0xe1);
+                process_कुंजी(0x1d | कुंजी_release);
+                process_कुंजी(0x45 | कुंजी_release);
             }
-            return;
-        } else if (scancode == 0xe037 && mods & ((1<<2) | (1<<6))) {
+            वापस;
+        } अन्यथा अगर (scancode == 0xe037 && mods & ((1<<2) | (1<<6))) {
             // Alt+SysReq key
-            process_key(0x54 | key_release);
-            return;
+            process_कुंजी(0x54 | कुंजी_release);
+            वापस;
         }
-        process_key(0xe0);
+        process_कुंजी(0xe0);
     }
-    process_key(scancode | key_release);
+    process_कुंजी(scancode | कुंजी_release);
 }
 
 // Handle a USB key press/release event.
-static void
-procscankey(u8 key, u8 key_release, u8 mods)
+अटल व्योम
+procscankey(u8 कुंजी, u8 कुंजी_release, u8 mods)
 {
-    if (key >= ARRAY_SIZE(KeyToScanCode))
-        return;
-    u16 scancode = GET_GLOBAL(KeyToScanCode[key]);
-    if (scancode)
-        prockeys(scancode, key_release, mods);
+    अगर (कुंजी >= ARRAY_आकार(कुंजी_To_Scan_Code))
+        वापस;
+    u16 scancode = GET_GLOBAL(कुंजी_To_Scan_Code[कुंजी]);
+    अगर (scancode)
+        prockeys(scancode, कुंजी_release, mods);
 }
 
 // Handle a USB modifier press/release event.
-static void
-procmodkey(u8 mods, u8 key_release)
+अटल व्योम
+procmodkey(u8 mods, u8 कुंजी_release)
 {
-    int i;
-    for (i=0; mods; i++)
-        if (mods & (1<<i)) {
+    पूर्णांक i;
+    क्रम (i=0; mods; i++)
+        अगर (mods & (1<<i)) {
             // Modifier key change.
-            prockeys(GET_GLOBAL(ModifierToScanCode[i]), key_release, 0);
+            prockeys(GET_GLOBAL(ModifierToScanCode[i]), कुंजी_release, 0);
             mods &= ~(1<<i);
         }
 }
 
-struct usbkeyinfo {
-    union {
-        struct {
+काष्ठा usbkeyinfo {
+    जोड़ {
+        काष्ठा {
             u8 modifiers;
             u8 repeatcount;
-            u8 keys[6];
+            u8 कुंजियाँ[6];
         };
-        u64 data;
+        u64 तथ्य;
     };
 };
-struct usbkeyinfo LastUSBkey VARLOW;
+काष्ठा usbkeyinfo LastUSBkey VARLOW;
 
 // Process USB keyboard data.
-static void
-handle_key(struct keyevent *data)
+अटल व्योम
+handle_कुंजी(काष्ठा keyevent *तथ्य)
 {
-    dprintf(9, "Got key %x %x\n", data->modifiers, data->keys[0]);
+    dprintf(9, "Got key %x %x\n", तथ्य->modifiers, तथ्य->कुंजियाँ[0]);
 
     // Load old keys.
-    struct usbkeyinfo old;
-    old.data = GET_LOW(LastUSBkey.data);
+    काष्ठा usbkeyinfo old;
+    old.तथ्य = GET_निचला(LastUSBkey.तथ्य);
 
     // Check for keys no longer pressed.
-    int addpos = 0;
-    int i;
-    for (i=0; i<ARRAY_SIZE(old.keys); i++) {
-        u8 key = old.keys[i];
-        if (!key)
-            break;
-        int j;
-        for (j=0;; j++) {
-            if (j>=ARRAY_SIZE(data->keys)) {
+    पूर्णांक addpos = 0;
+    पूर्णांक i;
+    क्रम (i=0; i<ARRAY_आकार(old.कुंजियाँ); i++) {
+        u8 कुंजी = old.कुंजियाँ[i];
+        अगर (!कुंजी)
+            अवरोध;
+        पूर्णांक j;
+        क्रम (j=0;; j++) {
+            अगर (j>=ARRAY_आकार(तथ्य->कुंजियाँ)) {
                 // Key released.
-                procscankey(key, RELEASEBIT, data->modifiers);
-                if (i+1 >= ARRAY_SIZE(old.keys) || !old.keys[i+1])
+                procscankey(कुंजी, RELEASEBIT, तथ्य->modifiers);
+                अगर (i+1 >= ARRAY_आकार(old.कुंजियाँ) || !old.कुंजियाँ[i+1])
                     // Last pressed key released - disable repeat.
                     old.repeatcount = 0xff;
-                break;
+                अवरोध;
             }
-            if (data->keys[j] == key) {
+            अगर (तथ्य->कुंजियाँ[j] == कुंजी) {
                 // Key still pressed.
-                data->keys[j] = 0;
-                old.keys[addpos++] = key;
-                break;
+                तथ्य->कुंजियाँ[j] = 0;
+                old.कुंजियाँ[addpos++] = कुंजी;
+                अवरोध;
             }
         }
     }
-    procmodkey(old.modifiers & ~data->modifiers, RELEASEBIT);
+    procmodkey(old.modifiers & ~तथ्य->modifiers, RELEASEBIT);
 
     // Process new keys
-    procmodkey(data->modifiers & ~old.modifiers, 0);
-    old.modifiers = data->modifiers;
-    for (i=0; i<ARRAY_SIZE(data->keys); i++) {
-        u8 key = data->keys[i];
-        if (!key)
-            continue;
+    procmodkey(तथ्य->modifiers & ~old.modifiers, 0);
+    old.modifiers = तथ्य->modifiers;
+    क्रम (i=0; i<ARRAY_आकार(तथ्य->कुंजियाँ); i++) {
+        u8 कुंजी = तथ्य->कुंजियाँ[i];
+        अगर (!कुंजी)
+            जारी;
         // New key pressed.
-        procscankey(key, 0, data->modifiers);
-        old.keys[addpos++] = key;
+        procscankey(कुंजी, 0, तथ्य->modifiers);
+        old.कुंजियाँ[addpos++] = कुंजी;
         old.repeatcount = KEYREPEATWAITMS / KEYREPEATMS + 1;
     }
-    if (addpos < ARRAY_SIZE(old.keys))
-        old.keys[addpos] = 0;
+    अगर (addpos < ARRAY_आकार(old.कुंजियाँ))
+        old.कुंजियाँ[addpos] = 0;
 
     // Check for key repeat event.
-    if (addpos) {
-        if (!old.repeatcount)
-            procscankey(old.keys[addpos-1], 0, data->modifiers);
-        else if (old.repeatcount != 0xff)
+    अगर (addpos) {
+        अगर (!old.repeatcount)
+            procscankey(old.कुंजियाँ[addpos-1], 0, तथ्य->modifiers);
+        अन्यथा अगर (old.repeatcount != 0xff)
             old.repeatcount--;
     }
 
     // Update old keys
-    SET_LOW(LastUSBkey.data, old.data);
+    SET_निचला(LastUSBkey.तथ्य, old.तथ्य);
 }
 
 // Check if a USB keyboard event is pending and process it if so.
-static void
-usb_check_key(void)
+अटल व्योम
+usb_check_कुंजी(व्योम)
 {
-    if (! CONFIG_USB_KEYBOARD)
-        return;
+    अगर (! CONFIG_USB_KEYBOARD)
+        वापस;
 
-    for (struct pipe_node *node = GET_GLOBAL(keyboards);
-         node;
-         node = GET_GLOBALFLAT(node->next)) {
-        struct usb_pipe *pipe = GET_GLOBALFLAT(node->pipe);
+    क्रम (काष्ठा pipe_गाँठ *गाँठ = GET_GLOBAL(keyboards);
+         गाँठ;
+         गाँठ = GET_GLOBALFLAT(गाँठ->अग्र)) {
+        काष्ठा usb_pipe *pipe = GET_GLOBALFLAT(गाँठ->pipe);
 
-        for (;;) {
-            u8 data[MAX_KBD_EVENT];
-            int ret = usb_poll_intr(pipe, data);
-            if (ret)
-                break;
-            handle_key((void*)data);
+        क्रम (;;) {
+            u8 तथ्य[MAX_KBD_EVENT];
+            पूर्णांक ret = usb_poll_intr(pipe, तथ्य);
+            अगर (ret)
+                अवरोध;
+            handle_कुंजी((व्योम*)तथ्य);
         }
     }
 }
 
 // Test if USB keyboard is active.
-inline int
-usb_kbd_active(void)
+अंतरभूत पूर्णांक
+usb_kbd_active(व्योम)
 {
-    if (! CONFIG_USB_KEYBOARD)
-        return 0;
+    अगर (! CONFIG_USB_KEYBOARD)
+        वापस 0;
 
-    return GET_GLOBAL(keyboards) != NULL;
+    वापस GET_GLOBAL(keyboards) != शून्य;
 }
 
 // Handle a ps2 style keyboard command.
-inline int
-usb_kbd_command(int command, u8 *param)
+अंतरभूत पूर्णांक
+usb_kbd_command(पूर्णांक command, u8 *param)
 {
-    if (! CONFIG_USB_KEYBOARD)
-        return -1;
+    अगर (! CONFIG_USB_KEYBOARD)
+        वापस -1;
     dprintf(9, "usb keyboard cmd=%x\n", command);
-    switch (command) {
-    case ATKBD_CMD_GETID:
+    चयन (command) {
+    हाल ATKBD_CMD_GETID:
         // Return the id of a standard AT keyboard.
         param[0] = 0xab;
         param[1] = 0x83;
-        return 0;
-    default:
-        return -1;
+        वापस 0;
+    शेष:
+        वापस -1;
     }
 }
 
@@ -393,13 +393,13 @@ usb_kbd_command(int command, u8 *param)
  ****************************************************************/
 
 // Process USB mouse data.
-static void
-handle_mouse(struct mouseevent *data)
+अटल व्योम
+handle_mouse(काष्ठा mouseevent *तथ्य)
 {
-    dprintf(9, "Got mouse b=%x x=%x y=%x\n", data->buttons, data->x, data->y);
+    dprintf(9, "Got mouse b=%x x=%x y=%x\n", तथ्य->buttons, तथ्य->x, तथ्य->y);
 
-    s8 x = data->x, y = -data->y;
-    u8 flag = ((data->buttons & 0x7) | (1<<3)
+    s8 x = तथ्य->x, y = -तथ्य->y;
+    u8 flag = ((तथ्य->buttons & 0x7) | (1<<3)
                | (x & 0x80 ? (1<<4) : 0) | (y & 0x80 ? (1<<5) : 0));
     process_mouse(flag);
     process_mouse(x);
@@ -407,76 +407,76 @@ handle_mouse(struct mouseevent *data)
 }
 
 // Check if a USB mouse event is pending and process it if so.
-static void
-usb_check_mouse(void)
+अटल व्योम
+usb_check_mouse(व्योम)
 {
-    if (! CONFIG_USB_MOUSE)
-        return;
+    अगर (! CONFIG_USB_MOUSE)
+        वापस;
 
-    for (struct pipe_node *node = GET_GLOBAL(mice);
-         node;
-         node = GET_GLOBALFLAT(node->next)) {
-        struct usb_pipe *pipe = GET_GLOBALFLAT(node->pipe);
+    क्रम (काष्ठा pipe_गाँठ *गाँठ = GET_GLOBAL(mice);
+         गाँठ;
+         गाँठ = GET_GLOBALFLAT(गाँठ->अग्र)) {
+        काष्ठा usb_pipe *pipe = GET_GLOBALFLAT(गाँठ->pipe);
 
-        for (;;) {
-            u8 data[MAX_MOUSE_EVENT];
-            int ret = usb_poll_intr(pipe, data);
-            if (ret)
-                break;
-            handle_mouse((void*)data);
+        क्रम (;;) {
+            u8 तथ्य[MAX_MOUSE_EVENT];
+            पूर्णांक ret = usb_poll_intr(pipe, तथ्य);
+            अगर (ret)
+                अवरोध;
+            handle_mouse((व्योम*)तथ्य);
         }
     }
 }
 
 // Test if USB mouse is active.
-inline int
-usb_mouse_active(void)
+अंतरभूत पूर्णांक
+usb_mouse_active(व्योम)
 {
-    if (! CONFIG_USB_MOUSE)
-        return 0;
+    अगर (! CONFIG_USB_MOUSE)
+        वापस 0;
 
-    return GET_GLOBAL(mice) != NULL;
+    वापस GET_GLOBAL(mice) != शून्य;
 }
 
 // Handle a ps2 style mouse command.
-inline int
-usb_mouse_command(int command, u8 *param)
+अंतरभूत पूर्णांक
+usb_mouse_command(पूर्णांक command, u8 *param)
 {
-    if (! CONFIG_USB_MOUSE)
-        return -1;
+    अगर (! CONFIG_USB_MOUSE)
+        वापस -1;
     dprintf(9, "usb mouse cmd=%x\n", command);
-    switch (command) {
-    case PSMOUSE_CMD_ENABLE:
-    case PSMOUSE_CMD_DISABLE:
-    case PSMOUSE_CMD_SETSCALE11:
-        return 0;
-    case PSMOUSE_CMD_SETSCALE21:
-    case PSMOUSE_CMD_SETRATE:
-    case PSMOUSE_CMD_SETRES:
+    चयन (command) {
+    हाल PSMOUSE_CMD_ENABLE:
+    हाल PSMOUSE_CMD_DISABLE:
+    हाल PSMOUSE_CMD_SETSCALE11:
+        वापस 0;
+    हाल PSMOUSE_CMD_SETSCALE21:
+    हाल PSMOUSE_CMD_SETRATE:
+    हाल PSMOUSE_CMD_SETRES:
         // XXX
-        return 0;
-    case PSMOUSE_CMD_RESET_BAT:
-    case PSMOUSE_CMD_GETID:
+        वापस 0;
+    हाल PSMOUSE_CMD_RESET_BAT:
+    हाल PSMOUSE_CMD_GETID:
         // Return the id of a standard AT mouse.
         param[0] = 0xaa;
         param[1] = 0x00;
-        return 0;
+        वापस 0;
 
-    case PSMOUSE_CMD_GETINFO:
+    हाल PSMOUSE_CMD_GETINFO:
         param[0] = 0x00;
         param[1] = 4;
         param[2] = 100;
-        return 0;
+        वापस 0;
 
-    default:
-        return -1;
+    शेष:
+        वापस -1;
     }
 }
 
 // Check for USB events pending - called periodically from timer interrupt.
-void
-usb_check_event(void)
+व्योम
+usb_check_event(व्योम)
 {
-    usb_check_key();
+    usb_check_कुंजी();
     usb_check_mouse();
 }

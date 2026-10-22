@@ -5,122 +5,122 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_GLOBAL
-#include "block.h" // struct drive_s
-#include "bregs.h" // struct bregs
-#include "hw/ata.h" // ATA_CMD_REQUEST_SENSE
-#include "hw/blockcmd.h" // CDB_CMD_REQUEST_SENSE
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "std/disk.h" // DISK_RET_SUCCESS
-#include "string.h" // memset
-#include "util.h" // cdrom_prepboot
-#include "tcgbios.h" // tpm_*
+#समावेश "biosvar.h" // GET_GLOBAL
+#समावेश "block.h" // struct drive_s
+#समावेश "bregs.h" // struct bregs
+#समावेश "hw/ata.h" // ATA_CMD_REQUEST_SENSE
+#समावेश "hw/blockcmd.h" // CDB_CMD_REQUEST_SENSE
+#समावेश "malloc.h" // free
+#समावेश "output.h" // dprintf
+#समावेश "std/disk.h" // DISK_RET_SUCCESS
+#समावेश "string.h" // memset
+#समावेश "util.h" // cdrom_prepboot
+#समावेश "tcgbios.h" // tpm_*
 
 
 /****************************************************************
  * CD emulation
  ****************************************************************/
 
-struct eltorito_s CDEmu VARLOW = { .size=sizeof(CDEmu) };
-struct drive_s *emulated_drive_gf VARLOW;
-struct drive_s *cdemu_drive_gf VARFSEG;
+काष्ठा eltorito_s CDEmu VARLOW = { .आकार=माप(CDEmu) };
+काष्ठा drive_s *emulated_drive_gf VARLOW;
+काष्ठा drive_s *cdemu_drive_gf VARFSEG;
 
-static int
-cdemu_read(struct disk_op_s *op)
+अटल पूर्णांक
+cdemu_read(काष्ठा disk_op_s *op)
 {
-    struct drive_s *drive_gf = GET_LOW(emulated_drive_gf);
-    struct disk_op_s dop;
+    काष्ठा drive_s *drive_gf = GET_निचला(emulated_drive_gf);
+    काष्ठा disk_op_s dop;
     dop.drive_fl = drive_gf;
     dop.command = op->command;
-    dop.lba = GET_LOW(CDEmu.ilba) + op->lba / 4;
+    dop.lba = GET_निचला(CDEmu.ilba) + op->lba / 4;
 
-    int count = op->count;
-    op->count = 0;
+    पूर्णांक गिनती = op->गिनती;
+    op->गिनती = 0;
     u8 *cdbuf_fl = GET_GLOBAL(bounce_buf_fl);
 
-    if (op->lba & 3) {
+    अगर (op->lba & 3) {
         // Partial read of first block.
-        dop.count = 1;
+        dop.गिनती = 1;
         dop.buf_fl = cdbuf_fl;
-        int ret = process_op(&dop);
-        if (ret)
-            return ret;
+        पूर्णांक ret = process_op(&dop);
+        अगर (ret)
+            वापस ret;
         u8 thiscount = 4 - (op->lba & 3);
-        if (thiscount > count)
-            thiscount = count;
-        count -= thiscount;
+        अगर (thiscount > गिनती)
+            thiscount = गिनती;
+        गिनती -= thiscount;
         memcpy_fl(op->buf_fl, cdbuf_fl + (op->lba & 3) * 512, thiscount * 512);
         op->buf_fl += thiscount * 512;
-        op->count += thiscount;
+        op->गिनती += thiscount;
         dop.lba++;
     }
 
-    if (count > 3) {
+    अगर (गिनती > 3) {
         // Read n number of regular blocks.
-        dop.count = count / 4;
+        dop.गिनती = गिनती / 4;
         dop.buf_fl = op->buf_fl;
-        int ret = process_op(&dop);
-        op->count += dop.count * 4;
-        if (ret)
-            return ret;
-        u8 thiscount = count & ~3;
-        count &= 3;
+        पूर्णांक ret = process_op(&dop);
+        op->गिनती += dop.गिनती * 4;
+        अगर (ret)
+            वापस ret;
+        u8 thiscount = गिनती & ~3;
+        गिनती &= 3;
         op->buf_fl += thiscount * 512;
         dop.lba += thiscount / 4;
     }
 
-    if (count) {
+    अगर (गिनती) {
         // Partial read on last block.
-        dop.count = 1;
+        dop.गिनती = 1;
         dop.buf_fl = cdbuf_fl;
-        int ret = process_op(&dop);
-        if (ret)
-            return ret;
-        u8 thiscount = count;
+        पूर्णांक ret = process_op(&dop);
+        अगर (ret)
+            वापस ret;
+        u8 thiscount = गिनती;
         memcpy_fl(op->buf_fl, cdbuf_fl, thiscount * 512);
-        op->count += thiscount;
+        op->गिनती += thiscount;
     }
 
-    return DISK_RET_SUCCESS;
+    वापस DISK_RET_SUCCESS;
 }
 
-int
-cdemu_process_op(struct disk_op_s *op)
+पूर्णांक
+cdemu_process_op(काष्ठा disk_op_s *op)
 {
-    if (!CONFIG_CDROM_EMU)
-        return 0;
+    अगर (!CONFIG_CDROM_EMU)
+        वापस 0;
 
-    switch (op->command) {
-    case CMD_READ:
-        return cdemu_read(op);
-    case CMD_WRITE:
-    case CMD_FORMAT:
-        return DISK_RET_EWRITEPROTECT;
-    default:
-        return default_process_op(op);
+    चयन (op->command) {
+    हाल CMD_READ:
+        वापस cdemu_read(op);
+    हाल CMD_WRITE:
+    हाल CMD_FORMAT:
+        वापस DISK_RET_EWRITEPROTECT;
+    शेष:
+        वापस default_process_op(op);
     }
 }
 
-void
-cdrom_prepboot(void)
+व्योम
+cdrom_prepboot(व्योम)
 {
-    if (!CONFIG_CDROM_EMU)
-        return;
-    if (!CDCount)
-        return;
-    if (create_bounce_buf() < 0)
-        return;
+    अगर (!CONFIG_CDROM_EMU)
+        वापस;
+    अगर (!CDCount)
+        वापस;
+    अगर (create_bounce_buf() < 0)
+        वापस;
 
-    struct drive_s *drive = malloc_fseg(sizeof(*drive));
-    if (!drive) {
+    काष्ठा drive_s *drive = malloc_fseg(माप(*drive));
+    अगर (!drive) {
         warn_noalloc();
-        return;
+        वापस;
     }
     cdemu_drive_gf = drive;
-    memset(drive, 0, sizeof(*drive));
+    स_रखो(drive, 0, माप(*drive));
     drive->type = DTYPE_CDEMU;
-    drive->blksize = DISK_SECTOR_SIZE;
+    drive->blksize = DISK_SECTOR_आकार;
     drive->sectors = (u64)-1;
 }
 
@@ -129,142 +129,142 @@ cdrom_prepboot(void)
  * CD booting
  ****************************************************************/
 
-int
-cdrom_boot(struct drive_s *drive)
+पूर्णांक
+cdrom_boot(काष्ठा drive_s *drive)
 {
     ASSERT32FLAT();
-    struct disk_op_s dop;
-    int cdid = getDriveId(EXTTYPE_CD, drive);
-    memset(&dop, 0, sizeof(dop));
+    काष्ठा disk_op_s dop;
+    पूर्णांक cdid = getDriveId(EXTTYPE_CD, drive);
+    स_रखो(&dop, 0, माप(dop));
     dop.drive_fl = drive;
-    if (!dop.drive_fl || cdid < 0)
-        return 1;
+    अगर (!dop.drive_fl || cdid < 0)
+        वापस 1;
 
-    int ret = scsi_is_ready(&dop);
-    if (ret)
+    पूर्णांक ret = scsi_is_ready(&dop);
+    अगर (ret)
         dprintf(5, "scsi_is_ready returned %d\n", ret);
 
     // Read the Boot Record Volume Descriptor
-    u8 buffer[CDROM_SECTOR_SIZE];
+    u8 बफर[CDROM_SECTOR_आकार];
     dop.command = CMD_READ;
     dop.lba = 0x11;
-    dop.count = 1;
-    dop.buf_fl = buffer;
+    dop.गिनती = 1;
+    dop.buf_fl = बफर;
     ret = process_op(&dop);
-    if (ret)
-        return 3;
+    अगर (ret)
+        वापस 3;
 
     // Validity checks
-    if (buffer[0])
-        return 4;
-    if (strcmp((char*)&buffer[1], "CD001\001EL TORITO SPECIFICATION") != 0)
-        return 5;
+    अगर (बफर[0])
+        वापस 4;
+    अगर (म_भेद((अक्षर*)&बफर[1], "CD001\001EL TORITO SPECIFICATION") != 0)
+        वापस 5;
 
     // ok, now we calculate the Boot catalog address
-    u32 lba = *(u32*)&buffer[0x47];
+    u32 lba = *(u32*)&बफर[0x47];
 
     // And we read the Boot Catalog
     dop.lba = lba;
-    dop.count = 1;
+    dop.गिनती = 1;
     ret = process_op(&dop);
-    if (ret)
-        return 7;
+    अगर (ret)
+        वापस 7;
 
     // Validation entry
-    if (buffer[0x00] != 0x01)
-        return 8;   // Header
-    if (buffer[0x01] != 0x00)
-        return 9;   // Platform
-    if (buffer[0x1E] != 0x55)
-        return 10;  // key 1
-    if (buffer[0x1F] != 0xAA)
-        return 10;  // key 2
+    अगर (बफर[0x00] != 0x01)
+        वापस 8;   // Header
+    अगर (बफर[0x01] != 0x00)
+        वापस 9;   // Platform
+    अगर (बफर[0x1E] != 0x55)
+        वापस 10;  // key 1
+    अगर (बफर[0x1F] != 0xAA)
+        वापस 10;  // key 2
 
     // Initial/Default Entry
-    if (buffer[0x20] != 0x88)
-        return 11; // Bootable
+    अगर (बफर[0x20] != 0x88)
+        वापस 11; // Bootable
 
     /* measure 2048 bytes (one sector) */
-    tpm_add_cdrom_catalog(MAKE_FLATPTR(GET_SEG(SS), buffer), sizeof(buffer));
+    tpm_add_cdrom_catalog(MAKE_FLATPTR(GET_SEG(SS), बफर), माप(बफर));
 
     // Fill in el-torito cdrom emulation fields.
     emulated_drive_gf = drive;
-    u8 media = buffer[0x21];
+    u8 media = बफर[0x21];
 
-    u16 boot_segment = *(u16*)&buffer[0x22];
-    if (!boot_segment)
+    u16 boot_segment = *(u16*)&बफर[0x22];
+    अगर (!boot_segment)
         boot_segment = 0x07C0;
     CDEmu.load_segment = boot_segment;
-    CDEmu.buffer_segment = 0x0000;
+    CDEmu.बफर_segment = 0x0000;
 
-    u16 nbsectors = *(u16*)&buffer[0x26];
-    CDEmu.sector_count = nbsectors;
+    u16 nbsectors = *(u16*)&बफर[0x26];
+    CDEmu.sector_गिनती = nbsectors;
 
-    lba = *(u32*)&buffer[0x28];
+    lba = *(u32*)&बफर[0x28];
     CDEmu.ilba = lba;
 
-    CDEmu.controller_index = drive->cntl_id / 2;
+    CDEmu.controller_सूचकांक = drive->cntl_id / 2;
     CDEmu.device_spec = drive->cntl_id % 2;
 
     // And we read the image in memory
     nbsectors = DIV_ROUND_UP(nbsectors, 4);
     dop.lba = lba;
     dop.buf_fl = MAKE_FLATPTR(boot_segment, 0);
-    while (nbsectors) {
-        int count = nbsectors;
-        if (count > 64*1024/CDROM_SECTOR_SIZE)
-            count = 64*1024/CDROM_SECTOR_SIZE;
-        dop.count = count;
+    जबतक (nbsectors) {
+        पूर्णांक गिनती = nbsectors;
+        अगर (गिनती > 64*1024/CDROM_SECTOR_आकार)
+            गिनती = 64*1024/CDROM_SECTOR_आकार;
+        dop.गिनती = गिनती;
         ret = process_op(&dop);
-        if (ret)
-            return 12;
-        nbsectors -= count;
-        dop.lba += count;
-        dop.buf_fl += count*CDROM_SECTOR_SIZE;
+        अगर (ret)
+            वापस 12;
+        nbsectors -= गिनती;
+        dop.lba += गिनती;
+        dop.buf_fl += गिनती*CDROM_SECTOR_आकार;
     }
 
-    if (media == 0) {
+    अगर (media == 0) {
         // No emulation requested - return success.
         CDEmu.emulated_drive = EXTSTART_CD + cdid;
-        return 0;
+        वापस 0;
     }
 
     // Emulation of a floppy/harddisk requested
-    if (! CONFIG_CDROM_EMU || !cdemu_drive_gf)
-        return 13;
+    अगर (! CONFIG_CDROM_EMU || !cdemu_drive_gf)
+        वापस 13;
 
     // Set emulated drive id and increase bios installed hardware
     // number of devices
-    if (media < 4) {
+    अगर (media < 4) {
         // Floppy emulation
         CDEmu.emulated_drive = 0x00;
         // XXX - get and set actual floppy count.
         set_equipment_flags(0x41, 0x41);
 
-        switch (media) {
-        case 0x01:  // 1.2M floppy
+        चयन (media) {
+        हाल 0x01:  // 1.2M floppy
             CDEmu.chs.sptcyl = 15;
             CDEmu.chs.cyllow = 79;
             CDEmu.chs.heads = 1;
-            break;
-        case 0x02:  // 1.44M floppy
+            अवरोध;
+        हाल 0x02:  // 1.44M floppy
             CDEmu.chs.sptcyl = 18;
             CDEmu.chs.cyllow = 79;
             CDEmu.chs.heads = 1;
-            break;
-        case 0x03:  // 2.88M floppy
+            अवरोध;
+        हाल 0x03:  // 2.88M floppy
             CDEmu.chs.sptcyl = 36;
             CDEmu.chs.cyllow = 79;
             CDEmu.chs.heads = 1;
-            break;
+            अवरोध;
         }
-    } else {
+    } अन्यथा {
         // Harddrive emulation
         CDEmu.emulated_drive = 0x80;
         SET_BDA(hdcount, GET_BDA(hdcount) + 1);
 
         // Peak at partition table to get chs.
-        struct mbr_s *mbr = MAKE_FLATPTR(boot_segment, 0);
+        काष्ठा mbr_s *mbr = MAKE_FLATPTR(boot_segment, 0);
         CDEmu.chs = mbr->partitions[0].last;
     }
 
@@ -272,51 +272,51 @@ cdrom_boot(struct drive_s *drive)
     CDEmu.media = media;
     dprintf(6, "cdemu media=%d\n", media);
 
-    return 0;
+    वापस 0;
 }
 
 // check if media is present and the drive is bootable.
 // in case it is return the volume label.
-char*
-cdrom_media_info(struct drive_s *drive)
+अक्षर*
+cdrom_media_info(काष्ठा drive_s *drive)
 {
     ASSERT32FLAT();
 
-    struct disk_op_s dop;
-    memset(&dop, 0, sizeof(dop));
+    काष्ठा disk_op_s dop;
+    स_रखो(&dop, 0, माप(dop));
     dop.drive_fl = drive;
 
-    int ret = scsi_is_ready(&dop);
-    if (ret)
-        return NULL;
+    पूर्णांक ret = scsi_is_ready(&dop);
+    अगर (ret)
+        वापस शून्य;
 
     // Read the Boot Record Volume Descriptor
-    u8 buffer[CDROM_SECTOR_SIZE];
+    u8 बफर[CDROM_SECTOR_आकार];
     dop.command = CMD_READ;
     dop.lba = 0x11;
-    dop.count = 1;
-    dop.buf_fl = buffer;
+    dop.गिनती = 1;
+    dop.buf_fl = बफर;
     ret = process_op(&dop);
-    if (ret)
-        return NULL;
+    अगर (ret)
+        वापस शून्य;
 
     // Is it bootable?
-    if (buffer[0])
-        return NULL;
-    if (strcmp((char*)&buffer[1], "CD001\001EL TORITO SPECIFICATION") != 0)
-        return NULL;
+    अगर (बफर[0])
+        वापस शून्य;
+    अगर (म_भेद((अक्षर*)&बफर[1], "CD001\001EL TORITO SPECIFICATION") != 0)
+        वापस शून्य;
 
     // Read the Primary Volume Descriptor
     dop.command = CMD_READ;
     dop.lba = 0x10;
-    dop.count = 1;
-    dop.buf_fl = buffer;
+    dop.गिनती = 1;
+    dop.buf_fl = बफर;
     ret = process_op(&dop);
-    if (ret)
-        return NULL;
+    अगर (ret)
+        वापस शून्य;
 
     // Read volume id, trim trailing spaces
-    char *volume = znprintf(30, "%s", buffer + 40);
+    अक्षर *volume = znprintf(30, "%s", बफर + 40);
     nullTrailingSpace(volume);
-    return volume;
+    वापस volume;
 }

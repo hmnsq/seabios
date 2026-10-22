@@ -1,11 +1,11 @@
-#ifndef __SHA_H
-#define __SHA_H
+#अगर_अघोषित __SHA_H
+#घोषणा __SHA_H
 
-#include "types.h" // u32
+#समावेश "types.h" // u32
 
-void sha1(const u8 *data, u32 length, u8 *hash);
-void sha256(const u8 *data, u32 length, u8 *hash);
-void sha384(const u8 *data, u32 length, u8 *hash);
-void sha512(const u8 *data, u32 length, u8 *hash);
+व्योम sha1(स्थिर u8 *तथ्य, u32 लंबाई, u8 *hash);
+व्योम sha256(स्थिर u8 *तथ्य, u32 लंबाई, u8 *hash);
+व्योम sha384(स्थिर u8 *तथ्य, u32 लंबाई, u8 *hash);
+व्योम sha512(स्थिर u8 *तथ्य, u32 लंबाई, u8 *hash);
 
-#endif // sha.h
+#पूर्ण_अगर // sha.h

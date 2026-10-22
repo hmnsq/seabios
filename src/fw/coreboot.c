@@ -4,26 +4,26 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "block.h" // MAXDESCSIZE
-#include "byteorder.h" // be32_to_cpu
-#include "config.h" // CONFIG_*
-#include "e820map.h" // e820_add
-#include "hw/pcidevice.h" // pci_probe_devices
-#include "lzmadecode.h" // LzmaDecode
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "paravirt.h" // PlatformRunningOn
-#include "romfile.h" // romfile_findprefix
-#include "stacks.h" // yield
-#include "string.h" // memset
-#include "util.h" // coreboot_preinit
+#समावेश "block.h" // MAXDESCSIZE
+#समावेश "byteorder.h" // be32_to_cpu
+#समावेश "config.h" // CONFIG_*
+#समावेश "e820map.h" // e820_add
+#समावेश "hw/pcidevice.h" // pci_probe_devices
+#समावेश "lzmadecode.h" // LzmaDecode
+#समावेश "malloc.h" // free
+#समावेश "output.h" // dprintf
+#समावेश "paravirt.h" // PlatformRunningOn
+#समावेश "romfile.h" // romfile_findprefix
+#समावेश "stacks.h" // yield
+#समावेश "string.h" // memset
+#समावेश "util.h" // coreboot_preinit
 
 
 /****************************************************************
  * Memory map
  ****************************************************************/
 
-struct cb_header {
+काष्ठा cb_header {
     u32 signature;
     u32 header_bytes;
     u32 header_checksum;
@@ -32,202 +32,202 @@ struct cb_header {
     u32 table_entries;
 };
 
-#define CB_SIGNATURE 0x4f49424C // "LBIO"
+#घोषणा CB_SIGNATURE 0x4f49424C // "LBIO"
 
-struct cb_memory_range {
+काष्ठा cb_memory_range {
     u64 start;
-    u64 size;
+    u64 आकार;
     u32 type;
 };
 
-#define CB_MEM_TABLE    16
+#घोषणा CB_MEM_TABLE    16
 
-struct cb_memory {
+काष्ठा cb_memory {
     u32 tag;
-    u32 size;
-    struct cb_memory_range map[0];
+    u32 आकार;
+    काष्ठा cb_memory_range map[0];
 };
 
-#define CB_TAG_MEMORY 0x01
+#घोषणा CB_TAG_MEMORY 0x01
 
-#define MEM_RANGE_COUNT(_rec) \
-        (((_rec)->size - sizeof(*(_rec))) / sizeof((_rec)->map[0]))
+#घोषणा MEM_RANGE_गिनती(_rec) \
+        (((_rec)->आकार - माप(*(_rec))) / माप((_rec)->map[0]))
 
-struct cb_mainboard {
+काष्ठा cb_mainboard {
     u32 tag;
-    u32 size;
+    u32 आकार;
     u8  vendor_idx;
     u8  part_idx;
-    char  strings[0];
+    अक्षर  strings[0];
 };
 
-#define CB_TAG_MAINBOARD 0x0003
+#घोषणा CB_TAG_MAINBOARD 0x0003
 
-struct cb_forward {
+काष्ठा cb_forward {
     u32 tag;
-    u32 size;
+    u32 आकार;
     u64 forward;
 };
 
-#define CB_TAG_FORWARD 0x11
+#घोषणा CB_TAG_FORWARD 0x11
 
-struct cb_cbmem_ref {
+काष्ठा cb_cbmem_ref {
     u32 tag;
-    u32 size;
+    u32 आकार;
     u64 cbmem_addr;
 };
 
-#define CB_TAG_CBMEM_CONSOLE 0x17
+#घोषणा CB_TAG_CBMEM_CONSOLE 0x17
 
-struct cbmem_console {
-    u32 size;
+काष्ठा cbmem_console {
+    u32 आकार;
     u32 cursor;
     u8  body[0];
 } PACKED;
-#define CBMC_CURSOR_MASK ((1 << 28) - 1)
-#define CBMC_OVERFLOW (1 << 31)
-static struct cbmem_console *cbcon = NULL;
+#घोषणा CBMC_CURSOR_MASK ((1 << 28) - 1)
+#घोषणा CBMC_OVERFLOW (1 << 31)
+अटल काष्ठा cbmem_console *cbcon = शून्य;
 
-static u16
-ipchksum(char *buf, int count)
+अटल u16
+ipchksum(अक्षर *buf, पूर्णांक गिनती)
 {
     u16 *p = (u16*)buf;
-    u32 sum = 0;
-    while (count > 1) {
-        sum += GET_FARVAR(0, *p);
+    u32 योग = 0;
+    जबतक (गिनती > 1) {
+        योग += GET_FARVAR(0, *p);
         p++;
-        count -= 2;
+        गिनती -= 2;
     }
-    if (count)
-        sum += GET_FARVAR(0, *(u8*)p);
-    sum = (sum >> 16) + (sum & 0xffff);
-    sum += (sum >> 16);
-    return ~sum;
+    अगर (गिनती)
+        योग += GET_FARVAR(0, *(u8*)p);
+    योग = (योग >> 16) + (योग & 0xffff);
+    योग += (योग >> 16);
+    वापस ~योग;
 }
 
 // Try to locate the coreboot header in a given address range.
-static struct cb_header *
-find_cb_header(u32 addr, int len)
+अटल काष्ठा cb_header *
+find_cb_header(u32 addr, पूर्णांक len)
 {
     u32 end = addr + len;
-    for (; addr < end; addr += 16) {
-        struct cb_header *cbh = (void*)addr;
-        if (GET_FARVAR(0, cbh->signature) != CB_SIGNATURE)
-            continue;
+    क्रम (; addr < end; addr += 16) {
+        काष्ठा cb_header *cbh = (व्योम*)addr;
+        अगर (GET_FARVAR(0, cbh->signature) != CB_SIGNATURE)
+            जारी;
         u32 tsize = GET_FARVAR(0, cbh->table_bytes);
-        if (! tsize)
-            continue;
-        if (ipchksum((void*)addr, sizeof(*cbh)) != 0)
-            continue;
-        if (ipchksum((void*)addr + sizeof(*cbh), tsize)
+        अगर (! tsize)
+            जारी;
+        अगर (ipchksum((व्योम*)addr, माप(*cbh)) != 0)
+            जारी;
+        अगर (ipchksum((व्योम*)addr + माप(*cbh), tsize)
             != GET_FARVAR(0, cbh->table_checksum))
-            continue;
-        return cbh;
+            जारी;
+        वापस cbh;
     }
-    return NULL;
+    वापस शून्य;
 }
 
 // Try to find the coreboot memory table in the given coreboot table.
-void *
-find_cb_subtable(struct cb_header *cbh, u32 tag)
+व्योम *
+find_cb_subtable(काष्ठा cb_header *cbh, u32 tag)
 {
-    char *tbl = (char *)cbh + sizeof(*cbh);
-    u32 count = GET_FARVAR(0, cbh->table_entries);
-    int i;
-    for (i=0; i<count; i++) {
-        struct cb_memory *cbm = (void*)tbl;
-        tbl += GET_FARVAR(0, cbm->size);
-        if (GET_FARVAR(0, cbm->tag) == tag)
-            return cbm;
+    अक्षर *tbl = (अक्षर *)cbh + माप(*cbh);
+    u32 गिनती = GET_FARVAR(0, cbh->table_entries);
+    पूर्णांक i;
+    क्रम (i=0; i<गिनती; i++) {
+        काष्ठा cb_memory *cbm = (व्योम*)tbl;
+        tbl += GET_FARVAR(0, cbm->आकार);
+        अगर (GET_FARVAR(0, cbm->tag) == tag)
+            वापस cbm;
     }
-    return NULL;
+    वापस शून्य;
 }
 
-struct cb_header *
-find_cb_table(void)
+काष्ठा cb_header *
+find_cb_table(व्योम)
 {
-    struct cb_header *cbh = find_cb_header(0, 0x1000);
-    if (!cbh)
-        return NULL;
-    struct cb_forward *cbf = find_cb_subtable(cbh, CB_TAG_FORWARD);
-    if (cbf) {
+    काष्ठा cb_header *cbh = find_cb_header(0, 0x1000);
+    अगर (!cbh)
+        वापस शून्य;
+    काष्ठा cb_forward *cbf = find_cb_subtable(cbh, CB_TAG_FORWARD);
+    अगर (cbf) {
         dprintf(3, "Found coreboot table forwarder.\n");
         cbh = find_cb_header(GET_FARVAR(0, cbf->forward), 0x100);
-        if (!cbh)
-            return NULL;
+        अगर (!cbh)
+            वापस शून्य;
     }
-    return cbh;
+    वापस cbh;
 }
 
-static struct cb_memory *CBMemTable;
-const char *CBvendor = "", *CBpart = "";
+अटल काष्ठा cb_memory *CBMemTable;
+स्थिर अक्षर *CBvendor = "", *CBpart = "";
 
 // Populate max ram and e820 map info by scanning for a coreboot table.
-void
-coreboot_preinit(void)
+व्योम
+coreboot_preinit(व्योम)
 {
-    if (!CONFIG_COREBOOT)
-        return;
+    अगर (!CONFIG_COREBOOT)
+        वापस;
 
     dprintf(3, "Attempting to find coreboot table\n");
 
     // Find coreboot table.
-    struct cb_header *cbh = find_cb_table();
-    if (!cbh)
-        goto fail;
+    काष्ठा cb_header *cbh = find_cb_table();
+    अगर (!cbh)
+        जाओ fail;
     dprintf(3, "Now attempting to find coreboot memory map\n");
-    struct cb_memory *cbm = CBMemTable = find_cb_subtable(cbh, CB_TAG_MEMORY);
-    if (!cbm)
-        goto fail;
+    काष्ठा cb_memory *cbm = CBMemTable = find_cb_subtable(cbh, CB_TAG_MEMORY);
+    अगर (!cbm)
+        जाओ fail;
 
-    int i, count = MEM_RANGE_COUNT(cbm);
-    for (i=0; i<count; i++) {
-        struct cb_memory_range *m = &cbm->map[i];
+    पूर्णांक i, गिनती = MEM_RANGE_गिनती(cbm);
+    क्रम (i=0; i<गिनती; i++) {
+        काष्ठा cb_memory_range *m = &cbm->map[i];
         u32 type = m->type;
-        if (type == CB_MEM_TABLE)
+        अगर (type == CB_MEM_TABLE)
             type = E820_RESERVED;
-        e820_add(m->start, m->size, type);
+        e820_add(m->start, m->आकार, type);
     }
 
     // Ughh - coreboot likes to set a map at 0x0000-0x1000, but this
     // confuses grub.  So, override it.
     e820_add(0, 16*1024, E820_RAM);
 
-    struct cb_cbmem_ref *cbref = find_cb_subtable(cbh, CB_TAG_CBMEM_CONSOLE);
-    if (cbref) {
-        cbcon = (void*)(u32)cbref->cbmem_addr;
+    काष्ठा cb_cbmem_ref *cbref = find_cb_subtable(cbh, CB_TAG_CBMEM_CONSOLE);
+    अगर (cbref) {
+        cbcon = (व्योम*)(u32)cbref->cbmem_addr;
         debug_banner();
         dprintf(1, "Found coreboot cbmem console @ %llx\n", cbref->cbmem_addr);
     }
 
-    struct cb_mainboard *cbmb = find_cb_subtable(cbh, CB_TAG_MAINBOARD);
-    if (cbmb) {
+    काष्ठा cb_mainboard *cbmb = find_cb_subtable(cbh, CB_TAG_MAINBOARD);
+    अगर (cbmb) {
         CBvendor = &cbmb->strings[cbmb->vendor_idx];
         CBpart = &cbmb->strings[cbmb->part_idx];
         dprintf(1, "Found mainboard %s %s\n", CBvendor, CBpart);
     }
 
-    return;
+    वापस;
 
 fail:
     // No table found..  Use 16Megs as a dummy value.
     dprintf(1, "Unable to find coreboot table!\n");
     e820_add(0, 16*1024*1024, E820_RAM);
-    return;
+    वापस;
 }
 
-void coreboot_debug_putc(char c)
+व्योम coreboot_debug_putc(अक्षर c)
 {
-    if (!CONFIG_DEBUG_COREBOOT)
-        return;
-    if (!cbcon)
-        return;
+    अगर (!CONFIG_DEBUG_COREBOOT)
+        वापस;
+    अगर (!cbcon)
+        वापस;
     u32 cursor = cbcon->cursor & CBMC_CURSOR_MASK;
     u32 flags = cbcon->cursor & ~CBMC_CURSOR_MASK;
-    if (cursor >= cbcon->size)
-        return; // Old coreboot version with legacy overflow mechanism.
+    अगर (cursor >= cbcon->आकार)
+        वापस; // Old coreboot version with legacy overflow mechanism.
     cbcon->body[cursor++] = c;
-    if (cursor >= cbcon->size) {
+    अगर (cursor >= cbcon->आकार) {
         cursor = 0;
         flags |= CBMC_OVERFLOW;
     }
@@ -240,34 +240,34 @@ void coreboot_debug_putc(char c)
 
 // Attempt to find (and relocate) any standard bios tables found in a
 // given address range.
-static void
-scan_tables(u32 start, u32 size)
+अटल व्योम
+scan_tables(u32 start, u32 आकार)
 {
-    void *p = (void*)ALIGN(start, 16);
-    void *end = (void*)start + size;
-    for (; p<end; p += 16)
+    व्योम *p = (व्योम*)ALIGN(start, 16);
+    व्योम *end = (व्योम*)start + आकार;
+    क्रम (; p<end; p += 16)
         copy_table(p);
 }
 
-void
-coreboot_platform_setup(void)
+व्योम
+coreboot_platform_setup(व्योम)
 {
-    if (!CONFIG_COREBOOT)
-        return;
+    अगर (!CONFIG_COREBOOT)
+        वापस;
     pci_probe_devices();
 
-    struct cb_memory *cbm = CBMemTable;
-    if (!cbm)
-        return;
+    काष्ठा cb_memory *cbm = CBMemTable;
+    अगर (!cbm)
+        वापस;
 
     dprintf(3, "Relocating coreboot bios tables\n");
 
     // Scan CB_MEM_TABLE areas for bios tables.
-    int i, count = MEM_RANGE_COUNT(cbm);
-    for (i=0; i<count; i++) {
-        struct cb_memory_range *m = &cbm->map[i];
-        if (m->type == CB_MEM_TABLE)
-            scan_tables(m->start, m->size);
+    पूर्णांक i, गिनती = MEM_RANGE_गिनती(cbm);
+    क्रम (i=0; i<गिनती; i++) {
+        काष्ठा cb_memory_range *m = &cbm->map[i];
+        अगर (m->type == CB_MEM_TABLE)
+            scan_tables(m->start, m->आकार);
     }
 
     find_acpi_features();
@@ -279,37 +279,37 @@ coreboot_platform_setup(void)
  ****************************************************************/
 
 // Uncompress data in flash to an area of memory.
-static int
-ulzma(u8 *dst, u32 maxlen, const u8 *src, u32 srclen)
+अटल पूर्णांक
+ulzma(u8 *dst, u32 maxlen, स्थिर u8 *src, u32 srclen)
 {
     dprintf(3, "Uncompressing data %d@%p to %d@%p\n", srclen, src, maxlen, dst);
     CLzmaDecoderState state;
-    int ret = LzmaDecodeProperties(&state.Properties, src, LZMA_PROPERTIES_SIZE);
-    if (ret != LZMA_RESULT_OK) {
+    पूर्णांक ret = LzmaDecodeProperties(&state.Properties, src, LZMA_PROPERTIES_आकार);
+    अगर (ret != LZMA_परिणाम_OK) {
         dprintf(1, "LzmaDecodeProperties error - %d\n", ret);
-        return -1;
+        वापस -1;
     }
     u8 scratch[15980];
-    int need = (LzmaGetNumProbs(&state.Properties) * sizeof(CProb));
-    if (need > sizeof(scratch)) {
-        dprintf(1, "LzmaDecode need %d have %d\n", need, (unsigned int)sizeof(scratch));
-        return -1;
+    पूर्णांक need = (Lzma_Get_अंक_Probs(&state.Properties) * माप(CProb));
+    अगर (need > माप(scratch)) {
+        dprintf(1, "LzmaDecode need %d have %d\n", need, (अचिन्हित पूर्णांक)माप(scratch));
+        वापस -1;
     }
     state.Probs = (CProb *)scratch;
 
-    u32 dstlen = *(u32*)(src + LZMA_PROPERTIES_SIZE);
-    if (dstlen > maxlen) {
+    u32 dstlen = *(u32*)(src + LZMA_PROPERTIES_आकार);
+    अगर (dstlen > maxlen) {
         dprintf(1, "LzmaDecode too large (max %d need %d)\n", maxlen, dstlen);
-        return -1;
+        वापस -1;
     }
     u32 inProcessed, outProcessed;
-    ret = LzmaDecode(&state, src + LZMA_PROPERTIES_SIZE + 8, srclen
+    ret = LzmaDecode(&state, src + LZMA_PROPERTIES_आकार + 8, srclen
                      , &inProcessed, dst, dstlen, &outProcessed);
-    if (ret) {
+    अगर (ret) {
         dprintf(1, "LzmaDecode returned %d\n", ret);
-        return -1;
+        वापस -1;
     }
-    return dstlen;
+    वापस dstlen;
 }
 
 
@@ -317,10 +317,10 @@ ulzma(u8 *dst, u32 maxlen, const u8 *src, u32 srclen)
  * Coreboot flash format
  ****************************************************************/
 
-#define CBFS_HEADER_MAGIC 0x4F524243
-#define CBFS_VERSION1 0x31313131
+#घोषणा CBFS_HEADER_MAGIC 0x4F524243
+#घोषणा CBFS_VERSION1 0x31313131
 
-struct cbfs_header {
+काष्ठा cbfs_header {
     u32 magic;
     u32 version;
     u32 romsize;
@@ -330,157 +330,157 @@ struct cbfs_header {
     u32 pad[2];
 } PACKED;
 
-#define CBFS_FILE_MAGIC 0x455649484352414cLL // LARCHIVE
+#घोषणा CBFS_FILE_MAGIC 0x455649484352414cLL // LARCHIVE
 
-struct cbfs_file {
+काष्ठा cbfs_file {
     u64 magic;
     u32 len;
     u32 type;
     u32 checksum;
     u32 offset;
-    char filename[0];
+    अक्षर filename[0];
 } PACKED;
 
-struct cbfs_romfile_s {
-    struct romfile_s file;
-    struct cbfs_file *fhdr;
-    void *data;
+काष्ठा cbfs_romfile_s {
+    काष्ठा romfile_s file;
+    काष्ठा cbfs_file *fhdr;
+    व्योम *तथ्य;
     u32 rawsize, flags;
 };
 
 // Copy a file to memory (uncompressing if necessary)
-static int
-cbfs_copyfile(struct romfile_s *file, void *dst, u32 maxlen)
+अटल पूर्णांक
+cbfs_copyfile(काष्ठा romfile_s *file, व्योम *dst, u32 maxlen)
 {
-    if (!CONFIG_COREBOOT_FLASH)
-        return -1;
+    अगर (!CONFIG_COREBOOT_FLASH)
+        वापस -1;
 
-    struct cbfs_romfile_s *cfile;
-    cfile = container_of(file, struct cbfs_romfile_s, file);
-    u32 size = cfile->rawsize;
-    void *src = cfile->data;
-    if (cfile->flags) {
+    काष्ठा cbfs_romfile_s *cfile;
+    cfile = container_of(file, काष्ठा cbfs_romfile_s, file);
+    u32 आकार = cfile->rawsize;
+    व्योम *src = cfile->तथ्य;
+    अगर (cfile->flags) {
         // Compressed - copy to temp ram and uncompress it.
-        void *temp = malloc_tmphigh(size);
-        if (!temp) {
+        व्योम *अस्थायी = malloc_tmphigh(आकार);
+        अगर (!अस्थायी) {
             warn_noalloc();
-            return -1;
+            वापस -1;
         }
-        iomemcpy(temp, src, size);
-        int ret = ulzma(dst, maxlen, temp, size);
+        iomemcpy(अस्थायी, src, आकार);
+        पूर्णांक ret = ulzma(dst, maxlen, अस्थायी, आकार);
         yield();
-        free(temp);
-        return ret;
+        मुक्त(अस्थायी);
+        वापस ret;
     }
 
     // Not compressed.
-    dprintf(3, "Copying data %d@%p to %d@%p\n", size, src, maxlen, dst);
-    if (size > maxlen) {
+    dprintf(3, "Copying data %d@%p to %d@%p\n", आकार, src, maxlen, dst);
+    अगर (आकार > maxlen) {
         warn_noalloc();
-        return -1;
+        वापस -1;
     }
-    iomemcpy(dst, src, size);
-    return size;
+    iomemcpy(dst, src, आकार);
+    वापस आकार;
 }
 
 // Process CBFS links file.  The links file is a newline separated
 // file where each line has a "link name" and a "destination name"
 // separated by a space character.
-static void
-process_links_file(void)
+अटल व्योम
+process_links_file(व्योम)
 {
-    char *links = romfile_loadfile("links", NULL), *next = links;
-    while (next) {
+    अक्षर *links = romfile_loadfile("links", शून्य), *अग्र = links;
+    जबतक (अग्र) {
         // Parse out linkname and destname
-        char *linkname = next;
-        next = strchr(linkname, '\n');
-        if (next)
-            *next++ = '\0';
-        char *comment = strchr(linkname, '#');
-        if (comment)
+        अक्षर *linkname = अग्र;
+        अग्र = म_अक्षर(linkname, '\n');
+        अगर (अग्र)
+            *अग्र++ = '\0';
+        अक्षर *comment = म_अक्षर(linkname, '#');
+        अगर (comment)
             *comment = '\0';
         linkname = nullTrailingSpace(linkname);
-        char *destname = strchr(linkname, ' ');
-        if (!destname)
-            continue;
+        अक्षर *destname = म_अक्षर(linkname, ' ');
+        अगर (!destname)
+            जारी;
         *destname++ = '\0';
         destname = nullTrailingSpace(destname);
         // Lookup destname and create new romfile entry for linkname
-        struct romfile_s *ufile = romfile_find(destname);
-        if (!ufile)
-            continue;
-        struct cbfs_romfile_s *cufile
-            = container_of(ufile, struct cbfs_romfile_s, file);
-        struct cbfs_romfile_s *cfile = malloc_tmp(sizeof(*cfile));
-        if (!cfile) {
+        काष्ठा romfile_s *ufile = romfile_find(destname);
+        अगर (!ufile)
+            जारी;
+        काष्ठा cbfs_romfile_s *cufile
+            = container_of(ufile, काष्ठा cbfs_romfile_s, file);
+        काष्ठा cbfs_romfile_s *cfile = malloc_tmp(माप(*cfile));
+        अगर (!cfile) {
             warn_noalloc();
-            break;
+            अवरोध;
         }
-        memcpy(cfile, cufile, sizeof(*cfile));
-        strtcpy(cfile->file.name, linkname, sizeof(cfile->file.name));
+        स_नकल(cfile, cufile, माप(*cfile));
+        strtcpy(cfile->file.name, linkname, माप(cfile->file.name));
         romfile_add(&cfile->file);
     }
-    free(links);
+    मुक्त(links);
 }
 
-void
-coreboot_cbfs_init(void)
+व्योम
+coreboot_cbfs_init(व्योम)
 {
-    if (!CONFIG_COREBOOT_FLASH)
-        return;
+    अगर (!CONFIG_COREBOOT_FLASH)
+        वापस;
 
-    struct cbfs_header *hdr = *(void **)(CONFIG_CBFS_LOCATION - 4);
-    if ((u32)hdr & 0x03) {
+    काष्ठा cbfs_header *hdr = *(व्योम **)(CONFIG_CBFS_LOCATION - 4);
+    अगर ((u32)hdr & 0x03) {
         dprintf(1, "Invalid CBFS pointer %p\n", hdr);
-        return;
+        वापस;
     }
-    if (CONFIG_CBFS_LOCATION && (u32)hdr > CONFIG_CBFS_LOCATION)
+    अगर (CONFIG_CBFS_LOCATION && (u32)hdr > CONFIG_CBFS_LOCATION)
         // Looks like the pointer is relative to CONFIG_CBFS_LOCATION
-        hdr = (void*)hdr + CONFIG_CBFS_LOCATION;
-    if (hdr->magic != cpu_to_be32(CBFS_HEADER_MAGIC)) {
+        hdr = (व्योम*)hdr + CONFIG_CBFS_LOCATION;
+    अगर (hdr->magic != cpu_to_be32(CBFS_HEADER_MAGIC)) {
         dprintf(1, "Unable to find CBFS (ptr=%p; got %x not %x)\n"
                 , hdr, hdr->magic, cpu_to_be32(CBFS_HEADER_MAGIC));
-        return;
+        वापस;
     }
     dprintf(1, "Found CBFS header at %p\n", hdr);
 
     u32 romsize = be32_to_cpu(hdr->romsize);
     u32 romstart = CONFIG_CBFS_LOCATION - romsize;
-    struct cbfs_file *fhdr = (void*)romstart + be32_to_cpu(hdr->offset);
-    for (;;) {
-        if ((u32)fhdr - romstart > romsize)
-            break;
+    काष्ठा cbfs_file *fhdr = (व्योम*)romstart + be32_to_cpu(hdr->offset);
+    क्रम (;;) {
+        अगर ((u32)fhdr - romstart > romsize)
+            अवरोध;
         u64 magic = fhdr->magic;
-        if (magic != CBFS_FILE_MAGIC)
-            break;
-        struct cbfs_romfile_s *cfile = malloc_tmp(sizeof(*cfile));
-        if (!cfile) {
+        अगर (magic != CBFS_FILE_MAGIC)
+            अवरोध;
+        काष्ठा cbfs_romfile_s *cfile = malloc_tmp(माप(*cfile));
+        अगर (!cfile) {
             warn_noalloc();
-            break;
+            अवरोध;
         }
-        memset(cfile, 0, sizeof(*cfile));
-        strtcpy(cfile->file.name, fhdr->filename, sizeof(cfile->file.name));
-        cfile->file.size = cfile->rawsize = be32_to_cpu(fhdr->len);
+        स_रखो(cfile, 0, माप(*cfile));
+        strtcpy(cfile->file.name, fhdr->filename, माप(cfile->file.name));
+        cfile->file.आकार = cfile->rawsize = be32_to_cpu(fhdr->len);
         cfile->fhdr = fhdr;
         cfile->file.copy = cbfs_copyfile;
-        cfile->data = (void*)fhdr + be32_to_cpu(fhdr->offset);
-        int len = strlen(cfile->file.name);
-        if (len > 5 && strcmp(&cfile->file.name[len-5], ".lzma") == 0) {
+        cfile->तथ्य = (व्योम*)fhdr + be32_to_cpu(fhdr->offset);
+        पूर्णांक len = म_माप(cfile->file.name);
+        अगर (len > 5 && म_भेद(&cfile->file.name[len-5], ".lzma") == 0) {
             // Using compression.
             cfile->flags = 1;
             cfile->file.name[len-5] = '\0';
-            cfile->file.size = *(u32*)(cfile->data + LZMA_PROPERTIES_SIZE);
+            cfile->file.आकार = *(u32*)(cfile->तथ्य + LZMA_PROPERTIES_आकार);
         }
         romfile_add(&cfile->file);
 
-        fhdr = (void*)ALIGN((u32)cfile->data + cfile->rawsize
+        fhdr = (व्योम*)ALIGN((u32)cfile->तथ्य + cfile->rawsize
                             , be32_to_cpu(hdr->align));
     }
 
     process_links_file();
 }
 
-struct cbfs_payload_segment {
+काष्ठा cbfs_payload_segment {
     u32 type;
     u32 compression;
     u32 offset;
@@ -489,81 +489,81 @@ struct cbfs_payload_segment {
     u32 mem_len;
 } PACKED;
 
-#define PAYLOAD_SEGMENT_BSS    0x20535342
-#define PAYLOAD_SEGMENT_ENTRY  0x52544E45
+#घोषणा PAYLOAD_SEGMENT_BSS    0x20535342
+#घोषणा PAYLOAD_SEGMENT_ENTRY  0x52544E45
 
-#define CBFS_COMPRESS_NONE  0
-#define CBFS_COMPRESS_LZMA  1
+#घोषणा CBFS_COMPRESS_NONE  0
+#घोषणा CBFS_COMPRESS_LZMA  1
 
-struct cbfs_payload {
-    struct cbfs_payload_segment segments[1];
+काष्ठा cbfs_payload {
+    काष्ठा cbfs_payload_segment segments[1];
 };
 
-void
-cbfs_run_payload(struct cbfs_file *fhdr)
+व्योम
+cbfs_run_payload(काष्ठा cbfs_file *fhdr)
 {
-    if (!CONFIG_COREBOOT_FLASH || !fhdr)
-        return;
+    अगर (!CONFIG_COREBOOT_FLASH || !fhdr)
+        वापस;
     dprintf(1, "Run %s\n", fhdr->filename);
-    struct cbfs_payload *pay = (void*)fhdr + be32_to_cpu(fhdr->offset);
-    struct cbfs_payload_segment *seg = pay->segments;
-    for (;;) {
-        void *src = (void*)pay + be32_to_cpu(seg->offset);
-        void *dest = (void*)(u32)be64_to_cpu(seg->load_addr);
+    काष्ठा cbfs_payload *pay = (व्योम*)fhdr + be32_to_cpu(fhdr->offset);
+    काष्ठा cbfs_payload_segment *seg = pay->segments;
+    क्रम (;;) {
+        व्योम *src = (व्योम*)pay + be32_to_cpu(seg->offset);
+        व्योम *dest = (व्योम*)(u32)be64_to_cpu(seg->load_addr);
         u32 src_len = be32_to_cpu(seg->len);
         u32 dest_len = be32_to_cpu(seg->mem_len);
-        switch (seg->type) {
-        case PAYLOAD_SEGMENT_BSS:
+        चयन (seg->type) {
+        हाल PAYLOAD_SEGMENT_BSS:
             dprintf(3, "BSS segment %d@%p\n", dest_len, dest);
-            memset(dest, 0, dest_len);
-            break;
-        case PAYLOAD_SEGMENT_ENTRY: {
+            स_रखो(dest, 0, dest_len);
+            अवरोध;
+        हाल PAYLOAD_SEGMENT_ENTRY: {
             dprintf(1, "Calling addr %p\n", dest);
-            void (*func)(void) = dest;
+            व्योम (*func)(व्योम) = dest;
             func();
-            return;
+            वापस;
         }
-        default:
+        शेष:
             dprintf(3, "Segment %x %d@%p -> %d@%p\n"
                     , seg->type, src_len, src, dest_len, dest);
-            if (seg->compression == cpu_to_be32(CBFS_COMPRESS_NONE)) {
-                if (src_len > dest_len)
+            अगर (seg->compression == cpu_to_be32(CBFS_COMPRESS_NONE)) {
+                अगर (src_len > dest_len)
                     src_len = dest_len;
-                memcpy(dest, src, src_len);
-            } else if (CONFIG_LZMA
+                स_नकल(dest, src, src_len);
+            } अन्यथा अगर (CONFIG_LZMA
                        && seg->compression == cpu_to_be32(CBFS_COMPRESS_LZMA)) {
-                int ret = ulzma(dest, dest_len, src, src_len);
-                if (ret < 0)
-                    return;
+                पूर्णांक ret = ulzma(dest, dest_len, src, src_len);
+                अगर (ret < 0)
+                    वापस;
                 src_len = ret;
-            } else {
+            } अन्यथा {
                 dprintf(1, "No support for compression type %x\n"
                         , seg->compression);
-                return;
+                वापस;
             }
-            if (dest_len > src_len)
-                memset(dest + src_len, 0, dest_len - src_len);
-            break;
+            अगर (dest_len > src_len)
+                स_रखो(dest + src_len, 0, dest_len - src_len);
+            अवरोध;
         }
         seg++;
     }
 }
 
 // Register payloads in "img/" directory with boot system.
-void
-cbfs_payload_setup(void)
+व्योम
+cbfs_payload_setup(व्योम)
 {
-    if (!CONFIG_COREBOOT_FLASH)
-        return;
-    struct romfile_s *file = NULL;
-    for (;;) {
+    अगर (!CONFIG_COREBOOT_FLASH)
+        वापस;
+    काष्ठा romfile_s *file = शून्य;
+    क्रम (;;) {
         file = romfile_findprefix("img/", file);
-        if (!file)
-            break;
-        struct cbfs_romfile_s *cfile;
-        cfile = container_of(file, struct cbfs_romfile_s, file);
-        const char *filename = file->name;
-        char *desc = znprintf(MAXDESCSIZE, "Payload [%s]", &filename[4]);
+        अगर (!file)
+            अवरोध;
+        काष्ठा cbfs_romfile_s *cfile;
+        cfile = container_of(file, काष्ठा cbfs_romfile_s, file);
+        स्थिर अक्षर *filename = file->name;
+        अक्षर *desc = znprintf(MAXDESCSIZE, "Payload [%s]", &filename[4]);
         boot_add_cbfs(cfile->fhdr, desc, bootprio_find_named_rom(filename, 0));
     }
 }

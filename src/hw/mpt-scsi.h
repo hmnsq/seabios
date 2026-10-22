@@ -1,8 +1,8 @@
-#ifndef __MPT_SCSI_H
-#define __MPT_SCSI_H
+#अगर_अघोषित __MPT_SCSI_H
+#घोषणा __MPT_SCSI_H
 
-struct disk_op_s;
-int mpt_scsi_process_op(struct disk_op_s *op);
-void mpt_scsi_setup(void);
+काष्ठा disk_op_s;
+पूर्णांक mpt_scsi_process_op(काष्ठा disk_op_s *op);
+व्योम mpt_scsi_setup(व्योम);
 
-#endif /* __MPT_SCSI_H */
+#पूर्ण_अगर /* __MPT_SCSI_H */

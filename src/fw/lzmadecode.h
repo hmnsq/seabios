@@ -19,39 +19,39 @@
   to this file, however, are subject to the LGPL or CPL terms.
 */
 
-#ifndef __LZMADECODE_H
-#define __LZMADECODE_H
+#अगर_अघोषित __LZMADECODE_H
+#घोषणा __LZMADECODE_H
 
-typedef unsigned char Byte;
-typedef unsigned short UInt16;
-typedef unsigned int UInt32;
-typedef UInt32 SizeT;
+प्रकार अचिन्हित अक्षर Byte;
+प्रकार अचिन्हित लघु UInt16;
+प्रकार अचिन्हित पूर्णांक UInt32;
+प्रकार UInt32 आकार_T;
 
-#define CProb UInt16
+#घोषणा CProb UInt16
 
-#define LZMA_RESULT_OK 0
-#define LZMA_RESULT_DATA_ERROR 1
+#घोषणा LZMA_परिणाम_OK 0
+#घोषणा LZMA_परिणाम_तथ्य_ERROR 1
 
 
-#define LZMA_BASE_SIZE 1846
-#define LZMA_LIT_SIZE 768
+#घोषणा LZMA_BASE_आकार 1846
+#घोषणा LZMA_LIT_आकार 768
 
-#define LZMA_PROPERTIES_SIZE 5
+#घोषणा LZMA_PROPERTIES_आकार 5
 
-typedef struct _CLzmaProperties
+प्रकार काष्ठा _CLzmaProperties
 {
-  int lc;
-  int lp;
-  int pb;
+  पूर्णांक lc;
+  पूर्णांक lp;
+  पूर्णांक pb;
 }CLzmaProperties;
 
-int LzmaDecodeProperties(CLzmaProperties *propsRes, const unsigned char *propsData, int size);
+पूर्णांक LzmaDecodeProperties(CLzmaProperties *propsRes, स्थिर अचिन्हित अक्षर *props_तथ्य, पूर्णांक आकार);
 
-#define LzmaGetNumProbs(Properties) (LZMA_BASE_SIZE + (LZMA_LIT_SIZE << ((Properties)->lc + (Properties)->lp)))
+#घोषणा Lzma_Get_अंक_Probs(Properties) (LZMA_BASE_आकार + (LZMA_LIT_आकार << ((Properties)->lc + (Properties)->lp)))
 
-#define kLzmaNeedInitId (-2)
+#घोषणा kLzmaNeedInitId (-2)
 
-typedef struct _CLzmaDecoderState
+प्रकार काष्ठा _CLzmaDecoderState
 {
   CLzmaProperties Properties;
   CProb *Probs;
@@ -60,8 +60,8 @@ typedef struct _CLzmaDecoderState
 } CLzmaDecoderState;
 
 
-int LzmaDecode(CLzmaDecoderState *vs,
-    const unsigned char *inStream, SizeT inSize, SizeT *inSizeProcessed,
-    unsigned char *outStream, SizeT outSize, SizeT *outSizeProcessed);
+पूर्णांक LzmaDecode(CLzmaDecoderState *vs,
+    स्थिर अचिन्हित अक्षर *inStream, आकार_T in_आकार, आकार_T *in_आकार_Processed,
+    अचिन्हित अक्षर *outStream, आकार_T out_आकार, आकार_T *out_आकार_Processed);
 
-#endif
+#पूर्ण_अगर

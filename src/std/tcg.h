@@ -1,16 +1,16 @@
-#ifndef STD_TCG_H
-#define STD_TCG_H
+#अगर_अघोषित STD_TCG_H
+#घोषणा STD_TCG_H
 
-#include "types.h"
+#समावेश "types.h"
 
-#define SHA1_BUFSIZE                20
-#define SHA256_BUFSIZE              32
-#define SHA384_BUFSIZE              48
-#define SHA512_BUFSIZE              64
-#define SM3_256_BUFSIZE             32
-#define SHA3_256_BUFSIZE            32
-#define SHA3_384_BUFSIZE            48
-#define SHA3_512_BUFSIZE            64
+#घोषणा SHA1_BUFSIZE                20
+#घोषणा SHA256_BUFSIZE              32
+#घोषणा SHA384_BUFSIZE              48
+#घोषणा SHA512_BUFSIZE              64
+#घोषणा SM3_256_BUFSIZE             32
+#घोषणा SHA3_256_BUFSIZE            32
+#घोषणा SHA3_384_BUFSIZE            48
+#घोषणा SHA3_512_BUFSIZE            64
 
 
 /****************************************************************
@@ -18,52 +18,52 @@
  ****************************************************************/
 
 /* Define for section 12.3 */
-#define TCG_PC_OK                       0x0
-#define TCG_PC_TPMERROR                 0x1
-#define TCG_PC_LOGOVERFLOW              0x2
-#define TCG_PC_UNSUPPORTED              0x3
+#घोषणा TCG_PC_OK                       0x0
+#घोषणा TCG_PC_TPMERROR                 0x1
+#घोषणा TCG_PC_LOGOVERFLOW              0x2
+#घोषणा TCG_PC_UNSUPPORTED              0x3
 
-#define TPM_ALG_SHA                     0x4
+#घोषणा TPM_ALG_SHA                     0x4
 
-#define TCG_MAGIC                       0x41504354L
-#define TCG_VERSION_MAJOR               1
-#define TCG_VERSION_MINOR               2
+#घोषणा TCG_MAGIC                       0x41504354L
+#घोषणा TCG_VERSION_MAJOR               1
+#घोषणा TCG_VERSION_MINOR               2
 
-#define TPM_OK                          0x0
-#define TPM_RET_BASE                    0x1
-#define TCG_GENERAL_ERROR               (TPM_RET_BASE + 0x0)
-#define TCG_TPM_IS_LOCKED               (TPM_RET_BASE + 0x1)
-#define TCG_NO_RESPONSE                 (TPM_RET_BASE + 0x2)
-#define TCG_INVALID_RESPONSE            (TPM_RET_BASE + 0x3)
-#define TCG_INVALID_ACCESS_REQUEST      (TPM_RET_BASE + 0x4)
-#define TCG_FIRMWARE_ERROR              (TPM_RET_BASE + 0x5)
-#define TCG_INTEGRITY_CHECK_FAILED      (TPM_RET_BASE + 0x6)
-#define TCG_INVALID_DEVICE_ID           (TPM_RET_BASE + 0x7)
-#define TCG_INVALID_VENDOR_ID           (TPM_RET_BASE + 0x8)
-#define TCG_UNABLE_TO_OPEN              (TPM_RET_BASE + 0x9)
-#define TCG_UNABLE_TO_CLOSE             (TPM_RET_BASE + 0xa)
-#define TCG_RESPONSE_TIMEOUT            (TPM_RET_BASE + 0xb)
-#define TCG_INVALID_COM_REQUEST         (TPM_RET_BASE + 0xc)
-#define TCG_INVALID_ADR_REQUEST         (TPM_RET_BASE + 0xd)
-#define TCG_WRITE_BYTE_ERROR            (TPM_RET_BASE + 0xe)
-#define TCG_READ_BYTE_ERROR             (TPM_RET_BASE + 0xf)
-#define TCG_BLOCK_WRITE_TIMEOUT         (TPM_RET_BASE + 0x10)
-#define TCG_CHAR_WRITE_TIMEOUT          (TPM_RET_BASE + 0x11)
-#define TCG_CHAR_READ_TIMEOUT           (TPM_RET_BASE + 0x12)
-#define TCG_BLOCK_READ_TIMEOUT          (TPM_RET_BASE + 0x13)
-#define TCG_TRANSFER_ABORT              (TPM_RET_BASE + 0x14)
-#define TCG_INVALID_DRV_FUNCTION        (TPM_RET_BASE + 0x15)
-#define TCG_OUTPUT_BUFFER_TOO_SHORT     (TPM_RET_BASE + 0x16)
-#define TCG_FATAL_COM_ERROR             (TPM_RET_BASE + 0x17)
-#define TCG_INVALID_INPUT_PARA          (TPM_RET_BASE + 0x18)
-#define TCG_TCG_COMMAND_ERROR           (TPM_RET_BASE + 0x19)
-#define TCG_INTERFACE_SHUTDOWN          (TPM_RET_BASE + 0x20)
+#घोषणा TPM_OK                          0x0
+#घोषणा TPM_RET_BASE                    0x1
+#घोषणा TCG_GENERAL_ERROR               (TPM_RET_BASE + 0x0)
+#घोषणा TCG_TPM_IS_LOCKED               (TPM_RET_BASE + 0x1)
+#घोषणा TCG_NO_RESPONSE                 (TPM_RET_BASE + 0x2)
+#घोषणा TCG_INVALID_RESPONSE            (TPM_RET_BASE + 0x3)
+#घोषणा TCG_INVALID_ACCESS_REQUEST      (TPM_RET_BASE + 0x4)
+#घोषणा TCG_FIRMWARE_ERROR              (TPM_RET_BASE + 0x5)
+#घोषणा TCG_INTEGRITY_CHECK_FAILED      (TPM_RET_BASE + 0x6)
+#घोषणा TCG_INVALID_DEVICE_ID           (TPM_RET_BASE + 0x7)
+#घोषणा TCG_INVALID_VENDOR_ID           (TPM_RET_BASE + 0x8)
+#घोषणा TCG_UNABLE_TO_OPEN              (TPM_RET_BASE + 0x9)
+#घोषणा TCG_UNABLE_TO_CLOSE             (TPM_RET_BASE + 0xa)
+#घोषणा TCG_RESPONSE_TIMEOUT            (TPM_RET_BASE + 0xb)
+#घोषणा TCG_INVALID_COM_REQUEST         (TPM_RET_BASE + 0xc)
+#घोषणा TCG_INVALID_ADR_REQUEST         (TPM_RET_BASE + 0xd)
+#घोषणा TCG_WRITE_BYTE_ERROR            (TPM_RET_BASE + 0xe)
+#घोषणा TCG_READ_BYTE_ERROR             (TPM_RET_BASE + 0xf)
+#घोषणा TCG_BLOCK_WRITE_TIMEOUT         (TPM_RET_BASE + 0x10)
+#घोषणा TCG_CHAR_WRITE_TIMEOUT          (TPM_RET_BASE + 0x11)
+#घोषणा TCG_CHAR_READ_TIMEOUT           (TPM_RET_BASE + 0x12)
+#घोषणा TCG_BLOCK_READ_TIMEOUT          (TPM_RET_BASE + 0x13)
+#घोषणा TCG_TRANSFER_ABORT              (TPM_RET_BASE + 0x14)
+#घोषणा TCG_INVALID_DRV_FUNCTION        (TPM_RET_BASE + 0x15)
+#घोषणा TCG_OUTPUT_बफर_TOO_SHORT     (TPM_RET_BASE + 0x16)
+#घोषणा TCG_FATAL_COM_ERROR             (TPM_RET_BASE + 0x17)
+#घोषणा TCG_INVALID_निवेश_PARA          (TPM_RET_BASE + 0x18)
+#घोषणा TCG_TCG_COMMAND_ERROR           (TPM_RET_BASE + 0x19)
+#घोषणा TCG_INTERFACE_SHUTDOWN          (TPM_RET_BASE + 0x20)
 //define TCG_PC_UNSUPPORTED             (TPM_RET_BASE + 0x21)
-#define TCG_PC_TPM_NOT_PRESENT          (TPM_RET_BASE + 0x22)
-#define TCG_PC_TPM_DEACTIVATED          (TPM_RET_BASE + 0x23)
+#घोषणा TCG_PC_TPM_NOT_PRESENT          (TPM_RET_BASE + 0x22)
+#घोषणा TCG_PC_TPM_DEACTIVATED          (TPM_RET_BASE + 0x23)
 
 /* interrupt identifiers (al register) */
-enum irq_ids {
+क्रमागत irq_ids {
     TCG_StatusCheck = 0,
     TCG_HashLogExtendEvent = 1,
     TCG_PassThroughToTPM = 2,
@@ -76,30 +76,30 @@ enum irq_ids {
 
 /* Input and Output blocks for the TCG BIOS commands */
 
-struct hleei_short
+काष्ठा hleei_short
 {
     u16   ipblength;
     u16   reserved;
-    const void *hashdataptr;
+    स्थिर व्योम *hashdataptr;
     u32   hashdatalen;
     u32   pcrindex;
-    const void *logdataptr;
+    स्थिर व्योम *logdataptr;
     u32   logdatalen;
 } PACKED;
 
-struct hleei_long
+काष्ठा hleei_long
 {
     u16   ipblength;
     u16   reserved;
-    void *hashdataptr;
+    व्योम *hashdataptr;
     u32   hashdatalen;
     u32   pcrindex;
     u32   reserved2;
-    void *logdataptr;
+    व्योम *logdataptr;
     u32   logdatalen;
 } PACKED;
 
-struct hleeo
+काष्ठा hleeo
 {
     u16    opblength;
     u16    reserved;
@@ -107,7 +107,7 @@ struct hleeo
     u8     digest[SHA1_BUFSIZE];
 } PACKED;
 
-struct pttti
+काष्ठा pttti
 {
     u16    ipblength;
     u16    reserved;
@@ -116,42 +116,42 @@ struct pttti
     u8     tpmopin[0];
 } PACKED;
 
-struct pttto
+काष्ठा pttto
 {
     u16    opblength;
     u16    reserved;
     u8     tpmopout[0];
 };
 
-struct hlei
+काष्ठा hlei
 {
     u16    ipblength;
     u16    reserved;
-    const void  *hashdataptr;
+    स्थिर व्योम  *hashdataptr;
     u32    hashdatalen;
     u32    pcrindex;
     u32    logeventtype;
-    const void  *logdataptr;
+    स्थिर व्योम  *logdataptr;
     u32    logdatalen;
 } PACKED;
 
-struct hleo
+काष्ठा hleo
 {
     u16    opblength;
     u16    reserved;
     u32    eventnumber;
 } PACKED;
 
-struct hai
+काष्ठा hai
 {
     u16    ipblength;
     u16    reserved;
-    const void  *hashdataptr;
+    स्थिर व्योम  *hashdataptr;
     u32    hashdatalen;
     u32    algorithmid;
 } PACKED;
 
-struct ti
+काष्ठा ti
 {
     u16    ipblength;
     u16    reserved;
@@ -160,14 +160,14 @@ struct ti
     u8     tssoperandin[0];
 } PACKED;
 
-struct to
+काष्ठा to
 {
     u16    opblength;
     u16    reserved;
     u8     tssoperandout[0];
 } PACKED;
 
-struct pcpes
+काष्ठा pcpes
 {
     u32    pcrindex;
     u32    eventtype;
@@ -181,80 +181,80 @@ struct pcpes
  * TPM v1.2 hardware commands
  ****************************************************************/
 
-#define TPM_ORD_SelfTestFull             0x00000050
-#define TPM_ORD_ForceClear               0x0000005d
-#define TPM_ORD_GetCapability            0x00000065
-#define TPM_ORD_PhysicalEnable           0x0000006f
-#define TPM_ORD_PhysicalDisable          0x00000070
-#define TPM_ORD_SetOwnerInstall          0x00000071
-#define TPM_ORD_PhysicalSetDeactivated   0x00000072
-#define TPM_ORD_SetTempDeactivated       0x00000073
-#define TPM_ORD_Startup                  0x00000099
-#define TPM_ORD_PhysicalPresence         0x4000000a
-#define TPM_ORD_Extend                   0x00000014
-#define TSC_ORD_ResetEstablishmentBit    0x4000000b
+#घोषणा TPM_ORD_SelfTestFull             0x00000050
+#घोषणा TPM_ORD_ForceClear               0x0000005d
+#घोषणा TPM_ORD_GetCapability            0x00000065
+#घोषणा TPM_ORD_PhysicalEnable           0x0000006f
+#घोषणा TPM_ORD_PhysicalDisable          0x00000070
+#घोषणा TPM_ORD_SetOwnerInstall          0x00000071
+#घोषणा TPM_ORD_PhysicalSetDeactivated   0x00000072
+#घोषणा TPM_ORD_Set_अस्थायी_Deactivated       0x00000073
+#घोषणा TPM_ORD_Startup                  0x00000099
+#घोषणा TPM_ORD_PhysicalPresence         0x4000000a
+#घोषणा TPM_ORD_Extend                   0x00000014
+#घोषणा TSC_ORD_ResetEstablishmentBit    0x4000000b
 
-#define TPM_ST_CLEAR                     0x0001
-#define TPM_ST_STATE                     0x0002
-#define TPM_ST_DEACTIVATED               0x0003
+#घोषणा TPM_ST_CLEAR                     0x0001
+#घोषणा TPM_ST_STATE                     0x0002
+#घोषणा TPM_ST_DEACTIVATED               0x0003
 
-#define TPM_PP_CMD_ENABLE                0x0020
-#define TPM_PP_PRESENT                   0x0008
-#define TPM_PP_NOT_PRESENT_LOCK          0x0014
+#घोषणा TPM_PP_CMD_ENABLE                0x0020
+#घोषणा TPM_PP_PRESENT                   0x0008
+#घोषणा TPM_PP_NOT_PRESENT_LOCK          0x0014
 
 /* TPM command error codes */
-#define TPM_INVALID_POSTINIT             0x26
-#define TPM_BAD_LOCALITY                 0x3d
+#घोषणा TPM_INVALID_POSTINIT             0x26
+#घोषणा TPM_BAD_LOCALITY                 0x3d
 
 /* TPM command tags */
-#define TPM_TAG_RQU_CMD                  0x00c1
-#define TPM_TAG_RQU_AUTH1_CMD            0x00c2
-#define TPM_TAG_RQU_AUTH2_CMD            0x00c3
+#घोषणा TPM_TAG_RQU_CMD                  0x00c1
+#घोषणा TPM_TAG_RQU_AUTH1_CMD            0x00c2
+#घोषणा TPM_TAG_RQU_AUTH2_CMD            0x00c3
 
-struct tpm_req_header {
+काष्ठा tpm_req_header {
     u16    tag;
     u32    totlen;
     u32    ordinal;
 } PACKED;
 
-struct tpm_rsp_header {
+काष्ठा tpm_rsp_header {
     u16    tag;
     u32    totlen;
     u32    errcode;
 } PACKED;
 
-struct tpm_req_extend {
-    struct tpm_req_header hdr;
+काष्ठा tpm_req_extend {
+    काष्ठा tpm_req_header hdr;
     u32    pcrindex;
     u8     digest[SHA1_BUFSIZE];
 } PACKED;
 
-struct tpm_rsp_extend {
-    struct tpm_rsp_header hdr;
+काष्ठा tpm_rsp_extend {
+    काष्ठा tpm_rsp_header hdr;
     u8     digest[SHA1_BUFSIZE];
 } PACKED;
 
-struct tpm_req_getcap {
-    struct tpm_req_header hdr;
+काष्ठा tpm_req_getcap {
+    काष्ठा tpm_req_header hdr;
     u32    capArea;
-    u32    subCapSize;
+    u32    sub_Cap_आकार;
     u32    subCap;
 } PACKED;
 
-#define TPM_CAP_FLAG     0x04
-#define TPM_CAP_PROPERTY 0x05
-#define TPM_CAP_FLAG_PERMANENT   0x108
-#define TPM_CAP_FLAG_VOLATILE    0x109
-#define TPM_CAP_PROP_OWNER       0x111
-#define TPM_CAP_PROP_TIS_TIMEOUT 0x115
-#define TPM_CAP_PROP_DURATION    0x120
+#घोषणा TPM_CAP_FLAG     0x04
+#घोषणा TPM_CAP_PROPERTY 0x05
+#घोषणा TPM_CAP_FLAG_PERMANENT   0x108
+#घोषणा TPM_CAP_FLAG_VOLATILE    0x109
+#घोषणा TPM_CAP_PROP_OWNER       0x111
+#घोषणा TPM_CAP_PROP_TIS_TIMEOUT 0x115
+#घोषणा TPM_CAP_PROP_DURATION    0x120
 
-struct tpm_permanent_flags {
+काष्ठा tpm_permanent_flags {
     u16    tag;
     u8     flags[20];
 } PACKED;
 
-enum permFlagsIndex {
+क्रमागत perm_Flags_सूचकांक {
     PERM_FLAG_IDX_DISABLE = 0,
     PERM_FLAG_IDX_OWNERSHIP,
     PERM_FLAG_IDX_DEACTIVATED,
@@ -266,54 +266,54 @@ enum permFlagsIndex {
     PERM_FLAG_IDX_PHYSICAL_PRESENCE_CMD_ENABLE,
 };
 
-struct tpm_res_getcap_perm_flags {
-    struct tpm_rsp_header hdr;
-    u32    size;
-    struct tpm_permanent_flags perm_flags;
+काष्ठा tpm_res_getcap_perm_flags {
+    काष्ठा tpm_rsp_header hdr;
+    u32    आकार;
+    काष्ठा tpm_permanent_flags perm_flags;
 } PACKED;
 
-struct tpm_stclear_flags {
+काष्ठा tpm_stclear_flags {
     u16    tag;
     u8     flags[5];
 } PACKED;
 
-#define STCLEAR_FLAG_IDX_DEACTIVATED 0
-#define STCLEAR_FLAG_IDX_DISABLE_FORCE_CLEAR 1
-#define STCLEAR_FLAG_IDX_PHYSICAL_PRESENCE 2
-#define STCLEAR_FLAG_IDX_PHYSICAL_PRESENCE_LOCK 3
-#define STCLEAR_FLAG_IDX_GLOBAL_LOCK 4
+#घोषणा STCLEAR_FLAG_IDX_DEACTIVATED 0
+#घोषणा STCLEAR_FLAG_IDX_DISABLE_FORCE_CLEAR 1
+#घोषणा STCLEAR_FLAG_IDX_PHYSICAL_PRESENCE 2
+#घोषणा STCLEAR_FLAG_IDX_PHYSICAL_PRESENCE_LOCK 3
+#घोषणा STCLEAR_FLAG_IDX_GLOBAL_LOCK 4
 
-struct tpm_res_getcap_stclear_flags {
-    struct tpm_rsp_header hdr;
-    u32    size;
-    struct tpm_stclear_flags stclear_flags;
+काष्ठा tpm_res_getcap_stclear_flags {
+    काष्ठा tpm_rsp_header hdr;
+    u32    आकार;
+    काष्ठा tpm_stclear_flags stclear_flags;
 } PACKED;
 
-struct tpm_res_getcap_ownerauth {
-    struct tpm_rsp_header hdr;
-    u32    size;
+काष्ठा tpm_res_getcap_ownerauth {
+    काष्ठा tpm_rsp_header hdr;
+    u32    आकार;
     u8     flag;
 } PACKED;
 
-struct tpm_res_getcap_timeouts {
-    struct tpm_rsp_header hdr;
-    u32    size;
+काष्ठा tpm_res_getcap_timeouts {
+    काष्ठा tpm_rsp_header hdr;
+    u32    आकार;
     u32    timeouts[4];
 } PACKED;
 
-struct tpm_res_getcap_durations {
-    struct tpm_rsp_header hdr;
-    u32    size;
+काष्ठा tpm_res_getcap_durations {
+    काष्ठा tpm_rsp_header hdr;
+    u32    आकार;
     u32    durations[3];
 } PACKED;
 
-struct tpm_res_sha1start {
-    struct tpm_rsp_header hdr;
-    u32    max_num_bytes;
+काष्ठा tpm_res_sha1start {
+    काष्ठा tpm_rsp_header hdr;
+    u32    max_अंक_bytes;
 } PACKED;
 
-struct tpm_res_sha1complete {
-    struct tpm_rsp_header hdr;
+काष्ठा tpm_res_sha1complete {
+    काष्ठा tpm_rsp_header hdr;
     u8     hash[20];
 } PACKED;
 
@@ -322,161 +322,161 @@ struct tpm_res_sha1complete {
  * TPM v2.0 hardware commands
  ****************************************************************/
 
-#define TPM2_NO                     0
-#define TPM2_YES                    1
+#घोषणा TPM2_NO                     0
+#घोषणा TPM2_YES                    1
 
-#define TPM2_SU_CLEAR               0x0000
-#define TPM2_SU_STATE               0x0001
+#घोषणा TPM2_SU_CLEAR               0x0000
+#घोषणा TPM2_SU_STATE               0x0001
 
-#define TPM2_RH_OWNER               0x40000001
-#define TPM2_RS_PW                  0x40000009
-#define TPM2_RH_ENDORSEMENT         0x4000000b
-#define TPM2_RH_PLATFORM            0x4000000c
+#घोषणा TPM2_RH_OWNER               0x40000001
+#घोषणा TPM2_RS_PW                  0x40000009
+#घोषणा TPM2_RH_ENDORSEMENT         0x4000000b
+#घोषणा TPM2_RH_PLATFORM            0x4000000c
 
-#define TPM2_ALG_SHA1               0x0004
-#define TPM2_ALG_SHA256             0x000b
-#define TPM2_ALG_SHA384             0x000c
-#define TPM2_ALG_SHA512             0x000d
-#define TPM2_ALG_SM3_256            0x0012
-#define TPM2_ALG_SHA3_256           0x0027
-#define TPM2_ALG_SHA3_384           0x0028
-#define TPM2_ALG_SHA3_512           0x0029
+#घोषणा TPM2_ALG_SHA1               0x0004
+#घोषणा TPM2_ALG_SHA256             0x000b
+#घोषणा TPM2_ALG_SHA384             0x000c
+#घोषणा TPM2_ALG_SHA512             0x000d
+#घोषणा TPM2_ALG_SM3_256            0x0012
+#घोषणा TPM2_ALG_SHA3_256           0x0027
+#घोषणा TPM2_ALG_SHA3_384           0x0028
+#घोषणा TPM2_ALG_SHA3_512           0x0029
 
-#define TPM2_ALG_SHA1_FLAG          (1 << 0)
-#define TPM2_ALG_SHA256_FLAG        (1 << 1)
-#define TPM2_ALG_SHA384_FLAG        (1 << 2)
-#define TPM2_ALG_SHA512_FLAG        (1 << 3)
-#define TPM2_ALG_SM3_256_FLAG       (1 << 4)
-#define TPM2_ALG_SHA3_256_FLAG      (1 << 5)
-#define TPM2_ALG_SHA3_384_FLAG      (1 << 6)
-#define TPM2_ALG_SHA3_512_FLAG      (1 << 7)
+#घोषणा TPM2_ALG_SHA1_FLAG          (1 << 0)
+#घोषणा TPM2_ALG_SHA256_FLAG        (1 << 1)
+#घोषणा TPM2_ALG_SHA384_FLAG        (1 << 2)
+#घोषणा TPM2_ALG_SHA512_FLAG        (1 << 3)
+#घोषणा TPM2_ALG_SM3_256_FLAG       (1 << 4)
+#घोषणा TPM2_ALG_SHA3_256_FLAG      (1 << 5)
+#घोषणा TPM2_ALG_SHA3_384_FLAG      (1 << 6)
+#घोषणा TPM2_ALG_SHA3_512_FLAG      (1 << 7)
 
 /* TPM 2 command tags */
-#define TPM2_ST_NO_SESSIONS         0x8001
-#define TPM2_ST_SESSIONS            0x8002
+#घोषणा TPM2_ST_NO_SESSIONS         0x8001
+#घोषणा TPM2_ST_SESSIONS            0x8002
 
 /* TPM 2 commands */
-#define TPM2_CC_HierarchyControl    0x121
-#define TPM2_CC_Clear               0x126
-#define TPM2_CC_ClearControl        0x127
-#define TPM2_CC_HierarchyChangeAuth 0x129
-#define TPM2_CC_PCR_Allocate        0x12b
-#define TPM2_CC_SelfTest            0x143
-#define TPM2_CC_Startup             0x144
-#define TPM2_CC_Shutdown            0x145
-#define TPM2_CC_StirRandom          0x146
-#define TPM2_CC_GetCapability       0x17a
-#define TPM2_CC_GetRandom           0x17b
-#define TPM2_CC_PCR_Extend          0x182
+#घोषणा TPM2_CC_HierarchyControl    0x121
+#घोषणा TPM2_CC_Clear               0x126
+#घोषणा TPM2_CC_ClearControl        0x127
+#घोषणा TPM2_CC_HierarchyChangeAuth 0x129
+#घोषणा TPM2_CC_PCR_Allocate        0x12b
+#घोषणा TPM2_CC_SelfTest            0x143
+#घोषणा TPM2_CC_Startup             0x144
+#घोषणा TPM2_CC_Shutdown            0x145
+#घोषणा TPM2_CC_StirRandom          0x146
+#घोषणा TPM2_CC_GetCapability       0x17a
+#घोषणा TPM2_CC_GetRandom           0x17b
+#घोषणा TPM2_CC_PCR_Extend          0x182
 
 /* TPM 2 error codes */
-#define TPM2_RC_INITIALIZE          0x100
+#घोषणा TPM2_RC_INITIALIZE          0x100
 
 /* TPM 2 Capabilities */
-#define TPM2_CAP_PCRS               0x00000005
+#घोषणा TPM2_CAP_PCRS               0x00000005
 
 /* TPM 2 data structures */
 
-struct tpm2_req_stirrandom {
-    struct tpm_req_header hdr;
-    u16 size;
+काष्ठा tpm2_req_stirrandom {
+    काष्ठा tpm_req_header hdr;
+    u16 आकार;
     u64 stir;
 } PACKED;
 
-struct tpm2_req_getrandom {
-    struct tpm_req_header hdr;
+काष्ठा tpm2_req_getrandom {
+    काष्ठा tpm_req_header hdr;
     u16 bytesRequested;
 } PACKED;
 
-struct tpm2b_20 {
-    u16 size;
-    u8 buffer[20];
+काष्ठा tpm2b_20 {
+    u16 आकार;
+    u8 बफर[20];
 } PACKED;
 
-struct tpm2_res_getrandom {
-    struct tpm_rsp_header hdr;
-    struct tpm2b_20 rnd;
+काष्ठा tpm2_res_getrandom {
+    काष्ठा tpm_rsp_header hdr;
+    काष्ठा tpm2b_20 rnd;
 } PACKED;
 
-struct tpm2_authblock {
+काष्ठा tpm2_authblock {
     u32 handle;
     u16 noncesize;  /* always 0 */
     u8 contsession; /* always TPM2_YES */
     u16 pwdsize;    /* always 0 */
 } PACKED;
 
-struct tpm2_req_hierarchychangeauth {
-    struct tpm_req_header hdr;
+काष्ठा tpm2_req_hierarchychangeauth {
+    काष्ठा tpm_req_header hdr;
     u32 authhandle;
     u32 authblocksize;
-    struct tpm2_authblock authblock;
-    struct tpm2b_20 newAuth;
+    काष्ठा tpm2_authblock authblock;
+    काष्ठा tpm2b_20 newAuth;
 } PACKED;
 
-struct tpm2_req_extend {
-    struct tpm_req_header hdr;
+काष्ठा tpm2_req_extend {
+    काष्ठा tpm_req_header hdr;
     u32 pcrindex;
     u32 authblocksize;
-    struct tpm2_authblock authblock;
+    काष्ठा tpm2_authblock authblock;
     u8 digest[0];
 } PACKED;
 
-struct tpm2_req_clearcontrol {
-    struct tpm_req_header hdr;
+काष्ठा tpm2_req_clearcontrol {
+    काष्ठा tpm_req_header hdr;
     u32 authhandle;
     u32 authblocksize;
-    struct tpm2_authblock authblock;
+    काष्ठा tpm2_authblock authblock;
     u8 disable;
 } PACKED;
 
-struct tpm2_req_clear {
-    struct tpm_req_header hdr;
+काष्ठा tpm2_req_clear {
+    काष्ठा tpm_req_header hdr;
     u32 authhandle;
     u32 authblocksize;
-    struct tpm2_authblock authblock;
+    काष्ठा tpm2_authblock authblock;
 } PACKED;
 
-struct tpm2_req_hierarchycontrol {
-    struct tpm_req_header hdr;
+काष्ठा tpm2_req_hierarchycontrol {
+    काष्ठा tpm_req_header hdr;
     u32 authhandle;
     u32 authblocksize;
-    struct tpm2_authblock authblock;
+    काष्ठा tpm2_authblock authblock;
     u32 enable;
     u8 state;
 } PACKED;
 
-struct tpm2_req_getcapability {
-    struct tpm_req_header hdr;
+काष्ठा tpm2_req_getcapability {
+    काष्ठा tpm_req_header hdr;
     u32 capability;
     u32 property;
     u32 propertycount;
 } PACKED;
 
-struct tpm2_res_getcapability {
-    struct tpm_rsp_header hdr;
-    u8 moreData;
+काष्ठा tpm2_res_getcapability {
+    काष्ठा tpm_rsp_header hdr;
+    u8 more_तथ्य;
     u32 capability;
-    u8 data[0]; /* capability dependent data */
+    u8 तथ्य[0]; /* capability dependent data */
 } PACKED;
 
-struct tpm2_req_pcr_allocate {
-    struct tpm_req_header hdr;
+काष्ठा tpm2_req_pcr_allocate {
+    काष्ठा tpm_req_header hdr;
     u32 authhandle;
     u32 authblocksize;
-    struct tpm2_authblock authblock;
-    u32 count;
+    काष्ठा tpm2_authblock authblock;
+    u32 गिनती;
     u8 tpms_pcr_selections[4];
 } PACKED;
 
-struct tpms_pcr_selection {
+काष्ठा tpms_pcr_selection {
     u16 hashAlg;
-    u8 sizeOfSelect;
+    u8 आकार_Of_Select;
     u8 pcrSelect[0];
 } PACKED;
 
-struct tpml_pcr_selection {
-    u32 count;
-    struct tpms_pcr_selection selections[0];
+काष्ठा tpml_pcr_selection {
+    u32 गिनती;
+    काष्ठा tpms_pcr_selection selections[0];
 } PACKED;
 
 
@@ -485,23 +485,23 @@ struct tpml_pcr_selection {
  ****************************************************************/
 
 /* event types: 10.4.1 / table 11 */
-#define EV_POST_CODE             1
-#define EV_NO_ACTION             3
-#define EV_SEPARATOR             4
-#define EV_ACTION                5
-#define EV_EVENT_TAG             6
-#define EV_COMPACT_HASH         12
-#define EV_IPL                  13
-#define EV_IPL_PARTITION_DATA   14
+#घोषणा EV_POST_CODE             1
+#घोषणा EV_NO_ACTION             3
+#घोषणा EV_SEPARATOR             4
+#घोषणा EV_ACTION                5
+#घोषणा EV_EVENT_TAG             6
+#घोषणा EV_COMPACT_HASH         12
+#घोषणा EV_IPL                  13
+#घोषणा EV_IPL_PARTITION_तथ्य   14
 
-struct tpm2_digest_value {
+काष्ठा tpm2_digest_मूल्य {
     u16 hashAlg;
     u8 hash[0]; /* size depends on hashAlg */
 } PACKED;
 
-struct tpm2_digest_values {
-    u32 count;
-    struct tpm2_digest_value digest[0];
+काष्ठा tpm2_digest_मूल्यावली {
+    u32 गिनती;
+    काष्ठा tpm2_digest_मूल्य digest[0];
 } PACKED;
 
 // Each entry in the TPM log contains: a tpm_log_header, a variable
@@ -511,28 +511,28 @@ struct tpm2_digest_values {
 // contains a tpm2_digest_values struct followed by a variable number
 // of tpm2_digest_value structs (as specified by the hardware via the
 // TPM2_CAP_PCRS request).
-struct tpm_log_header {
+काष्ठा tpm_log_header {
     u32 pcrindex;
     u32 eventtype;
     u8 digest[0];
 } PACKED;
 
-struct tpm_log_trailer {
+काष्ठा tpm_log_trailer {
     u32 eventdatasize;
     u8 event[0];
 } PACKED;
 
-struct TCG_EfiSpecIdEventStruct {
+काष्ठा TCG_EfiSpecIdEventStruct {
     u8 signature[16];
     u32 platformClass;
     u8 specVersionMinor;
     u8 specVersionMajor;
     u8 specErrata;
-    u8 uintnSize;
-    u32 numberOfAlgorithms;
-    struct TCG_EfiSpecIdEventAlgorithmSize {
+    u8 uintn_आकार;
+    u32 संख्या_Of_Algorithms;
+    काष्ठा TCG_Efi_Spec_Id_Event_Algorithm_आकार {
         u16 algorithmId;
-        u16 digestSize;
+        u16 digest_आकार;
     } digestSizes[];
     /*
     u8 vendorInfoSize;
@@ -540,16 +540,16 @@ struct TCG_EfiSpecIdEventStruct {
     */
 } PACKED;
 
-#define TPM_TCPA_ACPI_CLASS_CLIENT 0
+#घोषणा TPM_TCPA_ACPI_CLASS_CLIENT 0
 
-struct pcctes
+काष्ठा pcctes
 {
     u32 eventid;
     u32 eventdatasize;
     u8  digest[SHA1_BUFSIZE];
 } PACKED;
 
-struct pcctes_romex
+काष्ठा pcctes_romex
 {
     u32 eventid;
     u32 eventdatasize;
@@ -563,18 +563,18 @@ struct pcctes_romex
  * Physical presence interface
  ****************************************************************/
 
-#define TPM_STATE_ENABLED 1
-#define TPM_STATE_ACTIVE 2
-#define TPM_STATE_OWNED 4
-#define TPM_STATE_OWNERINSTALL 8
+#घोषणा TPM_STATE_ENABLED 1
+#घोषणा TPM_STATE_ACTIVE 2
+#घोषणा TPM_STATE_OWNED 4
+#घोषणा TPM_STATE_OWNERINSTALL 8
 
-#define TPM_PPI_OP_NOOP 0
-#define TPM_PPI_OP_ENABLE 1
-#define TPM_PPI_OP_DISABLE 2
-#define TPM_PPI_OP_ACTIVATE 3
-#define TPM_PPI_OP_DEACTIVATE 4
-#define TPM_PPI_OP_CLEAR 5
-#define TPM_PPI_OP_SET_OWNERINSTALL_TRUE 8
-#define TPM_PPI_OP_SET_OWNERINSTALL_FALSE 9
+#घोषणा TPM_PPI_OP_NOOP 0
+#घोषणा TPM_PPI_OP_ENABLE 1
+#घोषणा TPM_PPI_OP_DISABLE 2
+#घोषणा TPM_PPI_OP_ACTIVATE 3
+#घोषणा TPM_PPI_OP_DEACTIVATE 4
+#घोषणा TPM_PPI_OP_CLEAR 5
+#घोषणा TPM_PPI_OP_SET_OWNERINSTALL_TRUE 8
+#घोषणा TPM_PPI_OP_SET_OWNERINSTALL_FALSE 9
 
-#endif // tcg.h
+#पूर्ण_अगर // tcg.h

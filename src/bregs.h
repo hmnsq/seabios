@@ -4,23 +4,23 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#ifndef __BREGS_H
-#define __BREGS_H
+#अगर_अघोषित __BREGS_H
+#घोषणा __BREGS_H
 
-#include "types.h" // u16
-#include "x86.h" // F_CF
+#समावेश "types.h" // u16
+#समावेश "x86.h" // F_CF
 
 
 /****************************************************************
  * Registers saved/restored in romlayout.S
  ****************************************************************/
 
-#define UREG(ER, R, RH, RL) union { u32 ER; struct { u16 R; u16 R ## _hi; }; struct { u8 RL; u8 RH; u8 R ## _hilo; u8 R ## _hihi; }; }
+#घोषणा UREG(ER, R, RH, RL) जोड़ { u32 ER; काष्ठा { u16 R; u16 R ## _hi; }; काष्ठा { u8 RL; u8 RH; u8 R ## _hilo; u8 R ## _hihi; }; }
 
 // Layout of registers passed in to irq handlers.  Note that this
 // layout corresponds to code in romlayout.S - don't change it here
 // without also updating the assembler code.
-struct bregs {
+काष्ठा bregs {
     u16 ds;
     u16 es;
     UREG(edi, di, di8u, di8l);
@@ -30,7 +30,7 @@ struct bregs {
     UREG(edx, dx, dh, dl);
     UREG(ecx, cx, ch, cl);
     UREG(eax, ax, ah, al);
-    struct segoff_s code;
+    काष्ठा segoff_s code;
     u16 flags;
 } PACKED;
 
@@ -39,42 +39,42 @@ struct bregs {
  * Helper functions
  ****************************************************************/
 
-static inline void
-set_cf(struct bregs *regs, int cond)
+अटल अंतरभूत व्योम
+set_cf(काष्ठा bregs *regs, पूर्णांक cond)
 {
-    if (cond)
+    अगर (cond)
         regs->flags |= F_CF;
-    else
+    अन्यथा
         regs->flags &= ~F_CF;
 }
 
 // Frequently used return codes
-#define RET_EUNSUPPORTED 0x86
+#घोषणा RET_EUNSUPPORTED 0x86
 
-static inline void
-set_success(struct bregs *regs)
+अटल अंतरभूत व्योम
+set_success(काष्ठा bregs *regs)
 {
     set_cf(regs, 0);
 }
 
-static inline void
-set_code_success(struct bregs *regs)
+अटल अंतरभूत व्योम
+set_code_success(काष्ठा bregs *regs)
 {
     regs->ah = 0;
     set_cf(regs, 0);
 }
 
-static inline void
-set_invalid_silent(struct bregs *regs)
+अटल अंतरभूत व्योम
+set_invalid_silent(काष्ठा bregs *regs)
 {
     set_cf(regs, 1);
 }
 
-static inline void
-set_code_invalid_silent(struct bregs *regs, u8 code)
+अटल अंतरभूत व्योम
+set_code_invalid_silent(काष्ठा bregs *regs, u8 code)
 {
     regs->ah = code;
     set_cf(regs, 1);
 }
 
-#endif // bregs.h
+#पूर्ण_अगर // bregs.h

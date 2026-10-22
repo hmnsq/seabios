@@ -1,19 +1,19 @@
-#ifndef TCGBIOS_H
-#define TCGBIOS_H
+#अगर_अघोषित TCGBIOS_H
+#घोषणा TCGBIOS_H
 
-#include "types.h"
+#समावेश "types.h"
 
-struct bregs;
-void tpm_interrupt_handler32(struct bregs *regs);
+काष्ठा bregs;
+व्योम tpm_interrupt_handler32(काष्ठा bregs *regs);
 
-void tpm_setup(void);
-void tpm_prepboot(void);
-void tpm_s3_resume(void);
-void tpm_add_bcv(u32 bootdrv, const u8 *addr, u32 length);
-void tpm_add_cdrom(u32 bootdrv, const u8 *addr, u32 length);
-void tpm_add_cdrom_catalog(const u8 *addr, u32 length);
-void tpm_option_rom(const void *addr, u32 len);
-int tpm_can_show_menu(void);
-void tpm_menu(void);
+व्योम tpm_setup(व्योम);
+व्योम tpm_prepboot(व्योम);
+व्योम tpm_s3_resume(व्योम);
+व्योम tpm_add_bcv(u32 bootdrv, स्थिर u8 *addr, u32 लंबाई);
+व्योम tpm_add_cdrom(u32 bootdrv, स्थिर u8 *addr, u32 लंबाई);
+व्योम tpm_add_cdrom_catalog(स्थिर u8 *addr, u32 लंबाई);
+व्योम tpm_option_rom(स्थिर व्योम *addr, u32 len);
+पूर्णांक tpm_can_show_menu(व्योम);
+व्योम tpm_menu(व्योम);
 
-#endif /* TCGBIOS_H */
+#पूर्ण_अगर /* TCGBIOS_H */

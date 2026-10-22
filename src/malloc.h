@@ -1,70 +1,70 @@
-#ifndef __MALLOC_H
-#define __MALLOC_H
+#अगर_अघोषित __MALLOC_H
+#घोषणा __MALLOC_H
 
-#include "types.h" // u32
+#समावेश "types.h" // u32
 
 // malloc.c
-extern struct zone_s ZoneLow, ZoneHigh, ZoneFSeg, ZoneTmpLow, ZoneTmpHigh;
-u32 rom_get_max(void);
-u32 rom_get_last(void);
-struct rom_header *rom_reserve(u32 size);
-int rom_confirm(u32 size);
-void malloc_csm_preinit(u32 low_pmm, u32 low_pmm_size, u32 hi_pmm,
-                        u32 hi_pmm_size);
-void malloc_preinit(void);
-extern u32 LegacyRamSize;
-void malloc_init(void);
-void malloc_prepboot(void);
-u32 malloc_palloc(struct zone_s *zone, u32 size, u32 align);
-void *_malloc(struct zone_s *zone, u32 size, u32 align);
-int malloc_pfree(u32 data);
-void free(void *data);
-u32 malloc_getspace(struct zone_s *zone);
-void malloc_sethandle(u32 data, u32 handle);
+बाह्य काष्ठा zone_s Zone_निचला, Zone_ऊपरी, ZoneFSeg, Zone_Tmp_निचला, Zone_Tmp_ऊपरी;
+u32 rom_get_max(व्योम);
+u32 rom_get_last(व्योम);
+काष्ठा rom_header *rom_reserve(u32 आकार);
+पूर्णांक rom_confirm(u32 आकार);
+व्योम malloc_csm_preinit(u32 निचला_pmm, u32 निचला_pmm_आकार, u32 hi_pmm,
+                        u32 hi_pmm_आकार);
+व्योम malloc_preinit(व्योम);
+बाह्य u32 Legacy_Ram_आकार;
+व्योम malloc_init(व्योम);
+व्योम malloc_prepboot(व्योम);
+u32 malloc_palloc(काष्ठा zone_s *zone, u32 आकार, u32 align);
+व्योम *_malloc(काष्ठा zone_s *zone, u32 आकार, u32 align);
+पूर्णांक malloc_pfree(u32 तथ्य);
+व्योम मुक्त(व्योम *तथ्य);
+u32 malloc_getspace(काष्ठा zone_s *zone);
+व्योम malloc_sethandle(u32 तथ्य, u32 handle);
 u32 malloc_findhandle(u32 handle);
 
-#define MALLOC_DEFAULT_HANDLE 0xFFFFFFFF
+#घोषणा MALLOC_DEFAULT_HANDLE 0xFFFFFFFF
 // Minimum alignment of malloc'd memory
-#define MALLOC_MIN_ALIGN 16
+#घोषणा MALLOC_MIN_ALIGN 16
 // Helper functions for memory allocation.
-static inline void *malloc_low(u32 size) {
-    return _malloc(&ZoneLow, size, MALLOC_MIN_ALIGN);
+अटल अंतरभूत व्योम *malloc_निचला(u32 आकार) {
+    वापस _malloc(&Zone_निचला, आकार, MALLOC_MIN_ALIGN);
 }
-static inline void *malloc_high(u32 size) {
-    return _malloc(&ZoneHigh, size, MALLOC_MIN_ALIGN);
+अटल अंतरभूत व्योम *malloc_ऊपरी(u32 आकार) {
+    वापस _malloc(&Zone_ऊपरी, आकार, MALLOC_MIN_ALIGN);
 }
-static inline void *malloc_fseg(u32 size) {
-    return _malloc(&ZoneFSeg, size, MALLOC_MIN_ALIGN);
+अटल अंतरभूत व्योम *malloc_fseg(u32 आकार) {
+    वापस _malloc(&ZoneFSeg, आकार, MALLOC_MIN_ALIGN);
 }
-static inline void *malloc_tmplow(u32 size) {
-    return _malloc(&ZoneTmpLow, size, MALLOC_MIN_ALIGN);
+अटल अंतरभूत व्योम *malloc_tmplow(u32 आकार) {
+    वापस _malloc(&Zone_Tmp_निचला, आकार, MALLOC_MIN_ALIGN);
 }
-static inline void *malloc_tmphigh(u32 size) {
-    return _malloc(&ZoneTmpHigh, size, MALLOC_MIN_ALIGN);
+अटल अंतरभूत व्योम *malloc_tmphigh(u32 आकार) {
+    वापस _malloc(&Zone_Tmp_ऊपरी, आकार, MALLOC_MIN_ALIGN);
 }
-static inline void *malloc_tmp(u32 size) {
-    void *ret = malloc_tmphigh(size);
-    if (ret)
-        return ret;
-    return malloc_tmplow(size);
+अटल अंतरभूत व्योम *malloc_tmp(u32 आकार) {
+    व्योम *ret = malloc_tmphigh(आकार);
+    अगर (ret)
+        वापस ret;
+    वापस malloc_tmplow(आकार);
 }
-static inline void *memalign_low(u32 align, u32 size) {
-    return _malloc(&ZoneLow, size, align);
+अटल अंतरभूत व्योम *memalign_निचला(u32 align, u32 आकार) {
+    वापस _malloc(&Zone_निचला, आकार, align);
 }
-static inline void *memalign_high(u32 align, u32 size) {
-    return _malloc(&ZoneHigh, size, align);
+अटल अंतरभूत व्योम *memalign_ऊपरी(u32 align, u32 आकार) {
+    वापस _malloc(&Zone_ऊपरी, आकार, align);
 }
-static inline void *memalign_tmplow(u32 align, u32 size) {
-    return _malloc(&ZoneTmpLow, size, align);
+अटल अंतरभूत व्योम *memalign_tmplow(u32 align, u32 आकार) {
+    वापस _malloc(&Zone_Tmp_निचला, आकार, align);
 }
-static inline void *memalign_tmphigh(u32 align, u32 size) {
-    return _malloc(&ZoneTmpHigh, size, align);
+अटल अंतरभूत व्योम *memalign_tmphigh(u32 align, u32 आकार) {
+    वापस _malloc(&Zone_Tmp_ऊपरी, आकार, align);
 }
-static inline void *memalign_tmp(u32 align, u32 size) {
-    void *ret = memalign_tmphigh(align, size);
-    if (ret)
-        return ret;
-    return memalign_tmplow(align, size);
+अटल अंतरभूत व्योम *memalign_tmp(u32 align, u32 आकार) {
+    व्योम *ret = memalign_tmphigh(align, आकार);
+    अगर (ret)
+        वापस ret;
+    वापस memalign_tmplow(align, आकार);
 }
 
-#endif // malloc.h
+#पूर्ण_अगर // malloc.h

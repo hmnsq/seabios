@@ -5,82 +5,82 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // SET_BDA
-#include "bregs.h" // struct bregs
-#include "hw/serialio.h" // SEROFF_IER
-#include "output.h" // debug_enter
-#include "romfile.h" // romfile_loadint
-#include "stacks.h" // yield
-#include "util.h" // serial_setup
+#समावेश "biosvar.h" // SET_BDA
+#समावेश "bregs.h" // struct bregs
+#समावेश "hw/serialio.h" // SEROFF_IER
+#समावेश "output.h" // debug_enter
+#समावेश "romfile.h" // romfile_loadint
+#समावेश "stacks.h" // yield
+#समावेश "util.h" // serial_setup
 
 
 /****************************************************************
  * COM ports
  ****************************************************************/
 
-static u16
-detect_serial(u16 port, u8 timeout, u8 count)
+अटल u16
+detect_serial(u16 port, u8 timeout, u8 गिनती)
 {
-    if (CONFIG_DEBUG_SERIAL && port == CONFIG_DEBUG_SERIAL_PORT
+    अगर (CONFIG_DEBUG_SERIAL && port == CONFIG_DEBUG_SERIAL_PORT
         && !romfile_loadint("etc/advertise-serial-debug-port", 1))
-        return 0;
+        वापस 0;
     outb(0x02, port+SEROFF_IER);
     u8 ier = inb(port+SEROFF_IER);
-    if (ier != 0x02)
-        return 0;
+    अगर (ier != 0x02)
+        वापस 0;
     u8 iir = inb(port+SEROFF_IIR);
-    if ((iir & 0x3f) != 0x02)
-        return 0;
+    अगर ((iir & 0x3f) != 0x02)
+        वापस 0;
 
     outb(0x00, port+SEROFF_IER);
-    SET_BDA(port_com[count], port);
-    SET_BDA(com_timeout[count], timeout);
-    return 1;
+    SET_BDA(port_com[गिनती], port);
+    SET_BDA(com_timeout[गिनती], timeout);
+    वापस 1;
 }
 
-void
-serial_setup(void)
+व्योम
+serial_setup(व्योम)
 {
-    if (! CONFIG_SERIAL)
-        return;
+    अगर (! CONFIG_SERIAL)
+        वापस;
     dprintf(3, "init serial\n");
 
-    u16 count = 0;
-    count += detect_serial(PORT_SERIAL1, 0x0a, count);
-    count += detect_serial(PORT_SERIAL2, 0x0a, count);
-    count += detect_serial(PORT_SERIAL3, 0x0a, count);
-    count += detect_serial(PORT_SERIAL4, 0x0a, count);
-    dprintf(1, "Found %d serial ports\n", count);
+    u16 गिनती = 0;
+    गिनती += detect_serial(PORT_SERIAL1, 0x0a, गिनती);
+    गिनती += detect_serial(PORT_SERIAL2, 0x0a, गिनती);
+    गिनती += detect_serial(PORT_SERIAL3, 0x0a, गिनती);
+    गिनती += detect_serial(PORT_SERIAL4, 0x0a, गिनती);
+    dprintf(1, "Found %d serial ports\n", गिनती);
 
     // Equipment word bits 9..11 determing # serial ports
-    set_equipment_flags(0xe00, count << 9);
+    set_equipment_flags(0xe00, गिनती << 9);
 }
 
-static u16
-getComAddr(struct bregs *regs)
+अटल u16
+getComAddr(काष्ठा bregs *regs)
 {
-    if (regs->dx >= 4) {
+    अगर (regs->dx >= 4) {
         set_invalid(regs);
-        return 0;
+        वापस 0;
     }
     u16 addr = GET_BDA(port_com[regs->dx]);
-    if (! addr)
+    अगर (! addr)
         set_invalid(regs);
-    return addr;
+    वापस addr;
 }
 
 // SERIAL - INITIALIZE PORT
-static void
-handle_1400(struct bregs *regs)
+अटल व्योम
+handle_1400(काष्ठा bregs *regs)
 {
     u16 addr = getComAddr(regs);
-    if (!addr)
-        return;
+    अगर (!addr)
+        वापस;
     outb(inb(addr+SEROFF_LCR) | 0x80, addr+SEROFF_LCR);
-    if ((regs->al & 0xE0) == 0) {
+    अगर ((regs->al & 0xE0) == 0) {
         outb(0x17, addr+SEROFF_DLL);
         outb(0x04, addr+SEROFF_DLH);
-    } else {
+    } अन्यथा {
         u16 val16 = 0x600 >> ((regs->al & 0xE0) >> 5);
         outb(val16 & 0xFF, addr+SEROFF_DLL);
         outb(val16 >> 8, addr+SEROFF_DLH);
@@ -92,26 +92,26 @@ handle_1400(struct bregs *regs)
 }
 
 // SERIAL - WRITE CHARACTER TO PORT
-static void
-handle_1401(struct bregs *regs)
+अटल व्योम
+handle_1401(काष्ठा bregs *regs)
 {
     u16 addr = getComAddr(regs);
-    if (!addr)
-        return;
+    अगर (!addr)
+        वापस;
     u32 end = irqtimer_calc_ticks(GET_BDA(com_timeout[regs->dx]));
-    for (;;) {
+    क्रम (;;) {
         u8 lsr = inb(addr+SEROFF_LSR);
-        if ((lsr & 0x60) == 0x60) {
+        अगर ((lsr & 0x60) == 0x60) {
             // Success - can write data
-            outb(regs->al, addr+SEROFF_DATA);
+            outb(regs->al, addr+SEROFF_तथ्य);
             // XXX - reread lsr?
             regs->ah = lsr;
-            break;
+            अवरोध;
         }
-        if (irqtimer_check(end)) {
+        अगर (irqtimer_check(end)) {
             // Timed out - can't write data.
             regs->ah = lsr | 0x80;
-            break;
+            अवरोध;
         }
         yield();
     }
@@ -119,25 +119,25 @@ handle_1401(struct bregs *regs)
 }
 
 // SERIAL - READ CHARACTER FROM PORT
-static void
-handle_1402(struct bregs *regs)
+अटल व्योम
+handle_1402(काष्ठा bregs *regs)
 {
     u16 addr = getComAddr(regs);
-    if (!addr)
-        return;
+    अगर (!addr)
+        वापस;
     u32 end = irqtimer_calc_ticks(GET_BDA(com_timeout[regs->dx]));
-    for (;;) {
+    क्रम (;;) {
         u8 lsr = inb(addr+SEROFF_LSR);
-        if (lsr & 0x01) {
+        अगर (lsr & 0x01) {
             // Success - can read data
-            regs->al = inb(addr+SEROFF_DATA);
+            regs->al = inb(addr+SEROFF_तथ्य);
             regs->ah = lsr;
-            break;
+            अवरोध;
         }
-        if (irqtimer_check(end)) {
+        अगर (irqtimer_check(end)) {
             // Timed out - can't read data.
             regs->ah = lsr | 0x80;
-            break;
+            अवरोध;
         }
         yield();
     }
@@ -145,39 +145,39 @@ handle_1402(struct bregs *regs)
 }
 
 // SERIAL - GET PORT STATUS
-static void
-handle_1403(struct bregs *regs)
+अटल व्योम
+handle_1403(काष्ठा bregs *regs)
 {
     u16 addr = getComAddr(regs);
-    if (!addr)
-        return;
+    अगर (!addr)
+        वापस;
     regs->ah = inb(addr+SEROFF_LSR);
     regs->al = inb(addr+SEROFF_MSR);
     set_success(regs);
 }
 
-static void
-handle_14XX(struct bregs *regs)
+अटल व्योम
+handle_14XX(काष्ठा bregs *regs)
 {
     set_unimplemented(regs);
 }
 
 // INT 14h Serial Communications Service Entry Point
-void VISIBLE16
-handle_14(struct bregs *regs)
+व्योम VISIBLE16
+handle_14(काष्ठा bregs *regs)
 {
     debug_enter(regs, DEBUG_HDL_14);
-    if (! CONFIG_SERIAL) {
+    अगर (! CONFIG_SERIAL) {
         handle_14XX(regs);
-        return;
+        वापस;
     }
 
-    switch (regs->ah) {
-    case 0x00: handle_1400(regs); break;
-    case 0x01: handle_1401(regs); break;
-    case 0x02: handle_1402(regs); break;
-    case 0x03: handle_1403(regs); break;
-    default:   handle_14XX(regs); break;
+    चयन (regs->ah) {
+    हाल 0x00: handle_1400(regs); अवरोध;
+    हाल 0x01: handle_1401(regs); अवरोध;
+    हाल 0x02: handle_1402(regs); अवरोध;
+    हाल 0x03: handle_1403(regs); अवरोध;
+    शेष:   handle_14XX(regs); अवरोध;
     }
 }
 
@@ -186,57 +186,57 @@ handle_14(struct bregs *regs)
  * LPT ports
  ****************************************************************/
 
-static u16
-detect_parport(u16 port, u8 timeout, u8 count)
+अटल u16
+detect_parport(u16 port, u8 timeout, u8 गिनती)
 {
     // clear input mode
     outb(inb(port+2) & 0xdf, port+2);
 
     outb(0xaa, port);
-    if (inb(port) != 0xaa)
+    अगर (inb(port) != 0xaa)
         // Not present
-        return 0;
-    SET_BDA(port_lpt[count], port);
-    SET_BDA(lpt_timeout[count], timeout);
-    return 1;
+        वापस 0;
+    SET_BDA(port_lpt[गिनती], port);
+    SET_BDA(lpt_timeout[गिनती], timeout);
+    वापस 1;
 }
 
-void
-lpt_setup(void)
+व्योम
+lpt_setup(व्योम)
 {
-    if (! CONFIG_LPT)
-        return;
+    अगर (! CONFIG_LPT)
+        वापस;
     dprintf(3, "init lpt\n");
 
-    u16 count = 0;
-    count += detect_parport(PORT_LPT1, 0x14, count);
-    count += detect_parport(PORT_LPT2, 0x14, count);
-    dprintf(1, "Found %d lpt ports\n", count);
+    u16 गिनती = 0;
+    गिनती += detect_parport(PORT_LPT1, 0x14, गिनती);
+    गिनती += detect_parport(PORT_LPT2, 0x14, गिनती);
+    dprintf(1, "Found %d lpt ports\n", गिनती);
 
     // Equipment word bits 14..15 determing # parallel ports
-    set_equipment_flags(0xc000, count << 14);
+    set_equipment_flags(0xc000, गिनती << 14);
 }
 
-static u16
-getLptAddr(struct bregs *regs)
+अटल u16
+getLptAddr(काष्ठा bregs *regs)
 {
-    if (regs->dx >= 3) {
+    अगर (regs->dx >= 3) {
         set_invalid(regs);
-        return 0;
+        वापस 0;
     }
     u16 addr = GET_BDA(port_lpt[regs->dx]);
-    if (! addr)
+    अगर (! addr)
         set_invalid(regs);
-    return addr;
+    वापस addr;
 }
 
 // INT 17 - PRINTER - WRITE CHARACTER
-static void
-handle_1700(struct bregs *regs)
+अटल व्योम
+handle_1700(काष्ठा bregs *regs)
 {
     u16 addr = getLptAddr(regs);
-    if (!addr)
-        return;
+    अगर (!addr)
+        वापस;
 
     u32 end = irqtimer_calc_ticks(GET_BDA(lpt_timeout[regs->dx]));
 
@@ -246,17 +246,17 @@ handle_1700(struct bregs *regs)
     udelay(5);
     outb(val8 & ~0x01, addr+2);
 
-    for (;;) {
+    क्रम (;;) {
         u8 v = inb(addr+1);
-        if (!(v & 0x40)) {
+        अगर (!(v & 0x40)) {
             // Success
             regs->ah = v ^ 0x48;
-            break;
+            अवरोध;
         }
-        if (irqtimer_check(end)) {
+        अगर (irqtimer_check(end)) {
             // Timeout
             regs->ah = (v ^ 0x48) | 0x01;
-            break;
+            अवरोध;
         }
         yield();
     }
@@ -265,12 +265,12 @@ handle_1700(struct bregs *regs)
 }
 
 // INT 17 - PRINTER - INITIALIZE PORT
-static void
-handle_1701(struct bregs *regs)
+अटल व्योम
+handle_1701(काष्ठा bregs *regs)
 {
     u16 addr = getLptAddr(regs);
-    if (!addr)
-        return;
+    अगर (!addr)
+        वापस;
 
     u8 val8 = inb(addr+2);
     outb(val8 & ~0x04, addr+2); // send init
@@ -282,36 +282,36 @@ handle_1701(struct bregs *regs)
 }
 
 // INT 17 - PRINTER - GET STATUS
-static void
-handle_1702(struct bregs *regs)
+अटल व्योम
+handle_1702(काष्ठा bregs *regs)
 {
     u16 addr = getLptAddr(regs);
-    if (!addr)
-        return;
+    अगर (!addr)
+        वापस;
     regs->ah = inb(addr+1) ^ 0x48;
     set_success(regs);
 }
 
-static void
-handle_17XX(struct bregs *regs)
+अटल व्योम
+handle_17XX(काष्ठा bregs *regs)
 {
     set_unimplemented(regs);
 }
 
 // INT17h : Printer Service Entry Point
-void VISIBLE16
-handle_17(struct bregs *regs)
+व्योम VISIBLE16
+handle_17(काष्ठा bregs *regs)
 {
     debug_enter(regs, DEBUG_HDL_17);
-    if (! CONFIG_LPT) {
+    अगर (! CONFIG_LPT) {
         handle_17XX(regs);
-        return;
+        वापस;
     }
 
-    switch (regs->ah) {
-    case 0x00: handle_1700(regs); break;
-    case 0x01: handle_1701(regs); break;
-    case 0x02: handle_1702(regs); break;
-    default:   handle_17XX(regs); break;
+    चयन (regs->ah) {
+    हाल 0x00: handle_1700(regs); अवरोध;
+    हाल 0x01: handle_1701(regs); अवरोध;
+    हाल 0x02: handle_1702(regs); अवरोध;
+    शेष:   handle_17XX(regs); अवरोध;
     }
 }

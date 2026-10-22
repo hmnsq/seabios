@@ -1,12 +1,12 @@
-#ifndef __PNPHEADER_H
-#define __PNPHEADER_H
+#अगर_अघोषित __PNPHEADER_H
+#घोषणा __PNPHEADER_H
 
-#define PNP_SIGNATURE 0x506e5024 // $PnP
+#घोषणा PNP_SIGNATURE 0x506e5024 // $PnP
 
-struct pnpheader {
+काष्ठा pnpheader {
     u32 signature;
     u8 version;
-    u8 length;
+    u8 लंबाई;
     u16 control;
     u8 checksum;
     u32 eventloc;
@@ -19,6 +19,6 @@ struct pnpheader {
     u32 prot_database;
 } PACKED;
 
-#define FUNCTION_NOT_SUPPORTED 0x82
+#घोषणा FUNCTION_NOT_SUPPORTED 0x82
 
-#endif // pnpheader.h
+#पूर्ण_अगर // pnpheader.h

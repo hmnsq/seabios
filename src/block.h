@@ -1,54 +1,54 @@
-#ifndef __BLOCK_H
-#define __BLOCK_H
+#अगर_अघोषित __BLOCK_H
+#घोषणा __BLOCK_H
 
-#include "types.h" // u32
+#समावेश "types.h" // u32
 
 
 /****************************************************************
  * Disk command request
  ****************************************************************/
 
-struct disk_op_s {
-    void *buf_fl;
-    struct drive_s *drive_fl;
+काष्ठा disk_op_s {
+    व्योम *buf_fl;
+    काष्ठा drive_s *drive_fl;
     u8 command;
-    u16 count;
-    union {
+    u16 गिनती;
+    जोड़ {
         // Commands: READ, WRITE, VERIFY, SEEK, FORMAT
         u64 lba;
         // Commands: SCSI
-        struct {
+        काष्ठा {
             u16 blocksize;
-            void *cdbcmd;
+            व्योम *cdbcmd;
         };
     };
 };
 
-#define CMD_RESET   0x00
-#define CMD_READ    0x02
-#define CMD_WRITE   0x03
-#define CMD_VERIFY  0x04
-#define CMD_FORMAT  0x05
-#define CMD_SEEK    0x07
-#define CMD_ISREADY 0x10
-#define CMD_SCSI    0x20
+#घोषणा CMD_RESET   0x00
+#घोषणा CMD_READ    0x02
+#घोषणा CMD_WRITE   0x03
+#घोषणा CMD_VERIFY  0x04
+#घोषणा CMD_FORMAT  0x05
+#घोषणा CMD_SEEK    0x07
+#घोषणा CMD_ISREADY 0x10
+#घोषणा CMD_SCSI    0x20
 
 
 /****************************************************************
  * Global storage
  ****************************************************************/
 
-struct chs_s {
-    u16 head;
+काष्ठा chs_s {
+    u16 शीर्ष;
     u16 cylinder;
     u16 sector;
     u16 pad;
 };
 
-struct drive_s {
+काष्ठा drive_s {
     u8 type;            // Driver type (DTYPE_*)
     u8 floppy_type;     // Type of floppy (only for floppy drives).
-    struct chs_s lchs;  // Logical CHS
+    काष्ठा chs_s lchs;  // Logical CHS
     u64 sectors;        // Total sectors count
     u32 cntl_id;        // Unique id for a given driver type.
     u8 removable;       // Is media removable (currently unused)
@@ -56,50 +56,50 @@ struct drive_s {
     // Info for EDD calls
     u8 translation;     // type of translation
     u16 blksize;        // block size
-    struct chs_s pchs;  // Physical CHS
-    u32 max_segment_size; //max_segment_size
+    काष्ठा chs_s pchs;  // Physical CHS
+    u32 max_segment_आकार; //max_segment_size
     u32 max_segments;   //max_segments
 };
 
-#define DISK_SECTOR_SIZE  512
-#define CDROM_SECTOR_SIZE 2048
+#घोषणा DISK_SECTOR_आकार  512
+#घोषणा CDROM_SECTOR_आकार 2048
 
-#define DTYPE_NONE         0x00
-#define DTYPE_FLOPPY       0x10
-#define DTYPE_ATA          0x20
-#define DTYPE_ATA_ATAPI    0x21
-#define DTYPE_RAMDISK      0x30
-#define DTYPE_CDEMU        0x40
-#define DTYPE_AHCI         0x50
-#define DTYPE_AHCI_ATAPI   0x51
-#define DTYPE_VIRTIO_SCSI  0x60
-#define DTYPE_VIRTIO_BLK   0x61
-#define DTYPE_USB          0x70
-#define DTYPE_USB_32       0x71
-#define DTYPE_UAS          0x72
-#define DTYPE_UAS_32       0x73
-#define DTYPE_LSI_SCSI     0x80
-#define DTYPE_ESP_SCSI     0x81
-#define DTYPE_MEGASAS      0x82
-#define DTYPE_PVSCSI       0x83
-#define DTYPE_MPT_SCSI     0x84
-#define DTYPE_SDCARD       0x90
-#define DTYPE_NVME         0x91
+#घोषणा DTYPE_NONE         0x00
+#घोषणा DTYPE_FLOPPY       0x10
+#घोषणा DTYPE_ATA          0x20
+#घोषणा DTYPE_ATA_ATAPI    0x21
+#घोषणा DTYPE_RAMDISK      0x30
+#घोषणा DTYPE_CDEMU        0x40
+#घोषणा DTYPE_AHCI         0x50
+#घोषणा DTYPE_AHCI_ATAPI   0x51
+#घोषणा DTYPE_VIRTIO_SCSI  0x60
+#घोषणा DTYPE_VIRTIO_BLK   0x61
+#घोषणा DTYPE_USB          0x70
+#घोषणा DTYPE_USB_32       0x71
+#घोषणा DTYPE_UAS          0x72
+#घोषणा DTYPE_UAS_32       0x73
+#घोषणा DTYPE_LSI_SCSI     0x80
+#घोषणा DTYPE_ESP_SCSI     0x81
+#घोषणा DTYPE_MEGASAS      0x82
+#घोषणा DTYPE_PVSCSI       0x83
+#घोषणा DTYPE_MPT_SCSI     0x84
+#घोषणा DTYPE_SDCARD       0x90
+#घोषणा DTYPE_NVME         0x91
 
-#define MAXDESCSIZE 80
+#घोषणा MAXDESCSIZE 80
 
-#define TRANSLATION_NONE  0
-#define TRANSLATION_LBA   1
-#define TRANSLATION_LARGE 2
-#define TRANSLATION_RECHS 3
-#define TRANSLATION_HOST 4
+#घोषणा TRANSLATION_NONE  0
+#घोषणा TRANSLATION_LBA   1
+#घोषणा TRANSLATION_LARGE 2
+#घोषणा TRANSLATION_RECHS 3
+#घोषणा TRANSLATION_HOST 4
 
-#define EXTTYPE_FLOPPY 0
-#define EXTTYPE_HD 1
-#define EXTTYPE_CD 2
+#घोषणा EXTTYPE_FLOPPY 0
+#घोषणा EXTTYPE_HD 1
+#घोषणा EXTTYPE_CD 2
 
-#define EXTSTART_HD 0x80
-#define EXTSTART_CD 0xE0
+#घोषणा EXTSTART_HD 0x80
+#घोषणा EXTSTART_CD 0xE0
 
 
 /****************************************************************
@@ -107,18 +107,18 @@ struct drive_s {
  ****************************************************************/
 
 // block.c
-extern u8 FloppyCount, CDCount;
-extern u8 *bounce_buf_fl;
-struct drive_s *getDrive(u8 exttype, u8 extdriveoffset);
-int getDriveId(u8 exttype, struct drive_s *drive);
-void map_floppy_drive(struct drive_s *drive);
-void map_hd_drive(struct drive_s *drive);
-void map_cd_drive(struct drive_s *drive);
-struct int13dpt_s;
-int fill_edd(struct segoff_s edd, struct drive_s *drive_fl);
-void block_setup(void);
-int default_process_op(struct disk_op_s *op);
-int process_op(struct disk_op_s *op);
-int create_bounce_buf(void);
+बाह्य u8 Floppy_गिनती, CDCount;
+बाह्य u8 *bounce_buf_fl;
+काष्ठा drive_s *getDrive(u8 exttype, u8 extdriveoffset);
+पूर्णांक getDriveId(u8 exttype, काष्ठा drive_s *drive);
+व्योम map_floppy_drive(काष्ठा drive_s *drive);
+व्योम map_hd_drive(काष्ठा drive_s *drive);
+व्योम map_cd_drive(काष्ठा drive_s *drive);
+काष्ठा int13dpt_s;
+पूर्णांक fill_edd(काष्ठा segoff_s edd, काष्ठा drive_s *drive_fl);
+व्योम block_setup(व्योम);
+पूर्णांक default_process_op(काष्ठा disk_op_s *op);
+पूर्णांक process_op(काष्ठा disk_op_s *op);
+पूर्णांक create_bounce_buf(व्योम);
 
-#endif // block.h
+#पूर्ण_अगर // block.h

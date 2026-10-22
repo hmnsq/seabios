@@ -4,22 +4,22 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_GLOBALFLAT
-#include "block.h" // DTYPE_USB
-#include "blockcmd.h" // cdb_read
-#include "config.h" // CONFIG_USB_MSC
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "std/disk.h" // DISK_RET_SUCCESS
-#include "string.h" // memset
-#include "usb.h" // struct usb_s
-#include "usb-msc.h" // usb_msc_setup
-#include "util.h" // bootprio_find_usb
+#समावेश "biosvar.h" // GET_GLOBALFLAT
+#समावेश "block.h" // DTYPE_USB
+#समावेश "blockcmd.h" // cdb_read
+#समावेश "config.h" // CONFIG_USB_MSC
+#समावेश "malloc.h" // free
+#समावेश "output.h" // dprintf
+#समावेश "std/disk.h" // DISK_RET_SUCCESS
+#समावेश "string.h" // memset
+#समावेश "usb.h" // struct usb_s
+#समावेश "usb-msc.h" // usb_msc_setup
+#समावेश "util.h" // bootprio_find_usb
 
-struct usbdrive_s {
-    struct drive_s drive;
-    struct usb_pipe *bulkin, *bulkout;
-    int lun;
+काष्ठा usbdrive_s {
+    काष्ठा drive_s drive;
+    काष्ठा usb_pipe *bulkin, *bulkout;
+    पूर्णांक lun;
 };
 
 
@@ -27,144 +27,144 @@ struct usbdrive_s {
  * Bulk-only drive command processing
  ****************************************************************/
 
-#define USB_CDB_SIZE 12
+#घोषणा USB_CDB_आकार 12
 
-#define CBW_SIGNATURE 0x43425355 // USBC
+#घोषणा CBW_SIGNATURE 0x43425355 // USBC
 
-struct cbw_s {
+काष्ठा cbw_s {
     u32 dCBWSignature;
     u32 dCBWTag;
-    u32 dCBWDataTransferLength;
+    u32 d_CBWData_Transfer_लंबाई;
     u8 bmCBWFlags;
     u8 bCBWLUN;
     u8 bCBWCBLength;
     u8 CBWCB[16];
 } PACKED;
 
-#define CSW_SIGNATURE 0x53425355 // USBS
+#घोषणा CSW_SIGNATURE 0x53425355 // USBS
 
-struct csw_s {
+काष्ठा csw_s {
     u32 dCSWSignature;
     u32 dCSWTag;
     u32 dCSWDataResidue;
     u8 bCSWStatus;
 } PACKED;
 
-static int
-usb_msc_send(struct usbdrive_s *udrive_gf, int dir, void *buf, u32 bytes)
+अटल पूर्णांक
+usb_msc_send(काष्ठा usbdrive_s *udrive_gf, पूर्णांक dir, व्योम *buf, u32 bytes)
 {
-    struct usb_pipe *pipe;
-    if (dir == USB_DIR_OUT)
+    काष्ठा usb_pipe *pipe;
+    अगर (dir == USB_DIR_OUT)
         pipe = GET_GLOBALFLAT(udrive_gf->bulkout);
-    else
+    अन्यथा
         pipe = GET_GLOBALFLAT(udrive_gf->bulkin);
-    return usb_send_bulk(pipe, dir, buf, bytes);
+    वापस usb_send_bulk(pipe, dir, buf, bytes);
 }
 
 // Low-level usb command transmit function.
-int
-usb_process_op(struct disk_op_s *op)
+पूर्णांक
+usb_process_op(काष्ठा disk_op_s *op)
 {
-    if (!CONFIG_USB_MSC)
-        return 0;
+    अगर (!CONFIG_USB_MSC)
+        वापस 0;
 
     dprintf(16, "usb_cmd_data id=%p write=%d count=%d buf=%p\n"
-            , op->drive_fl, 0, op->count, op->buf_fl);
-    struct usbdrive_s *udrive_gf = container_of(
-        op->drive_fl, struct usbdrive_s, drive);
+            , op->drive_fl, 0, op->गिनती, op->buf_fl);
+    काष्ठा usbdrive_s *udrive_gf = container_of(
+        op->drive_fl, काष्ठा usbdrive_s, drive);
 
     // Setup command block wrapper.
-    struct cbw_s cbw;
-    memset(&cbw, 0, sizeof(cbw));
-    int blocksize = scsi_fill_cmd(op, cbw.CBWCB, USB_CDB_SIZE);
-    if (blocksize < 0)
-        return default_process_op(op);
-    u32 bytes = blocksize * op->count;
+    काष्ठा cbw_s cbw;
+    स_रखो(&cbw, 0, माप(cbw));
+    पूर्णांक blocksize = scsi_fill_cmd(op, cbw.CBWCB, USB_CDB_आकार);
+    अगर (blocksize < 0)
+        वापस default_process_op(op);
+    u32 bytes = blocksize * op->गिनती;
     cbw.dCBWSignature = CBW_SIGNATURE;
     cbw.dCBWTag = 999; // XXX
-    cbw.dCBWDataTransferLength = bytes;
+    cbw.d_CBWData_Transfer_लंबाई = bytes;
     cbw.bmCBWFlags = scsi_is_read(op) ? USB_DIR_IN : USB_DIR_OUT;
     cbw.bCBWLUN = GET_GLOBALFLAT(udrive_gf->lun);
-    cbw.bCBWCBLength = USB_CDB_SIZE;
+    cbw.bCBWCBLength = USB_CDB_आकार;
 
     // Transfer cbw to device.
-    int ret = usb_msc_send(udrive_gf, USB_DIR_OUT
-                           , MAKE_FLATPTR(GET_SEG(SS), &cbw), sizeof(cbw));
-    if (ret)
-        goto fail;
+    पूर्णांक ret = usb_msc_send(udrive_gf, USB_DIR_OUT
+                           , MAKE_FLATPTR(GET_SEG(SS), &cbw), माप(cbw));
+    अगर (ret)
+        जाओ fail;
 
     // Transfer data to/from device.
-    if (bytes) {
+    अगर (bytes) {
         ret = usb_msc_send(udrive_gf, cbw.bmCBWFlags, op->buf_fl, bytes);
-        if (ret)
-            goto fail;
+        अगर (ret)
+            जाओ fail;
     }
 
     // Transfer csw info.
-    struct csw_s csw;
+    काष्ठा csw_s csw;
     ret = usb_msc_send(udrive_gf, USB_DIR_IN
-                       , MAKE_FLATPTR(GET_SEG(SS), &csw), sizeof(csw));
-    if (ret)
-        goto fail;
+                       , MAKE_FLATPTR(GET_SEG(SS), &csw), माप(csw));
+    अगर (ret)
+        जाओ fail;
 
-    if (!csw.bCSWStatus)
-        return DISK_RET_SUCCESS;
-    if (csw.bCSWStatus == 2)
-        goto fail;
+    अगर (!csw.bCSWStatus)
+        वापस DISK_RET_SUCCESS;
+    अगर (csw.bCSWStatus == 2)
+        जाओ fail;
 
-    if (blocksize)
-        op->count -= csw.dCSWDataResidue / blocksize;
-    return DISK_RET_EBADTRACK;
+    अगर (blocksize)
+        op->गिनती -= csw.dCSWDataResidue / blocksize;
+    वापस DISK_RET_EBADTRACK;
 
 fail:
     // XXX - reset connection
     dprintf(1, "USB transmission failed\n");
-    return DISK_RET_EBADTRACK;
+    वापस DISK_RET_EBADTRACK;
 }
 
-static int
-usb_msc_maxlun(struct usb_pipe *pipe)
+अटल पूर्णांक
+usb_msc_maxlun(काष्ठा usb_pipe *pipe)
 {
-    struct usb_ctrlrequest req;
+    काष्ठा usb_ctrlrequest req;
     req.bRequestType = USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_INTERFACE;
     req.bRequest = 0xfe;
-    req.wValue = 0;
-    req.wIndex = 0;
-    req.wLength = 1;
-    unsigned char maxlun;
-    int ret = usb_send_default_control(pipe, &req, &maxlun);
-    if (ret)
-        return 0;
-    return maxlun;
+    req.w_मूल्य = 0;
+    req.w_सूचकांक = 0;
+    req.w_लंबाई = 1;
+    अचिन्हित अक्षर maxlun;
+    पूर्णांक ret = usb_send_default_control(pipe, &req, &maxlun);
+    अगर (ret)
+        वापस 0;
+    वापस maxlun;
 }
 
-static int
-usb_msc_lun_setup(struct usb_pipe *inpipe, struct usb_pipe *outpipe,
-                  struct usbdevice_s *usbdev, int lun)
+अटल पूर्णांक
+usb_msc_lun_setup(काष्ठा usb_pipe *inpipe, काष्ठा usb_pipe *outpipe,
+                  काष्ठा usbdevice_s *usbdev, पूर्णांक lun)
 {
     // Allocate drive structure.
-    struct usbdrive_s *drive = malloc_fseg(sizeof(*drive));
-    if (!drive) {
+    काष्ठा usbdrive_s *drive = malloc_fseg(माप(*drive));
+    अगर (!drive) {
         warn_noalloc();
-        return -1;
+        वापस -1;
     }
-    memset(drive, 0, sizeof(*drive));
-    if (usb_32bit_pipe(inpipe))
+    स_रखो(drive, 0, माप(*drive));
+    अगर (usb_32bit_pipe(inpipe))
         drive->drive.type = DTYPE_USB_32;
-    else
+    अन्यथा
         drive->drive.type = DTYPE_USB;
     drive->bulkin = inpipe;
     drive->bulkout = outpipe;
     drive->lun = lun;
 
-    int prio = bootprio_find_usb(usbdev, lun);
-    int ret = scsi_drive_setup(&drive->drive, "USB MSC", prio);
-    if (ret) {
+    पूर्णांक prio = bootprio_find_usb(usbdev, lun);
+    पूर्णांक ret = scsi_drive_setup(&drive->drive, "USB MSC", prio);
+    अगर (ret) {
         dprintf(1, "Unable to configure USB MSC drive.\n");
-        free(drive);
-        return -1;
+        मुक्त(drive);
+        वापस -1;
     }
-    return 0;
+    वापस 0;
 }
 
 /****************************************************************
@@ -172,51 +172,51 @@ usb_msc_lun_setup(struct usb_pipe *inpipe, struct usb_pipe *outpipe,
  ****************************************************************/
 
 // Configure a usb msc device.
-int
-usb_msc_setup(struct usbdevice_s *usbdev)
+पूर्णांक
+usb_msc_setup(काष्ठा usbdevice_s *usbdev)
 {
-    if (!CONFIG_USB_MSC)
-        return -1;
+    अगर (!CONFIG_USB_MSC)
+        वापस -1;
 
     // Verify right kind of device
-    struct usb_interface_descriptor *iface = usbdev->iface;
-    if ((iface->bInterfaceSubClass != US_SC_SCSI &&
+    काष्ठा usb_interface_descriptor *iface = usbdev->iface;
+    अगर ((iface->bInterfaceSubClass != US_SC_SCSI &&
          iface->bInterfaceSubClass != US_SC_ATAPI_8070 &&
          iface->bInterfaceSubClass != US_SC_ATAPI_8020)
         || iface->bInterfaceProtocol != US_PR_BULK) {
         dprintf(1, "Unsupported MSC USB device (subclass=%02x proto=%02x)\n"
                 , iface->bInterfaceSubClass, iface->bInterfaceProtocol);
-        return -1;
+        वापस -1;
     }
 
     // Find bulk in and bulk out endpoints.
-    struct usb_pipe *inpipe = NULL, *outpipe = NULL;
-    struct usb_endpoint_descriptor *indesc = usb_find_desc(
+    काष्ठा usb_pipe *inpipe = शून्य, *outpipe = शून्य;
+    काष्ठा usb_endpoint_descriptor *indesc = usb_find_desc(
         usbdev, USB_ENDPOINT_XFER_BULK, USB_DIR_IN);
-    struct usb_endpoint_descriptor *outdesc = usb_find_desc(
+    काष्ठा usb_endpoint_descriptor *outdesc = usb_find_desc(
         usbdev, USB_ENDPOINT_XFER_BULK, USB_DIR_OUT);
-    if (!indesc || !outdesc)
-        goto fail;
+    अगर (!indesc || !outdesc)
+        जाओ fail;
     inpipe = usb_alloc_pipe(usbdev, indesc);
     outpipe = usb_alloc_pipe(usbdev, outdesc);
-    if (!inpipe || !outpipe)
-        goto fail;
+    अगर (!inpipe || !outpipe)
+        जाओ fail;
 
-    int maxlun = usb_msc_maxlun(usbdev->defpipe);
-    int lun, pipesused = 0;
-    for (lun = 0; lun < maxlun + 1; lun++) {
-        int ret = usb_msc_lun_setup(inpipe, outpipe, usbdev, lun);
-        if (!ret)
+    पूर्णांक maxlun = usb_msc_maxlun(usbdev->defpipe);
+    पूर्णांक lun, pipesused = 0;
+    क्रम (lun = 0; lun < maxlun + 1; lun++) {
+        पूर्णांक ret = usb_msc_lun_setup(inpipe, outpipe, usbdev, lun);
+        अगर (!ret)
             pipesused = 1;
     }
 
-    if (!pipesused)
-        goto fail;
+    अगर (!pipesused)
+        जाओ fail;
 
-    return 0;
+    वापस 0;
 fail:
     dprintf(1, "Unable to configure USB MSC device.\n");
     usb_free_pipe(usbdev, inpipe);
     usb_free_pipe(usbdev, outpipe);
-    return -1;
+    वापस -1;
 }

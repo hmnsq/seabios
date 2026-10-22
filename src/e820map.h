@@ -1,28 +1,28 @@
-#ifndef __E820MAP_H
-#define __E820MAP_H
+#अगर_अघोषित __E820MAP_H
+#घोषणा __E820MAP_H
 
-#include "types.h" // u64
+#समावेश "types.h" // u64
 
-#define E820_RAM            1
-#define E820_RESERVED       2
-#define E820_ACPI           3
-#define E820_NVS            4
-#define E820_UNUSABLE       5
-#define E820_SOFT_RESERVED  0xEFFFFFFF
+#घोषणा E820_RAM            1
+#घोषणा E820_RESERVED       2
+#घोषणा E820_ACPI           3
+#घोषणा E820_NVS            4
+#घोषणा E820_UNUSABLE       5
+#घोषणा E820_SOFT_RESERVED  0xEFFFFFFF
 
-struct e820entry {
+काष्ठा e820entry {
     u64 start;
-    u64 size;
+    u64 आकार;
     u32 type;
 };
 
-void e820_add(u64 start, u64 size, u32 type);
-void e820_remove(u64 start, u64 size);
-void e820_prepboot(void);
-int e820_is_used(u64 start, u64 size);
+व्योम e820_add(u64 start, u64 आकार, u32 type);
+व्योम e820_remove(u64 start, u64 आकार);
+व्योम e820_prepboot(व्योम);
+पूर्णांक e820_is_used(u64 start, u64 आकार);
 
 // e820 map storage
-extern struct e820entry e820_list[];
-extern int e820_count;
+बाह्य काष्ठा e820entry e820_list[];
+बाह्य पूर्णांक e820_गिनती;
 
-#endif // e820map.h
+#पूर्ण_अगर // e820map.h

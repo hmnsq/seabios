@@ -1,9 +1,9 @@
-#ifndef _VIRTIO_MMIO_H
-#define _VIRTIO_MMIO_H
+#अगर_अघोषित _VIRTIO_MMIO_H
+#घोषणा _VIRTIO_MMIO_H
 
-struct vp_device;
+काष्ठा vp_device;
 
-typedef struct virtio_mmio_cfg {
+प्रकार काष्ठा virtio_mmio_cfg {
     u32 magic;
     u32 version;
     u32 device_id;
@@ -16,12 +16,12 @@ typedef struct virtio_mmio_cfg {
 
     u32 guest_feature;
     u32 guest_feature_select;
-    u32 legacy_guest_page_size;
+    u32 legacy_guest_page_आकार;
     u32 res_2c;
 
     u32 queue_select;
-    u32 queue_num_max;
-    u32 queue_num;
+    u32 queue_अंक_max;
+    u32 queue_अंक;
     u32 legacy_queue_align;
 
     u32 legacy_queue_pfn;
@@ -70,8 +70,8 @@ typedef struct virtio_mmio_cfg {
     u32 config_generation;
 } virtio_mmio_cfg;
 
-void virtio_mmio_setup_acpi(void);
-void virtio_mmio_setup_one(u64 mmio);
-void vp_init_mmio(struct vp_device *vp, void *mmio);
+व्योम virtio_mmio_setup_acpi(व्योम);
+व्योम virtio_mmio_setup_one(u64 mmio);
+व्योम vp_init_mmio(काष्ठा vp_device *vp, व्योम *mmio);
 
-#endif /* _VIRTIO_MMIO_H */
+#पूर्ण_अगर /* _VIRTIO_MMIO_H */

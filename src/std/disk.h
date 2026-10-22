@@ -1,23 +1,23 @@
 // Standard disk BIOS definitions.
-#ifndef __DISK_H
-#define __DISK_H
+#अगर_अघोषित __DISK_H
+#घोषणा __DISK_H
 
-#include "types.h" // u8
+#समावेश "types.h" // u8
 
-#define DISK_RET_SUCCESS       0x00
-#define DISK_RET_EPARAM        0x01
-#define DISK_RET_EADDRNOTFOUND 0x02
-#define DISK_RET_EWRITEPROTECT 0x03
-#define DISK_RET_ECHANGED      0x06
-#define DISK_RET_EBOUNDARY     0x09
-#define DISK_RET_EBADTRACK     0x0c
-#define DISK_RET_ECONTROLLER   0x20
-#define DISK_RET_ETIMEOUT      0x80
-#define DISK_RET_ENOTLOCKED    0xb0
-#define DISK_RET_ELOCKED       0xb1
-#define DISK_RET_ENOTREMOVABLE 0xb2
-#define DISK_RET_ETOOMANYLOCKS 0xb4
-#define DISK_RET_ENOTREADY     0xAA
+#घोषणा DISK_RET_SUCCESS       0x00
+#घोषणा DISK_RET_EPARAM        0x01
+#घोषणा DISK_RET_EADDRNOTFOUND 0x02
+#घोषणा DISK_RET_EWRITEPROTECT 0x03
+#घोषणा DISK_RET_ECHANGED      0x06
+#घोषणा DISK_RET_EBOUNDARY     0x09
+#घोषणा DISK_RET_EBADTRACK     0x0c
+#घोषणा DISK_RET_ECONTROLLER   0x20
+#घोषणा DISK_RET_ETIMEOUT      0x80
+#घोषणा DISK_RET_ENOTLOCKED    0xb0
+#घोषणा DISK_RET_ELOCKED       0xb1
+#घोषणा DISK_RET_ENOTREMOVABLE 0xb2
+#घोषणा DISK_RET_ETOOMANYLOCKS 0xb4
+#घोषणा DISK_RET_ENOTREADY     0xAA
 
 
 /****************************************************************
@@ -25,16 +25,16 @@
  ****************************************************************/
 
 // Bios disk structures.
-struct int13ext_s {
-    u8  size;
+काष्ठा int13ext_s {
+    u8  आकार;
     u8  reserved;
-    u16 count;
-    struct segoff_s data;
+    u16 गिनती;
+    काष्ठा segoff_s तथ्य;
     u64 lba;
 } PACKED;
 
 // DPTE definition
-struct dpte_s {
+काष्ठा dpte_s {
     u16 iobase1;
     u16 iobase2;
     u8  prefix;
@@ -50,29 +50,29 @@ struct dpte_s {
 };
 
 // Disk Physical Table definition
-struct int13dpt_s {
-    u16 size;
+काष्ठा int13dpt_s {
+    u16 आकार;
     u16 infos;
     u32 cylinders;
     u32 heads;
     u32 spt;
-    u64 sector_count;
+    u64 sector_गिनती;
     u16 blksize;
-    struct segoff_s dpte;
-    u16 key;
-    u8  dpi_length;
+    काष्ठा segoff_s dpte;
+    u16 कुंजी;
+    u8  dpi_लंबाई;
     u8  reserved1;
     u16 reserved2;
     u8  host_bus[4];
     u8  iface_type[8];
     u64 iface_path;
-    union {
-        struct {
+    जोड़ {
+        काष्ठा {
             u64 device_path;
             u8  reserved3;
             u8  checksum;
         } phoenix;
-        struct {
+        काष्ठा {
             u64 device_path[2];
             u8  reserved3;
             u8  checksum;
@@ -81,7 +81,7 @@ struct int13dpt_s {
 } PACKED;
 
 // Floppy info
-struct fdpt_s {
+काष्ठा fdpt_s {
     u16 cylinders;
     u8 heads;
     u8 a0h_signature;
@@ -97,25 +97,25 @@ struct fdpt_s {
 } PACKED;
 
 // Floppy "Disk Base Table"
-struct floppy_dbt_s {
+काष्ठा floppy_dbt_s {
     u8 specify1;
     u8 specify2;
     u8 shutoff_ticks;
     u8 bps_code;
     u8 sectors;
     u8 interblock_len;
-    u8 data_len;
+    u8 तथ्य_len;
     u8 gap_len;
     u8 fill_byte;
     u8 settle_time;
     u8 startup_time;
 } PACKED;
 
-struct floppy_ext_dbt_s {
-    struct floppy_dbt_s dbt;
+काष्ठा floppy_ext_dbt_s {
+    काष्ठा floppy_dbt_s dbt;
     // Extra fields
     u8 max_track;
-    u8 data_rate;
+    u8 तथ्य_rate;
     u8 drive_type;
 } PACKED;
 
@@ -124,51 +124,51 @@ struct floppy_ext_dbt_s {
  * Master boot record
  ****************************************************************/
 
-struct packed_chs_s {
+काष्ठा packed_chs_s {
     u8 heads;
     u8 sptcyl;
     u8 cyllow;
 } PACKED;
 
-struct partition_s {
+काष्ठा partition_s {
     u8 status;
-    struct packed_chs_s first;
+    काष्ठा packed_chs_s first;
     u8 type;
-    struct packed_chs_s last;
+    काष्ठा packed_chs_s last;
     u32 lba;
-    u32 count;
+    u32 गिनती;
 } PACKED;
 
-struct mbr_s {
+काष्ठा mbr_s {
     u8 code[440];
     // 0x01b8
     u32 diskseg;
     // 0x01bc
     u16 null;
     // 0x01be
-    struct partition_s partitions[4];
+    काष्ठा partition_s partitions[4];
     // 0x01fe
     u16 signature;
 } PACKED;
 
-#define MBR_SIGNATURE 0xaa55
+#घोषणा MBR_SIGNATURE 0xaa55
 
 
 /****************************************************************
  * ElTorito CDROM interface
  ****************************************************************/
 
-struct eltorito_s {
-    u8 size;
+काष्ठा eltorito_s {
+    u8 आकार;
     u8 media;
     u8 emulated_drive;
-    u8 controller_index;
+    u8 controller_सूचकांक;
     u32 ilba;
     u16 device_spec;
-    u16 buffer_segment;
+    u16 बफर_segment;
     u16 load_segment;
-    u16 sector_count;
-    struct packed_chs_s chs;
+    u16 sector_गिनती;
+    काष्ठा packed_chs_s chs;
 } PACKED;
 
-#endif // disk.h
+#पूर्ण_अगर // disk.h

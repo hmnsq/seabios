@@ -136,7 +136,7 @@ __farcall16:
         pushw %cs
         pushw $1f                       // return point
         pushw BREGS_flags(%eax)         // flags
-        pushl BREGS_code(%eax)          // CS:IP
+        pushl BREGS_code(%eax)          // कख:नस
 
         // Load calling registers and invoke call
         RESTOREBREGS_DSEAX
@@ -586,30 +586,30 @@ entry_18:
  ****************************************************************/
 
         // Specify a location in the fixed part of bios area.
-        .macro ORG addr
+        .macro शुरू addr
         .section .fixedaddr.\addr
         .endm
 
-        ORG 0xe05b
+        शुरू 0xe05b
 entry_post:
         cmpl $0, %cs:HaveRunPost                // Check for resume/reboot
         jnz entry_resume
         ENTRY_INTO32 _cfunc32flat_handle_post   // Normal entry point
 
-        ORG 0xe2c3
+        शुरू 0xe2c3
         .global entry_02
 entry_02:
-        ENTRY handle_02  // NMI handler does not switch onto extra stack
+        प्रथम handle_02  // NMI handler does not switch onto extra stack
         iretw
 
-        ORG 0xe3fe
+        शुरू 0xe3fe
         .global entry_13_official
 entry_13_official:
         jmp entry_13
 
         // 0xe401 - OldFDPT in misc.c
 
-        ORG 0xe6f2
+        शुरू 0xe6f2
         .global entry_19_official
 entry_19_official:
         jmp entry_19
@@ -618,44 +618,44 @@ entry_19_official:
 
         // 0xe729 - BaudTable in misc.c
 
-        ORG 0xe739
+        शुरू 0xe739
         IRQ_ENTRY_ARG 14
 
-        ORG 0xe82e
+        शुरू 0xe82e
         IRQ_ENTRY_ARG 16
 
-        ORG 0xe987
+        शुरू 0xe987
         IRQ_ENTRY 09
 
-        ORG 0xec59
+        शुरू 0xec59
         IRQ_ENTRY_ARG 40
 
-        ORG 0xef57
+        शुरू 0xef57
         IRQ_ENTRY 0e
 
         // 0xefc7 - diskette_param_table in misc.c
 
-        ORG 0xefd2
+        शुरू 0xefd2
         IRQ_ENTRY_ARG 17
 
-        ORG 0xf045
+        शुरू 0xf045
 entry_10_0x0f:
-        // XXX - INT 10 Functions 0-Fh Entry Point
+        // XXX - विघ्न 10 Functions 0-Fh Entry Point
         iretw
 
-        ORG 0xf065
+        शुरू 0xf065
 entry_10:
         iretw
 
         // 0xf0a4 - VideoParams in misc.c
 
-        ORG 0xf841
+        शुरू 0xf841
         IRQ_ENTRY_ARG 12
 
-        ORG 0xf84d
+        शुरू 0xf84d
         IRQ_ENTRY_ARG 11
 
-        ORG 0xf859
+        शुरू 0xf859
         .global entry_15_official
 entry_15_official:
         cmpb $0x89, %ah
@@ -664,27 +664,27 @@ entry_15_official:
 
         // 0xfa6e - vgafont8 in font.c
 
-        ORG 0xfe6e
+        शुरू 0xfe6e
         .global entry_1a_official
 entry_1a_official:
         cmpb $0xb1, %ah
         je entry_pcibios16      // PCIBIOS calls can be in protected mode
         IRQ_ENTRY_ARG 1a
 
-        ORG 0xfea5
+        शुरू 0xfea5
         IRQ_ENTRY 08
 
         // 0xfef3 - InitVectors in misc.c
 
-        ORG 0xff53
+        शुरू 0xff53
         .global entry_iret_official
 entry_iret_official:
         iretw
 
-        ORG 0xff54
+        शुरू 0xff54
         IRQ_ENTRY_ARG 05
 
-        ORG 0xfff0 // Power-up Entry Point
+        शुरू 0xfff0 // Power-up Entry Point
         .global reset_vector
 reset_vector:
         ljmpw $SEG_BIOS, $entry_post

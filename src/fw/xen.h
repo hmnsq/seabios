@@ -1,18 +1,18 @@
-#ifndef __XEN_H
-#define __XEN_H
+#अगर_अघोषित __XEN_H
+#घोषणा __XEN_H
 
-void xen_preinit(void);
-void xen_ramsize_preinit(void);
-void xen_hypercall_setup(void);
-void xen_biostable_setup(void);
+व्योम xen_preinit(व्योम);
+व्योम xen_ramsize_preinit(व्योम);
+व्योम xen_hypercall_setup(व्योम);
+व्योम xen_biostable_setup(व्योम);
 
-extern unsigned long xen_hypercall_page;
+बाह्य अचिन्हित दीर्घ xen_hypercall_page;
 
-#define _hypercall0(type, name)                                         \
+#घोषणा _hypercall0(type, name)                                         \
 ({                                                                      \
-    unsigned long __hentry = xen_hypercall_page+__HYPERVISOR_##name*32; \
-    long __res;                                                         \
-    asm volatile (                                                      \
+    अचिन्हित दीर्घ __hentry = xen_hypercall_page+__HYPERVISOR_##name*32; \
+    दीर्घ __res;                                                         \
+    यंत्र अस्थिर (                                                      \
         "call *%%eax"                                                   \
         : "=a" (__res)                                                  \
         : "0" (__hentry)                                                \
@@ -20,69 +20,69 @@ extern unsigned long xen_hypercall_page;
     (type)__res;                                                        \
 })
 
-#define _hypercall1(type, name, a1)                                     \
+#घोषणा _hypercall1(type, name, a1)                                     \
 ({                                                                      \
-    unsigned long __hentry = xen_hypercall_page+__HYPERVISOR_##name*32; \
-    long __res, __ign1;                                                 \
-    asm volatile (                                                      \
+    अचिन्हित दीर्घ __hentry = xen_hypercall_page+__HYPERVISOR_##name*32; \
+    दीर्घ __res, __ign1;                                                 \
+    यंत्र अस्थिर (                                                      \
         "call *%%eax"                                                   \
         : "=a" (__res), "=b" (__ign1)                                   \
-        : "0" (__hentry), "1" ((long)(a1))                              \
+        : "0" (__hentry), "1" ((दीर्घ)(a1))                              \
         : "memory" );                                                   \
     (type)__res;                                                        \
 })
 
-#define _hypercall2(type, name, a1, a2)                                 \
+#घोषणा _hypercall2(type, name, a1, a2)                                 \
 ({                                                                      \
-    unsigned long __hentry = xen_hypercall_page+__HYPERVISOR_##name*32; \
-    long __res, __ign1, __ign2;                                         \
-    asm volatile (                                                      \
+    अचिन्हित दीर्घ __hentry = xen_hypercall_page+__HYPERVISOR_##name*32; \
+    दीर्घ __res, __ign1, __ign2;                                         \
+    यंत्र अस्थिर (                                                      \
         "call *%%eax"                                                   \
         : "=a" (__res), "=b" (__ign1), "=c" (__ign2)                    \
-        : "0" (__hentry), "1" ((long)(a1)), "2" ((long)(a2))            \
+        : "0" (__hentry), "1" ((दीर्घ)(a1)), "2" ((दीर्घ)(a2))            \
         : "memory" );                                                   \
     (type)__res;                                                        \
 })
 
-#define _hypercall3(type, name, a1, a2, a3)                             \
+#घोषणा _hypercall3(type, name, a1, a2, a3)                             \
 ({                                                                      \
-    unsigned long __hentry = xen_hypercall_page+__HYPERVISOR_##name*32; \
-    long __res, __ign1, __ign2, __ign3;                                 \
-    asm volatile (                                                      \
+    अचिन्हित दीर्घ __hentry = xen_hypercall_page+__HYPERVISOR_##name*32; \
+    दीर्घ __res, __ign1, __ign2, __ign3;                                 \
+    यंत्र अस्थिर (                                                      \
         "call *%%eax"                                                   \
         : "=a" (__res), "=b" (__ign1), "=c" (__ign2),                   \
           "=d" (__ign3)                                                 \
-        : "0" (__hentry), "1" ((long)(a1)), "2" ((long)(a2)),           \
-          "3" ((long)(a3))                                              \
+        : "0" (__hentry), "1" ((दीर्घ)(a1)), "2" ((दीर्घ)(a2)),           \
+          "3" ((दीर्घ)(a3))                                              \
         : "memory" );                                                   \
     (type)__res;                                                        \
 })
 
-#define _hypercall4(type, name, a1, a2, a3, a4)                         \
+#घोषणा _hypercall4(type, name, a1, a2, a3, a4)                         \
 ({                                                                      \
-    unsigned long __hentry = xen_hypercall_page+__HYPERVISOR_##name*32; \
-    long __res, __ign1, __ign2, __ign3, __ign4;                         \
-    asm volatile (                                                      \
+    अचिन्हित दीर्घ __hentry = xen_hypercall_page+__HYPERVISOR_##name*32; \
+    दीर्घ __res, __ign1, __ign2, __ign3, __ign4;                         \
+    यंत्र अस्थिर (                                                      \
         "call *%%eax"                                                   \
         : "=a" (__res), "=b" (__ign1), "=c" (__ign2),                   \
           "=d" (__ign3), "=S" (__ign4)                                  \
-        : "0" (__hentry), "1" ((long)(a1)), "2" ((long)(a2)),           \
-          "3" ((long)(a3)), "4" ((long)(a4))                            \
+        : "0" (__hentry), "1" ((दीर्घ)(a1)), "2" ((दीर्घ)(a2)),           \
+          "3" ((दीर्घ)(a3)), "4" ((दीर्घ)(a4))                            \
         : "memory" );                                                   \
     (type)__res;                                                        \
 })
 
-#define _hypercall5(type, name, a1, a2, a3, a4, a5)                     \
+#घोषणा _hypercall5(type, name, a1, a2, a3, a4, a5)                     \
 ({                                                                      \
-    unsigned long __hentry = xen_hypercall_page+__HYPERVISOR_##name*32; \
-    long __res, __ign1, __ign2, __ign3, __ign4, __ign5;                 \
-    asm volatile (                                                      \
+    अचिन्हित दीर्घ __hentry = xen_hypercall_page+__HYPERVISOR_##name*32; \
+    दीर्घ __res, __ign1, __ign2, __ign3, __ign4, __ign5;                 \
+    यंत्र अस्थिर (                                                      \
         "call *%%eax"                                                   \
         : "=a" (__res), "=b" (__ign1), "=c" (__ign2),                   \
           "=d" (__ign3), "=S" (__ign4), "=D" (__ign5)                   \
-        : "0" (__hentry), "1" ((long)(a1)), "2" ((long)(a2)),           \
-          "3" ((long)(a3)), "4" ((long)(a4)),                           \
-          "5" ((long)(a5))                                              \
+        : "0" (__hentry), "1" ((दीर्घ)(a1)), "2" ((दीर्घ)(a2)),           \
+          "3" ((दीर्घ)(a3)), "4" ((दीर्घ)(a4)),                           \
+          "5" ((दीर्घ)(a5))                                              \
         : "memory" );                                                   \
     (type)__res;                                                        \
 })
@@ -113,13 +113,13 @@ extern unsigned long xen_hypercall_page;
 
 /* xen.h */
 
-#define __HYPERVISOR_xen_version          17
+#घोषणा __HYPERVISOR_xen_version          17
 
 /* version.h */
 
 /* arg == xen_extraversion_t. */
-#define XENVER_extraversion 1
-typedef char xen_extraversion_t[16];
-#define XEN_EXTRAVERSION_LEN (sizeof(xen_extraversion_t))
+#घोषणा XENVER_extraversion 1
+प्रकार अक्षर xen_extraversion_t[16];
+#घोषणा XEN_EXTRAVERSION_LEN (माप(xen_extraversion_t))
 
-#endif
+#पूर्ण_अगर

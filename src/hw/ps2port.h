@@ -1,67 +1,67 @@
 // Basic ps2 port (keyboard/mouse) command handling.
-#ifndef __PS2PORT_H
-#define __PS2PORT_H
+#अगर_अघोषित __PS2PORT_H
+#घोषणा __PS2PORT_H
 
-#include "types.h" // u8
+#समावेश "types.h" // u8
 
-#define PORT_PS2_DATA          0x0060
-#define PORT_PS2_STATUS        0x0064
+#घोषणा PORT_PS2_तथ्य          0x0060
+#घोषणा PORT_PS2_STATUS        0x0064
 
 // Standard commands.
-#define I8042_CMD_CTL_RCTR      0x0120
-#define I8042_CMD_CTL_WCTR      0x1060
-#define I8042_CMD_CTL_TEST      0x01aa
+#घोषणा I8042_CMD_CTL_RCTR      0x0120
+#घोषणा I8042_CMD_CTL_WCTR      0x1060
+#घोषणा I8042_CMD_CTL_TEST      0x01aa
 
-#define I8042_CMD_KBD_TEST      0x01ab
-#define I8042_CMD_KBD_DISABLE   0x00ad
-#define I8042_CMD_KBD_ENABLE    0x00ae
+#घोषणा I8042_CMD_KBD_TEST      0x01ab
+#घोषणा I8042_CMD_KBD_DISABLE   0x00ad
+#घोषणा I8042_CMD_KBD_ENABLE    0x00ae
 
-#define I8042_CMD_AUX_DISABLE   0x00a7
-#define I8042_CMD_AUX_ENABLE    0x00a8
-#define I8042_CMD_AUX_SEND      0x10d4
+#घोषणा I8042_CMD_AUX_DISABLE   0x00a7
+#घोषणा I8042_CMD_AUX_ENABLE    0x00a8
+#घोषणा I8042_CMD_AUX_SEND      0x10d4
 
 // Keyboard commands
-#define ATKBD_CMD_SETLEDS       0x10ed
-#define ATKBD_CMD_SSCANSET      0x10f0
-#define ATKBD_CMD_GETID         0x02f2
-#define ATKBD_CMD_ENABLE        0x00f4
-#define ATKBD_CMD_RESET_DIS     0x00f5
-#define ATKBD_CMD_RESET_BAT     0x01ff
+#घोषणा ATKBD_CMD_SETLEDS       0x10ed
+#घोषणा ATKBD_CMD_SSCANSET      0x10f0
+#घोषणा ATKBD_CMD_GETID         0x02f2
+#घोषणा ATKBD_CMD_ENABLE        0x00f4
+#घोषणा ATKBD_CMD_RESET_DIS     0x00f5
+#घोषणा ATKBD_CMD_RESET_BAT     0x01ff
 
 // Mouse commands
-#define PSMOUSE_CMD_SETSCALE11  0x00e6
-#define PSMOUSE_CMD_SETSCALE21  0x00e7
-#define PSMOUSE_CMD_SETRES      0x10e8
-#define PSMOUSE_CMD_GETINFO     0x03e9
-#define PSMOUSE_CMD_GETID       0x02f2
-#define PSMOUSE_CMD_SETRATE     0x10f3
-#define PSMOUSE_CMD_ENABLE      0x00f4
-#define PSMOUSE_CMD_DISABLE     0x00f5
-#define PSMOUSE_CMD_RESET_BAT   0x02ff
+#घोषणा PSMOUSE_CMD_SETSCALE11  0x00e6
+#घोषणा PSMOUSE_CMD_SETSCALE21  0x00e7
+#घोषणा PSMOUSE_CMD_SETRES      0x10e8
+#घोषणा PSMOUSE_CMD_GETINFO     0x03e9
+#घोषणा PSMOUSE_CMD_GETID       0x02f2
+#घोषणा PSMOUSE_CMD_SETRATE     0x10f3
+#घोषणा PSMOUSE_CMD_ENABLE      0x00f4
+#घोषणा PSMOUSE_CMD_DISABLE     0x00f5
+#घोषणा PSMOUSE_CMD_RESET_BAT   0x02ff
 
 // Status register bits.
-#define I8042_STR_PARITY        0x80
-#define I8042_STR_TIMEOUT       0x40
-#define I8042_STR_AUXDATA       0x20
-#define I8042_STR_KEYLOCK       0x10
-#define I8042_STR_CMDDAT        0x08
-#define I8042_STR_MUXERR        0x04
-#define I8042_STR_IBF           0x02
-#define I8042_STR_OBF           0x01
+#घोषणा I8042_STR_PARITY        0x80
+#घोषणा I8042_STR_TIMEOUT       0x40
+#घोषणा I8042_STR_AUXDATA       0x20
+#घोषणा I8042_STR_KEYLOCK       0x10
+#घोषणा I8042_STR_CMDDAT        0x08
+#घोषणा I8042_STR_MUXERR        0x04
+#घोषणा I8042_STR_IBF           0x02
+#घोषणा I8042_STR_OBF           0x01
 
 // Control register bits.
-#define I8042_CTR_KBDINT        0x01
-#define I8042_CTR_AUXINT        0x02
-#define I8042_CTR_IGNKEYLOCK    0x08
-#define I8042_CTR_KBDDIS        0x10
-#define I8042_CTR_AUXDIS        0x20
-#define I8042_CTR_XLATE         0x40
+#घोषणा I8042_CTR_KBDINT        0x01
+#घोषणा I8042_CTR_AUXINT        0x02
+#घोषणा I8042_CTR_IGNKEYLOCK    0x08
+#घोषणा I8042_CTR_KBDDIS        0x10
+#घोषणा I8042_CTR_AUXDIS        0x20
+#घोषणा I8042_CTR_XLATE         0x40
 
 // ps2port.c
-void i8042_reboot(void);
-int ps2_kbd_command(int command, u8 *param);
-int ps2_mouse_command(int command, u8 *param);
-void ps2_check_event(void);
-void ps2port_setup(void);
+व्योम i8042_reboot(व्योम);
+पूर्णांक ps2_kbd_command(पूर्णांक command, u8 *param);
+पूर्णांक ps2_mouse_command(पूर्णांक command, u8 *param);
+व्योम ps2_check_event(व्योम);
+व्योम ps2port_setup(व्योम);
 
-#endif // ps2port.h
+#पूर्ण_अगर // ps2port.h

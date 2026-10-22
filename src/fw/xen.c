@@ -4,26 +4,26 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_XEN
-#include "e820map.h" // e820_add
-#include "hw/serialio.h" // DebugOutputPort
-#include "malloc.h" // memalign_high
-#include "memmap.h" // PAGE_SIZE
-#include "output.h" // dprintf
-#include "paravirt.h" // PlatformRunningOn
-#include "string.h" // memcpy
-#include "util.h" // copy_acpi_rsdp
-#include "x86.h" // cpuid
-#include "xen.h" // xen_extraversion_t
+#समावेश "config.h" // CONFIG_XEN
+#समावेश "e820map.h" // e820_add
+#समावेश "hw/serialio.h" // DebugOutputPort
+#समावेश "malloc.h" // memalign_high
+#समावेश "memmap.h" // PAGE_SIZE
+#समावेश "output.h" // dprintf
+#समावेश "paravirt.h" // PlatformRunningOn
+#समावेश "string.h" // memcpy
+#समावेश "util.h" // copy_acpi_rsdp
+#समावेश "x86.h" // cpuid
+#समावेश "xen.h" // xen_extraversion_t
 
-#define INFO_PHYSICAL_ADDRESS 0x00001000
+#घोषणा INFO_PHYSICAL_ADDRESS 0x00001000
 
 u32 xen_cpuid_base = 0;
-unsigned long xen_hypercall_page = 0;
+अचिन्हित दीर्घ xen_hypercall_page = 0;
 
-struct xen_seabios_info {
-    char signature[14]; /* XenHVMSeaBIOS\0 */
-    u8 length;     /* Length of this struct */
+काष्ठा xen_seabios_info {
+    अक्षर signature[14]; /* XenHVMSeaBIOS\0 */
+    u8 लंबाई;     /* Length of this struct */
     u8 checksum;   /* Set such that the sum over bytes 0..length == 0 */
     /*
      * Physical address of an array of tables_nr elements.
@@ -40,90 +40,90 @@ struct xen_seabios_info {
     u32 e820_nr;
 } PACKED;
 
-static struct xen_seabios_info *validate_info(void)
+अटल काष्ठा xen_seabios_info *validate_info(व्योम)
 {
-    struct xen_seabios_info *t = (void *)INFO_PHYSICAL_ADDRESS;
+    काष्ठा xen_seabios_info *t = (व्योम *)INFO_PHYSICAL_ADDRESS;
 
-    if ( memcmp(t->signature, "XenHVMSeaBIOS", 14) ) {
+    अगर ( स_भेद(t->signature, "XenHVMSeaBIOS", 14) ) {
         dprintf(1, "Bad Xen info signature\n");
-        return NULL;
+        वापस शून्य;
     }
 
-    if ( t->length < sizeof(struct xen_seabios_info) ) {
+    अगर ( t->लंबाई < माप(काष्ठा xen_seabios_info) ) {
         dprintf(1, "Bad Xen info length\n");
-        return NULL;
+        वापस शून्य;
     }
 
-    if (checksum(t, t->length) != 0) {
+    अगर (checksum(t, t->लंबाई) != 0) {
         dprintf(1, "Bad Xen info checksum\n");
-        return NULL;
+        वापस शून्य;
     }
-    return t;
+    वापस t;
 }
 
-void xen_preinit(void)
+व्योम xen_preinit(व्योम)
 {
     u32 base, eax, ebx, ecx, edx;
-    char signature[13];
+    अक्षर signature[13];
 
-    if (!CONFIG_XEN)
-        return;
+    अगर (!CONFIG_XEN)
+        वापस;
 
-    for (base = 0x40000000; base < 0x40010000; base += 0x100) {
+    क्रम (base = 0x40000000; base < 0x40010000; base += 0x100) {
         cpuid(base, &eax, &ebx, &ecx, &edx);
-        memcpy(signature + 0, &ebx, 4);
-        memcpy(signature + 4, &ecx, 4);
-        memcpy(signature + 8, &edx, 4);
+        स_नकल(signature + 0, &ebx, 4);
+        स_नकल(signature + 4, &ecx, 4);
+        स_नकल(signature + 8, &edx, 4);
         signature[12] = 0;
 
         dprintf(9, "Found hypervisor signature \"%s\" at %x\n",
                 signature, base);
-        if (strcmp(signature, "XenVMMXenVMM") == 0) {
+        अगर (म_भेद(signature, "XenVMMXenVMM") == 0) {
             /* Set debug_io_port first, so the following messages work. */
             code_mutable_preinit();
             DebugOutputPort = 0xe9;
             debug_banner();
             dprintf(1, "\nFound Xen hypervisor signature at %x\n", base);
-            if ((eax - base) < 2)
+            अगर ((eax - base) < 2)
                 panic("Insufficient Xen cpuid leaves. eax=%x at base %x\n",
                       eax, base);
             xen_cpuid_base = base;
-            break;
+            अवरोध;
         }
     }
-    if (!xen_cpuid_base) {
+    अगर (!xen_cpuid_base) {
         dprintf(1, "No Xen hypervisor found.\n");
-        return;
+        वापस;
     }
-    if (validate_info())
+    अगर (validate_info())
         PlatformRunningOn = PF_QEMU|PF_XEN;
-    else
+    अन्यथा
         dprintf(1, "Not enabling Xen support due to lack of Xen info\n");
 }
 
-static int hypercall_xen_version( int cmd, void *arg)
+अटल पूर्णांक hypercall_xen_version( पूर्णांक cmd, व्योम *arg)
 {
-    return _hypercall2(int, xen_version, cmd, arg);
+    वापस _hypercall2(पूर्णांक, xen_version, cmd, arg);
 }
 
 /* Fill in hypercall transfer pages. */
-void xen_hypercall_setup(void)
+व्योम xen_hypercall_setup(व्योम)
 {
     u32 eax, ebx, ecx, edx;
     xen_extraversion_t extraversion;
-    unsigned long i;
+    अचिन्हित दीर्घ i;
 
-    if (!runningOnXen())
-        return;
+    अगर (!runningOnXen())
+        वापस;
 
     cpuid(xen_cpuid_base + 2, &eax, &ebx, &ecx, &edx);
 
-    xen_hypercall_page = (unsigned long)memalign_high(PAGE_SIZE, eax*PAGE_SIZE);
-    if (!xen_hypercall_page)
+    xen_hypercall_page = (अचिन्हित दीर्घ)memalign_ऊपरी(PAGE_आकार, eax*PAGE_आकार);
+    अगर (!xen_hypercall_page)
         panic("unable to allocate Xen hypercall page\n");
 
     dprintf(1, "Allocated Xen hypercall page at %lx\n", xen_hypercall_page);
-    for ( i = 0; i < eax; i++ )
+    क्रम ( i = 0; i < eax; i++ )
         wrmsr(ebx, xen_hypercall_page + (i << 12) + i);
 
     /* Print version information. */
@@ -132,37 +132,37 @@ void xen_hypercall_setup(void)
     dprintf(1, "Detected Xen v%u.%u%s\n", eax >> 16, eax & 0xffff, extraversion);
 }
 
-void xen_biostable_setup(void)
+व्योम xen_biostable_setup(व्योम)
 {
-    struct xen_seabios_info *info = validate_info();
-    void **tables;
-    int i;
+    काष्ठा xen_seabios_info *info = validate_info();
+    व्योम **tables;
+    पूर्णांक i;
 
-    if (!info)
+    अगर (!info)
         panic("Xen info corrupted\n");
 
-    tables = (void*)info->tables;
+    tables = (व्योम*)info->tables;
     dprintf(1, "xen: copy BIOS tables...\n");
-    for (i=0; i<info->tables_nr; i++)
+    क्रम (i=0; i<info->tables_nr; i++)
         copy_table(tables[i]);
 
     find_acpi_features();
 }
 
-void xen_ramsize_preinit(void)
+व्योम xen_ramsize_preinit(व्योम)
 {
-    int i;
-    struct xen_seabios_info *info = validate_info();
-    struct e820entry *e820;
+    पूर्णांक i;
+    काष्ठा xen_seabios_info *info = validate_info();
+    काष्ठा e820entry *e820;
 
-    if (!info)
+    अगर (!info)
         panic("Xen info corrupted\n");
 
     dprintf(1, "xen: copy e820...\n");
 
-    e820 = (struct e820entry *)info->e820;
-    for (i = 0; i < info->e820_nr; i++) {
-        struct e820entry *e = &e820[i];
-        e820_add(e->start, e->size, e->type);
+    e820 = (काष्ठा e820entry *)info->e820;
+    क्रम (i = 0; i < info->e820_nr; i++) {
+        काष्ठा e820entry *e = &e820[i];
+        e820_add(e->start, e->आकार, e->type);
     }
 }

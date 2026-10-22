@@ -3,28 +3,28 @@
 // Copyright (C) 2008-2010  Kevin O'Connor <kevin@koconnor.net>
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
-#ifndef __TYPES_H
-#define __TYPES_H
+#अगर_अघोषित __TYPES_H
+#घोषणा __TYPES_H
 
-typedef unsigned char u8;
-typedef signed char s8;
-typedef unsigned short u16;
-typedef signed short s16;
-typedef unsigned int u32;
-typedef signed int s32;
-typedef unsigned long long u64;
-typedef signed long long s64;
-typedef u32 size_t;
+प्रकार अचिन्हित अक्षर u8;
+प्रकार चिन्हित अक्षर s8;
+प्रकार अचिन्हित लघु u16;
+प्रकार चिन्हित लघु s16;
+प्रकार अचिन्हित पूर्णांक u32;
+प्रकार चिन्हित पूर्णांक s32;
+प्रकार अचिन्हित दीर्घ दीर्घ u64;
+प्रकार चिन्हित दीर्घ दीर्घ s64;
+प्रकार u32 माप_प्रकार;
 
-union u64_u32_u {
-    struct { u32 lo, hi; };
+जोड़ u64_u32_u {
+    काष्ठा { u32 lo, hi; };
     u64 val;
 };
 
 // Definition for common 16bit segment/offset pointers.
-struct segoff_s {
-    union {
-        struct {
+काष्ठा segoff_s {
+    जोड़ {
+        काष्ठा {
             u16 offset;
             u16 seg;
         };
@@ -32,26 +32,26 @@ struct segoff_s {
     };
 };
 
-#ifdef MANUAL_NO_JUMP_TABLE
-# define default case 775324556: asm(""); default
-#endif
+#अगर_घोषित MANUAL_NO_JUMP_TABLE
+# define शेष हाल 775324556: यंत्र(""); शेष
+#पूर्ण_अगर
 
-#ifdef WHOLE_PROGRAM
+#अगर_घोषित WHOLE_PROGRAM
 # define __VISIBLE __attribute__((externally_visible))
-#else
+#अन्यथा
 # define __VISIBLE
-#endif
+#पूर्ण_अगर
 
-#define UNIQSEC __FILE__ "." __stringify(__LINE__)
+#घोषणा UNIQSEC __खाता__ "." __stringify(__LINE__)
 
-#define __noreturn __attribute__((noreturn))
-extern void __force_link_error__only_in_32bit_flat(void) __noreturn;
-extern void __force_link_error__only_in_32bit_segmented(void) __noreturn;
-extern void __force_link_error__only_in_16bit(void) __noreturn;
+#घोषणा __noreturn __attribute__((noreturn))
+बाह्य व्योम __force_link_error__only_in_32bit_flat(व्योम) __noreturn;
+बाह्य व्योम __force_link_error__only_in_32bit_segmented(व्योम) __noreturn;
+बाह्य व्योम __force_link_error__only_in_16bit(व्योम) __noreturn;
 
-#define __ASM(code) asm(".section .text.asm." UNIQSEC "\n\t" code)
+#घोषणा __ASM(code) यंत्र(".section .text.asm." UNIQSEC "\n\t" code)
 
-#if MODE16 == 1
+#अगर MODE16 == 1
 // Notes a function as externally visible in the 16bit code chunk.
 # define VISIBLE16 __VISIBLE
 // Notes a function as externally visible in the 32bit flat code chunk.
@@ -77,10 +77,10 @@ extern void __force_link_error__only_in_16bit(void) __noreturn;
 // Designate top-level assembler as 32bit flat only.
 # define ASM32FLAT(code)
 // Compile time check for a given mode.
-# define ASSERT16() do { } while (0)
+# define ASSERT16() करो { } जबतक (0)
 # define ASSERT32SEG() __force_link_error__only_in_32bit_segmented()
 # define ASSERT32FLAT() __force_link_error__only_in_32bit_flat()
-#elif MODESEGMENT == 1
+#या_अगर MODESEGMENT == 1
 # define VISIBLE16
 # define VISIBLE32FLAT
 # define VISIBLE32INIT
@@ -94,9 +94,9 @@ extern void __force_link_error__only_in_16bit(void) __noreturn;
 # define ASM16(code)
 # define ASM32FLAT(code)
 # define ASSERT16() __force_link_error__only_in_16bit()
-# define ASSERT32SEG() do { } while (0)
+# define ASSERT32SEG() करो { } जबतक (0)
 # define ASSERT32FLAT() __force_link_error__only_in_32bit_flat()
-#else
+#अन्यथा
 # define VISIBLE16
 # define VISIBLE32FLAT __section(".text.runtime." UNIQSEC) __VISIBLE
 # define VISIBLE32INIT __section(".text.init." UNIQSEC) __VISIBLE
@@ -111,46 +111,46 @@ extern void __force_link_error__only_in_16bit(void) __noreturn;
 # define ASM32FLAT(code) __ASM(code)
 # define ASSERT16() __force_link_error__only_in_16bit()
 # define ASSERT32SEG() __force_link_error__only_in_32bit_segmented()
-# define ASSERT32FLAT() do { } while (0)
-#endif
+# define ASSERT32FLAT() करो { } जबतक (0)
+#पूर्ण_अगर
 
-#define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
-#define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
-#define FIELD_SIZEOF(t, f) (sizeof(((t*)0)->f))
-#define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
-#define DIV_ROUND_CLOSEST(x, divisor)({                 \
-            typeof(divisor) __divisor = divisor;        \
+#घोषणा दुरत्व(TYPE, MEMBER) ((माप_प्रकार) &((TYPE *)0)->MEMBER)
+#घोषणा ARRAY_आकार(a) (माप(a) / माप(a[0]))
+#घोषणा FIELD_SIZEOF(t, f) (माप(((t*)0)->f))
+#घोषणा DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
+#घोषणा DIV_ROUND_CLOSEST(x, भाजक)({                 \
+            typeof(भाजक) __divisor = भाजक;        \
             (((x) + ((__divisor) / 2)) / (__divisor));  \
         })
-#define ALIGN(x,a)              __ALIGN_MASK(x,(typeof(x))(a)-1)
-#define __ALIGN_MASK(x,mask)    (((x)+(mask))&~(mask))
-#define ALIGN_DOWN(x,a)         ((x) & ~((typeof(x))(a)-1))
-#define container_of(ptr, type, member) ({                      \
-        const typeof( ((type *)0)->member ) *__mptr = (ptr);    \
-        (type *)( (char *)__mptr - offsetof(type,member) );})
-#define container_of_or_null(ptr, type, member) ({              \
-        const typeof( ((type *)0)->member ) *___mptr = (ptr);   \
-        ___mptr ? container_of(___mptr, type, member) : NULL; })
+#घोषणा ALIGN(x,a)              __ALIGN_MASK(x,(typeof(x))(a)-1)
+#घोषणा __ALIGN_MASK(x,mask)    (((x)+(mask))&~(mask))
+#घोषणा ALIGN_DOWN(x,a)         ((x) & ~((typeof(x))(a)-1))
+#घोषणा container_of(ptr, type, member) ({                      \
+        स्थिर typeof( ((type *)0)->member ) *__mptr = (ptr);    \
+        (type *)( (अक्षर *)__mptr - दुरत्व(type,member) );})
+#घोषणा container_of_or_null(ptr, type, member) ({              \
+        स्थिर typeof( ((type *)0)->member ) *___mptr = (ptr);   \
+        ___mptr ? container_of(___mptr, type, member) : शून्य; })
 
-#define likely(x)       __builtin_expect(!!(x), 1)
-#define unlikely(x)     __builtin_expect(!!(x), 0)
+#घोषणा likely(x)       __builtin_expect(!!(x), 1)
+#घोषणा unlikely(x)     __builtin_expect(!!(x), 0)
 
-#define NULL ((void*)0)
+#घोषणा शून्य ((व्योम*)0)
 
-#define __weak __attribute__((weak))
-#define __section(S) __attribute__((section(S)))
+#घोषणा __weak __attribute__((weak))
+#घोषणा __section(S) __attribute__((section(S)))
 
-#define PACKED __attribute__((packed))
-#define __aligned(x) __attribute__((aligned(x)))
+#घोषणा PACKED __attribute__((packed))
+#घोषणा __aligned(x) __attribute__((aligned(x)))
 
-#define barrier() __asm__ __volatile__("": : :"memory")
+#घोषणा barrier() __asm__ __volatile__("": : :"memory")
 
-#define noinline __attribute__((noinline))
-#define __always_inline inline __attribute__((always_inline))
-#define __malloc __attribute__((__malloc__))
-#define __attribute_const __attribute__((__const__))
+#घोषणा noinline __attribute__((noinline))
+#घोषणा __always_inline अंतरभूत __attribute__((always_inline))
+#घोषणा __malloc __attribute__((__malloc__))
+#घोषणा __attribute_const __attribute__((__const__))
 
-#define __stringify_1(x)        #x
-#define __stringify(x)          __stringify_1(x)
+#घोषणा __stringify_1(x)        #x
+#घोषणा __stringify(x)          __stringify_1(x)
 
-#endif // types.h
+#पूर्ण_अगर // types.h

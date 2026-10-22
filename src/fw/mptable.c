@@ -6,49 +6,49 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_*
-#include "hw/pci.h" // pci_bdf_to_bus
-#include "hw/pcidevice.h" // foreachpci
-#include "hw/pci_regs.h" // PCI_INTERRUPT_PIN
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "romfile.h" // romfile_loadint
-#include "std/mptable.h" // MPTABLE_SIGNATURE
-#include "string.h" // memset
-#include "util.h" // MaxCountCPUs
-#include "x86.h" // cpuid
+#समावेश "config.h" // CONFIG_*
+#समावेश "hw/pci.h" // pci_bdf_to_bus
+#समावेश "hw/pcidevice.h" // foreachpci
+#समावेश "hw/pci_regs.h" // PCI_INTERRUPT_PIN
+#समावेश "malloc.h" // free
+#समावेश "output.h" // dprintf
+#समावेश "romfile.h" // romfile_loadint
+#समावेश "std/mptable.h" // MPTABLE_SIGNATURE
+#समावेश "string.h" // memset
+#समावेश "util.h" // MaxCountCPUs
+#समावेश "x86.h" // cpuid
 
-void
-mptable_setup(void)
+व्योम
+mptable_setup(व्योम)
 {
-    if (! CONFIG_MPTABLE)
-        return;
+    अगर (! CONFIG_MPTABLE)
+        वापस;
 
     dprintf(3, "init MPTable\n");
 
     // Config structure in temp area.
-    struct mptable_config_s *config = malloc_tmp(32*1024);
-    if (!config) {
+    काष्ठा mptable_config_s *config = malloc_tmp(32*1024);
+    अगर (!config) {
         warn_noalloc();
-        return;
+        वापस;
     }
-    memset(config, 0, sizeof(*config));
+    स_रखो(config, 0, माप(*config));
     config->signature = MPCONFIG_SIGNATURE;
     config->spec = 4;
-    memcpy(config->oemid, BUILD_CPUNAME8, sizeof(config->oemid));
-    memcpy(config->productid, "0.1         ", sizeof(config->productid));
+    स_नकल(config->oemid, BUILD_CPUNAME8, माप(config->oemid));
+    स_नकल(config->productid, "0.1         ", माप(config->productid));
     config->lapic = BUILD_APIC_ADDR;
 
     // Detect cpu info
     u32 cpuid_signature, ebx, ecx, cpuid_features;
     cpuid(1, &cpuid_signature, &ebx, &ecx, &cpuid_features);
-    if (! cpuid_signature) {
+    अगर (! cpuid_signature) {
         // Use default values.
         cpuid_signature = 0x600;
         cpuid_features = 0x201;
     }
-    int pkgcpus = 1;
-    if (cpuid_features & (1 << 28)) {
+    पूर्णांक pkgcpus = 1;
+    अगर (cpuid_features & (1 << 28)) {
         /* Only populate the MPS tables with the first logical CPU in
            each package */
         pkgcpus = (ebx >> 16) & 0xff;
@@ -57,10 +57,10 @@ mptable_setup(void)
     u8 apic_version = readl((u8*)BUILD_APIC_ADDR + 0x30) & 0xff;
 
     // CPU definitions.
-    struct mpt_cpu *cpus = (void*)&config[1], *cpu = cpus;
-    int i;
-    for (i = 0; i < MaxCountCPUs; i+=pkgcpus) {
-        memset(cpu, 0, sizeof(*cpu));
+    काष्ठा mpt_cpu *cpus = (व्योम*)&config[1], *cpu = cpus;
+    पूर्णांक i;
+    क्रम (i = 0; i < Max_गिनती_CPUs; i+=pkgcpus) {
+        स_रखो(cpu, 0, माप(*cpu));
         cpu->type = MPT_TYPE_CPU;
         cpu->apicid = i;
         cpu->apicver = apic_version;
@@ -70,32 +70,32 @@ mptable_setup(void)
         cpu->featureflag = cpuid_features;
         cpu++;
     }
-    int entrycount = cpu - cpus;
+    पूर्णांक entrycount = cpu - cpus;
 
     // PCI bus
-    struct mpt_bus *buses = (void*)cpu, *bus = buses;
-    if (!hlist_empty(&PCIDevices)) {
-        memset(bus, 0, sizeof(*bus));
+    काष्ठा mpt_bus *buses = (व्योम*)cpu, *bus = buses;
+    अगर (!hlist_empty(&PCIDevices)) {
+        स_रखो(bus, 0, माप(*bus));
         bus->type = MPT_TYPE_BUS;
         bus->busid = 0;
-        memcpy(bus->bustype, "PCI   ", sizeof(bus->bustype));
+        स_नकल(bus->bustype, "PCI   ", माप(bus->bustype));
         bus++;
         entrycount++;
     }
 
     /* isa bus */
-    int isabusid = bus - buses;
-    memset(bus, 0, sizeof(*bus));
+    पूर्णांक isabusid = bus - buses;
+    स_रखो(bus, 0, माप(*bus));
     bus->type = MPT_TYPE_BUS;
     bus->busid = isabusid;
-    memcpy(bus->bustype, "ISA   ", sizeof(bus->bustype));
+    स_नकल(bus->bustype, "ISA   ", माप(bus->bustype));
     bus++;
     entrycount++;
 
     /* ioapic */
     u8 ioapic_id = BUILD_IOAPIC_ID;
-    struct mpt_ioapic *ioapic = (void*)bus;
-    memset(ioapic, 0, sizeof(*ioapic));
+    काष्ठा mpt_ioapic *ioapic = (व्योम*)bus;
+    स_रखो(ioapic, 0, माप(*ioapic));
     ioapic->type = MPT_TYPE_IOAPIC;
     ioapic->apicid = ioapic_id;
     ioapic->apicver = 0x11;
@@ -104,27 +104,27 @@ mptable_setup(void)
     entrycount++;
 
     /* irqs */
-    struct mpt_intsrc *intsrcs = (void*)&ioapic[1], *intsrc = intsrcs;
-    int dev = -1;
-    unsigned short pinmask = 0;
+    काष्ठा mpt_intsrc *intsrcs = (व्योम*)&ioapic[1], *intsrc = intsrcs;
+    पूर्णांक dev = -1;
+    अचिन्हित लघु pinmask = 0;
 
-    struct pci_device *pci;
+    काष्ठा pci_device *pci;
     foreachpci(pci) {
         u16 bdf = pci->bdf;
-        if (pci_bdf_to_bus(bdf) != 0)
-            break;
-        int pin = pci_config_readb(bdf, PCI_INTERRUPT_PIN);
-        int irq = pci_config_readb(bdf, PCI_INTERRUPT_LINE);
-        if (pin == 0)
-            continue;
-        if (dev != pci_bdf_to_busdev(bdf)) {
+        अगर (pci_bdf_to_bus(bdf) != 0)
+            अवरोध;
+        पूर्णांक pin = pci_config_readb(bdf, PCI_INTERRUPT_PIN);
+        पूर्णांक irq = pci_config_readb(bdf, PCI_INTERRUPT_पंक्ति);
+        अगर (pin == 0)
+            जारी;
+        अगर (dev != pci_bdf_to_busdev(bdf)) {
             dev = pci_bdf_to_busdev(bdf);
             pinmask = 0;
         }
-        if (pinmask & (1 << pin)) /* pin was seen already */
-            continue;
+        अगर (pinmask & (1 << pin)) /* pin was seen already */
+            जारी;
         pinmask |= (1 << pin);
-        memset(intsrc, 0, sizeof(*intsrc));
+        स_रखो(intsrc, 0, माप(*intsrc));
         intsrc->type = MPT_TYPE_INTSRC;
         intsrc->irqtype = 0; /* INT */
         intsrc->irqflag = 1; /* active high */
@@ -135,11 +135,11 @@ mptable_setup(void)
         intsrc++;
     }
 
-    int irq0_override = romfile_loadint("etc/irq0-override", 0);
-    for (i = 0; i < 16; i++) {
-        memset(intsrc, 0, sizeof(*intsrc));
-        if (BUILD_PCI_IRQS & (1 << i))
-            continue;
+    पूर्णांक irq0_override = romfile_loadint("etc/irq0-override", 0);
+    क्रम (i = 0; i < 16; i++) {
+        स_रखो(intsrc, 0, माप(*intsrc));
+        अगर (BUILD_PCI_IRQS & (1 << i))
+            जारी;
         intsrc->type = MPT_TYPE_INTSRC;
         intsrc->irqtype = 0; /* INT */
         intsrc->irqflag = 0; /* conform to bus spec */
@@ -147,12 +147,12 @@ mptable_setup(void)
         intsrc->srcbusirq = i;
         intsrc->dstapic = ioapic_id;
         intsrc->dstirq = i;
-        if (irq0_override) {
+        अगर (irq0_override) {
             /* Destination 2 is covered by irq0->inti2 override (i ==
                0). Source IRQ 2 is unused */
-            if (i == 0)
+            अगर (i == 0)
                 intsrc->dstirq = 2;
-            else if (i == 2)
+            अन्यथा अगर (i == 2)
                 intsrc--;
         }
         intsrc++;
@@ -179,19 +179,19 @@ mptable_setup(void)
     entrycount += intsrc - intsrcs;
 
     // Finalize config structure.
-    int length = (void*)intsrc - (void*)config;
+    पूर्णांक लंबाई = (व्योम*)intsrc - (व्योम*)config;
     config->entrycount = entrycount;
-    config->length = length;
-    config->checksum -= checksum(config, length);
+    config->लंबाई = लंबाई;
+    config->checksum -= checksum(config, लंबाई);
 
     // floating pointer structure
-    struct mptable_floating_s floating;
-    memset(&floating, 0, sizeof(floating));
+    काष्ठा mptable_floating_s floating;
+    स_रखो(&floating, 0, माप(floating));
     floating.signature = MPTABLE_SIGNATURE;
     floating.physaddr = (u32)config;
-    floating.length = 1;
+    floating.लंबाई = 1;
     floating.spec_rev = 4;
-    floating.checksum -= checksum(&floating, sizeof(floating));
+    floating.checksum -= checksum(&floating, माप(floating));
     copy_mptable(&floating);
-    free(config);
+    मुक्त(config);
 }

@@ -16,14 +16,14 @@
  *
  */
 
-#include "output.h" // panic
-#include "virtio-ring.h"
-#include "virtio-pci.h"
+#समावेश "output.h" // panic
+#समावेश "virtio-ring.h"
+#समावेश "virtio-pci.h"
 
-#define BUG() do {                                                      \
+#घोषणा BUG() करो {                                                      \
             panic("BUG: failure at %d/%s()!\n", __LINE__, __func__);    \
-        } while (0)
-#define BUG_ON(condition) do { if (condition) BUG(); } while (0)
+        } जबतक (0)
+#घोषणा BUG_ON(condition) करो { अगर (condition) BUG(); } जबतक (0)
 
 /*
  * vring_more_used
@@ -32,13 +32,13 @@
  *
  */
 
-int vring_more_used(struct vring_virtqueue *vq)
+पूर्णांक vring_more_used(काष्ठा vring_virtqueue *vq)
 {
-    struct vring_used *used = vq->vring.used;
-    int more = vq->last_used_idx != used->idx;
+    काष्ठा vring_used *used = vq->vring.used;
+    पूर्णांक more = vq->last_used_idx != used->idx;
     /* Make sure ring reads are done after idx read above. */
     smp_rmb();
-    return more;
+    वापस more;
 }
 
 /*
@@ -47,22 +47,22 @@ int vring_more_used(struct vring_virtqueue *vq)
  * put at the begin of the free list the current desc[head]
  */
 
-void vring_detach(struct vring_virtqueue *vq, unsigned int head)
+व्योम vring_detach(काष्ठा vring_virtqueue *vq, अचिन्हित पूर्णांक शीर्ष)
 {
-    struct vring *vr = &vq->vring;
-    struct vring_desc *desc = GET_LOWFLAT(vr->desc);
-    unsigned int i;
+    काष्ठा vring *vr = &vq->vring;
+    काष्ठा vring_desc *desc = GET_LOWFLAT(vr->desc);
+    अचिन्हित पूर्णांक i;
 
     /* find end of given descriptor */
 
-    i = head;
-    while (desc[i].flags & VRING_DESC_F_NEXT)
-        i = desc[i].next;
+    i = शीर्ष;
+    जबतक (desc[i].flags & VRING_DESC_F_अग्र)
+        i = desc[i].अग्र;
 
     /* link it with free list and point to it */
 
-    desc[i].next = vq->free_head;
-    vq->free_head = head;
+    desc[i].अग्र = vq->free_शीर्ष;
+    vq->free_शीर्ष = शीर्ष;
 }
 
 /*
@@ -72,19 +72,19 @@ void vring_detach(struct vring_virtqueue *vq, unsigned int head)
  *
  */
 
-int vring_get_buf(struct vring_virtqueue *vq, unsigned int *len)
+पूर्णांक vring_get_buf(काष्ठा vring_virtqueue *vq, अचिन्हित पूर्णांक *len)
 {
-    struct vring *vr = &vq->vring;
-    struct vring_used_elem *elem;
-    struct vring_used *used = vq->vring.used;
+    काष्ठा vring *vr = &vq->vring;
+    काष्ठा vring_used_elem *elem;
+    काष्ठा vring_used *used = vq->vring.used;
     u32 id;
-    int ret;
+    पूर्णांक ret;
 
 //    BUG_ON(!vring_more_used(vq));
 
-    elem = &used->ring[vq->last_used_idx % vr->num];
+    elem = &used->ring[vq->last_used_idx % vr->अंक];
     id = elem->id;
-    if (len != NULL)
+    अगर (len != शून्य)
         *len = elem->len;
 
     ret = vq->vdata[id];
@@ -93,55 +93,55 @@ int vring_get_buf(struct vring_virtqueue *vq, unsigned int *len)
 
     vq->last_used_idx = vq->last_used_idx + 1;
 
-    return ret;
+    वापस ret;
 }
 
-void vring_add_buf(struct vring_virtqueue *vq,
-                   struct vring_list list[],
-                   unsigned int out, unsigned int in,
-                   int index, int num_added)
+व्योम vring_add_buf(काष्ठा vring_virtqueue *vq,
+                   काष्ठा vring_list list[],
+                   अचिन्हित पूर्णांक out, अचिन्हित पूर्णांक in,
+                   पूर्णांक सूचकांक, पूर्णांक अंक_added)
 {
-    struct vring *vr = &vq->vring;
-    int i, av, head, prev;
-    struct vring_desc *desc = vr->desc;
-    struct vring_avail *avail = vr->avail;
+    काष्ठा vring *vr = &vq->vring;
+    पूर्णांक i, av, शीर्ष, पूर्व;
+    काष्ठा vring_desc *desc = vr->desc;
+    काष्ठा vring_avail *avail = vr->avail;
 
     BUG_ON(out + in == 0);
 
-    prev = 0;
-    head = vq->free_head;
-    for (i = head; out; i = desc[i].next, out--) {
-        desc[i].flags = VRING_DESC_F_NEXT;
+    पूर्व = 0;
+    शीर्ष = vq->free_शीर्ष;
+    क्रम (i = शीर्ष; out; i = desc[i].अग्र, out--) {
+        desc[i].flags = VRING_DESC_F_अग्र;
         desc[i].addr = (u64)virt_to_phys(list->addr);
-        desc[i].len = list->length;
-        prev = i;
+        desc[i].len = list->लंबाई;
+        पूर्व = i;
         list++;
     }
-    for ( ; in; i = desc[i].next, in--) {
-        desc[i].flags = VRING_DESC_F_NEXT|VRING_DESC_F_WRITE;
+    क्रम ( ; in; i = desc[i].अग्र, in--) {
+        desc[i].flags = VRING_DESC_F_अग्र|VRING_DESC_F_WRITE;
         desc[i].addr = (u64)virt_to_phys(list->addr);
-        desc[i].len = list->length;
-        prev = i;
+        desc[i].len = list->लंबाई;
+        पूर्व = i;
         list++;
     }
-    desc[prev].flags = desc[prev].flags & ~VRING_DESC_F_NEXT;
+    desc[पूर्व].flags = desc[पूर्व].flags & ~VRING_DESC_F_अग्र;
 
-    vq->free_head = i;
+    vq->free_शीर्ष = i;
 
-    vq->vdata[head] = index;
+    vq->vdata[शीर्ष] = सूचकांक;
 
-    av = (avail->idx + num_added) % vr->num;
-    avail->ring[av] = head;
+    av = (avail->idx + अंक_added) % vr->अंक;
+    avail->ring[av] = शीर्ष;
 }
 
-void vring_kick(struct vp_device *vp, struct vring_virtqueue *vq, int num_added)
+व्योम vring_kick(काष्ठा vp_device *vp, काष्ठा vring_virtqueue *vq, पूर्णांक अंक_added)
 {
-    struct vring *vr = &vq->vring;
-    struct vring_avail *avail = vr->avail;
+    काष्ठा vring *vr = &vq->vring;
+    काष्ठा vring_avail *avail = vr->avail;
 
     /* Make sure idx update is done after ring write. */
     smp_wmb();
-    avail->idx = avail->idx + num_added;
+    avail->idx = avail->idx + अंक_added;
 
     vp_notify(vp, vq);
 }

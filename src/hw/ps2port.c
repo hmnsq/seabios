@@ -5,14 +5,14 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_LOW
-#include "output.h" // dprintf
-#include "pic.h" // pic_eoi1
-#include "ps2port.h" // ps2_kbd_command
-#include "romfile.h" // romfile_loadint
-#include "stacks.h" // yield
-#include "util.h" // udelay
-#include "x86.h" // inb
+#समावेश "biosvar.h" // GET_LOW
+#समावेश "output.h" // dprintf
+#समावेश "pic.h" // pic_eoi1
+#समावेश "ps2port.h" // ps2_kbd_command
+#समावेश "romfile.h" // romfile_loadint
+#समावेश "stacks.h" // yield
+#समावेश "util.h" // udelay
+#समावेश "x86.h" // inb
 
 
 /****************************************************************
@@ -20,124 +20,124 @@
  ****************************************************************/
 
 // Timeout value.
-#define I8042_CTL_TIMEOUT       10000
+#घोषणा I8042_CTL_TIMEOUT       10000
 
-#define I8042_BUFFER_SIZE       16
+#घोषणा I8042_बफर_आकार       16
 
-static int
-i8042_wait_read(void)
+अटल पूर्णांक
+i8042_wait_read(व्योम)
 {
     dprintf(7, "i8042_wait_read\n");
-    int i;
-    for (i=0; i<I8042_CTL_TIMEOUT; i++) {
+    पूर्णांक i;
+    क्रम (i=0; i<I8042_CTL_TIMEOUT; i++) {
         u8 status = inb(PORT_PS2_STATUS);
-        if (status & I8042_STR_OBF)
-            return 0;
+        अगर (status & I8042_STR_OBF)
+            वापस 0;
         udelay(50);
     }
     warn_timeout();
-    return -1;
+    वापस -1;
 }
 
-static int
-i8042_wait_write(void)
+अटल पूर्णांक
+i8042_wait_write(व्योम)
 {
     dprintf(7, "i8042_wait_write\n");
-    int i;
-    for (i=0; i<I8042_CTL_TIMEOUT; i++) {
+    पूर्णांक i;
+    क्रम (i=0; i<I8042_CTL_TIMEOUT; i++) {
         u8 status = inb(PORT_PS2_STATUS);
-        if (! (status & I8042_STR_IBF))
-            return 0;
+        अगर (! (status & I8042_STR_IBF))
+            वापस 0;
         udelay(50);
     }
     warn_timeout();
-    return -1;
+    वापस -1;
 }
 
-static int
-i8042_flush(void)
+अटल पूर्णांक
+i8042_flush(व्योम)
 {
     dprintf(7, "i8042_flush\n");
-    int i;
-    for (i=0; i<I8042_BUFFER_SIZE; i++) {
+    पूर्णांक i;
+    क्रम (i=0; i<I8042_बफर_आकार; i++) {
         u8 status = inb(PORT_PS2_STATUS);
-        if (! (status & I8042_STR_OBF))
-            return 0;
+        अगर (! (status & I8042_STR_OBF))
+            वापस 0;
         udelay(50);
-        u8 data = inb(PORT_PS2_DATA);
-        dprintf(7, "i8042 flushed %x (status=%x)\n", data, status);
+        u8 तथ्य = inb(PORT_PS2_तथ्य);
+        dprintf(7, "i8042 flushed %x (status=%x)\n", तथ्य, status);
     }
 
     warn_timeout();
-    return -1;
+    वापस -1;
 }
 
-static int
-__i8042_command(int command, u8 *param)
+अटल पूर्णांक
+__i8042_command(पूर्णांक command, u8 *param)
 {
-    int receive = (command >> 8) & 0xf;
-    int send = (command >> 12) & 0xf;
+    पूर्णांक receive = (command >> 8) & 0xf;
+    पूर्णांक send = (command >> 12) & 0xf;
 
     // Send the command.
-    int ret = i8042_wait_write();
-    if (ret)
-        return ret;
+    पूर्णांक ret = i8042_wait_write();
+    अगर (ret)
+        वापस ret;
     outb(command, PORT_PS2_STATUS);
 
     // Send parameters (if any).
-    int i;
-    for (i = 0; i < send; i++) {
+    पूर्णांक i;
+    क्रम (i = 0; i < send; i++) {
         ret = i8042_wait_write();
-        if (ret)
-            return ret;
-        outb(param[i], PORT_PS2_DATA);
+        अगर (ret)
+            वापस ret;
+        outb(param[i], PORT_PS2_तथ्य);
     }
 
     // Receive parameters (if any).
-    for (i = 0; i < receive; i++) {
+    क्रम (i = 0; i < receive; i++) {
         ret = i8042_wait_read();
-        if (ret)
-            return ret;
-        param[i] = inb(PORT_PS2_DATA);
+        अगर (ret)
+            वापस ret;
+        param[i] = inb(PORT_PS2_तथ्य);
         dprintf(7, "i8042 param=%x\n", param[i]);
     }
 
-    return 0;
+    वापस 0;
 }
 
-static int
-i8042_command(int command, u8 *param)
+अटल पूर्णांक
+i8042_command(पूर्णांक command, u8 *param)
 {
     dprintf(7, "i8042_command cmd=%x\n", command);
-    int ret = __i8042_command(command, param);
-    if (ret)
+    पूर्णांक ret = __i8042_command(command, param);
+    अगर (ret)
         dprintf(2, "i8042 command %x failed\n", command);
-    return ret;
+    वापस ret;
 }
 
-static int
+अटल पूर्णांक
 i8042_kbd_write(u8 c)
 {
     dprintf(7, "i8042_kbd_write c=%d\n", c);
-    int ret = i8042_wait_write();
-    if (! ret)
-        outb(c, PORT_PS2_DATA);
-    return ret;
+    पूर्णांक ret = i8042_wait_write();
+    अगर (! ret)
+        outb(c, PORT_PS2_तथ्य);
+    वापस ret;
 }
 
-static int
+अटल पूर्णांक
 i8042_aux_write(u8 c)
 {
-    return i8042_command(I8042_CMD_AUX_SEND, &c);
+    वापस i8042_command(I8042_CMD_AUX_SEND, &c);
 }
 
-void
-i8042_reboot(void)
+व्योम
+i8042_reboot(व्योम)
 {
-    if (! CONFIG_PS2PORT)
-       return;
-    int i;
-    for (i=0; i<10; i++) {
+    अगर (! CONFIG_PS2PORT)
+       वापस;
+    पूर्णांक i;
+    क्रम (i=0; i<10; i++) {
         i8042_wait_write();
         udelay(50);
         outb(0xfe, PORT_PS2_STATUS); /* pulse reset low */
@@ -150,156 +150,156 @@ i8042_reboot(void)
  * Device commands.
  ****************************************************************/
 
-#define PS2_RET_ACK             0xfa
-#define PS2_RET_NAK             0xfe
+#घोषणा PS2_RET_ACK             0xfa
+#घोषणा PS2_RET_NAK             0xfe
 
-static int
-ps2_recvbyte(int aux, int needack, int timeout)
+अटल पूर्णांक
+ps2_recvbyte(पूर्णांक aux, पूर्णांक needack, पूर्णांक timeout)
 {
     u32 end = timer_calc(timeout);
-    for (;;) {
+    क्रम (;;) {
         u8 status = inb(PORT_PS2_STATUS);
-        if (status & I8042_STR_OBF) {
-            u8 data = inb(PORT_PS2_DATA);
-            dprintf(7, "ps2 read %x\n", data);
+        अगर (status & I8042_STR_OBF) {
+            u8 तथ्य = inb(PORT_PS2_तथ्य);
+            dprintf(7, "ps2 read %x\n", तथ्य);
 
-            if (!!(status & I8042_STR_AUXDATA) == aux) {
-                if (!needack)
-                    return data;
-                if (data == PS2_RET_ACK)
-                    return data;
-                if (data == PS2_RET_NAK) {
+            अगर (!!(status & I8042_STR_AUXDATA) == aux) {
+                अगर (!needack)
+                    वापस तथ्य;
+                अगर (तथ्य == PS2_RET_ACK)
+                    वापस तथ्य;
+                अगर (तथ्य == PS2_RET_NAK) {
                     dprintf(1, "Got ps2 nak (status=%x)\n", status);
-                    return data;
+                    वापस तथ्य;
                 }
             }
 
             // This data not part of command - just discard it.
-            dprintf(1, "Discarding ps2 data %02x (status=%02x)\n", data, status);
+            dprintf(1, "Discarding ps2 data %02x (status=%02x)\n", तथ्य, status);
         }
 
-        if (timer_check(end)) {
+        अगर (timer_check(end)) {
             warn_timeout();
-            return -1;
+            वापस -1;
         }
         yield();
     }
 }
 
-static int
-ps2_sendbyte(int aux, u8 command, int timeout)
+अटल पूर्णांक
+ps2_sendbyte(पूर्णांक aux, u8 command, पूर्णांक timeout)
 {
     dprintf(7, "ps2_sendbyte aux=%d cmd=%x\n", aux, command);
-    int ret;
-    if (aux)
+    पूर्णांक ret;
+    अगर (aux)
         ret = i8042_aux_write(command);
-    else
+    अन्यथा
         ret = i8042_kbd_write(command);
-    if (ret)
-        return ret;
+    अगर (ret)
+        वापस ret;
 
     // Read ack.
     ret = ps2_recvbyte(aux, 1, timeout);
-    if (ret < 0)
-        return ret;
-    if (ret != PS2_RET_ACK)
-        return -1;
+    अगर (ret < 0)
+        वापस ret;
+    अगर (ret != PS2_RET_ACK)
+        वापस -1;
 
-    return 0;
+    वापस 0;
 }
 
 u8 Ps2ctr VARLOW = I8042_CTR_KBDDIS | I8042_CTR_AUXDIS;
 
-static int
-__ps2_command(int aux, int command, u8 *param)
+अटल पूर्णांक
+__ps2_command(पूर्णांक aux, पूर्णांक command, u8 *param)
 {
-    int ret2;
-    int receive = (command >> 8) & 0xf;
-    int send = (command >> 12) & 0xf;
+    पूर्णांक ret2;
+    पूर्णांक receive = (command >> 8) & 0xf;
+    पूर्णांक send = (command >> 12) & 0xf;
 
     // Disable interrupts and keyboard/mouse.
-    u8 ps2ctr = GET_LOW(Ps2ctr);
+    u8 ps2ctr = GET_निचला(Ps2ctr);
     u8 newctr = ((ps2ctr | I8042_CTR_AUXDIS | I8042_CTR_KBDDIS)
                  & ~(I8042_CTR_KBDINT|I8042_CTR_AUXINT));
     dprintf(6, "i8042 ctr old=%x new=%x\n", ps2ctr, newctr);
-    int ret = i8042_command(I8042_CMD_CTL_WCTR, &newctr);
-    if (ret)
-        return ret;
+    पूर्णांक ret = i8042_command(I8042_CMD_CTL_WCTR, &newctr);
+    अगर (ret)
+        वापस ret;
 
     // Flush any interrupts already pending.
     yield();
 
     // Enable port command is being sent to.
-    SET_LOW(Ps2ctr, newctr);
-    if (aux)
+    SET_निचला(Ps2ctr, newctr);
+    अगर (aux)
         newctr &= ~I8042_CTR_AUXDIS;
-    else
+    अन्यथा
         newctr &= ~I8042_CTR_KBDDIS;
     ret = i8042_command(I8042_CMD_CTL_WCTR, &newctr);
-    if (ret)
-        goto fail;
+    अगर (ret)
+        जाओ fail;
 
-    if ((u8)command == (u8)ATKBD_CMD_RESET_BAT) {
+    अगर ((u8)command == (u8)ATKBD_CMD_RESET_BAT) {
         // Reset is special wrt timeouts.
 
         // Send command.
         ret = ps2_sendbyte(aux, command, 1000);
-        if (ret)
-            goto fail;
+        अगर (ret)
+            जाओ fail;
 
         // Receive parameters.
         ret = ps2_recvbyte(aux, 0, 4000);
-        if (ret < 0)
-            goto fail;
+        अगर (ret < 0)
+            जाओ fail;
         param[0] = ret;
-        if (receive > 1) {
+        अगर (receive > 1) {
             ret = ps2_recvbyte(aux, 0, 500);
-            if (ret < 0)
-                goto fail;
+            अगर (ret < 0)
+                जाओ fail;
             param[1] = ret;
         }
-    } else if (command == ATKBD_CMD_GETID) {
+    } अन्यथा अगर (command == ATKBD_CMD_GETID) {
         // Getid is special wrt bytes received.
 
         // Send command.
         ret = ps2_sendbyte(aux, command, 200);
-        if (ret)
-            goto fail;
+        अगर (ret)
+            जाओ fail;
 
         // Receive parameters.
         ret = ps2_recvbyte(aux, 0, 500);
-        if (ret < 0)
-            goto fail;
+        अगर (ret < 0)
+            जाओ fail;
         param[0] = ret;
-        if (ret == 0xab || ret == 0xac || ret == 0x2b || ret == 0x5d
+        अगर (ret == 0xab || ret == 0xac || ret == 0x2b || ret == 0x5d
             || ret == 0x60 || ret == 0x47) {
             // These ids (keyboards) return two bytes.
             ret = ps2_recvbyte(aux, 0, 500);
-            if (ret < 0)
-                goto fail;
+            अगर (ret < 0)
+                जाओ fail;
             param[1] = ret;
-        } else {
+        } अन्यथा {
             param[1] = 0;
         }
-    } else {
+    } अन्यथा {
         // Send command.
         ret = ps2_sendbyte(aux, command, 200);
-        if (ret)
-            goto fail;
+        अगर (ret)
+            जाओ fail;
 
         // Send parameters (if any).
-        int i;
-        for (i = 0; i < send; i++) {
+        पूर्णांक i;
+        क्रम (i = 0; i < send; i++) {
             ret = ps2_sendbyte(aux, param[i], 200);
-            if (ret)
-                goto fail;
+            अगर (ret)
+                जाओ fail;
         }
 
         // Receive parameters (if any).
-        for (i = 0; i < receive; i++) {
+        क्रम (i = 0; i < receive; i++) {
             ret = ps2_recvbyte(aux, 0, 500);
-            if (ret < 0)
-                goto fail;
+            अगर (ret < 0)
+                जाओ fail;
             param[i] = ret;
         }
     }
@@ -308,50 +308,50 @@ __ps2_command(int aux, int command, u8 *param)
 
 fail:
     // Restore interrupts and keyboard/mouse.
-    SET_LOW(Ps2ctr, ps2ctr);
+    SET_निचला(Ps2ctr, ps2ctr);
     ret2 = i8042_command(I8042_CMD_CTL_WCTR, &ps2ctr);
-    if (ret2)
-        return ret2;
+    अगर (ret2)
+        वापस ret2;
 
-    return ret;
+    वापस ret;
 }
 
-static int
-ps2_command(int aux, int command, u8 *param)
+अटल पूर्णांक
+ps2_command(पूर्णांक aux, पूर्णांक command, u8 *param)
 {
     dprintf(7, "ps2_command aux=%d cmd=%x\n", aux, command);
-    int ret = __ps2_command(aux, command, param);
-    if (ret)
+    पूर्णांक ret = __ps2_command(aux, command, param);
+    अगर (ret)
         dprintf(2, "ps2 command %x failed (aux=%d)\n", command, aux);
-    return ret;
+    वापस ret;
 }
 
-int
-ps2_kbd_command(int command, u8 *param)
+पूर्णांक
+ps2_kbd_command(पूर्णांक command, u8 *param)
 {
-    if (! CONFIG_PS2PORT)
-        return -1;
-    return ps2_command(0, command, param);
+    अगर (! CONFIG_PS2PORT)
+        वापस -1;
+    वापस ps2_command(0, command, param);
 }
 
-int
-ps2_mouse_command(int command, u8 *param)
+पूर्णांक
+ps2_mouse_command(पूर्णांक command, u8 *param)
 {
-    if (! CONFIG_PS2PORT)
-        return -1;
+    अगर (! CONFIG_PS2PORT)
+        वापस -1;
 
     // Update ps2ctr for mouse enable/disable.
-    if (command == PSMOUSE_CMD_ENABLE || command == PSMOUSE_CMD_DISABLE) {
-        u8 ps2ctr = GET_LOW(Ps2ctr);
-        if (command == PSMOUSE_CMD_ENABLE)
+    अगर (command == PSMOUSE_CMD_ENABLE || command == PSMOUSE_CMD_DISABLE) {
+        u8 ps2ctr = GET_निचला(Ps2ctr);
+        अगर (command == PSMOUSE_CMD_ENABLE)
             ps2ctr = ((ps2ctr | (CONFIG_HARDWARE_IRQ ? I8042_CTR_AUXINT : 0))
                       & ~I8042_CTR_AUXDIS);
-        else
+        अन्यथा
             ps2ctr = (ps2ctr | I8042_CTR_AUXDIS) & ~I8042_CTR_AUXINT;
-        SET_LOW(Ps2ctr, ps2ctr);
+        SET_निचला(Ps2ctr, ps2ctr);
     }
 
-    return ps2_command(1, command, param);
+    वापस ps2_command(1, command, param);
 }
 
 
@@ -360,25 +360,25 @@ ps2_mouse_command(int command, u8 *param)
  ****************************************************************/
 
 // INT74h : PS/2 mouse hardware interrupt
-void VISIBLE16
-handle_74(void)
+व्योम VISIBLE16
+handle_74(व्योम)
 {
-    if (! CONFIG_PS2PORT)
-        return;
+    अगर (! CONFIG_PS2PORT)
+        वापस;
 
     debug_isr(DEBUG_ISR_74);
 
     u8 v = inb(PORT_PS2_STATUS);
-    if ((v & (I8042_STR_OBF|I8042_STR_AUXDATA))
+    अगर ((v & (I8042_STR_OBF|I8042_STR_AUXDATA))
         != (I8042_STR_OBF|I8042_STR_AUXDATA)) {
         dprintf(1, "ps2 mouse irq but no mouse data.\n");
-        goto done;
+        जाओ done;
     }
-    v = inb(PORT_PS2_DATA);
+    v = inb(PORT_PS2_तथ्य);
 
-    if (!(GET_LOW(Ps2ctr) & I8042_CTR_AUXINT))
+    अगर (!(GET_निचला(Ps2ctr) & I8042_CTR_AUXINT))
         // Interrupts not enabled.
-        goto done;
+        जाओ done;
 
     process_mouse(v);
 
@@ -387,56 +387,56 @@ done:
 }
 
 // INT09h : Keyboard Hardware Service Entry Point
-void VISIBLE16
-handle_09(void)
+व्योम VISIBLE16
+handle_09(व्योम)
 {
-    if (! CONFIG_PS2PORT)
-        return;
+    अगर (! CONFIG_PS2PORT)
+        वापस;
 
     debug_isr(DEBUG_ISR_09);
 
     // read key from keyboard controller
     u8 v = inb(PORT_PS2_STATUS);
-    if (v & I8042_STR_AUXDATA) {
+    अगर (v & I8042_STR_AUXDATA) {
         dprintf(1, "ps2 keyboard irq but found mouse data?!\n");
-        goto done;
+        जाओ done;
     }
-    v = inb(PORT_PS2_DATA);
+    v = inb(PORT_PS2_तथ्य);
 
-    if (!(GET_LOW(Ps2ctr) & I8042_CTR_KBDINT))
+    अगर (!(GET_निचला(Ps2ctr) & I8042_CTR_KBDINT))
         // Interrupts not enabled.
-        goto done;
+        जाओ done;
 
-    process_key(v);
+    process_कुंजी(v);
 
     // Some old programs expect ISR to turn keyboard back on.
-    i8042_command(I8042_CMD_KBD_ENABLE, NULL);
+    i8042_command(I8042_CMD_KBD_ENABLE, शून्य);
 
 done:
     pic_eoi1();
 }
 
 // Check for ps2 activity on machines without hardware irqs
-void
-ps2_check_event(void)
+व्योम
+ps2_check_event(व्योम)
 {
-    if (! CONFIG_PS2PORT || CONFIG_HARDWARE_IRQ)
-        return;
-    u8 ps2ctr = GET_LOW(Ps2ctr);
-    if ((ps2ctr & (I8042_CTR_KBDDIS|I8042_CTR_AUXDIS))
+    अगर (! CONFIG_PS2PORT || CONFIG_HARDWARE_IRQ)
+        वापस;
+    u8 ps2ctr = GET_निचला(Ps2ctr);
+    अगर ((ps2ctr & (I8042_CTR_KBDDIS|I8042_CTR_AUXDIS))
         == (I8042_CTR_KBDDIS|I8042_CTR_AUXDIS))
-        return;
-    for (;;) {
+        वापस;
+    क्रम (;;) {
         u8 status = inb(PORT_PS2_STATUS);
-        if (!(status & I8042_STR_OBF))
-            break;
-        u8 data = inb(PORT_PS2_DATA);
-        if (status & I8042_STR_AUXDATA) {
-            if (!(ps2ctr & I8042_CTR_AUXDIS))
-                process_mouse(data);
-        } else {
-            if (!(ps2ctr & I8042_CTR_KBDDIS))
-                process_key(data);
+        अगर (!(status & I8042_STR_OBF))
+            अवरोध;
+        u8 तथ्य = inb(PORT_PS2_तथ्य);
+        अगर (status & I8042_STR_AUXDATA) {
+            अगर (!(ps2ctr & I8042_CTR_AUXDIS))
+                process_mouse(तथ्य);
+        } अन्यथा {
+            अगर (!(ps2ctr & I8042_CTR_KBDDIS))
+                process_कुंजी(तथ्य);
         }
     }
 }
@@ -446,102 +446,102 @@ ps2_check_event(void)
  * Setup
  ****************************************************************/
 
-static void
-ps2_keyboard_setup(void *data)
+अटल व्योम
+ps2_keyboard_setup(व्योम *तथ्य)
 {
     // flush incoming keys (also verifies port is likely present)
-    int ret = i8042_flush();
-    if (ret)
-        return;
+    पूर्णांक ret = i8042_flush();
+    अगर (ret)
+        वापस;
 
     // Disable keyboard / mouse and drain any input they may have sent
-    ret = i8042_command(I8042_CMD_KBD_DISABLE, NULL);
-    if (ret)
-        return;
-    ret = i8042_command(I8042_CMD_AUX_DISABLE, NULL);
-    if (ret)
-        return;
+    ret = i8042_command(I8042_CMD_KBD_DISABLE, शून्य);
+    अगर (ret)
+        वापस;
+    ret = i8042_command(I8042_CMD_AUX_DISABLE, शून्य);
+    अगर (ret)
+        वापस;
     ret = i8042_flush();
-    if (ret)
-        return;
+    अगर (ret)
+        वापस;
 
     // Controller self-test.
     u8 param[2];
     ret = i8042_command(I8042_CMD_CTL_TEST, param);
-    if (ret)
-        return;
-    if (param[0] != 0x55) {
+    अगर (ret)
+        वापस;
+    अगर (param[0] != 0x55) {
         dprintf(1, "i8042 self test failed (got %x not 0x55)\n", param[0]);
-        return;
+        वापस;
     }
 
     // Controller keyboard test.
     ret = i8042_command(I8042_CMD_KBD_TEST, param);
-    if (ret)
-        return;
-    if (param[0] != 0x00) {
+    अगर (ret)
+        वापस;
+    अगर (param[0] != 0x00) {
         dprintf(1, "i8042 keyboard test failed (got %x not 0x00)\n", param[0]);
-        return;
+        वापस;
     }
 
 
     /* ------------------- keyboard side ------------------------*/
     /* reset keyboard and self test  (keyboard side) */
-    int spinupdelay = romfile_loadint("etc/ps2-keyboard-spinup", 0);
+    पूर्णांक spinupdelay = romfile_loadint("etc/ps2-keyboard-spinup", 0);
     u32 end = timer_calc(spinupdelay);
-    for (;;) {
+    क्रम (;;) {
         ret = ps2_kbd_command(ATKBD_CMD_RESET_BAT, param);
-        if (!ret)
-            break;
-        if (timer_check(end)) {
-            if (spinupdelay)
+        अगर (!ret)
+            अवरोध;
+        अगर (timer_check(end)) {
+            अगर (spinupdelay)
                 warn_timeout();
-            return;
+            वापस;
         }
         yield();
     }
-    if (param[0] != 0xaa) {
+    अगर (param[0] != 0xaa) {
         dprintf(1, "keyboard self test failed (got %x not 0xaa)\n", param[0]);
-        return;
+        वापस;
     }
 
     /* Disable keyboard */
-    ret = ps2_kbd_command(ATKBD_CMD_RESET_DIS, NULL);
-    if (ret)
-        return;
+    ret = ps2_kbd_command(ATKBD_CMD_RESET_DIS, शून्य);
+    अगर (ret)
+        वापस;
 
     // Set scancode command (mode 2)
     param[0] = 0x02;
     ret = ps2_kbd_command(ATKBD_CMD_SSCANSET, param);
-    if (ret)
-        return;
+    अगर (ret)
+        वापस;
 
     // Keyboard Mode: disable mouse, scan code convert, enable kbd IRQ
     Ps2ctr = (I8042_CTR_AUXDIS | I8042_CTR_XLATE
               | (CONFIG_HARDWARE_IRQ ? I8042_CTR_KBDINT : 0));
 
     /* Enable keyboard */
-    ret = ps2_kbd_command(ATKBD_CMD_ENABLE, NULL);
-    if (ret)
-        return;
+    ret = ps2_kbd_command(ATKBD_CMD_ENABLE, शून्य);
+    अगर (ret)
+        वापस;
 
     dprintf(1, "PS2 keyboard initialized\n");
 }
 
-void
-ps2port_setup(void)
+व्योम
+ps2port_setup(व्योम)
 {
     ASSERT32FLAT();
-    if (! CONFIG_PS2PORT)
-        return;
-    if (acpi_dsdt_present_eisaid(0x0303) == 0) {
+    अगर (! CONFIG_PS2PORT)
+        वापस;
+    अगर (acpi_dsdt_present_eisaid(0x0303) == 0) {
         dprintf(1, "ACPI: no PS/2 keyboard present\n");
-        return;
+        वापस;
     }
     dprintf(3, "init ps2port\n");
 
     enable_hwirq(1, FUNC16(entry_09));
     enable_hwirq(12, FUNC16(entry_74));
 
-    run_thread(ps2_keyboard_setup, NULL);
+    run_thread(ps2_keyboard_setup, शून्य);
 }

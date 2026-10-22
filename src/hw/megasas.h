@@ -1,8 +1,8 @@
-#ifndef __MEGASAS_H
-#define __MEGASAS_H
+#अगर_अघोषित __MEGASAS_H
+#घोषणा __MEGASAS_H
 
-struct disk_op_s;
-int megasas_process_op(struct disk_op_s *op);
-void megasas_setup(void);
+काष्ठा disk_op_s;
+पूर्णांक megasas_process_op(काष्ठा disk_op_s *op);
+व्योम megasas_setup(व्योम);
 
-#endif /* __MEGASAS_H */
+#पूर्ण_अगर /* __MEGASAS_H */

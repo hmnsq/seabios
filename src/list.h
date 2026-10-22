@@ -1,91 +1,91 @@
-#ifndef __LIST_H
-#define __LIST_H
+#अगर_अघोषित __LIST_H
+#घोषणा __LIST_H
 
-#include "types.h" // container_of
+#समावेश "types.h" // container_of
 
 
 /****************************************************************
  * hlist - Double linked lists with a single pointer list head
  ****************************************************************/
 
-struct hlist_node {
-    struct hlist_node *next, **pprev;
+काष्ठा hlist_गाँठ {
+    काष्ठा hlist_गाँठ *अग्र, **pprev;
 };
 
-struct hlist_head {
-    struct hlist_node *first;
+काष्ठा hlist_शीर्ष {
+    काष्ठा hlist_गाँठ *first;
 };
 
-static inline int
-hlist_empty(const struct hlist_head *h)
+अटल अंतरभूत पूर्णांक
+hlist_empty(स्थिर काष्ठा hlist_शीर्ष *h)
 {
-    return !h->first;
+    वापस !h->first;
 }
 
-static inline void
-hlist_del(struct hlist_node *n)
+अटल अंतरभूत व्योम
+hlist_del(काष्ठा hlist_गाँठ *n)
 {
-    struct hlist_node *next = n->next;
-    struct hlist_node **pprev = n->pprev;
-    *pprev = next;
-    if (next)
-        next->pprev = pprev;
+    काष्ठा hlist_गाँठ *अग्र = n->अग्र;
+    काष्ठा hlist_गाँठ **pprev = n->pprev;
+    *pprev = अग्र;
+    अगर (अग्र)
+        अग्र->pprev = pprev;
 }
 
-static inline void
-hlist_add(struct hlist_node *n, struct hlist_node **pprev)
+अटल अंतरभूत व्योम
+hlist_add(काष्ठा hlist_गाँठ *n, काष्ठा hlist_गाँठ **pprev)
 {
-    struct hlist_node *next = *pprev;
+    काष्ठा hlist_गाँठ *अग्र = *pprev;
     n->pprev = pprev;
-    n->next = next;
-    if (next)
-        next->pprev = &n->next;
+    n->अग्र = अग्र;
+    अगर (अग्र)
+        अग्र->pprev = &n->अग्र;
     *pprev = n;
 }
 
-static inline void
-hlist_add_head(struct hlist_node *n, struct hlist_head *h)
+अटल अंतरभूत व्योम
+hlist_add_शीर्ष(काष्ठा hlist_गाँठ *n, काष्ठा hlist_शीर्ष *h)
 {
     hlist_add(n, &h->first);
 }
 
-static inline void
-hlist_add_before(struct hlist_node *n, struct hlist_node *next)
+अटल अंतरभूत व्योम
+hlist_add_before(काष्ठा hlist_गाँठ *n, काष्ठा hlist_गाँठ *अग्र)
 {
-    hlist_add(n, next->pprev);
+    hlist_add(n, अग्र->pprev);
 }
 
-static inline void
-hlist_add_after(struct hlist_node *n, struct hlist_node *prev)
+अटल अंतरभूत व्योम
+hlist_add_after(काष्ठा hlist_गाँठ *n, काष्ठा hlist_गाँठ *पूर्व)
 {
-    hlist_add(n, &prev->next);
+    hlist_add(n, &पूर्व->अग्र);
 }
 
-static inline void
-hlist_replace(struct hlist_node *old, struct hlist_node *new)
+अटल अंतरभूत व्योम
+hlist_replace(काष्ठा hlist_गाँठ *old, काष्ठा hlist_गाँठ *new)
 {
-    new->next = old->next;
-    if (new->next)
-        new->next->pprev = &new->next;
+    new->अग्र = old->अग्र;
+    अगर (new->अग्र)
+        new->अग्र->pprev = &new->अग्र;
     new->pprev = old->pprev;
     *new->pprev = new;
 }
 
-#define hlist_for_each_entry(pos, head, member)                         \
-    for (pos = container_of((head)->first, typeof(*pos), member)        \
-         ; pos != container_of(NULL, typeof(*pos), member)              \
-         ; pos = container_of(pos->member.next, typeof(*pos), member))
+#घोषणा hlist_for_each_entry(pos, शीर्ष, member)                         \
+    क्रम (pos = container_of((शीर्ष)->first, typeof(*pos), member)        \
+         ; pos != container_of(शून्य, typeof(*pos), member)              \
+         ; pos = container_of(pos->member.अग्र, typeof(*pos), member))
 
-#define hlist_for_each_entry_safe(pos, n, head, member)                 \
-    for (pos = container_of((head)->first, typeof(*pos), member)        \
-         ; pos != container_of(NULL, typeof(*pos), member)              \
-             && ({ n = pos->member.next; 1; })                          \
+#घोषणा hlist_for_each_entry_safe(pos, n, शीर्ष, member)                 \
+    क्रम (pos = container_of((शीर्ष)->first, typeof(*pos), member)        \
+         ; pos != container_of(शून्य, typeof(*pos), member)              \
+             && ({ n = pos->member.अग्र; 1; })                          \
          ; pos = container_of(n, typeof(*pos), member))
 
-#define hlist_for_each_entry_pprev(pos, pprev, head, member)            \
-    for (pprev = &(head)->first                                         \
+#घोषणा hlist_for_each_entry_pprev(pos, pprev, शीर्ष, member)            \
+    क्रम (pprev = &(शीर्ष)->first                                         \
          ; *pprev && ({ pos=container_of(*pprev, typeof(*pos), member); 1; }) \
-         ; pprev = &(*pprev)->next)
+         ; pprev = &(*pprev)->अग्र)
 
 
-#endif // list.h
+#पूर्ण_अगर // list.h

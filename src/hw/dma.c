@@ -5,32 +5,32 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "util.h" // dma_setup
-#include "x86.h" // outb
+#समावेश "util.h" // dma_setup
+#समावेश "x86.h" // outb
 
-#define PORT_DMA_ADDR_2        0x0004
-#define PORT_DMA_CNT_2         0x0005
-#define PORT_DMA1_MASK_REG     0x000a
-#define PORT_DMA1_MODE_REG     0x000b
-#define PORT_DMA1_CLEAR_FF_REG 0x000c
-#define PORT_DMA1_MASTER_CLEAR 0x000d
-#define PORT_DMA_PAGE_2        0x0081
-#define PORT_DMA2_MASK_REG     0x00d4
-#define PORT_DMA2_MODE_REG     0x00d6
-#define PORT_DMA2_MASTER_CLEAR 0x00da
+#घोषणा PORT_DMA_ADDR_2        0x0004
+#घोषणा PORT_DMA_CNT_2         0x0005
+#घोषणा PORT_DMA1_MASK_REG     0x000a
+#घोषणा PORT_DMA1_MODE_REG     0x000b
+#घोषणा PORT_DMA1_CLEAR_FF_REG 0x000c
+#घोषणा PORT_DMA1_MASTER_CLEAR 0x000d
+#घोषणा PORT_DMA_PAGE_2        0x0081
+#घोषणा PORT_DMA2_MASK_REG     0x00d4
+#घोषणा PORT_DMA2_MODE_REG     0x00d6
+#घोषणा PORT_DMA2_MASTER_CLEAR 0x00da
 
 // Setup the DMA controller for a floppy transfer.
-int
-dma_floppy(u32 addr, int count, int isWrite)
+पूर्णांक
+dma_floppy(u32 addr, पूर्णांक गिनती, पूर्णांक isWrite)
 {
     // check for 64K boundary overrun
-    u16 end = count - 1;
+    u16 end = गिनती - 1;
     u32 last_addr = addr + end;
-    if ((addr >> 16) != (last_addr >> 16))
-        return -1;
+    अगर ((addr >> 16) != (last_addr >> 16))
+        वापस -1;
 
     u8 mode_register = 0x46; // single mode, increment, autoinit disable,
-    if (isWrite)
+    अगर (isWrite)
         mode_register = 0x4a;
 
     outb(0x06, PORT_DMA1_MASK_REG);
@@ -50,12 +50,12 @@ dma_floppy(u32 addr, int count, int isWrite)
 
     outb(0x02, PORT_DMA1_MASK_REG); // unmask channel 2
 
-    return 0;
+    वापस 0;
 }
 
 // Reset DMA controller
-void
-dma_setup(void)
+व्योम
+dma_setup(व्योम)
 {
     // first reset the DMA controllers
     outb(0, PORT_DMA1_MASTER_CLEAR);

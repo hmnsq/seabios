@@ -5,59 +5,59 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // SET_BDA
-#include "bregs.h" // struct bregs
-#include "config.h" // CONFIG_*
-#include "hw/ata.h" // ATA_CB_DC
-#include "hw/pic.h" // pic_eoi2
-#include "output.h" // debug_enter
-#include "stacks.h" // call16_int
-#include "std/disk.h" // DISK_RET_SUCCESS
-#include "string.h" // memset
-#include "util.h" // CDRom_locks
+#समावेश "biosvar.h" // SET_BDA
+#समावेश "bregs.h" // struct bregs
+#समावेश "config.h" // CONFIG_*
+#समावेश "hw/ata.h" // ATA_CB_DC
+#समावेश "hw/pic.h" // pic_eoi2
+#समावेश "output.h" // debug_enter
+#समावेश "stacks.h" // call16_int
+#समावेश "std/disk.h" // DISK_RET_SUCCESS
+#समावेश "string.h" // memset
+#समावेश "util.h" // CDRom_locks
 
 
 /****************************************************************
  * Return status functions
  ****************************************************************/
 
-static void
-__disk_ret(struct bregs *regs, u32 linecode, const char *fname)
+अटल व्योम
+__disk_ret(काष्ठा bregs *regs, u32 linecode, स्थिर अक्षर *fname)
 {
     u8 code = linecode;
-    if (regs->dl < EXTSTART_HD)
+    अगर (regs->dl < EXTSTART_HD)
         SET_BDA(floppy_last_status, code);
-    else
+    अन्यथा
         SET_BDA(disk_last_status, code);
-    if (code)
+    अगर (code)
         __set_code_invalid(regs, linecode, fname);
-    else
+    अन्यथा
         set_code_success(regs);
 }
 
-static void
-__disk_ret_unimplemented(struct bregs *regs, u32 linecode, const char *fname)
+अटल व्योम
+__disk_ret_unimplemented(काष्ठा bregs *regs, u32 linecode, स्थिर अक्षर *fname)
 {
     u8 code = linecode;
-    if (regs->dl < EXTSTART_HD)
+    अगर (regs->dl < EXTSTART_HD)
         SET_BDA(floppy_last_status, code);
-    else
+    अन्यथा
         SET_BDA(disk_last_status, code);
     __set_code_unimplemented(regs, linecode, fname);
 }
 
-static void
-__disk_stub(struct bregs *regs, int lineno, const char *fname)
+अटल व्योम
+__disk_stub(काष्ठा bregs *regs, पूर्णांक lineno, स्थिर अक्षर *fname)
 {
     __warn_unimplemented(regs, lineno, fname);
     __disk_ret(regs, DISK_RET_SUCCESS | (lineno << 8), fname);
 }
 
-#define disk_ret(regs, code) \
+#घोषणा disk_ret(regs, code) \
     __disk_ret((regs), (code) | (__LINE__ << 8), __func__)
-#define disk_ret_unimplemented(regs, code) \
+#घोषणा disk_ret_unimplemented(regs, code) \
     __disk_ret_unimplemented((regs), (code) | (__LINE__ << 8), __func__)
-#define DISK_STUB(regs)                         \
+#घोषणा DISK_STUB(regs)                         \
     __disk_stub((regs), __LINE__, __func__)
 
 
@@ -66,125 +66,125 @@ __disk_stub(struct bregs *regs, int lineno, const char *fname)
  ****************************************************************/
 
 // Get the cylinders/heads/sectors for the given drive.
-static struct chs_s
-getLCHS(struct drive_s *drive_fl)
+अटल काष्ठा chs_s
+getLCHS(काष्ठा drive_s *drive_fl)
 {
-    struct chs_s res = { };
-    if (CONFIG_CDROM_EMU && drive_fl == GET_GLOBAL(cdemu_drive_gf)) {
+    काष्ठा chs_s res = { };
+    अगर (CONFIG_CDROM_EMU && drive_fl == GET_GLOBAL(cdemu_drive_gf)) {
         // Emulated drive - get info from CDEmu.  (It's not possible to
         // populate the geometry directly in the driveid because the
         // geometry is only known after the bios segment is made
         // read-only).
-        u8 sptcyl = GET_LOW(CDEmu.chs.sptcyl);
-        res.cylinder = GET_LOW(CDEmu.chs.cyllow) + ((sptcyl << 2) & 0x300) + 1;
-        res.head = GET_LOW(CDEmu.chs.heads) + 1;
+        u8 sptcyl = GET_निचला(CDEmu.chs.sptcyl);
+        res.cylinder = GET_निचला(CDEmu.chs.cyllow) + ((sptcyl << 2) & 0x300) + 1;
+        res.शीर्ष = GET_निचला(CDEmu.chs.heads) + 1;
         res.sector = sptcyl & 0x3f;
-        return res;
+        वापस res;
     }
     res.cylinder = GET_FLATPTR(drive_fl->lchs.cylinder);
-    res.head = GET_FLATPTR(drive_fl->lchs.head);
+    res.शीर्ष = GET_FLATPTR(drive_fl->lchs.शीर्ष);
     res.sector = GET_FLATPTR(drive_fl->lchs.sector);
-    return res;
+    वापस res;
 }
 
 // Execute a "disk_op_s" request after jumping to the extra stack.
-static int
-__send_disk_op(struct disk_op_s *op_far, u16 op_seg)
+अटल पूर्णांक
+__send_disk_op(काष्ठा disk_op_s *op_far, u16 op_seg)
 {
-    struct disk_op_s dop;
-    memcpy_far(GET_SEG(SS), &dop, op_seg, op_far, sizeof(dop));
+    काष्ठा disk_op_s dop;
+    memcpy_far(GET_SEG(SS), &dop, op_seg, op_far, माप(dop));
 
-    int status = process_op(&dop);
+    पूर्णांक status = process_op(&dop);
 
     // Update count with total sectors transferred.
-    SET_FARVAR(op_seg, op_far->count, dop.count);
+    SET_FARVAR(op_seg, op_far->गिनती, dop.गिनती);
 
-    return status;
+    वापस status;
 }
 
 // Execute a "disk_op_s" request (using the extra 16bit stack).
-static int
-send_disk_op(struct disk_op_s *op)
+अटल पूर्णांक
+send_disk_op(काष्ठा disk_op_s *op)
 {
     ASSERT16();
-    if (! CONFIG_DRIVES)
-        return -1;
-    if (!CONFIG_ENTRY_EXTRASTACK)
+    अगर (! CONFIG_DRIVES)
+        वापस -1;
+    अगर (!CONFIG_ENTRY_EXTRASTACK)
         // Jump on to extra stack
-        return stack_hop(__send_disk_op, op, GET_SEG(SS));
-    return process_op(op);
+        वापस ढेर_hop(__send_disk_op, op, GET_SEG(SS));
+    वापस process_op(op);
 }
 
 // Perform read/write/verify using old-style chs accesses
-static void noinline
-basic_access(struct bregs *regs, struct drive_s *drive_fl, u16 command)
+अटल व्योम noinline
+basic_access(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl, u16 command)
 {
-    struct disk_op_s dop;
+    काष्ठा disk_op_s dop;
     dop.drive_fl = drive_fl;
     dop.command = command;
 
-    u8 count = regs->al;
+    u8 गिनती = regs->al;
     u16 cylinder = regs->ch | ((((u16)regs->cl) << 2) & 0x300);
     u16 sector = regs->cl & 0x3f;
-    u16 head = regs->dh;
+    u16 शीर्ष = regs->dh;
 
-    if (count > 128 || count == 0 || sector == 0) {
+    अगर (गिनती > 128 || गिनती == 0 || sector == 0) {
         warn_invalid(regs);
         disk_ret(regs, DISK_RET_EPARAM);
-        return;
+        वापस;
     }
-    dop.count = count;
+    dop.गिनती = गिनती;
 
-    struct chs_s chs = getLCHS(drive_fl);
-    u16 nlc=chs.cylinder, nlh=chs.head, nls=chs.sector;
+    काष्ठा chs_s chs = getLCHS(drive_fl);
+    u16 nlc=chs.cylinder, nlh=chs.शीर्ष, nls=chs.sector;
 
     // sanity check on cyl heads, sec
-    if (cylinder >= nlc || head >= nlh || sector > nls) {
+    अगर (cylinder >= nlc || शीर्ष >= nlh || sector > nls) {
         warn_invalid(regs);
         disk_ret(regs, DISK_RET_EPARAM);
-        return;
+        वापस;
     }
 
     // translate lchs to lba
-    dop.lba = (((((u32)cylinder * (u32)nlh) + (u32)head) * (u32)nls)
+    dop.lba = (((((u32)cylinder * (u32)nlh) + (u32)शीर्ष) * (u32)nls)
                + (u32)sector - 1);
 
     dop.buf_fl = MAKE_FLATPTR(regs->es, regs->bx);
 
-    int status = send_disk_op(&dop);
+    पूर्णांक status = send_disk_op(&dop);
 
-    regs->al = dop.count;
+    regs->al = dop.गिनती;
 
     disk_ret(regs, status);
 }
 
 // Perform read/write/verify using new-style "int13ext" accesses.
-static void noinline
-extended_access(struct bregs *regs, struct drive_s *drive_fl, u16 command)
+अटल व्योम noinline
+extended_access(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl, u16 command)
 {
-    struct disk_op_s dop;
-    struct int13ext_s *param_far = (struct int13ext_s*)(regs->si+0);
+    काष्ठा disk_op_s dop;
+    काष्ठा int13ext_s *param_far = (काष्ठा int13ext_s*)(regs->si+0);
     // Get lba and check.
     dop.lba = GET_FARVAR(regs->ds, param_far->lba);
     dop.command = command;
     dop.drive_fl = drive_fl;
-    if (dop.lba >= GET_FLATPTR(drive_fl->sectors)) {
+    अगर (dop.lba >= GET_FLATPTR(drive_fl->sectors)) {
         warn_invalid(regs);
         disk_ret(regs, DISK_RET_EPARAM);
-        return;
+        वापस;
     }
 
-    dop.buf_fl = SEGOFF_TO_FLATPTR(GET_FARVAR(regs->ds, param_far->data));
-    dop.count = GET_FARVAR(regs->ds, param_far->count);
-    if (! dop.count) {
+    dop.buf_fl = SEGOFF_TO_FLATPTR(GET_FARVAR(regs->ds, param_far->तथ्य));
+    dop.गिनती = GET_FARVAR(regs->ds, param_far->गिनती);
+    अगर (! dop.गिनती) {
         // Nothing to do.
         disk_ret(regs, DISK_RET_SUCCESS);
-        return;
+        वापस;
     }
 
-    int status = send_disk_op(&dop);
+    पूर्णांक status = send_disk_op(&dop);
 
-    SET_FARVAR(regs->ds, param_far->count, dop.count);
+    SET_FARVAR(regs->ds, param_far->गिनती, dop.गिनती);
 
     disk_ret(regs, status);
 }
@@ -195,26 +195,26 @@ extended_access(struct bregs *regs, struct drive_s *drive_fl, u16 command)
  ****************************************************************/
 
 // disk controller reset
-static void
-disk_1300(struct bregs *regs, struct drive_s *drive_fl)
+अटल व्योम
+disk_1300(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl)
 {
-    struct disk_op_s dop;
+    काष्ठा disk_op_s dop;
     dop.drive_fl = drive_fl;
     dop.command = CMD_RESET;
-    dop.count = 0;
-    int status = send_disk_op(&dop);
+    dop.गिनती = 0;
+    पूर्णांक status = send_disk_op(&dop);
     disk_ret(regs, status);
 }
 
 // read disk status
-static void
-disk_1301(struct bregs *regs, struct drive_s *drive_fl)
+अटल व्योम
+disk_1301(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl)
 {
     u8 v;
-    if (regs->dl < EXTSTART_HD)
+    अगर (regs->dl < EXTSTART_HD)
         // Floppy
         v = GET_BDA(floppy_last_status);
-    else
+    अन्यथा
         v = GET_BDA(disk_last_status);
     regs->ah = v;
     set_cf(regs, v);
@@ -222,94 +222,94 @@ disk_1301(struct bregs *regs, struct drive_s *drive_fl)
 }
 
 // read disk sectors
-static void
-disk_1302(struct bregs *regs, struct drive_s *drive_fl)
+अटल व्योम
+disk_1302(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl)
 {
     basic_access(regs, drive_fl, CMD_READ);
 }
 
 // write disk sectors
-static void
-disk_1303(struct bregs *regs, struct drive_s *drive_fl)
+अटल व्योम
+disk_1303(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl)
 {
     basic_access(regs, drive_fl, CMD_WRITE);
 }
 
 // verify disk sectors
-static void
-disk_1304(struct bregs *regs, struct drive_s *drive_fl)
+अटल व्योम
+disk_1304(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl)
 {
     basic_access(regs, drive_fl, CMD_VERIFY);
 }
 
 // format disk track
-static void noinline
-disk_1305(struct bregs *regs, struct drive_s *drive_fl)
+अटल व्योम noinline
+disk_1305(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl)
 {
     debug_stub(regs);
 
-    struct chs_s chs = getLCHS(drive_fl);
-    u16 nlc=chs.cylinder, nlh=chs.head, nls=chs.sector;
+    काष्ठा chs_s chs = getLCHS(drive_fl);
+    u16 nlc=chs.cylinder, nlh=chs.शीर्ष, nls=chs.sector;
 
-    u8 count = regs->al;
+    u8 गिनती = regs->al;
     u8 cylinder = regs->ch;
-    u8 head = regs->dh;
+    u8 शीर्ष = regs->dh;
 
-    if (cylinder >= nlc || head >= nlh || count == 0 || count > nls) {
+    अगर (cylinder >= nlc || शीर्ष >= nlh || गिनती == 0 || गिनती > nls) {
         disk_ret(regs, DISK_RET_EPARAM);
-        return;
+        वापस;
     }
 
-    struct disk_op_s dop;
+    काष्ठा disk_op_s dop;
     dop.drive_fl = drive_fl;
     dop.command = CMD_FORMAT;
-    dop.lba = (((u32)cylinder * (u32)nlh) + (u32)head) * (u32)nls;
-    dop.count = count;
+    dop.lba = (((u32)cylinder * (u32)nlh) + (u32)शीर्ष) * (u32)nls;
+    dop.गिनती = गिनती;
     dop.buf_fl = MAKE_FLATPTR(regs->es, regs->bx);
-    int status = send_disk_op(&dop);
+    पूर्णांक status = send_disk_op(&dop);
     disk_ret(regs, status);
 }
 
 // read disk drive parameters
-static void noinline
-disk_1308(struct bregs *regs, struct drive_s *drive_fl)
+अटल व्योम noinline
+disk_1308(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl)
 {
     // Get logical geometry from table
-    struct chs_s chs = getLCHS(drive_fl);
-    u16 nlc=chs.cylinder, nlh=chs.head, nls=chs.sector;
+    काष्ठा chs_s chs = getLCHS(drive_fl);
+    u16 nlc=chs.cylinder, nlh=chs.शीर्ष, nls=chs.sector;
     nlc--;
     nlh--;
-    u8 count;
-    if (regs->dl < EXTSTART_HD) {
+    u8 गिनती;
+    अगर (regs->dl < EXTSTART_HD) {
         // Floppy
-        count = GET_GLOBAL(FloppyCount);
+        गिनती = GET_GLOBAL(Floppy_गिनती);
 
-        if (CONFIG_CDROM_EMU && drive_fl == GET_GLOBAL(cdemu_drive_gf))
-            regs->bx = GET_LOW(CDEmu.media) * 2;
-        else
+        अगर (CONFIG_CDROM_EMU && drive_fl == GET_GLOBAL(cdemu_drive_gf))
+            regs->bx = GET_निचला(CDEmu.media) * 2;
+        अन्यथा
             regs->bx = GET_FLATPTR(drive_fl->floppy_type);
 
         // set es & di to point to 11 byte diskette param table in ROM
         regs->es = SEG_BIOS;
         regs->di = (u32)&diskette_param_table2;
-    } else if (regs->dl < EXTSTART_CD) {
+    } अन्यथा अगर (regs->dl < EXTSTART_CD) {
         // Hard drive
-        count = GET_BDA(hdcount);
+        गिनती = GET_BDA(hdcount);
         nlc--;  // last sector reserved
-    } else {
+    } अन्यथा {
         // Not supported on CDROM
         disk_ret(regs, DISK_RET_EPARAM);
-        return;
+        वापस;
     }
 
-    if (CONFIG_CDROM_EMU && GET_LOW(CDEmu.media)) {
-        u8 emudrive = GET_LOW(CDEmu.emulated_drive);
-        if (((emudrive ^ regs->dl) & 0x80) == 0)
+    अगर (CONFIG_CDROM_EMU && GET_निचला(CDEmu.media)) {
+        u8 emudrive = GET_निचला(CDEmu.emulated_drive);
+        अगर (((emudrive ^ regs->dl) & 0x80) == 0)
             // Note extra drive due to emulation.
-            count++;
-        if (regs->dl < EXTSTART_HD && count > 2)
+            गिनती++;
+        अगर (regs->dl < EXTSTART_HD && गिनती > 2)
             // Max of two floppy drives.
-            count = 2;
+            गिनती = 2;
     }
 
     regs->al = 0;
@@ -318,73 +318,73 @@ disk_1308(struct bregs *regs, struct drive_s *drive_fl)
     regs->dh = nlh;
 
     disk_ret(regs, DISK_RET_SUCCESS);
-    regs->dl = count;
+    regs->dl = गिनती;
 }
 
 // initialize drive parameters
-static void
-disk_1309(struct bregs *regs, struct drive_s *drive_fl)
+अटल व्योम
+disk_1309(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl)
 {
     DISK_STUB(regs);
 }
 
 // seek to specified cylinder
-static void
-disk_130c(struct bregs *regs, struct drive_s *drive_fl)
+अटल व्योम
+disk_130c(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl)
 {
     DISK_STUB(regs);
 }
 
 // alternate disk reset
-static void
-disk_130d(struct bregs *regs, struct drive_s *drive_fl)
+अटल व्योम
+disk_130d(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl)
 {
     DISK_STUB(regs);
 }
 
 // check drive ready
-static void
-disk_1310(struct bregs *regs, struct drive_s *drive_fl)
+अटल व्योम
+disk_1310(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl)
 {
     // should look at 40:8E also???
 
-    struct disk_op_s dop;
+    काष्ठा disk_op_s dop;
     dop.drive_fl = drive_fl;
     dop.command = CMD_ISREADY;
-    dop.count = 0;
-    int status = send_disk_op(&dop);
+    dop.गिनती = 0;
+    पूर्णांक status = send_disk_op(&dop);
     disk_ret(regs, status);
 }
 
 // recalibrate
-static void
-disk_1311(struct bregs *regs, struct drive_s *drive_fl)
+अटल व्योम
+disk_1311(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl)
 {
     DISK_STUB(regs);
 }
 
 // controller internal diagnostic
-static void
-disk_1314(struct bregs *regs, struct drive_s *drive_fl)
+अटल व्योम
+disk_1314(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl)
 {
     DISK_STUB(regs);
 }
 
 // read disk drive size
-static void noinline
-disk_1315(struct bregs *regs, struct drive_s *drive_fl)
+अटल व्योम noinline
+disk_1315(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl)
 {
     disk_ret(regs, DISK_RET_SUCCESS);
-    if (regs->dl < EXTSTART_HD || regs->dl >= EXTSTART_CD) {
+    अगर (regs->dl < EXTSTART_HD || regs->dl >= EXTSTART_CD) {
         // Floppy or cdrom
         regs->ah = 1;
-        return;
+        वापस;
     }
     // Hard drive
 
     // Get logical geometry from table
-    struct chs_s chs = getLCHS(drive_fl);
-    u16 nlc=chs.cylinder, nlh=chs.head, nls=chs.sector;
+    काष्ठा chs_s chs = getLCHS(drive_fl);
+    u16 nlc=chs.cylinder, nlh=chs.शीर्ष, nls=chs.sector;
 
     // Compute sector count seen by int13
     u32 lba = (u32)(nlc - 1) * (u32)nlh * (u32)nls;
@@ -393,20 +393,20 @@ disk_1315(struct bregs *regs, struct drive_s *drive_fl)
     regs->ah = 3; // hard disk accessible
 }
 
-static void
-disk_1316(struct bregs *regs, struct drive_s *drive_fl)
+अटल व्योम
+disk_1316(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl)
 {
-    if (regs->dl >= EXTSTART_HD) {
+    अगर (regs->dl >= EXTSTART_HD) {
         // Hard drive
         disk_ret(regs, DISK_RET_EPARAM);
-        return;
+        वापस;
     }
     disk_ret(regs, DISK_RET_ECHANGED);
 }
 
 // IBM/MS installation check
-static void
-disk_1341(struct bregs *regs, struct drive_s *drive_fl)
+अटल व्योम
+disk_1341(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl)
 {
     regs->bx = 0xaa55;  // install check
     regs->cx = 0x0007;  // ext disk access and edd, removable supported
@@ -415,22 +415,22 @@ disk_1341(struct bregs *regs, struct drive_s *drive_fl)
 }
 
 // IBM/MS extended read
-static void
-disk_1342(struct bregs *regs, struct drive_s *drive_fl)
+अटल व्योम
+disk_1342(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl)
 {
     extended_access(regs, drive_fl, CMD_READ);
 }
 
 // IBM/MS extended write
-static void
-disk_1343(struct bregs *regs, struct drive_s *drive_fl)
+अटल व्योम
+disk_1343(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl)
 {
     extended_access(regs, drive_fl, CMD_WRITE);
 }
 
 // IBM/MS verify
-static void
-disk_1344(struct bregs *regs, struct drive_s *drive_fl)
+अटल व्योम
+disk_1344(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl)
 {
     extended_access(regs, drive_fl, CMD_VERIFY);
 }
@@ -439,252 +439,252 @@ disk_1344(struct bregs *regs, struct drive_s *drive_fl)
 u8 CDRom_locks[BUILD_MAX_EXTDRIVE] VARLOW;
 
 // lock
-static void
-disk_134500(struct bregs *regs, struct drive_s *drive_fl)
+अटल व्योम
+disk_134500(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl)
 {
-    int cdid = regs->dl - EXTSTART_CD;
-    u8 locks = GET_LOW(CDRom_locks[cdid]);
-    if (locks == 0xff) {
+    पूर्णांक cdid = regs->dl - EXTSTART_CD;
+    u8 locks = GET_निचला(CDRom_locks[cdid]);
+    अगर (locks == 0xff) {
         regs->al = 1;
         disk_ret(regs, DISK_RET_ETOOMANYLOCKS);
-        return;
+        वापस;
     }
-    SET_LOW(CDRom_locks[cdid], locks + 1);
+    SET_निचला(CDRom_locks[cdid], locks + 1);
     regs->al = 1;
     disk_ret(regs, DISK_RET_SUCCESS);
 }
 
 // unlock
-static void
-disk_134501(struct bregs *regs, struct drive_s *drive_fl)
+अटल व्योम
+disk_134501(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl)
 {
-    int cdid = regs->dl - EXTSTART_CD;
-    u8 locks = GET_LOW(CDRom_locks[cdid]);
-    if (locks == 0x00) {
+    पूर्णांक cdid = regs->dl - EXTSTART_CD;
+    u8 locks = GET_निचला(CDRom_locks[cdid]);
+    अगर (locks == 0x00) {
         regs->al = 0;
         disk_ret(regs, DISK_RET_ENOTLOCKED);
-        return;
+        वापस;
     }
     locks--;
-    SET_LOW(CDRom_locks[cdid], locks);
+    SET_निचला(CDRom_locks[cdid], locks);
     regs->al = (locks ? 1 : 0);
     disk_ret(regs, DISK_RET_SUCCESS);
 }
 
 // status
-static void
-disk_134502(struct bregs *regs, struct drive_s *drive_fl)
+अटल व्योम
+disk_134502(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl)
 {
-    int cdid = regs->dl - EXTSTART_CD;
-    u8 locks = GET_LOW(CDRom_locks[cdid]);
+    पूर्णांक cdid = regs->dl - EXTSTART_CD;
+    u8 locks = GET_निचला(CDRom_locks[cdid]);
     regs->al = (locks ? 1 : 0);
     disk_ret(regs, DISK_RET_SUCCESS);
 }
 
-static void
-disk_1345XX(struct bregs *regs, struct drive_s *drive_fl)
+अटल व्योम
+disk_1345XX(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl)
 {
     disk_ret_unimplemented(regs, DISK_RET_EPARAM);
 }
 
 // IBM/MS lock/unlock drive
-static void
-disk_1345(struct bregs *regs, struct drive_s *drive_fl)
+अटल व्योम
+disk_1345(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl)
 {
-    if (regs->dl < EXTSTART_CD) {
+    अगर (regs->dl < EXTSTART_CD) {
         // Always success for HD
         disk_ret(regs, DISK_RET_SUCCESS);
-        return;
+        वापस;
     }
 
-    switch (regs->al) {
-    case 0x00: disk_134500(regs, drive_fl); break;
-    case 0x01: disk_134501(regs, drive_fl); break;
-    case 0x02: disk_134502(regs, drive_fl); break;
-    default:   disk_1345XX(regs, drive_fl); break;
+    चयन (regs->al) {
+    हाल 0x00: disk_134500(regs, drive_fl); अवरोध;
+    हाल 0x01: disk_134501(regs, drive_fl); अवरोध;
+    हाल 0x02: disk_134502(regs, drive_fl); अवरोध;
+    शेष:   disk_1345XX(regs, drive_fl); अवरोध;
     }
 }
 
 // IBM/MS eject media
-static void noinline
-disk_1346(struct bregs *regs, struct drive_s *drive_fl)
+अटल व्योम noinline
+disk_1346(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl)
 {
-    if (regs->dl < EXTSTART_CD) {
+    अगर (regs->dl < EXTSTART_CD) {
         // Volume Not Removable
         disk_ret(regs, DISK_RET_ENOTREMOVABLE);
-        return;
+        वापस;
     }
 
-    int cdid = regs->dl - EXTSTART_CD;
-    u8 locks = GET_LOW(CDRom_locks[cdid]);
-    if (locks != 0) {
+    पूर्णांक cdid = regs->dl - EXTSTART_CD;
+    u8 locks = GET_निचला(CDRom_locks[cdid]);
+    अगर (locks != 0) {
         disk_ret(regs, DISK_RET_ELOCKED);
-        return;
+        वापस;
     }
 
     // FIXME should handle 0x31 no media in device
     // FIXME should handle 0xb5 valid request failed
 
     // Call removable media eject
-    struct bregs br;
-    memset(&br, 0, sizeof(br));
+    काष्ठा bregs br;
+    स_रखो(&br, 0, माप(br));
     br.ah = 0x52;
     br.dl = regs->dl;
     call16_int(0x15, &br);
 
-    if (br.ah || br.flags & F_CF) {
+    अगर (br.ah || br.flags & F_CF) {
         disk_ret(regs, DISK_RET_ELOCKED);
-        return;
+        वापस;
     }
     disk_ret(regs, DISK_RET_SUCCESS);
 }
 
 // IBM/MS extended seek
-static void
-disk_1347(struct bregs *regs, struct drive_s *drive_fl)
+अटल व्योम
+disk_1347(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl)
 {
     extended_access(regs, drive_fl, CMD_SEEK);
 }
 
 // IBM/MS get drive parameters
-static void
-disk_1348(struct bregs *regs, struct drive_s *drive_fl)
+अटल व्योम
+disk_1348(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl)
 {
-    int ret = fill_edd(SEGOFF(regs->ds, regs->si), drive_fl);
+    पूर्णांक ret = fill_edd(SEGOFF(regs->ds, regs->si), drive_fl);
     disk_ret(regs, ret);
 }
 
 // IBM/MS extended media change
-static void
-disk_1349(struct bregs *regs, struct drive_s *drive_fl)
+अटल व्योम
+disk_1349(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl)
 {
-    if (regs->dl < EXTSTART_CD) {
+    अगर (regs->dl < EXTSTART_CD) {
         // Always success for HD
         disk_ret(regs, DISK_RET_SUCCESS);
-        return;
+        वापस;
     }
     set_invalid(regs);
     // always send changed ??
     regs->ah = DISK_RET_ECHANGED;
 }
 
-static void
-disk_134e01(struct bregs *regs, struct drive_s *drive_fl)
+अटल व्योम
+disk_134e01(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl)
 {
     disk_ret(regs, DISK_RET_SUCCESS);
 }
 
-static void
-disk_134e03(struct bregs *regs, struct drive_s *drive_fl)
+अटल व्योम
+disk_134e03(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl)
 {
     disk_ret(regs, DISK_RET_SUCCESS);
 }
 
-static void
-disk_134e04(struct bregs *regs, struct drive_s *drive_fl)
+अटल व्योम
+disk_134e04(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl)
 {
     disk_ret(regs, DISK_RET_SUCCESS);
 }
 
-static void
-disk_134e06(struct bregs *regs, struct drive_s *drive_fl)
+अटल व्योम
+disk_134e06(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl)
 {
     disk_ret(regs, DISK_RET_SUCCESS);
 }
 
-static void
-disk_134eXX(struct bregs *regs, struct drive_s *drive_fl)
+अटल व्योम
+disk_134eXX(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl)
 {
     disk_ret(regs, DISK_RET_EPARAM);
 }
 
 // IBM/MS set hardware configuration
-static void
-disk_134e(struct bregs *regs, struct drive_s *drive_fl)
+अटल व्योम
+disk_134e(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl)
 {
-    switch (regs->al) {
-    case 0x01: disk_134e01(regs, drive_fl); break;
-    case 0x03: disk_134e03(regs, drive_fl); break;
-    case 0x04: disk_134e04(regs, drive_fl); break;
-    case 0x06: disk_134e06(regs, drive_fl); break;
-    default:   disk_134eXX(regs, drive_fl); break;
+    चयन (regs->al) {
+    हाल 0x01: disk_134e01(regs, drive_fl); अवरोध;
+    हाल 0x03: disk_134e03(regs, drive_fl); अवरोध;
+    हाल 0x04: disk_134e04(regs, drive_fl); अवरोध;
+    हाल 0x06: disk_134e06(regs, drive_fl); अवरोध;
+    शेष:   disk_134eXX(regs, drive_fl); अवरोध;
     }
 }
 
-static void
-disk_13XX(struct bregs *regs, struct drive_s *drive_fl)
+अटल व्योम
+disk_13XX(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl)
 {
     disk_ret_unimplemented(regs, DISK_RET_EPARAM);
 }
 
-static void
-disk_13(struct bregs *regs, struct drive_s *drive_fl)
+अटल व्योम
+disk_13(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl)
 {
     //debug_stub(regs);
 
     // clear completion flag
     SET_BDA(disk_interrupt_flag, 0);
 
-    switch (regs->ah) {
-    case 0x00: disk_1300(regs, drive_fl); break;
-    case 0x01: disk_1301(regs, drive_fl); break;
-    case 0x02: disk_1302(regs, drive_fl); break;
-    case 0x03: disk_1303(regs, drive_fl); break;
-    case 0x04: disk_1304(regs, drive_fl); break;
-    case 0x05: disk_1305(regs, drive_fl); break;
-    case 0x08: disk_1308(regs, drive_fl); break;
-    case 0x09: disk_1309(regs, drive_fl); break;
-    case 0x0c: disk_130c(regs, drive_fl); break;
-    case 0x0d: disk_130d(regs, drive_fl); break;
-    case 0x10: disk_1310(regs, drive_fl); break;
-    case 0x11: disk_1311(regs, drive_fl); break;
-    case 0x14: disk_1314(regs, drive_fl); break;
-    case 0x15: disk_1315(regs, drive_fl); break;
-    case 0x16: disk_1316(regs, drive_fl); break;
-    case 0x41: disk_1341(regs, drive_fl); break;
-    case 0x42: disk_1342(regs, drive_fl); break;
-    case 0x43: disk_1343(regs, drive_fl); break;
-    case 0x44: disk_1344(regs, drive_fl); break;
-    case 0x45: disk_1345(regs, drive_fl); break;
-    case 0x46: disk_1346(regs, drive_fl); break;
-    case 0x47: disk_1347(regs, drive_fl); break;
-    case 0x48: disk_1348(regs, drive_fl); break;
-    case 0x49: disk_1349(regs, drive_fl); break;
-    case 0x4e: disk_134e(regs, drive_fl); break;
-    default:   disk_13XX(regs, drive_fl); break;
+    चयन (regs->ah) {
+    हाल 0x00: disk_1300(regs, drive_fl); अवरोध;
+    हाल 0x01: disk_1301(regs, drive_fl); अवरोध;
+    हाल 0x02: disk_1302(regs, drive_fl); अवरोध;
+    हाल 0x03: disk_1303(regs, drive_fl); अवरोध;
+    हाल 0x04: disk_1304(regs, drive_fl); अवरोध;
+    हाल 0x05: disk_1305(regs, drive_fl); अवरोध;
+    हाल 0x08: disk_1308(regs, drive_fl); अवरोध;
+    हाल 0x09: disk_1309(regs, drive_fl); अवरोध;
+    हाल 0x0c: disk_130c(regs, drive_fl); अवरोध;
+    हाल 0x0d: disk_130d(regs, drive_fl); अवरोध;
+    हाल 0x10: disk_1310(regs, drive_fl); अवरोध;
+    हाल 0x11: disk_1311(regs, drive_fl); अवरोध;
+    हाल 0x14: disk_1314(regs, drive_fl); अवरोध;
+    हाल 0x15: disk_1315(regs, drive_fl); अवरोध;
+    हाल 0x16: disk_1316(regs, drive_fl); अवरोध;
+    हाल 0x41: disk_1341(regs, drive_fl); अवरोध;
+    हाल 0x42: disk_1342(regs, drive_fl); अवरोध;
+    हाल 0x43: disk_1343(regs, drive_fl); अवरोध;
+    हाल 0x44: disk_1344(regs, drive_fl); अवरोध;
+    हाल 0x45: disk_1345(regs, drive_fl); अवरोध;
+    हाल 0x46: disk_1346(regs, drive_fl); अवरोध;
+    हाल 0x47: disk_1347(regs, drive_fl); अवरोध;
+    हाल 0x48: disk_1348(regs, drive_fl); अवरोध;
+    हाल 0x49: disk_1349(regs, drive_fl); अवरोध;
+    हाल 0x4e: disk_134e(regs, drive_fl); अवरोध;
+    शेष:   disk_13XX(regs, drive_fl); अवरोध;
     }
 }
 
-static void
-floppy_13(struct bregs *regs, struct drive_s *drive_fl)
+अटल व्योम
+floppy_13(काष्ठा bregs *regs, काष्ठा drive_s *drive_fl)
 {
     // Only limited commands are supported on floppies.
-    switch (regs->ah) {
-    case 0x00:
-    case 0x01:
-    case 0x02:
-    case 0x03:
-    case 0x04:
-    case 0x05:
-    case 0x08:
-    case 0x15:
-    case 0x16:
+    चयन (regs->ah) {
+    हाल 0x00:
+    हाल 0x01:
+    हाल 0x02:
+    हाल 0x03:
+    हाल 0x04:
+    हाल 0x05:
+    हाल 0x08:
+    हाल 0x15:
+    हाल 0x16:
         disk_13(regs, drive_fl);
-        break;
-    default:   disk_13XX(regs, drive_fl); break;
+        अवरोध;
+    शेष:   disk_13XX(regs, drive_fl); अवरोध;
     }
 }
 
 // ElTorito - Terminate disk emu
-static void
-cdemu_134b(struct bregs *regs)
+अटल व्योम
+cdemu_134b(काष्ठा bregs *regs)
 {
-    memcpy_far(regs->ds, (void*)(regs->si+0), SEG_LOW, &CDEmu, sizeof(CDEmu));
+    memcpy_far(regs->ds, (व्योम*)(regs->si+0), SEG_निचला, &CDEmu, माप(CDEmu));
 
     // If we have to terminate emulation
-    if (regs->al == 0x00) {
+    अगर (regs->al == 0x00) {
         // FIXME ElTorito Various. Should be handled accordingly to spec
-        SET_LOW(CDEmu.media, 0x00); // bye bye
+        SET_निचला(CDEmu.media, 0x00); // bye bye
 
         // XXX - update floppy/hd count.
     }
@@ -697,71 +697,71 @@ cdemu_134b(struct bregs *regs)
  * Entry points
  ****************************************************************/
 
-static void
-handle_legacy_disk(struct bregs *regs, u8 extdrive)
+अटल व्योम
+handle_legacy_disk(काष्ठा bregs *regs, u8 extdrive)
 {
-    if (! CONFIG_DRIVES) {
+    अगर (! CONFIG_DRIVES) {
         // XXX - support handle_1301 anyway?
         disk_ret(regs, DISK_RET_EPARAM);
-        return;
+        वापस;
     }
 
-    if (extdrive < EXTSTART_HD) {
-        struct drive_s *drive_fl = getDrive(EXTTYPE_FLOPPY, extdrive);
-        if (!drive_fl)
-            goto fail;
+    अगर (extdrive < EXTSTART_HD) {
+        काष्ठा drive_s *drive_fl = getDrive(EXTTYPE_FLOPPY, extdrive);
+        अगर (!drive_fl)
+            जाओ fail;
         floppy_13(regs, drive_fl);
-        return;
+        वापस;
     }
 
-    struct drive_s *drive_fl;
-    if (extdrive >= EXTSTART_CD)
+    काष्ठा drive_s *drive_fl;
+    अगर (extdrive >= EXTSTART_CD)
         drive_fl = getDrive(EXTTYPE_CD, extdrive - EXTSTART_CD);
-    else
+    अन्यथा
         drive_fl = getDrive(EXTTYPE_HD, extdrive - EXTSTART_HD);
-    if (!drive_fl)
-        goto fail;
+    अगर (!drive_fl)
+        जाओ fail;
     disk_13(regs, drive_fl);
-    return;
+    वापस;
 
 fail:
     // XXX - support 1301/1308/1315 anyway?
     disk_ret(regs, DISK_RET_EPARAM);
 }
 
-void VISIBLE16
-handle_40(struct bregs *regs)
+व्योम VISIBLE16
+handle_40(काष्ठा bregs *regs)
 {
     debug_enter(regs, DEBUG_HDL_40);
     handle_legacy_disk(regs, regs->dl);
 }
 
 // INT 13h Fixed Disk Services Entry Point
-void VISIBLE16
-handle_13(struct bregs *regs)
+व्योम VISIBLE16
+handle_13(काष्ठा bregs *regs)
 {
     debug_enter(regs, DEBUG_HDL_13);
     u8 extdrive = regs->dl;
 
-    if (CONFIG_CDROM_EMU) {
-        if (regs->ah == 0x4b) {
+    अगर (CONFIG_CDROM_EMU) {
+        अगर (regs->ah == 0x4b) {
             cdemu_134b(regs);
-            return;
+            वापस;
         }
-        if (GET_LOW(CDEmu.media)) {
-            u8 emudrive = GET_LOW(CDEmu.emulated_drive);
-            if (extdrive == emudrive) {
+        अगर (GET_निचला(CDEmu.media)) {
+            u8 emudrive = GET_निचला(CDEmu.emulated_drive);
+            अगर (extdrive == emudrive) {
                 // Access to an emulated drive.
-                struct drive_s *cdemu_gf = GET_GLOBAL(cdemu_drive_gf);
-                if (regs->ah > 0x16) {
+                काष्ठा drive_s *cdemu_gf = GET_GLOBAL(cdemu_drive_gf);
+                अगर (regs->ah > 0x16) {
                     // Only old-style commands supported.
                     disk_13XX(regs, cdemu_gf);
-                    return;
+                    वापस;
                 }
                 disk_13(regs, cdemu_gf);
-                return;
+                वापस;
             }
-            if (extdrive < EXTSTART_CD && ((emudrive ^ extdrive) & 0x80) == 0)
+            अगर (extdrive < EXTSTART_CD && ((emudrive ^ extdrive) & 0x80) == 0)
                 // Adjust id to make room for emulated drive.
                 extdrive--;
         }
@@ -770,8 +770,8 @@ handle_13(struct bregs *regs)
 }
 
 // record completion in BIOS task complete flag
-void VISIBLE16
-handle_76(void)
+व्योम VISIBLE16
+handle_76(व्योम)
 {
     debug_isr(DEBUG_ISR_76);
     SET_BDA(disk_interrupt_flag, 0xff);

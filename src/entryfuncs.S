@@ -74,7 +74,7 @@
         // Call a C function - this does the minimal work necessary to
         // call into C.  It sets up %ds, backs up %es, and backs up
         // those registers that are call clobbered by the C compiler.
-        .macro ENTRY cfunc
+        .macro प्रथम cfunc
         cli         // In case something far-calls instead of using "int"
         cld
         pushl %eax              // Save registers clobbered by C code

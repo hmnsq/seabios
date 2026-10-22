@@ -1,19 +1,19 @@
 // Tool for building defintions accessible from assembler code.  This
 // is based on code from the Linux Kernel.
-#ifndef __GEN_DEFS_H
-#define __GEN_DEFS_H
+#अगर_अघोषित __GEN_DEFS_H
+#घोषणा __GEN_DEFS_H
 
 
-#define DEFINE(sym, val) \
-    asm volatile("\n->" #sym " %0 " #val : : "i" (val))
+#घोषणा DEFINE(sym, val) \
+    यंत्र अस्थिर("\n->" #sym " %0 " #val : : "i" (val))
 
-#define BLANK() \
-    asm volatile("\n->" : : )
+#घोषणा BLANK() \
+    यंत्र अस्थिर("\n->" : : )
 
-#define OFFSET(sym, str, mem) \
-    DEFINE(sym, offsetof(struct str, mem))
+#घोषणा OFFSET(sym, str, mem) \
+    DEFINE(sym, दुरत्व(काष्ठा str, mem))
 
-#define COMMENT(x) \
-    asm volatile("\n->#" x)
+#घोषणा COMMENT(x) \
+    यंत्र अस्थिर("\n->#" x)
 
-#endif // gen-defs.h
+#पूर्ण_अगर // gen-defs.h

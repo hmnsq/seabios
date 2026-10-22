@@ -1,8 +1,8 @@
-#ifndef _PVSCSI_H_
-#define _PVSCSI_H_
+#अगर_अघोषित _PVSCSI_H_
+#घोषणा _PVSCSI_H_
 
-struct disk_op_s;
-int pvscsi_process_op(struct disk_op_s *op);
-void pvscsi_setup(void);
+काष्ठा disk_op_s;
+पूर्णांक pvscsi_process_op(काष्ठा disk_op_s *op);
+व्योम pvscsi_setup(व्योम);
 
-#endif /* _PVSCSI_H_ */
+#पूर्ण_अगर /* _PVSCSI_H_ */

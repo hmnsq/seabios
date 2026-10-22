@@ -4,35 +4,35 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_LOWFLAT
-#include "config.h" // CONFIG_*
-#include "malloc.h" // free
-#include "memmap.h" // PAGE_SIZE
-#include "output.h" // dprintf
-#include "pcidevice.h" // foreachpci
-#include "pci_ids.h" // PCI_CLASS_SERIAL_USB_OHCI
-#include "pci_regs.h" // PCI_BASE_ADDRESS_0
-#include "string.h" // memset
-#include "usb.h" // struct usb_s
-#include "usb-ehci.h" // ehci_wait_controllers
-#include "usb-ohci.h" // struct ohci_hcca
-#include "util.h" // msleep
-#include "x86.h" // readl
+#समावेश "biosvar.h" // GET_LOWFLAT
+#समावेश "config.h" // CONFIG_*
+#समावेश "malloc.h" // free
+#समावेश "memmap.h" // PAGE_SIZE
+#समावेश "output.h" // dprintf
+#समावेश "pcidevice.h" // foreachpci
+#समावेश "pci_ids.h" // PCI_CLASS_SERIAL_USB_OHCI
+#समावेश "pci_regs.h" // PCI_BASE_ADDRESS_0
+#समावेश "string.h" // memset
+#समावेश "usb.h" // struct usb_s
+#समावेश "usb-ehci.h" // ehci_wait_controllers
+#समावेश "usb-ohci.h" // struct ohci_hcca
+#समावेश "util.h" // msleep
+#समावेश "x86.h" // readl
 
-#define FIT                     (1 << 31)
+#घोषणा FIT                     (1 << 31)
 
-struct usb_ohci_s {
-    struct usb_s usb;
-    struct ohci_regs *regs;
+काष्ठा usb_ohci_s {
+    काष्ठा usb_s usb;
+    काष्ठा ohci_regs *regs;
 };
 
-struct ohci_pipe {
-    struct ohci_ed ed;
-    struct usb_pipe pipe;
-    struct ohci_regs *regs;
-    void *data;
-    int count;
-    struct ohci_td *tds;
+काष्ठा ohci_pipe {
+    काष्ठा ohci_ed ed;
+    काष्ठा usb_pipe pipe;
+    काष्ठा ohci_regs *regs;
+    व्योम *तथ्य;
+    पूर्णांक गिनती;
+    काष्ठा ohci_td *tds;
 };
 
 
@@ -41,60 +41,60 @@ struct ohci_pipe {
  ****************************************************************/
 
 // Check if device attached to port
-static int
-ohci_hub_detect(struct usbhub_s *hub, u32 port)
+अटल पूर्णांक
+ohci_hub_detect(काष्ठा usbhub_s *hub, u32 port)
 {
-    struct usb_ohci_s *cntl = container_of(hub->cntl, struct usb_ohci_s, usb);
+    काष्ठा usb_ohci_s *cntl = container_of(hub->cntl, काष्ठा usb_ohci_s, usb);
     u32 sts = readl(&cntl->regs->roothub_portstatus[port]);
-    return (sts & RH_PS_CCS) ? 1 : 0;
+    वापस (sts & RH_PS_CCS) ? 1 : 0;
 }
 
 // Disable port
-static void
-ohci_hub_disconnect(struct usbhub_s *hub, u32 port)
+अटल व्योम
+ohci_hub_disconnect(काष्ठा usbhub_s *hub, u32 port)
 {
-    struct usb_ohci_s *cntl = container_of(hub->cntl, struct usb_ohci_s, usb);
+    काष्ठा usb_ohci_s *cntl = container_of(hub->cntl, काष्ठा usb_ohci_s, usb);
     writel(&cntl->regs->roothub_portstatus[port], RH_PS_CCS|RH_PS_LSDA);
 }
 
 // Reset device on port
-static int
-ohci_hub_reset(struct usbhub_s *hub, u32 port)
+अटल पूर्णांक
+ohci_hub_reset(काष्ठा usbhub_s *hub, u32 port)
 {
-    struct usb_ohci_s *cntl = container_of(hub->cntl, struct usb_ohci_s, usb);
+    काष्ठा usb_ohci_s *cntl = container_of(hub->cntl, काष्ठा usb_ohci_s, usb);
     writel(&cntl->regs->roothub_portstatus[port], RH_PS_PRS);
     u32 sts;
     u32 end = timer_calc(USB_TIME_DRSTR * 2);
-    for (;;) {
+    क्रम (;;) {
         sts = readl(&cntl->regs->roothub_portstatus[port]);
-        if (!(sts & RH_PS_PRS))
+        अगर (!(sts & RH_PS_PRS))
             // XXX - need to ensure USB_TIME_DRSTR time in reset?
-            break;
-        if (timer_check(end)) {
+            अवरोध;
+        अगर (timer_check(end)) {
             // Timeout.
             warn_timeout();
             ohci_hub_disconnect(hub, port);
-            return -1;
+            वापस -1;
         }
         yield();
     }
 
-    if ((sts & (RH_PS_CCS|RH_PS_PES)) != (RH_PS_CCS|RH_PS_PES))
+    अगर ((sts & (RH_PS_CCS|RH_PS_PES)) != (RH_PS_CCS|RH_PS_PES))
         // Device no longer present
-        return -1;
+        वापस -1;
 
-    return !!(sts & RH_PS_LSDA);
+    वापस !!(sts & RH_PS_LSDA);
 }
 
-static struct usbhub_op_s ohci_HubOp = {
+अटल काष्ठा usbhub_op_s ohci_HubOp = {
     .detect = ohci_hub_detect,
     .reset = ohci_hub_reset,
     .disconnect = ohci_hub_disconnect,
 };
 
 // Find any devices connected to the root hub.
-static int
-check_ohci_ports(struct usb_ohci_s *cntl)
+अटल पूर्णांक
+check_ohci_ports(काष्ठा usb_ohci_s *cntl)
 {
     ASSERT32FLAT();
     // Wait for ehci init - in case this is a "companion controller"
@@ -107,13 +107,13 @@ check_ohci_ports(struct usb_ohci_s *cntl)
     msleep((rha >> 24) * 2);
     // XXX - need to sleep for USB_TIME_SIGATT if just powered up?
 
-    struct usbhub_s hub;
-    memset(&hub, 0, sizeof(hub));
+    काष्ठा usbhub_s hub;
+    स_रखो(&hub, 0, माप(hub));
     hub.cntl = &cntl->usb;
     hub.portcount = rha & RH_A_NDP;
     hub.op = &ohci_HubOp;
     usb_enumerate(&hub);
-    return hub.devcount;
+    वापस hub.devcount;
 }
 
 
@@ -122,57 +122,57 @@ check_ohci_ports(struct usb_ohci_s *cntl)
  ****************************************************************/
 
 // Wait for next USB frame to start - for ensuring safe memory release.
-static void
-ohci_waittick(struct ohci_regs *regs)
+अटल व्योम
+ohci_waittick(काष्ठा ohci_regs *regs)
 {
     barrier();
-    struct ohci_hcca *hcca = (void*)regs->hcca;
+    काष्ठा ohci_hcca *hcca = (व्योम*)regs->hcca;
     u32 startframe = hcca->frame_no;
     u32 end = timer_calc(1000 * 5);
-    for (;;) {
-        if (hcca->frame_no != startframe)
-            break;
-        if (timer_check(end)) {
+    क्रम (;;) {
+        अगर (hcca->frame_no != startframe)
+            अवरोध;
+        अगर (timer_check(end)) {
             warn_timeout();
-            return;
+            वापस;
         }
         yield();
     }
 }
 
-static void
-ohci_free_pipes(struct usb_ohci_s *cntl)
+अटल व्योम
+ohci_free_pipes(काष्ठा usb_ohci_s *cntl)
 {
     dprintf(7, "ohci_free_pipes %p\n", cntl);
 
     u32 creg = readl(&cntl->regs->control);
-    if (creg & (OHCI_CTRL_CLE|OHCI_CTRL_BLE)) {
+    अगर (creg & (OHCI_CTRL_CLE|OHCI_CTRL_BLE)) {
         writel(&cntl->regs->control, creg & ~(OHCI_CTRL_CLE|OHCI_CTRL_BLE));
         ohci_waittick(cntl->regs);
     }
 
     u32 *pos = &cntl->regs->ed_controlhead;
-    for (;;) {
-        struct ohci_ed *next = (void*)*pos;
-        if (!next)
-            break;
-        struct ohci_pipe *pipe = container_of(next, struct ohci_pipe, ed);
-        if (usb_is_freelist(&cntl->usb, &pipe->pipe)) {
-            *pos = next->hwNextED;
-            free(pipe);
-        } else {
-            pos = &next->hwNextED;
+    क्रम (;;) {
+        काष्ठा ohci_ed *अग्र = (व्योम*)*pos;
+        अगर (!अग्र)
+            अवरोध;
+        काष्ठा ohci_pipe *pipe = container_of(अग्र, काष्ठा ohci_pipe, ed);
+        अगर (usb_is_freelist(&cntl->usb, &pipe->pipe)) {
+            *pos = अग्र->hw_अग्र_ED;
+            मुक्त(pipe);
+        } अन्यथा {
+            pos = &अग्र->hw_अग्र_ED;
         }
     }
 
     writel(&cntl->regs->ed_controlcurrent, 0);
     writel(&cntl->regs->ed_bulkcurrent, 0);
     writel(&cntl->regs->control, creg);
-    cntl->usb.freelist = NULL;
+    cntl->usb.freelist = शून्य;
 }
 
-static int
-start_ohci(struct usb_ohci_s *cntl, struct ohci_hcca *hcca)
+अटल पूर्णांक
+start_ohci(काष्ठा usb_ohci_s *cntl, काष्ठा ohci_hcca *hcca)
 {
     u32 oldfminterval = readl(&cntl->regs->fminterval);
     u32 oldrwc = readl(&cntl->regs->control) & OHCI_CTRL_RWC;
@@ -187,13 +187,13 @@ start_ohci(struct usb_ohci_s *cntl, struct ohci_hcca *hcca)
     // Do software init (min 10us, max 2ms)
     u32 end = timer_calc_usec(10);
     writel(&cntl->regs->cmdstatus, OHCI_HCR);
-    for (;;) {
+    क्रम (;;) {
         u32 status = readl(&cntl->regs->cmdstatus);
-        if (!(status & OHCI_HCR))
-            break;
-        if (timer_check(end)) {
+        अगर (!(status & OHCI_HCR))
+            अवरोध;
+        अगर (timer_check(end)) {
             warn_timeout();
-            return -1;
+            वापस -1;
         }
     }
 
@@ -218,66 +218,66 @@ start_ohci(struct usb_ohci_s *cntl, struct ohci_hcca *hcca)
               | OHCI_USB_OPER | oldrwc));
     readl(&cntl->regs->control); // flush writes
 
-    return 0;
+    वापस 0;
 }
 
-static void
-stop_ohci(struct usb_ohci_s *cntl)
+अटल व्योम
+stop_ohci(काष्ठा usb_ohci_s *cntl)
 {
     u32 oldrwc = readl(&cntl->regs->control) & OHCI_CTRL_RWC;
     writel(&cntl->regs->control, oldrwc);
     readl(&cntl->regs->control); // flush writes
 }
 
-static void
-configure_ohci(void *data)
+अटल व्योम
+configure_ohci(व्योम *तथ्य)
 {
-    struct usb_ohci_s *cntl = data;
+    काष्ठा usb_ohci_s *cntl = तथ्य;
 
     // Allocate memory
-    struct ohci_hcca *hcca = memalign_high(256, sizeof(*hcca));
-    struct ohci_ed *intr_ed = malloc_high(sizeof(*intr_ed));
-    if (!hcca || !intr_ed) {
+    काष्ठा ohci_hcca *hcca = memalign_ऊपरी(256, माप(*hcca));
+    काष्ठा ohci_ed *intr_ed = malloc_ऊपरी(माप(*intr_ed));
+    अगर (!hcca || !intr_ed) {
         warn_noalloc();
-        goto free;
+        जाओ मुक्त;
     }
-    memset(hcca, 0, sizeof(*hcca));
-    memset(intr_ed, 0, sizeof(*intr_ed));
+    स_रखो(hcca, 0, माप(*hcca));
+    स_रखो(intr_ed, 0, माप(*intr_ed));
     intr_ed->hwINFO = ED_SKIP;
-    int i;
-    for (i=0; i<ARRAY_SIZE(hcca->int_table); i++)
+    पूर्णांक i;
+    क्रम (i=0; i<ARRAY_आकार(hcca->int_table); i++)
         hcca->int_table[i] = (u32)intr_ed;
 
-    int ret = start_ohci(cntl, hcca);
-    if (ret)
-        goto err;
+    पूर्णांक ret = start_ohci(cntl, hcca);
+    अगर (ret)
+        जाओ err;
 
-    int count = check_ohci_ports(cntl);
+    पूर्णांक गिनती = check_ohci_ports(cntl);
     ohci_free_pipes(cntl);
-    if (! count)
-        goto err;
-    return;
+    अगर (! गिनती)
+        जाओ err;
+    वापस;
 
 err:
     stop_ohci(cntl);
-free:
-    free(hcca);
-    free(intr_ed);
+मुक्त:
+    मुक्त(hcca);
+    मुक्त(intr_ed);
 }
 
-static void
-ohci_controller_setup(struct pci_device *pci)
+अटल व्योम
+ohci_controller_setup(काष्ठा pci_device *pci)
 {
-    struct ohci_regs *regs = pci_enable_membar(pci, PCI_BASE_ADDRESS_0);
-    if (!regs)
-        return;
+    काष्ठा ohci_regs *regs = pci_enable_membar(pci, PCI_BASE_ADDRESS_0);
+    अगर (!regs)
+        वापस;
 
-    struct usb_ohci_s *cntl = malloc_tmphigh(sizeof(*cntl));
-    if (!cntl) {
+    काष्ठा usb_ohci_s *cntl = malloc_tmphigh(माप(*cntl));
+    अगर (!cntl) {
         warn_noalloc();
-        return;
+        वापस;
     }
-    memset(cntl, 0, sizeof(*cntl));
+    स_रखो(cntl, 0, माप(*cntl));
     cntl->usb.pci = pci;
     cntl->usb.type = USB_TYPE_OHCI;
     cntl->regs = regs;
@@ -295,14 +295,14 @@ ohci_controller_setup(struct pci_device *pci)
     run_thread(configure_ohci, cntl);
 }
 
-void
-ohci_setup(void)
+व्योम
+ohci_setup(व्योम)
 {
-    if (! CONFIG_USB_OHCI)
-        return;
-    struct pci_device *pci;
+    अगर (! CONFIG_USB_OHCI)
+        वापस;
+    काष्ठा pci_device *pci;
     foreachpci(pci) {
-        if (pci_classprog(pci) == PCI_CLASS_SERIAL_USB_OHCI)
+        अगर (pci_classprog(pci) == PCI_CLASS_SERIAL_USB_OHCI)
             ohci_controller_setup(pci);
     }
 }
@@ -313,256 +313,256 @@ ohci_setup(void)
  ****************************************************************/
 
 // Setup fields in ed
-static void
-ohci_desc2pipe(struct ohci_pipe *pipe, struct usbdevice_s *usbdev
-               , struct usb_endpoint_descriptor *epdesc)
+अटल व्योम
+ohci_desc2pipe(काष्ठा ohci_pipe *pipe, काष्ठा usbdevice_s *usbdev
+               , काष्ठा usb_endpoint_descriptor *epdesc)
 {
     usb_desc2pipe(&pipe->pipe, usbdev, epdesc);
     pipe->ed.hwINFO = (ED_SKIP | usbdev->devaddr | (pipe->pipe.ep << 7)
-                       | (epdesc->wMaxPacketSize << 16)
+                       | (epdesc->w_Max_Packet_आकार << 16)
                        | (usbdev->speed ? ED_LOWSPEED : 0));
-    struct usb_ohci_s *cntl = container_of(
-        usbdev->hub->cntl, struct usb_ohci_s, usb);
+    काष्ठा usb_ohci_s *cntl = container_of(
+        usbdev->hub->cntl, काष्ठा usb_ohci_s, usb);
     pipe->regs = cntl->regs;
 }
 
-static struct usb_pipe *
-ohci_alloc_intr_pipe(struct usbdevice_s *usbdev
-                     , struct usb_endpoint_descriptor *epdesc)
+अटल काष्ठा usb_pipe *
+ohci_alloc_intr_pipe(काष्ठा usbdevice_s *usbdev
+                     , काष्ठा usb_endpoint_descriptor *epdesc)
 {
-    struct usb_ohci_s *cntl = container_of(
-        usbdev->hub->cntl, struct usb_ohci_s, usb);
-    int frameexp = usb_get_period(usbdev, epdesc);
+    काष्ठा usb_ohci_s *cntl = container_of(
+        usbdev->hub->cntl, काष्ठा usb_ohci_s, usb);
+    पूर्णांक frameexp = usb_get_period(usbdev, epdesc);
     dprintf(7, "ohci_alloc_intr_pipe %p %d\n", &cntl->usb, frameexp);
 
-    if (frameexp > 5)
+    अगर (frameexp > 5)
         frameexp = 5;
-    int maxpacket = epdesc->wMaxPacketSize;
+    पूर्णांक maxpacket = epdesc->w_Max_Packet_आकार;
     // Determine number of entries needed for 2 timer ticks.
-    int ms = 1<<frameexp;
-    int count = DIV_ROUND_UP(ticks_to_ms(2), ms) + 1;
-    struct ohci_pipe *pipe = malloc_low(sizeof(*pipe));
-    struct ohci_td *tds = malloc_low(sizeof(*tds) * count);
-    void *data = malloc_low(maxpacket * count);
-    if (!pipe || !tds || !data)
-        goto err;
-    memset(pipe, 0, sizeof(*pipe));
+    पूर्णांक ms = 1<<frameexp;
+    पूर्णांक गिनती = DIV_ROUND_UP(ticks_to_ms(2), ms) + 1;
+    काष्ठा ohci_pipe *pipe = malloc_निचला(माप(*pipe));
+    काष्ठा ohci_td *tds = malloc_निचला(माप(*tds) * गिनती);
+    व्योम *तथ्य = malloc_निचला(maxpacket * गिनती);
+    अगर (!pipe || !tds || !तथ्य)
+        जाओ err;
+    स_रखो(pipe, 0, माप(*pipe));
     ohci_desc2pipe(pipe, usbdev, epdesc);
     pipe->ed.hwINFO &= ~ED_SKIP;
-    pipe->data = data;
-    pipe->count = count;
+    pipe->तथ्य = तथ्य;
+    pipe->गिनती = गिनती;
     pipe->tds = tds;
 
-    struct ohci_ed *ed = &pipe->ed;
-    ed->hwHeadP = (u32)&tds[0];
-    ed->hwTailP = (u32)&tds[count-1];
+    काष्ठा ohci_ed *ed = &pipe->ed;
+    ed->hw_शीर्ष_P = (u32)&tds[0];
+    ed->hw_पुच्छ_P = (u32)&tds[गिनती-1];
 
-    int i;
-    for (i=0; i<count-1; i++) {
+    पूर्णांक i;
+    क्रम (i=0; i<गिनती-1; i++) {
         tds[i].hwINFO = TD_DP_IN | TD_T_TOGGLE | TD_CC;
-        tds[i].hwCBP = (u32)data + maxpacket * i;
-        tds[i].hwNextTD = (u32)&tds[i+1];
+        tds[i].hwCBP = (u32)तथ्य + maxpacket * i;
+        tds[i].hw_अग्र_TD = (u32)&tds[i+1];
         tds[i].hwBE = tds[i].hwCBP + maxpacket - 1;
     }
 
     // Add to interrupt schedule.
-    struct ohci_hcca *hcca = (void*)cntl->regs->hcca;
-    if (frameexp == 0) {
+    काष्ठा ohci_hcca *hcca = (व्योम*)cntl->regs->hcca;
+    अगर (frameexp == 0) {
         // Add to existing interrupt entry.
-        struct ohci_ed *intr_ed = (void*)hcca->int_table[0];
-        ed->hwNextED = intr_ed->hwNextED;
+        काष्ठा ohci_ed *intr_ed = (व्योम*)hcca->int_table[0];
+        ed->hw_अग्र_ED = intr_ed->hw_अग्र_ED;
         barrier();
-        intr_ed->hwNextED = (u32)ed;
-    } else {
-        int startpos = 1<<(frameexp-1);
-        ed->hwNextED = hcca->int_table[startpos];
+        intr_ed->hw_अग्र_ED = (u32)ed;
+    } अन्यथा {
+        पूर्णांक startpos = 1<<(frameexp-1);
+        ed->hw_अग्र_ED = hcca->int_table[startpos];
         barrier();
-        for (i=startpos; i<ARRAY_SIZE(hcca->int_table); i+=ms)
+        क्रम (i=startpos; i<ARRAY_आकार(hcca->int_table); i+=ms)
             hcca->int_table[i] = (u32)ed;
     }
 
-    return &pipe->pipe;
+    वापस &pipe->pipe;
 
 err:
-    free(pipe);
-    free(tds);
-    free(data);
-    return NULL;
+    मुक्त(pipe);
+    मुक्त(tds);
+    मुक्त(तथ्य);
+    वापस शून्य;
 }
 
-struct usb_pipe *
-ohci_realloc_pipe(struct usbdevice_s *usbdev, struct usb_pipe *upipe
-                  , struct usb_endpoint_descriptor *epdesc)
+काष्ठा usb_pipe *
+ohci_realloc_pipe(काष्ठा usbdevice_s *usbdev, काष्ठा usb_pipe *upipe
+                  , काष्ठा usb_endpoint_descriptor *epdesc)
 {
-    if (! CONFIG_USB_OHCI)
-        return NULL;
+    अगर (! CONFIG_USB_OHCI)
+        वापस शून्य;
     usb_add_freelist(upipe);
-    if (!epdesc)
-        return NULL;
+    अगर (!epdesc)
+        वापस शून्य;
     u8 eptype = epdesc->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK;
-    if (eptype == USB_ENDPOINT_XFER_INT)
-        return ohci_alloc_intr_pipe(usbdev, epdesc);
-    struct usb_ohci_s *cntl = container_of(
-        usbdev->hub->cntl, struct usb_ohci_s, usb);
+    अगर (eptype == USB_ENDPOINT_XFER_INT)
+        वापस ohci_alloc_intr_pipe(usbdev, epdesc);
+    काष्ठा usb_ohci_s *cntl = container_of(
+        usbdev->hub->cntl, काष्ठा usb_ohci_s, usb);
     dprintf(7, "ohci_alloc_async_pipe %p\n", &cntl->usb);
 
-    struct usb_pipe *usbpipe = usb_get_freelist(&cntl->usb, eptype);
-    if (usbpipe) {
+    काष्ठा usb_pipe *usbpipe = usb_get_freelist(&cntl->usb, eptype);
+    अगर (usbpipe) {
         // Use previously allocated pipe.
-        struct ohci_pipe *pipe = container_of(usbpipe, struct ohci_pipe, pipe);
+        काष्ठा ohci_pipe *pipe = container_of(usbpipe, काष्ठा ohci_pipe, pipe);
         ohci_desc2pipe(pipe, usbdev, epdesc);
-        return usbpipe;
+        वापस usbpipe;
     }
 
     // Allocate a new queue head.
-    struct ohci_pipe *pipe;
-    if (eptype == USB_ENDPOINT_XFER_CONTROL)
-        pipe = malloc_tmphigh(sizeof(*pipe));
-    else
-        pipe = malloc_low(sizeof(*pipe));
-    if (!pipe) {
+    काष्ठा ohci_pipe *pipe;
+    अगर (eptype == USB_ENDPOINT_XFER_CONTROL)
+        pipe = malloc_tmphigh(माप(*pipe));
+    अन्यथा
+        pipe = malloc_निचला(माप(*pipe));
+    अगर (!pipe) {
         warn_noalloc();
-        return NULL;
+        वापस शून्य;
     }
-    memset(pipe, 0, sizeof(*pipe));
+    स_रखो(pipe, 0, माप(*pipe));
     ohci_desc2pipe(pipe, usbdev, epdesc);
 
     // Add queue head to controller list.
-    u32 *head = &cntl->regs->ed_controlhead;
-    if (eptype != USB_ENDPOINT_XFER_CONTROL)
-        head = &cntl->regs->ed_bulkhead;
-    pipe->ed.hwNextED = *head;
+    u32 *शीर्ष = &cntl->regs->ed_controlhead;
+    अगर (eptype != USB_ENDPOINT_XFER_CONTROL)
+        शीर्ष = &cntl->regs->ed_bulkhead;
+    pipe->ed.hw_अग्र_ED = *शीर्ष;
     barrier();
-    *head = (u32)&pipe->ed;
-    return &pipe->pipe;
+    *शीर्ष = (u32)&pipe->ed;
+    वापस &pipe->pipe;
 }
 
-static int
-wait_ed(struct ohci_ed *ed, int timeout)
+अटल पूर्णांक
+wait_ed(काष्ठा ohci_ed *ed, पूर्णांक timeout)
 {
     u32 end = timer_calc(timeout);
-    for (;;) {
-        if ((ed->hwHeadP & ~(ED_C|ED_H)) == ed->hwTailP)
-            return 0;
-        if (timer_check(end)) {
+    क्रम (;;) {
+        अगर ((ed->hw_शीर्ष_P & ~(ED_C|ED_H)) == ed->hw_पुच्छ_P)
+            वापस 0;
+        अगर (timer_check(end)) {
             warn_timeout();
             dprintf(1, "ohci ed info=%x tail=%x head=%x next=%x\n"
-                    , ed->hwINFO, ed->hwTailP, ed->hwHeadP, ed->hwNextED);
-            return -1;
+                    , ed->hwINFO, ed->hw_पुच्छ_P, ed->hw_शीर्ष_P, ed->hw_अग्र_ED);
+            वापस -1;
         }
         yield();
     }
 }
 
-#define STACKOTDS 18
-#define OHCI_TD_ALIGN 16
+#घोषणा STACKOTDS 18
+#घोषणा OHCI_TD_ALIGN 16
 
-int
-ohci_send_pipe(struct usb_pipe *p, int dir, const void *cmd
-               , void *data, int datasize)
+पूर्णांक
+ohci_send_pipe(काष्ठा usb_pipe *p, पूर्णांक dir, स्थिर व्योम *cmd
+               , व्योम *तथ्य, पूर्णांक datasize)
 {
     ASSERT32FLAT();
-    if (! CONFIG_USB_OHCI)
-        return -1;
+    अगर (! CONFIG_USB_OHCI)
+        वापस -1;
     dprintf(7, "ohci_send_pipe %p\n", p);
-    struct ohci_pipe *pipe = container_of(p, struct ohci_pipe, pipe);
+    काष्ठा ohci_pipe *pipe = container_of(p, काष्ठा ohci_pipe, pipe);
 
     // Allocate tds on stack (with required alignment)
-    u8 tdsbuf[sizeof(struct ohci_td) * STACKOTDS + OHCI_TD_ALIGN - 1];
-    struct ohci_td *tds = (void*)ALIGN((u32)tdsbuf, OHCI_TD_ALIGN), *td = tds;
-    memset(tds, 0, sizeof(*tds) * STACKOTDS);
+    u8 tdsbuf[माप(काष्ठा ohci_td) * STACKOTDS + OHCI_TD_ALIGN - 1];
+    काष्ठा ohci_td *tds = (व्योम*)ALIGN((u32)tdsbuf, OHCI_TD_ALIGN), *td = tds;
+    स_रखो(tds, 0, माप(*tds) * STACKOTDS);
 
     // Setup transfer descriptors
     u16 maxpacket = pipe->pipe.maxpacket;
     u32 toggle = 0, statuscmd = OHCI_BLF;
-    if (cmd) {
+    अगर (cmd) {
         // Send setup pid on control transfers
         td->hwINFO = TD_DP_SETUP | TD_T_DATA0 | TD_CC;
         td->hwCBP = (u32)cmd;
-        td->hwNextTD = (u32)&td[1];
-        td->hwBE = (u32)cmd + USB_CONTROL_SETUP_SIZE - 1;
+        td->hw_अग्र_TD = (u32)&td[1];
+        td->hwBE = (u32)cmd + USB_CONTROL_SETUP_आकार - 1;
         td++;
         toggle = TD_T_DATA1;
         statuscmd = OHCI_CLF;
     }
-    u32 dest = (u32)data, dataend = dest + datasize;
-    while (dest < dataend) {
+    u32 dest = (u32)तथ्य, dataend = dest + datasize;
+    जबतक (dest < dataend) {
         // Send data pids
-        if (td >= &tds[STACKOTDS]) {
+        अगर (td >= &tds[STACKOTDS]) {
             warn_noalloc();
-            return -1;
+            वापस -1;
         }
-        int maxtransfer = 2*PAGE_SIZE - (dest & (PAGE_SIZE-1));
-        int transfer = dataend - dest;
-        if (transfer > maxtransfer)
+        पूर्णांक maxtransfer = 2*PAGE_आकार - (dest & (PAGE_आकार-1));
+        पूर्णांक transfer = dataend - dest;
+        अगर (transfer > maxtransfer)
             transfer = ALIGN_DOWN(maxtransfer, maxpacket);
         td->hwINFO = (dir ? TD_DP_IN : TD_DP_OUT) | toggle | TD_CC;
         td->hwCBP = dest;
-        td->hwNextTD = (u32)&td[1];
+        td->hw_अग्र_TD = (u32)&td[1];
         td->hwBE = dest + transfer - 1;
         td++;
         dest += transfer;
     }
-    if (cmd) {
+    अगर (cmd) {
         // Send status pid on control transfers
-        if (td >= &tds[STACKOTDS]) {
+        अगर (td >= &tds[STACKOTDS]) {
             warn_noalloc();
-            return -1;
+            वापस -1;
         }
         td->hwINFO = (dir ? TD_DP_OUT : TD_DP_IN) | TD_T_DATA1 | TD_CC;
         td->hwCBP = 0;
-        td->hwNextTD = (u32)&td[1];
+        td->hw_अग्र_TD = (u32)&td[1];
         td->hwBE = 0;
         td++;
     }
 
     // Transfer data
-    pipe->ed.hwHeadP = (u32)tds | (pipe->ed.hwHeadP & ED_C);
-    pipe->ed.hwTailP = (u32)td;
+    pipe->ed.hw_शीर्ष_P = (u32)tds | (pipe->ed.hw_शीर्ष_P & ED_C);
+    pipe->ed.hw_पुच्छ_P = (u32)td;
     barrier();
     pipe->ed.hwINFO &= ~ED_SKIP;
     writel(&pipe->regs->cmdstatus, statuscmd);
 
-    int ret = wait_ed(&pipe->ed, usb_xfer_time(p, datasize));
+    पूर्णांक ret = wait_ed(&pipe->ed, usb_xfer_time(p, datasize));
     pipe->ed.hwINFO |= ED_SKIP;
-    if (ret)
+    अगर (ret)
         ohci_waittick(pipe->regs);
-    return ret;
+    वापस ret;
 }
 
-int
-ohci_poll_intr(struct usb_pipe *p, void *data)
+पूर्णांक
+ohci_poll_intr(काष्ठा usb_pipe *p, व्योम *तथ्य)
 {
     ASSERT16();
-    if (! CONFIG_USB_OHCI)
-        return -1;
+    अगर (! CONFIG_USB_OHCI)
+        वापस -1;
 
-    struct ohci_pipe *pipe = container_of(p, struct ohci_pipe, pipe);
-    struct ohci_td *tds = GET_LOWFLAT(pipe->tds);
-    struct ohci_td *head = (void*)(GET_LOWFLAT(pipe->ed.hwHeadP) & ~(ED_C|ED_H));
-    struct ohci_td *tail = (void*)GET_LOWFLAT(pipe->ed.hwTailP);
-    int count = GET_LOWFLAT(pipe->count);
-    int pos = (tail - tds + 1) % count;
-    struct ohci_td *next = &tds[pos];
-    if (head == next)
+    काष्ठा ohci_pipe *pipe = container_of(p, काष्ठा ohci_pipe, pipe);
+    काष्ठा ohci_td *tds = GET_LOWFLAT(pipe->tds);
+    काष्ठा ohci_td *शीर्ष = (व्योम*)(GET_LOWFLAT(pipe->ed.hw_शीर्ष_P) & ~(ED_C|ED_H));
+    काष्ठा ohci_td *पुच्छ = (व्योम*)GET_LOWFLAT(pipe->ed.hw_पुच्छ_P);
+    पूर्णांक गिनती = GET_LOWFLAT(pipe->गिनती);
+    पूर्णांक pos = (पुच्छ - tds + 1) % गिनती;
+    काष्ठा ohci_td *अग्र = &tds[pos];
+    अगर (शीर्ष == अग्र)
         // No intrs found.
-        return -1;
+        वापस -1;
     // XXX - check for errors.
 
     // Copy data.
-    int maxpacket = GET_LOWFLAT(pipe->pipe.maxpacket);
-    void *pipedata = GET_LOWFLAT((pipe->data));
-    void *intrdata = pipedata + maxpacket * pos;
-    memcpy_far(GET_SEG(SS), data, SEG_LOW, LOWFLAT2LOW(intrdata), maxpacket);
+    पूर्णांक maxpacket = GET_LOWFLAT(pipe->pipe.maxpacket);
+    व्योम *pipedata = GET_LOWFLAT((pipe->तथ्य));
+    व्योम *intrdata = pipedata + maxpacket * pos;
+    memcpy_far(GET_SEG(SS), तथ्य, SEG_निचला, LOWFLAT2_निचला(intrdata), maxpacket);
 
     // Reenable this td.
-    SET_LOWFLAT(tail->hwINFO, TD_DP_IN | TD_T_TOGGLE | TD_CC);
-    intrdata = pipedata + maxpacket * (tail-tds);
-    SET_LOWFLAT(tail->hwCBP, (u32)intrdata);
-    SET_LOWFLAT(tail->hwNextTD, (u32)next);
-    SET_LOWFLAT(tail->hwBE, (u32)intrdata + maxpacket - 1);
+    SET_LOWFLAT(पुच्छ->hwINFO, TD_DP_IN | TD_T_TOGGLE | TD_CC);
+    intrdata = pipedata + maxpacket * (पुच्छ-tds);
+    SET_LOWFLAT(पुच्छ->hwCBP, (u32)intrdata);
+    SET_LOWFLAT(पुच्छ->hw_अग्र_TD, (u32)अग्र);
+    SET_LOWFLAT(पुच्छ->hwBE, (u32)intrdata + maxpacket - 1);
     barrier();
-    SET_LOWFLAT(pipe->ed.hwTailP, (u32)next);
+    SET_LOWFLAT(pipe->ed.hw_पुच्छ_P, (u32)अग्र);
 
-    return 0;
+    वापस 0;
 }

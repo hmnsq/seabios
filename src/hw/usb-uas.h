@@ -1,9 +1,9 @@
-#ifndef __USB_UAS_H
-#define __USB_UAS_H
+#अगर_अघोषित __USB_UAS_H
+#घोषणा __USB_UAS_H
 
-struct disk_op_s;
-int uas_process_op(struct disk_op_s *op);
-struct usbdevice_s;
-int usb_uas_setup(struct usbdevice_s *usbdev);
+काष्ठा disk_op_s;
+पूर्णांक uas_process_op(काष्ठा disk_op_s *op);
+काष्ठा usbdevice_s;
+पूर्णांक usb_uas_setup(काष्ठा usbdevice_s *usbdev);
 
-#endif /* __USB_UAS_H */
+#पूर्ण_अगर /* __USB_UAS_H */
