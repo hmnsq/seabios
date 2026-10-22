@@ -1,8 +1,8 @@
 #ifndef __MPT_SCSI_H
 #define __MPT_SCSI_H
 
-struct disk_op_s;
-int mpt_scsi_process_op(struct disk_op_s *op);
-void mpt_scsi_setup(void);
+கட்டமைப்பு disk_op_s;
+முழு mpt_scsi_process_op(கட்டமைப்பு disk_op_s *op);
+வெறுமை mpt_scsi_setup(வெறுமை);
 
 #endif /* __MPT_SCSI_H */

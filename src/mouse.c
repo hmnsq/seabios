@@ -5,30 +5,30 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_EBDA
-#include "bregs.h" // struct bregs
-#include "hw/ps2port.h" // ps2_mouse_command
-#include "hw/usb-hid.h" // usb_mouse_command
-#include "output.h" // dprintf
-#include "stacks.h" // stack_hop_back
-#include "util.h" // mouse_init
+#அந்தர்பாவ "biosvar.h" // GET_EBDA
+#அந்தர்பாவ "bregs.h" // struct bregs
+#அந்தர்பாவ "hw/ps2port.h" // ps2_mouse_command
+#அந்தர்பாவ "hw/usb-hid.h" // usb_mouse_command
+#அந்தர்பாவ "output.h" // dprintf
+#அந்தர்பாவ "stacks.h" // stack_hop_back
+#அந்தர்பாவ "util.h" // mouse_init
 
-void
-mouse_init(void)
+வெறுமை
+mouse_init(வெறுமை)
 {
-    if (! CONFIG_MOUSE)
-        return;
+    எனில் (! CONFIG_MOUSE)
+        திரும்பு;
     dprintf(3, "init mouse\n");
     // pointing device installed
     set_equipment_flags(0x04, 0x04);
 }
 
-static int
-mouse_command(int command, u8 *param)
+நிலையான முழு
+mouse_command(முழு command, u8 *param)
 {
-    if (usb_mouse_active())
-        return usb_mouse_command(command, param);
-    return ps2_mouse_command(command, param);
+    எனில் (usb_mouse_active())
+        திரும்பு usb_mouse_command(command, param);
+    திரும்பு ps2_mouse_command(command, param);
 }
 
 #define RET_SUCCESS      0x00
@@ -39,60 +39,60 @@ mouse_command(int command, u8 *param)
 #define RET_ENOHANDLER   0x05
 
 // Disable Mouse
-static void
-mouse_15c20000(struct bregs *regs)
+நிலையான வெறுமை
+mouse_15c20000(கட்டமைப்பு bregs *regs)
 {
-    int ret = mouse_command(PSMOUSE_CMD_DISABLE, NULL);
-    if (ret)
+    முழு ret = mouse_command(PSMOUSE_CMD_DISABLE, வெற்று);
+    எனில் (ret)
         set_code_invalid(regs, RET_ENEEDRESEND);
-    else
+    இல்லையெனில்
         set_code_success(regs);
 }
 
 // Enable Mouse
-static void
-mouse_15c20001(struct bregs *regs)
+நிலையான வெறுமை
+mouse_15c20001(கட்டமைப்பு bregs *regs)
 {
     u16 ebda_seg = get_ebda_seg();
     u8 mouse_flags_2 = GET_EBDA(ebda_seg, mouse_flag2);
-    if ((mouse_flags_2 & 0x80) == 0) {
+    எனில் ((mouse_flags_2 & 0x80) == 0) {
         set_code_invalid(regs, RET_ENOHANDLER);
-        return;
+        திரும்பு;
     }
 
-    int ret = mouse_command(PSMOUSE_CMD_ENABLE, NULL);
-    if (ret)
+    முழு ret = mouse_command(PSMOUSE_CMD_ENABLE, வெற்று);
+    எனில் (ret)
         set_code_invalid(regs, RET_ENEEDRESEND);
-    else
+    இல்லையெனில்
         set_code_success(regs);
 }
 
-static void
-mouse_15c200XX(struct bregs *regs)
+நிலையான வெறுமை
+mouse_15c200XX(கட்டமைப்பு bregs *regs)
 {
     set_code_unimplemented(regs, RET_EINVFUNCTION);
 }
 
 // Disable/Enable Mouse
-static void
-mouse_15c200(struct bregs *regs)
+நிலையான வெறுமை
+mouse_15c200(கட்டமைப்பு bregs *regs)
 {
-    switch (regs->bh) {
-    case 0x00: mouse_15c20000(regs); break;
-    case 0x01: mouse_15c20001(regs); break;
-    default:   mouse_15c200XX(regs); break;
+    தேர்வு (regs->bh) {
+    நிலை 0x00: mouse_15c20000(regs); நிறுத்து;
+    நிலை 0x01: mouse_15c20001(regs); நிறுத்து;
+    இயல்பு:   mouse_15c200XX(regs); நிறுத்து;
     }
 }
 
 // Reset Mouse
-static void
-mouse_15c201(struct bregs *regs)
+நிலையான வெறுமை
+mouse_15c201(கட்டமைப்பு bregs *regs)
 {
     u8 param[2];
-    int ret = mouse_command(PSMOUSE_CMD_RESET_BAT, param);
-    if (ret) {
+    முழு ret = mouse_command(PSMOUSE_CMD_RESET_BAT, param);
+    எனில் (ret) {
         set_code_invalid(regs, RET_ENEEDRESEND);
-        return;
+        திரும்பு;
     }
     regs->bl = param[0];
     regs->bh = param[1];
@@ -100,64 +100,64 @@ mouse_15c201(struct bregs *regs)
 }
 
 // Set Sample Rate
-static void
-mouse_15c202(struct bregs *regs)
+நிலையான வெறுமை
+mouse_15c202(கட்டமைப்பு bregs *regs)
 {
-    static u8 VAR16 sample_rates[7] = {10, 20, 40, 60, 80, 100, 200};
-    if (regs->bh >= ARRAY_SIZE(sample_rates)) {
+    நிலையான u8 VAR16 sample_rates[7] = {10, 20, 40, 60, 80, 100, 200};
+    எனில் (regs->bh >= ARRAY_SIZE(sample_rates)) {
         set_code_invalid(regs, RET_EINVINPUT);
-        return;
+        திரும்பு;
     }
     u8 mouse_data1 = GET_GLOBAL(sample_rates[regs->bh]);
-    int ret = mouse_command(PSMOUSE_CMD_SETRATE, &mouse_data1);
-    if (ret)
+    முழு ret = mouse_command(PSMOUSE_CMD_SETRATE, &mouse_data1);
+    எனில் (ret)
         set_code_invalid(regs, RET_ENEEDRESEND);
-    else
+    இல்லையெனில்
         set_code_success(regs);
 }
 
 // Set Resolution
-static void
-mouse_15c203(struct bregs *regs)
+நிலையான வெறுமை
+mouse_15c203(கட்டமைப்பு bregs *regs)
 {
     // BH:
     //      0 =  25 dpi, 1 count  per millimeter
     //      1 =  50 dpi, 2 counts per millimeter
     //      2 = 100 dpi, 4 counts per millimeter
     //      3 = 200 dpi, 8 counts per millimeter
-    if (regs->bh >= 4) {
+    எனில் (regs->bh >= 4) {
         set_code_invalid(regs, RET_EINVINPUT);
-        return;
+        திரும்பு;
     }
     u8 param = regs->bh;
-    int ret = mouse_command(PSMOUSE_CMD_SETRES, &param);
-    if (ret)
+    முழு ret = mouse_command(PSMOUSE_CMD_SETRES, &param);
+    எனில் (ret)
         set_code_invalid(regs, RET_ENEEDRESEND);
-    else
+    இல்லையெனில்
         set_code_success(regs);
 }
 
 // Get Device ID
-static void
-mouse_15c204(struct bregs *regs)
+நிலையான வெறுமை
+mouse_15c204(கட்டமைப்பு bregs *regs)
 {
     u8 param[2];
-    int ret = mouse_command(PSMOUSE_CMD_GETID, param);
-    if (ret) {
+    முழு ret = mouse_command(PSMOUSE_CMD_GETID, param);
+    எனில் (ret) {
         set_code_invalid(regs, RET_ENEEDRESEND);
-        return;
+        திரும்பு;
     }
     regs->bh = param[0];
     set_code_success(regs);
 }
 
 // Initialize Mouse
-static void
-mouse_15c205(struct bregs *regs)
+நிலையான வெறுமை
+mouse_15c205(கட்டமைப்பு bregs *regs)
 {
-    if (regs->bh != 3) {
+    எனில் (regs->bh != 3) {
         set_code_invalid(regs, RET_EINTERFACE);
-        return;
+        திரும்பு;
     }
     u16 ebda_seg = get_ebda_seg();
     SET_EBDA(ebda_seg, mouse_flag1, 0x00);
@@ -168,14 +168,14 @@ mouse_15c205(struct bregs *regs)
 }
 
 // Return Status
-static void
-mouse_15c20600(struct bregs *regs)
+நிலையான வெறுமை
+mouse_15c20600(கட்டமைப்பு bregs *regs)
 {
     u8 param[3];
-    int ret = mouse_command(PSMOUSE_CMD_GETINFO, param);
-    if (ret) {
+    முழு ret = mouse_command(PSMOUSE_CMD_GETINFO, param);
+    எனில் (ret) {
         set_code_invalid(regs, RET_ENEEDRESEND);
-        return;
+        திரும்பு;
     }
     regs->bl = param[0];
     regs->cl = param[1];
@@ -184,59 +184,59 @@ mouse_15c20600(struct bregs *regs)
 }
 
 // Set Scaling Factor to 1:1
-static void
-mouse_15c20601(struct bregs *regs)
+நிலையான வெறுமை
+mouse_15c20601(கட்டமைப்பு bregs *regs)
 {
-    int ret = mouse_command(PSMOUSE_CMD_SETSCALE11, NULL);
-    if (ret)
+    முழு ret = mouse_command(PSMOUSE_CMD_SETSCALE11, வெற்று);
+    எனில் (ret)
         set_code_invalid(regs, RET_ENEEDRESEND);
-    else
+    இல்லையெனில்
         set_code_success(regs);
 }
 
 // Set Scaling Factor to 2:1
-static void
-mouse_15c20602(struct bregs *regs)
+நிலையான வெறுமை
+mouse_15c20602(கட்டமைப்பு bregs *regs)
 {
-    int ret = mouse_command(PSMOUSE_CMD_SETSCALE21, NULL);
-    if (ret)
+    முழு ret = mouse_command(PSMOUSE_CMD_SETSCALE21, வெற்று);
+    எனில் (ret)
         set_code_invalid(regs, RET_ENEEDRESEND);
-    else
+    இல்லையெனில்
         set_code_success(regs);
 }
 
-static void
-mouse_15c206XX(struct bregs *regs)
+நிலையான வெறுமை
+mouse_15c206XX(கட்டமைப்பு bregs *regs)
 {
     set_code_unimplemented(regs, RET_EINVFUNCTION);
 }
 
 // Return Status & Set Scaling Factor...
-static void
-mouse_15c206(struct bregs *regs)
+நிலையான வெறுமை
+mouse_15c206(கட்டமைப்பு bregs *regs)
 {
-    switch (regs->bh) {
-    case 0x00: mouse_15c20600(regs); break;
-    case 0x01: mouse_15c20601(regs); break;
-    case 0x02: mouse_15c20602(regs); break;
-    default:   mouse_15c206XX(regs); break;
+    தேர்வு (regs->bh) {
+    நிலை 0x00: mouse_15c20600(regs); நிறுத்து;
+    நிலை 0x01: mouse_15c20601(regs); நிறுத்து;
+    நிலை 0x02: mouse_15c20602(regs); நிறுத்து;
+    இயல்பு:   mouse_15c206XX(regs); நிறுத்து;
     }
 }
 
 // Set Mouse Handler Address
-static void
-mouse_15c207(struct bregs *regs)
+நிலையான வெறுமை
+mouse_15c207(கட்டமைப்பு bregs *regs)
 {
-    struct segoff_s farptr = SEGOFF(regs->es, regs->bx);
+    கட்டமைப்பு segoff_s farptr = SEGOFF(regs->es, regs->bx);
     u16 ebda_seg = get_ebda_seg();
     u8 mouse_flags_2 = GET_EBDA(ebda_seg, mouse_flag2);
-    if (! farptr.segoff) {
+    எனில் (! farptr.segoff) {
         /* remove handler */
-        if ((mouse_flags_2 & 0x80) != 0) {
+        எனில் ((mouse_flags_2 & 0x80) != 0) {
             mouse_flags_2 &= ~0x80;
-            mouse_command(PSMOUSE_CMD_DISABLE, NULL);
+            mouse_command(PSMOUSE_CMD_DISABLE, வெற்று);
         }
-    } else {
+    } இல்லையெனில் {
         /* install handler */
         mouse_flags_2 |= 0x80;
     }
@@ -245,43 +245,43 @@ mouse_15c207(struct bregs *regs)
     set_code_success(regs);
 }
 
-static void
-mouse_15c2XX(struct bregs *regs)
+நிலையான வெறுமை
+mouse_15c2XX(கட்டமைப்பு bregs *regs)
 {
     set_code_unimplemented(regs, RET_EINVFUNCTION);
 }
 
-void
-handle_15c2(struct bregs *regs)
+வெறுமை
+handle_15c2(கட்டமைப்பு bregs *regs)
 {
     //debug_stub(regs);
 
-    if (! CONFIG_MOUSE) {
+    எனில் (! CONFIG_MOUSE) {
         set_code_invalid(regs, RET_EUNSUPPORTED);
-        return;
+        திரும்பு;
     }
 
-    switch (regs->al) {
-    case 0x00: mouse_15c200(regs); break;
-    case 0x01: mouse_15c201(regs); break;
-    case 0x02: mouse_15c202(regs); break;
-    case 0x03: mouse_15c203(regs); break;
-    case 0x04: mouse_15c204(regs); break;
-    case 0x05: mouse_15c205(regs); break;
-    case 0x06: mouse_15c206(regs); break;
-    case 0x07: mouse_15c207(regs); break;
-    default:   mouse_15c2XX(regs); break;
+    தேர்வு (regs->al) {
+    நிலை 0x00: mouse_15c200(regs); நிறுத்து;
+    நிலை 0x01: mouse_15c201(regs); நிறுத்து;
+    நிலை 0x02: mouse_15c202(regs); நிறுத்து;
+    நிலை 0x03: mouse_15c203(regs); நிறுத்து;
+    நிலை 0x04: mouse_15c204(regs); நிறுத்து;
+    நிலை 0x05: mouse_15c205(regs); நிறுத்து;
+    நிலை 0x06: mouse_15c206(regs); நிறுத்து;
+    நிலை 0x07: mouse_15c207(regs); நிறுத்து;
+    இயல்பு:   mouse_15c2XX(regs); நிறுத்து;
     }
 }
 
-void VISIBLE16
-invoke_mouse_handler(void)
+வெறுமை VISIBLE16
+invoke_mouse_handler(வெறுமை)
 {
-    if (!CONFIG_MOUSE)
-        return;
-    if (need_hop_back()) {
-        stack_hop_back(invoke_mouse_handler, 0, 0);
-        return;
+    எனில் (!CONFIG_MOUSE)
+        திரும்பு;
+    எனில் (need_hop_back()) {
+        அடுக்கு_hop_back(invoke_mouse_handler, 0, 0);
+        திரும்பு;
     }
     ASSERT16();
     u16 ebda_seg = get_ebda_seg();
@@ -289,11 +289,11 @@ invoke_mouse_handler(void)
     u16 X      = GET_EBDA(ebda_seg, mouse_data[1]);
     u16 Y      = GET_EBDA(ebda_seg, mouse_data[2]);
 
-    struct segoff_s func = GET_EBDA(ebda_seg, far_call_pointer);
+    கட்டமைப்பு segoff_s func = GET_EBDA(ebda_seg, far_call_pointer);
     dprintf(16, "mouse farcall s=%04x x=%04x y=%04x func=%04x:%04x\n"
             , status, X, Y, func.seg, func.offset);
 
-    asm volatile(
+    asm நிலையற்ற(
         "pushl %%ebp\n"
         "sti\n"
 
@@ -313,28 +313,28 @@ invoke_mouse_handler(void)
         : "edi", "esi", "cc", "memory");
 }
 
-void
+வெறுமை
 process_mouse(u8 data)
 {
-    if (!CONFIG_MOUSE)
-        return;
+    எனில் (!CONFIG_MOUSE)
+        திரும்பு;
 
     u16 ebda_seg = get_ebda_seg();
     u8 mouse_flags_1 = GET_EBDA(ebda_seg, mouse_flag1);
     u8 mouse_flags_2 = GET_EBDA(ebda_seg, mouse_flag2);
 
-    if (! (mouse_flags_2 & 0x80))
+    எனில் (! (mouse_flags_2 & 0x80))
         // far call handler not installed
-        return;
+        திரும்பு;
 
-    u8 package_count = mouse_flags_2 & 0x07;
+    u8 package_மொத்தம் = mouse_flags_2 & 0x07;
     u8 index = mouse_flags_1 & 0x07;
     SET_EBDA(ebda_seg, mouse_data[index], data);
 
-    if ((index+1) < package_count) {
+    எனில் ((index+1) < package_மொத்தம்) {
         mouse_flags_1++;
         SET_EBDA(ebda_seg, mouse_flag1, mouse_flags_1);
-        return;
+        திரும்பு;
     }
 
     SET_EBDA(ebda_seg, mouse_flag1, 0);

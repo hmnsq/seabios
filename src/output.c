@@ -4,23 +4,23 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include <stdarg.h> // va_list
+#அந்தர்பாவ <stdarg.h> // va_list
 
-#include "farptr.h" // GET_VAR
-#include "bregs.h" // struct bregs
-#include "config.h" // CONFIG_*
-#include "biosvar.h" // GET_GLOBAL
-#include "hw/pci.h" // pci_bdf_to_bus
-#include "hw/pcidevice.h" // pci_device
-#include "hw/serialio.h" // serial_debug_putc
-#include "malloc.h" // malloc_tmp
-#include "output.h" // dprintf
-#include "stacks.h" // call16_int
-#include "string.h" // memset
-#include "util.h" // ScreenAndDebug
+#அந்தர்பாவ "farptr.h" // GET_VAR
+#அந்தர்பாவ "bregs.h" // struct bregs
+#அந்தர்பாவ "config.h" // CONFIG_*
+#அந்தர்பாவ "biosvar.h" // GET_GLOBAL
+#அந்தர்பாவ "hw/pci.h" // pci_bdf_to_bus
+#அந்தர்பாவ "hw/pcidevice.h" // pci_device
+#அந்தர்பாவ "hw/serialio.h" // serial_debug_putc
+#அந்தர்பாவ "malloc.h" // malloc_tmp
+#அந்தர்பாவ "output.h" // dprintf
+#அந்தர்பாவ "stacks.h" // call16_int
+#அந்தர்பாவ "string.h" // memset
+#அந்தர்பாவ "util.h" // ScreenAndDebug
 
-struct putcinfo {
-    void (*func)(struct putcinfo *info, char c);
+கட்டமைப்பு putcinfo {
+    வெறுமை (*func)(கட்டமைப்பு putcinfo *info, எழுத்து c);
 };
 
 
@@ -28,28 +28,28 @@ struct putcinfo {
  * Debug output
  ****************************************************************/
 
-void
-debug_banner(void)
+வெறுமை
+debug_banner(வெறுமை)
 {
     dprintf(1, "SeaBIOS (version %s)\n", VERSION);
     dprintf(1, "BUILD: %s\n", BUILDINFO);
 }
 
 // Write a character to debug port(s).
-static void
-debug_putc(struct putcinfo *action, char c)
+நிலையான வெறுமை
+debug_putc(கட்டமைப்பு putcinfo *action, எழுத்து c)
 {
-    if (! CONFIG_DEBUG_LEVEL)
-        return;
+    எனில் (! CONFIG_DEBUG_LEVEL)
+        திரும்பு;
     qemu_debug_putc(c);
-    if (!MODESEGMENT)
+    எனில் (!MODESEGMENT)
         coreboot_debug_putc(c);
     serial_debug_putc(c);
 }
 
 // Flush any pending output to debug port(s).
-static void
-debug_flush(void)
+நிலையான வெறுமை
+debug_flush(வெறுமை)
 {
     serial_debug_flush();
 }
@@ -57,12 +57,12 @@ debug_flush(void)
 // In segmented mode just need a dummy variable (debug_putc is always
 // used anyway), and in 32bit flat mode need a pointer to the 32bit
 // instance of debug_putc().
-#if MODE16
-static struct putcinfo debuginfo VAR16;
-#elif MODESEGMENT
-static struct putcinfo debuginfo VAR32SEG;
-#else
-static struct putcinfo debuginfo = { debug_putc };
+#எனில் MODE16
+நிலையான கட்டமைப்பு putcinfo debuginfo VAR16;
+#அல்லதெனில் MODESEGMENT
+நிலையான கட்டமைப்பு putcinfo debuginfo VAR32SEG;
+#இல்லையெனில்
+நிலையான கட்டமைப்பு putcinfo debuginfo = { debug_putc };
 #endif
 
 
@@ -71,14 +71,14 @@ static struct putcinfo debuginfo = { debug_putc };
  ****************************************************************/
 
 // Show a character on the screen.
-static void
-screenc(char c)
+நிலையான வெறுமை
+screenc(எழுத்து c)
 {
-    if (!MODESEGMENT && GET_IVT(0x10).segoff == FUNC16(entry_10).segoff)
+    எனில் (!MODESEGMENT && GET_IVT(0x10).segoff == FUNC16(entry_10).segoff)
         // No need to thunk to 16bit mode if vgabios is not present
-        return;
-    struct bregs br;
-    memset(&br, 0, sizeof(br));
+        திரும்பு;
+    கட்டமைப்பு bregs br;
+    memset(&br, 0, அளவு(br));
     br.flags = F_IF;
     br.ah = 0x0e;
     br.al = c;
@@ -87,17 +87,17 @@ screenc(char c)
 }
 
 // Handle a character from a printf request.
-static void
-screen_putc(struct putcinfo *action, char c)
+நிலையான வெறுமை
+screen_putc(கட்டமைப்பு putcinfo *action, எழுத்து c)
 {
-    if (ScreenAndDebug)
+    எனில் (ScreenAndDebug)
         debug_putc(&debuginfo, c);
-    if (c == '\n')
+    எனில் (c == '\n')
         screenc('\r');
     screenc(c);
 }
 
-static struct putcinfo screeninfo = { screen_putc };
+நிலையான கட்டமைப்பு putcinfo screeninfo = { screen_putc };
 
 
 /****************************************************************
@@ -105,105 +105,105 @@ static struct putcinfo screeninfo = { screen_putc };
  ****************************************************************/
 
 // Output a character.
-static void
-putc(struct putcinfo *action, char c)
+நிலையான வெறுமை
+putc(கட்டமைப்பு putcinfo *action, எழுத்து c)
 {
-    if (MODESEGMENT) {
+    எனில் (MODESEGMENT) {
         // Only debugging output supported in segmented mode.
         debug_putc(action, c);
-        return;
+        திரும்பு;
     }
 
-    void (*func)(struct putcinfo *info, char c) = GET_GLOBAL(action->func);
+    வெறுமை (*func)(கட்டமைப்பு putcinfo *info, எழுத்து c) = GET_GLOBAL(action->func);
     func(action, c);
 }
 
 // Ouptut a string.
-static void
-puts(struct putcinfo *action, const char *s)
+நிலையான வெறுமை
+puts(கட்டமைப்பு putcinfo *action, மாறிலி எழுத்து *s)
 {
-    if (!MODESEGMENT && !s)
+    எனில் (!MODESEGMENT && !s)
         s = "(NULL)";
-    for (; *s; s++)
+    க்கு (; *s; s++)
         putc(action, *s);
 }
 
 // Output a string that is in the CS segment.
-static void
-puts_cs(struct putcinfo *action, const char *s)
+நிலையான வெறுமை
+puts_cs(கட்டமைப்பு putcinfo *action, மாறிலி எழுத்து *s)
 {
-    char *vs = (char*)s;
-    for (;; vs++) {
-        char c = GET_GLOBAL(*vs);
-        if (!c)
-            break;
+    எழுத்து *vs = (எழுத்து*)s;
+    க்கு (;; vs++) {
+        எழுத்து c = GET_GLOBAL(*vs);
+        எனில் (!c)
+            நிறுத்து;
         putc(action, c);
     }
 }
 
 // Output an unsigned integer.
-static void
-putuint(struct putcinfo *action, u32 val)
+நிலையான வெறுமை
+putuint(கட்டமைப்பு putcinfo *action, u32 val)
 {
-    char buf[12];
-    char *d = &buf[sizeof(buf) - 1];
+    எழுத்து buf[12];
+    எழுத்து *d = &buf[அளவு(buf) - 1];
     *d-- = '\0';
-    for (;;) {
+    க்கு (;;) {
         *d = (val % 10) + '0';
         val /= 10;
-        if (!val)
-            break;
+        எனில் (!val)
+            நிறுத்து;
         d--;
     }
     puts(action, d);
 }
 
 // Output a single digit hex character.
-static inline void
-putsinglehex(struct putcinfo *action, u32 val, int uc)
+நிலையான உள்வரி வெறுமை
+putsinglehex(கட்டமைப்பு putcinfo *action, u32 val, முழு uc)
 {
-    if (val <= 9)
+    எனில் (val <= 9)
         val = '0' + val;
-    else if (uc)
+    இல்லையெனில் எனில் (uc)
         val = 'A' + val - 10;
-    else
+    இல்லையெனில்
         val = 'a' + val - 10;
     putc(action, val);
 }
 
 // Output an integer in hexadecimal with a specified width.
-static void
-puthex(struct putcinfo *action, u32 val, int width, int uc)
+நிலையான வெறுமை
+puthex(கட்டமைப்பு putcinfo *action, u32 val, முழு width, முழு uc)
 {
-    switch (width) {
-    default: putsinglehex(action, (val >> 28) & 0xf, uc);
-    case 7:  putsinglehex(action, (val >> 24) & 0xf, uc);
-    case 6:  putsinglehex(action, (val >> 20) & 0xf, uc);
-    case 5:  putsinglehex(action, (val >> 16) & 0xf, uc);
-    case 4:  putsinglehex(action, (val >> 12) & 0xf, uc);
-    case 3:  putsinglehex(action, (val >> 8) & 0xf, uc);
-    case 2:  putsinglehex(action, (val >> 4) & 0xf, uc);
-    case 1:  putsinglehex(action, (val >> 0) & 0xf, uc);
+    தேர்வு (width) {
+    இயல்பு: putsinglehex(action, (val >> 28) & 0xf, uc);
+    நிலை 7:  putsinglehex(action, (val >> 24) & 0xf, uc);
+    நிலை 6:  putsinglehex(action, (val >> 20) & 0xf, uc);
+    நிலை 5:  putsinglehex(action, (val >> 16) & 0xf, uc);
+    நிலை 4:  putsinglehex(action, (val >> 12) & 0xf, uc);
+    நிலை 3:  putsinglehex(action, (val >> 8) & 0xf, uc);
+    நிலை 2:  putsinglehex(action, (val >> 4) & 0xf, uc);
+    நிலை 1:  putsinglehex(action, (val >> 0) & 0xf, uc);
     }
 }
 
 // Output an integer in hexadecimal with a minimum width.
-static void
-putprettyhex(struct putcinfo *action, u32 val, int width, char padchar, int uc)
+நிலையான வெறுமை
+putprettyhex(கட்டமைப்பு putcinfo *action, u32 val, முழு width, எழுத்து padchar, முழு uc)
 {
     u32 tmp = val;
-    int count = 1;
-    while (tmp >>= 4)
-        count++;
-    width -= count;
-    while (width-- > 0)
+    முழு மொத்தம் = 1;
+    போது (tmp >>= 4)
+        மொத்தம்++;
+    width -= மொத்தம்;
+    போது (width-- > 0)
         putc(action, padchar);
-    puthex(action, val, count, uc);
+    puthex(action, val, மொத்தம், uc);
 }
 
 // Output 'struct pci_device' BDF as %02x:%02x.%x
-static void
-put_pci_device(struct putcinfo *action, struct pci_device *pci)
+நிலையான வெறுமை
+put_pci_device(கட்டமைப்பு putcinfo *action, கட்டமைப்பு pci_device *pci)
 {
     puthex(action, pci_bdf_to_bus(pci->bdf), 2, 0);
     putc(action, ':');
@@ -212,114 +212,114 @@ put_pci_device(struct putcinfo *action, struct pci_device *pci)
     puthex(action, pci_bdf_to_fn(pci->bdf), 1, 0);
 }
 
-static inline int
+நிலையான உள்வரி முழு
 isdigit(u8 c)
 {
-    return ((u8)(c - '0')) < 10;
+    திரும்பு ((u8)(c - '0')) < 10;
 }
 
-static void
-bvprintf(struct putcinfo *action, const char *fmt, va_list args)
+நிலையான வெறுமை
+bvprintf(கட்டமைப்பு putcinfo *action, மாறிலி எழுத்து *fmt, va_list args)
 {
-    const char *s = fmt;
-    int uc;
-    for (;; s++) {
-        char c = GET_GLOBAL(*(u8*)s);
-        if (!c)
-            break;
-        if (c != '%') {
+    மாறிலி எழுத்து *s = fmt;
+    முழு uc;
+    க்கு (;; s++) {
+        எழுத்து c = GET_GLOBAL(*(u8*)s);
+        எனில் (!c)
+            நிறுத்து;
+        எனில் (c != '%') {
             putc(action, c);
-            continue;
+            தொடர்;
         }
-        const char *n = s+1;
-        int field_width = 0;
-        char padchar = ' ';
+        மாறிலி எழுத்து *n = s+1;
+        முழு field_width = 0;
+        எழுத்து padchar = ' ';
         u8 is64 = 0;
-        for (;;) {
+        க்கு (;;) {
             c = GET_GLOBAL(*(u8*)n);
-            if (!isdigit(c))
-                break;
-            if (!field_width && (c == '0'))
+            எனில் (!isdigit(c))
+                நிறுத்து;
+            எனில் (!field_width && (c == '0'))
                 padchar = '0';
-            else
+            இல்லையெனில்
                 field_width = field_width * 10 + c - '0';
             n++;
         }
-        if (c == 'l') {
+        எனில் (c == 'l') {
             // Ignore long format indicator
             n++;
             c = GET_GLOBAL(*(u8*)n);
         }
-        if (c == 'l') {
+        எனில் (c == 'l') {
             is64 = 1;
             n++;
             c = GET_GLOBAL(*(u8*)n);
         }
         s32 val;
-        const char *sarg;
-        switch (c) {
-        case '%':
+        மாறிலி எழுத்து *sarg;
+        தேர்வு (c) {
+        நிலை '%':
             putc(action, '%');
-            break;
-        case 'd':
+            நிறுத்து;
+        நிலை 'd':
             val = va_arg(args, s32);
-            if (is64)
+            எனில் (is64)
                 va_arg(args, s32);
-            if (val < 0) {
+            எனில் (val < 0) {
                 putc(action, '-');
                 val = -val;
             }
             putuint(action, val);
-            break;
-        case 'u':
+            நிறுத்து;
+        நிலை 'u':
             val = va_arg(args, s32);
-            if (is64)
+            எனில் (is64)
                 va_arg(args, s32);
             putuint(action, val);
-            break;
-        case 'p':
+            நிறுத்து;
+        நிலை 'p':
             val = va_arg(args, s32);
-            if (!MODESEGMENT && GET_GLOBAL(*(u8*)(n+1)) == 'P') {
+            எனில் (!MODESEGMENT && GET_GLOBAL(*(u8*)(n+1)) == 'P') {
                 // %pP is 'struct pci_device' printer
-                put_pci_device(action, (void*)val);
+                put_pci_device(action, (வெறுமை*)val);
                 n++;
-                break;
+                நிறுத்து;
             }
             putc(action, '0');
             putc(action, 'x');
             puthex(action, val, 8, 0);
-            break;
-        case 'X':
-        case 'x':
+            நிறுத்து;
+        நிலை 'X':
+        நிலை 'x':
             uc = (c == 'X');
             val = va_arg(args, s32);
-            if (is64) {
+            எனில் (is64) {
                 u32 upper = va_arg(args, s32);
-                if (upper) {
+                எனில் (upper) {
                     putprettyhex(action, upper, field_width - 8, padchar, uc);
                     puthex(action, val, 8, uc);
-                    break;
+                    நிறுத்து;
                 }
             }
             putprettyhex(action, val, field_width, padchar, uc);
-            break;
-        case 'c':
-            val = va_arg(args, int);
+            நிறுத்து;
+        நிலை 'c':
+            val = va_arg(args, முழு);
             putc(action, val);
-            break;
-        case '.':
+            நிறுத்து;
+        நிலை '.':
             // Hack to support "%.s" - meaning string on stack.
-            if (GET_GLOBAL(*(u8*)(n+1)) != 's')
-                break;
+            எனில் (GET_GLOBAL(*(u8*)(n+1)) != 's')
+                நிறுத்து;
             n++;
-            sarg = va_arg(args, const char *);
+            sarg = va_arg(args, மாறிலி எழுத்து *);
             puts(action, sarg);
-            break;
-        case 's':
-            sarg = va_arg(args, const char *);
+            நிறுத்து;
+        நிலை 's':
+            sarg = va_arg(args, மாறிலி எழுத்து *);
             puts_cs(action, sarg);
-            break;
-        default:
+            நிறுத்து;
+        இயல்பு:
             putc(action, '%');
             n = s;
         }
@@ -327,10 +327,10 @@ bvprintf(struct putcinfo *action, const char *fmt, va_list args)
     }
 }
 
-void
-panic(const char *fmt, ...)
+வெறுமை
+panic(மாறிலி எழுத்து *fmt, ...)
 {
-    if (CONFIG_DEBUG_LEVEL) {
+    எனில் (CONFIG_DEBUG_LEVEL) {
         va_list args;
         va_start(args, fmt);
         bvprintf(&debuginfo, fmt, args);
@@ -340,17 +340,17 @@ panic(const char *fmt, ...)
 
     // XXX - use PANIC PORT.
     irq_disable();
-    for (;;)
+    க்கு (;;)
         hlt();
 }
 
-void
-__dprintf(const char *fmt, ...)
+வெறுமை
+__dprintf(மாறிலி எழுத்து *fmt, ...)
 {
-    if (!MODESEGMENT && CONFIG_THREADS && CONFIG_DEBUG_LEVEL >= DEBUG_thread
+    எனில் (!MODESEGMENT && CONFIG_THREADS && CONFIG_DEBUG_LEVEL >= DEBUG_thread
         && *fmt != '\\' && *fmt != '/') {
-        struct thread_info *cur = getCurThread();
-        if (cur != &MainThread) {
+        கட்டமைப்பு thread_info *cur = getCurThread();
+        எனில் (cur != &MainThread) {
             // Show "thread id" for this debug message.
             debug_putc(&debuginfo, '|');
             puthex(&debuginfo, (u32)cur, 8, 0);
@@ -366,15 +366,15 @@ __dprintf(const char *fmt, ...)
     debug_flush();
 }
 
-void
-printf(const char *fmt, ...)
+வெறுமை
+printf(மாறிலி எழுத்து *fmt, ...)
 {
     ASSERT32FLAT();
     va_list args;
     va_start(args, fmt);
     bvprintf(&screeninfo, fmt, args);
     va_end(args);
-    if (ScreenAndDebug)
+    எனில் (ScreenAndDebug)
         debug_flush();
 }
 
@@ -383,17 +383,17 @@ printf(const char *fmt, ...)
  * snprintf
  ****************************************************************/
 
-struct snprintfinfo {
-    struct putcinfo info;
-    char *str, *end;
+கட்டமைப்பு snprintfinfo {
+    கட்டமைப்பு putcinfo info;
+    எழுத்து *str, *end;
 };
 
-static void
-putc_str(struct putcinfo *info, char c)
+நிலையான வெறுமை
+putc_str(கட்டமைப்பு putcinfo *info, எழுத்து c)
 {
-    struct snprintfinfo *sinfo = container_of(info, struct snprintfinfo, info);
-    if (sinfo->str >= sinfo->end)
-        return;
+    கட்டமைப்பு snprintfinfo *sinfo = container_of(info, கட்டமைப்பு snprintfinfo, info);
+    எனில் (sinfo->str >= sinfo->end)
+        திரும்பு;
     *sinfo->str = c;
     sinfo->str++;
 }
@@ -401,46 +401,46 @@ putc_str(struct putcinfo *info, char c)
 // Build a formatted string.  Note, this function returns the actual
 // number of bytes used (not including null) even in the overflow
 // case.
-int
-snprintf(char *str, size_t size, const char *fmt, ...)
+முழு
+snprintf(எழுத்து *str, size_t size, மாறிலி எழுத்து *fmt, ...)
 {
     ASSERT32FLAT();
-    if (!size)
-        return 0;
-    struct snprintfinfo sinfo = { { putc_str }, str, str + size };
+    எனில் (!size)
+        திரும்பு 0;
+    கட்டமைப்பு snprintfinfo sinfo = { { putc_str }, str, str + size };
     va_list args;
     va_start(args, fmt);
     bvprintf(&sinfo.info, fmt, args);
     va_end(args);
-    char *end = sinfo.str;
-    if (end >= sinfo.end)
+    எழுத்து *end = sinfo.str;
+    எனில் (end >= sinfo.end)
         end = sinfo.end - 1;
     *end = '\0';
-    return end - str;
+    திரும்பு end - str;
 }
 
 // Build a formatted string - malloc'ing the memory.
-char *
-znprintf(size_t size, const char *fmt, ...)
+எழுத்து *
+znprintf(size_t size, மாறிலி எழுத்து *fmt, ...)
 {
     ASSERT32FLAT();
-    if (!size)
-        return NULL;
-    char *str = malloc_tmp(size);
-    if (!str) {
+    எனில் (!size)
+        திரும்பு வெற்று;
+    எழுத்து *str = malloc_tmp(size);
+    எனில் (!str) {
         warn_noalloc();
-        return NULL;
+        திரும்பு வெற்று;
     }
-    struct snprintfinfo sinfo = { { putc_str }, str, str + size };
+    கட்டமைப்பு snprintfinfo sinfo = { { putc_str }, str, str + size };
     va_list args;
     va_start(args, fmt);
     bvprintf(&sinfo.info, fmt, args);
     va_end(args);
-    char *end = sinfo.str;
-    if (end >= sinfo.end)
+    எழுத்து *end = sinfo.str;
+    எனில் (end >= sinfo.end)
         end = sinfo.end - 1;
     *end = '\0';
-    return str;
+    திரும்பு str;
 }
 
 
@@ -448,20 +448,20 @@ znprintf(size_t size, const char *fmt, ...)
  * Misc helpers
  ****************************************************************/
 
-void
-hexdump(const void *d, int len)
+வெறுமை
+hexdump(மாறிலி வெறுமை *d, முழு len)
 {
-    int count=0;
-    while (len > 0) {
-        if (count % 8 == 0) {
+    முழு மொத்தம்=0;
+    போது (len > 0) {
+        எனில் (மொத்தம் % 8 == 0) {
             putc(&debuginfo, '\n');
-            puthex(&debuginfo, count*4, 8, 0);
+            puthex(&debuginfo, மொத்தம்*4, 8, 0);
             putc(&debuginfo, ':');
-        } else {
+        } இல்லையெனில் {
             putc(&debuginfo, ' ');
         }
         puthex(&debuginfo, *(u32*)d, 8, 0);
-        count++;
+        மொத்தம்++;
         len-=4;
         d+=4;
     }
@@ -469,12 +469,12 @@ hexdump(const void *d, int len)
     debug_flush();
 }
 
-static void
-dump_regs(struct bregs *regs)
+நிலையான வெறுமை
+dump_regs(கட்டமைப்பு bregs *regs)
 {
-    if (!regs) {
+    எனில் (!regs) {
         dprintf(1, "  NULL\n");
-        return;
+        திரும்பு;
     }
     dprintf(1, "   a=%08x  b=%08x  c=%08x  d=%08x ds=%04x es=%04x ss=%04x\n"
             , regs->eax, regs->ebx, regs->ecx, regs->edx
@@ -485,8 +485,8 @@ dump_regs(struct bregs *regs)
 }
 
 // Report entry to an Interrupt Service Routine (ISR).
-void
-__debug_isr(const char *fname)
+வெறுமை
+__debug_isr(மாறிலி எழுத்து *fname)
 {
     puts_cs(&debuginfo, fname);
     putc(&debuginfo, '\n');
@@ -494,75 +494,75 @@ __debug_isr(const char *fname)
 }
 
 // Function called on handler startup.
-void
-__debug_enter(struct bregs *regs, const char *fname)
+வெறுமை
+__debug_enter(கட்டமைப்பு bregs *regs, மாறிலி எழுத்து *fname)
 {
     dprintf(1, "enter %s:\n", fname);
     dump_regs(regs);
 }
 
 // Send debugging output info.
-void
-__debug_stub(struct bregs *regs, int lineno, const char *fname)
+வெறுமை
+__debug_stub(கட்டமைப்பு bregs *regs, முழு lineno, மாறிலி எழுத்து *fname)
 {
     dprintf(1, "stub %s:%d:\n", fname, lineno);
     dump_regs(regs);
 }
 
 // Report on an invalid parameter.
-void
-__warn_invalid(struct bregs *regs, int lineno, const char *fname)
+வெறுமை
+__warn_invalid(கட்டமைப்பு bregs *regs, முழு lineno, மாறிலி எழுத்து *fname)
 {
-    if (CONFIG_DEBUG_LEVEL >= DEBUG_invalid) {
+    எனில் (CONFIG_DEBUG_LEVEL >= DEBUG_invalid) {
         dprintf(1, "invalid %s:%d:\n", fname, lineno);
         dump_regs(regs);
     }
 }
 
 // Report on an unimplemented feature.
-void
-__warn_unimplemented(struct bregs *regs, int lineno, const char *fname)
+வெறுமை
+__warn_unimplemented(கட்டமைப்பு bregs *regs, முழு lineno, மாறிலி எழுத்து *fname)
 {
-    if (CONFIG_DEBUG_LEVEL >= DEBUG_unimplemented) {
+    எனில் (CONFIG_DEBUG_LEVEL >= DEBUG_unimplemented) {
         dprintf(1, "unimplemented %s:%d:\n", fname, lineno);
         dump_regs(regs);
     }
 }
 
 // Report a detected internal inconsistency.
-void
-__warn_internalerror(int lineno, const char *fname)
+வெறுமை
+__warn_internalerror(முழு lineno, மாறிலி எழுத்து *fname)
 {
     dprintf(1, "WARNING - internal error detected at %s:%d!\n"
             , fname, lineno);
 }
 
 // Report on an allocation failure.
-void
-__warn_noalloc(int lineno, const char *fname)
+வெறுமை
+__warn_noalloc(முழு lineno, மாறிலி எழுத்து *fname)
 {
     dprintf(1, "WARNING - Unable to allocate resource at %s:%d!\n"
             , fname, lineno);
 }
 
 // Report on a timeout exceeded.
-void
-__warn_timeout(int lineno, const char *fname)
+வெறுமை
+__warn_timeout(முழு lineno, மாறிலி எழுத்து *fname)
 {
     dprintf(1, "WARNING - Timeout at %s:%d!\n", fname, lineno);
 }
 
 // Report a handler reporting an invalid parameter to the caller.
-void
-__set_invalid(struct bregs *regs, int lineno, const char *fname)
+வெறுமை
+__set_invalid(கட்டமைப்பு bregs *regs, முழு lineno, மாறிலி எழுத்து *fname)
 {
     __warn_invalid(regs, lineno, fname);
     set_invalid_silent(regs);
 }
 
 // Report a call of an unimplemented function.
-void
-__set_unimplemented(struct bregs *regs, int lineno, const char *fname)
+வெறுமை
+__set_unimplemented(கட்டமைப்பு bregs *regs, முழு lineno, மாறிலி எழுத்து *fname)
 {
     __warn_unimplemented(regs, lineno, fname);
     set_invalid_silent(regs);
@@ -572,8 +572,8 @@ __set_unimplemented(struct bregs *regs, int lineno, const char *fname)
 // caller.  Note, the lineno and return code are encoded in the same
 // parameter as gcc does a better job of scheduling function calls
 // when there are 3 or less parameters.
-void
-__set_code_invalid(struct bregs *regs, u32 linecode, const char *fname)
+வெறுமை
+__set_code_invalid(கட்டமைப்பு bregs *regs, u32 linecode, மாறிலி எழுத்து *fname)
 {
     u8 code = linecode;
     u32 lineno = linecode >> 8;
@@ -582,8 +582,8 @@ __set_code_invalid(struct bregs *regs, u32 linecode, const char *fname)
 }
 
 // Report a call of an unimplemented function.
-void
-__set_code_unimplemented(struct bregs *regs, u32 linecode, const char *fname)
+வெறுமை
+__set_code_unimplemented(கட்டமைப்பு bregs *regs, u32 linecode, மாறிலி எழுத்து *fname)
 {
     u8 code = linecode;
     u32 lineno = linecode >> 8;

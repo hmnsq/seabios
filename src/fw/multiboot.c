@@ -4,106 +4,106 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_*
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "romfile.h" // romfile_add
-#include "std/multiboot.h" // MULTIBOOT_*
-#include "string.h" // memset
-#include "util.h" // multiboot_init
+#அந்தர்பாவ "config.h" // CONFIG_*
+#அந்தர்பாவ "malloc.h" // free
+#அந்தர்பாவ "output.h" // dprintf
+#அந்தர்பாவ "romfile.h" // romfile_add
+#அந்தர்பாவ "std/multiboot.h" // MULTIBOOT_*
+#அந்தர்பாவ "string.h" // memset
+#அந்தர்பாவ "util.h" // multiboot_init
 
-struct mbfs_romfile_s {
-    struct romfile_s file;
-    void *data;
+கட்டமைப்பு mbfs_romfile_s {
+    கட்டமைப்பு romfile_s file;
+    வெறுமை *data;
 };
 
-static int
-extract_filename(char *dest, char *src, size_t lim)
+நிலையான முழு
+extract_filename(எழுத்து *dest, எழுத்து *src, size_t lim)
 {
-    char *ptr;
-    for (ptr = src; *ptr; ptr++) {
-        if (!(ptr == src || ptr[-1] == ' ' || ptr[-1] == '\t'))
-            continue;
+    எழுத்து *ptr;
+    க்கு (ptr = src; *ptr; ptr++) {
+        எனில் (!(ptr == src || ptr[-1] == ' ' || ptr[-1] == '\t'))
+            தொடர்;
         /* memcmp stops early if it encounters \0 as it doesn't match name=.  */
-        if (memcmp(ptr, "name=", 5) == 0) {
-            int i;
-            char *optr = dest;
-            for (i = 0, ptr += 5; *ptr && *ptr != ' ' && i < lim; i++) {
+        எனில் (memcmp(ptr, "name=", 5) == 0) {
+            முழு i;
+            எழுத்து *optr = dest;
+            க்கு (i = 0, ptr += 5; *ptr && *ptr != ' ' && i < lim; i++) {
                 *optr++ = *ptr++;
             }
             *optr++ = '\0';
-            return 1;
+            திரும்பு 1;
         }
     }
-    return 0;
+    திரும்பு 0;
 }
 
 // Copy a file to memory
-static int
-mbfs_copyfile(struct romfile_s *file, void *dst, u32 maxlen)
+நிலையான முழு
+mbfs_copyfile(கட்டமைப்பு romfile_s *file, வெறுமை *dst, u32 maxlen)
 {
-    struct mbfs_romfile_s *cfile;
-    cfile = container_of(file, struct mbfs_romfile_s, file);
+    கட்டமைப்பு mbfs_romfile_s *cfile;
+    cfile = container_of(file, கட்டமைப்பு mbfs_romfile_s, file);
     u32 size = cfile->file.size;
-    void *src = cfile->data;
+    வெறுமை *src = cfile->data;
 
     // Not compressed.
     dprintf(3, "Copying data %d@%p to %d@%p\n", size, src, maxlen, dst);
-    if (size > maxlen) {
+    எனில் (size > maxlen) {
         warn_noalloc();
-        return -1;
+        திரும்பு -1;
     }
     iomemcpy(dst, src, size);
-    return size;
+    திரும்பு size;
 }
 
 u32 __VISIBLE entry_elf_eax, entry_elf_ebx;
 
-void
-multiboot_init(void)
+வெறுமை
+multiboot_init(வெறுமை)
 {
-    struct multiboot_info *mbi;
-    if (!CONFIG_MULTIBOOT)
-        return;
+    கட்டமைப்பு multiboot_info *mbi;
+    எனில் (!CONFIG_MULTIBOOT)
+        திரும்பு;
     dprintf(1, "multiboot: eax=%x, ebx=%x\n", entry_elf_eax, entry_elf_ebx);
-    if (entry_elf_eax != MULTIBOOT_BOOTLOADER_MAGIC)
-        return;
-    mbi = (void *)entry_elf_ebx;
+    எனில் (entry_elf_eax != MULTIBOOT_BOOTLOADER_MAGIC)
+        திரும்பு;
+    mbi = (வெறுமை *)entry_elf_ebx;
     dprintf(1, "mbptr=%p\n", mbi);
     dprintf(1, "flags=0x%x, mods=0x%x, mods_c=%d\n", mbi->flags, mbi->mods_addr,
-            mbi->mods_count);
-    if (!(mbi->flags & MULTIBOOT_INFO_MODS))
-        return;
-    int i;
-    struct multiboot_mod_list *mod = (void *)mbi->mods_addr;
-    for (i = 0; i < mbi->mods_count; i++) {
-        struct mbfs_romfile_s *cfile;
+            mbi->mods_மொத்தம்);
+    எனில் (!(mbi->flags & MULTIBOOT_INFO_MODS))
+        திரும்பு;
+    முழு i;
+    கட்டமைப்பு multiboot_mod_list *mod = (வெறுமை *)mbi->mods_addr;
+    க்கு (i = 0; i < mbi->mods_மொத்தம்; i++) {
+        கட்டமைப்பு mbfs_romfile_s *cfile;
         u8 *copy;
         u32 len;
-        if (!mod[i].cmdline)
-            continue;
+        எனில் (!mod[i].cmdline)
+            தொடர்;
         len = mod[i].mod_end - mod[i].mod_start;
-        cfile = malloc_tmp(sizeof(*cfile));
-        if (!cfile) {
+        cfile = malloc_tmp(அளவு(*cfile));
+        எனில் (!cfile) {
             warn_noalloc();
-            return;
+            திரும்பு;
         }
-        memset(cfile, 0, sizeof(*cfile));
-        dprintf(1, "module %s, size 0x%x\n", (char *)mod[i].cmdline, len);
-        if (!extract_filename(cfile->file.name, (char *)mod[i].cmdline,
-                              sizeof(cfile->file.name))) {
-            free(cfile);
-            continue;
+        memset(cfile, 0, அளவு(*cfile));
+        dprintf(1, "module %s, size 0x%x\n", (எழுத்து *)mod[i].cmdline, len);
+        எனில் (!extract_filename(cfile->file.name, (எழுத்து *)mod[i].cmdline,
+                              அளவு(cfile->file.name))) {
+            விடுவி(cfile);
+            தொடர்;
         }
         dprintf(1, "assigned file name <%s>\n", cfile->file.name);
         cfile->file.size = len;
         copy = malloc_tmp(len);
-        if (!copy) {
+        எனில் (!copy) {
             warn_noalloc();
-            free(cfile);
-            return;
+            விடுவி(cfile);
+            திரும்பு;
         }
-        memcpy(copy, (void *)mod[i].mod_start, len);
+        memcpy(copy, (வெறுமை *)mod[i].mod_start, len);
         cfile->file.copy = mbfs_copyfile;
         cfile->data = copy;
         romfile_add(&cfile->file);

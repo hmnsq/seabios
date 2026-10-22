@@ -1,22 +1,22 @@
 #ifndef __ROMFILE_H
 #define __ROMFILE_H
 
-#include "types.h" // u32
+#அந்தர்பாவ "types.h" // u32
 
 // romfile.c
-struct romfile_s {
-    struct romfile_s *next;
-    char name[128];
+கட்டமைப்பு romfile_s {
+    கட்டமைப்பு romfile_s *next;
+    எழுத்து name[128];
     u32 size;
-    int (*copy)(struct romfile_s *file, void *dest, u32 maxlen);
+    முழு (*copy)(கட்டமைப்பு romfile_s *file, வெறுமை *dest, u32 maxlen);
 };
-void romfile_add(struct romfile_s *file);
-struct romfile_s *romfile_findprefix(const char *prefix, struct romfile_s *prev);
-struct romfile_s *romfile_find(const char *name);
-void *romfile_loadfile(const char *name, int *psize);
-u64 romfile_loadint(const char *name, u64 defval);
-u32 romfile_loadbool(const char *name, u32 defval);
+வெறுமை romfile_add(கட்டமைப்பு romfile_s *file);
+கட்டமைப்பு romfile_s *romfile_findprefix(மாறிலி எழுத்து *prefix, கட்டமைப்பு romfile_s *prev);
+கட்டமைப்பு romfile_s *romfile_find(மாறிலி எழுத்து *name);
+வெறுமை *romfile_loadfile(மாறிலி எழுத்து *name, முழு *psize);
+u64 romfile_loadint(மாறிலி எழுத்து *name, u64 defval);
+u32 romfile_loadbool(மாறிலி எழுத்து *name, u32 defval);
 
-void const_romfile_add_int(char *name, u32 value);
+வெறுமை const_romfile_add_int(எழுத்து *name, u32 மதிப்பு);
 
 #endif // romfile.h

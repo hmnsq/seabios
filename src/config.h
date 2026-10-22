@@ -1,7 +1,7 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
-#include "autoconf.h"
+#அந்தர்பாவ "autoconf.h"
 
 // Configuration definitions.
 
@@ -31,15 +31,15 @@
 #define BUILD_BIOS_REVISION 0x01
 
 // Various memory addresses used by the code.
-#define BUILD_STACK_ADDR          0x7000
-#define BUILD_S3RESUME_STACK_ADDR 0x1000
+#define BUILD_அடுக்கு_ADDR          0x7000
+#define BUILD_S3_RESUME_அடுக்கு_ADDR 0x1000
 #define BUILD_AP_BOOT_ADDR        0x10000
 #define BUILD_EBDA_MINIMUM        0x90000
 #define BUILD_LOWRAM_END          0xa0000
 #define BUILD_ROM_START           0xc0000
 #define BUILD_BIOS_ADDR           0xf0000
 #define BUILD_BIOS_SIZE           0x10000
-#define BUILD_EXTRA_STACK_SIZE    0x800
+#define BUILD_EXTRA_அடுக்கு_SIZE    0x800
 #define BUILD_SMM_INIT_ADDR       0x30000
 #define BUILD_SMM_ADDR            0xa0000
 

@@ -2,16 +2,16 @@
 #define __USB_UHCI_H
 
 // usb-uhci.c
-void uhci_setup(void);
-struct usbdevice_s;
-struct usb_endpoint_descriptor;
-struct usb_pipe;
-struct usb_pipe *uhci_realloc_pipe(struct usbdevice_s *usbdev
-                                   , struct usb_pipe *upipe
-                                   , struct usb_endpoint_descriptor *epdesc);
-int uhci_send_pipe(struct usb_pipe *p, int dir, const void *cmd
-                   , void *data, int datasize);
-int uhci_poll_intr(struct usb_pipe *p, void *data);
+வெறுமை uhci_setup(வெறுமை);
+கட்டமைப்பு usbdevice_s;
+கட்டமைப்பு usb_endpoint_descriptor;
+கட்டமைப்பு usb_pipe;
+கட்டமைப்பு usb_pipe *uhci_realloc_pipe(கட்டமைப்பு usbdevice_s *usbdev
+                                   , கட்டமைப்பு usb_pipe *upipe
+                                   , கட்டமைப்பு usb_endpoint_descriptor *epdesc);
+முழு uhci_send_pipe(கட்டமைப்பு usb_pipe *p, முழு dir, மாறிலி வெறுமை *cmd
+                   , வெறுமை *data, முழு datasize);
+முழு uhci_poll_intr(கட்டமைப்பு usb_pipe *p, வெறுமை *data);
 
 
 /****************************************************************
@@ -70,7 +70,7 @@ int uhci_poll_intr(struct usb_pipe *p, void *data);
 #define USBSOF          12
 #define   USBSOF_DEFAULT        64      /* Frame length is exactly 1 ms */
 
-struct uhci_framelist {
+கட்டமைப்பு uhci_framelist {
     u32 links[1024];
 } PACKED;
 
@@ -107,14 +107,14 @@ struct uhci_framelist {
 #define uhci_expected_length(token) ((((token) >> TD_TOKEN_EXPLEN_SHIFT) + \
                                         1) & TD_TOKEN_EXPLEN_MASK)
 
-struct uhci_td {
+கட்டமைப்பு uhci_td {
     u32 link;
     u32 status;
     u32 token;
-    void *buffer;
+    வெறுமை *buffer;
 } PACKED;
 
-struct uhci_qh {
+கட்டமைப்பு uhci_qh {
     u32 link;
     u32 element;
 } PACKED;

@@ -4,10 +4,10 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // BUILD_MAX_E820
-#include "e820map.h" // struct e820entry
-#include "output.h" // dprintf
-#include "string.h" // memmove
+#அந்தர்பாவ "config.h" // BUILD_MAX_E820
+#அந்தர்பாவ "e820map.h" // struct e820entry
+#அந்தர்பாவ "output.h" // dprintf
+#அந்தர்பாவ "string.h" // memmove
 
 
 /****************************************************************
@@ -15,57 +15,57 @@
  ****************************************************************/
 
 // Info on e820 map location and size.
-struct e820entry e820_list[BUILD_MAX_E820] VARFSEG;
-int e820_count VARFSEG;
+கட்டமைப்பு e820entry e820_list[BUILD_MAX_E820] VARFSEG;
+முழு e820_மொத்தம் VARFSEG;
 
 // Remove an entry from the e820_list.
-static void
-remove_e820(int i)
+நிலையான வெறுமை
+remove_e820(முழு i)
 {
-    e820_count--;
+    e820_மொத்தம்--;
     memmove(&e820_list[i], &e820_list[i+1]
-            , sizeof(e820_list[0]) * (e820_count - i));
+            , அளவு(e820_list[0]) * (e820_மொத்தம் - i));
 }
 
 // Insert an entry in the e820_list at the given position.
-static void
-insert_e820(int i, u64 start, u64 size, u32 type)
+நிலையான வெறுமை
+செருகு_e820(முழு i, u64 start, u64 size, u32 type)
 {
-    if (e820_count >= BUILD_MAX_E820) {
+    எனில் (e820_மொத்தம் >= BUILD_MAX_E820) {
         warn_noalloc();
-        return;
+        திரும்பு;
     }
 
     memmove(&e820_list[i+1], &e820_list[i]
-            , sizeof(e820_list[0]) * (e820_count - i));
-    e820_count++;
-    struct e820entry *e = &e820_list[i];
+            , அளவு(e820_list[0]) * (e820_மொத்தம் - i));
+    e820_மொத்தம்++;
+    கட்டமைப்பு e820entry *e = &e820_list[i];
     e->start = start;
     e->size = size;
     e->type = type;
 }
 
-static const char *
+நிலையான மாறிலி எழுத்து *
 e820_type_name(u32 type)
 {
-    switch (type) {
-    case E820_RAM:      return "RAM";
-    case E820_RESERVED: return "RESERVED";
-    case E820_ACPI:     return "ACPI";
-    case E820_NVS:      return "NVS";
-    case E820_UNUSABLE: return "UNUSABLE";
-    default:            return "UNKNOWN";
+    தேர்வு (type) {
+    நிலை E820_RAM:      திரும்பு "RAM";
+    நிலை E820_RESERVED: திரும்பு "RESERVED";
+    நிலை E820_ACPI:     திரும்பு "ACPI";
+    நிலை E820_NVS:      திரும்பு "NVS";
+    நிலை E820_UNUSABLE: திரும்பு "UNUSABLE";
+    இயல்பு:            திரும்பு "UNKNOWN";
     }
 }
 
 // Show the current e820_list.
-static void
-dump_map(void)
+நிலையான வெறுமை
+dump_map(வெறுமை)
 {
-    dprintf(1, "e820 map has %d items:\n", e820_count);
-    int i;
-    for (i=0; i<e820_count; i++) {
-        struct e820entry *e = &e820_list[i];
+    dprintf(1, "e820 map has %d items:\n", e820_மொத்தம்);
+    முழு i;
+    க்கு (i=0; i<e820_மொத்தம்; i++) {
+        கட்டமைப்பு e820entry *e = &e820_list[i];
         u64 e_end = e->start + e->size;
         dprintf(1, "  %d: %016llx - %016llx = %d %s\n", i
                 , e->start, e_end, e->type, e820_type_name(e->type));
@@ -76,92 +76,92 @@ dump_map(void)
 
 // Add a new entry to the list.  This scans for overlaps and keeps the
 // list sorted.
-void
+வெறுமை
 e820_add(u64 start, u64 size, u32 type)
 {
     dprintf(8, "Add to e820 map: %08llx %08llx %d\n", start, size, type);
 
-    if (! size)
+    எனில் (! size)
         // Huh?  Nothing to do.
-        return;
+        திரும்பு;
 
     // Find position of new item (splitting existing item if needed).
     u64 end = start + size;
-    int i;
-    for (i=0; i<e820_count; i++) {
-        struct e820entry *e = &e820_list[i];
+    முழு i;
+    க்கு (i=0; i<e820_மொத்தம்; i++) {
+        கட்டமைப்பு e820entry *e = &e820_list[i];
         u64 e_end = e->start + e->size;
-        if (start > e_end)
-            continue;
+        எனில் (start > e_end)
+            தொடர்;
         // Found position - check if an existing item needs to be split.
-        if (start > e->start) {
-            if (type == e->type) {
+        எனில் (start > e->start) {
+            எனில் (type == e->type) {
                 // Same type - merge them.
                 size += start - e->start;
                 start = e->start;
-            } else {
+            } இல்லையெனில் {
                 // Split existing item.
                 e->size = start - e->start;
                 i++;
-                if (e_end > end)
-                    insert_e820(i, end, e_end - end, e->type);
+                எனில் (e_end > end)
+                    செருகு_e820(i, end, e_end - end, e->type);
             }
         }
-        break;
+        நிறுத்து;
     }
     // Remove/adjust existing items that are overlapping.
-    while (i<e820_count) {
-        struct e820entry *e = &e820_list[i];
-        if (end < e->start)
+    போது (i<e820_மொத்தம்) {
+        கட்டமைப்பு e820entry *e = &e820_list[i];
+        எனில் (end < e->start)
             // No overlap - done.
-            break;
+            நிறுத்து;
         u64 e_end = e->start + e->size;
-        if (end >= e_end) {
+        எனில் (end >= e_end) {
             // Existing item completely overlapped - remove it.
             remove_e820(i);
-            continue;
+            தொடர்;
         }
         // Not completely overlapped - adjust its start.
         e->start = end;
         e->size = e_end - end;
-        if (type == e->type) {
+        எனில் (type == e->type) {
             // Same type - merge them.
             size += e->size;
             remove_e820(i);
         }
-        break;
+        நிறுத்து;
     }
     // Insert new item.
-    if (type != E820_HOLE)
-        insert_e820(i, start, size, type);
+    எனில் (type != E820_HOLE)
+        செருகு_e820(i, start, size, type);
     //dump_map();
 }
 
 // Remove any definitions in a memory range (make a memory hole).
-void
+வெறுமை
 e820_remove(u64 start, u64 size)
 {
     e820_add(start, size, E820_HOLE);
 }
 
 // Report on final memory locations.
-void
-e820_prepboot(void)
+வெறுமை
+e820_prepboot(வெறுமை)
 {
     dump_map();
 }
 
-int
+முழு
 e820_is_used(u64 start, u64 size)
 {
-    int i;
-    for (i=0; i<e820_count; i++) {
-        struct e820entry *e = &e820_list[i];
-        if (start + size <= e->start)
-            continue;
-        if (start >= e->start + e->size)
-            continue;
-        return 1;
+    முழு i;
+    க்கு (i=0; i<e820_மொத்தம்; i++) {
+        கட்டமைப்பு e820entry *e = &e820_list[i];
+        எனில் (start + size <= e->start)
+            தொடர்;
+        எனில் (start >= e->start + e->size)
+            தொடர்;
+        திரும்பு 1;
     }
-    return 0;
+    திரும்பு 0;
 }

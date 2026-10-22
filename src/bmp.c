@@ -6,22 +6,22 @@
 *
 * This work is licensed under the terms of the GNU LGPLv3.
 */
-#include "malloc.h" // malloc_tmphigh
-#include "string.h" // memcpy
-#include "util.h" // struct bmp_decdata
+#அந்தர்பாவ "malloc.h" // malloc_tmphigh
+#அந்தர்பாவ "string.h" // memcpy
+#அந்தர்பாவ "util.h" // struct bmp_decdata
 
-struct bmp_decdata {
-    struct tagRGBQUAD *quadp;
-    unsigned char *datap;
-    int width;
-    int height;
-    int bpp;
+கட்டமைப்பு bmp_decdata {
+    கட்டமைப்பு tagRGBQUAD *quadp;
+    unsigned எழுத்து *datap;
+    முழு width;
+    முழு height;
+    முழு bpp;
 };
 
 #define bmp_load4byte(addr) (*(u32 *)(addr))
 #define bmp_load2byte(addr) (*(u16 *)(addr))
 
-typedef struct tagBITMAPFILEHEADER {
+வகைவரை கட்டமைப்பு tagBITMAPFILEHEADER {
     u8 bfType[2];
     u8 bfSize[4];
     u8 bfReserved1[2];
@@ -29,12 +29,12 @@ typedef struct tagBITMAPFILEHEADER {
     u8 bfOffBits[4];
 } BITMAPFILEHEADER, tagBITMAPFILEHEADER;
 
-typedef struct tagBITMAPINFOHEADER {
+வகைவரை கட்டமைப்பு tagBITMAPINFOHEADER {
     u8 biSize[4];
     u8 biWidth[4];
     u8 biHeight[4];
     u8 biPlanes[2];
-    u8 biBitCount[2];
+    u8 bi_Bit_மொத்தம்[2];
     u8 biCompression[4];
     u8 biSizeImage[4];
     u8 biXPelsPerMeter[4];
@@ -43,7 +43,7 @@ typedef struct tagBITMAPINFOHEADER {
     u8 biClrImportant[4];
 } BITMAPINFOHEADER, tagBITMAPINFOHEADER;
 
-typedef struct tagRGBQUAD {
+வகைவரை கட்டமைப்பு tagRGBQUAD {
     u8 rgbBlue;
     u8 rgbGreen;
     u8 rgbRed;
@@ -56,45 +56,45 @@ typedef struct tagRGBQUAD {
 *   arrange horizontal pixel data, add extra space in the dest buffer
 *       for every line
 */
-static void raw_data_format_adjust(u8 *src, u8 *dest, int width,
-		int height, int bytes_per_line_src, int bytes_per_line_dest)
+நிலையான வெறுமை raw_data_format_adjust(u8 *src, u8 *dest, முழு width,
+		முழு height, முழு bytes_per_வரி_src, முழு bytes_per_வரி_dest)
 {
-    int i;
-    for (i = 0 ; i < height ; i++) {
-        memcpy(dest + i * bytes_per_line_dest,
-           src + (height - 1 - i) * bytes_per_line_src, bytes_per_line_src);
+    முழு i;
+    க்கு (i = 0 ; i < height ; i++) {
+        memcpy(dest + i * bytes_per_வரி_dest,
+           src + (height - 1 - i) * bytes_per_வரி_src, bytes_per_வரி_src);
     }
 }
 
 /* allocate decdata struct */
-struct bmp_decdata *bmp_alloc(void)
+கட்டமைப்பு bmp_decdata *bmp_alloc(வெறுமை)
 {
-    struct bmp_decdata *bmp = malloc_tmphigh(sizeof(*bmp));
-    return bmp;
+    கட்டமைப்பு bmp_decdata *bmp = malloc_tmphigh(அளவு(*bmp));
+    திரும்பு bmp;
 }
 
 /* extract information from bmp file data */
-int bmp_decode(struct bmp_decdata *bmp, unsigned char *data, int data_size)
+முழு bmp_decode(கட்டமைப்பு bmp_decdata *bmp, unsigned எழுத்து *data, முழு data_size)
 {
-    if (data_size < 54)
-        return 1;
+    எனில் (data_size < 54)
+        திரும்பு 1;
 
     u16 bmp_filehead = bmp_load2byte(data + 0);
-    if (bmp_filehead != 0x4d42)
-        return 2;
+    எனில் (bmp_filehead != 0x4d42)
+        திரும்பு 2;
     u32 bmp_recordsize = bmp_load4byte(data + 2);
-    if (bmp_recordsize != data_size)
-        return 3;
+    எனில் (bmp_recordsize != data_size)
+        திரும்பு 3;
     u32 bmp_dataoffset = bmp_load4byte(data + 10);
-    bmp->datap = (unsigned char *)data + bmp_dataoffset;
+    bmp->datap = (unsigned எழுத்து *)data + bmp_dataoffset;
     bmp->width = bmp_load4byte(data + 18);
     bmp->height = bmp_load4byte(data + 22);
     bmp->bpp = bmp_load2byte(data + 28);
-    return 0;
+    திரும்பு 0;
 }
 
 /* get bmp properties */
-void bmp_get_info(struct bmp_decdata *bmp, int *width, int *height, int *bpp)
+வெறுமை bmp_get_info(கட்டமைப்பு bmp_decdata *bmp, முழு *width, முழு *height, முழு *bpp)
 {
     *width = bmp->width;
     *height = bmp->height;
@@ -102,15 +102,15 @@ void bmp_get_info(struct bmp_decdata *bmp, int *width, int *height, int *bpp)
 }
 
 /* flush flat picture data to *pc */
-int bmp_show(struct bmp_decdata *bmp, unsigned char *pic, int width,
-             int height, int depth, int bytes_per_line_dest)
+முழு bmp_show(கட்டமைப்பு bmp_decdata *bmp, unsigned எழுத்து *pic, முழு width,
+             முழு height, முழு depth, முழு bytes_per_வரி_dest)
 {
-    if (bmp->datap == pic)
-        return 0;
-    if ((depth == bmp->bpp) && (bmp->bpp%8 == 0)) {
+    எனில் (bmp->datap == pic)
+        திரும்பு 0;
+    எனில் ((depth == bmp->bpp) && (bmp->bpp%8 == 0)) {
         raw_data_format_adjust(bmp->datap, pic, width, height,
-			(bmp->bpp/8)*width, bytes_per_line_dest);
-        return 0;
+			(bmp->bpp/8)*width, bytes_per_வரி_dest);
+        திரும்பு 0;
     }
-    return 1;
+    திரும்பு 1;
 }

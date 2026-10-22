@@ -1,33 +1,33 @@
 #ifndef __ATA_H
 #define __ATA_H
 
-#include "block.h" // struct drive_s
-#include "config.h" // CONFIG_MAX_ATA_INTERFACES
-#include "types.h" // u8
+#அந்தர்பாவ "block.h" // struct drive_s
+#அந்தர்பாவ "config.h" // CONFIG_MAX_ATA_INTERFACES
+#அந்தர்பாவ "types.h" // u8
 
-struct ata_channel_s {
+கட்டமைப்பு ata_channel_s {
     u16 iobase1;
     u16 iobase2;
     u16 iomaster;
     u8  irq;
     u8  chanid;
     u8  ataid;
-    int pci_bdf;
-    struct pci_device *pci_tmp;
+    முழு pci_bdf;
+    கட்டமைப்பு pci_device *pci_tmp;
 };
 
-struct atadrive_s {
-    struct drive_s drive;
-    struct ata_channel_s *chan_gf;
+கட்டமைப்பு atadrive_s {
+    கட்டமைப்பு drive_s drive;
+    கட்டமைப்பு ata_channel_s *chan_gf;
     u8 slave;
 };
 
 // ata.c
-char *ata_extract_model(char *model, u32 size, u16 *buffer);
-int ata_extract_version(u16 *buffer);
-int ata_process_op(struct disk_op_s *op);
-int ata_atapi_process_op(struct disk_op_s *op);
-void ata_setup(void);
+எழுத்து *ata_extract_model(எழுத்து *model, u32 size, u16 *buffer);
+முழு ata_extract_version(u16 *buffer);
+முழு ata_process_op(கட்டமைப்பு disk_op_s *op);
+முழு ata_atapi_process_op(கட்டமைப்பு disk_op_s *op);
+வெறுமை ata_setup(வெறுமை);
 
 #define PORT_ATA2_CMD_BASE     0x0170
 #define PORT_ATA1_CMD_BASE     0x01f0

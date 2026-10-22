@@ -1,14 +1,14 @@
 #ifndef __PCIDEVICE_H
 #define __PCIDEVICE_H
 
-#include "types.h" // u32
-#include "list.h" // hlist_node
+#அந்தர்பாவ "types.h" // u32
+#அந்தர்பாவ "list.h" // hlist_node
 
-struct pci_device {
+கட்டமைப்பு pci_device {
     u16 bdf;
     u8 rootbus;
-    struct hlist_node node;
-    struct pci_device *parent;
+    கட்டமைப்பு hlist_முனை முனை;
+    கட்டமைப்பு pci_device *parent;
 
     // Configuration space device information
     u16 vendor, device;
@@ -18,25 +18,25 @@ struct pci_device {
     u8 secondary_bus;
 
     // Local information on device.
-    int have_driver;
+    முழு have_driver;
 };
-extern struct hlist_head PCIDevices;
-extern int MaxPCIBus;
+வெளி கட்டமைப்பு hlist_head PCIDevices;
+வெளி முழு MaxPCIBus;
 
-static inline u32 pci_classprog(struct pci_device *pci) {
-    return (pci->class << 8) | pci->prog_if;
+நிலையான உள்வரி u32 pci_classprog(கட்டமைப்பு pci_device *pci) {
+    திரும்பு (pci->class << 8) | pci->prog_if;
 }
 
 #define foreachpci(PCI)                                 \
-    hlist_for_each_entry(PCI, &PCIDevices, node)
+    hlist_for_each_entry(PCI, &PCIDevices, முனை)
 
 #define PCI_ANY_ID      (~0)
-struct pci_device_id {
+கட்டமைப்பு pci_device_id {
     u32 vendid;
     u32 devid;
     u32 class;
     u32 class_mask;
-    void (*func)(struct pci_device *pci, void *arg);
+    வெறுமை (*func)(கட்டமைப்பு pci_device *pci, வெறுமை *arg);
 };
 
 #define PCI_DEVICE(vendor_id, device_id, init_func)     \
@@ -62,15 +62,15 @@ struct pci_device_id {
         .vendid = 0,                            \
     }
 
-void pci_probe_devices(void);
-struct pci_device *pci_find_device(u16 vendid, u16 devid);
-struct pci_device *pci_find_class(u16 classid);
-int pci_init_device(const struct pci_device_id *ids
-                    , struct pci_device *pci, void *arg);
-struct pci_device *pci_find_init_device(const struct pci_device_id *ids
-                                        , void *arg);
-void pci_enable_busmaster(struct pci_device *pci);
-u16 pci_enable_iobar(struct pci_device *pci, u32 addr);
-void *pci_enable_membar(struct pci_device *pci, u32 addr);
+வெறுமை pci_probe_devices(வெறுமை);
+கட்டமைப்பு pci_device *pci_find_device(u16 vendid, u16 devid);
+கட்டமைப்பு pci_device *pci_find_class(u16 classid);
+முழு pci_init_device(மாறிலி கட்டமைப்பு pci_device_id *ids
+                    , கட்டமைப்பு pci_device *pci, வெறுமை *arg);
+கட்டமைப்பு pci_device *pci_find_init_device(மாறிலி கட்டமைப்பு pci_device_id *ids
+                                        , வெறுமை *arg);
+வெறுமை pci_enable_busmaster(கட்டமைப்பு pci_device *pci);
+u16 pci_enable_iobar(கட்டமைப்பு pci_device *pci, u32 addr);
+வெறுமை *pci_enable_membar(கட்டமைப்பு pci_device *pci, u32 addr);
 
 #endif // pcidevice.h

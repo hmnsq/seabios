@@ -7,20 +7,20 @@
 #ifndef __BREGS_H
 #define __BREGS_H
 
-#include "types.h" // u16
-#include "x86.h" // F_CF
+#அந்தர்பாவ "types.h" // u16
+#அந்தர்பாவ "x86.h" // F_CF
 
 
 /****************************************************************
  * Registers saved/restored in romlayout.S
  ****************************************************************/
 
-#define UREG(ER, R, RH, RL) union { u32 ER; struct { u16 R; u16 R ## _hi; }; struct { u8 RL; u8 RH; u8 R ## _hilo; u8 R ## _hihi; }; }
+#define UREG(ER, R, RH, RL) ஒன்றிப்பு { u32 ER; கட்டமைப்பு { u16 R; u16 R ## _hi; }; கட்டமைப்பு { u8 RL; u8 RH; u8 R ## _hilo; u8 R ## _hihi; }; }
 
 // Layout of registers passed in to irq handlers.  Note that this
 // layout corresponds to code in romlayout.S - don't change it here
 // without also updating the assembler code.
-struct bregs {
+கட்டமைப்பு bregs {
     u16 ds;
     u16 es;
     UREG(edi, di, di8u, di8l);
@@ -30,7 +30,7 @@ struct bregs {
     UREG(edx, dx, dh, dl);
     UREG(ecx, cx, ch, cl);
     UREG(eax, ax, ah, al);
-    struct segoff_s code;
+    கட்டமைப்பு segoff_s code;
     u16 flags;
 } PACKED;
 
@@ -39,39 +39,39 @@ struct bregs {
  * Helper functions
  ****************************************************************/
 
-static inline void
-set_cf(struct bregs *regs, int cond)
+நிலையான உள்வரி வெறுமை
+set_cf(கட்டமைப்பு bregs *regs, முழு cond)
 {
-    if (cond)
+    எனில் (cond)
         regs->flags |= F_CF;
-    else
+    இல்லையெனில்
         regs->flags &= ~F_CF;
 }
 
 // Frequently used return codes
 #define RET_EUNSUPPORTED 0x86
 
-static inline void
-set_success(struct bregs *regs)
+நிலையான உள்வரி வெறுமை
+set_success(கட்டமைப்பு bregs *regs)
 {
     set_cf(regs, 0);
 }
 
-static inline void
-set_code_success(struct bregs *regs)
+நிலையான உள்வரி வெறுமை
+set_code_success(கட்டமைப்பு bregs *regs)
 {
     regs->ah = 0;
     set_cf(regs, 0);
 }
 
-static inline void
-set_invalid_silent(struct bregs *regs)
+நிலையான உள்வரி வெறுமை
+set_invalid_silent(கட்டமைப்பு bregs *regs)
 {
     set_cf(regs, 1);
 }
 
-static inline void
-set_code_invalid_silent(struct bregs *regs, u8 code)
+நிலையான உள்வரி வெறுமை
+set_code_invalid_silent(கட்டமைப்பு bregs *regs, u8 code)
 {
     regs->ah = code;
     set_cf(regs, 1);

@@ -20,48 +20,48 @@
 
 #ifndef __ASSEMBLY__
 
-#include "types.h" // u32
+#அந்தர்பாவ "types.h" // u32
 
-static inline void irq_disable(void)
+நிலையான உள்வரி வெறுமை irq_disable(வெறுமை)
 {
-    asm volatile("cli": : :"memory");
+    asm நிலையற்ற("cli": : :"memory");
 }
 
-static inline void irq_enable(void)
+நிலையான உள்வரி வெறுமை irq_enable(வெறுமை)
 {
-    asm volatile("sti": : :"memory");
+    asm நிலையற்ற("sti": : :"memory");
 }
 
-static inline u32 save_flags(void)
+நிலையான உள்வரி u32 save_flags(வெறுமை)
 {
     u32 flags;
-    asm volatile("pushfl ; popl %0" : "=rm" (flags));
-    return flags;
+    asm நிலையற்ற("pushfl ; popl %0" : "=rm" (flags));
+    திரும்பு flags;
 }
 
-static inline void restore_flags(u32 flags)
+நிலையான உள்வரி வெறுமை restore_flags(u32 flags)
 {
-    asm volatile("pushl %0 ; popfl" : : "g" (flags) : "memory", "cc");
+    asm நிலையற்ற("pushl %0 ; popfl" : : "g" (flags) : "memory", "cc");
 }
 
-static inline void cpu_relax(void)
+நிலையான உள்வரி வெறுமை cpu_relax(வெறுமை)
 {
-    asm volatile("rep ; nop": : :"memory");
+    asm நிலையற்ற("rep ; nop": : :"memory");
 }
 
-static inline void nop(void)
+நிலையான உள்வரி வெறுமை nop(வெறுமை)
 {
-    asm volatile("nop");
+    asm நிலையற்ற("nop");
 }
 
-static inline void hlt(void)
+நிலையான உள்வரி வெறுமை hlt(வெறுமை)
 {
-    asm volatile("hlt": : :"memory");
+    asm நிலையற்ற("hlt": : :"memory");
 }
 
-static inline void wbinvd(void)
+நிலையான உள்வரி வெறுமை wbinvd(வெறுமை)
 {
-    asm volatile("wbinvd": : :"memory");
+    asm நிலையற்ற("wbinvd": : :"memory");
 }
 
 #define CPUID_TSC (1 << 4)
@@ -69,174 +69,174 @@ static inline void wbinvd(void)
 #define CPUID_APIC (1 << 9)
 #define CPUID_MTRR (1 << 12)
 #define CPUID_X2APIC (1 << 21)
-static inline void __cpuid(u32 index, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx)
+நிலையான உள்வரி வெறுமை __cpuid(u32 index, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx)
 {
     asm("cpuid"
         : "=a" (*eax), "=b" (*ebx), "=c" (*ecx), "=d" (*edx)
         : "0" (index));
 }
 
-static inline u32 cr0_read(void) {
+நிலையான உள்வரி u32 cr0_read(வெறுமை) {
     u32 cr0;
     asm("movl %%cr0, %0" : "=r"(cr0));
-    return cr0;
+    திரும்பு cr0;
 }
-static inline void cr0_write(u32 cr0) {
+நிலையான உள்வரி வெறுமை cr0_write(u32 cr0) {
     asm("movl %0, %%cr0" : : "r"(cr0));
 }
-static inline void cr0_mask(u32 off, u32 on) {
+நிலையான உள்வரி வெறுமை cr0_mask(u32 off, u32 on) {
     cr0_write((cr0_read() & ~off) | on);
 }
-static inline u16 cr0_vm86_read(void) {
+நிலையான உள்வரி u16 cr0_vm86_read(வெறுமை) {
     u16 cr0;
     asm("smsww %0" : "=r"(cr0));
-    return cr0;
+    திரும்பு cr0;
 }
 
-static inline u64 rdmsr(u32 index)
+நிலையான உள்வரி u64 rdmsr(u32 index)
 {
     u64 ret;
     asm ("rdmsr" : "=A"(ret) : "c"(index));
-    return ret;
+    திரும்பு ret;
 }
 
-static inline void wrmsr(u32 index, u64 val)
+நிலையான உள்வரி வெறுமை wrmsr(u32 index, u64 val)
 {
-    asm volatile ("wrmsr" : : "c"(index), "A"(val));
+    asm நிலையற்ற ("wrmsr" : : "c"(index), "A"(val));
 }
 
-static inline u64 rdtscll(void)
+நிலையான உள்வரி u64 rdtscll(வெறுமை)
 {
     u64 val;
-    asm volatile("rdtsc" : "=A" (val));
-    return val;
+    asm நிலையற்ற("rdtsc" : "=A" (val));
+    திரும்பு val;
 }
 
-static inline u32 __ffs(u32 word)
+நிலையான உள்வரி u32 __ffs(u32 word)
 {
     asm("bsf %1,%0"
         : "=r" (word)
         : "rm" (word));
-    return word;
+    திரும்பு word;
 }
-static inline u32 __fls(u32 word)
+நிலையான உள்வரி u32 __fls(u32 word)
 {
     asm("bsr %1,%0"
         : "=r" (word)
         : "rm" (word));
-    return word;
+    திரும்பு word;
 }
 
-static inline u32 getesp(void) {
+நிலையான உள்வரி u32 getesp(வெறுமை) {
     u32 esp;
     asm("movl %%esp, %0" : "=rm"(esp));
-    return esp;
+    திரும்பு esp;
 }
 
-static inline u32 rol(u32 val, u16 rol) {
+நிலையான உள்வரி u32 rol(u32 val, u16 rol) {
     u32 res;
-    asm volatile("roll %%cl, %%eax"
+    asm நிலையற்ற("roll %%cl, %%eax"
                  : "=a" (res) : "a" (val), "c" (rol));
-    return res;
+    திரும்பு res;
 }
 
-static inline u32 ror(u32 val, u16 ror) {
+நிலையான உள்வரி u32 ror(u32 val, u16 ror) {
     u32 res;
-    asm volatile("rorl %%cl, %%eax"
+    asm நிலையற்ற("rorl %%cl, %%eax"
                  : "=a" (res) : "a" (val), "c" (ror));
-    return res;
+    திரும்பு res;
 }
 
-static inline void outb(u8 value, u16 port) {
-    __asm__ __volatile__("outb %b0, %w1" : : "a"(value), "Nd"(port));
+நிலையான உள்வரி வெறுமை outb(u8 மதிப்பு, u16 port) {
+    __asm__ __volatile__("outb %b0, %w1" : : "a"(மதிப்பு), "Nd"(port));
 }
-static inline void outw(u16 value, u16 port) {
-    __asm__ __volatile__("outw %w0, %w1" : : "a"(value), "Nd"(port));
+நிலையான உள்வரி வெறுமை outw(u16 மதிப்பு, u16 port) {
+    __asm__ __volatile__("outw %w0, %w1" : : "a"(மதிப்பு), "Nd"(port));
 }
-static inline void outl(u32 value, u16 port) {
-    __asm__ __volatile__("outl %0, %w1" : : "a"(value), "Nd"(port));
+நிலையான உள்வரி வெறுமை outl(u32 மதிப்பு, u16 port) {
+    __asm__ __volatile__("outl %0, %w1" : : "a"(மதிப்பு), "Nd"(port));
 }
-static inline u8 inb(u16 port) {
-    u8 value;
-    __asm__ __volatile__("inb %w1, %b0" : "=a"(value) : "Nd"(port));
-    return value;
+நிலையான உள்வரி u8 inb(u16 port) {
+    u8 மதிப்பு;
+    __asm__ __volatile__("inb %w1, %b0" : "=a"(மதிப்பு) : "Nd"(port));
+    திரும்பு மதிப்பு;
 }
-static inline u16 inw(u16 port) {
-    u16 value;
-    __asm__ __volatile__("inw %w1, %w0" : "=a"(value) : "Nd"(port));
-    return value;
+நிலையான உள்வரி u16 inw(u16 port) {
+    u16 மதிப்பு;
+    __asm__ __volatile__("inw %w1, %w0" : "=a"(மதிப்பு) : "Nd"(port));
+    திரும்பு மதிப்பு;
 }
-static inline u32 inl(u16 port) {
-    u32 value;
-    __asm__ __volatile__("inl %w1, %0" : "=a"(value) : "Nd"(port));
-    return value;
+நிலையான உள்வரி u32 inl(u16 port) {
+    u32 மதிப்பு;
+    __asm__ __volatile__("inl %w1, %0" : "=a"(மதிப்பு) : "Nd"(port));
+    திரும்பு மதிப்பு;
 }
 
-static inline void insb(u16 port, u8 *data, u32 count) {
-    asm volatile("rep insb (%%dx), %%es:(%%edi)"
-                 : "+c"(count), "+D"(data) : "d"(port) : "memory");
+நிலையான உள்வரி வெறுமை insb(u16 port, u8 *data, u32 மொத்தம்) {
+    asm நிலையற்ற("rep insb (%%dx), %%es:(%%edi)"
+                 : "+c"(மொத்தம்), "+D"(data) : "d"(port) : "memory");
 }
-static inline void insw(u16 port, u16 *data, u32 count) {
-    asm volatile("rep insw (%%dx), %%es:(%%edi)"
-                 : "+c"(count), "+D"(data) : "d"(port) : "memory");
+நிலையான உள்வரி வெறுமை insw(u16 port, u16 *data, u32 மொத்தம்) {
+    asm நிலையற்ற("rep insw (%%dx), %%es:(%%edi)"
+                 : "+c"(மொத்தம்), "+D"(data) : "d"(port) : "memory");
 }
-static inline void insl(u16 port, u32 *data, u32 count) {
-    asm volatile("rep insl (%%dx), %%es:(%%edi)"
-                 : "+c"(count), "+D"(data) : "d"(port) : "memory");
+நிலையான உள்வரி வெறுமை insl(u16 port, u32 *data, u32 மொத்தம்) {
+    asm நிலையற்ற("rep insl (%%dx), %%es:(%%edi)"
+                 : "+c"(மொத்தம்), "+D"(data) : "d"(port) : "memory");
 }
 // XXX - outs not limited to es segment
-static inline void outsb(u16 port, u8 *data, u32 count) {
-    asm volatile("rep outsb %%es:(%%esi), (%%dx)"
-                 : "+c"(count), "+S"(data) : "d"(port) : "memory");
+நிலையான உள்வரி வெறுமை outsb(u16 port, u8 *data, u32 மொத்தம்) {
+    asm நிலையற்ற("rep outsb %%es:(%%esi), (%%dx)"
+                 : "+c"(மொத்தம்), "+S"(data) : "d"(port) : "memory");
 }
-static inline void outsw(u16 port, u16 *data, u32 count) {
-    asm volatile("rep outsw %%es:(%%esi), (%%dx)"
-                 : "+c"(count), "+S"(data) : "d"(port) : "memory");
+நிலையான உள்வரி வெறுமை outsw(u16 port, u16 *data, u32 மொத்தம்) {
+    asm நிலையற்ற("rep outsw %%es:(%%esi), (%%dx)"
+                 : "+c"(மொத்தம்), "+S"(data) : "d"(port) : "memory");
 }
-static inline void outsl(u16 port, u32 *data, u32 count) {
-    asm volatile("rep outsl %%es:(%%esi), (%%dx)"
-                 : "+c"(count), "+S"(data) : "d"(port) : "memory");
+நிலையான உள்வரி வெறுமை outsl(u16 port, u32 *data, u32 மொத்தம்) {
+    asm நிலையற்ற("rep outsl %%es:(%%esi), (%%dx)"
+                 : "+c"(மொத்தம்), "+S"(data) : "d"(port) : "memory");
 }
 
 /* Compiler barrier is enough as an x86 CPU does not reorder reads or writes */
-static inline void smp_rmb(void) {
+நிலையான உள்வரி வெறுமை smp_rmb(வெறுமை) {
     barrier();
 }
-static inline void smp_wmb(void) {
+நிலையான உள்வரி வெறுமை smp_wmb(வெறுமை) {
     barrier();
 }
 
-static inline void writel(void *addr, u32 val) {
+நிலையான உள்வரி வெறுமை writel(வெறுமை *addr, u32 val) {
     barrier();
-    *(volatile u32 *)addr = val;
+    *(நிலையற்ற u32 *)addr = val;
 }
-static inline void writew(void *addr, u16 val) {
+நிலையான உள்வரி வெறுமை writew(வெறுமை *addr, u16 val) {
     barrier();
-    *(volatile u16 *)addr = val;
+    *(நிலையற்ற u16 *)addr = val;
 }
-static inline void writeb(void *addr, u8 val) {
+நிலையான உள்வரி வெறுமை writeb(வெறுமை *addr, u8 val) {
     barrier();
-    *(volatile u8 *)addr = val;
+    *(நிலையற்ற u8 *)addr = val;
 }
-static inline u64 readq(const void *addr) {
-    u64 val = *(volatile const u64 *)addr;
+நிலையான உள்வரி u64 readq(மாறிலி வெறுமை *addr) {
+    u64 val = *(நிலையற்ற மாறிலி u64 *)addr;
     barrier();
-    return val;
+    திரும்பு val;
 }
-static inline u32 readl(const void *addr) {
-    u32 val = *(volatile const u32 *)addr;
+நிலையான உள்வரி u32 readl(மாறிலி வெறுமை *addr) {
+    u32 val = *(நிலையற்ற மாறிலி u32 *)addr;
     barrier();
-    return val;
+    திரும்பு val;
 }
-static inline u16 readw(const void *addr) {
-    u16 val = *(volatile const u16 *)addr;
+நிலையான உள்வரி u16 readw(மாறிலி வெறுமை *addr) {
+    u16 val = *(நிலையற்ற மாறிலி u16 *)addr;
     barrier();
-    return val;
+    திரும்பு val;
 }
-static inline u8 readb(const void *addr) {
-    u8 val = *(volatile const u8 *)addr;
+நிலையான உள்வரி u8 readb(மாறிலி வெறுமை *addr) {
+    u8 val = *(நிலையற்ற மாறிலி u8 *)addr;
     barrier();
-    return val;
+    திரும்பு val;
 }
 
 // GDT bits
@@ -253,31 +253,31 @@ static inline u8 readb(const void *addr) {
 // GDT bits for segment limit (0-4Gig in 4K chunks)
 #define GDT_GRANLIMIT(v) (GDT_G | GDT_LIMIT((v) >> 12))
 
-struct descloc_s {
+கட்டமைப்பு descloc_s {
     u16 length;
     u32 addr;
 } PACKED;
 
-static inline void sgdt(struct descloc_s *desc) {
+நிலையான உள்வரி வெறுமை sgdt(கட்டமைப்பு descloc_s *desc) {
     asm("sgdtl %0" : "=m"(*desc));
 }
-static inline void lgdt(struct descloc_s *desc) {
+நிலையான உள்வரி வெறுமை lgdt(கட்டமைப்பு descloc_s *desc) {
     asm("lgdtl %0" : : "m"(*desc) : "memory");
 }
 
-static inline u8 get_a20(void) {
-    return (inb(PORT_A20) & A20_ENABLE_BIT) != 0;
+நிலையான உள்வரி u8 get_a20(வெறுமை) {
+    திரும்பு (inb(PORT_A20) & A20_ENABLE_BIT) != 0;
 }
 
-static inline u8 set_a20(u8 cond) {
+நிலையான உள்வரி u8 set_a20(u8 cond) {
     u8 val = inb(PORT_A20), a20_enabled = (val & A20_ENABLE_BIT) != 0;
-    if (a20_enabled != !!cond)
+    எனில் (a20_enabled != !!cond)
         outb(val ^ A20_ENABLE_BIT, PORT_A20);
-    return a20_enabled;
+    திரும்பு a20_enabled;
 }
 
 // x86.c
-void cpuid(u32 index, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx);
+வெறுமை cpuid(u32 index, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx);
 
 #endif // !__ASSEMBLY__
 

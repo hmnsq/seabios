@@ -4,194 +4,194 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_USB_HUB
-#include "output.h" // dprintf
-#include "string.h" // memset
-#include "usb.h" // struct usb_s
-#include "usb-hub.h" // struct usb_hub_descriptor
-#include "util.h" // timer_calc
+#அந்தர்பாவ "config.h" // CONFIG_USB_HUB
+#அந்தர்பாவ "output.h" // dprintf
+#அந்தர்பாவ "string.h" // memset
+#அந்தர்பாவ "usb.h" // struct usb_s
+#அந்தர்பாவ "usb-hub.h" // struct usb_hub_descriptor
+#அந்தர்பாவ "util.h" // timer_calc
 
-static int
-get_hub_desc(struct usb_pipe *pipe, struct usb_hub_descriptor *desc)
+நிலையான முழு
+get_hub_desc(கட்டமைப்பு usb_pipe *pipe, கட்டமைப்பு usb_hub_descriptor *desc)
 {
-    struct usb_ctrlrequest req;
+    கட்டமைப்பு usb_ctrlrequest req;
     req.bRequestType = USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_DEVICE;
     req.bRequest = USB_REQ_GET_DESCRIPTOR;
-    if (pipe->speed == USB_SUPERSPEED)
-        req.wValue = USB_DT_HUB3<<8;
-    else
-        req.wValue = USB_DT_HUB<<8;
+    எனில் (pipe->speed == USB_SUPERSPEED)
+        req.w_மதிப்பு = USB_DT_HUB3<<8;
+    இல்லையெனில்
+        req.w_மதிப்பு = USB_DT_HUB<<8;
     req.wIndex = 0;
-    req.wLength = sizeof(*desc);
-    return usb_send_default_control(pipe, &req, desc);
+    req.wLength = அளவு(*desc);
+    திரும்பு usb_send_default_control(pipe, &req, desc);
 }
 
-static int
-set_hub_depth(struct usb_pipe *pipe, u16 depth)
+நிலையான முழு
+set_hub_depth(கட்டமைப்பு usb_pipe *pipe, u16 depth)
 {
-    struct usb_ctrlrequest req;
+    கட்டமைப்பு usb_ctrlrequest req;
     req.bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_DEVICE;
     req.bRequest = HUB_REQ_SET_HUB_DEPTH;
-    req.wValue = depth;
+    req.w_மதிப்பு = depth;
     req.wIndex = 0;
     req.wLength = 0;
-    return usb_send_default_control(pipe, &req, NULL);
+    திரும்பு usb_send_default_control(pipe, &req, வெற்று);
 }
 
-static int
-set_port_feature(struct usbhub_s *hub, int port, int feature)
+நிலையான முழு
+set_port_feature(கட்டமைப்பு usbhub_s *hub, முழு port, முழு feature)
 {
-    struct usb_ctrlrequest req;
+    கட்டமைப்பு usb_ctrlrequest req;
     req.bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_OTHER;
     req.bRequest = USB_REQ_SET_FEATURE;
-    req.wValue = feature;
+    req.w_மதிப்பு = feature;
     req.wIndex = port + 1;
     req.wLength = 0;
     mutex_lock(&hub->lock);
-    int ret = usb_send_default_control(hub->usbdev->defpipe, &req, NULL);
+    முழு ret = usb_send_default_control(hub->usbdev->defpipe, &req, வெற்று);
     mutex_unlock(&hub->lock);
-    return ret;
+    திரும்பு ret;
 }
 
-static int
-clear_port_feature(struct usbhub_s *hub, int port, int feature)
+நிலையான முழு
+clear_port_feature(கட்டமைப்பு usbhub_s *hub, முழு port, முழு feature)
 {
-    struct usb_ctrlrequest req;
+    கட்டமைப்பு usb_ctrlrequest req;
     req.bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_OTHER;
     req.bRequest = USB_REQ_CLEAR_FEATURE;
-    req.wValue = feature;
+    req.w_மதிப்பு = feature;
     req.wIndex = port + 1;
     req.wLength = 0;
     mutex_lock(&hub->lock);
-    int ret = usb_send_default_control(hub->usbdev->defpipe, &req, NULL);
+    முழு ret = usb_send_default_control(hub->usbdev->defpipe, &req, வெற்று);
     mutex_unlock(&hub->lock);
-    return ret;
+    திரும்பு ret;
 }
 
-static int
-get_port_status(struct usbhub_s *hub, int port, struct usb_port_status *sts)
+நிலையான முழு
+get_port_status(கட்டமைப்பு usbhub_s *hub, முழு port, கட்டமைப்பு usb_port_status *sts)
 {
-    struct usb_ctrlrequest req;
+    கட்டமைப்பு usb_ctrlrequest req;
     req.bRequestType = USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_OTHER;
     req.bRequest = USB_REQ_GET_STATUS;
-    req.wValue = 0;
+    req.w_மதிப்பு = 0;
     req.wIndex = port + 1;
-    req.wLength = sizeof(*sts);
+    req.wLength = அளவு(*sts);
     mutex_lock(&hub->lock);
-    int ret = usb_send_default_control(hub->usbdev->defpipe, &req, sts);
+    முழு ret = usb_send_default_control(hub->usbdev->defpipe, &req, sts);
     mutex_unlock(&hub->lock);
-    return ret;
+    திரும்பு ret;
 }
 
 // Check if device attached to port
-static int
-usb_hub_detect(struct usbhub_s *hub, u32 port)
+நிலையான முழு
+usb_hub_detect(கட்டமைப்பு usbhub_s *hub, u32 port)
 {
-    struct usb_port_status sts;
-    int ret = get_port_status(hub, port, &sts);
-    if (ret) {
+    கட்டமைப்பு usb_port_status sts;
+    முழு ret = get_port_status(hub, port, &sts);
+    எனில் (ret) {
         dprintf(1, "Failure on hub port %d detect\n", port);
-        return -1;
+        திரும்பு -1;
     }
-    return (sts.wPortStatus & USB_PORT_STAT_CONNECTION) ? 1 : 0;
+    திரும்பு (sts.wPortStatus & USB_PORT_STAT_CONNECTION) ? 1 : 0;
 }
 
 // Disable port
-static void
-usb_hub_disconnect(struct usbhub_s *hub, u32 port)
+நிலையான வெறுமை
+usb_hub_disconnect(கட்டமைப்பு usbhub_s *hub, u32 port)
 {
-    int ret = clear_port_feature(hub, port, USB_PORT_FEAT_ENABLE);
-    if (ret)
+    முழு ret = clear_port_feature(hub, port, USB_PORT_FEAT_ENABLE);
+    எனில் (ret)
         dprintf(1, "Failure on hub port %d disconnect\n", port);
 }
 
 // Reset device on port
-static int
-usb_hub_reset(struct usbhub_s *hub, u32 port)
+நிலையான முழு
+usb_hub_reset(கட்டமைப்பு usbhub_s *hub, u32 port)
 {
-    int ret = set_port_feature(hub, port, USB_PORT_FEAT_RESET);
-    if (ret)
-        goto fail;
+    முழு ret = set_port_feature(hub, port, USB_PORT_FEAT_RESET);
+    எனில் (ret)
+        செல் fail;
 
     // Wait for reset to complete.
-    struct usb_port_status sts;
+    கட்டமைப்பு usb_port_status sts;
     u32 end = timer_calc(USB_TIME_DRST * 2);
-    for (;;) {
+    க்கு (;;) {
         ret = get_port_status(hub, port, &sts);
-        if (ret)
-            goto fail;
-        if (!(sts.wPortStatus & USB_PORT_STAT_RESET)
+        எனில் (ret)
+            செல் fail;
+        எனில் (!(sts.wPortStatus & USB_PORT_STAT_RESET)
             && (hub->usbdev->speed != USB_SUPERSPEED
                 || !(sts.wPortStatus & USB_PORT_STAT_LINK_MASK)))
-            break;
-        if (timer_check(end)) {
+            நிறுத்து;
+        எனில் (timer_check(end)) {
             warn_timeout();
-            goto fail;
+            செல் fail;
         }
         msleep(5);
     }
 
     // Reset complete.
-    if (!(sts.wPortStatus & USB_PORT_STAT_CONNECTION))
+    எனில் (!(sts.wPortStatus & USB_PORT_STAT_CONNECTION))
         // Device no longer present
-        return -1;
+        திரும்பு -1;
 
-    if (hub->usbdev->speed == USB_SUPERSPEED)
-        return USB_SUPERSPEED;
-    return ((sts.wPortStatus & USB_PORT_STAT_SPEED_MASK)
+    எனில் (hub->usbdev->speed == USB_SUPERSPEED)
+        திரும்பு USB_SUPERSPEED;
+    திரும்பு ((sts.wPortStatus & USB_PORT_STAT_SPEED_MASK)
             >> USB_PORT_STAT_SPEED_SHIFT);
 
 fail:
     dprintf(1, "Failure on hub port %d reset\n", port);
     usb_hub_disconnect(hub, port);
-    return -1;
+    திரும்பு -1;
 }
 
-static struct usbhub_op_s HubOp = {
+நிலையான கட்டமைப்பு usbhub_op_s HubOp = {
     .detect = usb_hub_detect,
     .reset = usb_hub_reset,
     .disconnect = usb_hub_disconnect,
 };
 
 // Configure a usb hub and then find devices connected to it.
-int
-usb_hub_setup(struct usbdevice_s *usbdev)
+முழு
+usb_hub_setup(கட்டமைப்பு usbdevice_s *usbdev)
 {
     ASSERT32FLAT();
-    if (!CONFIG_USB_HUB)
-        return -1;
+    எனில் (!CONFIG_USB_HUB)
+        திரும்பு -1;
 
-    struct usb_hub_descriptor desc;
-    int ret = get_hub_desc(usbdev->defpipe, &desc);
-    if (ret)
-        return ret;
+    கட்டமைப்பு usb_hub_descriptor desc;
+    முழு ret = get_hub_desc(usbdev->defpipe, &desc);
+    எனில் (ret)
+        திரும்பு ret;
 
-    struct usbhub_s hub;
-    memset(&hub, 0, sizeof(hub));
+    கட்டமைப்பு usbhub_s hub;
+    memset(&hub, 0, அளவு(hub));
     hub.usbdev = usbdev;
     hub.cntl = usbdev->defpipe->cntl;
     hub.portcount = desc.bNbrPorts;
     hub.op = &HubOp;
 
-    if (usbdev->speed == USB_SUPERSPEED) {
-        int depth = 0;
-        struct usbdevice_s *parent = usbdev->hub->usbdev;
-        while (parent) {
+    எனில் (usbdev->speed == USB_SUPERSPEED) {
+        முழு depth = 0;
+        கட்டமைப்பு usbdevice_s *parent = usbdev->hub->usbdev;
+        போது (parent) {
             depth++;
             parent = parent->hub->usbdev;
         }
 
         ret = set_hub_depth(usbdev->defpipe, depth);
-        if (ret)
-            return ret;
+        எனில் (ret)
+            திரும்பு ret;
     }
 
     // Turn on power to ports.
-    int port;
-    for (port=0; port<desc.bNbrPorts; port++) {
+    முழு port;
+    க்கு (port=0; port<desc.bNbrPorts; port++) {
         ret = set_port_feature(&hub, port, USB_PORT_FEAT_POWER);
-        if (ret)
-            return ret;
+        எனில் (ret)
+            திரும்பு ret;
     }
     // Wait for port power to stabilize.
     msleep(desc.bPwrOn2PwrGood * 2);
@@ -199,7 +199,7 @@ usb_hub_setup(struct usbdevice_s *usbdev)
     usb_enumerate(&hub);
 
     dprintf(1, "Initialized USB HUB (%d ports used)\n", hub.devcount);
-    if (hub.devcount)
-        return 0;
-    return -1;
+    எனில் (hub.devcount)
+        திரும்பு 0;
+    திரும்பு -1;
 }

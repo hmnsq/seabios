@@ -1,11 +1,11 @@
 #ifndef __SHA_H
 #define __SHA_H
 
-#include "types.h" // u32
+#அந்தர்பாவ "types.h" // u32
 
-void sha1(const u8 *data, u32 length, u8 *hash);
-void sha256(const u8 *data, u32 length, u8 *hash);
-void sha384(const u8 *data, u32 length, u8 *hash);
-void sha512(const u8 *data, u32 length, u8 *hash);
+வெறுமை sha1(மாறிலி u8 *data, u32 length, u8 *hash);
+வெறுமை sha256(மாறிலி u8 *data, u32 length, u8 *hash);
+வெறுமை sha384(மாறிலி u8 *data, u32 length, u8 *hash);
+வெறுமை sha512(மாறிலி u8 *data, u32 length, u8 *hash);
 
 #endif // sha.h

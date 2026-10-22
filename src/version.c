@@ -1,5 +1,5 @@
 // Place build generated version into a C variable
-#include "autoversion.h"
+#அந்தர்பாவ "autoversion.h"
 
-char VERSION[] = BUILD_VERSION;
-char BUILDINFO[] = BUILD_TOOLS;
+எழுத்து VERSION[] = BUILD_VERSION;
+எழுத்து BUILDINFO[] = BUILD_TOOLS;

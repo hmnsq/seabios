@@ -3,7 +3,7 @@
 
 #define PNP_SIGNATURE 0x506e5024 // $PnP
 
-struct pnpheader {
+கட்டமைப்பு pnpheader {
     u32 signature;
     u8 version;
     u8 length;

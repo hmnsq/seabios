@@ -4,11 +4,11 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_DEBUG_SERIAL
-#include "fw/paravirt.h" // RunningOnQEMU
-#include "output.h" // dprintf
-#include "serialio.h" // serial_debug_preinit
-#include "x86.h" // outb
+#அந்தர்பாவ "config.h" // CONFIG_DEBUG_SERIAL
+#அந்தர்பாவ "fw/paravirt.h" // RunningOnQEMU
+#அந்தர்பாவ "output.h" // dprintf
+#அந்தர்பாவ "serialio.h" // serial_debug_preinit
+#அந்தர்பாவ "x86.h" // outb
 
 
 /****************************************************************
@@ -18,35 +18,35 @@
 #define DEBUG_TIMEOUT 100000
 
 // Write to a serial port register
-static void
+நிலையான வெறுமை
 serial_debug_write(u8 offset, u8 val)
 {
-    if (CONFIG_DEBUG_SERIAL) {
+    எனில் (CONFIG_DEBUG_SERIAL) {
         outb(val, CONFIG_DEBUG_SERIAL_PORT + offset);
-    } else if (CONFIG_DEBUG_SERIAL_MMIO) {
+    } இல்லையெனில் எனில் (CONFIG_DEBUG_SERIAL_MMIO) {
         ASSERT32FLAT();
-        writeb((void*)CONFIG_DEBUG_SERIAL_MEM_ADDRESS + 4*offset, val);
+        writeb((வெறுமை*)CONFIG_DEBUG_SERIAL_MEM_ADDRESS + 4*offset, val);
     }
 }
 
 // Read from a serial port register
-static u8
+நிலையான u8
 serial_debug_read(u8 offset)
 {
-    if (CONFIG_DEBUG_SERIAL)
-        return inb(CONFIG_DEBUG_SERIAL_PORT + offset);
-    if (CONFIG_DEBUG_SERIAL_MMIO) {
+    எனில் (CONFIG_DEBUG_SERIAL)
+        திரும்பு inb(CONFIG_DEBUG_SERIAL_PORT + offset);
+    எனில் (CONFIG_DEBUG_SERIAL_MMIO) {
         ASSERT32FLAT();
-        return readb((void*)CONFIG_DEBUG_SERIAL_MEM_ADDRESS + 4*offset);
+        திரும்பு readb((வெறுமை*)CONFIG_DEBUG_SERIAL_MEM_ADDRESS + 4*offset);
     }
 }
 
 // Setup the debug serial port for output.
-void
-serial_debug_preinit(void)
+வெறுமை
+serial_debug_preinit(வெறுமை)
 {
-    if (!CONFIG_DEBUG_SERIAL && (!CONFIG_DEBUG_SERIAL_MMIO || MODESEGMENT))
-        return;
+    எனில் (!CONFIG_DEBUG_SERIAL && (!CONFIG_DEBUG_SERIAL_MMIO || MODESEGMENT))
+        திரும்பு;
     // setup for serial logging: 8N1
     u8 oldparam, newparam = 0x03;
     oldparam = serial_debug_read(SEROFF_LCR);
@@ -56,44 +56,44 @@ serial_debug_preinit(void)
     oldier = serial_debug_read(SEROFF_IER);
     serial_debug_write(SEROFF_IER, newier);
 
-    if (oldparam != newparam || oldier != newier)
+    எனில் (oldparam != newparam || oldier != newier)
         dprintf(1, "Changing serial settings was %x/%x now %x/%x\n"
                 , oldparam, oldier, newparam, newier);
 }
 
 // Write a character to the serial port.
-static void
-serial_debug(char c)
+நிலையான வெறுமை
+serial_debug(எழுத்து c)
 {
-    if (!CONFIG_DEBUG_SERIAL && (!CONFIG_DEBUG_SERIAL_MMIO || MODESEGMENT))
-        return;
-    int timeout = DEBUG_TIMEOUT;
-    while ((serial_debug_read(SEROFF_LSR) & 0x20) != 0x20)
-        if (!timeout--)
+    எனில் (!CONFIG_DEBUG_SERIAL && (!CONFIG_DEBUG_SERIAL_MMIO || MODESEGMENT))
+        திரும்பு;
+    முழு timeout = DEBUG_TIMEOUT;
+    போது ((serial_debug_read(SEROFF_LSR) & 0x20) != 0x20)
+        எனில் (!timeout--)
             // Ran out of time.
-            return;
+            திரும்பு;
     serial_debug_write(SEROFF_DATA, c);
 }
 
-void
-serial_debug_putc(char c)
+வெறுமை
+serial_debug_putc(எழுத்து c)
 {
-    if (c == '\n')
+    எனில் (c == '\n')
         serial_debug('\r');
     serial_debug(c);
 }
 
 // Make sure all serial port writes have been completely sent.
-void
-serial_debug_flush(void)
+வெறுமை
+serial_debug_flush(வெறுமை)
 {
-    if (!CONFIG_DEBUG_SERIAL && (!CONFIG_DEBUG_SERIAL_MMIO || MODESEGMENT))
-        return;
-    int timeout = DEBUG_TIMEOUT;
-    while ((serial_debug_read(SEROFF_LSR) & 0x60) != 0x60)
-        if (!timeout--)
+    எனில் (!CONFIG_DEBUG_SERIAL && (!CONFIG_DEBUG_SERIAL_MMIO || MODESEGMENT))
+        திரும்பு;
+    முழு timeout = DEBUG_TIMEOUT;
+    போது ((serial_debug_read(SEROFF_LSR) & 0x60) != 0x60)
+        எனில் (!timeout--)
             // Ran out of time.
-            return;
+            திரும்பு;
 }
 
 
@@ -103,27 +103,27 @@ serial_debug_flush(void)
 
 u16 DebugOutputPort VARFSEG = 0x402;
 
-void
-qemu_debug_preinit(void)
+வெறுமை
+qemu_debug_preinit(வெறுமை)
 {
     /* Xen doesn't support checking if debug output is active. */
-    if (runningOnXen())
-        return;
+    எனில் (runningOnXen())
+        திரும்பு;
 
     /* Check if the QEMU debug output port is active */
-    if (CONFIG_DEBUG_IO &&
+    எனில் (CONFIG_DEBUG_IO &&
         inb(GET_GLOBAL(DebugOutputPort)) != QEMU_DEBUGCON_READBACK)
         DebugOutputPort = 0;
 }
 
 // Write a character to the special debugging port.
-void
-qemu_debug_putc(char c)
+வெறுமை
+qemu_debug_putc(எழுத்து c)
 {
-    if (!CONFIG_DEBUG_IO || !runningOnQEMU())
-        return;
+    எனில் (!CONFIG_DEBUG_IO || !runningOnQEMU())
+        திரும்பு;
     u16 port = GET_GLOBAL(DebugOutputPort);
-    if (port)
+    எனில் (port)
         // Send character to debug port.
         outb(c, port);
 }
