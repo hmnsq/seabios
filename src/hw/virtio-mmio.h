@@ -1,9 +1,9 @@
 #ifndef _VIRTIO_MMIO_H
 #define _VIRTIO_MMIO_H
 
-struct vp_device;
+संरचना vp_device;
 
-typedef struct virtio_mmio_cfg {
+प्रकारनिर्देश संरचना virtio_mmio_cfg {
     u32 magic;
     u32 version;
     u32 device_id;
@@ -20,8 +20,8 @@ typedef struct virtio_mmio_cfg {
     u32 res_2c;
 
     u32 queue_select;
-    u32 queue_num_max;
-    u32 queue_num;
+    u32 queue_अङ्कः_max;
+    u32 queue_अङ्कः;
     u32 legacy_queue_align;
 
     u32 legacy_queue_pfn;
@@ -70,8 +70,8 @@ typedef struct virtio_mmio_cfg {
     u32 config_generation;
 } virtio_mmio_cfg;
 
-void virtio_mmio_setup_acpi(void);
-void virtio_mmio_setup_one(u64 mmio);
-void vp_init_mmio(struct vp_device *vp, void *mmio);
+शून्य virtio_mmio_setup_acpi(शून्य);
+शून्य virtio_mmio_setup_one(u64 mmio);
+शून्य vp_init_mmio(संरचना vp_device *vp, शून्य *mmio);
 
 #endif /* _VIRTIO_MMIO_H */

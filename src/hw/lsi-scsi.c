@@ -10,20 +10,20 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_GLOBALFLAT
-#include "block.h" // struct drive_s
-#include "blockcmd.h" // scsi_drive_setup
-#include "config.h" // CONFIG_*
-#include "fw/paravirt.h" // runningOnQEMU
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "pcidevice.h" // foreachpci
-#include "pci_ids.h" // PCI_DEVICE_ID_VIRTIO_BLK
-#include "pci_regs.h" // PCI_VENDOR_ID
-#include "stacks.h" // run_thread
-#include "std/disk.h" // DISK_RET_SUCCESS
-#include "string.h" // memset
-#include "util.h" // usleep
+#अन्तर्भाव "biosvar.h" // GET_GLOBALFLAT
+#अन्तर्भाव "block.h" // struct drive_s
+#अन्तर्भाव "blockcmd.h" // scsi_drive_setup
+#अन्तर्भाव "config.h" // CONFIG_*
+#अन्तर्भाव "fw/paravirt.h" // runningOnQEMU
+#अन्तर्भाव "malloc.h" // free
+#अन्तर्भाव "output.h" // dprintf
+#अन्तर्भाव "pcidevice.h" // foreachpci
+#अन्तर्भाव "pci_ids.h" // PCI_DEVICE_ID_VIRTIO_BLK
+#अन्तर्भाव "pci_regs.h" // PCI_VENDOR_ID
+#अन्तर्भाव "stacks.h" // run_thread
+#अन्तर्भाव "std/disk.h" // DISK_RET_SUCCESS
+#अन्तर्भाव "string.h" // memset
+#अन्तर्भाव "util.h" // usleep
 
 #define LSI_REG_DSTAT     0x0c
 #define LSI_REG_ISTAT0    0x14
@@ -43,30 +43,30 @@
 #define LSI_ISTAT0_SRST   0x40
 #define LSI_ISTAT0_ABRT   0x80
 
-struct lsi_lun_s {
-    struct drive_s drive;
-    struct pci_device *pci;
+संरचना lsi_lun_s {
+    संरचना drive_s drive;
+    संरचना pci_device *pci;
     u32 iobase;
     u8 target;
     u8 lun;
 };
 
-int
-lsi_scsi_process_op(struct disk_op_s *op)
+पूर्णाङ्क
+lsi_scsi_process_op(संरचना disk_op_s *op)
 {
-    if (!CONFIG_LSI_SCSI)
-        return DISK_RET_EBADTRACK;
-    struct lsi_lun_s *llun_gf =
-        container_of(op->drive_fl, struct lsi_lun_s, drive);
+    सचे (!CONFIG_LSI_SCSI)
+        पटिनिवत्त DISK_RET_EBADTRACK;
+    संरचना lsi_lun_s *llun_gf =
+        container_of(op->drive_fl, संरचना lsi_lun_s, drive);
     u16 target = GET_GLOBALFLAT(llun_gf->target);
     u16 lun = GET_GLOBALFLAT(llun_gf->lun);
     u8 cdbcmd[16];
-    int blocksize = scsi_fill_cmd(op, cdbcmd, sizeof(cdbcmd));
-    if (blocksize < 0)
-        return default_process_op(op);
+    पूर्णाङ्क blocksize = scsi_fill_cmd(op, cdbcmd, परिमाण(cdbcmd));
+    सचे (blocksize < 0)
+        पटिनिवत्त default_process_op(op);
     u32 iobase = GET_GLOBALFLAT(llun_gf->iobase);
     u32 dma = ((scsi_is_read(op) ? 0x01000000 : 0x00000000) |
-               (op->count * blocksize));
+               (op->गणनम् * blocksize));
     u8 msgout[] = {
         0x80 | lun,                 // select lun
         0x08,
@@ -111,32 +111,32 @@ lsi_scsi_process_op(struct disk_op_s *op)
     outb((dsp >> 16) & 0xff, iobase + LSI_REG_DSP2);
     outb((dsp >> 24) & 0xff, iobase + LSI_REG_DSP3);
 
-    for (;;) {
+    अत्थाय (;;) {
         u8 dstat = inb(iobase + LSI_REG_DSTAT);
         u8 sist0 = inb(iobase + LSI_REG_SIST0);
         u8 sist1 = inb(iobase + LSI_REG_SIST1);
-        if (sist0 || sist1) {
-            goto fail;
+        सचे (sist0 || sist1) {
+            गच्छ fail;
         }
-        if (dstat & 0x04) {
-            break;
+        सचे (dstat & 0x04) {
+            भङ्ग;
         }
         usleep(5);
     }
 
-    if (msgin == 0 && status == 0) {
-        return DISK_RET_SUCCESS;
+    सचे (msgin == 0 && status == 0) {
+        पटिनिवत्त DISK_RET_SUCCESS;
     }
 
 fail:
-    return DISK_RET_EBADTRACK;
+    पटिनिवत्त DISK_RET_EBADTRACK;
 }
 
-static void
-lsi_scsi_init_lun(struct lsi_lun_s *llun, struct pci_device *pci, u32 iobase,
+स्थिर शून्य
+lsi_scsi_init_lun(संरचना lsi_lun_s *llun, संरचना pci_device *pci, u32 iobase,
                   u8 target, u8 lun)
 {
-    memset(llun, 0, sizeof(*llun));
+    memset(llun, 0, परिमाण(*llun));
     llun->drive.type = DTYPE_LSI_SCSI;
     llun->drive.cntl_id = pci->bdf;
     llun->pci = pci;
@@ -145,53 +145,53 @@ lsi_scsi_init_lun(struct lsi_lun_s *llun, struct pci_device *pci, u32 iobase,
     llun->iobase = iobase;
 }
 
-static int
-lsi_scsi_add_lun(u32 lun, struct drive_s *tmpl_drv)
+स्थिर पूर्णाङ्क
+lsi_scsi_add_lun(u32 lun, संरचना drive_s *tmpl_drv)
 {
-    struct lsi_lun_s *tmpl_llun =
-        container_of(tmpl_drv, struct lsi_lun_s, drive);
-    struct lsi_lun_s *llun = malloc_fseg(sizeof(*llun));
-    if (!llun) {
+    संरचना lsi_lun_s *tmpl_llun =
+        container_of(tmpl_drv, संरचना lsi_lun_s, drive);
+    संरचना lsi_lun_s *llun = malloc_fseg(परिमाण(*llun));
+    सचे (!llun) {
         warn_noalloc();
-        return -1;
+        पटिनिवत्त -1;
     }
     lsi_scsi_init_lun(llun, tmpl_llun->pci, tmpl_llun->iobase,
                       tmpl_llun->target, lun);
 
     boot_lchs_find_scsi_device(llun->pci, llun->target, llun->lun,
                                &(llun->drive.lchs));
-    char *name = znprintf(MAXDESCSIZE, "lsi %pP %d:%d",
+    वर्ण *name = znprintf(MAXDESCSIZE, "lsi %pP %d:%d",
                           llun->pci, llun->target, llun->lun);
-    int prio = bootprio_find_scsi_device(llun->pci, llun->target, llun->lun);
-    int ret = scsi_drive_setup(&llun->drive, name, prio);
-    free(name);
-    if (ret)
-        goto fail;
-    return 0;
+    पूर्णाङ्क prio = bootprio_find_scsi_device(llun->pci, llun->target, llun->lun);
+    पूर्णाङ्क ret = scsi_drive_setup(&llun->drive, name, prio);
+    मुक्त(name);
+    सचे (ret)
+        गच्छ fail;
+    पटिनिवत्त 0;
 
 fail:
-    free(llun);
-    return -1;
+    मुक्त(llun);
+    पटिनिवत्त -1;
 }
 
-static void
-lsi_scsi_scan_target(struct pci_device *pci, u32 iobase, u8 target)
+स्थिर शून्य
+lsi_scsi_scan_target(संरचना pci_device *pci, u32 iobase, u8 target)
 {
-    struct lsi_lun_s llun0;
+    संरचना lsi_lun_s llun0;
 
     lsi_scsi_init_lun(&llun0, pci, iobase, target, 0);
 
-    if (scsi_rep_luns_scan(&llun0.drive, lsi_scsi_add_lun) < 0)
+    सचे (scsi_rep_luns_scan(&llun0.drive, lsi_scsi_add_lun) < 0)
         scsi_sequential_scan(&llun0.drive, 8, lsi_scsi_add_lun);
 }
 
-static void
-init_lsi_scsi(void *data)
+स्थिर शून्य
+init_lsi_scsi(शून्य *data)
 {
-    struct pci_device *pci = data;
+    संरचना pci_device *pci = data;
     u32 iobase = pci_enable_iobar(pci, PCI_BASE_ADDRESS_0);
-    if (!iobase)
-        return;
+    सचे (!iobase)
+        पटिनिवत्त;
     pci_enable_busmaster(pci);
 
     dprintf(1, "found lsi53c895a at %pP, io @ %x\n", pci, iobase);
@@ -199,25 +199,25 @@ init_lsi_scsi(void *data)
     // reset
     outb(LSI_ISTAT0_SRST, iobase + LSI_REG_ISTAT0);
 
-    int i;
-    for (i = 0; i < 7; i++)
+    पूर्णाङ्क i;
+    अत्थाय (i = 0; i < 7; i++)
         lsi_scsi_scan_target(pci, iobase, i);
 }
 
-void
-lsi_scsi_setup(void)
+शून्य
+lsi_scsi_setup(शून्य)
 {
     ASSERT32FLAT();
-    if (!CONFIG_LSI_SCSI || !runningOnQEMU())
-        return;
+    सचे (!CONFIG_LSI_SCSI || !runningOnQEMU())
+        पटिनिवत्त;
 
     dprintf(3, "init lsi53c895a\n");
 
-    struct pci_device *pci;
+    संरचना pci_device *pci;
     foreachpci(pci) {
-        if (pci->vendor != PCI_VENDOR_ID_LSI_LOGIC
+        सचे (pci->vendor != PCI_VENDOR_ID_LSI_LOGIC
             || pci->device != PCI_DEVICE_ID_LSI_53C895A)
-            continue;
+            अनुवर्त;
         run_thread(init_lsi_scsi, pci);
     }
 }

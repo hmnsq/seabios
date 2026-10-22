@@ -14,17 +14,17 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_GLOBALFLAT
-#include "block.h" // DTYPE_USB
-#include "blockcmd.h" // cdb_read
-#include "config.h" // CONFIG_USB_UAS
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "std/disk.h" // DISK_RET_SUCCESS
-#include "string.h" // memset
-#include "usb.h" // struct usb_s
-#include "usb-uas.h" // usb_uas_init
-#include "util.h" // bootprio_find_usb
+#अन्तर्भाव "biosvar.h" // GET_GLOBALFLAT
+#अन्तर्भाव "block.h" // DTYPE_USB
+#अन्तर्भाव "blockcmd.h" // cdb_read
+#अन्तर्भाव "config.h" // CONFIG_USB_UAS
+#अन्तर्भाव "malloc.h" // free
+#अन्तर्भाव "output.h" // dprintf
+#अन्तर्भाव "std/disk.h" // DISK_RET_SUCCESS
+#अन्तर्भाव "string.h" // memset
+#अन्तर्भाव "usb.h" // struct usb_s
+#अन्तर्भाव "usb-uas.h" // usb_uas_init
+#अन्तर्भाव "util.h" // bootprio_find_usb
 
 #define UAS_UI_COMMAND              0x01
 #define UAS_UI_SENSE                0x03
@@ -38,13 +38,13 @@
 #define UAS_PIPE_ID_DATA_IN         0x03
 #define UAS_PIPE_ID_DATA_OUT        0x04
 
-typedef struct {
+प्रकारनिर्देश संरचना {
     u8    id;
     u8    reserved;
     u16   tag;
 } PACKED  uas_ui_header;
 
-typedef struct {
+प्रकारनिर्देश संरचना {
     u8    prio_taskattr;   /* 6:3 priority, 2:0 task attribute   */
     u8    reserved_1;
     u8    add_cdb_length;  /* 7:2 additional adb length (dwords) */
@@ -54,7 +54,7 @@ typedef struct {
     u8    add_cdb[];
 } PACKED  uas_ui_command;
 
-typedef struct {
+प्रकारनिर्देश संरचना {
     u16   status_qualifier;
     u8    status;
     u8    reserved[7];
@@ -62,21 +62,21 @@ typedef struct {
     u8    sense_data[18];
 } PACKED  uas_ui_sense;
 
-typedef struct {
+प्रकारनिर्देश संरचना {
     u16   add_response_info;
     u8    response_code;
 } PACKED  uas_ui_response;
 
-typedef struct {
+प्रकारनिर्देश संरचना {
     u8    function;
     u8    reserved;
     u16   task_tag;
     u8    lun[8];
 } PACKED  uas_ui_task_mgmt;
 
-typedef struct {
+प्रकारनिर्देश संरचना {
     uas_ui_header  hdr;
-    union {
+    सङ्घ {
         uas_ui_command   command;
         uas_ui_sense     sense;
         uas_ui_task_mgmt task;
@@ -84,101 +84,101 @@ typedef struct {
     };
 } PACKED  uas_ui;
 
-struct uasdrive_s {
-    struct drive_s drive;
-    struct usbdevice_s *usbdev;
-    struct usb_pipe *command, *status, *data_in, *data_out;
+संरचना uasdrive_s {
+    संरचना drive_s drive;
+    संरचना usbdevice_s *usbdev;
+    संरचना usb_pipe *command, *status, *data_in, *data_out;
     u32 lun;
 };
 
-int
-uas_process_op(struct disk_op_s *op)
+पूर्णाङ्क
+uas_process_op(संरचना disk_op_s *op)
 {
-    if (!CONFIG_USB_UAS)
-        return DISK_RET_EBADTRACK;
+    सचे (!CONFIG_USB_UAS)
+        पटिनिवत्त DISK_RET_EBADTRACK;
 
-    struct uasdrive_s *drive_gf = container_of(
-        op->drive_fl, struct uasdrive_s, drive);
+    संरचना uasdrive_s *drive_gf = container_of(
+        op->drive_fl, संरचना uasdrive_s, drive);
 
     uas_ui ui;
-    memset(&ui, 0, sizeof(ui));
+    memset(&ui, 0, परिमाण(ui));
     ui.hdr.id = UAS_UI_COMMAND;
     ui.hdr.tag = 0xdead;
     ui.command.lun[1] = GET_GLOBALFLAT(drive_gf->lun);
-    int blocksize = scsi_fill_cmd(op, ui.command.cdb, sizeof(ui.command.cdb));
-    if (blocksize < 0)
-        return default_process_op(op);
-    int ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->command),
+    पूर्णाङ्क blocksize = scsi_fill_cmd(op, ui.command.cdb, परिमाण(ui.command.cdb));
+    सचे (blocksize < 0)
+        पटिनिवत्त default_process_op(op);
+    पूर्णाङ्क ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->command),
                             USB_DIR_OUT, MAKE_FLATPTR(GET_SEG(SS), &ui),
-                            sizeof(ui.hdr) + sizeof(ui.command));
-    if (ret) {
+                            परिमाण(ui.hdr) + परिमाण(ui.command));
+    सचे (ret) {
         dprintf(1, "uas: command send fail");
-        goto fail;
+        गच्छ fail;
     }
 
-    memset(&ui, 0xff, sizeof(ui));
+    memset(&ui, 0xff, परिमाण(ui));
     ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->status),
-                        USB_DIR_IN, MAKE_FLATPTR(GET_SEG(SS), &ui), sizeof(ui));
-    if (ret) {
+                        USB_DIR_IN, MAKE_FLATPTR(GET_SEG(SS), &ui), परिमाण(ui));
+    सचे (ret) {
         dprintf(1, "uas: status recv fail");
-        goto fail;
+        गच्छ fail;
     }
 
-    switch (ui.hdr.id) {
-    case UAS_UI_SENSE:
-        goto have_sense;
-    case UAS_UI_READ_READY:
+    विकल्प (ui.hdr.id) {
+    पक्ष UAS_UI_SENSE:
+        गच्छ have_sense;
+    पक्ष UAS_UI_READ_READY:
         ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->data_in),
-                            USB_DIR_IN, op->buf_fl, op->count * blocksize);
-        if (ret) {
+                            USB_DIR_IN, op->buf_fl, op->गणनम् * blocksize);
+        सचे (ret) {
             dprintf(1, "uas: data read fail");
-            goto fail;
+            गच्छ fail;
         }
-        break;
-    case UAS_UI_WRITE_READY:
+        भङ्ग;
+    पक्ष UAS_UI_WRITE_READY:
         ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->data_out),
-                            USB_DIR_OUT, op->buf_fl, op->count * blocksize);
-        if (ret) {
+                            USB_DIR_OUT, op->buf_fl, op->गणनम् * blocksize);
+        सचे (ret) {
             dprintf(1, "uas: data write fail");
-            goto fail;
+            गच्छ fail;
         }
-        break;
-    default:
+        भङ्ग;
+    स्वभाव:
         dprintf(1, "uas: unknown status ui id %d", ui.hdr.id);
-        goto fail;
+        गच्छ fail;
     }
 
-    memset(&ui, 0xff, sizeof(ui));
+    memset(&ui, 0xff, परिमाण(ui));
     ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->status),
-                        USB_DIR_IN, MAKE_FLATPTR(GET_SEG(SS), &ui), sizeof(ui));
-    if (ret) {
+                        USB_DIR_IN, MAKE_FLATPTR(GET_SEG(SS), &ui), परिमाण(ui));
+    सचे (ret) {
         dprintf(1, "uas: status recv fail");
-        goto fail;
+        गच्छ fail;
     }
-    if (ui.hdr.id != UAS_UI_SENSE) {
+    सचे (ui.hdr.id != UAS_UI_SENSE) {
         dprintf(1, "uas: expected sense ui, got ui id %d", ui.hdr.id);
-        goto fail;
+        गच्छ fail;
     }
 
 have_sense:
-    if (ui.sense.status == 0) {
-        return DISK_RET_SUCCESS;
+    सचे (ui.sense.status == 0) {
+        पटिनिवत्त DISK_RET_SUCCESS;
     }
 
 fail:
-    return DISK_RET_EBADTRACK;
+    पटिनिवत्त DISK_RET_EBADTRACK;
 }
 
-static void
-uas_init_lun(struct uasdrive_s *drive, struct usbdevice_s *usbdev,
-             struct usb_pipe *command, struct usb_pipe *status,
-             struct usb_pipe *data_in, struct usb_pipe *data_out,
+स्थिर शून्य
+uas_init_lun(संरचना uasdrive_s *drive, संरचना usbdevice_s *usbdev,
+             संरचना usb_pipe *command, संरचना usb_pipe *status,
+             संरचना usb_pipe *data_in, संरचना usb_pipe *data_out,
              u32 lun)
 {
-    memset(drive, 0, sizeof(*drive));
-    if (usb_32bit_pipe(data_in))
+    memset(drive, 0, परिमाण(*drive));
+    सचे (usb_32bit_pipe(data_in))
         drive->drive.type = DTYPE_UAS_32;
-    else
+    अञ्ञथा
         drive->drive.type = DTYPE_UAS;
     drive->usbdev = usbdev;
     drive->command = command;
@@ -188,102 +188,102 @@ uas_init_lun(struct uasdrive_s *drive, struct usbdevice_s *usbdev,
     drive->lun = lun;
 }
 
-static int
-uas_add_lun(u32 lun, struct drive_s *tmpl_drv)
+स्थिर पूर्णाङ्क
+uas_add_lun(u32 lun, संरचना drive_s *tmpl_drv)
 {
-    struct uasdrive_s *tmpl_lun =
-        container_of(tmpl_drv, struct uasdrive_s, drive);
-    struct uasdrive_s *drive = malloc_fseg(sizeof(*drive));
-    if (!drive) {
+    संरचना uasdrive_s *tmpl_lun =
+        container_of(tmpl_drv, संरचना uasdrive_s, drive);
+    संरचना uasdrive_s *drive = malloc_fseg(परिमाण(*drive));
+    सचे (!drive) {
         warn_noalloc();
-        return -1;
+        पटिनिवत्त -1;
     }
     uas_init_lun(drive, tmpl_lun->usbdev,
                  tmpl_lun->command, tmpl_lun->status,
                  tmpl_lun->data_in, tmpl_lun->data_out,
                  lun);
 
-    int prio = bootprio_find_usb(drive->usbdev, drive->lun);
-    int ret = scsi_drive_setup(&drive->drive, "USB UAS", prio);
-    if (ret) {
-        free(drive);
-        return -1;
+    पूर्णाङ्क prio = bootprio_find_usb(drive->usbdev, drive->lun);
+    पूर्णाङ्क ret = scsi_drive_setup(&drive->drive, "USB UAS", prio);
+    सचे (ret) {
+        मुक्त(drive);
+        पटिनिवत्त -1;
     }
-    return 0;
+    पटिनिवत्त 0;
 }
 
-int
-usb_uas_setup(struct usbdevice_s *usbdev)
+पूर्णाङ्क
+usb_uas_setup(संरचना usbdevice_s *usbdev)
 {
-    if (!CONFIG_USB_UAS)
-        return -1;
+    सचे (!CONFIG_USB_UAS)
+        पटिनिवत्त -1;
 
     // Verify right kind of device
-    struct usb_interface_descriptor *iface = usbdev->iface;
-    if (iface->bInterfaceSubClass != US_SC_SCSI ||
+    संरचना usb_interface_descriptor *iface = usbdev->iface;
+    सचे (iface->bInterfaceSubClass != US_SC_SCSI ||
         iface->bInterfaceProtocol != US_PR_UAS) {
         dprintf(1, "Unsupported UAS device (subclass=%02x proto=%02x)\n"
                 , iface->bInterfaceSubClass, iface->bInterfaceProtocol);
-        return -1;
+        पटिनिवत्त -1;
     }
 
     /* find & allocate pipes */
-    struct usb_endpoint_descriptor *ep = NULL;
-    struct usb_pipe *command = NULL;
-    struct usb_pipe *status = NULL;
-    struct usb_pipe *data_in = NULL;
-    struct usb_pipe *data_out = NULL;
+    संरचना usb_endpoint_descriptor *ep = रिक्त;
+    संरचना usb_pipe *command = रिक्त;
+    संरचना usb_pipe *status = रिक्त;
+    संरचना usb_pipe *data_in = रिक्त;
+    संरचना usb_pipe *data_out = रिक्त;
     u8 *desc = (u8*)iface;
-    while (desc) {
+    याव (desc) {
         desc += desc[0];
-        switch (desc[1]) {
-        case USB_DT_ENDPOINT:
-            ep = (void*)desc;
-            break;
-        case USB_DT_ENDPOINT_COMPANION:
+        विकल्प (desc[1]) {
+        पक्ष USB_DT_ENDPOINT:
+            ep = (शून्य*)desc;
+            भङ्ग;
+        पक्ष USB_DT_ENDPOINT_COMPANION:
             /* No support (yet) for usb3 streams */
             dprintf(1, "Superspeed UAS devices not supported (yet)\n");
-            goto fail;
-        case 0x24:
-            switch (desc[2]) {
-            case UAS_PIPE_ID_COMMAND:
+            गच्छ fail;
+        पक्ष 0x24:
+            विकल्प (desc[2]) {
+            पक्ष UAS_PIPE_ID_COMMAND:
                 command = usb_alloc_pipe(usbdev, ep);
-                break;
-            case UAS_PIPE_ID_STATUS:
+                भङ्ग;
+            पक्ष UAS_PIPE_ID_STATUS:
                 status = usb_alloc_pipe(usbdev, ep);
-                break;
-            case UAS_PIPE_ID_DATA_IN:
+                भङ्ग;
+            पक्ष UAS_PIPE_ID_DATA_IN:
                 data_in = usb_alloc_pipe(usbdev, ep);
-                break;
-            case UAS_PIPE_ID_DATA_OUT:
+                भङ्ग;
+            पक्ष UAS_PIPE_ID_DATA_OUT:
                 data_out = usb_alloc_pipe(usbdev, ep);
-                break;
-            default:
-                goto fail;
+                भङ्ग;
+            स्वभाव:
+                गच्छ fail;
             }
-            break;
-        default:
-            desc = NULL;
-            break;
+            भङ्ग;
+        स्वभाव:
+            desc = रिक्त;
+            भङ्ग;
         }
     }
-    if (!command || !status || !data_in || !data_out)
-        goto fail;
+    सचे (!command || !status || !data_in || !data_out)
+        गच्छ fail;
 
-    struct uasdrive_s lun0;
+    संरचना uasdrive_s lun0;
     uas_init_lun(&lun0, usbdev, command, status, data_in, data_out, 0);
-    int ret = scsi_rep_luns_scan(&lun0.drive, uas_add_lun);
-    if (ret <= 0) {
+    पूर्णाङ्क ret = scsi_rep_luns_scan(&lun0.drive, uas_add_lun);
+    सचे (ret <= 0) {
         dprintf(1, "Unable to configure UAS drive.\n");
-        goto fail;
+        गच्छ fail;
     }
 
-    return 0;
+    पटिनिवत्त 0;
 
 fail:
     usb_free_pipe(usbdev, command);
     usb_free_pipe(usbdev, status);
     usb_free_pipe(usbdev, data_in);
     usb_free_pipe(usbdev, data_out);
-    return -1;
+    पटिनिवत्त -1;
 }
