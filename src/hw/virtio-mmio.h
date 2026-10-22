@@ -1,9 +1,9 @@
 #ifndef _VIRTIO_MMIO_H
 #define _VIRTIO_MMIO_H
 
-struct vp_device;
+بنية vp_device;
 
-typedef struct virtio_mmio_cfg {
+تعريفنوع بنية virtio_mmio_cfg {
     u32 magic;
     u32 version;
     u32 device_id;
@@ -70,8 +70,8 @@ typedef struct virtio_mmio_cfg {
     u32 config_generation;
 } virtio_mmio_cfg;
 
-void virtio_mmio_setup_acpi(void);
-void virtio_mmio_setup_one(u64 mmio);
-void vp_init_mmio(struct vp_device *vp, void *mmio);
+فراغ virtio_mmio_setup_acpi(فراغ);
+فراغ virtio_mmio_setup_one(u64 mmio);
+فراغ vp_init_mmio(بنية vp_device *vp, فراغ *mmio);
 
 #endif /* _VIRTIO_MMIO_H */

@@ -32,8 +32,8 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 ///
 #pragma pack(1)
 
-typedef UINT8                       SERIAL_MODE;
-typedef UINT8                       PARALLEL_MODE;
+تعريفنوع UINT8                       SERIAL_MODE;
+تعريفنوع UINT8                       PARALLEL_MODE;
 
 #define EFI_COMPATIBILITY16_TABLE_SIGNATURE SIGNATURE_32 ('I', 'F', 'E', '$')
 
@@ -45,7 +45,7 @@ typedef UINT8                       PARALLEL_MODE;
 /// thunking by using EFI_LEGACY_BIOS_PROTOCOL.FarCall86() with the 32-bit physical
 /// entry point.
 ///
-typedef struct {
+تعريفنوع بنية {
   ///
   /// The string "$EFI" denotes the start of the EfiCompatibility table. Byte 0 is "I," byte
   /// 1 is "F," byte 2 is "E," and byte 3 is "$" and is normally accessed as a DWORD or UINT32.
@@ -259,7 +259,7 @@ typedef struct {
 /// Compatibility Support Module Specification / 0.97 version] 
 /// has been changed to "Legacy16" since keeping backward compatible.
 ///
-typedef enum {
+تعريفنوع تعداد {
   ///
   /// Causes the Compatibility16 code to do any internal initialization required.
   /// Input:
@@ -368,7 +368,7 @@ typedef enum {
 ///
 /// EFI_DISPATCH_OPROM_TABLE
 ///
-typedef struct {
+تعريفنوع بنية {
   UINT16  PnPInstallationCheckSegment;  ///< A pointer to the PnpInstallationCheck data structure.
   UINT16  PnPInstallationCheckOffset;   ///< A pointer to the PnpInstallationCheck data structure.
   UINT16  OpromSegment;                 ///< The segment where the OpROM was placed. Offset is assumed to be 3.
@@ -389,7 +389,7 @@ typedef struct {
 ///
 /// EFI_TO_COMPATIBILITY16_INIT_TABLE
 ///
-typedef struct {
+تعريفنوع بنية {
   ///
   /// Starting address of memory under 1 MB. The ending address is assumed to be 640 KB or 0x9FFFF.
   ///
@@ -449,7 +449,7 @@ typedef struct {
 ///
 /// DEVICE_PRODUCER_SERIAL.
 ///
-typedef struct {
+تعريفنوع بنية {
   UINT16                            Address;    ///< I/O address assigned to the serial port.
   UINT8                             Irq;        ///< IRQ assigned to the serial port.
   SERIAL_MODE                       Mode;       ///< Mode of serial port. Values are defined below.
@@ -468,7 +468,7 @@ typedef struct {
 ///
 /// DEVICE_PRODUCER_PARALLEL.
 ///
-typedef struct {
+تعريفنوع بنية {
   UINT16                            Address;  ///< I/O address assigned to the parallel port.
   UINT8                             Irq;      ///< IRQ assigned to the parallel port.
   UINT8                             Dma;      ///< DMA assigned to the parallel port.
@@ -487,7 +487,7 @@ typedef struct {
 ///
 /// DEVICE_PRODUCER_FLOPPY
 ///
-typedef struct {
+تعريفنوع بنية {
   UINT16                            Address;          ///< I/O address assigned to the floppy.
   UINT8                             Irq;              ///< IRQ assigned to the floppy.
   UINT8                             Dma;              ///< DMA assigned to the floppy.
@@ -497,7 +497,7 @@ typedef struct {
 ///
 /// LEGACY_DEVICE_FLAGS
 ///
-typedef struct {
+تعريفنوع بنية {
   UINT32                            A20Kybd : 1;      ///< A20 controller by keyboard controller.
   UINT32                            A20Port90 : 1;    ///< A20 controlled by port 0x92.
   UINT32                            Reserved : 30;    ///< Reserved for future usage.
@@ -506,7 +506,7 @@ typedef struct {
 ///
 /// DEVICE_PRODUCER_DATA_HEADER
 ///
-typedef struct {
+تعريفنوع بنية {
   DEVICE_PRODUCER_SERIAL            Serial[4];      ///< Data for serial port x. Type DEVICE_PRODUCER_SERIAL is defined below.
   DEVICE_PRODUCER_PARALLEL          Parallel[3];    ///< Data for parallel port x. Type DEVICE_PRODUCER_PARALLEL is defined below.
   DEVICE_PRODUCER_FLOPPY            Floppy;         ///< Data for floppy. Type DEVICE_PRODUCER_FLOPPY is defined below.
@@ -517,14 +517,14 @@ typedef struct {
 ///
 /// ATAPI_IDENTIFY
 ///
-typedef struct {
+تعريفنوع بنية {
   UINT16                            Raw[256];     ///< Raw data from the IDE IdentifyDrive command.
 } ATAPI_IDENTIFY;
 
 ///
 /// HDD_INFO
 ///
-typedef struct {
+تعريفنوع بنية {
   ///
   /// Status of IDE device. Values are defined below. There is one HDD_INFO structure
   /// per IDE controller. The IdentifyDrive is per drive. Index 0 is master and index
@@ -585,7 +585,7 @@ typedef struct {
 ///
 /// BBS_STATUS_FLAGS;\.
 ///
-typedef struct {
+تعريفنوع بنية {
   UINT16                            OldPosition : 4;    ///< Prior priority.
   UINT16                            Reserved1 : 4;      ///< Reserved for future use.
   UINT16                            Enabled : 1;        ///< If 0, ignore this entry.
@@ -606,7 +606,7 @@ typedef struct {
 ///
 /// BBS_TABLE, device type values & boot priority values.
 ///
-typedef struct {
+تعريفنوع بنية {
   ///
   /// The boot priority for this boot device. Values are defined below.
   ///
@@ -743,7 +743,7 @@ typedef struct {
 ///
 /// SMM_ATTRIBUTES
 ///
-typedef struct {
+تعريفنوع بنية {
   ///
   /// Access mechanism used to generate the soft SMI. Defined types are below. The other
   /// values are reserved for future usage.
@@ -794,7 +794,7 @@ typedef struct {
 ///
 /// SMM_FUNCTION & relating constants.
 ///
-typedef struct {
+تعريفنوع بنية {
   UINT16                            Function : 15;
   UINT16                            Owner : 1;
 } SMM_FUNCTION;
@@ -818,7 +818,7 @@ typedef struct {
 /// This structure assumes both port and data sizes are 1. SmmAttribute must be
 /// properly to reflect that assumption.
 ///
-typedef struct {
+تعريفنوع بنية {
   ///
   /// Describes the access mechanism, SmmPort, and SmmData sizes. Type
   /// SMM_ATTRIBUTES is defined below.
@@ -844,7 +844,7 @@ typedef struct {
 ///
 /// SMM_TABLE
 ///
-typedef struct {
+تعريفنوع بنية {
   UINT16                            NumSmmEntries;    ///< Number of entries represented by SmmEntry.
   SMM_ENTRY                         SmmEntry;         ///< One entry per function. Type SMM_ENTRY is defined below.
 } SMM_TABLE;
@@ -852,7 +852,7 @@ typedef struct {
 ///
 /// UDC_ATTRIBUTES
 ///
-typedef struct {
+تعريفنوع بنية {
   ///
   /// This bit set indicates that the ServiceAreaData is valid.
   ///
@@ -878,7 +878,7 @@ typedef struct {
 ///
 /// UD_TABLE
 ///
-typedef struct {
+تعريفنوع بنية {
   ///
   /// This field contains the bit-mapped attributes of the PARTIES information. Type
   /// UDC_ATTRIBUTES is defined below.
@@ -926,7 +926,7 @@ typedef struct {
 ///
 /// EFI_TO_COMPATIBILITY16_BOOT_TABLE
 ///
-typedef struct {
+تعريفنوع بنية {
   UINT16                            MajorVersion;                 ///< The EfiCompatibility major version number.
   UINT16                            MinorVersion;                 ///< The EfiCompatibility minor version number.
   UINT32                            AcpiTable;                    ///< The location of the RSDT ACPI table. < 4G range.
@@ -957,7 +957,7 @@ typedef struct {
 ///
 /// EFI_LEGACY_INSTALL_PCI_HANDLER
 ///
-typedef struct {
+تعريفنوع بنية {
   UINT8                             PciBus;             ///< The PCI bus of the device.
   UINT8                             PciDeviceFun;       ///< The PCI device in bits 7:3 and function in bits 2:0.
   UINT8                             PciSegment;         ///< The PCI segment of the device.

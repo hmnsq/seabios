@@ -1,70 +1,70 @@
 #ifndef __MALLOC_H
 #define __MALLOC_H
 
-#include "types.h" // u32
+#ضمن "types.h" // u32
 
 // malloc.c
-extern struct zone_s ZoneLow, ZoneHigh, ZoneFSeg, ZoneTmpLow, ZoneTmpHigh;
-u32 rom_get_max(void);
-u32 rom_get_last(void);
-struct rom_header *rom_reserve(u32 size);
-int rom_confirm(u32 size);
-void malloc_csm_preinit(u32 low_pmm, u32 low_pmm_size, u32 hi_pmm,
+خارجي بنية zone_s ZoneLow, ZoneHigh, ZoneFSeg, ZoneTmpLow, ZoneTmpHigh;
+u32 rom_get_max(فراغ);
+u32 rom_get_last(فراغ);
+بنية rom_header *rom_reserve(u32 size);
+صحيح rom_confirm(u32 size);
+فراغ malloc_csm_preinit(u32 low_pmm, u32 low_pmm_size, u32 hi_pmm,
                         u32 hi_pmm_size);
-void malloc_preinit(void);
-extern u32 LegacyRamSize;
-void malloc_init(void);
-void malloc_prepboot(void);
-u32 malloc_palloc(struct zone_s *zone, u32 size, u32 align);
-void *_malloc(struct zone_s *zone, u32 size, u32 align);
-int malloc_pfree(u32 data);
-void free(void *data);
-u32 malloc_getspace(struct zone_s *zone);
-void malloc_sethandle(u32 data, u32 handle);
+فراغ malloc_preinit(فراغ);
+خارجي u32 LegacyRamSize;
+فراغ malloc_init(فراغ);
+فراغ malloc_prepboot(فراغ);
+u32 malloc_palloc(بنية zone_s *zone, u32 size, u32 align);
+فراغ *_malloc(بنية zone_s *zone, u32 size, u32 align);
+صحيح malloc_pfree(u32 data);
+فراغ حرر(فراغ *data);
+u32 malloc_getspace(بنية zone_s *zone);
+فراغ malloc_sethandle(u32 data, u32 handle);
 u32 malloc_findhandle(u32 handle);
 
 #define MALLOC_DEFAULT_HANDLE 0xFFFFFFFF
 // Minimum alignment of malloc'd memory
 #define MALLOC_MIN_ALIGN 16
 // Helper functions for memory allocation.
-static inline void *malloc_low(u32 size) {
-    return _malloc(&ZoneLow, size, MALLOC_MIN_ALIGN);
+ساكن مضمن فراغ *malloc_low(u32 size) {
+    أرجع _malloc(&ZoneLow, size, MALLOC_MIN_ALIGN);
 }
-static inline void *malloc_high(u32 size) {
-    return _malloc(&ZoneHigh, size, MALLOC_MIN_ALIGN);
+ساكن مضمن فراغ *malloc_high(u32 size) {
+    أرجع _malloc(&ZoneHigh, size, MALLOC_MIN_ALIGN);
 }
-static inline void *malloc_fseg(u32 size) {
-    return _malloc(&ZoneFSeg, size, MALLOC_MIN_ALIGN);
+ساكن مضمن فراغ *malloc_fseg(u32 size) {
+    أرجع _malloc(&ZoneFSeg, size, MALLOC_MIN_ALIGN);
 }
-static inline void *malloc_tmplow(u32 size) {
-    return _malloc(&ZoneTmpLow, size, MALLOC_MIN_ALIGN);
+ساكن مضمن فراغ *malloc_tmplow(u32 size) {
+    أرجع _malloc(&ZoneTmpLow, size, MALLOC_MIN_ALIGN);
 }
-static inline void *malloc_tmphigh(u32 size) {
-    return _malloc(&ZoneTmpHigh, size, MALLOC_MIN_ALIGN);
+ساكن مضمن فراغ *malloc_tmphigh(u32 size) {
+    أرجع _malloc(&ZoneTmpHigh, size, MALLOC_MIN_ALIGN);
 }
-static inline void *malloc_tmp(u32 size) {
-    void *ret = malloc_tmphigh(size);
-    if (ret)
-        return ret;
-    return malloc_tmplow(size);
+ساكن مضمن فراغ *malloc_tmp(u32 size) {
+    فراغ *ret = malloc_tmphigh(size);
+    𐤀𐤌 (ret)
+        أرجع ret;
+    أرجع malloc_tmplow(size);
 }
-static inline void *memalign_low(u32 align, u32 size) {
-    return _malloc(&ZoneLow, size, align);
+ساكن مضمن فراغ *memalign_low(u32 align, u32 size) {
+    أرجع _malloc(&ZoneLow, size, align);
 }
-static inline void *memalign_high(u32 align, u32 size) {
-    return _malloc(&ZoneHigh, size, align);
+ساكن مضمن فراغ *memalign_high(u32 align, u32 size) {
+    أرجع _malloc(&ZoneHigh, size, align);
 }
-static inline void *memalign_tmplow(u32 align, u32 size) {
-    return _malloc(&ZoneTmpLow, size, align);
+ساكن مضمن فراغ *memalign_tmplow(u32 align, u32 size) {
+    أرجع _malloc(&ZoneTmpLow, size, align);
 }
-static inline void *memalign_tmphigh(u32 align, u32 size) {
-    return _malloc(&ZoneTmpHigh, size, align);
+ساكن مضمن فراغ *memalign_tmphigh(u32 align, u32 size) {
+    أرجع _malloc(&ZoneTmpHigh, size, align);
 }
-static inline void *memalign_tmp(u32 align, u32 size) {
-    void *ret = memalign_tmphigh(align, size);
-    if (ret)
-        return ret;
-    return memalign_tmplow(align, size);
+ساكن مضمن فراغ *memalign_tmp(u32 align, u32 size) {
+    فراغ *ret = memalign_tmphigh(align, size);
+    𐤀𐤌 (ret)
+        أرجع ret;
+    أرجع memalign_tmplow(align, size);
 }
 
 #endif // malloc.h
