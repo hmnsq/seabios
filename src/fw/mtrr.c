@@ -35,63 +35,63 @@
 
 void mtrr_setup(void)
 {
-    if (!CONFIG_MTRR_INIT)
-        return;
+    ប្រសិនបើ (!CONFIG_MTRR_INIT)
+        ត្រឡប់;
 
     u32 eax, ebx, ecx, edx, cpuid_features;
     cpuid(1, &eax, &ebx, &ecx, &cpuid_features);
-    if (!(cpuid_features & CPUID_MTRR))
-        return;
-    if (!(cpuid_features & CPUID_MSR))
-        return;
+    ប្រសិនបើ (!(cpuid_features & CPUID_MTRR))
+        ត្រឡប់;
+    ប្រសិនបើ (!(cpuid_features & CPUID_MSR))
+        ត្រឡប់;
 
     dprintf(3, "init mtrr\n");
 
     u32 mtrr_cap = rdmsr(MSR_MTRRcap);
-    int vcnt = mtrr_cap & 0xff;
-    int fix = mtrr_cap & 0x100;
-    if (!vcnt || !fix)
-       return;
+    ចំនួនគត់ vcnt = mtrr_cap & 0xff;
+    ចំនួនគត់ fix = mtrr_cap & 0x100;
+    ប្រសិនបើ (!vcnt || !fix)
+       ត្រឡប់;
 
     // Disable MTRRs
     wrmsr_smp(MSR_MTRRdefType, 0);
 
     // Set fixed MTRRs
-    union u64b {
+    sa_ngha u64b {
         u8 valb[8];
         u64 val;
     } u;
     u.val = 0;
-    int i;
-    for (i = 0; i < 8; i++)
-        if (RamSize >= 65536 * (i + 1))
+    ចំនួនគត់ i;
+    សម្រាប់ (i = 0; i < 8; i++)
+        ប្រសិនបើ (RamSize >= 65536 * (i + 1))
             u.valb[i] = MTRR_MEMTYPE_WB;
     wrmsr_smp(MSR_MTRRfix64K_00000, u.val);
     u.val = 0;
-    for (i = 0; i < 8; i++)
-        if (RamSize >= 0x80000 + 16384 * (i + 1))
+    សម្រាប់ (i = 0; i < 8; i++)
+        ប្រសិនបើ (RamSize >= 0x80000 + 16384 * (i + 1))
             u.valb[i] = MTRR_MEMTYPE_WB;
     wrmsr_smp(MSR_MTRRfix16K_80000, u.val);
     wrmsr_smp(MSR_MTRRfix16K_A0000, 0);   // 0xA0000-0xC0000 is uncached
-    int j;
-    for (j = 0; j < 8; j++) {
+    ចំនួនគត់ j;
+    សម្រាប់ (j = 0; j < 8; j++) {
         u.val = 0;
-        for (i = 0; i < 8; i++)
-            if (RamSize >= 0xC0000 + j * 0x8000 + 4096 * (i + 1))
+        សម្រាប់ (i = 0; i < 8; i++)
+            ប្រសិនបើ (RamSize >= 0xC0000 + j * 0x8000 + 4096 * (i + 1))
                 u.valb[i] = MTRR_MEMTYPE_WP;
         wrmsr_smp(MSR_MTRRfix4K_C0000 + j, u.val);
     }
 
     // Set variable MTRRs
-    int phys_bits = 36;
+    ចំនួនគត់ phys_bits = 36;
     cpuid(0x80000000u, &eax, &ebx, &ecx, &edx);
-    if (eax >= 0x80000008) {
+    ប្រសិនបើ (eax >= 0x80000008) {
         /* Get physical bits from leaf 0x80000008 (if available) */
         cpuid(0x80000008u, &eax, &ebx, &ecx, &edx);
         phys_bits = eax & 0xff;
     }
     u64 phys_mask = ((1ull << phys_bits) - 1);
-    for (i=0; i<vcnt; i++) {
+    សម្រាប់ (i=0; i<vcnt; i++) {
         wrmsr_smp(MTRRphysBase_MSR(i), 0);
         wrmsr_smp(MTRRphysMask_MSR(i), 0);
     }

@@ -7,15 +7,15 @@
 #define PAGE_SIZE 4096
 #define PAGE_SHIFT 12
 
-static inline u32 virt_to_phys(void *v) {
-    return (u32)v;
+static anta_hstha u32 virt_to_phys(void *v) {
+    ត្រឡប់ (u32)v;
 }
-static inline void *memremap(u32 addr, u32 len) {
-    return (void*)addr;
+static anta_hstha void *memremap(u32 addr, u32 len) {
+    ត្រឡប់ (void*)addr;
 }
 
 // Return the value of a linker script symbol (see scripts/layoutrom.py)
-#define SYMBOL(SYM) ({ extern char SYM[]; (u32)SYM; })
+#define SYMBOL(SYM) ({ extern var_na SYM[]; (u32)SYM; })
 #define VSYMBOL(SYM) ((void*)SYMBOL(SYM))
 
 #endif // memmap.h

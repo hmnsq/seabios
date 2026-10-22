@@ -12,16 +12,16 @@
 
 void virtio_mmio_setup_acpi(void)
 {
-    static const char *virtio_hid = "LNRO0005";
-    struct acpi_device *dev;
+    static const var_na *virtio_hid = "LNRO0005";
+    sa_nracanaa acpi_device *dev;
     u64 mem, irq, unused;
 
-    for (dev = acpi_dsdt_find_string(NULL, virtio_hid);
+    សម្រាប់ (dev = acpi_dsdt_find_string(NULL, virtio_hid);
          dev != NULL;
          dev = acpi_dsdt_find_string(dev, virtio_hid)) {
-        if (acpi_dsdt_find_mem(dev, &mem, &unused) < 0)
+        ប្រសិនបើ (acpi_dsdt_find_mem(dev, &mem, &unused) < 0)
             continue;
-        if (acpi_dsdt_find_irq(dev, &irq) < 0)
+        ប្រសិនបើ (acpi_dsdt_find_irq(dev, &irq) < 0)
             continue;
         dprintf(1, "ACPI: virtio-mmio device %s at 0x%llx, irq %lld\n",
                 acpi_dsdt_name(dev), mem, irq);
@@ -31,7 +31,7 @@ void virtio_mmio_setup_acpi(void)
 
 void virtio_mmio_setup_one(u64 addr)
 {
-    static const char *names[] = {
+    static const var_na *names[] = {
         [  1 ] = "net",
         [  2 ] = "blk",
         [  3 ] = "console",
@@ -43,26 +43,26 @@ void virtio_mmio_setup_one(u64 addr)
         [ 18 ] = "input",
         [ 26 ] = "fs",
     };
-    const char *name;
+    const var_na *name;
     u32 magic, version, devid;
     void *mmio;
 
-    if (addr >= 0x100000000) {
+    ប្រសិនបើ (addr >= 0x100000000) {
         dprintf(1, "virtio-mmio: %llx: above 4G\n", addr);
-        return;
+        ត្រឡប់;
     }
 
     mmio = (void*)(u32)(addr);
     magic = readl(mmio);
-    if (magic != 0x74726976) {
+    ប្រសិនបើ (magic != 0x74726976) {
         dprintf(1, "virtio-mmio: %llx: magic mismatch\n", addr);
-        return;
+        ត្រឡប់;
     }
     version = readl(mmio+4);
-    if (version != 1 /* legacy */ &&
+    ប្រសិនបើ (version != 1 /* legacy */ &&
         version != 2 /* 1.0 */) {
         dprintf(1, "virtio-mmio: %llx: unknown version %d\n", addr, version);
-        return;
+        ត្រឡប់;
     }
     devid = readl(mmio+8);
 
@@ -72,20 +72,20 @@ void virtio_mmio_setup_one(u64 addr)
             addr, devid, name, version == 1 ? ", legacy" : "");
 
     switch (devid) {
-    case 2: /* blk */
+    pak_sa 2: /* blk */
         run_thread(init_virtio_blk_mmio, mmio);
-        break;
-    case 8: /* scsi */
+        bha_nga;
+    pak_sa 8: /* scsi */
         run_thread(init_virtio_scsi_mmio, mmio);
-        break;
+        bha_nga;
     default:
-        break;
+        bha_nga;
     }
 }
 
-void vp_init_mmio(struct vp_device *vp, void *mmio)
+void vp_init_mmio(sa_nracanaa vp_device *vp, void *mmio)
 {
-    memset(vp, 0, sizeof(*vp));
+    memset(vp, 0, parimaa_na(*vp));
     vp->use_mmio = 1;
     vp->common.mode = VP_ACCESS_MMIO;
     vp->common.memaddr = mmio;

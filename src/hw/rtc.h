@@ -65,7 +65,7 @@
 u8 rtc_read(u8 index);
 void rtc_write(u8 index, u8 val);
 void rtc_mask(u8 index, u8 off, u8 on);
-int rtc_updating(void);
+ចំនួនគត់ rtc_updating(void);
 void rtc_setup(void);
 void rtc_use(void);
 void rtc_release(void);
