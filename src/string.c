@@ -4,9 +4,9 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "stacks.h" // yield
-#include "string.h" // memcpy
-#include "farptr.h" // SET_SEG
+#ಅನ್ತರ್ಭಾವ "stacks.h" // yield
+#ಅನ್ತರ್ಭಾವ "string.h" // memcpy
+#ಅನ್ತರ್ಭಾವ "farptr.h" // SET_SEG
 
 
 /****************************************************************
@@ -15,120 +15,120 @@
 
 // Sum the bytes in the specified area.
 u8
-checksum_far(u16 buf_seg, void *buf_far, u32 len)
+checksum_far(u16 buf_seg, ಶೂನ್ಯ *buf_far, u32 len)
 {
     SET_SEG(ES, buf_seg);
     u32 i;
     u8 sum = 0;
-    for (i=0; i<len; i++)
+    ಪ್ರತಿ (i=0; i<len; i++)
         sum += GET_VAR(ES, ((u8*)buf_far)[i]);
-    return sum;
+    ಪ್ರತ್ಯಾಗಮ sum;
 }
 
 u8
-checksum(void *buf, u32 len)
+checksum(ಶೂನ್ಯ *buf, u32 len)
 {
-    return checksum_far(GET_SEG(SS), buf, len);
+    ಪ್ರತ್ಯಾಗಮ checksum_far(GET_SEG(SS), buf, len);
 }
 
 size_t
-strlen(const char *s)
+strlen(ಧ್ರುವ ವರ್ಣ *s)
 {
-    if (__builtin_constant_p(s))
-        return __builtin_strlen(s);
-    const char *p = s;
-    while (*p)
+    ಯದಿ (__builtin_constant_p(s))
+        ಪ್ರತ್ಯಾಗಮ __builtin_strlen(s);
+    ಧ್ರುವ ವರ್ಣ *p = s;
+    ಯಾವತ್ (*p)
         p++;
-    return p-s;
+    ಪ್ರತ್ಯಾಗಮ p-s;
 }
 
-int
-memcmp_far(u16 s1seg, const void *s1, u16 s2seg, const void *s2, size_t n)
+ಪೂರ್ಣಾಙ್ಕ
+memcmp_far(u16 s1seg, ಧ್ರುವ ಶೂನ್ಯ *s1, u16 s2seg, ಧ್ರುವ ಶೂನ್ಯ *s2, size_t n)
 {
-    while (n--) {
-        int d = GET_FARVAR(s1seg, *(u8*)s1) - GET_FARVAR(s2seg, *(u8*)s2);
-        if (d)
-            return d < 0 ? -1 : 1;
+    ಯಾವತ್ (n--) {
+        ಪೂರ್ಣಾಙ್ಕ d = GET_FARVAR(s1seg, *(u8*)s1) - GET_FARVAR(s2seg, *(u8*)s2);
+        ಯದಿ (d)
+            ಪ್ರತ್ಯಾಗಮ d < 0 ? -1 : 1;
         s1++;
         s2++;
     }
-    return 0;
+    ಪ್ರತ್ಯಾಗಮ 0;
 }
 
 // Compare two areas of memory.
-int
-memcmp(const void *s1, const void *s2, size_t n)
+ಪೂರ್ಣಾಙ್ಕ
+memcmp(ಧ್ರುವ ಶೂನ್ಯ *s1, ಧ್ರುವ ಶೂನ್ಯ *s2, size_t n)
 {
-    while (n) {
-        if (*(u8*)s1 != *(u8*)s2)
-            return *(u8*)s1 < *(u8*)s2 ? -1 : 1;
+    ಯಾವತ್ (n) {
+        ಯದಿ (*(u8*)s1 != *(u8*)s2)
+            ಪ್ರತ್ಯಾಗಮ *(u8*)s1 < *(u8*)s2 ? -1 : 1;
         s1++;
         s2++;
         n--;
     }
-    return 0;
+    ಪ್ರತ್ಯಾಗಮ 0;
 }
 
 // Compare two strings.
-int
-strcmp(const char *s1, const char *s2)
+ಪೂರ್ಣಾಙ್ಕ
+strcmp(ಧ್ರುವ ವರ್ಣ *s1, ಧ್ರುವ ವರ್ಣ *s2)
 {
-    for (;;) {
-        if (*s1 != *s2)
-            return *s1 < *s2 ? -1 : 1;
-        if (! *s1)
-            return 0;
+    ಪ್ರತಿ (;;) {
+        ಯದಿ (*s1 != *s2)
+            ಪ್ರತ್ಯಾಗಮ *s1 < *s2 ? -1 : 1;
+        ಯದಿ (! *s1)
+            ಪ್ರತ್ಯಾಗಮ 0;
         s1++;
         s2++;
     }
 }
 
-inline void
-memset_far(u16 d_seg, void *d_far, u8 c, size_t len)
+ಅನ್ತಃಸ್ಥ ಶೂನ್ಯ
+memset_far(u16 d_seg, ಶೂನ್ಯ *d_far, u8 c, size_t len)
 {
     SET_SEG(ES, d_seg);
-    asm volatile(
+    asm ಚಞ್ಚಲ(
         "rep stosb %%es:(%%di)"
         : "+c"(len), "+D"(d_far)
         : "a"(c), "m" (__segment_ES)
         : "cc", "memory");
 }
 
-inline void
-memset16_far(u16 d_seg, void *d_far, u16 c, size_t len)
+ಅನ್ತಃಸ್ಥ ಶೂನ್ಯ
+memset16_far(u16 d_seg, ಶೂನ್ಯ *d_far, u16 c, size_t len)
 {
     len /= 2;
     SET_SEG(ES, d_seg);
-    asm volatile(
+    asm ಚಞ್ಚಲ(
         "rep stosw %%es:(%%di)"
         : "+c"(len), "+D"(d_far)
         : "a"(c), "m" (__segment_ES)
         : "cc", "memory");
 }
 
-void *
-memset(void *s, int c, size_t n)
+ಶೂನ್ಯ *
+memset(ಶೂನ್ಯ *s, ಪೂರ್ಣಾಙ್ಕ c, size_t n)
 {
-    while (n)
-        ((char *)s)[--n] = c;
-    return s;
+    ಯಾವತ್ (n)
+        ((ವರ್ಣ *)s)[--n] = c;
+    ಪ್ರತ್ಯಾಗಮ s;
 }
 
-void memset_fl(void *ptr, u8 val, size_t size)
+ಶೂನ್ಯ memset_fl(ಶೂನ್ಯ *ptr, u8 val, size_t size)
 {
-    if (MODESEGMENT)
-        memset_far(FLATPTR_TO_SEG(ptr), (void*)(FLATPTR_TO_OFFSET(ptr)),
+    ಯದಿ (MODESEGMENT)
+        memset_far(FLATPTR_TO_SEG(ptr), (ಶೂನ್ಯ*)(FLATPTR_TO_OFFSET(ptr)),
                    val, size);
-    else
+    ಅನ್ಯಥಾ
         memset(ptr, val, size);
 }
 
-inline void
-memcpy_far(u16 d_seg, void *d_far, u16 s_seg, const void *s_far, size_t len)
+ಅನ್ತಃಸ್ಥ ಶೂನ್ಯ
+memcpy_far(u16 d_seg, ಶೂನ್ಯ *d_far, u16 s_seg, ಧ್ರುವ ಶೂನ್ಯ *s_far, size_t len)
 {
     SET_SEG(ES, d_seg);
     u16 bkup_ds;
-    asm volatile(
+    asm ಚಞ್ಚಲ(
         "movw %%ds, %w0\n"
         "movw %w4, %%ds\n"
         "rep movsb (%%si),%%es:(%%di)\n"
@@ -138,114 +138,114 @@ memcpy_far(u16 d_seg, void *d_far, u16 s_seg, const void *s_far, size_t len)
         : "cc", "memory");
 }
 
-inline void
-memcpy_fl(void *d_fl, const void *s_fl, size_t len)
+ಅನ್ತಃಸ್ಥ ಶೂನ್ಯ
+memcpy_fl(ಶೂನ್ಯ *d_fl, ಧ್ರುವ ಶೂನ್ಯ *s_fl, size_t len)
 {
-    if (MODESEGMENT)
-        memcpy_far(FLATPTR_TO_SEG(d_fl), (void*)FLATPTR_TO_OFFSET(d_fl)
-                   , FLATPTR_TO_SEG(s_fl), (void*)FLATPTR_TO_OFFSET(s_fl)
+    ಯದಿ (MODESEGMENT)
+        memcpy_far(FLATPTR_TO_SEG(d_fl), (ಶೂನ್ಯ*)FLATPTR_TO_OFFSET(d_fl)
+                   , FLATPTR_TO_SEG(s_fl), (ಶೂನ್ಯ*)FLATPTR_TO_OFFSET(s_fl)
                    , len);
-    else
+    ಅನ್ಯಥಾ
         memcpy(d_fl, s_fl, len);
 }
 
-void *
+ಶೂನ್ಯ *
 #undef memcpy
-memcpy(void *d1, const void *s1, size_t len)
-#if MODESEGMENT == 0
+memcpy(ಶೂನ್ಯ *d1, ಧ್ರುವ ಶೂನ್ಯ *s1, size_t len)
+#ಯದಿ MODESEGMENT == 0
 #define memcpy __builtin_memcpy
 #endif
 {
     SET_SEG(ES, GET_SEG(SS));
-    void *d = d1;
-    if (((u32)d1 | (u32)s1 | len) & 3) {
+    ಶೂನ್ಯ *d = d1;
+    ಯದಿ (((u32)d1 | (u32)s1 | len) & 3) {
         // non-aligned memcpy
-        asm volatile(
+        asm ಚಞ್ಚಲ(
             "rep movsb (%%esi),%%es:(%%edi)"
             : "+c"(len), "+S"(s1), "+D"(d)
             : "m" (__segment_ES) : "cc", "memory");
-        return d1;
+        ಪ್ರತ್ಯಾಗಮ d1;
     }
     // Common case - use 4-byte copy
     len /= 4;
-    asm volatile(
+    asm ಚಞ್ಚಲ(
         "rep movsl (%%esi),%%es:(%%edi)"
         : "+c"(len), "+S"(s1), "+D"(d)
         : "m" (__segment_ES) : "cc", "memory");
-    return d1;
+    ಪ್ರತ್ಯಾಗಮ d1;
 }
 
 // Copy to/from memory mapped IO.  IO mem is very slow, so yield
 // periodically.
-void
-iomemcpy(void *d, const void *s, u32 len)
+ಶೂನ್ಯ
+iomemcpy(ಶೂನ್ಯ *d, ಧ್ರುವ ಶೂನ್ಯ *s, u32 len)
 {
     ASSERT32FLAT();
     yield();
-    while (len > 3) {
+    ಯಾವತ್ (len > 3) {
         u32 copylen = len;
-        if (copylen > 2048)
+        ಯದಿ (copylen > 2048)
             copylen = 2048;
         copylen /= 4;
         len -= copylen * 4;
-        asm volatile(
+        asm ಚಞ್ಚಲ(
             "rep movsl (%%esi),%%es:(%%edi)"
             : "+c"(copylen), "+S"(s), "+D"(d)
             : : "cc", "memory");
         yield();
     }
-    if (len)
+    ಯದಿ (len)
         // Copy any remaining bytes.
         memcpy(d, s, len);
 }
 
-void *
-memmove(void *d, const void *s, size_t len)
+ಶೂನ್ಯ *
+memmove(ಶೂನ್ಯ *d, ಧ್ರುವ ಶೂನ್ಯ *s, size_t len)
 {
-    if (s >= d)
-        return memcpy(d, s, len);
+    ಯದಿ (s >= d)
+        ಪ್ರತ್ಯಾಗಮ memcpy(d, s, len);
 
     d += len-1;
     s += len-1;
-    while (len--) {
-        *(char*)d = *(char*)s;
+    ಯಾವತ್ (len--) {
+        *(ವರ್ಣ*)d = *(ವರ್ಣ*)s;
         d--;
         s--;
     }
 
-    return d;
+    ಪ್ರತ್ಯಾಗಮ d;
 }
 
 // Copy a string - truncating it if necessary.
-char *
-strtcpy(char *dest, const char *src, size_t len)
+ವರ್ಣ *
+strtcpy(ವರ್ಣ *dest, ಧ್ರುವ ವರ್ಣ *src, size_t len)
 {
-    char *d = dest;
-    while (--len && *src != '\0')
+    ವರ್ಣ *d = dest;
+    ಯಾವತ್ (--len && *src != '\0')
         *d++ = *src++;
     *d = '\0';
-    return dest;
+    ಪ್ರತ್ಯಾಗಮ dest;
 }
 
 // locate first occurrence of character c in the string s
-char *
-strchr(const char *s, int c)
+ವರ್ಣ *
+strchr(ಧ್ರುವ ವರ್ಣ *s, ಪೂರ್ಣಾಙ್ಕ c)
 {
-    for (; *s; s++)
-        if (*s == c)
-            return (char*)s;
-    return NULL;
+    ಪ್ರತಿ (; *s; s++)
+        ಯದಿ (*s == c)
+            ಪ್ರತ್ಯಾಗಮ (ವರ್ಣ*)s;
+    ಪ್ರತ್ಯಾಗಮ ರಿಕ್ತ;
 }
 
 // Remove any trailing blank characters (spaces, new lines, carriage returns)
-char *
-nullTrailingSpace(char *buf)
+ವರ್ಣ *
+nullTrailingSpace(ವರ್ಣ *buf)
 {
-    int len = strlen(buf);
-    char *end = &buf[len-1];
-    while (end >= buf && *end <= ' ')
+    ಪೂರ್ಣಾಙ್ಕ len = strlen(buf);
+    ವರ್ಣ *end = &buf[len-1];
+    ಯಾವತ್ (end >= buf && *end <= ' ')
         *(end--) = '\0';
-    while (*buf && *buf <= ' ')
+    ಯಾವತ್ (*buf && *buf <= ' ')
         buf++;
-    return buf;
+    ಪ್ರತ್ಯಾಗಮ buf;
 }

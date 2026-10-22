@@ -2,13 +2,13 @@
 #ifndef __USB_H
 #define __USB_H
 
-#include "stacks.h" // struct mutex_s
+#ಅನ್ತರ್ಭಾವ "stacks.h" // struct mutex_s
 
 // Information on a USB end point.
-struct usb_pipe {
-    union {
-        struct usb_s *cntl;
-        struct usb_pipe *freenext;
+ಸಂರಚನಾ usb_pipe {
+    ಸಙ್ಘ {
+        ಸಂರಚನಾ usb_s *cntl;
+        ಸಂರಚನಾ usb_pipe *freenext;
     };
     u8 type;
     u8 ep;
@@ -19,33 +19,33 @@ struct usb_pipe {
 };
 
 // Common information for usb devices.
-struct usbdevice_s {
-    struct usbhub_s *hub;
-    struct usb_pipe *defpipe;
+ಸಂರಚನಾ usbdevice_s {
+    ಸಂರಚನಾ usbhub_s *hub;
+    ಸಂರಚನಾ usb_pipe *defpipe;
     u32 port;
-    struct usb_config_descriptor *config;
-    struct usb_interface_descriptor *iface;
-    int imax;
+    ಸಂರಚನಾ usb_config_descriptor *config;
+    ಸಂರಚನಾ usb_interface_descriptor *iface;
+    ಪೂರ್ಣಾಙ್ಕ imax;
     u8 speed;
     u8 devaddr;
 };
 
 // Common information for usb controllers.
-struct usb_s {
-    struct usb_pipe *freelist;
-    struct mutex_s resetlock;
-    struct pci_device *pci;
-    void *mmio;
+ಸಂರಚನಾ usb_s {
+    ಸಂರಚನಾ usb_pipe *freelist;
+    ಸಂರಚನಾ mutex_s resetlock;
+    ಸಂರಚನಾ pci_device *pci;
+    ಶೂನ್ಯ *mmio;
     u8 type;
     u8 maxaddr;
 };
 
 // Information for enumerating USB hubs
-struct usbhub_s {
-    struct usbhub_op_s *op;
-    struct usbdevice_s *usbdev;
-    struct usb_s *cntl;
-    struct mutex_s lock;
+ಸಂರಚನಾ usbhub_s {
+    ಸಂರಚನಾ usbhub_op_s *op;
+    ಸಂರಚನಾ usbdevice_s *usbdev;
+    ಸಂರಚನಾ usb_s *cntl;
+    ಸಂರಚನಾ mutex_s lock;
     u32 detectend;
     u32 port;
     u32 threads;
@@ -54,11 +54,11 @@ struct usbhub_s {
 };
 
 // Hub callback (32bit) info
-struct usbhub_op_s {
-    int (*detect)(struct usbhub_s *hub, u32 port);
-    int (*reset)(struct usbhub_s *hub, u32 port);
-    int (*portmap)(struct usbhub_s *hub, u32 port);
-    void (*disconnect)(struct usbhub_s *hub, u32 port);
+ಸಂರಚನಾ usbhub_op_s {
+    ಪೂರ್ಣಾಙ್ಕ (*detect)(ಸಂರಚನಾ usbhub_s *hub, u32 port);
+    ಪೂರ್ಣಾಙ್ಕ (*reset)(ಸಂರಚನಾ usbhub_s *hub, u32 port);
+    ಪೂರ್ಣಾಙ್ಕ (*portmap)(ಸಂರಚನಾ usbhub_s *hub, u32 port);
+    ಶೂನ್ಯ (*disconnect)(ಸಂರಚನಾ usbhub_s *hub, u32 port);
 };
 
 #define USB_TYPE_UHCI  1
@@ -122,10 +122,10 @@ struct usbhub_op_s {
 #define USB_REQ_SET_INTERFACE           0x0B
 #define USB_REQ_SYNCH_FRAME             0x0C
 
-struct usb_ctrlrequest {
+ಸಂರಚನಾ usb_ctrlrequest {
     u8 bRequestType;
     u8 bRequest;
-    u16 wValue;
+    u16 w_ಮೌಲ್ಯ;
     u16 wIndex;
     u16 wLength;
 } PACKED;
@@ -139,7 +139,7 @@ struct usb_ctrlrequest {
 #define USB_DT_OTHER_SPEED_CONFIG       0x07
 #define USB_DT_ENDPOINT_COMPANION       0x30
 
-struct usb_device_descriptor {
+ಸಂರಚನಾ usb_device_descriptor {
     u8  bLength;
     u8  bDescriptorType;
 
@@ -153,8 +153,8 @@ struct usb_device_descriptor {
     u16 bcdDevice;
     u8  iManufacturer;
     u8  iProduct;
-    u8  iSerialNumber;
-    u8  bNumConfigurations;
+    u8  i_Serial_ಸಂಖ್ಯೆ;
+    u8  b_ಅಂಕೆ_Configurations;
 } PACKED;
 
 #define USB_CLASS_PER_INTERFACE         0       /* for DeviceClass */
@@ -167,32 +167,32 @@ struct usb_device_descriptor {
 #define USB_CLASS_MASS_STORAGE          8
 #define USB_CLASS_HUB                   9
 
-struct usb_config_descriptor {
+ಸಂರಚನಾ usb_config_descriptor {
     u8  bLength;
     u8  bDescriptorType;
 
     u16 wTotalLength;
-    u8  bNumInterfaces;
-    u8  bConfigurationValue;
+    u8  b_ಅಂಕೆ_Interfaces;
+    u8  b_Configuration_ಮೌಲ್ಯ;
     u8  iConfiguration;
     u8  bmAttributes;
     u8  bMaxPower;
 } PACKED;
 
-struct usb_interface_descriptor {
+ಸಂರಚನಾ usb_interface_descriptor {
     u8  bLength;
     u8  bDescriptorType;
 
-    u8  bInterfaceNumber;
+    u8  b_Interface_ಸಂಖ್ಯೆ;
     u8  bAlternateSetting;
-    u8  bNumEndpoints;
+    u8  b_ಅಂಕೆ_Endpoints;
     u8  bInterfaceClass;
     u8  bInterfaceSubClass;
     u8  bInterfaceProtocol;
     u8  iInterface;
 } PACKED;
 
-struct usb_endpoint_descriptor {
+ಸಂರಚನಾ usb_endpoint_descriptor {
     u8  bLength;
     u8  bDescriptorType;
 
@@ -202,7 +202,7 @@ struct usb_endpoint_descriptor {
     u8  bInterval;
 } PACKED;
 
-#define USB_ENDPOINT_NUMBER_MASK        0x0f    /* in bEndpointAddress */
+#define USB_ENDPOINT_ಸಂಖ್ಯೆ_MASK        0x0f    /* in bEndpointAddress */
 #define USB_ENDPOINT_DIR_MASK           0x80
 
 #define USB_ENDPOINT_XFERTYPE_MASK      0x03    /* in bmAttributes */
@@ -231,25 +231,25 @@ struct usb_endpoint_descriptor {
  ****************************************************************/
 
 // usb.c
-int usb_send_bulk(struct usb_pipe *pipe, int dir, void *data, int datasize);
-int usb_poll_intr(struct usb_pipe *pipe, void *data);
-int usb_32bit_pipe(struct usb_pipe *pipe_fl);
-struct usb_pipe *usb_alloc_pipe(struct usbdevice_s *usbdev
-                                , struct usb_endpoint_descriptor *epdesc);
-void usb_free_pipe(struct usbdevice_s *usbdev, struct usb_pipe *pipe);
-int usb_send_default_control(struct usb_pipe *pipe
-                             , const struct usb_ctrlrequest *req, void *data);
-int usb_is_freelist(struct usb_s *cntl, struct usb_pipe *pipe);
-void usb_add_freelist(struct usb_pipe *pipe);
-struct usb_pipe *usb_get_freelist(struct usb_s *cntl, u8 eptype);
-void usb_desc2pipe(struct usb_pipe *pipe, struct usbdevice_s *usbdev
-                   , struct usb_endpoint_descriptor *epdesc);
-int usb_get_period(struct usbdevice_s *usbdev
-                   , struct usb_endpoint_descriptor *epdesc);
-int usb_xfer_time(struct usb_pipe *pipe, int datalen);
-struct usb_endpoint_descriptor *usb_find_desc(struct usbdevice_s *usbdev
-                                              , int type, int dir);
-void usb_enumerate(struct usbhub_s *hub);
-void usb_setup(void);
+ಪೂರ್ಣಾಙ್ಕ usb_send_bulk(ಸಂರಚನಾ usb_pipe *pipe, ಪೂರ್ಣಾಙ್ಕ dir, ಶೂನ್ಯ *data, ಪೂರ್ಣಾಙ್ಕ datasize);
+ಪೂರ್ಣಾಙ್ಕ usb_poll_intr(ಸಂರಚನಾ usb_pipe *pipe, ಶೂನ್ಯ *data);
+ಪೂರ್ಣಾಙ್ಕ usb_32bit_pipe(ಸಂರಚನಾ usb_pipe *pipe_fl);
+ಸಂರಚನಾ usb_pipe *usb_alloc_pipe(ಸಂರಚನಾ usbdevice_s *usbdev
+                                , ಸಂರಚನಾ usb_endpoint_descriptor *epdesc);
+ಶೂನ್ಯ usb_free_pipe(ಸಂರಚನಾ usbdevice_s *usbdev, ಸಂರಚನಾ usb_pipe *pipe);
+ಪೂರ್ಣಾಙ್ಕ usb_send_default_control(ಸಂರಚನಾ usb_pipe *pipe
+                             , ಧ್ರುವ ಸಂರಚನಾ usb_ctrlrequest *req, ಶೂನ್ಯ *data);
+ಪೂರ್ಣಾಙ್ಕ usb_is_freelist(ಸಂರಚನಾ usb_s *cntl, ಸಂರಚನಾ usb_pipe *pipe);
+ಶೂನ್ಯ usb_add_freelist(ಸಂರಚನಾ usb_pipe *pipe);
+ಸಂರಚನಾ usb_pipe *usb_get_freelist(ಸಂರಚನಾ usb_s *cntl, u8 eptype);
+ಶೂನ್ಯ usb_desc2pipe(ಸಂರಚನಾ usb_pipe *pipe, ಸಂರಚನಾ usbdevice_s *usbdev
+                   , ಸಂರಚನಾ usb_endpoint_descriptor *epdesc);
+ಪೂರ್ಣಾಙ್ಕ usb_get_period(ಸಂರಚನಾ usbdevice_s *usbdev
+                   , ಸಂರಚನಾ usb_endpoint_descriptor *epdesc);
+ಪೂರ್ಣಾಙ್ಕ usb_xfer_time(ಸಂರಚನಾ usb_pipe *pipe, ಪೂರ್ಣಾಙ್ಕ datalen);
+ಸಂರಚನಾ usb_endpoint_descriptor *usb_find_desc(ಸಂರಚನಾ usbdevice_s *usbdev
+                                              , ಪೂರ್ಣಾಙ್ಕ type, ಪೂರ್ಣಾಙ್ಕ dir);
+ಶೂನ್ಯ usb_enumerate(ಸಂರಚನಾ usbhub_s *hub);
+ಶೂನ್ಯ usb_setup(ಶೂನ್ಯ);
 
 #endif // usb.h

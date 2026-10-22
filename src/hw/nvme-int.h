@@ -7,14 +7,14 @@
 #ifndef __NVME_INT_H
 #define __NVME_INT_H
 
-#include "types.h" // u32
-#include "pcidevice.h" // struct pci_device
+#ಅನ್ತರ್ಭಾವ "types.h" // u32
+#ಅನ್ತರ್ಭಾವ "pcidevice.h" // struct pci_device
 
 /* Data structures */
 
 /* The register file of a NVMe host controller. This struct follows the naming
    scheme in the NVMe specification. */
-struct nvme_reg {
+ಸಂರಚನಾ nvme_reg {
     u64 cap;                    /* controller capabilities */
     u32 vs;                     /* version */
     u32 intms;                  /* interrupt mask set */
@@ -29,10 +29,10 @@ struct nvme_reg {
 };
 
 /* Submission queue entry */
-struct nvme_sqe {
-    union {
+ಸಂರಚನಾ nvme_sqe {
+    ಸಙ್ಘ {
         u32 dword[16];
-        struct {
+        ಸಂರಚನಾ {
             u32 cdw0;           /* Command DWORD 0 */
             u32 nsid;           /* Namespace ID */
             u64 _res0;
@@ -45,10 +45,10 @@ struct nvme_sqe {
 };
 
 /* Completion queue entry */
-struct nvme_cqe {
-    union {
+ಸಂರಚನಾ nvme_cqe {
+    ಸಙ್ಘ {
         u32 dword[4];
-        struct {
+        ಸಂರಚನಾ {
             u32 cdw0;
             u32 _res0;
             u16 sq_head;
@@ -60,14 +60,14 @@ struct nvme_cqe {
 };
 
 /* The common part of every submission or completion queue. */
-struct nvme_queue {
+ಸಂರಚನಾ nvme_queue {
     u32 *dbl;                   /* doorbell */
     u16 mask;                   /* length - 1 */
 };
 
-struct nvme_cq {
-    struct nvme_queue common;
-    struct nvme_cqe *cqe;
+ಸಂರಚನಾ nvme_cq {
+    ಸಂರಚನಾ nvme_queue common;
+    ಸಂರಚನಾ nvme_cqe *cqe;
 
     /* We have read upto (but not including) this entry in the queue. */
     u16 head;
@@ -77,12 +77,12 @@ struct nvme_cq {
     unsigned phase : 1;
 };
 
-struct nvme_sq {
-    struct nvme_queue common;
-    struct nvme_sqe *sqe;
+ಸಂರಚನಾ nvme_sq {
+    ಸಂರಚನಾ nvme_queue common;
+    ಸಂರಚನಾ nvme_sqe *sqe;
 
     /* Corresponding completion queue. We only support a single SQ per CQ. */
-    struct nvme_cq *cq;
+    ಸಂರಚನಾ nvme_cq *cq;
 
     /* The last entry the controller has fetched. */
     u16 head;
@@ -91,28 +91,28 @@ struct nvme_sq {
     u16 tail;
 };
 
-struct nvme_ctrl {
-    struct pci_device *pci;
-    struct nvme_reg volatile *reg;
+ಸಂರಚನಾ nvme_ctrl {
+    ಸಂರಚನಾ pci_device *pci;
+    ಸಂರಚನಾ nvme_reg ಚಞ್ಚಲ *reg;
 
     u32 doorbell_stride;        /* in bytes */
 
-    struct nvme_sq admin_sq;
-    struct nvme_cq admin_cq;
+    ಸಂರಚನಾ nvme_sq admin_sq;
+    ಸಂರಚನಾ nvme_cq admin_cq;
 
-    u32 ns_count;
+    u32 ns_ಎಣಿಕೆ;
 
-    struct nvme_sq io_sq;
-    struct nvme_cq io_cq;
+    ಸಂರಚನಾ nvme_sq io_sq;
+    ಸಂರಚನಾ nvme_cq io_cq;
 };
 
-struct nvme_namespace {
-    struct drive_s drive;
-    struct nvme_ctrl *ctrl;
+ಸಂರಚನಾ nvme_namespace {
+    ಸಂರಚನಾ drive_s drive;
+    ಸಂರಚನಾ nvme_ctrl *ctrl;
 
     u32 ns_id;
 
-    u64 lba_count;              /* The total amount of sectors. */
+    u64 lba_ಎಣಿಕೆ;              /* The total amount of sectors. */
 
     u32 block_size;
     u32 metadata_size;
@@ -121,34 +121,34 @@ struct nvme_namespace {
 
 /* Data structures for NVMe admin identify commands */
 
-struct nvme_identify_ctrl {
+ಸಂರಚನಾ nvme_identify_ctrl {
     u16 vid;
     u16 ssvid;
-    char sn[20];
-    char mn[40];
-    char fr[8];
+    ವರ್ಣ sn[20];
+    ವರ್ಣ mn[40];
+    ವರ್ಣ fr[8];
 
     u8 rab;
     u8 ieee[3];
     u8 cmic;
     u8 mdts;
 
-    char _boring[516 - 78];
+    ವರ್ಣ _boring[516 - 78];
 
     u32 nn;                     /* number of namespaces */
 };
 
-struct nvme_identify_ns_list {
+ಸಂರಚನಾ nvme_identify_ns_list {
     u32 ns_id[1024];
 };
 
-struct nvme_lba_format {
+ಸಂರಚನಾ nvme_lba_format {
     u16 ms;
     u8  lbads;
     u8  rp;
 };
 
-struct nvme_identify_ns {
+ಸಂರಚನಾ nvme_identify_ns {
     u64 nsze;
     u64 ncap;
     u64 nuse;
@@ -156,15 +156,15 @@ struct nvme_identify_ns {
     u8  nlbaf;
     u8  flbas;
 
-    char _boring[128 - 27];
+    ವರ್ಣ _boring[128 - 27];
 
-    struct nvme_lba_format lbaf[16];
+    ಸಂರಚನಾ nvme_lba_format lbaf[16];
 };
 
-union nvme_identify {
-    struct nvme_identify_ns      ns;
-    struct nvme_identify_ctrl    ctrl;
-    struct nvme_identify_ns_list ns_list;
+ಸಙ್ಘ nvme_identify {
+    ಸಂರಚನಾ nvme_identify_ns      ns;
+    ಸಂರಚನಾ nvme_identify_ctrl    ctrl;
+    ಸಂರಚನಾ nvme_identify_ns_list ns_list;
 };
 
 /* NVMe constants */

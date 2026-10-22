@@ -6,37 +6,37 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_*
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "paravirt.h" // RamSize
-#include "romfile.h" // romfile_findprefix
-#include "std/smbios.h" // struct smbios_21_entry_point
-#include "string.h" // memset
-#include "util.h" // MaxCountCPUs
-#include "x86.h" // cpuid
+#ಅನ್ತರ್ಭಾವ "config.h" // CONFIG_*
+#ಅನ್ತರ್ಭಾವ "malloc.h" // free
+#ಅನ್ತರ್ಭಾವ "output.h" // dprintf
+#ಅನ್ತರ್ಭಾವ "paravirt.h" // RamSize
+#ಅನ್ತರ್ಭಾವ "romfile.h" // romfile_findprefix
+#ಅನ್ತರ್ಭಾವ "std/smbios.h" // struct smbios_21_entry_point
+#ಅನ್ತರ್ಭಾವ "string.h" // memset
+#ಅನ್ತರ್ಭಾವ "util.h" // MaxCountCPUs
+#ಅನ್ತರ್ಭಾವ "x86.h" // cpuid
 
-static void
+ಸ್ಥಿರ ಶೂನ್ಯ
 smbios_21_entry_point_setup(u16 max_structure_size,
                          u16 structure_table_length,
-                         void *structure_table_address,
-                         u16 number_of_structures)
+                         ಶೂನ್ಯ *structure_table_address,
+                         u16 ಸಂಖ್ಯೆ_of_structures)
 {
-    void *finaltable;
-    if (structure_table_length <= BUILD_MAX_SMBIOS_FSEG)
+    ಶೂನ್ಯ *finaltable;
+    ಯದಿ (structure_table_length <= BUILD_MAX_SMBIOS_FSEG)
         // Table is small enough for f-seg - allocate there.  This
         // works around a bug in JunOS (at least for small SMBIOS tables).
         finaltable = malloc_fseg(structure_table_length);
-    else
-        finaltable = malloc_high(structure_table_length);
-    if (!finaltable) {
+    ಅನ್ಯಥಾ
+        finaltable = malloc_ಮೇಲಿನ(structure_table_length);
+    ಯದಿ (!finaltable) {
         warn_noalloc();
-        return;
+        ಪ್ರತ್ಯಾಗಮ;
     }
     memcpy(finaltable, structure_table_address, structure_table_length);
 
-    struct smbios_21_entry_point ep;
-    memset(&ep, 0, sizeof(ep));
+    ಸಂರಚನಾ smbios_21_entry_point ep;
+    memset(&ep, 0, ಪರಿಮಾಣ(ep));
     ep.signature = SMBIOS_21_SIGNATURE;
     ep.length = 0x1f;
     ep.smbios_major_version = 2;
@@ -46,57 +46,57 @@ smbios_21_entry_point_setup(u16 max_structure_size,
 
     ep.structure_table_length = structure_table_length;
     ep.structure_table_address = (u32)finaltable;
-    ep.number_of_structures = number_of_structures;
+    ep.ಸಂಖ್ಯೆ_of_structures = ಸಂಖ್ಯೆ_of_structures;
     ep.smbios_bcd_revision = 0x24;
 
     ep.checksum -= checksum(&ep, 0x10);
 
-    ep.intermediate_checksum -= checksum((void*)&ep + 0x10, ep.length - 0x10);
+    ep.intermediate_checksum -= checksum((ಶೂನ್ಯ*)&ep + 0x10, ep.length - 0x10);
 
     copy_smbios_21(&ep);
 }
 
-static int
-get_field(int type, int offset, void *dest)
+ಸ್ಥಿರ ಪೂರ್ಣಾಙ್ಕ
+get_field(ಪೂರ್ಣಾಙ್ಕ type, ಪೂರ್ಣಾಙ್ಕ offset, ಶೂನ್ಯ *dest)
 {
-    char name[128];
-    snprintf(name, sizeof(name), "smbios/field%d-%d", type, offset);
-    struct romfile_s *file = romfile_find(name);
-    if (!file)
-        return 0;
+    ವರ್ಣ name[128];
+    snprintf(name, ಪರಿಮಾಣ(name), "smbios/field%d-%d", type, offset);
+    ಸಂರಚನಾ romfile_s *file = romfile_find(name);
+    ಯದಿ (!file)
+        ಪ್ರತ್ಯಾಗಮ 0;
     file->copy(file, dest, file->size);
-    return file->size;
+    ಪ್ರತ್ಯಾಗಮ file->size;
 }
 
-static int
-get_external(int type, char **p, unsigned *nr_structs,
-             unsigned *max_struct_size, char *end)
+ಸ್ಥಿರ ಪೂರ್ಣಾಙ್ಕ
+get_external(ಪೂರ್ಣಾಙ್ಕ type, ವರ್ಣ **p, unsigned *nr_structs,
+             unsigned *max_struct_size, ವರ್ಣ *end)
 {
-    static u64 used_bitmap[4] = { 0 };
-    char *start = *p;
+    ಸ್ಥಿರ u64 used_bitmap[4] = { 0 };
+    ವರ್ಣ *start = *p;
 
     /* Check if we've already reported these tables */
-    if (used_bitmap[(type >> 6) & 0x3] & (1ULL << (type & 0x3f)))
-        return 1;
+    ಯದಿ (used_bitmap[(type >> 6) & 0x3] & (1ULL << (type & 0x3f)))
+        ಪ್ರತ್ಯಾಗಮ 1;
 
     /* Don't introduce spurious end markers */
-    if (type == 127)
-        return 0;
+    ಯದಿ (type == 127)
+        ಪ್ರತ್ಯಾಗಮ 0;
 
-    char prefix[128];
-    snprintf(prefix, sizeof(prefix), "smbios/table%d-", type);
-    struct romfile_s *file = NULL;
-    for (;;) {
+    ವರ್ಣ prefix[128];
+    snprintf(prefix, ಪರಿಮಾಣ(prefix), "smbios/table%d-", type);
+    ಸಂರಚನಾ romfile_s *file = ರಿಕ್ತ;
+    ಪ್ರತಿ (;;) {
         file = romfile_findprefix(prefix, file);
-        if (!file)
-            break;
+        ಯದಿ (!file)
+            ಭಙ್ಗ;
 
-        if (end - *p < file->size) {
+        ಯದಿ (end - *p < file->size) {
             warn_noalloc();
-            break;
+            ಭಙ್ಗ;
         }
 
-        struct smbios_structure_header *header = (void*)*p;
+        ಸಂರಚನಾ smbios_structure_header *header = (ಶೂನ್ಯ*)*p;
         file->copy(file, header, file->size);
         *p += file->size;
 
@@ -105,73 +105,73 @@ get_external(int type, char **p, unsigned *nr_structs,
          * terminator provides the first NULL. */
         *((u8*)*p) = 0;
         (*p)++;
-        if (header->length >= file->size) {
+        ಯದಿ (header->length >= file->size) {
             *((u8*)*p) = 0;
             (*p)++;
         }
 
         (*nr_structs)++;
-        if (*p - (char*)header > *max_struct_size)
-            *max_struct_size = *p - (char*)header;
+        ಯದಿ (*p - (ವರ್ಣ*)header > *max_struct_size)
+            *max_struct_size = *p - (ವರ್ಣ*)header;
     }
 
-    if (start == *p)
-        return 0;
+    ಯದಿ (start == *p)
+        ಪ್ರತ್ಯಾಗಮ 0;
 
     /* Mark that we've reported on this type */
     used_bitmap[(type >> 6) & 0x3] |= (1ULL << (type & 0x3f));
-    return 1;
+    ಪ್ರತ್ಯಾಗಮ 1;
 }
 
 #define load_str_field_with_default(type, field, def)                   \
-    do {                                                                \
-        size = get_field(type, offsetof(struct smbios_type_##type,      \
+    ಕುರು {                                                                \
+        size = get_field(type, offsetof(ಸಂರಚನಾ smbios_type_##type,      \
                                         field), end);                   \
-        if (size == 1) {                                                \
+        ಯದಿ (size == 1) {                                                \
             /* zero-length string, skip to avoid bogus end marker */    \
             p->field = 0;                                               \
-        } else if (size > 1) {                                          \
+        } ಅನ್ಯಥಾ ಯದಿ (size > 1) {                                          \
             end += size;                                                \
             p->field = ++str_index;                                     \
-        } else {                                                        \
-            memcpy(end, def, sizeof(def));                              \
-            end += sizeof(def);                                         \
+        } ಅನ್ಯಥಾ {                                                        \
+            memcpy(end, def, ಪರಿಮಾಣ(def));                              \
+            end += ಪರಿಮಾಣ(def);                                         \
             p->field = ++str_index;                                     \
         }                                                               \
-    } while (0)
+    } ಯಾವತ್ (0)
 
 #define load_str_field_or_skip(type, field)                             \
-    do {                                                                \
-        size = get_field(type, offsetof(struct smbios_type_##type,      \
+    ಕುರು {                                                                \
+        size = get_field(type, offsetof(ಸಂರಚನಾ smbios_type_##type,      \
                                         field), end);                   \
-        if (size > 1) {                                                 \
+        ಯದಿ (size > 1) {                                                 \
             end += size;                                                \
             p->field = ++str_index;                                     \
-        } else {                                                        \
+        } ಅನ್ಯಥಾ {                                                        \
             p->field = 0;                                               \
         }                                                               \
-    } while (0)
+    } ಯಾವತ್ (0)
 
 #define set_field_with_default(type, field, def)                        \
-    do {                                                                \
-        if (!get_field(type, offsetof(struct smbios_type_##type,        \
+    ಕುರು {                                                                \
+        ಯದಿ (!get_field(type, offsetof(ಸಂರಚನಾ smbios_type_##type,        \
                                       field), &p->field)) {             \
             p->field = def;                                             \
         }                                                               \
-    } while (0)
+    } ಯಾವತ್ (0)
 
 /* Type 0 -- BIOS Information */
 #define RELEASE_DATE_STR "01/01/2011"
-static void *
-smbios_init_type_0(void *start)
+ಸ್ಥಿರ ಶೂನ್ಯ *
+smbios_init_type_0(ಶೂನ್ಯ *start)
 {
-    struct smbios_type_0 *p = (struct smbios_type_0 *)start;
-    char *end = (char *)start + sizeof(struct smbios_type_0);
+    ಸಂರಚನಾ smbios_type_0 *p = (ಸಂರಚನಾ smbios_type_0 *)start;
+    ವರ್ಣ *end = (ವರ್ಣ *)start + ಪರಿಮಾಣ(ಸಂರಚನಾ smbios_type_0);
     size_t size;
-    int str_index = 0;
+    ಪೂರ್ಣಾಙ್ಕ str_index = 0;
 
     p->header.type = 0;
-    p->header.length = sizeof(struct smbios_type_0);
+    p->header.length = ಪರಿಮಾಣ(ಸಂರಚನಾ smbios_type_0);
     p->header.handle = 0;
 
     load_str_field_with_default(0, vendor_str, BUILD_APPNAME);
@@ -183,14 +183,14 @@ smbios_init_type_0(void *start)
 
     p->bios_rom_size = 0; /* FIXME */
 
-    if (!get_field(0, offsetof(struct smbios_type_0, bios_characteristics),
+    ಯದಿ (!get_field(0, offsetof(ಸಂರಚನಾ smbios_type_0, bios_characteristics),
                    &p->bios_characteristics)) {
         memset(p->bios_characteristics, 0, 8);
         /* BIOS characteristics not supported */
         p->bios_characteristics[0] = 0x08;
     }
 
-    if (!get_field(0, offsetof(struct smbios_type_0,
+    ಯದಿ (!get_field(0, offsetof(ಸಂರಚನಾ smbios_type_0,
                                bios_characteristics_extension_bytes),
                    &p->bios_characteristics_extension_bytes)) {
         p->bios_characteristics_extension_bytes[0] = 0;
@@ -205,69 +205,69 @@ smbios_init_type_0(void *start)
 
     *end = 0;
     end++;
-    if (!str_index) {
+    ಯದಿ (!str_index) {
         *end = 0;
         end++;
     }
 
-    return end;
+    ಪ್ರತ್ಯಾಗಮ end;
 }
 
 /* Type 1 -- System Information */
-static void *
-smbios_init_type_1(void *start)
+ಸ್ಥಿರ ಶೂನ್ಯ *
+smbios_init_type_1(ಶೂನ್ಯ *start)
 {
-    struct smbios_type_1 *p = (struct smbios_type_1 *)start;
-    char *end = (char *)start + sizeof(struct smbios_type_1);
+    ಸಂರಚನಾ smbios_type_1 *p = (ಸಂರಚನಾ smbios_type_1 *)start;
+    ವರ್ಣ *end = (ವರ್ಣ *)start + ಪರಿಮಾಣ(ಸಂರಚನಾ smbios_type_1);
     size_t size;
-    int str_index = 0;
+    ಪೂರ್ಣಾಙ್ಕ str_index = 0;
 
     p->header.type = 1;
-    p->header.length = sizeof(struct smbios_type_1);
+    p->header.length = ಪರಿಮಾಣ(ಸಂರಚನಾ smbios_type_1);
     p->header.handle = 0x100;
 
     load_str_field_with_default(1, manufacturer_str, BUILD_APPNAME);
     load_str_field_with_default(1, product_name_str, BUILD_APPNAME);
     load_str_field_or_skip(1, version_str);
-    load_str_field_or_skip(1, serial_number_str);
+    load_str_field_or_skip(1, serial_ಸಂಖ್ಯೆ_str);
 
-    if (!get_field(1, offsetof(struct smbios_type_1, uuid), &p->uuid))
+    ಯದಿ (!get_field(1, offsetof(ಸಂರಚನಾ smbios_type_1, uuid), &p->uuid))
         memset(p->uuid, 0, 16);
 
     set_field_with_default(1, wake_up_type, 0x06); /* power switch */
 
-    load_str_field_or_skip(1, sku_number_str);
+    load_str_field_or_skip(1, sku_ಸಂಖ್ಯೆ_str);
     load_str_field_or_skip(1, family_str);
 
     *end = 0;
     end++;
-    if (!str_index) {
+    ಯದಿ (!str_index) {
         *end = 0;
         end++;
     }
 
-    return end;
+    ಪ್ರತ್ಯಾಗಮ end;
 }
 
 /* Type 3 -- System Enclosure */
-static void *
-smbios_init_type_3(void *start)
+ಸ್ಥಿರ ಶೂನ್ಯ *
+smbios_init_type_3(ಶೂನ್ಯ *start)
 {
-    struct smbios_type_3 *p = (struct smbios_type_3 *)start;
-    char *end = (char *)start + sizeof(struct smbios_type_3);
+    ಸಂರಚನಾ smbios_type_3 *p = (ಸಂರಚನಾ smbios_type_3 *)start;
+    ವರ್ಣ *end = (ವರ್ಣ *)start + ಪರಿಮಾಣ(ಸಂರಚನಾ smbios_type_3);
     size_t size;
-    int str_index = 0;
+    ಪೂರ್ಣಾಙ್ಕ str_index = 0;
 
     p->header.type = 3;
-    p->header.length = sizeof(struct smbios_type_3);
+    p->header.length = ಪರಿಮಾಣ(ಸಂರಚನಾ smbios_type_3);
     p->header.handle = 0x300;
 
     load_str_field_with_default(3, manufacturer_str, BUILD_APPNAME);
     set_field_with_default(3, type, 0x01); /* other */
 
     load_str_field_or_skip(3, version_str);
-    load_str_field_or_skip(3, serial_number_str);
-    load_str_field_or_skip(3, asset_tag_number_str);
+    load_str_field_or_skip(3, serial_ಸಂಖ್ಯೆ_str);
+    load_str_field_or_skip(3, asset_tag_ಸಂಖ್ಯೆ_str);
 
     set_field_with_default(3, boot_up_state, 0x03); /* safe */
     set_field_with_default(3, power_supply_state, 0x03); /* safe */
@@ -276,39 +276,39 @@ smbios_init_type_3(void *start)
 
     set_field_with_default(3, oem_defined, 0);
     set_field_with_default(3, height, 0);
-    set_field_with_default(3, number_of_power_cords, 0);
-    set_field_with_default(3, contained_element_count, 0);
+    set_field_with_default(3, ಸಂಖ್ಯೆ_of_power_cords, 0);
+    set_field_with_default(3, contained_element_ಎಣಿಕೆ, 0);
 
     *end = 0;
     end++;
-    if (!str_index) {
+    ಯದಿ (!str_index) {
         *end = 0;
         end++;
     }
 
-    return end;
+    ಪ್ರತ್ಯಾಗಮ end;
 }
 
 /* Type 4 -- Processor Information */
-static void *
-smbios_init_type_4(void *start, unsigned int cpu_number)
+ಸ್ಥಿರ ಶೂನ್ಯ *
+smbios_init_type_4(ಶೂನ್ಯ *start, unsigned ಪೂರ್ಣಾಙ್ಕ cpu_ಸಂಖ್ಯೆ)
 {
-    struct smbios_type_4 *p = (struct smbios_type_4 *)start;
-    char *end = (char *)start + sizeof(struct smbios_type_4);
+    ಸಂರಚನಾ smbios_type_4 *p = (ಸಂರಚನಾ smbios_type_4 *)start;
+    ವರ್ಣ *end = (ವರ್ಣ *)start + ಪರಿಮಾಣ(ಸಂರಚನಾ smbios_type_4);
     size_t size;
-    int str_index = 0;
-    char name[1024];
+    ಪೂರ್ಣಾಙ್ಕ str_index = 0;
+    ವರ್ಣ name[1024];
 
     p->header.type = 4;
-    p->header.length = sizeof(struct smbios_type_4);
-    p->header.handle = 0x400 + cpu_number;
+    p->header.length = ಪರಿಮಾಣ(ಸಂರಚನಾ smbios_type_4);
+    p->header.handle = 0x400 + cpu_ಸಂಖ್ಯೆ;
 
-    size = get_field(4, offsetof(struct smbios_type_4, socket_designation_str),
+    size = get_field(4, offsetof(ಸಂರಚನಾ smbios_type_4, socket_designation_str),
                      name);
-    if (size)
-        snprintf(name + size - 1, sizeof(name) - size, "%2x", cpu_number);
-    else
-        snprintf(name, sizeof(name), "CPU%2x", cpu_number);
+    ಯದಿ (size)
+        snprintf(name + size - 1, ಪರಿಮಾಣ(name) - size, "%2x", cpu_ಸಂಖ್ಯೆ);
+    ಅನ್ಯಥಾ
+        snprintf(name, ಪರಿಮಾಣ(name), "CPU%2x", cpu_ಸಂಖ್ಯೆ);
 
     memcpy(end, name, strlen(name) + 1);
     end += strlen(name) + 1;
@@ -319,7 +319,7 @@ smbios_init_type_4(void *start, unsigned int cpu_number)
 
     load_str_field_with_default(4, processor_manufacturer_str, BUILD_APPNAME);
 
-    if (!get_field(4, offsetof(struct smbios_type_4, processor_id)
+    ಯದಿ (!get_field(4, offsetof(ಸಂರಚನಾ smbios_type_4, processor_id)
                    , p->processor_id)) {
         u32 cpuid_signature, ebx, ecx, cpuid_features;
         cpuid(1, &cpuid_signature, &ebx, &ecx, &cpuid_features);
@@ -344,22 +344,22 @@ smbios_init_type_4(void *start, unsigned int cpu_number)
 
     *end = 0;
     end++;
-    if (!str_index) {
+    ಯದಿ (!str_index) {
         *end = 0;
         end++;
     }
 
-    return end;
+    ಪ್ರತ್ಯಾಗಮ end;
 }
 
 /* Type 16 -- Physical Memory Array */
-static void *
-smbios_init_type_16(void *start, u32 memory_size_mb, int nr_mem_devs)
+ಸ್ಥಿರ ಶೂನ್ಯ *
+smbios_init_type_16(ಶೂನ್ಯ *start, u32 memory_size_mb, ಪೂರ್ಣಾಙ್ಕ nr_mem_devs)
 {
-    struct smbios_type_16 *p = (struct smbios_type_16*)start;
+    ಸಂರಚನಾ smbios_type_16 *p = (ಸಂರಚನಾ smbios_type_16*)start;
 
     p->header.type = 16;
-    p->header.length = sizeof(struct smbios_type_16);
+    p->header.length = ಪರಿಮಾಣ(ಸಂರಚನಾ smbios_type_16);
     p->header.handle = 0x1000;
 
     set_field_with_default(16, location, 0x01); /* other */
@@ -370,26 +370,26 @@ smbios_init_type_16(void *start, u32 memory_size_mb, int nr_mem_devs)
     p->maximum_capacity = memory_size_mb < 2 << 20 ?
                           memory_size_mb << 10 : 0x80000000;
     p->memory_error_information_handle = 0xfffe; /* none provided */
-    p->number_of_memory_devices = nr_mem_devs;
+    p->ಸಂಖ್ಯೆ_of_memory_devices = nr_mem_devs;
 
-    start += sizeof(struct smbios_type_16);
+    start += ಪರಿಮಾಣ(ಸಂರಚನಾ smbios_type_16);
     *((u16 *)start) = 0;
 
-    return start + 2;
+    ಪ್ರತ್ಯಾಗಮ start + 2;
 }
 
 /* Type 17 -- Memory Device */
-static void *
-smbios_init_type_17(void *start, u32 size_mb, int instance)
+ಸ್ಥಿರ ಶೂನ್ಯ *
+smbios_init_type_17(ಶೂನ್ಯ *start, u32 size_mb, ಪೂರ್ಣಾಙ್ಕ instance)
 {
-    struct smbios_type_17 *p = (struct smbios_type_17 *)start;
-    char *end = (char *)start + sizeof(struct smbios_type_17);
+    ಸಂರಚನಾ smbios_type_17 *p = (ಸಂರಚನಾ smbios_type_17 *)start;
+    ವರ್ಣ *end = (ವರ್ಣ *)start + ಪರಿಮಾಣ(ಸಂರಚನಾ smbios_type_17);
     size_t size;
-    int str_index = 0;
-    char name[1024];
+    ಪೂರ್ಣಾಙ್ಕ str_index = 0;
+    ವರ್ಣ name[1024];
 
     p->header.type = 17;
-    p->header.length = sizeof(struct smbios_type_17);
+    p->header.length = ಪರಿಮಾಣ(ಸಂರಚನಾ smbios_type_17);
     p->header.handle = 0x1100 + instance;
 
     p->physical_memory_array_handle = 0x1000;
@@ -400,12 +400,12 @@ smbios_init_type_17(void *start, u32 size_mb, int instance)
     set_field_with_default(17, form_factor, 0x09); /* DIMM */
     p->device_set = 0;
 
-    size = get_field(17, offsetof(struct smbios_type_17, device_locator_str),
+    size = get_field(17, offsetof(ಸಂರಚನಾ smbios_type_17, device_locator_str),
                      name);
-    if (size)
-        snprintf(name + size - 1, sizeof(name) - size, "%d", instance);
-    else
-        snprintf(name, sizeof(name), "DIMM %d", instance);
+    ಯದಿ (size)
+        snprintf(name + size - 1, ಪರಿಮಾಣ(name) - size, "%d", instance);
+    ಅನ್ಯಥಾ
+        snprintf(name, ಪರಿಮಾಣ(name), "DIMM %d", instance);
 
     memcpy(end, name, strlen(name) + 1);
     end += strlen(name) + 1;
@@ -417,22 +417,22 @@ smbios_init_type_17(void *start, u32 size_mb, int instance)
 
     *end = 0;
     end++;
-    if (!str_index) {
+    ಯದಿ (!str_index) {
         *end = 0;
         end++;
     }
 
-    return end;
+    ಪ್ರತ್ಯಾಗಮ end;
 }
 
 /* Type 19 -- Memory Array Mapped Address */
-static void *
-smbios_init_type_19(void *start, u32 start_mb, u32 size_mb, int instance)
+ಸ್ಥಿರ ಶೂನ್ಯ *
+smbios_init_type_19(ಶೂನ್ಯ *start, u32 start_mb, u32 size_mb, ಪೂರ್ಣಾಙ್ಕ instance)
 {
-    struct smbios_type_19 *p = (struct smbios_type_19 *)start;
+    ಸಂರಚನಾ smbios_type_19 *p = (ಸಂರಚನಾ smbios_type_19 *)start;
 
     p->header.type = 19;
-    p->header.length = sizeof(struct smbios_type_19);
+    p->header.length = ಪರಿಮಾಣ(ಸಂರಚನಾ smbios_type_19);
     p->header.handle = 0x1300 + instance;
 
     p->starting_address = start_mb << 10;
@@ -440,21 +440,21 @@ smbios_init_type_19(void *start, u32 start_mb, u32 size_mb, int instance)
     p->memory_array_handle = 0x1000;
     p->partition_width = 1;
 
-    start += sizeof(struct smbios_type_19);
+    start += ಪರಿಮಾಣ(ಸಂರಚನಾ smbios_type_19);
     *((u16 *)start) = 0;
 
-    return start + 2;
+    ಪ್ರತ್ಯಾಗಮ start + 2;
 }
 
 /* Type 20 -- Memory Device Mapped Address */
-static void *
-smbios_init_type_20(void *start, u32 start_mb, u32 size_mb, int instance,
-                    int dev_handle, int array_handle)
+ಸ್ಥಿರ ಶೂನ್ಯ *
+smbios_init_type_20(ಶೂನ್ಯ *start, u32 start_mb, u32 size_mb, ಪೂರ್ಣಾಙ್ಕ instance,
+                    ಪೂರ್ಣಾಙ್ಕ dev_handle, ಪೂರ್ಣಾಙ್ಕ array_handle)
 {
-    struct smbios_type_20 *p = (struct smbios_type_20 *)start;
+    ಸಂರಚನಾ smbios_type_20 *p = (ಸಂರಚನಾ smbios_type_20 *)start;
 
     p->header.type = 20;
-    p->header.length = sizeof(struct smbios_type_20);
+    p->header.length = ಪರಿಮಾಣ(ಸಂರಚನಾ smbios_type_20);
     p->header.handle = 0x1400 + instance;
 
     p->starting_address = start_mb << 10;
@@ -465,92 +465,92 @@ smbios_init_type_20(void *start, u32 start_mb, u32 size_mb, int instance,
     p->interleave_position = 0;
     p->interleaved_data_depth = 0;
 
-    start += sizeof(struct smbios_type_20);
+    start += ಪರಿಮಾಣ(ಸಂರಚನಾ smbios_type_20);
 
     *((u16 *)start) = 0;
-    return start+2;
+    ಪ್ರತ್ಯಾಗಮ start+2;
 }
 
 /* Type 32 -- System Boot Information */
-static void *
-smbios_init_type_32(void *start)
+ಸ್ಥಿರ ಶೂನ್ಯ *
+smbios_init_type_32(ಶೂನ್ಯ *start)
 {
-    struct smbios_type_32 *p = (struct smbios_type_32 *)start;
+    ಸಂರಚನಾ smbios_type_32 *p = (ಸಂರಚನಾ smbios_type_32 *)start;
 
     p->header.type = 32;
-    p->header.length = sizeof(struct smbios_type_32);
+    p->header.length = ಪರಿಮಾಣ(ಸಂರಚನಾ smbios_type_32);
     p->header.handle = 0x2000;
     memset(p->reserved, 0, 6);
     set_field_with_default(32, boot_status, 0); /* no errors detected */
 
-    start += sizeof(struct smbios_type_32);
+    start += ಪರಿಮಾಣ(ಸಂರಚನಾ smbios_type_32);
     *((u16 *)start) = 0;
 
-    return start+2;
+    ಪ್ರತ್ಯಾಗಮ start+2;
 }
 
 /* Type 127 -- End of Table */
-static void *
-smbios_init_type_127(void *start)
+ಸ್ಥಿರ ಶೂನ್ಯ *
+smbios_init_type_127(ಶೂನ್ಯ *start)
 {
-    struct smbios_type_127 *p = (struct smbios_type_127 *)start;
+    ಸಂರಚನಾ smbios_type_127 *p = (ಸಂರಚನಾ smbios_type_127 *)start;
 
     p->header.type = 127;
-    p->header.length = sizeof(struct smbios_type_127);
+    p->header.length = ಪರಿಮಾಣ(ಸಂರಚನಾ smbios_type_127);
     p->header.handle = 0x7f00;
 
-    start += sizeof(struct smbios_type_127);
+    start += ಪರಿಮಾಣ(ಸಂರಚನಾ smbios_type_127);
     *((u16 *)start) = 0;
 
-    return start + 2;
+    ಪ್ರತ್ಯಾಗಮ start + 2;
 }
 
 #define TEMPSMBIOSSIZE (32 * 1024)
 
-void
-smbios_legacy_setup(void)
+ಶೂನ್ಯ
+smbios_legacy_setup(ಶೂನ್ಯ)
 {
-    if (! CONFIG_SMBIOS)
-        return;
+    ಯದಿ (! CONFIG_SMBIOS)
+        ಪ್ರತ್ಯಾಗಮ;
 
     dprintf(3, "init SMBIOS tables\n");
 
-    char *start = malloc_tmphigh(TEMPSMBIOSSIZE);
-    if (! start) {
+    ವರ್ಣ *start = malloc_tmphigh(TEMPSMBIOSSIZE);
+    ಯದಿ (! start) {
         warn_noalloc();
-        return;
+        ಪ್ರತ್ಯಾಗಮ;
     }
     memset(start, 0, TEMPSMBIOSSIZE);
 
     u32 nr_structs = 0, max_struct_size = 0;
-    char *q, *p = start;
-    char *end = start + TEMPSMBIOSSIZE - sizeof(struct smbios_type_127);
+    ವರ್ಣ *q, *p = start;
+    ವರ್ಣ *end = start + TEMPSMBIOSSIZE - ಪರಿಮಾಣ(ಸಂರಚನಾ smbios_type_127);
 
 #define add_struct(type, args...)                                       \
-    do {                                                                \
-        if (!get_external(type, &p, &nr_structs, &max_struct_size, end)) { \
+    ಕುರು {                                                                \
+        ಯದಿ (!get_external(type, &p, &nr_structs, &max_struct_size, end)) { \
             q = smbios_init_type_##type(args);                          \
             nr_structs++;                                               \
-            if ((q - p) > max_struct_size)                              \
+            ಯದಿ ((q - p) > max_struct_size)                              \
                 max_struct_size = q - p;                                \
             p = q;                                                      \
         }                                                               \
-    } while (0)
+    } ಯಾವತ್ (0)
 
     add_struct(0, p);
     add_struct(1, p);
     add_struct(3, p);
 
-    int cpu_num;
-    for (cpu_num = 1; cpu_num <= MaxCountCPUs; cpu_num++)
-        add_struct(4, p, cpu_num);
+    ಪೂರ್ಣಾಙ್ಕ cpu_ಅಂಕೆ;
+    ಪ್ರತಿ (cpu_ಅಂಕೆ = 1; cpu_ಅಂಕೆ <= Max_ಎಣಿಕೆ_CPUs; cpu_ಅಂಕೆ++)
+        add_struct(4, p, cpu_ಅಂಕೆ);
 
-    int ram_mb = (RamSize + RamSizeOver4G) >> 20;
-    int nr_mem_devs = (ram_mb + 0x3fff) >> 14;
+    ಪೂರ್ಣಾಙ್ಕ ram_mb = (RamSize + RamSizeOver4G) >> 20;
+    ಪೂರ್ಣಾಙ್ಕ nr_mem_devs = (ram_mb + 0x3fff) >> 14;
     add_struct(16, p, ram_mb, nr_mem_devs);
 
-    int i, j;
-    for (i = 0; i < nr_mem_devs; i++) {
+    ಪೂರ್ಣಾಙ್ಕ i, j;
+    ಪ್ರತಿ (i = 0; i < nr_mem_devs; i++) {
         u32 dev_mb = ((i == (nr_mem_devs - 1))
                       ? (((ram_mb - 1) & 0x3fff) + 1)
                       : 16384);
@@ -558,17 +558,17 @@ smbios_legacy_setup(void)
     }
 
     add_struct(19, p, 0, RamSize >> 20, 0);
-    if (RamSizeOver4G)
+    ಯದಿ (RamSizeOver4G)
         add_struct(19, p, 4096, RamSizeOver4G >> 20, 1);
 
     add_struct(20, p, 0, RamSize >> 20, 0, 0, 0);
-    if (RamSizeOver4G) {
+    ಯದಿ (RamSizeOver4G) {
         u32 start_mb = 4096;
-        for (j = 1, i = 0; i < nr_mem_devs; i++, j++) {
+        ಪ್ರತಿ (j = 1, i = 0; i < nr_mem_devs; i++, j++) {
             u32 dev_mb = ((i == (nr_mem_devs - 1))
                                ? (((ram_mb - 1) & 0x3fff) + 1)
                                : 16384);
-            if (i == 0)
+            ಯದಿ (i == 0)
                 dev_mb -= RamSize >> 20;
 
             add_struct(20, p, start_mb, dev_mb, j, i, 1);
@@ -578,12 +578,12 @@ smbios_legacy_setup(void)
 
     add_struct(32, p);
     /* Add any remaining provided entries before the end marker */
-    for (i = 0; i < 256; i++)
+    ಪ್ರತಿ (i = 0; i < 256; i++)
         get_external(i, &p, &nr_structs, &max_struct_size, end);
     add_struct(127, p);
 
 #undef add_struct
 
     smbios_21_entry_point_setup(max_struct_size, p - start, start, nr_structs);
-    free(start);
+    ಮುಕ್ತ(start);
 }

@@ -1,12 +1,12 @@
 #ifndef __ACPI_H
 #define __ACPI_H
 
-#include "types.h" // u32
+#ಅನ್ತರ್ಭಾವ "types.h" // u32
 
 /*
  * ACPI 2.0 Generic Address Space definition.
  */
-struct acpi_20_generic_address {
+ಸಂರಚನಾ acpi_20_generic_address {
     u8  address_space_id;
     u8  register_bit_width;
     u8  register_bit_offset;
@@ -16,7 +16,7 @@ struct acpi_20_generic_address {
 
 #define RSDP_SIGNATURE 0x2052545020445352LL // "RSD PTR "
 
-struct rsdp_descriptor {        /* Root System Descriptor Pointer */
+ಸಂರಚನಾ rsdp_descriptor {        /* Root System Descriptor Pointer */
     u64 signature;              /* ACPI signature, contains "RSD PTR " */
     u8  checksum;               /* To make sum of struct == 0 */
     u8  oem_id [6];             /* OEM identification */
@@ -66,13 +66,13 @@ struct rsdp_descriptor {        /* Root System Descriptor Pointer */
 #define    ACPI_FADT_F_FORCE_APIC_CLUSTER_MODEL  (1 << 18)
 #define    ACPI_FADT_F_FORCE_APIC_PHYSICAL_DESTINATION_MODE  (1 << 19)
 #define    ACPI_FADT_F_HW_REDUCED_ACPI    (1 << 20)
-#define    ACPI_FADT_F_LOW_POWER_S0_IDLE_CAPABLE  (1 << 21)
+#define    ACPI_FADT_F_ಕೆಳಗಿನ_POWER_S0_IDLE_CAPABLE  (1 << 21)
 
 /*
  * ACPI 1.0 Fixed ACPI Description Table (FADT)
  */
 #define FACP_SIGNATURE 0x50434146 // FACP
-struct fadt_descriptor_rev1
+ಸಂರಚನಾ fadt_descriptor_rev1
 {
     ACPI_TABLE_HEADER_DEF     /* ACPI common table header */
     u32 firmware_ctrl;          /* Physical address of FACS */
@@ -116,7 +116,7 @@ struct fadt_descriptor_rev1
     u32 flags;
 } PACKED;
 
-struct acpi_table_header         /* ACPI common table header */
+ಸಂರಚನಾ acpi_table_header         /* ACPI common table header */
 {
     ACPI_TABLE_HEADER_DEF
 } PACKED;
@@ -125,7 +125,7 @@ struct acpi_table_header         /* ACPI common table header */
  * ACPI 1.0 Root System Description Table (RSDT)
  */
 #define RSDT_SIGNATURE 0x54445352 // RSDT
-struct rsdt_descriptor_rev1
+ಸಂರಚನಾ rsdt_descriptor_rev1
 {
     ACPI_TABLE_HEADER_DEF       /* ACPI common table header */
     u32 table_offset_entry[0];  /* Array of pointers to other */
@@ -136,7 +136,7 @@ struct rsdt_descriptor_rev1
  * ACPI 2.0 eXtended System Description Table (XSDT)
  */
 #define XSDT_SIGNATURE 0x54445358 // XSDT
-struct xsdt_descriptor_rev2
+ಸಂರಚನಾ xsdt_descriptor_rev2
 {
     ACPI_TABLE_HEADER_DEF       /* ACPI common table header */
     u64 table_offset_entry[0];  /* Array of pointers to other */
@@ -147,7 +147,7 @@ struct xsdt_descriptor_rev2
  * ACPI 1.0 Firmware ACPI Control Structure (FACS)
  */
 #define FACS_SIGNATURE 0x53434146 // FACS
-struct facs_descriptor_rev1
+ಸಂರಚನಾ facs_descriptor_rev1
 {
     u32 signature;           /* ACPI Signature */
     u32 length;                 /* Length of structure, in bytes */
@@ -175,7 +175,7 @@ struct facs_descriptor_rev1
 /* Master MADT */
 
 #define APIC_SIGNATURE 0x43495041 // APIC
-struct multiple_apic_table
+ಸಂರಚನಾ multiple_apic_table
 {
     ACPI_TABLE_HEADER_DEF     /* ACPI common table header */
     u32 local_apic_address;     /* Physical address of local APIC */
@@ -204,7 +204,7 @@ struct multiple_apic_table
 
 /* Sub-structures for MADT */
 
-struct madt_processor_apic
+ಸಂರಚನಾ madt_processor_apic
 {
     ACPI_SUB_HEADER_DEF
     u8  processor_id;           /* ACPI processor id */
@@ -212,7 +212,7 @@ struct madt_processor_apic
     u32 flags;
 } PACKED;
 
-struct madt_io_apic
+ಸಂರಚನಾ madt_io_apic
 {
     ACPI_SUB_HEADER_DEF
     u8  io_apic_id;             /* I/O APIC ID */
@@ -222,7 +222,7 @@ struct madt_io_apic
                                  * lines start */
 } PACKED;
 
-struct madt_intsrcovr {
+ಸಂರಚನಾ madt_intsrcovr {
     ACPI_SUB_HEADER_DEF
     u8  bus;
     u8  source;
@@ -230,7 +230,7 @@ struct madt_intsrcovr {
     u16 flags;
 } PACKED;
 
-struct madt_local_nmi {
+ಸಂರಚನಾ madt_local_nmi {
     ACPI_SUB_HEADER_DEF
     u8  processor_id;           /* ACPI processor id */
     u16 flags;                  /* MPS INTI flags */
@@ -241,11 +241,11 @@ struct madt_local_nmi {
  * HPET Description Table
  */
 #define HPET_SIGNATURE 0x54455048 // HPET
-struct acpi_20_hpet {
+ಸಂರಚನಾ acpi_20_hpet {
     ACPI_TABLE_HEADER_DEF                    /* ACPI common table header */
     u32           timer_block_id;
-    struct acpi_20_generic_address addr;
-    u8            hpet_number;
+    ಸಂರಚನಾ acpi_20_generic_address addr;
+    u8            hpet_ಸಂಖ್ಯೆ;
     u16           min_tick;
     u8            page_protect;
 } PACKED;
@@ -255,7 +255,7 @@ struct acpi_20_hpet {
  */
 
 #define SRAT_SIGNATURE 0x54415253 // SRAT
-struct system_resource_affinity_table
+ಸಂರಚನಾ system_resource_affinity_table
 {
     ACPI_TABLE_HEADER_DEF
     u32    reserved1;
@@ -265,7 +265,7 @@ struct system_resource_affinity_table
 #define SRAT_PROCESSOR          0
 #define SRAT_MEMORY             1
 
-struct srat_processor_affinity
+ಸಂರಚನಾ srat_processor_affinity
 {
     ACPI_SUB_HEADER_DEF
     u8     proximity_lo;
@@ -276,7 +276,7 @@ struct srat_processor_affinity
     u32    reserved;
 } PACKED;
 
-struct srat_memory_affinity
+ಸಂರಚನಾ srat_memory_affinity
 {
     ACPI_SUB_HEADER_DEF
     u8     proximity[4];
@@ -290,23 +290,23 @@ struct srat_memory_affinity
 
 /* PCI fw r3.0 MCFG table. */
 /* Subtable */
-struct acpi_mcfg_allocation {
+ಸಂರಚನಾ acpi_mcfg_allocation {
     u64 address;                /* Base address, processor-relative */
     u16 pci_segment;            /* PCI segment group number */
-    u8 start_bus_number;       /* Starting PCI Bus number */
-    u8 end_bus_number;         /* Final PCI Bus number */
+    u8 start_bus_ಸಂಖ್ಯೆ;       /* Starting PCI Bus number */
+    u8 end_bus_ಸಂಖ್ಯೆ;         /* Final PCI Bus number */
     u32 reserved;
 } PACKED;
 
 #define MCFG_SIGNATURE 0x4746434d       // MCFG
-struct acpi_table_mcfg {
+ಸಂರಚನಾ acpi_table_mcfg {
     ACPI_TABLE_HEADER_DEF;
     u8 reserved[8];
-    struct acpi_mcfg_allocation allocation[0];
+    ಸಂರಚನಾ acpi_mcfg_allocation allocation[0];
 } PACKED;
 
 #define TCPA_SIGNATURE 0x41504354
-struct tcpa_descriptor_rev2
+ಸಂರಚನಾ tcpa_descriptor_rev2
 {
     ACPI_TABLE_HEADER_DEF
     u16  platform_class;
@@ -319,7 +319,7 @@ struct tcpa_descriptor_rev2
 #define TCPA_ACPI_CLASS_SERVER          1
 
 #define TPM2_SIGNATURE 0x324D5054
-struct tpm2_descriptor_rev2
+ಸಂರಚನಾ tpm2_descriptor_rev2
 {
     ACPI_TABLE_HEADER_DEF
     u16  platform_class;

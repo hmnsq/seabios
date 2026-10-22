@@ -4,23 +4,23 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_GLOBAL
-#include "config.h" // CONFIG_*
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "romfile.h" // romfile_loadint
-#include "string.h" // memset
-#include "usb.h" // struct usb_s
-#include "usb-ehci.h" // ehci_setup
-#include "usb-xhci.h" // xhci_setup
-#include "usb-hid.h" // usb_keyboard_setup
-#include "usb-hub.h" // usb_hub_setup
-#include "usb-msc.h" // usb_msc_setup
-#include "usb-ohci.h" // ohci_setup
-#include "usb-uas.h" // usb_uas_setup
-#include "usb-uhci.h" // uhci_setup
-#include "util.h" // msleep
-#include "x86.h" // __fls
+#ಅನ್ತರ್ಭಾವ "biosvar.h" // GET_GLOBAL
+#ಅನ್ತರ್ಭಾವ "config.h" // CONFIG_*
+#ಅನ್ತರ್ಭಾವ "malloc.h" // free
+#ಅನ್ತರ್ಭಾವ "output.h" // dprintf
+#ಅನ್ತರ್ಭಾವ "romfile.h" // romfile_loadint
+#ಅನ್ತರ್ಭಾವ "string.h" // memset
+#ಅನ್ತರ್ಭಾವ "usb.h" // struct usb_s
+#ಅನ್ತರ್ಭಾವ "usb-ehci.h" // ehci_setup
+#ಅನ್ತರ್ಭಾವ "usb-xhci.h" // xhci_setup
+#ಅನ್ತರ್ಭಾವ "usb-hid.h" // usb_keyboard_setup
+#ಅನ್ತರ್ಭಾವ "usb-hub.h" // usb_hub_setup
+#ಅನ್ತರ್ಭಾವ "usb-msc.h" // usb_msc_setup
+#ಅನ್ತರ್ಭಾವ "usb-ohci.h" // ohci_setup
+#ಅನ್ತರ್ಭಾವ "usb-uas.h" // usb_uas_setup
+#ಅನ್ತರ್ಭಾವ "usb-uhci.h" // uhci_setup
+#ಅನ್ತರ್ಭಾವ "util.h" // msleep
+#ಅನ್ತರ್ಭಾವ "x86.h" // __fls
 
 
 /****************************************************************
@@ -28,66 +28,66 @@
  ****************************************************************/
 
 // Allocate, update, or free a usb pipe.
-static struct usb_pipe *
-usb_realloc_pipe(struct usbdevice_s *usbdev, struct usb_pipe *pipe
-                 , struct usb_endpoint_descriptor *epdesc)
+ಸ್ಥಿರ ಸಂರಚನಾ usb_pipe *
+usb_realloc_pipe(ಸಂರಚನಾ usbdevice_s *usbdev, ಸಂರಚನಾ usb_pipe *pipe
+                 , ಸಂರಚನಾ usb_endpoint_descriptor *epdesc)
 {
-    switch (usbdev->hub->cntl->type) {
-    default:
-    case USB_TYPE_UHCI:
-        return uhci_realloc_pipe(usbdev, pipe, epdesc);
-    case USB_TYPE_OHCI:
-        return ohci_realloc_pipe(usbdev, pipe, epdesc);
-    case USB_TYPE_EHCI:
-        return ehci_realloc_pipe(usbdev, pipe, epdesc);
-    case USB_TYPE_XHCI:
-        return xhci_realloc_pipe(usbdev, pipe, epdesc);
+    ವಿಕಲ್ಪ (usbdev->hub->cntl->type) {
+    ಸ್ವಭಾವ:
+    ಪಕ್ಷ USB_TYPE_UHCI:
+        ಪ್ರತ್ಯಾಗಮ uhci_realloc_pipe(usbdev, pipe, epdesc);
+    ಪಕ್ಷ USB_TYPE_OHCI:
+        ಪ್ರತ್ಯಾಗಮ ohci_realloc_pipe(usbdev, pipe, epdesc);
+    ಪಕ್ಷ USB_TYPE_EHCI:
+        ಪ್ರತ್ಯಾಗಮ ehci_realloc_pipe(usbdev, pipe, epdesc);
+    ಪಕ್ಷ USB_TYPE_XHCI:
+        ಪ್ರತ್ಯಾಗಮ xhci_realloc_pipe(usbdev, pipe, epdesc);
     }
 }
 
 // Send a message on a control pipe using the default control descriptor.
-static int
-usb_send_pipe(struct usb_pipe *pipe_fl, int dir, const void *cmd
-              , void *data, int datasize)
+ಸ್ಥಿರ ಪೂರ್ಣಾಙ್ಕ
+usb_send_pipe(ಸಂರಚನಾ usb_pipe *pipe_fl, ಪೂರ್ಣಾಙ್ಕ dir, ಧ್ರುವ ಶೂನ್ಯ *cmd
+              , ಶೂನ್ಯ *data, ಪೂರ್ಣಾಙ್ಕ datasize)
 {
-    switch (GET_LOWFLAT(pipe_fl->type)) {
-    default:
-    case USB_TYPE_UHCI:
-        return uhci_send_pipe(pipe_fl, dir, cmd, data, datasize);
-    case USB_TYPE_OHCI:
-        if (MODESEGMENT)
-            return -1;
-        return ohci_send_pipe(pipe_fl, dir, cmd, data, datasize);
-    case USB_TYPE_EHCI:
-        return ehci_send_pipe(pipe_fl, dir, cmd, data, datasize);
-    case USB_TYPE_XHCI:
-        if (MODESEGMENT)
-            return -1;
-        return xhci_send_pipe(pipe_fl, dir, cmd, data, datasize);
+    ವಿಕಲ್ಪ (GET_LOWFLAT(pipe_fl->type)) {
+    ಸ್ವಭಾವ:
+    ಪಕ್ಷ USB_TYPE_UHCI:
+        ಪ್ರತ್ಯಾಗಮ uhci_send_pipe(pipe_fl, dir, cmd, data, datasize);
+    ಪಕ್ಷ USB_TYPE_OHCI:
+        ಯದಿ (MODESEGMENT)
+            ಪ್ರತ್ಯಾಗಮ -1;
+        ಪ್ರತ್ಯಾಗಮ ohci_send_pipe(pipe_fl, dir, cmd, data, datasize);
+    ಪಕ್ಷ USB_TYPE_EHCI:
+        ಪ್ರತ್ಯಾಗಮ ehci_send_pipe(pipe_fl, dir, cmd, data, datasize);
+    ಪಕ್ಷ USB_TYPE_XHCI:
+        ಯದಿ (MODESEGMENT)
+            ಪ್ರತ್ಯಾಗಮ -1;
+        ಪ್ರತ್ಯಾಗಮ xhci_send_pipe(pipe_fl, dir, cmd, data, datasize);
     }
 }
 
-int
-usb_poll_intr(struct usb_pipe *pipe_fl, void *data)
+ಪೂರ್ಣಾಙ್ಕ
+usb_poll_intr(ಸಂರಚನಾ usb_pipe *pipe_fl, ಶೂನ್ಯ *data)
 {
     ASSERT16();
-    switch (GET_LOWFLAT(pipe_fl->type)) {
-    default:
-    case USB_TYPE_UHCI:
-        return uhci_poll_intr(pipe_fl, data);
-    case USB_TYPE_OHCI:
-        return ohci_poll_intr(pipe_fl, data);
-    case USB_TYPE_EHCI:
-        return ehci_poll_intr(pipe_fl, data);
-    case USB_TYPE_XHCI: ;
-        return call32_params(xhci_poll_intr, pipe_fl
+    ವಿಕಲ್ಪ (GET_LOWFLAT(pipe_fl->type)) {
+    ಸ್ವಭಾವ:
+    ಪಕ್ಷ USB_TYPE_UHCI:
+        ಪ್ರತ್ಯಾಗಮ uhci_poll_intr(pipe_fl, data);
+    ಪಕ್ಷ USB_TYPE_OHCI:
+        ಪ್ರತ್ಯಾಗಮ ohci_poll_intr(pipe_fl, data);
+    ಪಕ್ಷ USB_TYPE_EHCI:
+        ಪ್ರತ್ಯಾಗಮ ehci_poll_intr(pipe_fl, data);
+    ಪಕ್ಷ USB_TYPE_XHCI: ;
+        ಪ್ರತ್ಯಾಗಮ call32_params(xhci_poll_intr, pipe_fl
                              , MAKE_FLATPTR(GET_SEG(SS), data), 0, -1);
     }
 }
 
-int usb_32bit_pipe(struct usb_pipe *pipe_fl)
+ಪೂರ್ಣಾಙ್ಕ usb_32bit_pipe(ಸಂರಚನಾ usb_pipe *pipe_fl)
 {
-    return (CONFIG_USB_XHCI && GET_LOWFLAT(pipe_fl->type) == USB_TYPE_XHCI)
+    ಪ್ರತ್ಯಾಗಮ (CONFIG_USB_XHCI && GET_LOWFLAT(pipe_fl->type) == USB_TYPE_XHCI)
         || (CONFIG_USB_OHCI && GET_LOWFLAT(pipe_fl->type) == USB_TYPE_OHCI);
 }
 
@@ -97,81 +97,81 @@ int usb_32bit_pipe(struct usb_pipe *pipe_fl)
  ****************************************************************/
 
 // Allocate a usb pipe.
-struct usb_pipe *
-usb_alloc_pipe(struct usbdevice_s *usbdev
-               , struct usb_endpoint_descriptor *epdesc)
+ಸಂರಚನಾ usb_pipe *
+usb_alloc_pipe(ಸಂರಚನಾ usbdevice_s *usbdev
+               , ಸಂರಚನಾ usb_endpoint_descriptor *epdesc)
 {
-    return usb_realloc_pipe(usbdev, NULL, epdesc);
+    ಪ್ರತ್ಯಾಗಮ usb_realloc_pipe(usbdev, ರಿಕ್ತ, epdesc);
 }
 
 // Free an allocated control or bulk pipe.
-void
-usb_free_pipe(struct usbdevice_s *usbdev, struct usb_pipe *pipe)
+ಶೂನ್ಯ
+usb_free_pipe(ಸಂರಚನಾ usbdevice_s *usbdev, ಸಂರಚನಾ usb_pipe *pipe)
 {
-    if (!pipe)
-        return;
-    usb_realloc_pipe(usbdev, pipe, NULL);
+    ಯದಿ (!pipe)
+        ಪ್ರತ್ಯಾಗಮ;
+    usb_realloc_pipe(usbdev, pipe, ರಿಕ್ತ);
 }
 
 // Send a message to the default control pipe of a device.
-int
-usb_send_default_control(struct usb_pipe *pipe, const struct usb_ctrlrequest *req
-                         , void *data)
+ಪೂರ್ಣಾಙ್ಕ
+usb_send_default_control(ಸಂರಚನಾ usb_pipe *pipe, ಧ್ರುವ ಸಂರಚನಾ usb_ctrlrequest *req
+                         , ಶೂನ್ಯ *data)
 {
-    return usb_send_pipe(pipe, req->bRequestType & USB_DIR_IN, req
+    ಪ್ರತ್ಯಾಗಮ usb_send_pipe(pipe, req->bRequestType & USB_DIR_IN, req
                          , data, req->wLength);
 }
 
 // Send a message to a bulk endpoint
-int
-usb_send_bulk(struct usb_pipe *pipe_fl, int dir, void *data, int datasize)
+ಪೂರ್ಣಾಙ್ಕ
+usb_send_bulk(ಸಂರಚನಾ usb_pipe *pipe_fl, ಪೂರ್ಣಾಙ್ಕ dir, ಶೂನ್ಯ *data, ಪೂರ್ಣಾಙ್ಕ datasize)
 {
-    return usb_send_pipe(pipe_fl, dir, NULL, data, datasize);
+    ಪ್ರತ್ಯಾಗಮ usb_send_pipe(pipe_fl, dir, ರಿಕ್ತ, data, datasize);
 }
 
 // Check if a pipe for a given controller is on the freelist
-int
-usb_is_freelist(struct usb_s *cntl, struct usb_pipe *pipe)
+ಪೂರ್ಣಾಙ್ಕ
+usb_is_freelist(ಸಂರಚನಾ usb_s *cntl, ಸಂರಚನಾ usb_pipe *pipe)
 {
-    return pipe->cntl != cntl;
+    ಪ್ರತ್ಯಾಗಮ pipe->cntl != cntl;
 }
 
 // Add a pipe to the controller's freelist
-void
-usb_add_freelist(struct usb_pipe *pipe)
+ಶೂನ್ಯ
+usb_add_freelist(ಸಂರಚನಾ usb_pipe *pipe)
 {
-    if (!pipe)
-        return;
-    struct usb_s *cntl = pipe->cntl;
+    ಯದಿ (!pipe)
+        ಪ್ರತ್ಯಾಗಮ;
+    ಸಂರಚನಾ usb_s *cntl = pipe->cntl;
     pipe->freenext = cntl->freelist;
     cntl->freelist = pipe;
 }
 
 // Check for an available pipe on the freelist.
-struct usb_pipe *
-usb_get_freelist(struct usb_s *cntl, u8 eptype)
+ಸಂರಚನಾ usb_pipe *
+usb_get_freelist(ಸಂರಚನಾ usb_s *cntl, u8 eptype)
 {
-    struct usb_pipe **pfree = &cntl->freelist;
-    for (;;) {
-        struct usb_pipe *pipe = *pfree;
-        if (!pipe)
-            return NULL;
-        if (pipe->eptype == eptype) {
+    ಸಂರಚನಾ usb_pipe **pfree = &cntl->freelist;
+    ಪ್ರತಿ (;;) {
+        ಸಂರಚನಾ usb_pipe *pipe = *pfree;
+        ಯದಿ (!pipe)
+            ಪ್ರತ್ಯಾಗಮ ರಿಕ್ತ;
+        ಯದಿ (pipe->eptype == eptype) {
             *pfree = pipe->freenext;
-            return pipe;
+            ಪ್ರತ್ಯಾಗಮ pipe;
         }
         pfree = &pipe->freenext;
     }
 }
 
 // Fill "pipe" endpoint info from an endpoint descriptor.
-void
-usb_desc2pipe(struct usb_pipe *pipe, struct usbdevice_s *usbdev
-              , struct usb_endpoint_descriptor *epdesc)
+ಶೂನ್ಯ
+usb_desc2pipe(ಸಂರಚನಾ usb_pipe *pipe, ಸಂರಚನಾ usbdevice_s *usbdev
+              , ಸಂರಚನಾ usb_endpoint_descriptor *epdesc)
 {
     pipe->cntl = usbdev->hub->cntl;
     pipe->type = usbdev->hub->cntl->type;
-    pipe->ep = epdesc->bEndpointAddress & USB_ENDPOINT_NUMBER_MASK;
+    pipe->ep = epdesc->bEndpointAddress & USB_ENDPOINT_ಸಂಖ್ಯೆ_MASK;
     pipe->devaddr = usbdev->devaddr;
     pipe->speed = usbdev->speed;
     pipe->maxpacket = epdesc->wMaxPacketSize;
@@ -179,100 +179,100 @@ usb_desc2pipe(struct usb_pipe *pipe, struct usbdevice_s *usbdev
 }
 
 // Find the exponential period of the requested interrupt end point.
-int
-usb_get_period(struct usbdevice_s *usbdev
-               , struct usb_endpoint_descriptor *epdesc)
+ಪೂರ್ಣಾಙ್ಕ
+usb_get_period(ಸಂರಚನಾ usbdevice_s *usbdev
+               , ಸಂರಚನಾ usb_endpoint_descriptor *epdesc)
 {
-    int period = epdesc->bInterval;
-    if (usbdev->speed != USB_HIGHSPEED)
-        return (period <= 0) ? 0 : __fls(period);
-    return (period <= 4) ? 0 : period - 4;
+    ಪೂರ್ಣಾಙ್ಕ period = epdesc->bInterval;
+    ಯದಿ (usbdev->speed != USB_HIGHSPEED)
+        ಪ್ರತ್ಯಾಗಮ (period <= 0) ? 0 : __fls(period);
+    ಪ್ರತ್ಯಾಗಮ (period <= 4) ? 0 : period - 4;
 }
 
 // Maximum time (in ms) a data transfer should take
-int
-usb_xfer_time(struct usb_pipe *pipe, int datalen)
+ಪೂರ್ಣಾಙ್ಕ
+usb_xfer_time(ಸಂರಚನಾ usb_pipe *pipe, ಪೂರ್ಣಾಙ್ಕ datalen)
 {
     // Use the maximum command time (5 seconds), except for
     // set_address commands where we don't want to stall the boot if
     // the device doesn't actually exist.  Add 100ms to account for
     // any controller delays.
-    if (!GET_LOWFLAT(pipe->devaddr))
-        return USB_TIME_STATUS + 100;
-    return USB_TIME_COMMAND + 100;
+    ಯದಿ (!GET_LOWFLAT(pipe->devaddr))
+        ಪ್ರತ್ಯಾಗಮ USB_TIME_STATUS + 100;
+    ಪ್ರತ್ಯಾಗಮ USB_TIME_COMMAND + 100;
 }
 
 // Find the first endpoint of a given type in an interface description.
-struct usb_endpoint_descriptor *
-usb_find_desc(struct usbdevice_s *usbdev, int type, int dir)
+ಸಂರಚನಾ usb_endpoint_descriptor *
+usb_find_desc(ಸಂರಚನಾ usbdevice_s *usbdev, ಪೂರ್ಣಾಙ್ಕ type, ಪೂರ್ಣಾಙ್ಕ dir)
 {
-    struct usb_endpoint_descriptor *epdesc = (void*)&usbdev->iface[1];
-    for (;;) {
-        if ((void*)epdesc >= (void*)usbdev->iface + usbdev->imax
+    ಸಂರಚನಾ usb_endpoint_descriptor *epdesc = (ಶೂನ್ಯ*)&usbdev->iface[1];
+    ಪ್ರತಿ (;;) {
+        ಯದಿ ((ಶೂನ್ಯ*)epdesc >= (ಶೂನ್ಯ*)usbdev->iface + usbdev->imax
             || epdesc->bDescriptorType == USB_DT_INTERFACE) {
-            return NULL;
+            ಪ್ರತ್ಯಾಗಮ ರಿಕ್ತ;
         }
-        if (epdesc->bDescriptorType == USB_DT_ENDPOINT
+        ಯದಿ (epdesc->bDescriptorType == USB_DT_ENDPOINT
             && (epdesc->bEndpointAddress & USB_ENDPOINT_DIR_MASK) == dir
             && (epdesc->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK) == type)
-            return epdesc;
-        epdesc = (void*)epdesc + epdesc->bLength;
+            ಪ್ರತ್ಯಾಗಮ epdesc;
+        epdesc = (ಶೂನ್ಯ*)epdesc + epdesc->bLength;
     }
 }
 
 // Get the first 8 bytes of the device descriptor.
-static int
-get_device_info8(struct usb_pipe *pipe, struct usb_device_descriptor *dinfo)
+ಸ್ಥಿರ ಪೂರ್ಣಾಙ್ಕ
+get_device_info8(ಸಂರಚನಾ usb_pipe *pipe, ಸಂರಚನಾ usb_device_descriptor *dinfo)
 {
-    struct usb_ctrlrequest req;
+    ಸಂರಚನಾ usb_ctrlrequest req;
     req.bRequestType = USB_DIR_IN | USB_TYPE_STANDARD | USB_RECIP_DEVICE;
     req.bRequest = USB_REQ_GET_DESCRIPTOR;
-    req.wValue = USB_DT_DEVICE<<8;
+    req.w_ಮೌಲ್ಯ = USB_DT_DEVICE<<8;
     req.wIndex = 0;
     req.wLength = 8;
-    return usb_send_default_control(pipe, &req, dinfo);
+    ಪ್ರತ್ಯಾಗಮ usb_send_default_control(pipe, &req, dinfo);
 }
 
-static struct usb_config_descriptor *
-get_device_config(struct usb_pipe *pipe)
+ಸ್ಥಿರ ಸಂರಚನಾ usb_config_descriptor *
+get_device_config(ಸಂರಚನಾ usb_pipe *pipe)
 {
-    struct usb_config_descriptor cfg;
+    ಸಂರಚನಾ usb_config_descriptor cfg;
 
-    struct usb_ctrlrequest req;
+    ಸಂರಚನಾ usb_ctrlrequest req;
     req.bRequestType = USB_DIR_IN | USB_TYPE_STANDARD | USB_RECIP_DEVICE;
     req.bRequest = USB_REQ_GET_DESCRIPTOR;
-    req.wValue = USB_DT_CONFIG<<8;
+    req.w_ಮೌಲ್ಯ = USB_DT_CONFIG<<8;
     req.wIndex = 0;
-    req.wLength = sizeof(cfg);
-    int ret = usb_send_default_control(pipe, &req, &cfg);
-    if (ret)
-        return NULL;
+    req.wLength = ಪರಿಮಾಣ(cfg);
+    ಪೂರ್ಣಾಙ್ಕ ret = usb_send_default_control(pipe, &req, &cfg);
+    ಯದಿ (ret)
+        ಪ್ರತ್ಯಾಗಮ ರಿಕ್ತ;
 
-    struct usb_config_descriptor *config = malloc_tmphigh(cfg.wTotalLength);
-    if (!config) {
+    ಸಂರಚನಾ usb_config_descriptor *config = malloc_tmphigh(cfg.wTotalLength);
+    ಯದಿ (!config) {
         warn_noalloc();
-        return NULL;
+        ಪ್ರತ್ಯಾಗಮ ರಿಕ್ತ;
     }
     req.wLength = cfg.wTotalLength;
     ret = usb_send_default_control(pipe, &req, config);
-    if (ret || config->wTotalLength != cfg.wTotalLength) {
-        free(config);
-        return NULL;
+    ಯದಿ (ret || config->wTotalLength != cfg.wTotalLength) {
+        ಮುಕ್ತ(config);
+        ಪ್ರತ್ಯಾಗಮ ರಿಕ್ತ;
     }
     //hexdump(config, cfg.wTotalLength);
-    return config;
+    ಪ್ರತ್ಯಾಗಮ config;
 }
 
-static int
-set_configuration(struct usb_pipe *pipe, u16 val)
+ಸ್ಥಿರ ಪೂರ್ಣಾಙ್ಕ
+set_configuration(ಸಂರಚನಾ usb_pipe *pipe, u16 val)
 {
-    struct usb_ctrlrequest req;
+    ಸಂರಚನಾ usb_ctrlrequest req;
     req.bRequestType = USB_DIR_OUT | USB_TYPE_STANDARD | USB_RECIP_DEVICE;
     req.bRequest = USB_REQ_SET_CONFIGURATION;
-    req.wValue = val;
+    req.w_ಮೌಲ್ಯ = val;
     req.wIndex = 0;
     req.wLength = 0;
-    return usb_send_default_control(pipe, &req, NULL);
+    ಪ್ರತ್ಯಾಗಮ usb_send_default_control(pipe, &req, ರಿಕ್ತ);
 }
 
 
@@ -280,7 +280,7 @@ set_configuration(struct usb_pipe *pipe, u16 val)
  * Initialization and enumeration
  ****************************************************************/
 
-static const int speed_to_ctlsize[] = {
+ಸ್ಥಿರ ಧ್ರುವ ಪೂರ್ಣಾಙ್ಕ speed_to_ctlsize[] = {
     [ USB_FULLSPEED  ] = 8,
     [ USB_LOWSPEED   ] = 8,
     [ USB_HIGHSPEED  ] = 64,
@@ -289,37 +289,37 @@ static const int speed_to_ctlsize[] = {
 
 // Assign an address to a device in the default state on the given
 // controller.
-static int
-usb_set_address(struct usbdevice_s *usbdev)
+ಸ್ಥಿರ ಪೂರ್ಣಾಙ್ಕ
+usb_set_address(ಸಂರಚನಾ usbdevice_s *usbdev)
 {
     ASSERT32FLAT();
-    struct usb_s *cntl = usbdev->hub->cntl;
+    ಸಂರಚನಾ usb_s *cntl = usbdev->hub->cntl;
     dprintf(3, "set_address %p\n", cntl);
-    if (cntl->maxaddr >= USB_MAXADDR)
-        return -1;
+    ಯದಿ (cntl->maxaddr >= USB_MAXADDR)
+        ಪ್ರತ್ಯಾಗಮ -1;
 
     msleep(USB_TIME_RSTRCY);
 
     // Create a pipe for the default address.
-    struct usb_endpoint_descriptor epdesc = {
+    ಸಂರಚನಾ usb_endpoint_descriptor epdesc = {
         .wMaxPacketSize = speed_to_ctlsize[usbdev->speed],
         .bmAttributes = USB_ENDPOINT_XFER_CONTROL,
     };
     usbdev->defpipe = usb_alloc_pipe(usbdev, &epdesc);
-    if (!usbdev->defpipe)
-        return -1;
+    ಯದಿ (!usbdev->defpipe)
+        ಪ್ರತ್ಯಾಗಮ -1;
 
     // Send set_address command.
-    struct usb_ctrlrequest req;
+    ಸಂರಚನಾ usb_ctrlrequest req;
     req.bRequestType = USB_DIR_OUT | USB_TYPE_STANDARD | USB_RECIP_DEVICE;
     req.bRequest = USB_REQ_SET_ADDRESS;
-    req.wValue = cntl->maxaddr + 1;
+    req.w_ಮೌಲ್ಯ = cntl->maxaddr + 1;
     req.wIndex = 0;
     req.wLength = 0;
-    int ret = usb_send_default_control(usbdev->defpipe, &req, NULL);
-    if (ret) {
+    ಪೂರ್ಣಾಙ್ಕ ret = usb_send_default_control(usbdev->defpipe, &req, ರಿಕ್ತ);
+    ಯದಿ (ret) {
         usb_free_pipe(usbdev, usbdev->defpipe);
-        return -1;
+        ಪ್ರತ್ಯಾಗಮ -1;
     }
 
     msleep(USB_TIME_SETADDR_RECOVERY);
@@ -327,111 +327,111 @@ usb_set_address(struct usbdevice_s *usbdev)
     cntl->maxaddr++;
     usbdev->devaddr = cntl->maxaddr;
     usbdev->defpipe = usb_realloc_pipe(usbdev, usbdev->defpipe, &epdesc);
-    if (!usbdev->defpipe)
-        return -1;
-    return 0;
+    ಯದಿ (!usbdev->defpipe)
+        ಪ್ರತ್ಯಾಗಮ -1;
+    ಪ್ರತ್ಯಾಗಮ 0;
 }
 
 // Called for every found device - see if a driver is available for
 // this device and do setup if so.
-static int
-configure_usb_device(struct usbdevice_s *usbdev)
+ಸ್ಥಿರ ಪೂರ್ಣಾಙ್ಕ
+configure_usb_device(ಸಂರಚನಾ usbdevice_s *usbdev)
 {
     ASSERT32FLAT();
     dprintf(3, "config_usb: %p\n", usbdev->defpipe);
 
     // Set the max packet size for endpoint 0 of this device.
-    struct usb_device_descriptor dinfo;
-    int ret = get_device_info8(usbdev->defpipe, &dinfo);
-    if (ret)
-        return 0;
+    ಸಂರಚನಾ usb_device_descriptor dinfo;
+    ಪೂರ್ಣಾಙ್ಕ ret = get_device_info8(usbdev->defpipe, &dinfo);
+    ಯದಿ (ret)
+        ಪ್ರತ್ಯಾಗಮ 0;
     u16 maxpacket = dinfo.bMaxPacketSize0;
-    if (dinfo.bcdUSB >= 0x0300)
+    ಯದಿ (dinfo.bcdUSB >= 0x0300)
         maxpacket = 1 << dinfo.bMaxPacketSize0;
     dprintf(3, "device rev=%04x cls=%02x sub=%02x proto=%02x size=%d\n"
             , dinfo.bcdUSB, dinfo.bDeviceClass, dinfo.bDeviceSubClass
             , dinfo.bDeviceProtocol, maxpacket);
-    if (maxpacket < 8)
-        return 0;
-    struct usb_endpoint_descriptor epdesc = {
+    ಯದಿ (maxpacket < 8)
+        ಪ್ರತ್ಯಾಗಮ 0;
+    ಸಂರಚನಾ usb_endpoint_descriptor epdesc = {
         .wMaxPacketSize = maxpacket,
         .bmAttributes = USB_ENDPOINT_XFER_CONTROL,
     };
     usbdev->defpipe = usb_realloc_pipe(usbdev, usbdev->defpipe, &epdesc);
-    if (!usbdev->defpipe)
-        return -1;
+    ಯದಿ (!usbdev->defpipe)
+        ಪ್ರತ್ಯಾಗಮ -1;
 
     // Get configuration
-    struct usb_config_descriptor *config = get_device_config(usbdev->defpipe);
-    if (!config)
-        return 0;
+    ಸಂರಚನಾ usb_config_descriptor *config = get_device_config(usbdev->defpipe);
+    ಯದಿ (!config)
+        ಪ್ರತ್ಯಾಗಮ 0;
 
     // Determine if a driver exists for this device - only look at the
     // interfaces of the first configuration.
-    int num_iface = config->bNumInterfaces;
-    void *config_end = (void*)config + config->wTotalLength;
-    struct usb_interface_descriptor *iface = (void*)(&config[1]);
-    for (;;) {
-        if (!num_iface || (void*)iface + iface->bLength > config_end)
+    ಪೂರ್ಣಾಙ್ಕ ಅಂಕೆ_iface = config->b_ಅಂಕೆ_Interfaces;
+    ಶೂನ್ಯ *config_end = (ಶೂನ್ಯ*)config + config->wTotalLength;
+    ಸಂರಚನಾ usb_interface_descriptor *iface = (ಶೂನ್ಯ*)(&config[1]);
+    ಪ್ರತಿ (;;) {
+        ಯದಿ (!ಅಂಕೆ_iface || (ಶೂನ್ಯ*)iface + iface->bLength > config_end)
             // Not a supported device.
-            goto fail;
-        if (iface->bDescriptorType == USB_DT_INTERFACE) {
-            num_iface--;
-            if (iface->bInterfaceClass == USB_CLASS_HUB
+            ಗಚ್ಛ fail;
+        ಯದಿ (iface->bDescriptorType == USB_DT_INTERFACE) {
+            ಅಂಕೆ_iface--;
+            ಯದಿ (iface->bInterfaceClass == USB_CLASS_HUB
                 || (iface->bInterfaceClass == USB_CLASS_MASS_STORAGE
                     && (iface->bInterfaceProtocol == US_PR_BULK
                         || iface->bInterfaceProtocol == US_PR_UAS))
                 || (iface->bInterfaceClass == USB_CLASS_HID
                     && iface->bInterfaceSubClass == USB_INTERFACE_SUBCLASS_BOOT))
-                break;
+                ಭಙ್ಗ;
         }
-        iface = (void*)iface + iface->bLength;
+        iface = (ಶೂನ್ಯ*)iface + iface->bLength;
     }
 
     // Set the configuration.
-    ret = set_configuration(usbdev->defpipe, config->bConfigurationValue);
-    if (ret)
-        goto fail;
+    ret = set_configuration(usbdev->defpipe, config->b_Configuration_ಮೌಲ್ಯ);
+    ಯದಿ (ret)
+        ಗಚ್ಛ fail;
 
     // Configure driver.
     usbdev->config = config;
     usbdev->iface = iface;
-    usbdev->imax = (void*)config + config->wTotalLength - (void*)iface;
-    if (iface->bInterfaceClass == USB_CLASS_HUB)
+    usbdev->imax = (ಶೂನ್ಯ*)config + config->wTotalLength - (ಶೂನ್ಯ*)iface;
+    ಯದಿ (iface->bInterfaceClass == USB_CLASS_HUB)
         ret = usb_hub_setup(usbdev);
-    else if (iface->bInterfaceClass == USB_CLASS_MASS_STORAGE) {
-        if (iface->bInterfaceProtocol == US_PR_BULK)
+    ಅನ್ಯಥಾ ಯದಿ (iface->bInterfaceClass == USB_CLASS_MASS_STORAGE) {
+        ಯದಿ (iface->bInterfaceProtocol == US_PR_BULK)
             ret = usb_msc_setup(usbdev);
-        if (iface->bInterfaceProtocol == US_PR_UAS)
+        ಯದಿ (iface->bInterfaceProtocol == US_PR_UAS)
             ret = usb_uas_setup(usbdev);
-    } else
+    } ಅನ್ಯಥಾ
         ret = usb_hid_setup(usbdev);
-    if (ret)
-        goto fail;
+    ಯದಿ (ret)
+        ಗಚ್ಛ fail;
 
-    free(config);
-    return 1;
+    ಮುಕ್ತ(config);
+    ಪ್ರತ್ಯಾಗಮ 1;
 fail:
-    free(config);
-    return 0;
+    ಮುಕ್ತ(config);
+    ಪ್ರತ್ಯಾಗಮ 0;
 }
 
-static void
-usb_hub_port_setup(void *data)
+ಸ್ಥಿರ ಶೂನ್ಯ
+usb_hub_port_setup(ಶೂನ್ಯ *data)
 {
-    struct usbdevice_s *usbdev = data;
-    struct usbhub_s *hub = usbdev->hub;
+    ಸಂರಚನಾ usbdevice_s *usbdev = data;
+    ಸಂರಚನಾ usbhub_s *hub = usbdev->hub;
     u32 port = usbdev->port;
 
-    for (;;) {
+    ಪ್ರತಿ (;;) {
         // Detect if device present (and possibly start reset)
-        int ret = hub->op->detect(hub, port);
-        if (ret > 0)
+        ಪೂರ್ಣಾಙ್ಕ ret = hub->op->detect(hub, port);
+        ಯದಿ (ret > 0)
             // Device connected.
-            break;
-        if (ret < 0 || timer_check(hub->detectend))
+            ಭಙ್ಗ;
+        ಯದಿ (ret < 0 || timer_check(hub->detectend))
             // No device found.
-            goto done;
+            ಗಚ್ಛ done;
         msleep(5);
     }
 
@@ -439,70 +439,70 @@ usb_hub_port_setup(void *data)
 
     // Reset port and determine device speed
     mutex_lock(&hub->cntl->resetlock);
-    int ret = hub->op->reset(hub, port);
-    if (ret < 0)
+    ಪೂರ್ಣಾಙ್ಕ ret = hub->op->reset(hub, port);
+    ಯದಿ (ret < 0)
         // Reset failed
-        goto resetfail;
+        ಗಚ್ಛ resetfail;
     usbdev->speed = ret;
 
     // Set address of port
     ret = usb_set_address(usbdev);
-    if (ret) {
+    ಯದಿ (ret) {
         hub->op->disconnect(hub, port);
-        goto resetfail;
+        ಗಚ್ಛ resetfail;
     }
     mutex_unlock(&hub->cntl->resetlock);
 
     // Configure the device
-    int count = configure_usb_device(usbdev);
+    ಪೂರ್ಣಾಙ್ಕ ಎಣಿಕೆ = configure_usb_device(usbdev);
     usb_free_pipe(usbdev, usbdev->defpipe);
-    if (!count)
+    ಯದಿ (!ಎಣಿಕೆ)
         hub->op->disconnect(hub, port);
-    hub->devcount += count;
+    hub->devcount += ಎಣಿಕೆ;
 done:
     hub->threads--;
-    free(usbdev);
-    return;
+    ಮುಕ್ತ(usbdev);
+    ಪ್ರತ್ಯಾಗಮ;
 
 resetfail:
     mutex_unlock(&hub->cntl->resetlock);
-    goto done;
+    ಗಚ್ಛ done;
 }
 
-static u32 usb_time_sigatt;
+ಸ್ಥಿರ u32 usb_time_sigatt;
 
-void
-usb_enumerate(struct usbhub_s *hub)
+ಶೂನ್ಯ
+usb_enumerate(ಸಂರಚನಾ usbhub_s *hub)
 {
     u32 portcount = hub->portcount;
     hub->threads = portcount;
     hub->detectend = timer_calc(usb_time_sigatt);
 
     // Launch a thread for every port.
-    int i;
-    for (i=0; i<portcount; i++) {
-        struct usbdevice_s *usbdev = malloc_tmphigh(sizeof(*usbdev));
-        if (!usbdev) {
+    ಪೂರ್ಣಾಙ್ಕ i;
+    ಪ್ರತಿ (i=0; i<portcount; i++) {
+        ಸಂರಚನಾ usbdevice_s *usbdev = malloc_tmphigh(ಪರಿಮಾಣ(*usbdev));
+        ಯದಿ (!usbdev) {
             warn_noalloc();
-            continue;
+            ಅನುವರ್ತ;
         }
-        memset(usbdev, 0, sizeof(*usbdev));
+        memset(usbdev, 0, ಪರಿಮಾಣ(*usbdev));
         usbdev->hub = hub;
         usbdev->port = i;
         run_thread(usb_hub_port_setup, usbdev);
     }
 
     // Wait for threads to complete.
-    while (hub->threads)
+    ಯಾವತ್ (hub->threads)
         yield();
 }
 
-void
-usb_setup(void)
+ಶೂನ್ಯ
+usb_setup(ಶೂನ್ಯ)
 {
     ASSERT32FLAT();
-    if (! CONFIG_USB)
-        return;
+    ಯದಿ (! CONFIG_USB)
+        ಪ್ರತ್ಯಾಗಮ;
     dprintf(3, "init usb\n");
     usb_time_sigatt = romfile_loadint("etc/usb-time-sigatt", USB_TIME_SIGATT);
     xhci_setup();

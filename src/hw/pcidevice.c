@@ -4,54 +4,54 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "malloc.h" // malloc_tmp
-#include "output.h" // dprintf
-#include "pci.h" // pci_config_writel
-#include "pcidevice.h" // pci_probe_devices
-#include "pci_regs.h" // PCI_VENDOR_ID
-#include "romfile.h" // romfile_loadint
-#include "stacks.h" // wait_preempt
-#include "string.h" // memset
+#ಅನ್ತರ್ಭಾವ "malloc.h" // malloc_tmp
+#ಅನ್ತರ್ಭಾವ "output.h" // dprintf
+#ಅನ್ತರ್ಭಾವ "pci.h" // pci_config_writel
+#ಅನ್ತರ್ಭಾವ "pcidevice.h" // pci_probe_devices
+#ಅನ್ತರ್ಭಾವ "pci_regs.h" // PCI_VENDOR_ID
+#ಅನ್ತರ್ಭಾವ "romfile.h" // romfile_loadint
+#ಅನ್ತರ್ಭಾವ "stacks.h" // wait_preempt
+#ಅನ್ತರ್ಭಾವ "string.h" // memset
 
-struct hlist_head PCIDevices VARVERIFY32INIT;
-int MaxPCIBus VARFSEG;
+ಸಂರಚನಾ hlist_head PCIDevices VARVERIFY32INIT;
+ಪೂರ್ಣಾಙ್ಕ MaxPCIBus VARFSEG;
 
 // Find all PCI devices and populate PCIDevices linked list.
-void
-pci_probe_devices(void)
+ಶೂನ್ಯ
+pci_probe_devices(ಶೂನ್ಯ)
 {
     dprintf(3, "PCI probe\n");
-    struct pci_device *busdevs[256];
-    memset(busdevs, 0, sizeof(busdevs));
-    struct hlist_node **pprev = &PCIDevices.first;
-    int extraroots = romfile_loadint("etc/extra-pci-roots", 0);
-    int bus = -1, lastbus = 0, rootbuses = 0, count=0;
-    while (bus < 0xff && (bus < MaxPCIBus || rootbuses < extraroots)) {
+    ಸಂರಚನಾ pci_device *busdevs[256];
+    memset(busdevs, 0, ಪರಿಮಾಣ(busdevs));
+    ಸಂರಚನಾ hlist_ಗಂಟು **pprev = &PCIDevices.first;
+    ಪೂರ್ಣಾಙ್ಕ extraroots = romfile_loadint("etc/extra-pci-roots", 0);
+    ಪೂರ್ಣಾಙ್ಕ bus = -1, lastbus = 0, rootbuses = 0, ಎಣಿಕೆ=0;
+    ಯಾವತ್ (bus < 0xff && (bus < MaxPCIBus || rootbuses < extraroots)) {
         bus++;
-        int bdf;
+        ಪೂರ್ಣಾಙ್ಕ bdf;
         foreachbdf(bdf, bus) {
             // Create new pci_device struct and add to list.
-            struct pci_device *dev = malloc_tmp(sizeof(*dev));
-            if (!dev) {
+            ಸಂರಚನಾ pci_device *dev = malloc_tmp(ಪರಿಮಾಣ(*dev));
+            ಯದಿ (!dev) {
                 warn_noalloc();
-                return;
+                ಪ್ರತ್ಯಾಗಮ;
             }
-            memset(dev, 0, sizeof(*dev));
-            hlist_add(&dev->node, pprev);
-            pprev = &dev->node.next;
-            count++;
+            memset(dev, 0, ಪರಿಮಾಣ(*dev));
+            hlist_add(&dev->ಗಂಟು, pprev);
+            pprev = &dev->ಗಂಟು.next;
+            ಎಣಿಕೆ++;
 
             // Find parent device.
-            int rootbus;
-            struct pci_device *parent = busdevs[bus];
-            if (!parent) {
-                if (bus != lastbus)
+            ಪೂರ್ಣಾಙ್ಕ rootbus;
+            ಸಂರಚನಾ pci_device *parent = busdevs[bus];
+            ಯದಿ (!parent) {
+                ಯದಿ (bus != lastbus)
                     rootbuses++;
                 lastbus = bus;
                 rootbus = rootbuses;
-                if (bus > MaxPCIBus)
+                ಯದಿ (bus > MaxPCIBus)
                     MaxPCIBus = bus;
-            } else {
+            } ಅನ್ಯಥಾ {
                 rootbus = parent->rootbus;
             }
 
@@ -68,75 +68,75 @@ pci_probe_devices(void)
             dev->revision = classrev & 0xff;
             dev->header_type = pci_config_readb(bdf, PCI_HEADER_TYPE);
             u8 v = dev->header_type & 0x7f;
-            if (v == PCI_HEADER_TYPE_BRIDGE || v == PCI_HEADER_TYPE_CARDBUS) {
+            ಯದಿ (v == PCI_HEADER_TYPE_BRIDGE || v == PCI_HEADER_TYPE_CARDBUS) {
                 u8 secbus = pci_config_readb(bdf, PCI_SECONDARY_BUS);
                 dev->secondary_bus = secbus;
-                if (secbus > bus && !busdevs[secbus])
+                ಯದಿ (secbus > bus && !busdevs[secbus])
                     busdevs[secbus] = dev;
-                if (secbus > MaxPCIBus)
+                ಯದಿ (secbus > MaxPCIBus)
                     MaxPCIBus = secbus;
             }
             dprintf(4, "PCI device %pP (vd=%04x:%04x c=%04x)\n"
                     , dev, dev->vendor, dev->device, dev->class);
         }
     }
-    dprintf(1, "Found %d PCI devices (max PCI bus is %02x)\n", count, MaxPCIBus);
+    dprintf(1, "Found %d PCI devices (max PCI bus is %02x)\n", ಎಣಿಕೆ, MaxPCIBus);
 }
 
 // Search for a device with the specified vendor and device ids.
-struct pci_device *
+ಸಂರಚನಾ pci_device *
 pci_find_device(u16 vendid, u16 devid)
 {
-    struct pci_device *pci;
+    ಸಂರಚನಾ pci_device *pci;
     foreachpci(pci) {
-        if (pci->vendor == vendid && pci->device == devid)
-            return pci;
+        ಯದಿ (pci->vendor == vendid && pci->device == devid)
+            ಪ್ರತ್ಯಾಗಮ pci;
     }
-    return NULL;
+    ಪ್ರತ್ಯಾಗಮ ರಿಕ್ತ;
 }
 
 // Search for a device with the specified class id.
-struct pci_device *
+ಸಂರಚನಾ pci_device *
 pci_find_class(u16 classid)
 {
-    struct pci_device *pci;
+    ಸಂರಚನಾ pci_device *pci;
     foreachpci(pci) {
-        if (pci->class == classid)
-            return pci;
+        ಯದಿ (pci->class == classid)
+            ಪ್ರತ್ಯಾಗಮ pci;
     }
-    return NULL;
+    ಪ್ರತ್ಯಾಗಮ ರಿಕ್ತ;
 }
 
-int pci_init_device(const struct pci_device_id *ids
-                    , struct pci_device *pci, void *arg)
+ಪೂರ್ಣಾಙ್ಕ pci_init_device(ಧ್ರುವ ಸಂರಚನಾ pci_device_id *ids
+                    , ಸಂರಚನಾ pci_device *pci, ಶೂನ್ಯ *arg)
 {
-    while (ids->vendid || ids->class_mask) {
-        if ((ids->vendid == PCI_ANY_ID || ids->vendid == pci->vendor) &&
+    ಯಾವತ್ (ids->vendid || ids->class_mask) {
+        ಯದಿ ((ids->vendid == PCI_ANY_ID || ids->vendid == pci->vendor) &&
             (ids->devid == PCI_ANY_ID || ids->devid == pci->device) &&
             !((ids->class ^ pci->class) & ids->class_mask)) {
-            if (ids->func)
+            ಯದಿ (ids->func)
                 ids->func(pci, arg);
-            return 0;
+            ಪ್ರತ್ಯಾಗಮ 0;
         }
         ids++;
     }
-    return -1;
+    ಪ್ರತ್ಯಾಗಮ -1;
 }
 
-struct pci_device *
-pci_find_init_device(const struct pci_device_id *ids, void *arg)
+ಸಂರಚನಾ pci_device *
+pci_find_init_device(ಧ್ರುವ ಸಂರಚನಾ pci_device_id *ids, ಶೂನ್ಯ *arg)
 {
-    struct pci_device *pci;
+    ಸಂರಚನಾ pci_device *pci;
     foreachpci(pci) {
-        if (pci_init_device(ids, pci, arg) == 0)
-            return pci;
+        ಯದಿ (pci_init_device(ids, pci, arg) == 0)
+            ಪ್ರತ್ಯಾಗಮ pci;
     }
-    return NULL;
+    ಪ್ರತ್ಯಾಗಮ ರಿಕ್ತ;
 }
 
 // Enable PCI bus-mastering (ie, DMA) support on a pci device
-void
-pci_enable_busmaster(struct pci_device *pci)
+ಶೂನ್ಯ
+pci_enable_busmaster(ಸಂರಚನಾ pci_device *pci)
 {
     wait_preempt();
     pci_config_maskw(pci->bdf, PCI_COMMAND, 0, PCI_COMMAND_MASTER);
@@ -145,48 +145,48 @@ pci_enable_busmaster(struct pci_device *pci)
 
 // Verify an IO bar and return it to the caller
 u16
-pci_enable_iobar(struct pci_device *pci, u32 addr)
+pci_enable_iobar(ಸಂರಚನಾ pci_device *pci, u32 addr)
 {
     wait_preempt();
     u32 bar = pci_config_readl(pci->bdf, addr);
-    if (!(bar & PCI_BASE_ADDRESS_SPACE_IO)) {
+    ಯದಿ (!(bar & PCI_BASE_ADDRESS_SPACE_IO)) {
         warn_internalerror();
-        return 0;
+        ಪ್ರತ್ಯಾಗಮ 0;
     }
     bar &= PCI_BASE_ADDRESS_IO_MASK;
-    if (bar == 0 || bar > 0xffff) {
+    ಯದಿ (bar == 0 || bar > 0xffff) {
         warn_internalerror();
-        return 0;
+        ಪ್ರತ್ಯಾಗಮ 0;
     }
     pci_config_maskw(pci->bdf, PCI_COMMAND, 0, PCI_COMMAND_IO);
     pci->have_driver = 1;
-    return bar;
+    ಪ್ರತ್ಯಾಗಮ bar;
 }
 
 // Verify a memory bar and return it to the caller
-void *
-pci_enable_membar(struct pci_device *pci, u32 addr)
+ಶೂನ್ಯ *
+pci_enable_membar(ಸಂರಚನಾ pci_device *pci, u32 addr)
 {
     wait_preempt();
     u32 bar = pci_config_readl(pci->bdf, addr);
-    if (bar & PCI_BASE_ADDRESS_SPACE_IO) {
+    ಯದಿ (bar & PCI_BASE_ADDRESS_SPACE_IO) {
         warn_internalerror();
-        return NULL;
+        ಪ್ರತ್ಯಾಗಮ ರಿಕ್ತ;
     }
-    if (bar & PCI_BASE_ADDRESS_MEM_TYPE_64) {
-        u32 high = pci_config_readl(pci->bdf, addr+4);
-        if (high) {
+    ಯದಿ (bar & PCI_BASE_ADDRESS_MEM_TYPE_64) {
+        u32 ಮೇಲಿನ = pci_config_readl(pci->bdf, addr+4);
+        ಯದಿ (ಮೇಲಿನ) {
             dprintf(1, "Can not map memory bar over 4Gig\n");
-            return NULL;
+            ಪ್ರತ್ಯಾಗಮ ರಿಕ್ತ;
         }
     }
     bar &= PCI_BASE_ADDRESS_MEM_MASK;
-    if (bar + 4*1024*1024 < 20*1024*1024) {
+    ಯದಿ (bar + 4*1024*1024 < 20*1024*1024) {
         // Bar doesn't look valid (it is in last 4M or first 16M)
         warn_internalerror();
-        return NULL;
+        ಪ್ರತ್ಯಾಗಮ ರಿಕ್ತ;
     }
     pci_config_maskw(pci->bdf, PCI_COMMAND, 0, PCI_COMMAND_MEMORY);
     pci->have_driver = 1;
-    return (void*)bar;
+    ಪ್ರತ್ಯಾಗಮ (ಶೂನ್ಯ*)bar;
 }

@@ -15,14 +15,14 @@
 
 
 /****************************************************************
- * 16bit / 32bit call trampolines
+ * 16bit / 32bit ಆಹ್ವಾನ trampolines
  ****************************************************************/
 
 // Place CPU into 32bit mode from 16bit mode.
 // %edx = return location (in 32bit mode)
 // Clobbers: ecx, flags, segment registers, cr0, idt/gdt
         DECLFUNC transition32
-        .global transition32_nmi_off
+        .ವೈಶ್ವಿಕ transition32_nmi_off
 transition32:
         // Disable irqs (and clear direction flag)
         cli
@@ -70,7 +70,7 @@ transition32_nmi_off:
 // %edx = return location (in 16bit mode)
 // Clobbers: ecx, flags, segment registers, cr0, idt/gdt
         DECLFUNC transition16
-        .global transition16big
+        .ವೈಶ್ವಿಕ transition16big
         .code32
 transition16:
         // Reset data segment limits
@@ -121,7 +121,7 @@ transition16big:
  * External calling trampolines
  ****************************************************************/
 
-// Far call a 16bit function from 16bit mode with a specified cpu register state
+// Far ಆಹ್ವಾನ a 16bit function from 16bit mode with a specified cpu register state
 // %eax = address of struct bregs, %edx = segment of struct bregs
 // Clobbers: %e[bc]x, %e[ds]i, flags
         DECLFUNC __farcall16
@@ -131,14 +131,14 @@ __farcall16:
         pushl %eax
         pushl %edx
 
-        // Setup for iretw call
+        // Setup for iretw ಆಹ್ವಾನ
         movl %edx, %ds
         pushw %cs
         pushw $1f                       // return point
         pushw BREGS_flags(%eax)         // flags
         pushl BREGS_code(%eax)          // CS:IP
 
-        // Load calling registers and invoke call
+        // Load calling registers and invoke ಆಹ್ವಾನ
         RESTOREBREGS_DSEAX
         iretw                           // XXX - just do a lcalll
 1:
@@ -261,7 +261,7 @@ entry_pmm:
 
 // PnP entry points
         DECLFUNC entry_pnp_real
-        .global entry_pnp_prot
+        .ವೈಶ್ವಿಕ entry_pnp_prot
 entry_pnp_prot:
         pushl %esp
         jmp 1f
@@ -390,7 +390,7 @@ entry_csm:
         shll $4, %eax
         addl %esp, %eax
 
-        // Change to BUILD_STACK_ADDR stack and call handle_csm(bregs)
+        // Change to BUILD_STACK_ADDR stack and ಆಹ್ವಾನ handle_csm(bregs)
         ENTRY_INTO32 _cfunc32flat_handle_csm
 
         DECLFUNC __csm_return
@@ -438,7 +438,7 @@ entry_sercon:
         cmpb $0, sercon_enable  // Test that sercon is enabled
         je 3f
 
-        // call handle_sercon
+        // ಆಹ್ವಾನ handle_sercon
         popl %eax
         popw %ds
 2:      pushl $handle_sercon
@@ -482,7 +482,7 @@ irqentry_extrastack:
         movl %esp, PUSHBREGS_size(%eax)
         movw %ss, PUSHBREGS_size+4(%eax)
 
-        movw %ds, %dx           // Setup %ss/%esp and call function
+        movw %ds, %dx           // Setup %ss/%esp and ಆಹ್ವಾನ function
         movw %dx, %ss
         movl %eax, %esp
         calll *%ecx
@@ -511,7 +511,7 @@ irqentry_arg_extrastack:
         popl BREGS_code(%eax)
         popw BREGS_flags(%eax)
 
-        movw %ds, %dx           // Setup %ss/%esp and call function
+        movw %ds, %dx           // Setup %ss/%esp and ಆಹ್ವಾನ function
         movw %dx, %ss
         movl %eax, %esp
         calll *%ecx
@@ -534,7 +534,7 @@ irqentry_arg:
 
         // Helper macros for hardware interrupt declaration
         .macro IRQ_ENTRY num
-        .global entry_\num
+        .ವೈಶ್ವಿಕ entry_\num
         entry_\num :
         pushl $ handle_\num
         jmp irqentry_extrastack
@@ -547,7 +547,7 @@ irqentry_arg:
 
         // Helper macros for software interrupt declaration
         .macro IRQ_ENTRY_ARG num
-        .global entry_\num
+        .ವೈಶ್ವಿಕ entry_\num
         entry_\num :
         pushl $ handle_\num
 #if CONFIG_ENTRY_EXTRASTACK
@@ -571,7 +571,7 @@ irqentry_arg:
         DECL_IRQ_ENTRY hwpic1
         DECL_IRQ_ENTRY hwpic2
 
-        // int 18/19 are special - they reset stack and call into 32bit mode.
+        // int 18/19 are special - they reset stack and ಆಹ್ವಾನ into 32bit mode.
         DECLFUNC entry_19
 entry_19:
         ENTRY_INTO32 _cfunc32flat_handle_19
@@ -597,20 +597,20 @@ entry_post:
         ENTRY_INTO32 _cfunc32flat_handle_post   // Normal entry point
 
         ORG 0xe2c3
-        .global entry_02
+        .ವೈಶ್ವಿಕ entry_02
 entry_02:
         ENTRY handle_02  // NMI handler does not switch onto extra stack
         iretw
 
         ORG 0xe3fe
-        .global entry_13_official
+        .ವೈಶ್ವಿಕ entry_13_official
 entry_13_official:
         jmp entry_13
 
         // 0xe401 - OldFDPT in misc.c
 
         ORG 0xe6f2
-        .global entry_19_official
+        .ವೈಶ್ವಿಕ entry_19_official
 entry_19_official:
         jmp entry_19
 
@@ -640,7 +640,7 @@ entry_19_official:
 
         ORG 0xf045
 entry_10_0x0f:
-        // XXX - INT 10 Functions 0-Fh Entry Point
+        // XXX - ಪೂರ್ಣಾಙ್ಕ 10 Functions 0-Fh Entry Point
         iretw
 
         ORG 0xf065
@@ -656,7 +656,7 @@ entry_10:
         IRQ_ENTRY_ARG 11
 
         ORG 0xf859
-        .global entry_15_official
+        .ವೈಶ್ವಿಕ entry_15_official
 entry_15_official:
         cmpb $0x89, %ah
         je entry_1589           // 1589 calls return in protected mode
@@ -665,7 +665,7 @@ entry_15_official:
         // 0xfa6e - vgafont8 in font.c
 
         ORG 0xfe6e
-        .global entry_1a_official
+        .ವೈಶ್ವಿಕ entry_1a_official
 entry_1a_official:
         cmpb $0xb1, %ah
         je entry_pcibios16      // PCIBIOS calls can be in protected mode
@@ -677,7 +677,7 @@ entry_1a_official:
         // 0xfef3 - InitVectors in misc.c
 
         ORG 0xff53
-        .global entry_iret_official
+        .ವೈಶ್ವಿಕ entry_iret_official
 entry_iret_official:
         iretw
 
@@ -685,7 +685,7 @@ entry_iret_official:
         IRQ_ENTRY_ARG 05
 
         ORG 0xfff0 // Power-up Entry Point
-        .global reset_vector
+        .ವೈಶ್ವಿಕ reset_vector
 reset_vector:
         ljmpw $SEG_BIOS, $entry_post
 

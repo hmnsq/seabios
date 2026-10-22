@@ -1,37 +1,37 @@
-#include "config.h" // CONFIG_DEBUG_LEVEL
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "stacks.h" // run_thread
-#include "string.h" // memset
-#include "util.h" // acpi_dsdt_*
-#include "virtio-pci.h"
-#include "virtio-blk.h"
-#include "virtio-scsi.h"
-#include "virtio-ring.h"
-#include "virtio-mmio.h"
+#ಅನ್ತರ್ಭಾವ "config.h" // CONFIG_DEBUG_LEVEL
+#ಅನ್ತರ್ಭಾವ "malloc.h" // free
+#ಅನ್ತರ್ಭಾವ "output.h" // dprintf
+#ಅನ್ತರ್ಭಾವ "stacks.h" // run_thread
+#ಅನ್ತರ್ಭಾವ "string.h" // memset
+#ಅನ್ತರ್ಭಾವ "util.h" // acpi_dsdt_*
+#ಅನ್ತರ್ಭಾವ "virtio-pci.h"
+#ಅನ್ತರ್ಭಾವ "virtio-blk.h"
+#ಅನ್ತರ್ಭಾವ "virtio-scsi.h"
+#ಅನ್ತರ್ಭಾವ "virtio-ring.h"
+#ಅನ್ತರ್ಭಾವ "virtio-mmio.h"
 
-void virtio_mmio_setup_acpi(void)
+ಶೂನ್ಯ virtio_mmio_setup_acpi(ಶೂನ್ಯ)
 {
-    static const char *virtio_hid = "LNRO0005";
-    struct acpi_device *dev;
+    ಸ್ಥಿರ ಧ್ರುವ ವರ್ಣ *virtio_hid = "LNRO0005";
+    ಸಂರಚನಾ acpi_device *dev;
     u64 mem, irq, unused;
 
-    for (dev = acpi_dsdt_find_string(NULL, virtio_hid);
-         dev != NULL;
+    ಪ್ರತಿ (dev = acpi_dsdt_find_string(ರಿಕ್ತ, virtio_hid);
+         dev != ರಿಕ್ತ;
          dev = acpi_dsdt_find_string(dev, virtio_hid)) {
-        if (acpi_dsdt_find_mem(dev, &mem, &unused) < 0)
-            continue;
-        if (acpi_dsdt_find_irq(dev, &irq) < 0)
-            continue;
+        ಯದಿ (acpi_dsdt_find_mem(dev, &mem, &unused) < 0)
+            ಅನುವರ್ತ;
+        ಯದಿ (acpi_dsdt_find_irq(dev, &irq) < 0)
+            ಅನುವರ್ತ;
         dprintf(1, "ACPI: virtio-mmio device %s at 0x%llx, irq %lld\n",
                 acpi_dsdt_name(dev), mem, irq);
         virtio_mmio_setup_one(mem);
     }
 }
 
-void virtio_mmio_setup_one(u64 addr)
+ಶೂನ್ಯ virtio_mmio_setup_one(u64 addr)
 {
-    static const char *names[] = {
+    ಸ್ಥಿರ ಧ್ರುವ ವರ್ಣ *names[] = {
         [  1 ] = "net",
         [  2 ] = "blk",
         [  3 ] = "console",
@@ -43,49 +43,49 @@ void virtio_mmio_setup_one(u64 addr)
         [ 18 ] = "input",
         [ 26 ] = "fs",
     };
-    const char *name;
+    ಧ್ರುವ ವರ್ಣ *name;
     u32 magic, version, devid;
-    void *mmio;
+    ಶೂನ್ಯ *mmio;
 
-    if (addr >= 0x100000000) {
+    ಯದಿ (addr >= 0x100000000) {
         dprintf(1, "virtio-mmio: %llx: above 4G\n", addr);
-        return;
+        ಪ್ರತ್ಯಾಗಮ;
     }
 
-    mmio = (void*)(u32)(addr);
+    mmio = (ಶೂನ್ಯ*)(u32)(addr);
     magic = readl(mmio);
-    if (magic != 0x74726976) {
+    ಯದಿ (magic != 0x74726976) {
         dprintf(1, "virtio-mmio: %llx: magic mismatch\n", addr);
-        return;
+        ಪ್ರತ್ಯಾಗಮ;
     }
     version = readl(mmio+4);
-    if (version != 1 /* legacy */ &&
+    ಯದಿ (version != 1 /* legacy */ &&
         version != 2 /* 1.0 */) {
         dprintf(1, "virtio-mmio: %llx: unknown version %d\n", addr, version);
-        return;
+        ಪ್ರತ್ಯಾಗಮ;
     }
     devid = readl(mmio+8);
 
-    name = (devid < ARRAY_SIZE(names) && names[devid] != NULL)
+    name = (devid < ARRAY_SIZE(names) && names[devid] != ರಿಕ್ತ)
         ? names[devid] : "unknown";
     dprintf(1, "virtio-mmio: %llx: device id %x (%s%s)\n",
             addr, devid, name, version == 1 ? ", legacy" : "");
 
-    switch (devid) {
-    case 2: /* blk */
+    ವಿಕಲ್ಪ (devid) {
+    ಪಕ್ಷ 2: /* blk */
         run_thread(init_virtio_blk_mmio, mmio);
-        break;
-    case 8: /* scsi */
+        ಭಙ್ಗ;
+    ಪಕ್ಷ 8: /* scsi */
         run_thread(init_virtio_scsi_mmio, mmio);
-        break;
-    default:
-        break;
+        ಭಙ್ಗ;
+    ಸ್ವಭಾವ:
+        ಭಙ್ಗ;
     }
 }
 
-void vp_init_mmio(struct vp_device *vp, void *mmio)
+ಶೂನ್ಯ vp_init_mmio(ಸಂರಚನಾ vp_device *vp, ಶೂನ್ಯ *mmio)
 {
-    memset(vp, 0, sizeof(*vp));
+    memset(vp, 0, ಪರಿಮಾಣ(*vp));
     vp->use_mmio = 1;
     vp->common.mode = VP_ACCESS_MMIO;
     vp->common.memaddr = mmio;

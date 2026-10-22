@@ -22,10 +22,10 @@
 #ifndef __LZMADECODE_H
 #define __LZMADECODE_H
 
-typedef unsigned char Byte;
-typedef unsigned short UInt16;
-typedef unsigned int UInt32;
-typedef UInt32 SizeT;
+ಪ್ರಕಾರನಿರ್ದೇಶ unsigned ವರ್ಣ Byte;
+ಪ್ರಕಾರನಿರ್ದೇಶ unsigned short UInt16;
+ಪ್ರಕಾರನಿರ್ದೇಶ unsigned ಪೂರ್ಣಾಙ್ಕ UInt32;
+ಪ್ರಕಾರನಿರ್ದೇಶ UInt32 SizeT;
 
 #define CProb UInt16
 
@@ -38,20 +38,20 @@ typedef UInt32 SizeT;
 
 #define LZMA_PROPERTIES_SIZE 5
 
-typedef struct _CLzmaProperties
+ಪ್ರಕಾರನಿರ್ದೇಶ ಸಂರಚನಾ _CLzmaProperties
 {
-  int lc;
-  int lp;
-  int pb;
+  ಪೂರ್ಣಾಙ್ಕ lc;
+  ಪೂರ್ಣಾಙ್ಕ lp;
+  ಪೂರ್ಣಾಙ್ಕ pb;
 }CLzmaProperties;
 
-int LzmaDecodeProperties(CLzmaProperties *propsRes, const unsigned char *propsData, int size);
+ಪೂರ್ಣಾಙ್ಕ LzmaDecodeProperties(CLzmaProperties *propsRes, ಧ್ರುವ unsigned ವರ್ಣ *propsData, ಪೂರ್ಣಾಙ್ಕ size);
 
-#define LzmaGetNumProbs(Properties) (LZMA_BASE_SIZE + (LZMA_LIT_SIZE << ((Properties)->lc + (Properties)->lp)))
+#define Lzma_Get_ಅಂಕೆ_Probs(Properties) (LZMA_BASE_SIZE + (LZMA_LIT_SIZE << ((Properties)->lc + (Properties)->lp)))
 
 #define kLzmaNeedInitId (-2)
 
-typedef struct _CLzmaDecoderState
+ಪ್ರಕಾರನಿರ್ದೇಶ ಸಂರಚನಾ _CLzmaDecoderState
 {
   CLzmaProperties Properties;
   CProb *Probs;
@@ -60,8 +60,8 @@ typedef struct _CLzmaDecoderState
 } CLzmaDecoderState;
 
 
-int LzmaDecode(CLzmaDecoderState *vs,
-    const unsigned char *inStream, SizeT inSize, SizeT *inSizeProcessed,
-    unsigned char *outStream, SizeT outSize, SizeT *outSizeProcessed);
+ಪೂರ್ಣಾಙ್ಕ LzmaDecode(CLzmaDecoderState *vs,
+    ಧ್ರುವ unsigned ವರ್ಣ *inStream, SizeT inSize, SizeT *inSizeProcessed,
+    unsigned ವರ್ಣ *outStream, SizeT outSize, SizeT *outSizeProcessed);
 
 #endif

@@ -2,23 +2,23 @@
 #define __USB_OHCI_H
 
 // usb-ohci.c
-void ohci_setup(void);
-struct usbdevice_s;
-struct usb_endpoint_descriptor;
-struct usb_pipe;
-struct usb_pipe *ohci_realloc_pipe(struct usbdevice_s *usbdev
-                                   , struct usb_pipe *upipe
-                                   , struct usb_endpoint_descriptor *epdesc);
-int ohci_send_pipe(struct usb_pipe *p, int dir, const void *cmd
-                   , void *data, int datasize);
-int ohci_poll_intr(struct usb_pipe *p, void *data);
+ಶೂನ್ಯ ohci_setup(ಶೂನ್ಯ);
+ಸಂರಚನಾ usbdevice_s;
+ಸಂರಚನಾ usb_endpoint_descriptor;
+ಸಂರಚನಾ usb_pipe;
+ಸಂರಚನಾ usb_pipe *ohci_realloc_pipe(ಸಂರಚನಾ usbdevice_s *usbdev
+                                   , ಸಂರಚನಾ usb_pipe *upipe
+                                   , ಸಂರಚನಾ usb_endpoint_descriptor *epdesc);
+ಪೂರ್ಣಾಙ್ಕ ohci_send_pipe(ಸಂರಚನಾ usb_pipe *p, ಪೂರ್ಣಾಙ್ಕ dir, ಧ್ರುವ ಶೂನ್ಯ *cmd
+                   , ಶೂನ್ಯ *data, ಪೂರ್ಣಾಙ್ಕ datasize);
+ಪೂರ್ಣಾಙ್ಕ ohci_poll_intr(ಸಂರಚನಾ usb_pipe *p, ಶೂನ್ಯ *data);
 
 
 /****************************************************************
  * ohci structs and flags
  ****************************************************************/
 
-struct ohci_ed {
+ಸಂರಚನಾ ohci_ed {
     u32 hwINFO;
     u32 hwTailP;
     u32 hwHeadP;
@@ -34,7 +34,7 @@ struct ohci_ed {
 #define ED_C            (0x02)
 #define ED_H            (0x01)
 
-struct ohci_td {
+ಸಂರಚನಾ ohci_td {
     u32 hwINFO;
     u32 hwCBP;
     u32 hwNextTD;
@@ -60,14 +60,14 @@ struct ohci_td {
 
 #define TD_R        0x00040000
 
-struct ohci_hcca {
+ಸಂರಚನಾ ohci_hcca {
     u32  int_table[32];
     u32  frame_no;
     u32  done_head;
     u8   reserved[120];
 } PACKED;
 
-struct ohci_regs {
+ಸಂರಚನಾ ohci_regs {
     u32  revision;
     u32  control;
     u32  cmdstatus;

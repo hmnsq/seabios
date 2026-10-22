@@ -2,30 +2,30 @@
 #ifndef __STRING_H
 #define __STRING_H
 
-#include "types.h" // u32
+#ಅನ್ತರ್ಭಾವ "types.h" // u32
 
 // string.c
-u8 checksum_far(u16 buf_seg, void *buf_far, u32 len);
-u8 checksum(void *buf, u32 len);
-size_t strlen(const char *s);
-int memcmp_far(u16 s1seg, const void *s1, u16 s2seg, const void *s2, size_t n);
-int memcmp(const void *s1, const void *s2, size_t n);
-int strcmp(const char *s1, const char *s2);
-void memset_far(u16 d_seg, void *d_far, u8 c, size_t len);
-void memset16_far(u16 d_seg, void *d_far, u16 c, size_t len);
-void *memset(void *s, int c, size_t n);
-void memset_fl(void *ptr, u8 val, size_t size);
-void memcpy_far(u16 d_seg, void *d_far
-                , u16 s_seg, const void *s_far, size_t len);
-void memcpy_fl(void *d_fl, const void *s_fl, size_t len);
-void *memcpy(void *d1, const void *s1, size_t len);
-#if MODESEGMENT == 0
+u8 checksum_far(u16 buf_seg, ಶೂನ್ಯ *buf_far, u32 len);
+u8 checksum(ಶೂನ್ಯ *buf, u32 len);
+size_t strlen(ಧ್ರುವ ವರ್ಣ *s);
+ಪೂರ್ಣಾಙ್ಕ memcmp_far(u16 s1seg, ಧ್ರುವ ಶೂನ್ಯ *s1, u16 s2seg, ಧ್ರುವ ಶೂನ್ಯ *s2, size_t n);
+ಪೂರ್ಣಾಙ್ಕ memcmp(ಧ್ರುವ ಶೂನ್ಯ *s1, ಧ್ರುವ ಶೂನ್ಯ *s2, size_t n);
+ಪೂರ್ಣಾಙ್ಕ strcmp(ಧ್ರುವ ವರ್ಣ *s1, ಧ್ರುವ ವರ್ಣ *s2);
+ಶೂನ್ಯ memset_far(u16 d_seg, ಶೂನ್ಯ *d_far, u8 c, size_t len);
+ಶೂನ್ಯ memset16_far(u16 d_seg, ಶೂನ್ಯ *d_far, u16 c, size_t len);
+ಶೂನ್ಯ *memset(ಶೂನ್ಯ *s, ಪೂರ್ಣಾಙ್ಕ c, size_t n);
+ಶೂನ್ಯ memset_fl(ಶೂನ್ಯ *ptr, u8 val, size_t size);
+ಶೂನ್ಯ memcpy_far(u16 d_seg, ಶೂನ್ಯ *d_far
+                , u16 s_seg, ಧ್ರುವ ಶೂನ್ಯ *s_far, size_t len);
+ಶೂನ್ಯ memcpy_fl(ಶೂನ್ಯ *d_fl, ಧ್ರುವ ಶೂನ್ಯ *s_fl, size_t len);
+ಶೂನ್ಯ *memcpy(ಶೂನ್ಯ *d1, ಧ್ರುವ ಶೂನ್ಯ *s1, size_t len);
+#ಯದಿ MODESEGMENT == 0
 #define memcpy __builtin_memcpy
 #endif
-void iomemcpy(void *d, const void *s, u32 len);
-void *memmove(void *d, const void *s, size_t len);
-char *strtcpy(char *dest, const char *src, size_t len);
-char *strchr(const char *s, int c);
-char *nullTrailingSpace(char *buf);
+ಶೂನ್ಯ iomemcpy(ಶೂನ್ಯ *d, ಧ್ರುವ ಶೂನ್ಯ *s, u32 len);
+ಶೂನ್ಯ *memmove(ಶೂನ್ಯ *d, ಧ್ರುವ ಶೂನ್ಯ *s, size_t len);
+ವರ್ಣ *strtcpy(ವರ್ಣ *dest, ಧ್ರುವ ವರ್ಣ *src, size_t len);
+ವರ್ಣ *strchr(ಧ್ರುವ ವರ್ಣ *s, ಪೂರ್ಣಾಙ್ಕ c);
+ವರ್ಣ *nullTrailingSpace(ವರ್ಣ *buf);
 
 #endif // string.h

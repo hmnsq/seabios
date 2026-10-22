@@ -2,8 +2,8 @@
 #define __USB_HUB_H
 
 // usb-hub.c
-struct usbdevice_s;
-int usb_hub_setup(struct usbdevice_s *usbdev);
+ಸಂರಚನಾ usbdevice_s;
+ಪೂರ್ಣಾಙ್ಕ usb_hub_setup(ಸಂರಚನಾ usbdevice_s *usbdev);
 
 
 /****************************************************************
@@ -15,7 +15,7 @@ int usb_hub_setup(struct usbdevice_s *usbdev);
 
 #define HUB_REQ_SET_HUB_DEPTH           0x0C
 
-struct usb_hub_descriptor {
+ಸಂರಚನಾ usb_hub_descriptor {
     u8  bDescLength;
     u8  bDescriptorType;
     u8  bNbrPorts;
@@ -41,7 +41,7 @@ struct usb_hub_descriptor {
 #define USB_PORT_FEAT_INDICATOR         22
 #define USB_PORT_FEAT_C_PORT_L1         23
 
-struct usb_port_status {
+ಸಂರಚನಾ usb_port_status {
     u16 wPortStatus;
     u16 wPortChange;
 } PACKED;
@@ -56,8 +56,8 @@ struct usb_port_status {
 #define USB_PORT_STAT_POWER             0x0100
 #define USB_PORT_STAT_SPEED_SHIFT       9
 #define USB_PORT_STAT_SPEED_MASK        (0x3 << USB_PORT_STAT_SPEED_SHIFT)
-#define USB_PORT_STAT_LOW_SPEED         0x0200
-#define USB_PORT_STAT_HIGH_SPEED        0x0400
+#define USB_PORT_STAT_ಕೆಳಗಿನ_SPEED         0x0200
+#define USB_PORT_STAT_ಮೇಲಿನ_SPEED        0x0400
 #define USB_PORT_STAT_TEST              0x0800
 #define USB_PORT_STAT_INDICATOR         0x1000
 
