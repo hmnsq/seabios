@@ -7,10 +7,10 @@
 #ifndef __NVME_H
 #define __NVME_H
 
-#include "block.h" // struct disk_op_s
+#ضمن "block.h" // struct disk_op_s
 
-void nvme_setup(void);
-int nvme_process_op(struct disk_op_s *op);
+فراغ nvme_setup(فراغ);
+صحيح nvme_process_op(بنية disk_op_s *op);
 
 #endif
 
