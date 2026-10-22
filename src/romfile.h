@@ -1,22 +1,22 @@
 #ifndef __ROMFILE_H
 #define __ROMFILE_H
 
-#include "types.h" // u32
+#अन्तर्भाव "types.h" // u32
 
 // romfile.c
-struct romfile_s {
-    struct romfile_s *next;
-    char name[128];
+संरचना romfile_s {
+    संरचना romfile_s *next;
+    अक्षर name[128];
     u32 size;
-    int (*copy)(struct romfile_s *file, void *dest, u32 maxlen);
+    पूर्णांक (*copy)(संरचना romfile_s *file, शून्य *dest, u32 maxlen);
 };
-void romfile_add(struct romfile_s *file);
-struct romfile_s *romfile_findprefix(const char *prefix, struct romfile_s *prev);
-struct romfile_s *romfile_find(const char *name);
-void *romfile_loadfile(const char *name, int *psize);
-u64 romfile_loadint(const char *name, u64 defval);
-u32 romfile_loadbool(const char *name, u32 defval);
+शून्य romfile_add(संरचना romfile_s *file);
+संरचना romfile_s *romfile_findprefix(स्थिरांक अक्षर *prefix, संरचना romfile_s *prev);
+संरचना romfile_s *romfile_find(स्थिरांक अक्षर *name);
+शून्य *romfile_loadfile(स्थिरांक अक्षर *name, पूर्णांक *psize);
+u64 romfile_loadint(स्थिरांक अक्षर *name, u64 defval);
+u32 romfile_loadbool(स्थिरांक अक्षर *name, u32 defval);
 
-void const_romfile_add_int(char *name, u32 value);
+शून्य const_romfile_add_int(अक्षर *name, u32 मूल्य);
 
 #endif // romfile.h

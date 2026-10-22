@@ -2,23 +2,23 @@
 #define __USB_OHCI_H
 
 // usb-ohci.c
-void ohci_setup(void);
-struct usbdevice_s;
-struct usb_endpoint_descriptor;
-struct usb_pipe;
-struct usb_pipe *ohci_realloc_pipe(struct usbdevice_s *usbdev
-                                   , struct usb_pipe *upipe
-                                   , struct usb_endpoint_descriptor *epdesc);
-int ohci_send_pipe(struct usb_pipe *p, int dir, const void *cmd
-                   , void *data, int datasize);
-int ohci_poll_intr(struct usb_pipe *p, void *data);
+शून्य ohci_setup(शून्य);
+संरचना usbdevice_s;
+संरचना usb_endpoint_descriptor;
+संरचना usb_pipe;
+संरचना usb_pipe *ohci_realloc_pipe(संरचना usbdevice_s *usbdev
+                                   , संरचना usb_pipe *upipe
+                                   , संरचना usb_endpoint_descriptor *epdesc);
+पूर्णांक ohci_send_pipe(संरचना usb_pipe *p, पूर्णांक dir, स्थिरांक शून्य *cmd
+                   , शून्य *data, पूर्णांक datasize);
+पूर्णांक ohci_poll_intr(संरचना usb_pipe *p, शून्य *data);
 
 
 /****************************************************************
  * ohci structs and flags
  ****************************************************************/
 
-struct ohci_ed {
+संरचना ohci_ed {
     u32 hwINFO;
     u32 hwTailP;
     u32 hwHeadP;
@@ -34,7 +34,7 @@ struct ohci_ed {
 #define ED_C            (0x02)
 #define ED_H            (0x01)
 
-struct ohci_td {
+संरचना ohci_td {
     u32 hwINFO;
     u32 hwCBP;
     u32 hwNextTD;
@@ -60,14 +60,14 @@ struct ohci_td {
 
 #define TD_R        0x00040000
 
-struct ohci_hcca {
+संरचना ohci_hcca {
     u32  int_table[32];
     u32  frame_no;
     u32  done_head;
     u8   reserved[120];
 } PACKED;
 
-struct ohci_regs {
+संरचना ohci_regs {
     u32  revision;
     u32  control;
     u32  cmdstatus;

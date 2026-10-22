@@ -5,32 +5,32 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // SET_BDA
-#include "bregs.h" // struct bregs
-#include "hw/pic.h" // pic_eoi1
-#include "hw/ps2port.h" // ps2_check_event
-#include "hw/rtc.h" // rtc_read
-#include "hw/usb-hid.h" // usb_check_event
-#include "output.h" // debug_enter
-#include "stacks.h" // yield
-#include "string.h" // memset
-#include "util.h" // clock_setup
+#अन्तर्भाव "biosvar.h" // SET_BDA
+#अन्तर्भाव "bregs.h" // struct bregs
+#अन्तर्भाव "hw/pic.h" // pic_eoi1
+#अन्तर्भाव "hw/ps2port.h" // ps2_check_event
+#अन्तर्भाव "hw/rtc.h" // rtc_read
+#अन्तर्भाव "hw/usb-hid.h" // usb_check_event
+#अन्तर्भाव "output.h" // debug_enter
+#अन्तर्भाव "stacks.h" // yield
+#अन्तर्भाव "string.h" // memset
+#अन्तर्भाव "util.h" // clock_setup
 
 
 /****************************************************************
  * Init
  ****************************************************************/
 
-static u32
+स्थिर u32
 bcd2bin(u8 val)
 {
-    return (val & 0xf) + ((val >> 4) * 10);
+    परत (val & 0xf) + ((val >> 4) * 10);
 }
 
 u8 Century VARLOW;
 
-void
-clock_setup(void)
+शून्य
+clock_setup(शून्य)
 {
     dprintf(3, "init timer\n");
     pit_setup();
@@ -44,19 +44,19 @@ clock_setup(void)
     SET_BDA(timer_counter, ticks % TICKS_PER_DAY);
 
     // Setup Century storage
-    if (CONFIG_QEMU) {
+    जर (CONFIG_QEMU) {
         Century = rtc_read(CMOS_CENTURY);
-    } else {
+    } अन्यथा {
         // Infer current century from the year.
         u8 year = rtc_read(CMOS_RTC_YEAR);
-        if (year > 0x80)
+        जर (year > 0x80)
             Century = 0x19;
-        else
+        अन्यथा
             Century = 0x20;
     }
 
     enable_hwirq(0, FUNC16(entry_08));
-    if (CONFIG_RTC_TIMER)
+    जर (CONFIG_RTC_TIMER)
         enable_hwirq(8, FUNC16(entry_70));
 }
 
@@ -66,8 +66,8 @@ clock_setup(void)
  ****************************************************************/
 
 // get current clock count
-static void
-handle_1a00(struct bregs *regs)
+स्थिर शून्य
+handle_1a00(संरचना bregs *regs)
 {
     yield();
     u32 ticks = GET_BDA(timer_counter);
@@ -79,8 +79,8 @@ handle_1a00(struct bregs *regs)
 }
 
 // Set Current Clock Count
-static void
-handle_1a01(struct bregs *regs)
+स्थिर शून्य
+handle_1a01(संरचना bregs *regs)
 {
     u32 ticks = (regs->cx << 16) | regs->dx;
     SET_BDA(timer_counter, ticks);
@@ -91,12 +91,12 @@ handle_1a01(struct bregs *regs)
 }
 
 // Read CMOS Time
-static void
-handle_1a02(struct bregs *regs)
+स्थिर शून्य
+handle_1a02(संरचना bregs *regs)
 {
-    if (rtc_updating()) {
+    जर (rtc_updating()) {
         set_invalid(regs);
-        return;
+        परत;
     }
 
     regs->dh = rtc_read(CMOS_RTC_SECONDS);
@@ -109,8 +109,8 @@ handle_1a02(struct bregs *regs)
 }
 
 // Set CMOS Time
-static void
-handle_1a03(struct bregs *regs)
+स्थिर शून्य
+handle_1a03(संरचना bregs *regs)
 {
     // Using a debugger, I notice the following masking/setting
     // of bits in Status Register B, by setting Reg B to
@@ -122,7 +122,7 @@ handle_1a03(struct bregs *regs)
     //
     // Bit4 in try#1 flipped in hardware (forced low) due to bit7=1
     // My assumption: RegB = ((RegB & 01100000b) | 00000010b)
-    if (rtc_updating()) {
+    जर (rtc_updating()) {
         rtc_setup();
         // fall through as if an update were not in progress
     }
@@ -139,25 +139,25 @@ handle_1a03(struct bregs *regs)
 }
 
 // Read CMOS Date
-static void
-handle_1a04(struct bregs *regs)
+स्थिर शून्य
+handle_1a04(संरचना bregs *regs)
 {
     regs->ah = 0;
-    if (rtc_updating()) {
+    जर (rtc_updating()) {
         set_invalid(regs);
-        return;
+        परत;
     }
     regs->cl = rtc_read(CMOS_RTC_YEAR);
     regs->dh = rtc_read(CMOS_RTC_MONTH);
     regs->dl = rtc_read(CMOS_RTC_DAY_MONTH);
-    regs->ch = GET_LOW(Century);
+    regs->ch = GET_खालचा(Century);
     regs->al = regs->ch;
     set_success(regs);
 }
 
 // Set CMOS Date
-static void
-handle_1a05(struct bregs *regs)
+स्थिर शून्य
+handle_1a05(संरचना bregs *regs)
 {
     // Using a debugger, I notice the following masking/setting
     // of bits in Status Register B, by setting Reg B to
@@ -169,15 +169,15 @@ handle_1a05(struct bregs *regs)
     //
     // Bit4 in try#1 flipped in hardware (forced low) due to bit7=1
     // My assumption: RegB = (RegB & 01111111b)
-    if (rtc_updating()) {
+    जर (rtc_updating()) {
         rtc_setup();
         set_invalid(regs);
-        return;
+        परत;
     }
     rtc_write(CMOS_RTC_YEAR, regs->cl);
     rtc_write(CMOS_RTC_MONTH, regs->dh);
     rtc_write(CMOS_RTC_DAY_MONTH, regs->dl);
-    SET_LOW(Century, regs->ch);
+    SET_खालचा(Century, regs->ch);
     // clear halt-clock bit
     u8 val8 = rtc_read(CMOS_STATUS_B) & ~RTC_B_SET;
     rtc_write(CMOS_STATUS_B, val8);
@@ -187,8 +187,8 @@ handle_1a05(struct bregs *regs)
 }
 
 // Set Alarm Time in CMOS
-static void
-handle_1a06(struct bregs *regs)
+स्थिर शून्य
+handle_1a06(संरचना bregs *regs)
 {
     // Using a debugger, I notice the following masking/setting
     // of bits in Status Register B, by setting Reg B to
@@ -202,12 +202,12 @@ handle_1a06(struct bregs *regs)
     // My assumption: RegB = ((RegB & 01111111b) | 00100000b)
     u8 val8 = rtc_read(CMOS_STATUS_B); // Get Status Reg B
     regs->ax = 0;
-    if (val8 & RTC_B_AIE) {
+    जर (val8 & RTC_B_AIE) {
         // Alarm interrupt enabled already
         set_invalid(regs);
-        return;
+        परत;
     }
-    if (rtc_updating()) {
+    जर (rtc_updating()) {
         rtc_setup();
         // fall through as if an update were not in progress
     }
@@ -220,8 +220,8 @@ handle_1a06(struct bregs *regs)
 }
 
 // Turn off Alarm
-static void
-handle_1a07(struct bregs *regs)
+स्थिर शून्य
+handle_1a07(संरचना bregs *regs)
 {
     // Using a debugger, I notice the following masking/setting
     // of bits in Status Register B, by setting Reg B to
@@ -241,50 +241,50 @@ handle_1a07(struct bregs *regs)
     set_success(regs);
 }
 
-static void
-handle_1abb(struct bregs *regs)
+स्थिर शून्य
+handle_1abb(संरचना bregs *regs)
 {
-    if (!CONFIG_TCGBIOS)
-        return;
+    जर (!CONFIG_TCGBIOS)
+        परत;
 
     dprintf(DEBUG_tcg, "16: Calling tpm_interrupt_handler\n");
     call32(tpm_interrupt_handler32, MAKE_FLATPTR(GET_SEG(SS), regs), 0);
 }
 
 // Unsupported
-static void
-handle_1aXX(struct bregs *regs)
+स्थिर शून्य
+handle_1aXX(संरचना bregs *regs)
 {
     set_unimplemented(regs);
 }
 
 // INT 1Ah Time-of-day Service Entry Point
-void VISIBLE16
-handle_1a(struct bregs *regs)
+शून्य VISIBLE16
+handle_1a(संरचना bregs *regs)
 {
     debug_enter(regs, DEBUG_HDL_1a);
-    switch (regs->ah) {
-    case 0x00: handle_1a00(regs); break;
-    case 0x01: handle_1a01(regs); break;
-    case 0x02: handle_1a02(regs); break;
-    case 0x03: handle_1a03(regs); break;
-    case 0x04: handle_1a04(regs); break;
-    case 0x05: handle_1a05(regs); break;
-    case 0x06: handle_1a06(regs); break;
-    case 0x07: handle_1a07(regs); break;
-    case 0xbb: handle_1abb(regs); break;
-    default:   handle_1aXX(regs); break;
+    निवड (regs->ah) {
+    स्थिती 0x00: handle_1a00(regs); थांबा;
+    स्थिती 0x01: handle_1a01(regs); थांबा;
+    स्थिती 0x02: handle_1a02(regs); थांबा;
+    स्थिती 0x03: handle_1a03(regs); थांबा;
+    स्थिती 0x04: handle_1a04(regs); थांबा;
+    स्थिती 0x05: handle_1a05(regs); थांबा;
+    स्थिती 0x06: handle_1a06(regs); थांबा;
+    स्थिती 0x07: handle_1a07(regs); थांबा;
+    स्थिती 0xbb: handle_1abb(regs); थांबा;
+    पूर्वनिर्धारित:   handle_1aXX(regs); थांबा;
     }
 }
 
 // Update main tick counter
-static void
-clock_update(void)
+स्थिर शून्य
+clock_update(शून्य)
 {
     u32 counter = GET_BDA(timer_counter);
     counter++;
     // compare to one days worth of timer ticks at 18.2 hz
-    if (counter >= TICKS_PER_DAY) {
+    जर (counter >= TICKS_PER_DAY) {
         // there has been a midnight rollover at this point
         counter = 0;
         SET_BDA(timer_rollover, GET_BDA(timer_rollover) + 1);
@@ -299,15 +299,15 @@ clock_update(void)
 }
 
 // INT 08h System Timer ISR Entry Point
-void VISIBLE16
-handle_08(void)
+शून्य VISIBLE16
+handle_08(शून्य)
 {
     debug_isr(DEBUG_ISR_08);
     clock_update();
 
     // chain to user timer tick INT #0x1c
-    struct bregs br;
-    memset(&br, 0, sizeof(br));
+    संरचना bregs br;
+    स_रखो(&br, 0, आकार(br));
     br.flags = F_IF;
     call16_int(0x1c, &br);
 
@@ -317,14 +317,14 @@ handle_08(void)
 u32 last_timer_check VARLOW;
 
 // Simulate timer irq on machines without hardware irqs
-void
-clock_poll_irq(void)
+शून्य
+clock_poll_irq(शून्य)
 {
-    if (CONFIG_HARDWARE_IRQ)
-        return;
-    if (!timer_check(GET_LOW(last_timer_check)))
-        return;
-    SET_LOW(last_timer_check, timer_calc(ticks_to_ms(1)));
+    जर (CONFIG_HARDWARE_IRQ)
+        परत;
+    जर (!timer_check(GET_खालचा(last_timer_check)))
+        परत;
+    SET_खालचा(last_timer_check, timer_calc(ticks_to_ms(1)));
     clock_update();
 }
 
@@ -336,25 +336,25 @@ clock_poll_irq(void)
 // Calculate the timer value at 'count' number of full timer ticks in
 // the future.
 u32
-irqtimer_calc_ticks(u32 count)
+irqtimer_calc_ticks(u32 मोजणी)
 {
-    return (GET_BDA(timer_counter) + count + 1) % TICKS_PER_DAY;
+    परत (GET_BDA(timer_counter) + मोजणी + 1) % TICKS_PER_DAY;
 }
 
 // Return the timer value that is 'msecs' time in the future.
 u32
 irqtimer_calc(u32 msecs)
 {
-    if (!msecs)
-        return GET_BDA(timer_counter);
-    return irqtimer_calc_ticks(ticks_from_ms(msecs));
+    जर (!msecs)
+        परत GET_BDA(timer_counter);
+    परत irqtimer_calc_ticks(ticks_from_ms(msecs));
 }
 
 // Check if the given timer value has passed.
-int
+पूर्णांक
 irqtimer_check(u32 end)
 {
-    return (((GET_BDA(timer_counter) + TICKS_PER_DAY - end) % TICKS_PER_DAY)
+    परत (((GET_BDA(timer_counter) + TICKS_PER_DAY - end) % TICKS_PER_DAY)
             < (TICKS_PER_DAY/2));
 }
 
@@ -363,25 +363,25 @@ irqtimer_check(u32 end)
  * Periodic timer
  ****************************************************************/
 
-static int
+स्थिर पूर्णांक
 set_usertimer(u32 usecs, u16 seg, u16 offset)
 {
-    if (GET_BDA(rtc_wait_flag) & RWS_WAIT_PENDING)
-        return -1;
+    जर (GET_BDA(rtc_wait_flag) & RWS_WAIT_PENDING)
+        परत -1;
 
     // Interval not already set.
     SET_BDA(rtc_wait_flag, RWS_WAIT_PENDING);  // Set status byte.
     SET_BDA(user_wait_complete_flag, SEGOFF(seg, offset));
     SET_BDA(user_wait_timeout, usecs);
     rtc_use();
-    return 0;
+    परत 0;
 }
 
-static void
-clear_usertimer(void)
+स्थिर शून्य
+clear_usertimer(शून्य)
 {
-    if (!(GET_BDA(rtc_wait_flag) & RWS_WAIT_PENDING))
-        return;
+    जर (!(GET_BDA(rtc_wait_flag) & RWS_WAIT_PENDING))
+        परत;
     // Turn off status byte.
     SET_BDA(rtc_wait_flag, 0);
     rtc_release();
@@ -390,115 +390,115 @@ clear_usertimer(void)
 #define RET_ECLOCKINUSE  0x83
 
 // Wait for CX:DX microseconds
-void
-handle_1586(struct bregs *regs)
+शून्य
+handle_1586(संरचना bregs *regs)
 {
-    if (!CONFIG_RTC_TIMER) {
+    जर (!CONFIG_RTC_TIMER) {
         set_code_unimplemented(regs, RET_EUNSUPPORTED);
-        return;
+        परत;
     }
     // Use the rtc to wait for the specified time.
     u8 statusflag = 0;
-    u32 count = (regs->cx << 16) | regs->dx;
-    int ret = set_usertimer(count, GET_SEG(SS), (u32)&statusflag);
-    if (ret) {
+    u32 मोजणी = (regs->cx << 16) | regs->dx;
+    पूर्णांक ret = set_usertimer(मोजणी, GET_SEG(SS), (u32)&statusflag);
+    जर (ret) {
         set_code_invalid(regs, RET_ECLOCKINUSE);
-        return;
+        परत;
     }
-    while (!statusflag)
+    पर्यंत (!statusflag)
         yield_toirq();
     set_success(regs);
 }
 
 // Set Interval requested.
-static void
-handle_158300(struct bregs *regs)
+स्थिर शून्य
+handle_158300(संरचना bregs *regs)
 {
-    int ret = set_usertimer((regs->cx << 16) | regs->dx, regs->es, regs->bx);
-    if (ret)
+    पूर्णांक ret = set_usertimer((regs->cx << 16) | regs->dx, regs->es, regs->bx);
+    जर (ret)
         // Interval already set.
         set_code_invalid(regs, RET_EUNSUPPORTED);
-    else
+    अन्यथा
         set_success(regs);
 }
 
 // Clear interval requested
-static void
-handle_158301(struct bregs *regs)
+स्थिर शून्य
+handle_158301(संरचना bregs *regs)
 {
     clear_usertimer();
     set_success(regs);
 }
 
-static void
-handle_1583XX(struct bregs *regs)
+स्थिर शून्य
+handle_1583XX(संरचना bregs *regs)
 {
     set_code_unimplemented(regs, RET_EUNSUPPORTED);
     regs->al--;
 }
 
-void
-handle_1583(struct bregs *regs)
+शून्य
+handle_1583(संरचना bregs *regs)
 {
-    if (!CONFIG_RTC_TIMER) {
+    जर (!CONFIG_RTC_TIMER) {
         handle_1583XX(regs);
-        return;
+        परत;
     }
-    switch (regs->al) {
-    case 0x00: handle_158300(regs); break;
-    case 0x01: handle_158301(regs); break;
-    default:   handle_1583XX(regs); break;
+    निवड (regs->al) {
+    स्थिती 0x00: handle_158300(regs); थांबा;
+    स्थिती 0x01: handle_158301(regs); थांबा;
+    पूर्वनिर्धारित:   handle_1583XX(regs); थांबा;
     }
 }
 
 #define USEC_PER_RTC DIV_ROUND_CLOSEST(1000000, 1024)
 
 // int70h: IRQ8 - CMOS RTC
-void VISIBLE16
-handle_70(void)
+शून्य VISIBLE16
+handle_70(शून्य)
 {
-    if (!CONFIG_RTC_TIMER)
-        return;
+    जर (!CONFIG_RTC_TIMER)
+        परत;
     debug_isr(DEBUG_ISR_70);
 
     // Check which modes are enabled and have occurred.
     u8 registerB = rtc_read(CMOS_STATUS_B);
     u8 registerC = rtc_read(CMOS_STATUS_C);
 
-    if (!(registerB & (RTC_B_PIE|RTC_B_AIE)))
-        goto done;
-    if (registerC & RTC_B_AIE) {
+    जर (!(registerB & (RTC_B_PIE|RTC_B_AIE)))
+        जा done;
+    जर (registerC & RTC_B_AIE) {
         // Handle Alarm Interrupt.
-        struct bregs br;
-        memset(&br, 0, sizeof(br));
+        संरचना bregs br;
+        स_रखो(&br, 0, आकार(br));
         br.flags = F_IF;
         call16_int(0x4a, &br);
     }
-    if (!(registerC & RTC_B_PIE))
-        goto done;
+    जर (!(registerC & RTC_B_PIE))
+        जा done;
 
     // Handle Periodic Interrupt.
 
     check_preempt();
 
-    if (!GET_BDA(rtc_wait_flag))
-        goto done;
+    जर (!GET_BDA(rtc_wait_flag))
+        जा done;
 
     // Wait Interval (Int 15, AH=83) active.
-    u32 time = GET_BDA(user_wait_timeout);  // Time left in microseconds.
-    if (time < USEC_PER_RTC) {
+    u32 समय = GET_BDA(user_wait_timeout);  // Time left in microseconds.
+    जर (समय < USEC_PER_RTC) {
         // Done waiting - write to specified flag byte.
-        struct segoff_s segoff = GET_BDA(user_wait_complete_flag);
+        संरचना segoff_s segoff = GET_BDA(user_wait_complete_flag);
         u16 ptr_seg = segoff.seg;
         u8 *ptr_far = (u8*)(segoff.offset+0);
         u8 oldval = GET_FARVAR(ptr_seg, *ptr_far);
         SET_FARVAR(ptr_seg, *ptr_far, oldval | 0x80);
 
         clear_usertimer();
-    } else {
+    } अन्यथा {
         // Continue waiting.
-        time -= USEC_PER_RTC;
-        SET_BDA(user_wait_timeout, time);
+        समय -= USEC_PER_RTC;
+        SET_BDA(user_wait_timeout, समय);
     }
 
 done:

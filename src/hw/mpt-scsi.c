@@ -5,20 +5,20 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_GLOBALFLAT
-#include "block.h" // struct drive_s
-#include "blockcmd.h" // scsi_drive_setup
-#include "config.h" // CONFIG_*
-#include "fw/paravirt.h" // runningOnQEMU
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "pcidevice.h" // foreachpci
-#include "pci_ids.h" // PCI_DEVICE_ID
-#include "pci_regs.h" // PCI_VENDOR_ID
-#include "stacks.h" // run_thread
-#include "std/disk.h" // DISK_RET_SUCCESS
-#include "string.h" // memset
-#include "util.h" // usleep
+#अन्तर्भाव "biosvar.h" // GET_GLOBALFLAT
+#अन्तर्भाव "block.h" // struct drive_s
+#अन्तर्भाव "blockcmd.h" // scsi_drive_setup
+#अन्तर्भाव "config.h" // CONFIG_*
+#अन्तर्भाव "fw/paravirt.h" // runningOnQEMU
+#अन्तर्भाव "malloc.h" // free
+#अन्तर्भाव "output.h" // dprintf
+#अन्तर्भाव "pcidevice.h" // foreachpci
+#अन्तर्भाव "pci_ids.h" // PCI_DEVICE_ID
+#अन्तर्भाव "pci_regs.h" // PCI_VENDOR_ID
+#अन्तर्भाव "stacks.h" // run_thread
+#अन्तर्भाव "std/disk.h" // DISK_RET_SUCCESS
+#अन्तर्भाव "string.h" // memset
+#अन्तर्भाव "util.h" // usleep
 
 #define MPT_REG_DOORBELL  0x00
 #define MPT_REG_WRITE_SEQ 0x04
@@ -31,26 +31,26 @@
 #define MPT_REG_REQ_Q     0x40
 #define MPT_REG_REP_Q     0x44
 
-#define MPT_DOORBELL_MSG_RESET 0x40
+#define MPT_DOORBELL_संदेश_RESET 0x40
 #define MPT_DOORBELL_HANDSHAKE 0x42
 
 #define MPT_IMASK_DOORBELL 0x01
 #define MPT_IMASK_REPLY    0x08
 
-struct mpt_lun_s {
-    struct drive_s drive;
-    struct pci_device *pci;
+संरचना mpt_lun_s {
+    संरचना drive_s drive;
+    संरचना pci_device *pci;
     u32 iobase;
     u8 target;
     u8 lun;
 };
 
-u8 reply_msg[4] __attribute((aligned(4))) VARLOW;
+u8 reply_संदेश[4] __attribute((aligned(4))) VARLOW;
 
 #define MPT_MESSAGE_HDR_FUNCTION_SCSI_IO_REQUEST        (0x00)
 #define MPT_MESSAGE_HDR_FUNCTION_IOC_INIT               (0x02)
 
-static struct MptIOCInitRequest
+स्थिर संरचना MptIOCInitRequest
 {
     u8     WhoInit;             /* Which system sent this init request. */
     u8     Reserved1;           /* Reserved */
@@ -63,19 +63,19 @@ static struct MptIOCInitRequest
     u32    MessageContext;      /* Message context ID. */
     u16    ReplyFrameSize;      /* Reply frame size. */
     u16    Reserved2;           /* Reserved */
-    u32    HostMfaHighAddr;     /* Upper 32bit of the message frames. */
-    u32    SenseBufferHighAddr; /* Upper 32bit of the sense buffer. */
+    u32    Host_Mfa_वरचा_Addr;     /* Upper 32bit of the message frames. */
+    u32    Sense_Buffer_वरचा_Addr; /* Upper 32bit of the sense buffer. */
 } MptIOCInitRequest = {
     .WhoInit = 2,
     .Function = MPT_MESSAGE_HDR_FUNCTION_IOC_INIT,
     .MaxDevices = 8,
     .MaxBuses = 1,
-    .ReplyFrameSize = sizeof(reply_msg),
-    .HostMfaHighAddr = 0,
-    .SenseBufferHighAddr = 0
+    .ReplyFrameSize = आकार(reply_संदेश),
+    .Host_Mfa_वरचा_Addr = 0,
+    .Sense_Buffer_वरचा_Addr = 0
 };
 
-struct MptIOCInitReply {
+संरचना MptIOCInitReply {
     u8     WhoInit;     /* Which subsystem sent this init request. */
     u8     Reserved1;   /* Reserved */
     u8     MessageLength; /* Message length */
@@ -90,7 +90,7 @@ struct MptIOCInitReply {
     u32    IOCLogInfo;  /* IO controller log information. */
 };
 
-typedef struct MptSCSIIORequest {
+प्रकारव्याख्या संरचना MptSCSIIORequest {
     u8     TargetID;            /* Target ID */
     u8     Bus;                 /* Bus number */
     u8     ChainOffset;         /* Chain offset */
@@ -104,24 +104,24 @@ typedef struct MptSCSIIORequest {
     u32    Control;             /* Control values. */
     u8     CDB[16];             /* The CDB. */
     u32    DataLength;          /* Data length. */
-    u32    SenseBufferLowAddr;  /* Sense buffer low 32bit address. */
+    u32    Sense_Buffer_खालचा_Addr;  /* Sense buffer low 32bit address. */
 } __attribute__((packed)) MptSCSIIORequest_t;
 
 #define MPT_POLL_TIMEOUT  60000
 
-typedef struct MptSGEntrySimple32 {
+प्रकारव्याख्या संरचना MptSGEntrySimple32 {
     u32 FlagsLength;
-    u32 DataBufferAddressLow;
+    u32 Data_Buffer_Address_खालचा;
 } __attribute__((packed)) MptSGEntrySimple32_t;
 
-static int
-mpt_scsi_cmd(u32 iobase, struct disk_op_s *op,
+स्थिर पूर्णांक
+mpt_scsi_cmd(u32 iobase, संरचना disk_op_s *op,
              u8 *cdb, u16 target, u16 lun, u16 blocksize)
 {
     u32 end = timer_calc(MPT_POLL_TIMEOUT);
 
     u8 sense_buf[18];
-    struct scsi_req {
+    संरचना scsi_req {
         MptSCSIIORequest_t      scsi_io;
         MptSGEntrySimple32_t    sge;
     } __attribute__((packed, aligned(4))) req = {
@@ -132,22 +132,22 @@ mpt_scsi_cmd(u32 iobase, struct disk_op_s *op,
             .CDBLength = 16,
             .SenseBufferLength = 18,
             .MessageContext = end & 0x7fffffff,
-            .DataLength = op->count * blocksize,
-            .SenseBufferLowAddr = (u32)MAKE_FLATPTR(GET_SEG(SS), &sense_buf[0]),
+            .DataLength = op->मोजणी * blocksize,
+            .Sense_Buffer_खालचा_Addr = (u32)MAKE_FLATPTR(GET_SEG(SS), &sense_buf[0]),
         },
         .sge = {
             /* end of list, simple entry, end of buffer, last element */
-            .FlagsLength = (op->count * blocksize) | 0xD1000000,
-            .DataBufferAddressLow = (u32)op->buf_fl,
+            .FlagsLength = (op->मोजणी * blocksize) | 0xD1000000,
+            .Data_Buffer_Address_खालचा = (u32)op->buf_fl,
         }
     };
 
     req.scsi_io.LUN[1] = lun;
-    memcpy(req.scsi_io.CDB, cdb, 16);
-    if (blocksize) {
-        if (scsi_is_read(op)) {
+    स_नकल(req.scsi_io.CDB, cdb, 16);
+    जर (blocksize) {
+        जर (scsi_is_read(op)) {
             req.scsi_io.Control = 2 << 24;
-        } else {
+        } अन्यथा {
             req.scsi_io.Control = 1 << 24;
             req.sge.FlagsLength |= 0x04000000;
         }
@@ -155,51 +155,51 @@ mpt_scsi_cmd(u32 iobase, struct disk_op_s *op,
 
     outl((u32)MAKE_FLATPTR(GET_SEG(SS), &req), iobase + MPT_REG_REQ_Q);
 
-    for (;;) {
-        if (timer_check(end)) {
-            return DISK_RET_ETIMEOUT;
+    साठी (;;) {
+        जर (timer_check(end)) {
+            परत DISK_RET_ETIMEOUT;
         }
 
         u32 istatus = inl(iobase + MPT_REG_ISTATUS);
-        if (istatus & MPT_IMASK_REPLY) {
+        जर (istatus & MPT_IMASK_REPLY) {
             u32 resp = inl(iobase + MPT_REG_REP_Q);
             /* another read to turn interrupt off */
             inl(iobase + MPT_REG_REP_Q);
-            if (resp == req.scsi_io.MessageContext) {
-                return DISK_RET_SUCCESS;
-            } else if (resp & 0x80000000) {
-                outl((u32)&reply_msg[0], iobase + MPT_REG_REP_Q);
-                return DISK_RET_EBADTRACK;
+            जर (resp == req.scsi_io.MessageContext) {
+                परत DISK_RET_SUCCESS;
+            } अन्यथा जर (resp & 0x80000000) {
+                outl((u32)&reply_संदेश[0], iobase + MPT_REG_REP_Q);
+                परत DISK_RET_EBADTRACK;
             }
         }
         usleep(50);
     }
 }
 
-int
-mpt_scsi_process_op(struct disk_op_s *op)
+पूर्णांक
+mpt_scsi_process_op(संरचना disk_op_s *op)
 {
-    if (!CONFIG_MPT_SCSI)
-        return DISK_RET_EBADTRACK;
+    जर (!CONFIG_MPT_SCSI)
+        परत DISK_RET_EBADTRACK;
 
     u8 cdbcmd[16];
-    int blocksize = scsi_fill_cmd(op, cdbcmd, sizeof(cdbcmd));
-    if (blocksize < 0)
-        return default_process_op(op);
+    पूर्णांक blocksize = scsi_fill_cmd(op, cdbcmd, आकार(cdbcmd));
+    जर (blocksize < 0)
+        परत default_process_op(op);
 
-    struct mpt_lun_s *llun_gf =
-        container_of(op->drive_fl, struct mpt_lun_s, drive);
+    संरचना mpt_lun_s *llun_gf =
+        container_of(op->drive_fl, संरचना mpt_lun_s, drive);
     u16 target = GET_GLOBALFLAT(llun_gf->target);
     u16 lun = GET_GLOBALFLAT(llun_gf->lun);
     u32 iobase = GET_GLOBALFLAT(llun_gf->iobase);
-    return mpt_scsi_cmd(iobase, op, cdbcmd, target, lun, blocksize);
+    परत mpt_scsi_cmd(iobase, op, cdbcmd, target, lun, blocksize);
 }
 
-static void
-mpt_scsi_init_lun(struct mpt_lun_s *llun, struct pci_device *pci,
+स्थिर शून्य
+mpt_scsi_init_lun(संरचना mpt_lun_s *llun, संरचना pci_device *pci,
                   u32 iobase, u8 target, u8 lun)
 {
-    memset(llun, 0, sizeof(*llun));
+    स_रखो(llun, 0, आकार(*llun));
     llun->drive.type = DTYPE_MPT_SCSI;
     llun->drive.cntl_id = pci->bdf;
     llun->pci = pci;
@@ -208,111 +208,111 @@ mpt_scsi_init_lun(struct mpt_lun_s *llun, struct pci_device *pci,
     llun->iobase = iobase;
 }
 
-static int
-mpt_scsi_add_lun(u32 lun, struct drive_s *tmpl_drv)
+स्थिर पूर्णांक
+mpt_scsi_add_lun(u32 lun, संरचना drive_s *tmpl_drv)
 {
-    struct mpt_lun_s *tmpl_llun =
-        container_of(tmpl_drv, struct mpt_lun_s, drive);
-    struct mpt_lun_s *llun = malloc_fseg(sizeof(*llun));
-    if (!llun) {
+    संरचना mpt_lun_s *tmpl_llun =
+        container_of(tmpl_drv, संरचना mpt_lun_s, drive);
+    संरचना mpt_lun_s *llun = malloc_fseg(आकार(*llun));
+    जर (!llun) {
         warn_noalloc();
-        return -1;
+        परत -1;
     }
     mpt_scsi_init_lun(llun, tmpl_llun->pci, tmpl_llun->iobase,
                       tmpl_llun->target, lun);
 
     boot_lchs_find_scsi_device(llun->pci, llun->target, llun->lun,
                                &(llun->drive.lchs));
-    char *name = znprintf(MAXDESCSIZE, "mpt %pP %d:%d",
+    अक्षर *name = znprintf(MAXDESCSIZE, "mpt %pP %d:%d",
                           llun->pci, llun->target, llun->lun);
-    int prio = bootprio_find_scsi_device(llun->pci, llun->target, llun->lun);
-    int ret = scsi_drive_setup(&llun->drive, name, prio);
-    free(name);
-    if (ret) {
-        goto fail;
+    पूर्णांक prio = bootprio_find_scsi_device(llun->pci, llun->target, llun->lun);
+    पूर्णांक ret = scsi_drive_setup(&llun->drive, name, prio);
+    मुक्त(name);
+    जर (ret) {
+        जा fail;
     }
-    return 0;
+    परत 0;
 
 fail:
-    free(llun);
-    return -1;
+    मुक्त(llun);
+    परत -1;
 }
 
-static void
-mpt_scsi_scan_target(struct pci_device *pci, u32 iobase, u8 target)
+स्थिर शून्य
+mpt_scsi_scan_target(संरचना pci_device *pci, u32 iobase, u8 target)
 {
-    struct mpt_lun_s llun0;
+    संरचना mpt_lun_s llun0;
 
     mpt_scsi_init_lun(&llun0, pci, iobase, target, 0);
 
-    if (scsi_rep_luns_scan(&llun0.drive, mpt_scsi_add_lun) < 0)
+    जर (scsi_rep_luns_scan(&llun0.drive, mpt_scsi_add_lun) < 0)
         scsi_sequential_scan(&llun0.drive, 8, mpt_scsi_add_lun);
 }
 
-static inline void
+स्थिर ओळीत शून्य
 mpt_out_doorbell(u8 func, u8 arg, u16 iobase)
 {
     outl((func << 24) | (arg << 16), iobase + MPT_REG_DOORBELL);
 }
 
-static void
-init_mpt_scsi(void *data)
+स्थिर शून्य
+init_mpt_scsi(शून्य *data)
 {
-    struct pci_device *pci = data;
-    u16 *msg_in_p;
+    संरचना pci_device *pci = data;
+    u16 *संदेश_in_p;
     u32 iobase = pci_enable_iobar(pci, PCI_BASE_ADDRESS_0);
-    if (!iobase)
-        return;
-    struct MptIOCInitReply MptIOCInitReply;
+    जर (!iobase)
+        परत;
+    संरचना MptIOCInitReply MptIOCInitReply;
     pci_enable_busmaster(pci);
 
     dprintf(1, "found mpt-scsi(%04x) at %pP, io @ %x\n"
             , pci->device, pci, iobase);
 
     // reset
-    mpt_out_doorbell(MPT_DOORBELL_MSG_RESET, 0, iobase);
+    mpt_out_doorbell(MPT_DOORBELL_संदेश_RESET, 0, iobase);
     outl(MPT_IMASK_DOORBELL|MPT_IMASK_REPLY , iobase + MPT_REG_IMASK);
     outl(0, iobase + MPT_REG_ISTATUS);
 
     // send IOC Init message through the doorbell
     mpt_out_doorbell(MPT_DOORBELL_HANDSHAKE,
-                     sizeof(MptIOCInitRequest)/sizeof(u32),
+                     आकार(MptIOCInitRequest)/आकार(u32),
                      iobase);
 
     outsl(iobase + MPT_REG_DOORBELL,
           (u32 *)&MptIOCInitRequest,
-          sizeof(MptIOCInitRequest)/sizeof(u32));
+          आकार(MptIOCInitRequest)/आकार(u32));
 
     // Read the reply 16 bits at a time.  Cannot use insl
     // because the port is 32 bits wide.
-    msg_in_p = (u16 *)&MptIOCInitReply;
-    while(msg_in_p != (u16 *)(&MptIOCInitReply + 1))
-        *msg_in_p++ = (u16)inl(iobase + MPT_REG_DOORBELL);
+    संदेश_in_p = (u16 *)&MptIOCInitReply;
+    पर्यंत(संदेश_in_p != (u16 *)(&MptIOCInitReply + 1))
+        *संदेश_in_p++ = (u16)inl(iobase + MPT_REG_DOORBELL);
 
     // Eat doorbell interrupt
     outl(0, iobase + MPT_REG_ISTATUS);
 
     // Post reply message used for SCSI errors
-    outl((u32)&reply_msg[0], iobase + MPT_REG_REP_Q);
+    outl((u32)&reply_संदेश[0], iobase + MPT_REG_REP_Q);
 
-    int i;
-    for (i = 0; i < 7; i++)
+    पूर्णांक i;
+    साठी (i = 0; i < 7; i++)
         mpt_scsi_scan_target(pci, iobase, i);
 }
 
-void
-mpt_scsi_setup(void)
+शून्य
+mpt_scsi_setup(शून्य)
 {
     ASSERT32FLAT();
-    if (!CONFIG_MPT_SCSI || !runningOnQEMU()) {
-        return;
+    जर (!CONFIG_MPT_SCSI || !runningOnQEMU()) {
+        परत;
     }
 
     dprintf(3, "init MPT\n");
 
-    struct pci_device *pci;
+    संरचना pci_device *pci;
     foreachpci(pci) {
-        if (pci->vendor == PCI_VENDOR_ID_LSI_LOGIC
+        जर (pci->vendor == PCI_VENDOR_ID_LSI_LOGIC
             && (pci->device == PCI_DEVICE_ID_LSI_53C1030
                 || pci->device == PCI_DEVICE_ID_LSI_SAS1068
                 || pci->device == PCI_DEVICE_ID_LSI_SAS1068E))

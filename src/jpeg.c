@@ -40,12 +40,12 @@
  */
 
 #define __LITTLE_ENDIAN
-#include "malloc.h"
-#include "string.h"
-#include "util.h"
+#अन्तर्भाव "malloc.h"
+#अन्तर्भाव "string.h"
+#अन्तर्भाव "util.h"
 #define ISHIFT 11
 
-#define IFIX(a) ((int)((a) * (1 << ISHIFT) + .5))
+#define IFIX(a) ((पूर्णांक)((a) * (1 << ISHIFT) + .5))
 #define IMULT(a, b) (((a) * (b)) >> ISHIFT)
 #define ITOINT(a) ((a) >> ISHIFT)
 
@@ -57,69 +57,69 @@
 #define M_BADHUFF        -1
 #define M_EOF                0x80
 
-struct in {
-    unsigned char *p;
-    unsigned int bits;
-    int left;
-    int marker;
+संरचना in {
+    अचिन्हित अक्षर *p;
+    अचिन्हित पूर्णांक bits;
+    पूर्णांक डावा;
+    पूर्णांक marker;
 
-    int (*func) __P((void *));
-    void *data;
+    पूर्णांक (*func) __P((शून्य *));
+    शून्य *data;
 };
 
 /*********************************/
-struct dec_hufftbl;
-struct enc_hufftbl;
+संरचना dec_hufftbl;
+संरचना enc_hufftbl;
 
-union hufftblp {
-    struct dec_hufftbl *dhuff;
-    struct enc_hufftbl *ehuff;
+संघ hufftblp {
+    संरचना dec_hufftbl *dhuff;
+    संरचना enc_hufftbl *ehuff;
 };
 
-struct scan {
-    int dc;               /* old dc value */
+संरचना scan {
+    पूर्णांक dc;               /* old dc value */
 
-    union hufftblp hudc;
-    union hufftblp huac;
-    int next;             /* when to switch to next scan */
+    संघ hufftblp hudc;
+    संघ hufftblp huac;
+    पूर्णांक next;             /* when to switch to next scan */
 
-    int cid;              /* component id */
-    int hv;               /* horiz/vert, copied from comp */
-    int tq;               /* quant tbl, copied from comp */
+    पूर्णांक cid;              /* component id */
+    पूर्णांक hv;               /* horiz/vert, copied from comp */
+    पूर्णांक tq;               /* quant tbl, copied from comp */
 };
 
 /*********************************/
 
 #define DECBITS 10        /* seems to be the optimum */
 
-struct dec_hufftbl {
-    int maxcode[17];
-    int valptr[16];
-    unsigned char vals[256];
-    unsigned int llvals[1 << DECBITS];
+संरचना dec_hufftbl {
+    पूर्णांक maxcode[17];
+    पूर्णांक valptr[16];
+    अचिन्हित अक्षर vals[256];
+    अचिन्हित पूर्णांक llvals[1 << DECBITS];
 };
 
-static void decode_mcus __P((struct in *, int *, int, struct scan *, int *));
-static int dec_readmarker __P((struct in *));
-static void dec_makehuff __P((struct dec_hufftbl *, int *, unsigned char *));
+स्थिर शून्य decode_mcus __P((संरचना in *, पूर्णांक *, पूर्णांक, संरचना scan *, पूर्णांक *));
+स्थिर पूर्णांक dec_readmarker __P((संरचना in *));
+स्थिर शून्य dec_makehuff __P((संरचना dec_hufftbl *, पूर्णांक *, अचिन्हित अक्षर *));
 
-static void setinput __P((struct in *, unsigned char *));
+स्थिर शून्य setinput __P((संरचना in *, अचिन्हित अक्षर *));
 /*********************************/
 
 #undef PREC
-#define PREC int
+#define PREC पूर्णांक
 
-static void idctqtab __P((unsigned char *, PREC *));
-static void idct __P((int *, int *, PREC *, PREC, int));
-static void scaleidctqtab __P((PREC *, PREC));
+स्थिर शून्य idctqtab __P((अचिन्हित अक्षर *, PREC *));
+स्थिर शून्य idct __P((पूर्णांक *, पूर्णांक *, PREC *, PREC, पूर्णांक));
+स्थिर शून्य scaleidctqtab __P((PREC *, PREC));
 
 /*********************************/
 
-static void initcol __P((PREC[][64]));
+स्थिर शून्य initcol __P((PREC[][64]));
 
-static void col221111 __P((int *, unsigned char *, int));
-static void col221111_16 __P((int *, unsigned char *, int));
-static void col221111_32 __P((int *, unsigned char *, int));
+स्थिर शून्य col221111 __P((पूर्णांक *, अचिन्हित अक्षर *, पूर्णांक));
+स्थिर शून्य col221111_16 __P((पूर्णांक *, अचिन्हित अक्षर *, पूर्णांक));
+स्थिर शून्य col221111_32 __P((पूर्णांक *, अचिन्हित अक्षर *, पूर्णांक));
 
 /*********************************/
 
@@ -152,204 +152,204 @@ static void col221111_32 __P((int *, unsigned char *, int));
 #define M_EOI   0xd9
 #define M_COM   0xfe
 
-struct comp {
-    int cid;
-    int hv;
-    int tq;
+संरचना comp {
+    पूर्णांक cid;
+    पूर्णांक hv;
+    पूर्णांक tq;
 };
 
 #define MAXCOMP 4
-struct jpginfo {
-    int nc;   /* number of components */
-    int ns;   /* number of scans */
-    int dri;  /* restart interval */
-    int nm;   /* mcus til next marker */
-    int rm;   /* next restart marker */
+संरचना jpginfo {
+    पूर्णांक nc;   /* number of components */
+    पूर्णांक ns;   /* number of scans */
+    पूर्णांक dri;  /* restart interval */
+    पूर्णांक nm;   /* mcus til next marker */
+    पूर्णांक rm;   /* next restart marker */
 };
 
-struct jpeg_decdata {
-    int dcts[6 * 64 + 16];
-    int out[64 * 6];
-    int dquant[3][64];
+संरचना jpeg_decdata {
+    पूर्णांक dcts[6 * 64 + 16];
+    पूर्णांक out[64 * 6];
+    पूर्णांक dquant[3][64];
 
-    unsigned char *datap;
-    struct jpginfo info;
-    struct comp comps[MAXCOMP];
-    struct scan dscans[MAXCOMP];
-    unsigned char quant[4][64];
-    struct dec_hufftbl dhuff[4];
-    struct in in;
+    अचिन्हित अक्षर *datap;
+    संरचना jpginfo info;
+    संरचना comp comps[MAXCOMP];
+    संरचना scan dscans[MAXCOMP];
+    अचिन्हित अक्षर quant[4][64];
+    संरचना dec_hufftbl dhuff[4];
+    संरचना in in;
 
-    int height, width;
+    पूर्णांक height, width;
 };
 
-static int getbyte(struct jpeg_decdata *jpeg)
+स्थिर पूर्णांक getbyte(संरचना jpeg_decdata *jpeg)
 {
-    return *jpeg->datap++;
+    परत *jpeg->datap++;
 }
 
-static int getword(struct jpeg_decdata *jpeg)
+स्थिर पूर्णांक getword(संरचना jpeg_decdata *jpeg)
 {
-    int c1, c2;
+    पूर्णांक c1, c2;
     c1 = *jpeg->datap++;
     c2 = *jpeg->datap++;
-    return c1 << 8 | c2;
+    परत c1 << 8 | c2;
 }
 
-static int readtables(struct jpeg_decdata *jpeg, int till)
+स्थिर पूर्णांक readtables(संरचना jpeg_decdata *jpeg, पूर्णांक till)
 {
-    int m, l, i, j, lq, pq, tq;
-    int tc, th, tt;
+    पूर्णांक m, l, i, j, lq, pq, tq;
+    पूर्णांक tc, th, tt;
 
-    for (;;) {
-        if (getbyte(jpeg) != 0xff)
-            return -1;
-        if ((m = getbyte(jpeg)) == till)
-            break;
+    साठी (;;) {
+        जर (getbyte(jpeg) != 0xff)
+            परत -1;
+        जर ((m = getbyte(jpeg)) == till)
+            थांबा;
 
-        switch (m) {
-        case 0xc2:
-            return 0;
+        निवड (m) {
+        स्थिती 0xc2:
+            परत 0;
 
-        case M_DQT:
+        स्थिती M_DQT:
             lq = getword(jpeg);
-            while (lq > 2) {
+            पर्यंत (lq > 2) {
                 pq = getbyte(jpeg);
                 tq = pq & 15;
-                if (tq > 3)
-                    return -1;
+                जर (tq > 3)
+                    परत -1;
                 pq >>= 4;
-                if (pq != 0)
-                    return -1;
-                for (i = 0; i < 64; i++)
+                जर (pq != 0)
+                    परत -1;
+                साठी (i = 0; i < 64; i++)
                     jpeg->quant[tq][i] = getbyte(jpeg);
                 lq -= 64 + 1;
             }
-            break;
+            थांबा;
 
-        case M_DHT:
+        स्थिती M_DHT:
             l = getword(jpeg);
-            while (l > 2) {
-                int hufflen[16], k;
-                unsigned char huffvals[256];
+            पर्यंत (l > 2) {
+                पूर्णांक hufflen[16], k;
+                अचिन्हित अक्षर huffvals[256];
 
                 tc = getbyte(jpeg);
                 th = tc & 15;
                 tc >>= 4;
                 tt = tc * 2 + th;
-                if (tc > 1 || th > 1)
-                    return -1;
-                for (i = 0; i < 16; i++)
+                जर (tc > 1 || th > 1)
+                    परत -1;
+                साठी (i = 0; i < 16; i++)
                     hufflen[i] = getbyte(jpeg);
                 l -= 1 + 16;
                 k = 0;
-                for (i = 0; i < 16; i++) {
-                    for (j = 0; j < hufflen[i]; j++)
+                साठी (i = 0; i < 16; i++) {
+                    साठी (j = 0; j < hufflen[i]; j++)
                         huffvals[k++] = getbyte(jpeg);
                     l -= hufflen[i];
                 }
                 dec_makehuff(jpeg->dhuff + tt, hufflen, huffvals);
             }
-            break;
+            थांबा;
 
-        case M_DRI:
+        स्थिती M_DRI:
             l = getword(jpeg);
             jpeg->info.dri = getword(jpeg);
-            break;
+            थांबा;
 
-        default:
+        पूर्वनिर्धारित:
             l = getword(jpeg);
-            while (l-- > 2)
+            पर्यंत (l-- > 2)
                 getbyte(jpeg);
-            break;
+            थांबा;
         }
     }
-    return 0;
+    परत 0;
 }
 
-static void dec_initscans(struct jpeg_decdata *jpeg)
+स्थिर शून्य dec_initscans(संरचना jpeg_decdata *jpeg)
 {
-    int i;
+    पूर्णांक i;
 
     jpeg->info.nm = jpeg->info.dri + 1;
     jpeg->info.rm = M_RST0;
-    for (i = 0; i < jpeg->info.ns; i++)
+    साठी (i = 0; i < jpeg->info.ns; i++)
         jpeg->dscans[i].dc = 0;
 }
 
-static int dec_checkmarker(struct jpeg_decdata *jpeg)
+स्थिर पूर्णांक dec_checkmarker(संरचना jpeg_decdata *jpeg)
 {
-    int i;
+    पूर्णांक i;
 
-    if (dec_readmarker(&jpeg->in) != jpeg->info.rm)
-        return -1;
+    जर (dec_readmarker(&jpeg->in) != jpeg->info.rm)
+        परत -1;
     jpeg->info.nm = jpeg->info.dri;
     jpeg->info.rm = (jpeg->info.rm + 1) & ~0x08;
-    for (i = 0; i < jpeg->info.ns; i++)
+    साठी (i = 0; i < jpeg->info.ns; i++)
         jpeg->dscans[i].dc = 0;
-    return 0;
+    परत 0;
 }
 
-struct jpeg_decdata *jpeg_alloc(void)
+संरचना jpeg_decdata *jpeg_alloc(शून्य)
 {
-    struct jpeg_decdata *jpeg = malloc_tmphigh(sizeof(*jpeg));
-    return jpeg;
+    संरचना jpeg_decdata *jpeg = malloc_tmphigh(आकार(*jpeg));
+    परत jpeg;
 }
 
-int jpeg_decode(struct jpeg_decdata *jpeg, unsigned char *buf)
+पूर्णांक jpeg_decode(संरचना jpeg_decdata *jpeg, अचिन्हित अक्षर *buf)
 {
-    int i, j, m, tac, tdc;
+    पूर्णांक i, j, m, tac, tdc;
 
-    if (!jpeg || !buf)
-        return -1;
+    जर (!jpeg || !buf)
+        परत -1;
     jpeg->datap = buf;
-    if (getbyte(jpeg) != 0xff)
-        return ERR_NO_SOI;
-    if (getbyte(jpeg) != M_SOI)
-        return ERR_NO_SOI;
-    if (readtables(jpeg, M_SOF0))
-        return ERR_BAD_TABLES;
+    जर (getbyte(jpeg) != 0xff)
+        परत ERR_NO_SOI;
+    जर (getbyte(jpeg) != M_SOI)
+        परत ERR_NO_SOI;
+    जर (readtables(jpeg, M_SOF0))
+        परत ERR_BAD_TABLES;
     getword(jpeg);
     i = getbyte(jpeg);
-    if (i != 8)
-        return ERR_NOT_8BIT;
+    जर (i != 8)
+        परत ERR_NOT_8BIT;
     jpeg->height = getword(jpeg);
     jpeg->width = getword(jpeg);
-    if ((jpeg->height & 15) || (jpeg->width & 15))
-        return ERR_BAD_WIDTH_OR_HEIGHT;
+    जर ((jpeg->height & 15) || (jpeg->width & 15))
+        परत ERR_BAD_WIDTH_OR_HEIGHT;
     jpeg->info.nc = getbyte(jpeg);
-    if (jpeg->info.nc > MAXCOMP)
-        return ERR_TOO_MANY_COMPPS;
-    for (i = 0; i < jpeg->info.nc; i++) {
-        int h, v;
+    जर (jpeg->info.nc > MAXCOMP)
+        परत ERR_TOO_MANY_COMPPS;
+    साठी (i = 0; i < jpeg->info.nc; i++) {
+        पूर्णांक h, v;
         jpeg->comps[i].cid = getbyte(jpeg);
         jpeg->comps[i].hv = getbyte(jpeg);
         v = jpeg->comps[i].hv & 15;
         h = jpeg->comps[i].hv >> 4;
         jpeg->comps[i].tq = getbyte(jpeg);
-        if (h > 3 || v > 3)
-            return ERR_ILLEGAL_HV;
-        if (jpeg->comps[i].tq > 3)
-            return ERR_QUANT_TABLE_SELECTOR;
+        जर (h > 3 || v > 3)
+            परत ERR_ILLEGAL_HV;
+        जर (jpeg->comps[i].tq > 3)
+            परत ERR_QUANT_TABLE_SELECTOR;
     }
-    if (readtables(jpeg, M_SOS))
-        return ERR_BAD_TABLES;
+    जर (readtables(jpeg, M_SOS))
+        परत ERR_BAD_TABLES;
     getword(jpeg);
     jpeg->info.ns = getbyte(jpeg);
-    if (jpeg->info.ns != 3)
-        return ERR_NOT_YCBCR_221111;
-    for (i = 0; i < 3; i++) {
+    जर (jpeg->info.ns != 3)
+        परत ERR_NOT_YCBCR_221111;
+    साठी (i = 0; i < 3; i++) {
         jpeg->dscans[i].cid = getbyte(jpeg);
         tdc = getbyte(jpeg);
         tac = tdc & 15;
         tdc >>= 4;
-        if (tdc > 1 || tac > 1)
-            return ERR_QUANT_TABLE_SELECTOR;
-        for (j = 0; j < jpeg->info.nc; j++)
-            if (jpeg->comps[j].cid == jpeg->dscans[i].cid)
-                break;
-        if (j == jpeg->info.nc)
-            return ERR_UNKNOWN_CID_IN_SCAN;
+        जर (tdc > 1 || tac > 1)
+            परत ERR_QUANT_TABLE_SELECTOR;
+        साठी (j = 0; j < jpeg->info.nc; j++)
+            जर (jpeg->comps[j].cid == jpeg->dscans[i].cid)
+                थांबा;
+        जर (j == jpeg->info.nc)
+            परत ERR_UNKNOWN_CID_IN_SCAN;
         jpeg->dscans[i].hv = jpeg->comps[j].hv;
         jpeg->dscans[i].tq = jpeg->comps[j].tq;
         jpeg->dscans[i].hudc.dhuff = &jpeg->dhuff[tdc];
@@ -360,16 +360,16 @@ int jpeg_decode(struct jpeg_decdata *jpeg, unsigned char *buf)
     j = getbyte(jpeg);
     m = getbyte(jpeg);
 
-    if (i != 0 || j != 63 || m != 0)
-        return ERR_NOT_SEQUENTIAL_DCT;
+    जर (i != 0 || j != 63 || m != 0)
+        परत ERR_NOT_SEQUENTIAL_DCT;
 
-    if (jpeg->dscans[0].cid != 1 || jpeg->dscans[1].cid != 2
+    जर (jpeg->dscans[0].cid != 1 || jpeg->dscans[1].cid != 2
         || jpeg->dscans[2].cid != 3)
-        return ERR_NOT_YCBCR_221111;
+        परत ERR_NOT_YCBCR_221111;
 
-    if (jpeg->dscans[0].hv != 0x22 || jpeg->dscans[1].hv != 0x11
+    जर (jpeg->dscans[0].hv != 0x22 || jpeg->dscans[1].hv != 0x11
         || jpeg->dscans[2].hv != 0x11)
-        return ERR_NOT_YCBCR_221111;
+        परत ERR_NOT_YCBCR_221111;
 
     idctqtab(jpeg->quant[jpeg->dscans[0].tq], jpeg->dquant[0]);
     idctqtab(jpeg->quant[jpeg->dscans[1].tq], jpeg->dquant[1]);
@@ -377,7 +377,7 @@ int jpeg_decode(struct jpeg_decdata *jpeg, unsigned char *buf)
     initcol(jpeg->dquant);
     setinput(&jpeg->in, jpeg->datap);
 
-#if 0
+#जर 0
     /* landing zone */
     img[len] = 0;
     img[len + 1] = 0xff;
@@ -386,28 +386,28 @@ int jpeg_decode(struct jpeg_decdata *jpeg, unsigned char *buf)
 
     dec_initscans(jpeg);
 
-    return 0;
+    परत 0;
 }
 
-void jpeg_get_size(struct jpeg_decdata *jpeg, int *width, int *height)
+शून्य jpeg_get_size(संरचना jpeg_decdata *jpeg, पूर्णांक *width, पूर्णांक *height)
 {
     *width = jpeg->width;
     *height = jpeg->height;
 }
 
-int jpeg_show(struct jpeg_decdata *jpeg, unsigned char *pic, int width
-              , int height, int depth, int bytes_per_line_dest)
+पूर्णांक jpeg_show(संरचना jpeg_decdata *jpeg, अचिन्हित अक्षर *pic, पूर्णांक width
+              , पूर्णांक height, पूर्णांक depth, पूर्णांक bytes_per_ओळ_dest)
 {
-    int m, mcusx, mcusy, mx, my, mloffset, jpgbpl;
-    int max[6];
+    पूर्णांक m, mcusx, mcusy, mx, my, mloffset, jpgbpl;
+    पूर्णांक max[6];
 
-    if (jpeg->height != height)
-        return ERR_HEIGHT_MISMATCH;
-    if (jpeg->width != width)
-        return ERR_WIDTH_MISMATCH;
+    जर (jpeg->height != height)
+        परत ERR_HEIGHT_MISMATCH;
+    जर (jpeg->width != width)
+        परत ERR_WIDTH_MISMATCH;
 
     jpgbpl = width * depth / 8;
-    mloffset = bytes_per_line_dest > jpgbpl ? bytes_per_line_dest : jpgbpl;
+    mloffset = bytes_per_ओळ_dest > jpgbpl ? bytes_per_ओळ_dest : jpgbpl;
 
     mcusx = jpeg->width >> 4;
     mcusy = jpeg->height >> 4;
@@ -415,11 +415,11 @@ int jpeg_show(struct jpeg_decdata *jpeg, unsigned char *pic, int width
     jpeg->dscans[0].next = 6 - 4;
     jpeg->dscans[1].next = 6 - 4 - 1;
     jpeg->dscans[2].next = 6 - 4 - 1 - 1;        /* 411 encoding */
-    for (my = 0; my < mcusy; my++) {
-        for (mx = 0; mx < mcusx; mx++) {
-            if (jpeg->info.dri && !--jpeg->info.nm)
-                if (dec_checkmarker(jpeg))
-                    return ERR_WRONG_MARKER;
+    साठी (my = 0; my < mcusy; my++) {
+        साठी (mx = 0; mx < mcusx; mx++) {
+            जर (jpeg->info.dri && !--jpeg->info.nm)
+                जर (dec_checkmarker(jpeg))
+                    परत ERR_WRONG_MARKER;
 
             decode_mcus(&jpeg->in, jpeg->dcts, 6, jpeg->dscans, max);
             idct(jpeg->dcts, jpeg->out, jpeg->dquant[0],
@@ -435,94 +435,94 @@ int jpeg_show(struct jpeg_decdata *jpeg, unsigned char *pic, int width
             idct(jpeg->dcts + 320, jpeg->out + 320, jpeg->dquant[2],
                  IFIX(0.5), max[5]);
 
-            switch (depth) {
-            case 32:
+            निवड (depth) {
+            स्थिती 32:
                 col221111_32(jpeg->out,
                              pic + (my * 16 * mloffset + mx * 16 * 4),
                              mloffset);
-                break;
-            case 24:
+                थांबा;
+            स्थिती 24:
                 col221111(jpeg->out,
                           pic + (my * 16 * mloffset + mx * 16 * 3),
                           mloffset);
-                break;
-            case 16:
+                थांबा;
+            स्थिती 16:
                 col221111_16(jpeg->out,
                              pic + (my * 16 * mloffset + mx * 16 * 2),
                              mloffset);
-                break;
-            default:
-                return ERR_DEPTH_MISMATCH;
-                break;
+                थांबा;
+            पूर्वनिर्धारित:
+                परत ERR_DEPTH_MISMATCH;
+                थांबा;
             }
         }
     }
 
     m = dec_readmarker(&jpeg->in);
-    if (m != M_EOI)
-        return ERR_NO_EOI;
+    जर (m != M_EOI)
+        परत ERR_NO_EOI;
 
-    return 0;
+    परत 0;
 }
 
 /****************************************************************/
 /**************       huffman decoder             ***************/
 /****************************************************************/
 
-static int fillbits __P((struct in *, int, unsigned int));
-static int dec_rec2 __P((struct in *, struct dec_hufftbl *, int *, int, int));
+स्थिर पूर्णांक fillbits __P((संरचना in *, पूर्णांक, अचिन्हित पूर्णांक));
+स्थिर पूर्णांक dec_rec2 __P((संरचना in *, संरचना dec_hufftbl *, पूर्णांक *, पूर्णांक, पूर्णांक));
 
-static void setinput(struct in *in, unsigned char *p)
+स्थिर शून्य setinput(संरचना in *in, अचिन्हित अक्षर *p)
 {
     in->p = p;
-    in->left = 0;
+    in->डावा = 0;
     in->bits = 0;
     in->marker = 0;
 }
 
-static int fillbits(struct in *in, int le, unsigned int bi)
+स्थिर पूर्णांक fillbits(संरचना in *in, पूर्णांक le, अचिन्हित पूर्णांक bi)
 {
-    int b, m;
+    पूर्णांक b, m;
 
-    if (in->marker) {
-        if (le <= 16)
+    जर (in->marker) {
+        जर (le <= 16)
             in->bits = bi << 16, le += 16;
-        return le;
+        परत le;
     }
-    while (le <= 24) {
+    पर्यंत (le <= 24) {
         b = *in->p++;
-        if (b == 0xff && (m = *in->p++) != 0) {
-            if (m == M_EOF) {
-                if (in->func && (m = in->func(in->data)) == 0)
-                    continue;
+        जर (b == 0xff && (m = *in->p++) != 0) {
+            जर (m == M_EOF) {
+                जर (in->func && (m = in->func(in->data)) == 0)
+                    सुरूठेवा;
             }
             in->marker = m;
-            if (le <= 16)
+            जर (le <= 16)
                 bi = bi << 16, le += 16;
-            break;
+            थांबा;
         }
         bi = bi << 8 | b;
         le += 8;
     }
     in->bits = bi;                /* tmp... 2 return values needed */
-    return le;
+    परत le;
 }
 
-static int dec_readmarker(struct in *in)
+स्थिर पूर्णांक dec_readmarker(संरचना in *in)
 {
-    int m;
+    पूर्णांक m;
 
-    in->left = fillbits(in, in->left, in->bits);
-    if ((m = in->marker) == 0)
-        return 0;
-    in->left = 0;
+    in->डावा = fillbits(in, in->डावा, in->bits);
+    जर ((m = in->marker) == 0)
+        परत 0;
+    in->डावा = 0;
     in->marker = 0;
-    return m;
+    परत m;
 }
 
-#define LEBI_DCL       int le, bi
-#define LEBI_GET(in)   (le = in->left, bi = in->bits)
-#define LEBI_PUT(in)   (in->left = le, in->bits = bi)
+#define LEBI_DCL       पूर्णांक le, bi
+#define LEBI_GET(in)   (le = in->डावा, bi = in->bits)
+#define LEBI_PUT(in)   (in->डावा = le, in->bits = bi)
 
 #define GETBITS(in, n) (                                     \
   (le < (n) ? le = fillbits(in, le, bi), bi = in->bits : 0), \
@@ -535,37 +535,37 @@ static int dec_readmarker(struct in *in)
 )
 
 
-static int dec_rec2(struct in *in, struct dec_hufftbl *hu, int *runp,
-                    int c, int i)
+स्थिर पूर्णांक dec_rec2(संरचना in *in, संरचना dec_hufftbl *hu, पूर्णांक *runp,
+                    पूर्णांक c, पूर्णांक i)
 {
     LEBI_DCL;
 
     LEBI_GET(in);
-    if (i) {
+    जर (i) {
         UNGETBITS(in, i & 127);
         *runp = i >> 8 & 15;
         i >>= 16;
-    } else {
-        for (i = DECBITS;
+    } अन्यथा {
+        साठी (i = DECBITS;
              (c = ((c << 1) | GETBITS(in, 1))) >= (hu->maxcode[i]); i++);
-        if (i >= 16) {
+        जर (i >= 16) {
             in->marker = M_BADHUFF;
-            return 0;
+            परत 0;
         }
         i = hu->vals[hu->valptr[i] + c - hu->maxcode[i - 1] * 2];
         *runp = i >> 4;
         i &= 15;
     }
-    if (i == 0) {                /* sigh, 0xf0 is 11 bit */
+    जर (i == 0) {                /* sigh, 0xf0 is 11 bit */
         LEBI_PUT(in);
-        return 0;
+        परत 0;
     }
     /* receive part */
     c = GETBITS(in, i);
-    if (c < (1 << (i - 1)))
+    जर (c < (1 << (i - 1)))
         c += (-1 << i) + 1;
     LEBI_PUT(in);
-    return c;
+    परत c;
 }
 
 #define DEC_REC(in, hu, r, i)         (  \
@@ -586,43 +586,43 @@ static int dec_rec2(struct in *in, struct dec_hufftbl *hu, int *runp,
     )                                    \
 )
 
-static void decode_mcus(struct in *in, int *dct, int n, struct scan *sc,
-                        int *maxp)
+स्थिर शून्य decode_mcus(संरचना in *in, पूर्णांक *dct, पूर्णांक n, संरचना scan *sc,
+                        पूर्णांक *maxp)
 {
-    struct dec_hufftbl *hu;
-    int i, r, t;
+    संरचना dec_hufftbl *hu;
+    पूर्णांक i, r, t;
     LEBI_DCL;
 
-    memset(dct, 0, n * 64 * sizeof(*dct));
+    स_रखो(dct, 0, n * 64 * आकार(*dct));
     LEBI_GET(in);
-    while (n-- > 0) {
+    पर्यंत (n-- > 0) {
         hu = sc->hudc.dhuff;
         *dct++ = (sc->dc += DEC_REC(in, hu, r, t));
 
         hu = sc->huac.dhuff;
         i = 63;
-        while (i > 0) {
+        पर्यंत (i > 0) {
             t = DEC_REC(in, hu, r, t);
-            if (t == 0 && r == 0) {
+            जर (t == 0 && r == 0) {
                 dct += i;
-                break;
+                थांबा;
             }
             dct += r;
             *dct++ = t;
             i -= r + 1;
         }
         *maxp++ = 64 - i;
-        if (n == sc->next)
+        जर (n == sc->next)
             sc++;
     }
     LEBI_PUT(in);
 }
 
-static void dec_makehuff(struct dec_hufftbl *hu, int *hufflen,
-                         unsigned char *huffvals)
+स्थिर शून्य dec_makehuff(संरचना dec_hufftbl *hu, पूर्णांक *hufflen,
+                         अचिन्हित अक्षर *huffvals)
 {
-    int code, k, i, j, d, x, c, v;
-    for (i = 0; i < (1 << DECBITS); i++)
+    पूर्णांक code, k, i, j, d, x, c, v;
+    साठी (i = 0; i < (1 << DECBITS); i++)
         hu->llvals[i] = 0;
 
     /*
@@ -638,21 +638,21 @@ static void dec_makehuff(struct dec_hufftbl *hu, int *hufflen,
 
     code = 0;
     k = 0;
-    for (i = 0; i < 16; i++, code <<= 1) {        /* sizes */
+    साठी (i = 0; i < 16; i++, code <<= 1) {        /* sizes */
         hu->valptr[i] = k;
-        for (j = 0; j < hufflen[i]; j++) {
+        साठी (j = 0; j < hufflen[i]; j++) {
             hu->vals[k] = *huffvals++;
-            if (i < DECBITS) {
+            जर (i < DECBITS) {
                 c = code << (DECBITS - 1 - i);
                 v = hu->vals[k] & 0x0f;        /* size */
-                for (d = 1 << (DECBITS - 1 - i); --d >= 0;) {
-                    if (v + i < DECBITS) {        /* both fit in table */
+                साठी (d = 1 << (DECBITS - 1 - i); --d >= 0;) {
+                    जर (v + i < DECBITS) {        /* both fit in table */
                         x = d >> (DECBITS - 1 - v - i);
-                        if (v && x < (1 << (v - 1)))
+                        जर (v && x < (1 << (v - 1)))
                             x += (-1 << v) + 1;
                         x = x << 16 | (hu->vals[k] & 0xf0) << 4 |
                             (DECBITS - (i + 1 + v)) | 128;
-                    } else
+                    } अन्यथा
                         x = v << 16 | (hu->vals[k] & 0xf0) << 4 |
                             (DECBITS - (i + 1));
                     hu->llvals[c | d] = x;
@@ -712,7 +712,7 @@ static void dec_makehuff(struct dec_hufftbl *hu, int *hufflen,
   XPP(t3, t4)               \
 )
 
-static unsigned char zig2[64] = {
+स्थिर अचिन्हित अक्षर zig2[64] = {
      0,  2,  3,  9, 10, 20, 21, 35,
     14, 16, 25, 31, 39, 46, 50, 57,
      5,  7, 12, 18, 23, 33, 37, 48,
@@ -723,23 +723,23 @@ static unsigned char zig2[64] = {
      6, 13, 17, 24, 32, 38, 47, 49
 };
 
-static void idct(int *in, int *out, PREC * quant, PREC off, int max)
+स्थिर शून्य idct(पूर्णांक *in, पूर्णांक *out, PREC * quant, PREC off, पूर्णांक max)
 {
     PREC t0, t1, t2, t3, t4, t5, t6, t7, t;
     PREC tmp[64], *tmpp;
-    int i, j;
-    unsigned char *zig2p;
+    पूर्णांक i, j;
+    अचिन्हित अक्षर *zig2p;
 
     t0 = off;
-    if (max == 1) {
+    जर (max == 1) {
         t0 += in[0] * quant[0];
-        for (i = 0; i < 64; i++)
+        साठी (i = 0; i < 64; i++)
             out[i] = ITOINT(t0);
-        return;
+        परत;
     }
     zig2p = zig2;
     tmpp = tmp;
-    for (i = 0; i < 8; i++) {
+    साठी (i = 0; i < 8; i++) {
         j = *zig2p++;
         t0 += in[j] * quant[j];
         j = *zig2p++;
@@ -768,7 +768,7 @@ static void idct(int *in, int *out, PREC * quant, PREC off, int max)
         tmpp++;
         t0 = 0;
     }
-    for (i = 0; i < 8; i++) {
+    साठी (i = 0; i < 8; i++) {
         t0 = tmp[8 * i + 0];
         t1 = tmp[8 * i + 1];
         t2 = tmp[8 * i + 2];
@@ -789,7 +789,7 @@ static void idct(int *in, int *out, PREC * quant, PREC off, int max)
     }
 }
 
-static unsigned char zig[64] = {
+स्थिर अचिन्हित अक्षर zig[64] = {
      0,  1,  5,  6, 14, 15, 27, 28,
      2,  4,  7, 13, 16, 26, 29, 42,
      3,  8, 12, 17, 25, 30, 41, 43,
@@ -800,7 +800,7 @@ static unsigned char zig[64] = {
     35, 36, 48, 49, 57, 58, 62, 63
 };
 
-static PREC aaidct[8] = {
+स्थिर PREC aaidct[8] = {
     IFIX(0.3535533906), IFIX(0.4903926402),
     IFIX(0.4619397663), IFIX(0.4157348062),
     IFIX(0.3535533906), IFIX(0.2777851165),
@@ -808,21 +808,21 @@ static PREC aaidct[8] = {
 };
 
 
-static void idctqtab(unsigned char *qin, PREC * qout)
+स्थिर शून्य idctqtab(अचिन्हित अक्षर *qin, PREC * qout)
 {
-    int i, j;
+    पूर्णांक i, j;
 
-    for (i = 0; i < 8; i++)
-        for (j = 0; j < 8; j++)
+    साठी (i = 0; i < 8; i++)
+        साठी (j = 0; j < 8; j++)
             qout[zig[i * 8 + j]] = qin[zig[i * 8 + j]] *
                 IMULT(aaidct[i], aaidct[j]);
 }
 
-static void scaleidctqtab(PREC * q, PREC sc)
+स्थिर शून्य scaleidctqtab(PREC * q, PREC sc)
 {
-    int i;
+    पूर्णांक i;
 
-    for (i = 0; i < 64; i++)
+    साठी (i = 0; i < 64; i++)
         q[i] = IMULT(q[i], sc);
 }
 
@@ -853,7 +853,7 @@ static void scaleidctqtab(PREC * q, PREC sc)
  *      Cg = (50 * Cb + 130 * Cr + 128) >> 8;
  */
 
-static void initcol(PREC q[][64])
+स्थिर शून्य initcol(PREC q[][64])
 {
     scaleidctqtab(q[1], IFIX(1.77200));
     scaleidctqtab(q[2], IFIX(1.40200));
@@ -863,13 +863,13 @@ static void initcol(PREC q[][64])
 #define STORECLAMP(a,x)                          \
 (                                                \
   (a) = (x),                                     \
-  (unsigned int)(x) >= 256 ?                     \
+  (अचिन्हित पूर्णांक)(x) >= 256 ?                     \
     ((a) = (x) < 0 ? 0 : 255)                    \
   :                                              \
     0                                            \
 )
 
-#define CLAMP(x) ((unsigned int)(x) >= 256 ? ((x) < 0 ? 0 : 255) : (x))
+#define CLAMP(x) ((अचिन्हित पूर्णांक)(x) >= 256 ? ((x) < 0 ? 0 : 255) : (x))
 
 #ifdef ROUND
 
@@ -880,7 +880,7 @@ static void initcol(PREC q[][64])
   cg = (50 * cb + 130 * cr + 128) >> 8           \
 )
 
-#else
+#अन्यथा
 
 #define CBCRCG(yin, xin)                         \
 (                                                \
@@ -899,7 +899,7 @@ static void initcol(PREC q[][64])
   STORECLAMP(p[(xout) * 3 + 1], y - cg),         \
   STORECLAMP(p[(xout) * 3 + 0], y + cb)          \
 )
-#else
+#अन्यथा
 #define PIC(yin, xin, p, xout)                   \
 (                                                \
   y = outy[(yin) * 8 + xin],                     \
@@ -919,7 +919,7 @@ static void initcol(PREC q[][64])
   p[(xout) * 2 + 0] = y & 0xff,                  \
   p[(xout) * 2 + 1] = y >> 8                     \
 )
-#else
+#अन्यथा
 #ifdef CONFIG_PPC
 #define PIC_16(yin, xin, p, xout, add)           \
 (                                                \
@@ -930,7 +930,7 @@ static void initcol(PREC q[][64])
   p[(xout) * 2 + 0] = y >> 8,                    \
   p[(xout) * 2 + 1] = y & 0xff                   \
 )
-#else
+#अन्यथा
 #define PIC_16(yin, xin, p, xout, add)           \
 (                                                \
   y = outy[(yin) * 8 + xin],                     \
@@ -979,20 +979,20 @@ static void initcol(PREC q[][64])
   PIC_32(xin / 4 * 8 + 1, (xin & 3) * 2 + 1, pic1, xin * 2 + 1)     \
 )
 
-static void col221111(int *out, unsigned char *pic, int width)
+स्थिर शून्य col221111(पूर्णांक *out, अचिन्हित अक्षर *pic, पूर्णांक width)
 {
-    int i, j, k;
-    unsigned char *pic0, *pic1;
-    int *outy, *outc;
-    int cr, cg, cb, y;
+    पूर्णांक i, j, k;
+    अचिन्हित अक्षर *pic0, *pic1;
+    पूर्णांक *outy, *outc;
+    पूर्णांक cr, cg, cb, y;
 
     pic0 = pic;
     pic1 = pic + width;
     outy = out;
     outc = out + 64 * 4;
-    for (i = 2; i > 0; i--) {
-        for (j = 4; j > 0; j--) {
-            for (k = 0; k < 8; k++) {
+    साठी (i = 2; i > 0; i--) {
+        साठी (j = 4; j > 0; j--) {
+            साठी (k = 0; k < 8; k++) {
                 PIC221111(k);
             }
             outc += 8;
@@ -1004,20 +1004,20 @@ static void col221111(int *out, unsigned char *pic, int width)
     }
 }
 
-static void col221111_16(int *out, unsigned char *pic, int width)
+स्थिर शून्य col221111_16(पूर्णांक *out, अचिन्हित अक्षर *pic, पूर्णांक width)
 {
-    int i, j, k;
-    unsigned char *pic0, *pic1;
-    int *outy, *outc;
-    int cr, cg, cb, y;
+    पूर्णांक i, j, k;
+    अचिन्हित अक्षर *pic0, *pic1;
+    पूर्णांक *outy, *outc;
+    पूर्णांक cr, cg, cb, y;
 
     pic0 = pic;
     pic1 = pic + width;
     outy = out;
     outc = out + 64 * 4;
-    for (i = 2; i > 0; i--) {
-        for (j = 4; j > 0; j--) {
-            for (k = 0; k < 8; k++) {
+    साठी (i = 2; i > 0; i--) {
+        साठी (j = 4; j > 0; j--) {
+            साठी (k = 0; k < 8; k++) {
                 PIC221111_16(k);
             }
             outc += 8;
@@ -1029,20 +1029,20 @@ static void col221111_16(int *out, unsigned char *pic, int width)
     }
 }
 
-static void col221111_32(int *out, unsigned char *pic, int width)
+स्थिर शून्य col221111_32(पूर्णांक *out, अचिन्हित अक्षर *pic, पूर्णांक width)
 {
-    int i, j, k;
-    unsigned char *pic0, *pic1;
-    int *outy, *outc;
-    int cr, cg, cb, y;
+    पूर्णांक i, j, k;
+    अचिन्हित अक्षर *pic0, *pic1;
+    पूर्णांक *outy, *outc;
+    पूर्णांक cr, cg, cb, y;
 
     pic0 = pic;
     pic1 = pic + width;
     outy = out;
     outc = out + 64 * 4;
-    for (i = 2; i > 0; i--) {
-        for (j = 4; j > 0; j--) {
-            for (k = 0; k < 8; k++) {
+    साठी (i = 2; i > 0; i--) {
+        साठी (j = 4; j > 0; j--) {
+            साठी (k = 0; k < 8; k++) {
                 PIC221111_32(k);
             }
             outc += 8;

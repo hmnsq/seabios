@@ -1,33 +1,33 @@
 #ifndef __ATA_H
 #define __ATA_H
 
-#include "block.h" // struct drive_s
-#include "config.h" // CONFIG_MAX_ATA_INTERFACES
-#include "types.h" // u8
+#अन्तर्भाव "block.h" // struct drive_s
+#अन्तर्भाव "config.h" // CONFIG_MAX_ATA_INTERFACES
+#अन्तर्भाव "types.h" // u8
 
-struct ata_channel_s {
+संरचना ata_channel_s {
     u16 iobase1;
     u16 iobase2;
     u16 iomaster;
     u8  irq;
     u8  chanid;
     u8  ataid;
-    int pci_bdf;
-    struct pci_device *pci_tmp;
+    पूर्णांक pci_bdf;
+    संरचना pci_device *pci_tmp;
 };
 
-struct atadrive_s {
-    struct drive_s drive;
-    struct ata_channel_s *chan_gf;
+संरचना atadrive_s {
+    संरचना drive_s drive;
+    संरचना ata_channel_s *chan_gf;
     u8 slave;
 };
 
 // ata.c
-char *ata_extract_model(char *model, u32 size, u16 *buffer);
-int ata_extract_version(u16 *buffer);
-int ata_process_op(struct disk_op_s *op);
-int ata_atapi_process_op(struct disk_op_s *op);
-void ata_setup(void);
+अक्षर *ata_extract_model(अक्षर *model, u32 size, u16 *buffer);
+पूर्णांक ata_extract_version(u16 *buffer);
+पूर्णांक ata_process_op(संरचना disk_op_s *op);
+पूर्णांक ata_atapi_process_op(संरचना disk_op_s *op);
+शून्य ata_setup(शून्य);
 
 #define PORT_ATA2_CMD_BASE     0x0170
 #define PORT_ATA1_CMD_BASE     0x01f0
