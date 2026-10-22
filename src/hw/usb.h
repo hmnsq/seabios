@@ -2,13 +2,13 @@
 #ifndef __USB_H
 #define __USB_H
 
-#include "stacks.h" // struct mutex_s
+#ضمن "stacks.h" // struct mutex_s
 
 // Information on a USB end point.
-struct usb_pipe {
-    union {
-        struct usb_s *cntl;
-        struct usb_pipe *freenext;
+بنية usb_pipe {
+    اتحاد {
+        بنية usb_s *cntl;
+        بنية usb_pipe *freenext;
     };
     u8 type;
     u8 ep;
@@ -19,33 +19,33 @@ struct usb_pipe {
 };
 
 // Common information for usb devices.
-struct usbdevice_s {
-    struct usbhub_s *hub;
-    struct usb_pipe *defpipe;
+بنية usbdevice_s {
+    بنية usbhub_s *hub;
+    بنية usb_pipe *defpipe;
     u32 port;
-    struct usb_config_descriptor *config;
-    struct usb_interface_descriptor *iface;
-    int imax;
+    بنية usb_config_descriptor *config;
+    بنية usb_interface_descriptor *iface;
+    صحيح imax;
     u8 speed;
     u8 devaddr;
 };
 
 // Common information for usb controllers.
-struct usb_s {
-    struct usb_pipe *freelist;
-    struct mutex_s resetlock;
-    struct pci_device *pci;
-    void *mmio;
+بنية usb_s {
+    بنية usb_pipe *freelist;
+    بنية mutex_s resetlock;
+    بنية pci_device *pci;
+    فراغ *mmio;
     u8 type;
     u8 maxaddr;
 };
 
 // Information for enumerating USB hubs
-struct usbhub_s {
-    struct usbhub_op_s *op;
-    struct usbdevice_s *usbdev;
-    struct usb_s *cntl;
-    struct mutex_s lock;
+بنية usbhub_s {
+    بنية usbhub_op_s *op;
+    بنية usbdevice_s *usbdev;
+    بنية usb_s *cntl;
+    بنية mutex_s lock;
     u32 detectend;
     u32 port;
     u32 threads;
@@ -54,11 +54,11 @@ struct usbhub_s {
 };
 
 // Hub callback (32bit) info
-struct usbhub_op_s {
-    int (*detect)(struct usbhub_s *hub, u32 port);
-    int (*reset)(struct usbhub_s *hub, u32 port);
-    int (*portmap)(struct usbhub_s *hub, u32 port);
-    void (*disconnect)(struct usbhub_s *hub, u32 port);
+بنية usbhub_op_s {
+    صحيح (*detect)(بنية usbhub_s *hub, u32 port);
+    صحيح (*reset)(بنية usbhub_s *hub, u32 port);
+    صحيح (*portmap)(بنية usbhub_s *hub, u32 port);
+    فراغ (*disconnect)(بنية usbhub_s *hub, u32 port);
 };
 
 #define USB_TYPE_UHCI  1
@@ -122,7 +122,7 @@ struct usbhub_op_s {
 #define USB_REQ_SET_INTERFACE           0x0B
 #define USB_REQ_SYNCH_FRAME             0x0C
 
-struct usb_ctrlrequest {
+بنية usb_ctrlrequest {
     u8 bRequestType;
     u8 bRequest;
     u16 wValue;
@@ -139,7 +139,7 @@ struct usb_ctrlrequest {
 #define USB_DT_OTHER_SPEED_CONFIG       0x07
 #define USB_DT_ENDPOINT_COMPANION       0x30
 
-struct usb_device_descriptor {
+بنية usb_device_descriptor {
     u8  bLength;
     u8  bDescriptorType;
 
@@ -167,7 +167,7 @@ struct usb_device_descriptor {
 #define USB_CLASS_MASS_STORAGE          8
 #define USB_CLASS_HUB                   9
 
-struct usb_config_descriptor {
+بنية usb_config_descriptor {
     u8  bLength;
     u8  bDescriptorType;
 
@@ -179,7 +179,7 @@ struct usb_config_descriptor {
     u8  bMaxPower;
 } PACKED;
 
-struct usb_interface_descriptor {
+بنية usb_interface_descriptor {
     u8  bLength;
     u8  bDescriptorType;
 
@@ -192,7 +192,7 @@ struct usb_interface_descriptor {
     u8  iInterface;
 } PACKED;
 
-struct usb_endpoint_descriptor {
+بنية usb_endpoint_descriptor {
     u8  bLength;
     u8  bDescriptorType;
 
@@ -231,25 +231,25 @@ struct usb_endpoint_descriptor {
  ****************************************************************/
 
 // usb.c
-int usb_send_bulk(struct usb_pipe *pipe, int dir, void *data, int datasize);
-int usb_poll_intr(struct usb_pipe *pipe, void *data);
-int usb_32bit_pipe(struct usb_pipe *pipe_fl);
-struct usb_pipe *usb_alloc_pipe(struct usbdevice_s *usbdev
-                                , struct usb_endpoint_descriptor *epdesc);
-void usb_free_pipe(struct usbdevice_s *usbdev, struct usb_pipe *pipe);
-int usb_send_default_control(struct usb_pipe *pipe
-                             , const struct usb_ctrlrequest *req, void *data);
-int usb_is_freelist(struct usb_s *cntl, struct usb_pipe *pipe);
-void usb_add_freelist(struct usb_pipe *pipe);
-struct usb_pipe *usb_get_freelist(struct usb_s *cntl, u8 eptype);
-void usb_desc2pipe(struct usb_pipe *pipe, struct usbdevice_s *usbdev
-                   , struct usb_endpoint_descriptor *epdesc);
-int usb_get_period(struct usbdevice_s *usbdev
-                   , struct usb_endpoint_descriptor *epdesc);
-int usb_xfer_time(struct usb_pipe *pipe, int datalen);
-struct usb_endpoint_descriptor *usb_find_desc(struct usbdevice_s *usbdev
-                                              , int type, int dir);
-void usb_enumerate(struct usbhub_s *hub);
-void usb_setup(void);
+صحيح usb_send_bulk(بنية usb_pipe *pipe, صحيح dir, فراغ *data, صحيح datasize);
+صحيح usb_poll_intr(بنية usb_pipe *pipe, فراغ *data);
+صحيح usb_32bit_pipe(بنية usb_pipe *pipe_fl);
+بنية usb_pipe *usb_alloc_pipe(بنية usbdevice_s *usbdev
+                                , بنية usb_endpoint_descriptor *epdesc);
+فراغ usb_free_pipe(بنية usbdevice_s *usbdev, بنية usb_pipe *pipe);
+صحيح usb_send_default_control(بنية usb_pipe *pipe
+                             , ثابت بنية usb_ctrlrequest *req, فراغ *data);
+صحيح usb_is_freelist(بنية usb_s *cntl, بنية usb_pipe *pipe);
+فراغ usb_add_freelist(بنية usb_pipe *pipe);
+بنية usb_pipe *usb_get_freelist(بنية usb_s *cntl, u8 eptype);
+فراغ usb_desc2pipe(بنية usb_pipe *pipe, بنية usbdevice_s *usbdev
+                   , بنية usb_endpoint_descriptor *epdesc);
+صحيح usb_get_period(بنية usbdevice_s *usbdev
+                   , بنية usb_endpoint_descriptor *epdesc);
+صحيح usb_xfer_time(بنية usb_pipe *pipe, صحيح datalen);
+بنية usb_endpoint_descriptor *usb_find_desc(بنية usbdevice_s *usbdev
+                                              , صحيح type, صحيح dir);
+فراغ usb_enumerate(بنية usbhub_s *hub);
+فراغ usb_setup(فراغ);
 
 #endif // usb.h

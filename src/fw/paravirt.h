@@ -1,12 +1,12 @@
 #ifndef __PV_H
 #define __PV_H
 
-#include "config.h" // CONFIG_*
-#include "biosvar.h" // GET_GLOBAL
-#include "romfile.h" // struct romfile_s
+#ضمن "config.h" // CONFIG_*
+#ضمن "biosvar.h" // GET_GLOBAL
+#ضمن "romfile.h" // struct romfile_s
 
 // kvmclock
-struct pvclock_vcpu_time_info {
+بنية pvclock_vcpu_time_info {
 	u32   version;
 	u32   pad0;
 	u64   tsc_timestamp;
@@ -22,27 +22,27 @@ struct pvclock_vcpu_time_info {
 #define PF_XEN      (1<<1)
 #define PF_KVM      (1<<2)
 
-typedef struct QemuCfgDmaAccess {
+تعريفنوع بنية QemuCfgDmaAccess {
     u32 control;
     u32 length;
     u64 address;
 } PACKED QemuCfgDmaAccess;
 
-extern u32 RamSize;
-extern u64 RamSizeOver4G;
-extern int PlatformRunningOn;
-extern u8 CPUPhysBits;
-extern u8 CPULongMode;
+خارجي u32 RamSize;
+خارجي u64 RamSizeOver4G;
+خارجي صحيح PlatformRunningOn;
+خارجي u8 CPUPhysBits;
+خارجي u8 CPULongMode;
 
-static inline int runningOnQEMU(void) {
-    return CONFIG_QEMU || (
+ساكن مضمن صحيح runningOnQEMU(فراغ) {
+    ܦܢܐ CONFIG_QEMU || (
         CONFIG_QEMU_HARDWARE && GET_GLOBAL(PlatformRunningOn) & PF_QEMU);
 }
-static inline int runningOnXen(void) {
-    return CONFIG_XEN && GET_GLOBAL(PlatformRunningOn) & PF_XEN;
+ساكن مضمن صحيح runningOnXen(فراغ) {
+    ܦܢܐ CONFIG_XEN && GET_GLOBAL(PlatformRunningOn) & PF_XEN;
 }
-static inline int runningOnKVM(void) {
-    return CONFIG_QEMU && GET_GLOBAL(PlatformRunningOn) & PF_KVM;
+ساكن مضمن صحيح runningOnKVM(فراغ) {
+    ܦܢܐ CONFIG_QEMU && GET_GLOBAL(PlatformRunningOn) & PF_KVM;
 }
 
 // Common paravirt ports.
@@ -66,15 +66,15 @@ static inline int runningOnKVM(void) {
 // QEMU debugcon read value
 #define QEMU_DEBUGCON_READBACK  0xe9
 
-int qemu_cfg_enabled(void);
-int qemu_cfg_dma_enabled(void);
-void qemu_preinit(void);
-void qemu_platform_setup(void);
-void qemu_cfg_init(void);
+صحيح qemu_cfg_enabled(فراغ);
+صحيح qemu_cfg_dma_enabled(فراغ);
+فراغ qemu_preinit(فراغ);
+فراغ qemu_platform_setup(فراغ);
+فراغ qemu_cfg_init(فراغ);
 
-u16 qemu_get_present_cpus_count(void);
-int qemu_cfg_write_file(void *src, struct romfile_s *file, u32 offset, u32 len);
-int qemu_cfg_write_file_simple(void *src, u16 key, u32 offset, u32 len);
-u16 qemu_get_romfile_key(struct romfile_s *file);
+u16 qemu_get_present_cpus_count(فراغ);
+صحيح qemu_cfg_write_file(فراغ *src, بنية romfile_s *file, u32 offset, u32 len);
+صحيح qemu_cfg_write_file_simple(فراغ *src, u16 key, u32 offset, u32 len);
+u16 qemu_get_romfile_key(بنية romfile_s *file);
 
 #endif

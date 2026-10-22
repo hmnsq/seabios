@@ -4,39 +4,39 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // SET_BDA
-#include "bregs.h" // struct bregs
-#include "stacks.h" // yield
-#include "output.h" // dprintf
-#include "util.h" // irqtimer_calc_ticks
-#include "string.h" // memcpy
-#include "romfile.h" // romfile_loadint
-#include "hw/serialio.h" // SEROFF_IER
-#include "cp437.h"
+#ضمن "biosvar.h" // SET_BDA
+#ضمن "bregs.h" // struct bregs
+#ضمن "stacks.h" // yield
+#ضمن "output.h" // dprintf
+#ضمن "util.h" // irqtimer_calc_ticks
+#ضمن "string.h" // memcpy
+#ضمن "romfile.h" // romfile_loadint
+#ضمن "hw/serialio.h" // SEROFF_IER
+#ضمن "cp437.h"
 
-static u8 video_rows(void)
+ساكن u8 video_rows(فراغ)
 {
-    return GET_BDA(video_rows)+1;
+    ܦܢܐ GET_BDA(video_rows)+1;
 }
 
-static u8 video_cols(void)
+ساكن u8 video_cols(فراغ)
 {
-    return GET_BDA(video_cols);
+    ܦܢܐ GET_BDA(video_cols);
 }
 
-static u8 cursor_pos_col(void)
-{
-    u16 pos = GET_BDA(cursor_pos[0]);
-    return pos & 0xff;
-}
-
-static u8 cursor_pos_row(void)
+ساكن u8 cursor_pos_col(فراغ)
 {
     u16 pos = GET_BDA(cursor_pos[0]);
-    return (pos >> 8) & 0xff;
+    ܦܢܐ pos & 0xff;
 }
 
-static void cursor_pos_set(u8 row, u8 col)
+ساكن u8 cursor_pos_row(فراغ)
+{
+    u16 pos = GET_BDA(cursor_pos[0]);
+    ܦܢܐ (pos >> 8) & 0xff;
+}
+
+ساكن فراغ cursor_pos_set(u8 row, u8 col)
 {
     u16 pos = ((u16)row << 8) | col;
     SET_BDA(cursor_pos[0], pos);
@@ -49,7 +49,7 @@ static void cursor_pos_set(u8 row, u8 col)
 VARLOW u16 sercon_port;
 VARLOW u8 sercon_split;
 VARLOW u8 sercon_enable;
-VARFSEG struct segoff_s sercon_real_vga_handler;
+VARFSEG بنية segoff_s sercon_real_vga_handler;
 
 /*
  * We have a small output buffer here, for lazy output.  That allows
@@ -67,45 +67,45 @@ VARLOW u8 sercon_row_last;
 VARLOW u8 sercon_char;
 VARLOW u8 sercon_attr = 0x07;
 
-static VAR16 u8 sercon_cmap[8] = { '0', '4', '2', '6', '1', '5', '3', '7' };
+ساكن VAR16 u8 sercon_cmap[8] = { '0', '4', '2', '6', '1', '5', '3', '7' };
 
-static int sercon_splitmode(void)
+ساكن صحيح sercon_splitmode(فراغ)
 {
-    return GET_LOW(sercon_split);
+    ܦܢܐ GET_LOW(sercon_split);
 }
 
-static void sercon_putchar(u8 chr)
+ساكن فراغ sercon_putchar(u8 chr)
 {
     u16 addr = GET_LOW(sercon_port);
     u32 end = irqtimer_calc_ticks(0x0a);
 
-#if 0
+#ܐܢ 0
     /* for visual control sequence debugging */
-    if (chr == '\x1b')
+    ܐܢ (chr == '\x1b')
         chr = '*';
 #endif
 
-    for (;;) {
+    لكل (;;) {
         u8 lsr = inb(addr+SEROFF_LSR);
-        if ((lsr & 0x60) == 0x60) {
+        ܐܢ ((lsr & 0x60) == 0x60) {
             // Success - can write data
             outb(chr, addr+SEROFF_DATA);
-            break;
+            اكسر;
         }
-        if (irqtimer_check(end)) {
-            break;
+        ܐܢ (irqtimer_check(end)) {
+            اكسر;
         }
         yield();
     }
 }
 
-static void sercon_term_reset(void)
+ساكن فراغ sercon_term_reset(فراغ)
 {
     sercon_putchar('\x1b');
     sercon_putchar('c');
 }
 
-static void sercon_term_clear_screen(void)
+ساكن فراغ sercon_term_clear_screen(فراغ)
 {
     sercon_putchar('\x1b');
     sercon_putchar('[');
@@ -113,7 +113,7 @@ static void sercon_term_clear_screen(void)
     sercon_putchar('J');
 }
 
-static void sercon_term_no_linewrap(void)
+ساكن فراغ sercon_term_no_linewrap(فراغ)
 {
     sercon_putchar('\x1b');
     sercon_putchar('[');
@@ -122,7 +122,7 @@ static void sercon_term_no_linewrap(void)
     sercon_putchar('l');
 }
 
-static void sercon_term_cursor_goto(u8 row, u8 col)
+ساكن فراغ sercon_term_cursor_goto(u8 row, u8 col)
 {
     row++; col++;
     sercon_putchar('\x1b');
@@ -135,32 +135,32 @@ static void sercon_term_cursor_goto(u8 row, u8 col)
     sercon_putchar('H');
 }
 
-static void sercon_term_set_color(u8 fg, u8 bg, u8 bold)
+ساكن فراغ sercon_term_set_color(u8 fg, u8 bg, u8 bold)
 {
     sercon_putchar('\x1b');
     sercon_putchar('[');
     sercon_putchar('0');
-    if (fg != 7) {
+    ܐܢ (fg != 7) {
         sercon_putchar(';');
         sercon_putchar('3');
         sercon_putchar(GET_GLOBAL(sercon_cmap[fg & 7]));
     }
-    if (bg != 0) {
+    ܐܢ (bg != 0) {
         sercon_putchar(';');
         sercon_putchar('4');
         sercon_putchar(GET_GLOBAL(sercon_cmap[bg & 7]));
     }
-    if (bold) {
+    ܐܢ (bold) {
         sercon_putchar(';');
         sercon_putchar('1');
     }
     sercon_putchar('m');
 }
 
-static void sercon_set_attr(u8 attr)
+ساكن فراغ sercon_set_attr(u8 attr)
 {
-    if (attr == GET_LOW(sercon_attr_last))
-        return;
+    ܐܢ (attr == GET_LOW(sercon_attr_last))
+        ܦܢܐ;
 
     SET_LOW(sercon_attr_last, attr);
     sercon_term_set_color((attr >> 0) & 7,
@@ -168,52 +168,52 @@ static void sercon_set_attr(u8 attr)
                           attr & 0x08);
 }
 
-static void sercon_print_utf8(u8 chr)
+ساكن فراغ sercon_print_utf8(u8 chr)
 {
     u16 unicode = cp437_to_unicode(chr);
 
-    if (unicode < 0x7f) {
+    ܐܢ (unicode < 0x7f) {
         sercon_putchar(unicode);
-    } else if (unicode < 0x7ff) {
+    } ܐܚܪܢܐ ܐܢ (unicode < 0x7ff) {
         sercon_putchar(0xc0 | ((unicode >>  6) & 0x1f));
         sercon_putchar(0x80 | ((unicode >>  0) & 0x3f));
-    } else {
+    } ܐܚܪܢܐ {
         sercon_putchar(0xe0 | ((unicode >> 12) & 0x0f));
         sercon_putchar(0x80 | ((unicode >>  6) & 0x3f));
         sercon_putchar(0x80 | ((unicode >>  0) & 0x3f));
     }
 }
 
-static void sercon_cursor_pos_set(u8 row, u8 col)
+ساكن فراغ sercon_cursor_pos_set(u8 row, u8 col)
 {
-    if (!sercon_splitmode()) {
+    ܐܢ (!sercon_splitmode()) {
         cursor_pos_set(row, col);
-    } else {
+    } ܐܚܪܢܐ {
         /* let vgabios update cursor */
     }
 }
 
-static void sercon_lazy_cursor_sync(void)
+ساكن فراغ sercon_lazy_cursor_sync(فراغ)
 {
     u8 row = cursor_pos_row();
     u8 col = cursor_pos_col();
 
-    if (GET_LOW(sercon_row_last) == row &&
+    ܐܢ (GET_LOW(sercon_row_last) == row &&
         GET_LOW(sercon_col_last) == col)
-        return;
+        ܦܢܐ;
 
-    if (col == 0 && GET_LOW(sercon_row_last) <= row) {
-        if (GET_LOW(sercon_col_last) != 0) {
+    ܐܢ (col == 0 && GET_LOW(sercon_row_last) <= row) {
+        ܐܢ (GET_LOW(sercon_col_last) != 0) {
             sercon_putchar('\r');
             SET_LOW(sercon_col_last, 0);
         }
-        while (GET_LOW(sercon_row_last) < row) {
+        ܟܡܐ (GET_LOW(sercon_row_last) < row) {
             sercon_putchar('\n');
             SET_LOW(sercon_row_last, GET_LOW(sercon_row_last)+1);
         }
-        if (GET_LOW(sercon_row_last) == row &&
+        ܐܢ (GET_LOW(sercon_row_last) == row &&
             GET_LOW(sercon_col_last) == col)
-            return;
+            ܦܢܐ;
     }
 
     sercon_term_cursor_goto(row, col);
@@ -221,13 +221,13 @@ static void sercon_lazy_cursor_sync(void)
     SET_LOW(sercon_col_last, col);
 }
 
-static void sercon_lazy_flush(void)
+ساكن فراغ sercon_lazy_flush(فراغ)
 {
     u8 chr, attr;
 
     chr = GET_LOW(sercon_char);
     attr = GET_LOW(sercon_attr);
-    if (chr) {
+    ܐܢ (chr) {
         sercon_set_attr(attr);
         sercon_print_utf8(chr);
         SET_LOW(sercon_col_last, GET_LOW(sercon_col_last) + 1);
@@ -239,105 +239,105 @@ static void sercon_lazy_flush(void)
     SET_LOW(sercon_char, 0x00);
 }
 
-static void sercon_lazy_cursor_update(u8 row, u8 col)
+ساكن فراغ sercon_lazy_cursor_update(u8 row, u8 col)
 {
     sercon_cursor_pos_set(row, col);
     SET_LOW(sercon_row_last, row);
     SET_LOW(sercon_col_last, col);
 }
 
-static void sercon_lazy_backspace(void)
+ساكن فراغ sercon_lazy_backspace(فراغ)
 {
     u8 col;
 
     sercon_lazy_flush();
     col = cursor_pos_col();
-    if (col > 0) {
+    ܐܢ (col > 0) {
         sercon_putchar(8);
         sercon_lazy_cursor_update(cursor_pos_row(), col-1);
     }
 }
 
-static void sercon_lazy_cr(void)
+ساكن فراغ sercon_lazy_cr(فراغ)
 {
     sercon_cursor_pos_set(cursor_pos_row(), 0);
 }
 
-static void sercon_lazy_lf(void)
+ساكن فراغ sercon_lazy_lf(فراغ)
 {
     u8 row;
 
     row = cursor_pos_row() + 1;
-    if (row >= video_rows()) {
+    ܐܢ (row >= video_rows()) {
         /* scrolling up */
         row = video_rows()-1;
-        if (GET_LOW(sercon_row_last) > 0) {
+        ܐܢ (GET_LOW(sercon_row_last) > 0) {
             SET_LOW(sercon_row_last, GET_LOW(sercon_row_last) - 1);
         }
     }
     sercon_cursor_pos_set(row, cursor_pos_col());
 }
 
-static void sercon_lazy_move_cursor(void)
+ساكن فراغ sercon_lazy_move_cursor(فراغ)
 {
     u8 col;
 
     col = cursor_pos_col() + 1;
-    if (col >= video_cols()) {
+    ܐܢ (col >= video_cols()) {
         sercon_lazy_cr();
         sercon_lazy_lf();
-    } else {
+    } ܐܚܪܢܐ {
         sercon_cursor_pos_set(cursor_pos_row(), col);
     }
 }
 
-static void sercon_lazy_putchar(u8 chr, u8 attr, u8 teletype)
+ساكن فراغ sercon_lazy_putchar(u8 chr, u8 attr, u8 teletype)
 {
-    if (cursor_pos_row() != GET_LOW(sercon_row_last) ||
+    ܐܢ (cursor_pos_row() != GET_LOW(sercon_row_last) ||
         cursor_pos_col() != GET_LOW(sercon_col_last)) {
         sercon_lazy_flush();
     }
 
     SET_LOW(sercon_char, chr);
-    if (teletype)
+    ܐܢ (teletype)
         sercon_lazy_move_cursor();
-    else
+    ܐܚܪܢܐ
         SET_LOW(sercon_attr, attr);
 }
 
 /* Set video mode */
-static void sercon_1000(struct bregs *regs)
+ساكن فراغ sercon_1000(بنية bregs *regs)
 {
     u8 clearscreen = !(regs->al & 0x80);
     u8 mode = regs->al & 0x7f;
     u8 rows, cols;
 
-    if (!sercon_splitmode()) {
-        switch (mode) {
-        case 0x00:
-        case 0x01:
-        case 0x04: /* 320x200 */
-        case 0x05: /* 320x200 */
+    ܐܢ (!sercon_splitmode()) {
+        بدل (mode) {
+        حالة 0x00:
+        حالة 0x01:
+        حالة 0x04: /* 320x200 */
+        حالة 0x05: /* 320x200 */
             cols = 40;
             rows = 25;
             regs->al = 0x30;
-            break;
-        case 0x02:
-        case 0x03:
-        case 0x06: /* 640x200 */
-        case 0x07:
-        default:
+            اكسر;
+        حالة 0x02:
+        حالة 0x03:
+        حالة 0x06: /* 640x200 */
+        حالة 0x07:
+        افتراضي:
             cols = 80;
             rows = 25;
             regs->al = 0x30;
-            break;
+            اكسر;
         }
         cursor_pos_set(0, 0);
         SET_BDA(video_mode, mode);
         SET_BDA(video_cols, cols);
         SET_BDA(video_rows, rows-1);
         SET_BDA(cursor_type, 0x0007);
-    } else {
+    } ܐܚܪܢܐ {
         /* let vgabios handle mode init */
     }
 
@@ -348,25 +348,25 @@ static void sercon_1000(struct bregs *regs)
 
     sercon_term_reset();
     sercon_term_no_linewrap();
-    if (clearscreen)
+    ܐܢ (clearscreen)
         sercon_term_clear_screen();
 }
 
 /* Set text-mode cursor shape */
-static void sercon_1001(struct bregs *regs)
+ساكن فراغ sercon_1001(بنية bregs *regs)
 {
     /* show/hide cursor? */
     SET_BDA(cursor_type, regs->cx);
 }
 
 /* Set cursor position */
-static void sercon_1002(struct bregs *regs)
+ساكن فراغ sercon_1002(بنية bregs *regs)
 {
     sercon_cursor_pos_set(regs->dh, regs->dl);
 }
 
 /* Get cursor position */
-static void sercon_1003(struct bregs *regs)
+ساكن فراغ sercon_1003(بنية bregs *regs)
 {
     regs->cx = GET_BDA(cursor_type);
     regs->dh = cursor_pos_row();
@@ -374,40 +374,40 @@ static void sercon_1003(struct bregs *regs)
 }
 
 /* Scroll up window */
-static void sercon_1006(struct bregs *regs)
+ساكن فراغ sercon_1006(بنية bregs *regs)
 {
     sercon_lazy_flush();
-    if (regs->al == 0) {
+    ܐܢ (regs->al == 0) {
         /* clear rect, do only in case this looks like a fullscreen clear */
-        if (regs->ch == 0 &&
+        ܐܢ (regs->ch == 0 &&
             regs->cl == 0 &&
             regs->dh == video_rows()-1 &&
             regs->dl == video_cols()-1) {
             sercon_set_attr(regs->bh);
             sercon_term_clear_screen();
         }
-    } else {
+    } ܐܚܪܢܐ {
         sercon_putchar('\r');
         sercon_putchar('\n');
     }
 }
 
 /* Read character and attribute at cursor position */
-static void sercon_1008(struct bregs *regs)
+ساكن فراغ sercon_1008(بنية bregs *regs)
 {
     regs->ah = 0x07;
     regs->bh = ' ';
 }
 
 /* Write character and attribute at cursor position */
-static void sercon_1009(struct bregs *regs)
+ساكن فراغ sercon_1009(بنية bregs *regs)
 {
     u16 count = regs->cx;
 
-    if (count == 1) {
+    ܐܢ (count == 1) {
         sercon_lazy_putchar(regs->al, regs->bl, 0);
 
-    } else if (regs->al == 0x20 &&
+    } ܐܚܪܢܐ ܐܢ (regs->al == 0x20 &&
                video_rows() * video_cols() == count &&
                cursor_pos_row() == 0 &&
                cursor_pos_col() == 0) {
@@ -416,10 +416,10 @@ static void sercon_1009(struct bregs *regs)
         sercon_set_attr(regs->bl);
         sercon_term_clear_screen();
 
-    } else {
+    } ܐܚܪܢܐ {
         sercon_lazy_flush();
         sercon_set_attr(regs->bl);
-        while (count) {
+        ܟܡܐ (count) {
             sercon_print_utf8(regs->al);
             count--;
         }
@@ -429,111 +429,111 @@ static void sercon_1009(struct bregs *regs)
 }
 
 /* Teletype output */
-static void sercon_100e(struct bregs *regs)
+ساكن فراغ sercon_100e(بنية bregs *regs)
 {
-    switch (regs->al) {
-    case 7:
+    بدل (regs->al) {
+    حالة 7:
         sercon_putchar(0x07);
-        break;
-    case 8:
+        اكسر;
+    حالة 8:
         sercon_lazy_backspace();
-        break;
-    case '\r':
+        اكسر;
+    حالة '\r':
         sercon_lazy_cr();
-        break;
-    case '\n':
+        اكسر;
+    حالة '\n':
         sercon_lazy_lf();
-        break;
-    default:
+        اكسر;
+    افتراضي:
         sercon_lazy_putchar(regs->al, 0, 1);
-        break;
+        اكسر;
     }
 }
 
 /* Get current video mode */
-static void sercon_100f(struct bregs *regs)
+ساكن فراغ sercon_100f(بنية bregs *regs)
 {
     regs->al = GET_BDA(video_mode);
     regs->ah = GET_BDA(video_cols);
 }
 
 /* VBE 2.0 */
-static void sercon_104f(struct bregs *regs)
+ساكن فراغ sercon_104f(بنية bregs *regs)
 {
-    if (!sercon_splitmode()) {
+    ܐܢ (!sercon_splitmode()) {
         regs->ax = 0x0100;
-    } else {
+    } ܐܚܪܢܐ {
         // Disable sercon entry point on any vesa modeset
-        if (regs->al == 0x02)
+        ܐܢ (regs->al == 0x02)
             SET_LOW(sercon_enable, 0);
     }
 }
 
-static void sercon_10XX(struct bregs *regs)
+ساكن فراغ sercon_10XX(بنية bregs *regs)
 {
     warn_unimplemented(regs);
 }
 
-void VISIBLE16
-handle_sercon(struct bregs *regs)
+فراغ VISIBLE16
+handle_sercon(بنية bregs *regs)
 {
-    if (!CONFIG_SERCON)
-        return;
-    if (!GET_LOW(sercon_port))
-        return;
+    ܐܢ (!CONFIG_SERCON)
+        ܦܢܐ;
+    ܐܢ (!GET_LOW(sercon_port))
+        ܦܢܐ;
 
-    switch (regs->ah) {
-    case 0x01:
-    case 0x02:
-    case 0x03:
-    case 0x08:
-    case 0x0f:
-        if (sercon_splitmode())
+    بدل (regs->ah) {
+    حالة 0x01:
+    حالة 0x02:
+    حالة 0x03:
+    حالة 0x08:
+    حالة 0x0f:
+        ܐܢ (sercon_splitmode())
             /* nothing, vgabios handles it */
-            return;
+            ܦܢܐ;
     }
 
-    switch (regs->ah) {
-    case 0x00: sercon_1000(regs); break;
-    case 0x01: sercon_1001(regs); break;
-    case 0x02: sercon_1002(regs); break;
-    case 0x03: sercon_1003(regs); break;
-    case 0x06: sercon_1006(regs); break;
-    case 0x08: sercon_1008(regs); break;
-    case 0x09: sercon_1009(regs); break;
-    case 0x0e: sercon_100e(regs); break;
-    case 0x0f: sercon_100f(regs); break;
-    case 0x4f: sercon_104f(regs); break;
-    default:   sercon_10XX(regs); break;
+    بدل (regs->ah) {
+    حالة 0x00: sercon_1000(regs); اكسر;
+    حالة 0x01: sercon_1001(regs); اكسر;
+    حالة 0x02: sercon_1002(regs); اكسر;
+    حالة 0x03: sercon_1003(regs); اكسر;
+    حالة 0x06: sercon_1006(regs); اكسر;
+    حالة 0x08: sercon_1008(regs); اكسر;
+    حالة 0x09: sercon_1009(regs); اكسر;
+    حالة 0x0e: sercon_100e(regs); اكسر;
+    حالة 0x0f: sercon_100f(regs); اكسر;
+    حالة 0x4f: sercon_104f(regs); اكسر;
+    افتراضي:   sercon_10XX(regs); اكسر;
     }
 }
 
-void sercon_setup(void)
+فراغ sercon_setup(فراغ)
 {
-    if (!CONFIG_SERCON)
-        return;
+    ܐܢ (!CONFIG_SERCON)
+        ܦܢܐ;
 
-    struct segoff_s seabios, vgabios;
+    بنية segoff_s seabios, vgabios;
     u16 addr;
 
     addr = romfile_loadint("etc/sercon-port", 0);
-    if (!addr)
-        return;
+    ܐܢ (!addr)
+        ܦܢܐ;
     dprintf(1, "sercon: using ioport 0x%x\n", addr);
 
-    if (CONFIG_DEBUG_SERIAL)
-        if (addr == CONFIG_DEBUG_SERIAL_PORT)
+    ܐܢ (CONFIG_DEBUG_SERIAL)
+        ܐܢ (addr == CONFIG_DEBUG_SERIAL_PORT)
             ScreenAndDebug = 0;
 
     vgabios = GET_IVT(0x10);
     seabios = FUNC16(entry_10);
-    if (vgabios.seg != seabios.seg ||
+    ܐܢ (vgabios.seg != seabios.seg ||
         vgabios.offset != seabios.offset) {
         dprintf(1, "sercon: configuring in splitmode (vgabios %04x:%04x)\n",
                 vgabios.seg, vgabios.offset);
         sercon_real_vga_handler = vgabios;
         SET_LOW(sercon_split, 1);
-    } else {
+    } ܐܚܪܢܐ {
         dprintf(1, "sercon: configuring as primary display\n");
         sercon_real_vga_handler = seabios;
     }
@@ -551,8 +551,8 @@ void sercon_setup(void)
 VARLOW u8 rx_buf[16];
 VARLOW u8 rx_bytes;
 
-static VAR16 struct {
-    char seq[4];
+ساكن VAR16 بنية {
+    حرف seq[4];
     u8   len;
     u16  keycode;
 } termseq[] = {
@@ -584,95 +584,95 @@ static VAR16 struct {
     { .seq = "[F",   .len = 2, .keycode = 0x4fe0 },    // end
 };
 
-static void shiftbuf(int remove)
+ساكن فراغ shiftbuf(صحيح remove)
 {
-    int i, remaining;
+    صحيح i, remaining;
 
     remaining = GET_LOW(rx_bytes) - remove;
     SET_LOW(rx_bytes, remaining);
-    for (i = 0; i < remaining; i++)
+    لكل (i = 0; i < remaining; i++)
         SET_LOW(rx_buf[i], GET_LOW(rx_buf[i + remove]));
 }
 
-static int cmpbuf(int seq)
+ساكن صحيح cmpbuf(صحيح seq)
 {
-    int chr, len;
+    صحيح chr, len;
 
     len = GET_GLOBAL(termseq[seq].len);
-    if (GET_LOW(rx_bytes) < len + 1)
-        return 0;
-    for (chr = 0; chr < len; chr++)
-        if (GET_GLOBAL(termseq[seq].seq[chr]) != GET_LOW(rx_buf[chr + 1]))
-            return 0;
-    return 1;
+    ܐܢ (GET_LOW(rx_bytes) < len + 1)
+        ܦܢܐ 0;
+    لكل (chr = 0; chr < len; chr++)
+        ܐܢ (GET_GLOBAL(termseq[seq].seq[chr]) != GET_LOW(rx_buf[chr + 1]))
+            ܦܢܐ 0;
+    ܦܢܐ 1;
 }
 
-static int findseq(void)
+ساكن صحيح findseq(فراغ)
 {
-    int seq;
+    صحيح seq;
 
-    for (seq = 0; seq < ARRAY_SIZE(termseq); seq++)
-        if (cmpbuf(seq))
-            return seq;
-    return -1;
+    لكل (seq = 0; seq < ARRAY_SIZE(termseq); seq++)
+        ܐܢ (cmpbuf(seq))
+            ܦܢܐ seq;
+    ܦܢܐ -1;
 }
 
-void
-sercon_check_event(void)
+فراغ
+sercon_check_event(فراغ)
 {
-    if (!CONFIG_SERCON)
-        return;
+    ܐܢ (!CONFIG_SERCON)
+        ܦܢܐ;
 
     u16 addr = GET_LOW(sercon_port);
     u16 keycode;
     u8 byte, count = 0;
-    int seq;
+    صحيح seq;
 
     // check to see if there is a active serial port
-    if (!addr)
-        return;
-    if (inb(addr + SEROFF_LSR) == 0xFF)
-        return;
+    ܐܢ (!addr)
+        ܦܢܐ;
+    ܐܢ (inb(addr + SEROFF_LSR) == 0xFF)
+        ܦܢܐ;
 
     // flush pending output
     sercon_lazy_flush();
 
     // read all available data
-    while (inb(addr + SEROFF_LSR) & 0x01) {
+    ܟܡܐ (inb(addr + SEROFF_LSR) & 0x01) {
         byte = inb(addr + SEROFF_DATA);
         u8 rb = GET_LOW(rx_bytes);
-        if (rb < sizeof(rx_buf)) {
+        ܐܢ (rb < حجم(rx_buf)) {
             SET_LOW(rx_buf[rb], byte);
             SET_LOW(rx_bytes, rb + 1);
             count++;
         }
     }
 
-    for (;;) {
+    لكل (;;) {
         // no (more) input data
         u8 rb = GET_LOW(rx_bytes);
-        if (!rb)
-            return;
+        ܐܢ (!rb)
+            ܦܢܐ;
 
         // lookup escape sequences
         u8 next_char = GET_LOW(rx_buf[0]);
-        if (rb > 1 && next_char == 0x1b) {
+        ܐܢ (rb > 1 && next_char == 0x1b) {
             seq = findseq();
-            if (seq >= 0) {
+            ܐܢ (seq >= 0) {
                 enqueue_key(GET_GLOBAL(termseq[seq].keycode));
                 shiftbuf(GET_GLOBAL(termseq[seq].len) + 1);
-                continue;
+                استمر;
             }
         }
 
         // Seems we got a escape sequence we didn't recognise.
         //  -> If we received data wait for more, maybe it is just incomplete.
-        if (next_char == 0x1b && count)
-            return;
+        ܐܢ (next_char == 0x1b && count)
+            ܦܢܐ;
 
         // Handle input as individual char.
         keycode = ascii_to_keycode(next_char);
-        if (keycode)
+        ܐܢ (keycode)
             enqueue_key(keycode);
         shiftbuf(1);
     }

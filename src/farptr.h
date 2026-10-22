@@ -6,12 +6,12 @@
 #ifndef __FARPTR_H
 #define __FARPTR_H
 
-#include "x86.h" // insb
+#ضمن "x86.h" // insb
 
 // Dummy definitions used to make sure gcc understands dependencies
 // between SET_SEG and GET/READ/WRITE_SEG macros.
-extern u16 __segment_ES, __segment_CS, __segment_DS, __segment_SS;
-extern u16 __segment_FS, __segment_GS;
+خارجي u16 __segment_ES, __segment_CS, __segment_DS, __segment_SS;
+خارجي u16 __segment_FS, __segment_GS;
 
 // Low level macros for reading/writing memory via a segment selector.
 #define READ8_SEG(prefix, SEG, value, var)                      \
@@ -23,13 +23,13 @@ extern u16 __segment_FS, __segment_GS;
 #define READ32_SEG(prefix, SEG, value, var)                     \
     __asm__(prefix "movl %%" #SEG ":%1, %0" : "=ri"(value)      \
             : "m"(var), "m"(__segment_ ## SEG))
-#define READ64_SEG(prefix, SEG, value, var) do {                \
-        union u64_u32_u __value;                                \
-        union u64_u32_u *__r64_ptr = (union u64_u32_u *)&(var); \
+#define READ64_SEG(prefix, SEG, value, var) ܥܒܕ {                \
+        اتحاد u64_u32_u __value;                                \
+        اتحاد u64_u32_u *__r64_ptr = (اتحاد u64_u32_u *)&(var); \
         READ32_SEG(prefix, SEG, __value.lo, __r64_ptr->lo);     \
         READ32_SEG(prefix, SEG, __value.hi, __r64_ptr->hi);     \
         *(u64*)&(value) = __value.val;                          \
-    } while (0)
+    } ܟܡܐ (0)
 #define WRITE8_SEG(prefix, SEG, var, value)                     \
     __asm__(prefix "movb %b1, %%" #SEG ":%0" : "=m"(var)        \
             : "Q"(value), "m"(__segment_ ## SEG))
@@ -39,56 +39,56 @@ extern u16 __segment_FS, __segment_GS;
 #define WRITE32_SEG(prefix, SEG, var, value)                    \
     __asm__(prefix "movl %1, %%" #SEG ":%0" : "=m"(var)         \
             : "r"(value), "m"(__segment_ ## SEG))
-#define WRITE64_SEG(prefix, SEG, var, value) do {               \
-        union u64_u32_u __value;                                \
-        union u64_u32_u *__w64_ptr = (union u64_u32_u *)&(var); \
+#define WRITE64_SEG(prefix, SEG, var, value) ܥܒܕ {               \
+        اتحاد u64_u32_u __value;                                \
+        اتحاد u64_u32_u *__w64_ptr = (اتحاد u64_u32_u *)&(var); \
         typeof(var) __value_tmp = (value);                      \
         __value.val = *(u64*)&__value_tmp;                      \
         WRITE32_SEG(prefix, SEG, __w64_ptr->lo, __value.lo);    \
         WRITE32_SEG(prefix, SEG, __w64_ptr->hi, __value.hi);    \
-    } while (0)
+    } ܟܡܐ (0)
 
 // Macros for automatically choosing the appropriate memory size
 // access method.
-extern void __force_link_error__unknown_type(void);
+خارجي فراغ __force_link_error__unknown_type(فراغ);
 
 #define __GET_VAR(prefix, seg, var) ({          \
     typeof(var) __val;                          \
-    if (sizeof(__val) == 1)                     \
+    ܐܢ (حجم(__val) == 1)                     \
         READ8_SEG(prefix, seg, __val, var);     \
-    else if (sizeof(__val) == 2)                \
+    ܐܚܪܢܐ ܐܢ (حجم(__val) == 2)                \
         READ16_SEG(prefix, seg, __val, var);    \
-    else if (sizeof(__val) == 4)                \
+    ܐܚܪܢܐ ܐܢ (حجم(__val) == 4)                \
         READ32_SEG(prefix, seg, __val, var);    \
-    else if (sizeof(__val) == 8)                \
+    ܐܚܪܢܐ ܐܢ (حجم(__val) == 8)                \
         READ64_SEG(prefix, seg, __val, var);    \
-    else                                        \
+    ܐܚܪܢܐ                                        \
         __force_link_error__unknown_type();     \
     __val; })
 
-#define __SET_VAR(prefix, seg, var, val) do {           \
-        if (sizeof(var) == 1)                           \
+#define __SET_VAR(prefix, seg, var, val) ܥܒܕ {           \
+        ܐܢ (حجم(var) == 1)                           \
             WRITE8_SEG(prefix, seg, var, (val));        \
-        else if (sizeof(var) == 2)                      \
+        ܐܚܪܢܐ ܐܢ (حجم(var) == 2)                      \
             WRITE16_SEG(prefix, seg, var, (val));       \
-        else if (sizeof(var) == 4)                      \
+        ܐܚܪܢܐ ܐܢ (حجم(var) == 4)                      \
             WRITE32_SEG(prefix, seg, var, (val));       \
-        else if (sizeof(var) == 8)                      \
+        ܐܚܪܢܐ ܐܢ (حجم(var) == 8)                      \
             WRITE64_SEG(prefix, seg, var, (val));       \
-        else                                            \
+        ܐܚܪܢܐ                                            \
             __force_link_error__unknown_type();         \
-    } while (0)
+    } ܟܡܐ (0)
 
 #define DECL_SEGFUNCS(SEG)                              \
-static inline void __set_seg_##SEG(u16 seg) {           \
+ساكن مضمن فراغ __set_seg_##SEG(u16 seg) {           \
     __asm__("movw %w1, %%" #SEG : "=m"(__segment_##SEG) \
             : "rm"(seg));                               \
 }                                                       \
-static inline u16 __get_seg_##SEG(void) {               \
+ساكن مضمن u16 __get_seg_##SEG(فراغ) {               \
     u16 res;                                            \
     __asm__("movw %%" #SEG ", %w0" : "=rm"(res)         \
             : "m"(__segment_##SEG));                    \
-    return res;                                         \
+    ܦܢܐ res;                                         \
 }
 DECL_SEGFUNCS(CS)
 DECL_SEGFUNCS(DS)
@@ -109,11 +109,11 @@ DECL_SEGFUNCS(SS)
 #define __GET_FARVAR(seg, var) ({               \
     SET_SEG(ES, (seg));                         \
     GET_VAR(ES, (var)); })
-#define __SET_FARVAR(seg, var, val) do {        \
+#define __SET_FARVAR(seg, var, val) ܥܒܕ {        \
         typeof(var) __sfv_val = (val);          \
         SET_SEG(ES, (seg));                     \
         SET_VAR(ES, (var), __sfv_val);          \
-    } while (0)
+    } ܟܡܐ (0)
 
 // Macros for accesssing a 32bit flat mode pointer from 16bit real
 // mode.  (They automatically update the %es segment, break the
@@ -122,21 +122,21 @@ DECL_SEGFUNCS(SS)
     typeof(&(ptr)) __ptr = &(ptr);                              \
     GET_FARVAR(FLATPTR_TO_SEG(__ptr)                            \
                , *(typeof(__ptr))FLATPTR_TO_OFFSET(__ptr)); })
-#define __SET_FLATPTR(ptr, val) do {                            \
+#define __SET_FLATPTR(ptr, val) ܥܒܕ {                            \
         typeof (&(ptr)) __ptr = &(ptr);                         \
         SET_FARVAR(FLATPTR_TO_SEG(__ptr)                        \
                    , *(typeof(__ptr))FLATPTR_TO_OFFSET(__ptr)   \
                    , (val));                                    \
-    } while (0)
+    } ܟܡܐ (0)
 
 // Macros for converting to/from 32bit flat mode pointers to their
 // equivalent 16bit segment/offset values.
 #define FLATPTR_TO_SEG(p) (((u32)(p)) >> 4)
 #define FLATPTR_TO_OFFSET(p) (((u32)(p)) & 0xf)
-#define MAKE_FLATPTR(seg,off) ((void*)(((u32)(seg)<<4)+(u32)(off)))
+#define MAKE_FLATPTR(seg,off) ((فراغ*)(((u32)(seg)<<4)+(u32)(off)))
 
 
-#if MODESEGMENT == 1
+#ܐܢ MODESEGMENT == 1
 
 // Definitions when using segmented mode.
 #define GET_FARVAR(seg, var) __GET_FARVAR((seg), (var))
@@ -148,44 +148,44 @@ DECL_SEGFUNCS(SS)
 #define GET_FLATPTR(ptr) __GET_FLATPTR(ptr)
 #define SET_FLATPTR(ptr, val) __SET_FLATPTR((ptr), (val))
 
-static inline void insb_fl(u16 port, void *ptr_fl, u16 count) {
+ساكن مضمن فراغ insb_fl(u16 port, فراغ *ptr_fl, u16 count) {
     SET_SEG(ES, FLATPTR_TO_SEG(ptr_fl));
     insb(port, (u8*)FLATPTR_TO_OFFSET(ptr_fl), count);
 }
-static inline void insw_fl(u16 port, void *ptr_fl, u16 count) {
+ساكن مضمن فراغ insw_fl(u16 port, فراغ *ptr_fl, u16 count) {
     SET_SEG(ES, FLATPTR_TO_SEG(ptr_fl));
     insw(port, (u16*)FLATPTR_TO_OFFSET(ptr_fl), count);
 }
-static inline void insl_fl(u16 port, void *ptr_fl, u16 count) {
+ساكن مضمن فراغ insl_fl(u16 port, فراغ *ptr_fl, u16 count) {
     SET_SEG(ES, FLATPTR_TO_SEG(ptr_fl));
     insl(port, (u32*)FLATPTR_TO_OFFSET(ptr_fl), count);
 }
-static inline void outsb_fl(u16 port, void *ptr_fl, u16 count) {
+ساكن مضمن فراغ outsb_fl(u16 port, فراغ *ptr_fl, u16 count) {
     SET_SEG(ES, FLATPTR_TO_SEG(ptr_fl));
     outsb(port, (u8*)FLATPTR_TO_OFFSET(ptr_fl), count);
 }
-static inline void outsw_fl(u16 port, void *ptr_fl, u16 count) {
+ساكن مضمن فراغ outsw_fl(u16 port, فراغ *ptr_fl, u16 count) {
     SET_SEG(ES, FLATPTR_TO_SEG(ptr_fl));
     outsw(port, (u16*)FLATPTR_TO_OFFSET(ptr_fl), count);
 }
-static inline void outsl_fl(u16 port, void *ptr_fl, u16 count) {
+ساكن مضمن فراغ outsl_fl(u16 port, فراغ *ptr_fl, u16 count) {
     SET_SEG(ES, FLATPTR_TO_SEG(ptr_fl));
     outsl(port, (u32*)FLATPTR_TO_OFFSET(ptr_fl), count);
 }
 
-#else
+#ܐܚܪܢܐ
 
 // In 32-bit flat mode there is no need to mess with the segments.
 #define GET_FARVAR(seg, var) \
     (*((typeof(&(var)))MAKE_FLATPTR((seg), &(var))))
 #define SET_FARVAR(seg, var, val) \
-    do { GET_FARVAR((seg), (var)) = (val); } while (0)
+    ܥܒܕ { GET_FARVAR((seg), (var)) = (val); } ܟܡܐ (0)
 #define GET_VAR(seg, var) (var)
-#define SET_VAR(seg, var, val) do { (var) = (val); } while (0)
-#define SET_SEG(SEG, value) ((void)(value))
+#define SET_VAR(seg, var, val) ܥܒܕ { (var) = (val); } ܟܡܐ (0)
+#define SET_SEG(SEG, value) ((فراغ)(value))
 #define GET_SEG(SEG) 0
 #define GET_FLATPTR(ptr) (ptr)
-#define SET_FLATPTR(ptr, val) do { (ptr) = (val); } while (0)
+#define SET_FLATPTR(ptr, val) ܥܒܕ { (ptr) = (val); } ܟܡܐ (0)
 
 #define insb_fl(port, ptr_fl, count) insb(port, ptr_fl, count)
 #define insw_fl(port, ptr_fl, count) insw(port, ptr_fl, count)
@@ -196,13 +196,13 @@ static inline void outsl_fl(u16 port, void *ptr_fl, u16 count) {
 
 #endif
 
-#define SEGOFF(s,o) ({struct segoff_s __so; __so.offset=(o); __so.seg=(s); __so;})
+#define SEGOFF(s,o) ({بنية segoff_s __so; __so.offset=(o); __so.seg=(s); __so;})
 
-static inline struct segoff_s FLATPTR_TO_SEGOFF(void *p) {
-    return SEGOFF(FLATPTR_TO_SEG(p), FLATPTR_TO_OFFSET(p));
+ساكن مضمن بنية segoff_s FLATPTR_TO_SEGOFF(فراغ *p) {
+    ܦܢܐ SEGOFF(FLATPTR_TO_SEG(p), FLATPTR_TO_OFFSET(p));
 }
-static inline void *SEGOFF_TO_FLATPTR(struct segoff_s so) {
-    return MAKE_FLATPTR(so.seg, so.offset);
+ساكن مضمن فراغ *SEGOFF_TO_FLATPTR(بنية segoff_s so) {
+    ܦܢܐ MAKE_FLATPTR(so.seg, so.offset);
 }
 
 #endif // farptr.h

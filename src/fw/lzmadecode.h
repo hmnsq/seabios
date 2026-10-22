@@ -22,10 +22,10 @@
 #ifndef __LZMADECODE_H
 #define __LZMADECODE_H
 
-typedef unsigned char Byte;
-typedef unsigned short UInt16;
-typedef unsigned int UInt32;
-typedef UInt32 SizeT;
+تعريفنوع unsigned حرف Byte;
+تعريفنوع unsigned short UInt16;
+تعريفنوع unsigned صحيح UInt32;
+تعريفنوع UInt32 SizeT;
 
 #define CProb UInt16
 
@@ -38,20 +38,20 @@ typedef UInt32 SizeT;
 
 #define LZMA_PROPERTIES_SIZE 5
 
-typedef struct _CLzmaProperties
+تعريفنوع بنية _CLzmaProperties
 {
-  int lc;
-  int lp;
-  int pb;
+  صحيح lc;
+  صحيح lp;
+  صحيح pb;
 }CLzmaProperties;
 
-int LzmaDecodeProperties(CLzmaProperties *propsRes, const unsigned char *propsData, int size);
+صحيح LzmaDecodeProperties(CLzmaProperties *propsRes, ثابت unsigned حرف *propsData, صحيح size);
 
 #define LzmaGetNumProbs(Properties) (LZMA_BASE_SIZE + (LZMA_LIT_SIZE << ((Properties)->lc + (Properties)->lp)))
 
 #define kLzmaNeedInitId (-2)
 
-typedef struct _CLzmaDecoderState
+تعريفنوع بنية _CLzmaDecoderState
 {
   CLzmaProperties Properties;
   CProb *Probs;
@@ -60,8 +60,8 @@ typedef struct _CLzmaDecoderState
 } CLzmaDecoderState;
 
 
-int LzmaDecode(CLzmaDecoderState *vs,
-    const unsigned char *inStream, SizeT inSize, SizeT *inSizeProcessed,
-    unsigned char *outStream, SizeT outSize, SizeT *outSizeProcessed);
+صحيح LzmaDecode(CLzmaDecoderState *vs,
+    ثابت unsigned حرف *inStream, SizeT inSize, SizeT *inSizeProcessed,
+    unsigned حرف *outStream, SizeT outSize, SizeT *outSizeProcessed);
 
 #endif

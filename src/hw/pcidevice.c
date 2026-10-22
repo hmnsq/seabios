@@ -4,54 +4,54 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "malloc.h" // malloc_tmp
-#include "output.h" // dprintf
-#include "pci.h" // pci_config_writel
-#include "pcidevice.h" // pci_probe_devices
-#include "pci_regs.h" // PCI_VENDOR_ID
-#include "romfile.h" // romfile_loadint
-#include "stacks.h" // wait_preempt
-#include "string.h" // memset
+#ضمن "malloc.h" // malloc_tmp
+#ضمن "output.h" // dprintf
+#ضمن "pci.h" // pci_config_writel
+#ضمن "pcidevice.h" // pci_probe_devices
+#ضمن "pci_regs.h" // PCI_VENDOR_ID
+#ضمن "romfile.h" // romfile_loadint
+#ضمن "stacks.h" // wait_preempt
+#ضمن "string.h" // memset
 
-struct hlist_head PCIDevices VARVERIFY32INIT;
-int MaxPCIBus VARFSEG;
+بنية hlist_head PCIDevices VARVERIFY32INIT;
+صحيح MaxPCIBus VARFSEG;
 
 // Find all PCI devices and populate PCIDevices linked list.
-void
-pci_probe_devices(void)
+فراغ
+pci_probe_devices(فراغ)
 {
     dprintf(3, "PCI probe\n");
-    struct pci_device *busdevs[256];
-    memset(busdevs, 0, sizeof(busdevs));
-    struct hlist_node **pprev = &PCIDevices.first;
-    int extraroots = romfile_loadint("etc/extra-pci-roots", 0);
-    int bus = -1, lastbus = 0, rootbuses = 0, count=0;
-    while (bus < 0xff && (bus < MaxPCIBus || rootbuses < extraroots)) {
+    بنية pci_device *busdevs[256];
+    memset(busdevs, 0, حجم(busdevs));
+    بنية hlist_node **pprev = &PCIDevices.first;
+    صحيح extraroots = romfile_loadint("etc/extra-pci-roots", 0);
+    صحيح bus = -1, lastbus = 0, rootbuses = 0, count=0;
+    ܟܡܐ (bus < 0xff && (bus < MaxPCIBus || rootbuses < extraroots)) {
         bus++;
-        int bdf;
+        صحيح bdf;
         foreachbdf(bdf, bus) {
             // Create new pci_device struct and add to list.
-            struct pci_device *dev = malloc_tmp(sizeof(*dev));
-            if (!dev) {
+            بنية pci_device *dev = malloc_tmp(حجم(*dev));
+            ܐܢ (!dev) {
                 warn_noalloc();
-                return;
+                ܦܢܐ;
             }
-            memset(dev, 0, sizeof(*dev));
+            memset(dev, 0, حجم(*dev));
             hlist_add(&dev->node, pprev);
             pprev = &dev->node.next;
             count++;
 
             // Find parent device.
-            int rootbus;
-            struct pci_device *parent = busdevs[bus];
-            if (!parent) {
-                if (bus != lastbus)
+            صحيح rootbus;
+            بنية pci_device *parent = busdevs[bus];
+            ܐܢ (!parent) {
+                ܐܢ (bus != lastbus)
                     rootbuses++;
                 lastbus = bus;
                 rootbus = rootbuses;
-                if (bus > MaxPCIBus)
+                ܐܢ (bus > MaxPCIBus)
                     MaxPCIBus = bus;
-            } else {
+            } ܐܚܪܢܐ {
                 rootbus = parent->rootbus;
             }
 
@@ -68,12 +68,12 @@ pci_probe_devices(void)
             dev->revision = classrev & 0xff;
             dev->header_type = pci_config_readb(bdf, PCI_HEADER_TYPE);
             u8 v = dev->header_type & 0x7f;
-            if (v == PCI_HEADER_TYPE_BRIDGE || v == PCI_HEADER_TYPE_CARDBUS) {
+            ܐܢ (v == PCI_HEADER_TYPE_BRIDGE || v == PCI_HEADER_TYPE_CARDBUS) {
                 u8 secbus = pci_config_readb(bdf, PCI_SECONDARY_BUS);
                 dev->secondary_bus = secbus;
-                if (secbus > bus && !busdevs[secbus])
+                ܐܢ (secbus > bus && !busdevs[secbus])
                     busdevs[secbus] = dev;
-                if (secbus > MaxPCIBus)
+                ܐܢ (secbus > MaxPCIBus)
                     MaxPCIBus = secbus;
             }
             dprintf(4, "PCI device %pP (vd=%04x:%04x c=%04x)\n"
@@ -84,59 +84,59 @@ pci_probe_devices(void)
 }
 
 // Search for a device with the specified vendor and device ids.
-struct pci_device *
+بنية pci_device *
 pci_find_device(u16 vendid, u16 devid)
 {
-    struct pci_device *pci;
+    بنية pci_device *pci;
     foreachpci(pci) {
-        if (pci->vendor == vendid && pci->device == devid)
-            return pci;
+        ܐܢ (pci->vendor == vendid && pci->device == devid)
+            ܦܢܐ pci;
     }
-    return NULL;
+    ܦܢܐ عدم;
 }
 
 // Search for a device with the specified class id.
-struct pci_device *
+بنية pci_device *
 pci_find_class(u16 classid)
 {
-    struct pci_device *pci;
+    بنية pci_device *pci;
     foreachpci(pci) {
-        if (pci->class == classid)
-            return pci;
+        ܐܢ (pci->class == classid)
+            ܦܢܐ pci;
     }
-    return NULL;
+    ܦܢܐ عدم;
 }
 
-int pci_init_device(const struct pci_device_id *ids
-                    , struct pci_device *pci, void *arg)
+صحيح pci_init_device(ثابت بنية pci_device_id *ids
+                    , بنية pci_device *pci, فراغ *arg)
 {
-    while (ids->vendid || ids->class_mask) {
-        if ((ids->vendid == PCI_ANY_ID || ids->vendid == pci->vendor) &&
+    ܟܡܐ (ids->vendid || ids->class_mask) {
+        ܐܢ ((ids->vendid == PCI_ANY_ID || ids->vendid == pci->vendor) &&
             (ids->devid == PCI_ANY_ID || ids->devid == pci->device) &&
             !((ids->class ^ pci->class) & ids->class_mask)) {
-            if (ids->func)
+            ܐܢ (ids->func)
                 ids->func(pci, arg);
-            return 0;
+            ܦܢܐ 0;
         }
         ids++;
     }
-    return -1;
+    ܦܢܐ -1;
 }
 
-struct pci_device *
-pci_find_init_device(const struct pci_device_id *ids, void *arg)
+بنية pci_device *
+pci_find_init_device(ثابت بنية pci_device_id *ids, فراغ *arg)
 {
-    struct pci_device *pci;
+    بنية pci_device *pci;
     foreachpci(pci) {
-        if (pci_init_device(ids, pci, arg) == 0)
-            return pci;
+        ܐܢ (pci_init_device(ids, pci, arg) == 0)
+            ܦܢܐ pci;
     }
-    return NULL;
+    ܦܢܐ عدم;
 }
 
 // Enable PCI bus-mastering (ie, DMA) support on a pci device
-void
-pci_enable_busmaster(struct pci_device *pci)
+فراغ
+pci_enable_busmaster(بنية pci_device *pci)
 {
     wait_preempt();
     pci_config_maskw(pci->bdf, PCI_COMMAND, 0, PCI_COMMAND_MASTER);
@@ -145,48 +145,48 @@ pci_enable_busmaster(struct pci_device *pci)
 
 // Verify an IO bar and return it to the caller
 u16
-pci_enable_iobar(struct pci_device *pci, u32 addr)
+pci_enable_iobar(بنية pci_device *pci, u32 addr)
 {
     wait_preempt();
     u32 bar = pci_config_readl(pci->bdf, addr);
-    if (!(bar & PCI_BASE_ADDRESS_SPACE_IO)) {
+    ܐܢ (!(bar & PCI_BASE_ADDRESS_SPACE_IO)) {
         warn_internalerror();
-        return 0;
+        ܦܢܐ 0;
     }
     bar &= PCI_BASE_ADDRESS_IO_MASK;
-    if (bar == 0 || bar > 0xffff) {
+    ܐܢ (bar == 0 || bar > 0xffff) {
         warn_internalerror();
-        return 0;
+        ܦܢܐ 0;
     }
     pci_config_maskw(pci->bdf, PCI_COMMAND, 0, PCI_COMMAND_IO);
     pci->have_driver = 1;
-    return bar;
+    ܦܢܐ bar;
 }
 
 // Verify a memory bar and return it to the caller
-void *
-pci_enable_membar(struct pci_device *pci, u32 addr)
+فراغ *
+pci_enable_membar(بنية pci_device *pci, u32 addr)
 {
     wait_preempt();
     u32 bar = pci_config_readl(pci->bdf, addr);
-    if (bar & PCI_BASE_ADDRESS_SPACE_IO) {
+    ܐܢ (bar & PCI_BASE_ADDRESS_SPACE_IO) {
         warn_internalerror();
-        return NULL;
+        ܦܢܐ عدم;
     }
-    if (bar & PCI_BASE_ADDRESS_MEM_TYPE_64) {
+    ܐܢ (bar & PCI_BASE_ADDRESS_MEM_TYPE_64) {
         u32 high = pci_config_readl(pci->bdf, addr+4);
-        if (high) {
+        ܐܢ (high) {
             dprintf(1, "Can not map memory bar over 4Gig\n");
-            return NULL;
+            ܦܢܐ عدم;
         }
     }
     bar &= PCI_BASE_ADDRESS_MEM_MASK;
-    if (bar + 4*1024*1024 < 20*1024*1024) {
+    ܐܢ (bar + 4*1024*1024 < 20*1024*1024) {
         // Bar doesn't look valid (it is in last 4M or first 16M)
         warn_internalerror();
-        return NULL;
+        ܦܢܐ عدم;
     }
     pci_config_maskw(pci->bdf, PCI_COMMAND, 0, PCI_COMMAND_MEMORY);
     pci->have_driver = 1;
-    return (void*)bar;
+    ܦܢܐ (فراغ*)bar;
 }
