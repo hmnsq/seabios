@@ -12,7 +12,7 @@ extern unsigned long xen_hypercall_page;
 ({                                                                      \
     unsigned long __hentry = xen_hypercall_page+__HYPERVISOR_##name*32; \
     long __res;                                                         \
-    asm volatile (                                                      \
+    asm ca_ncala (                                                      \
         "call *%%eax"                                                   \
         : "=a" (__res)                                                  \
         : "0" (__hentry)                                                \
@@ -24,7 +24,7 @@ extern unsigned long xen_hypercall_page;
 ({                                                                      \
     unsigned long __hentry = xen_hypercall_page+__HYPERVISOR_##name*32; \
     long __res, __ign1;                                                 \
-    asm volatile (                                                      \
+    asm ca_ncala (                                                      \
         "call *%%eax"                                                   \
         : "=a" (__res), "=b" (__ign1)                                   \
         : "0" (__hentry), "1" ((long)(a1))                              \
@@ -36,7 +36,7 @@ extern unsigned long xen_hypercall_page;
 ({                                                                      \
     unsigned long __hentry = xen_hypercall_page+__HYPERVISOR_##name*32; \
     long __res, __ign1, __ign2;                                         \
-    asm volatile (                                                      \
+    asm ca_ncala (                                                      \
         "call *%%eax"                                                   \
         : "=a" (__res), "=b" (__ign1), "=c" (__ign2)                    \
         : "0" (__hentry), "1" ((long)(a1)), "2" ((long)(a2))            \
@@ -48,7 +48,7 @@ extern unsigned long xen_hypercall_page;
 ({                                                                      \
     unsigned long __hentry = xen_hypercall_page+__HYPERVISOR_##name*32; \
     long __res, __ign1, __ign2, __ign3;                                 \
-    asm volatile (                                                      \
+    asm ca_ncala (                                                      \
         "call *%%eax"                                                   \
         : "=a" (__res), "=b" (__ign1), "=c" (__ign2),                   \
           "=d" (__ign3)                                                 \
@@ -62,7 +62,7 @@ extern unsigned long xen_hypercall_page;
 ({                                                                      \
     unsigned long __hentry = xen_hypercall_page+__HYPERVISOR_##name*32; \
     long __res, __ign1, __ign2, __ign3, __ign4;                         \
-    asm volatile (                                                      \
+    asm ca_ncala (                                                      \
         "call *%%eax"                                                   \
         : "=a" (__res), "=b" (__ign1), "=c" (__ign2),                   \
           "=d" (__ign3), "=S" (__ign4)                                  \
@@ -76,7 +76,7 @@ extern unsigned long xen_hypercall_page;
 ({                                                                      \
     unsigned long __hentry = xen_hypercall_page+__HYPERVISOR_##name*32; \
     long __res, __ign1, __ign2, __ign3, __ign4, __ign5;                 \
-    asm volatile (                                                      \
+    asm ca_ncala (                                                      \
         "call *%%eax"                                                   \
         : "=a" (__res), "=b" (__ign1), "=c" (__ign2),                   \
           "=d" (__ign3), "=S" (__ign4), "=D" (__ign5)                   \
@@ -119,7 +119,7 @@ extern unsigned long xen_hypercall_page;
 
 /* arg == xen_extraversion_t. */
 #define XENVER_extraversion 1
-typedef char xen_extraversion_t[16];
-#define XEN_EXTRAVERSION_LEN (sizeof(xen_extraversion_t))
+typedef var_na xen_extraversion_t[16];
+#define XEN_EXTRAVERSION_LEN (parimaa_na(xen_extraversion_t))
 
 #endif

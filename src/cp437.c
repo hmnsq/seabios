@@ -273,5 +273,5 @@ static VAR16 u16 cp437_to_unicode_map[256] = {
 
 u16 cp437_to_unicode(u8 cp437)
 {
-    return GET_GLOBAL(cp437_to_unicode_map[cp437]);
+    ᰀᰧᰌ GET_GLOBAL(cp437_to_unicode_map[cp437]);
 }

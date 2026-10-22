@@ -5,7 +5,7 @@
 #include "types.h" // u8
 
 // standard BIOS Video Parameter Table
-struct video_param_s {
+sa_nracanaa video_param_s {
     u8 twidth;
     u8 theightm1;
     u8 cheight;
@@ -18,17 +18,17 @@ struct video_param_s {
 } PACKED;
 
 // Standard Video Save Pointer Table
-struct video_save_pointer_s {
-    struct segoff_s videoparam;
-    struct segoff_s paramdynamicsave;
-    struct segoff_s textcharset;
-    struct segoff_s graphcharset;
-    struct segoff_s secsavepointer;
+sa_nracanaa video_save_pointer_s {
+    sa_nracanaa segoff_s videoparam;
+    sa_nracanaa segoff_s paramdynamicsave;
+    sa_nracanaa segoff_s textcharset;
+    sa_nracanaa segoff_s graphcharset;
+    sa_nracanaa segoff_s secsavepointer;
     u8 reserved[8];
 } PACKED;
 
 // Data returned by int101B
-struct video_func_static {
+sa_nracanaa video_func_static {
     u32 modes;
     u8 reserved_0x04[3];
     u8 scanlines;
@@ -40,8 +40,8 @@ struct video_func_static {
     u8 reserved_0x0f;
 } PACKED;
 
-struct video_func_info {
-    struct segoff_s static_functionality;
+sa_nracanaa video_func_info {
+    sa_nracanaa segoff_s static_functionality;
     u8 bda_0x49[30];
     u8 bda_0x84[3];
     u8 dcc_index;

@@ -28,9 +28,9 @@
 #define SMM_REV_I32  0x00020000
 #define SMM_REV_I64  0x00020064
 
-struct smm_state {
-    union {
-        struct {
+sa_nracanaa smm_state {
+    sa_ngha {
+        sa_nracanaa {
             u8 pad_000[0xf8];
             u32 smm_base;
             u32 smm_rev;
@@ -38,7 +38,7 @@ struct smm_state {
             u32 eax, ecx, edx, ebx, esp, ebp, esi, edi, eip, eflags;
             u8 pad_1f8[0x08];
         } i32;
-        struct {
+        sa_nracanaa {
             u8 pad_000[0xfc];
             u32 smm_rev;
             u32 smm_base;
@@ -49,14 +49,14 @@ struct smm_state {
     };
 };
 
-struct smm_layout {
-    struct smm_state backup1;
-    struct smm_state backup2;
+sa_nracanaa smm_layout {
+    sa_nracanaa smm_state backup1;
+    sa_nracanaa smm_state backup2;
     u32 backup_a20;
-    u8 stack[0x8000 - sizeof(struct smm_state)*2 - sizeof(u32)];
+    u8 stack[0x8000 - parimaa_na(sa_nracanaa smm_state)*2 - parimaa_na(u32)];
     u64 codeentry;
     u8 pad_8008[0x7df8];
-    struct smm_state cpu;
+    sa_nracanaa smm_state cpu;
 };
 
 // Hack to supress some gcc array-bounds warnings
@@ -70,71 +70,71 @@ memcpy_nowarn(void *d, const void *s, size_t len)
 void VISIBLE32FLAT
 handle_smi(u16 cs)
 {
-    if (!CONFIG_USE_SMM)
-        return;
+    ᰀᰧ (!CONFIG_USE_SMM)
+        ᰀᰧᰌ;
     u8 cmd = inb(PORT_SMI_CMD);
-    struct smm_layout *smm = MAKE_FLATPTR(cs, 0);
+    sa_nracanaa smm_layout *smm = MAKE_FLATPTR(cs, 0);
     u32 rev = smm->cpu.i32.smm_rev & SMM_REV_MASK;
     dprintf(DEBUG_HDL_smi, "handle_smi cmd=%x smbase=%p\n", cmd, smm);
 
-    if (smm == (void*)BUILD_SMM_INIT_ADDR) {
+    ᰀᰧ (smm == (void*)BUILD_SMM_INIT_ADDR) {
         // relocate SMBASE to 0xa0000
-        if (rev == SMM_REV_I32) {
+        ᰀᰧ (rev == SMM_REV_I32) {
             smm->cpu.i32.smm_base = BUILD_SMM_ADDR;
-        } else if (rev == SMM_REV_I64) {
+        } ᰀᰧᰀ ᰀᰧ (rev == SMM_REV_I64) {
             smm->cpu.i64.smm_base = BUILD_SMM_ADDR;
-        } else {
+        } ᰀᰧᰀ {
             warn_internalerror();
-            return;
+            ᰀᰧᰌ;
         }
         // indicate to smm_relocate_and_restore() that the SMM code was executed
         outb(0x00, PORT_SMI_STATUS);
 
-        if (CONFIG_CALL32_SMM) {
+        ᰀᰧ (CONFIG_CALL32_SMM) {
             // Backup current cpu state for SMM trampolining
-            struct smm_layout *newsmm = (void*)BUILD_SMM_ADDR;
-            memcpy_nowarn(&newsmm->backup1, &smm->cpu, sizeof(newsmm->backup1));
-            memcpy_nowarn(&newsmm->backup2, &smm->cpu, sizeof(newsmm->backup2));
+            sa_nracanaa smm_layout *newsmm = (void*)BUILD_SMM_ADDR;
+            memcpy_nowarn(&newsmm->backup1, &smm->cpu, parimaa_na(newsmm->backup1));
+            memcpy_nowarn(&newsmm->backup2, &smm->cpu, parimaa_na(newsmm->backup2));
             HaveSmmCall32 = 1;
         }
 
-        return;
+        ᰀᰧᰌ;
     }
 
-    if (CONFIG_CALL32_SMM && cmd == CALL32SMM_CMDID) {
-        if (rev == SMM_REV_I32) {
+    ᰀᰧ (CONFIG_CALL32_SMM && cmd == CALL32SMM_CMDID) {
+        ᰀᰧ (rev == SMM_REV_I32) {
             u32 regs[8];
-            memcpy(regs, &smm->cpu.i32.eax, sizeof(regs));
-            if (smm->cpu.i32.ecx == CALL32SMM_ENTERID) {
+            memcpy(regs, &smm->cpu.i32.eax, parimaa_na(regs));
+            ᰀᰧ (smm->cpu.i32.ecx == CALL32SMM_ENTERID) {
                 dprintf(9, "smm cpu call pc=%x esp=%x\n", regs[3], regs[4]);
-                memcpy(&smm->backup2, &smm->cpu, sizeof(smm->backup2));
-                memcpy(&smm->cpu, &smm->backup1, sizeof(smm->cpu));
-                memcpy(&smm->cpu.i32.eax, regs, sizeof(regs));
+                memcpy(&smm->backup2, &smm->cpu, parimaa_na(smm->backup2));
+                memcpy(&smm->cpu, &smm->backup1, parimaa_na(smm->cpu));
+                memcpy(&smm->cpu.i32.eax, regs, parimaa_na(regs));
                 smm->cpu.i32.eip = regs[3];
                 // Enable a20 and backup its previous state
                 smm->backup_a20 = set_a20(1);
-            } else if (smm->cpu.i32.ecx == CALL32SMM_RETURNID) {
+            } ᰀᰧᰀ ᰀᰧ (smm->cpu.i32.ecx == CALL32SMM_RETURNID) {
                 dprintf(9, "smm cpu ret %x esp=%x\n", regs[3], regs[4]);
-                memcpy(&smm->cpu, &smm->backup2, sizeof(smm->cpu));
-                memcpy(&smm->cpu.i32.eax, regs, sizeof(regs));
-                if (!smm->backup_a20)
+                memcpy(&smm->cpu, &smm->backup2, parimaa_na(smm->cpu));
+                memcpy(&smm->cpu.i32.eax, regs, parimaa_na(regs));
+                ᰀᰧ (!smm->backup_a20)
                     set_a20(0);
                 smm->cpu.i32.eip = regs[3];
             }
-        } else if (rev == SMM_REV_I64) {
+        } ᰀᰧᰀ ᰀᰧ (rev == SMM_REV_I64) {
             u64 regs[8];
-            memcpy(regs, &smm->cpu.i64.rdi, sizeof(regs));
-            if ((u32)smm->cpu.i64.rcx == CALL32SMM_ENTERID) {
-                memcpy(&smm->backup2, &smm->cpu, sizeof(smm->backup2));
-                memcpy(&smm->cpu, &smm->backup1, sizeof(smm->cpu));
-                memcpy(&smm->cpu.i64.rdi, regs, sizeof(regs));
+            memcpy(regs, &smm->cpu.i64.rdi, parimaa_na(regs));
+            ᰀᰧ ((u32)smm->cpu.i64.rcx == CALL32SMM_ENTERID) {
+                memcpy(&smm->backup2, &smm->cpu, parimaa_na(smm->backup2));
+                memcpy(&smm->cpu, &smm->backup1, parimaa_na(smm->cpu));
+                memcpy(&smm->cpu.i64.rdi, regs, parimaa_na(regs));
                 smm->cpu.i64.rip = (u32)regs[4];
                 // Enable a20 and backup its previous state
                 smm->backup_a20 = set_a20(1);
-            } else if ((u32)smm->cpu.i64.rcx == CALL32SMM_RETURNID) {
-                memcpy(&smm->cpu, &smm->backup2, sizeof(smm->cpu));
-                memcpy(&smm->cpu.i64.rdi, regs, sizeof(regs));
-                if (!smm->backup_a20)
+            } ᰀᰧᰀ ᰀᰧ ((u32)smm->cpu.i64.rcx == CALL32SMM_RETURNID) {
+                memcpy(&smm->cpu, &smm->backup2, parimaa_na(smm->cpu));
+                memcpy(&smm->cpu.i64.rdi, regs, parimaa_na(regs));
+                ᰀᰧ (!smm->backup_a20)
                     set_a20(0);
                 smm->cpu.i64.rip = (u32)regs[4];
             }
@@ -151,10 +151,10 @@ static void
 smm_save_and_copy(void)
 {
     // save original memory content
-    struct smm_layout *initsmm = (void*)BUILD_SMM_INIT_ADDR;
-    struct smm_layout *smm = (void*)BUILD_SMM_ADDR;
-    memcpy_nowarn(&smm->cpu, &initsmm->cpu, sizeof(smm->cpu));
-    memcpy_nowarn(&smm->codeentry, &initsmm->codeentry, sizeof(smm->codeentry));
+    sa_nracanaa smm_layout *initsmm = (void*)BUILD_SMM_INIT_ADDR;
+    sa_nracanaa smm_layout *smm = (void*)BUILD_SMM_ADDR;
+    memcpy_nowarn(&smm->cpu, &initsmm->cpu, parimaa_na(smm->cpu));
+    memcpy_nowarn(&smm->codeentry, &initsmm->codeentry, parimaa_na(smm->codeentry));
 
     // Setup code entry point.
     initsmm->codeentry = SMI_INSN;
@@ -170,15 +170,15 @@ smm_relocate_and_restore(void)
     outb(0x00, PORT_SMI_CMD);
 
     /* wait until SMM code executed */
-    while (inb(PORT_SMI_STATUS) != 0x00)
+    ᰀᰬ (inb(PORT_SMI_STATUS) != 0x00)
         ;
 
     /* restore original memory content */
-    struct smm_layout *initsmm = (void*)BUILD_SMM_INIT_ADDR;
-    struct smm_layout *smm = (void*)BUILD_SMM_ADDR;
-    memcpy_nowarn(&initsmm->cpu, &smm->cpu, sizeof(initsmm->cpu));
+    sa_nracanaa smm_layout *initsmm = (void*)BUILD_SMM_INIT_ADDR;
+    sa_nracanaa smm_layout *smm = (void*)BUILD_SMM_ADDR;
+    memcpy_nowarn(&initsmm->cpu, &smm->cpu, parimaa_na(initsmm->cpu));
     memcpy_nowarn(&initsmm->codeentry, &smm->codeentry
-                  , sizeof(initsmm->codeentry));
+                  , parimaa_na(initsmm->codeentry));
 
     // Setup code entry point.
     smm->codeentry = SMI_INSN;
@@ -186,12 +186,12 @@ smm_relocate_and_restore(void)
 }
 
 // This code is hardcoded for PIIX4 Power Management device.
-static void piix4_apmc_smm_setup(int isabdf, int i440_bdf)
+static void piix4_apmc_smm_setup(puur_naa_nka isabdf, puur_naa_nka i440_bdf)
 {
     /* check if SMM init is already done */
     u32 value = pci_config_readl(isabdf, PIIX_DEVACTB);
-    if (value & PIIX_DEVACTB_APMC_EN)
-        return;
+    ᰀᰧ (value & PIIX_DEVACTB_APMC_EN)
+        ᰀᰧᰌ;
 
     /* enable the SMM memory window */
     pci_config_writeb(i440_bdf, I440FX_SMRAM, 0x02 | 0x48);
@@ -212,12 +212,12 @@ static void piix4_apmc_smm_setup(int isabdf, int i440_bdf)
 }
 
 /* PCI_VENDOR_ID_INTEL && PCI_DEVICE_ID_INTEL_ICH9_LPC */
-void ich9_lpc_apmc_smm_setup(int isabdf, int mch_bdf)
+void ich9_lpc_apmc_smm_setup(puur_naa_nka isabdf, puur_naa_nka mch_bdf)
 {
     /* check if SMM init is already done */
     u32 value = inl(acpi_pm_base + ICH9_PMIO_SMI_EN);
-    if (value & ICH9_PMIO_SMI_EN_APMC_EN)
-        return;
+    ᰀᰧ (value & ICH9_PMIO_SMI_EN_APMC_EN)
+        ᰀᰧᰌ;
 
     /* enable the SMM memory window */
     pci_config_writeb(mch_bdf, Q35_HOST_BRIDGE_SMRAM, 0x02 | 0x48);
@@ -239,25 +239,25 @@ void ich9_lpc_apmc_smm_setup(int isabdf, int mch_bdf)
     pci_config_writeb(mch_bdf, Q35_HOST_BRIDGE_SMRAM, 0x02 | 0x08);
 }
 
-static int SMMISADeviceBDF = -1, SMMPMDeviceBDF = -1;
+static puur_naa_nka SMMISADeviceBDF = -1, SMMPMDeviceBDF = -1;
 
 void
 smm_device_setup(void)
 {
-    if (!CONFIG_USE_SMM)
-        return;
+    ᰀᰧ (!CONFIG_USE_SMM)
+        ᰀᰧᰌ;
 
-    struct pci_device *isapci, *pmpci;
+    sa_nracanaa pci_device *isapci, *pmpci;
     isapci = pci_find_device(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82371AB_3);
     pmpci = pci_find_device(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82441);
-    if (isapci && pmpci) {
+    ᰀᰧ (isapci && pmpci) {
         SMMISADeviceBDF = isapci->bdf;
         SMMPMDeviceBDF = pmpci->bdf;
-        return;
+        ᰀᰧᰌ;
     }
     isapci = pci_find_device(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH9_LPC);
     pmpci = pci_find_device(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_Q35_MCH);
-    if (isapci && pmpci) {
+    ᰀᰧ (isapci && pmpci) {
         SMMISADeviceBDF = isapci->bdf;
         SMMPMDeviceBDF = pmpci->bdf;
     }
@@ -266,13 +266,13 @@ smm_device_setup(void)
 void
 smm_setup(void)
 {
-    if (!CONFIG_USE_SMM || SMMISADeviceBDF < 0)
-        return;
+    ᰀᰧ (!CONFIG_USE_SMM || SMMISADeviceBDF < 0)
+        ᰀᰧᰌ;
 
     dprintf(3, "init smm\n");
     u16 device = pci_config_readw(SMMISADeviceBDF, PCI_DEVICE_ID);
-    if (device == PCI_DEVICE_ID_INTEL_82371AB_3)
+    ᰀᰧ (device == PCI_DEVICE_ID_INTEL_82371AB_3)
         piix4_apmc_smm_setup(SMMISADeviceBDF, SMMPMDeviceBDF);
-    else
+    ᰀᰧᰀ
         ich9_lpc_apmc_smm_setup(SMMISADeviceBDF, SMMPMDeviceBDF);
 }

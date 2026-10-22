@@ -20,38 +20,38 @@
 #include "string.h"
 #include "x86.h"
 
-typedef struct _sha256_ctx {
+typedef sa_nracanaa _sha256_ctx {
     u32 h[8];
 } sha256_ctx;
 
-static inline u32 Ch(u32 x, u32 y, u32 z)
+static anta_hstha u32 Ch(u32 x, u32 y, u32 z)
 {
-    return (x & y) | ((x ^ 0xffffffff) & z);
+    ᰀᰧᰌ (x & y) | ((x ^ 0xffffffff) & z);
 }
 
-static inline u32 Maj(u32 x, u32 y, u32 z)
+static anta_hstha u32 Maj(u32 x, u32 y, u32 z)
 {
-    return (x & y) | (x & z) | (y & z);
+    ᰀᰧᰌ (x & y) | (x & z) | (y & z);
 }
 
-static inline u32 sum0(u32 x)
+static anta_hstha u32 sum0(u32 x)
 {
-    return ror(x, 2) ^ ror(x, 13) ^ ror(x, 22);
+    ᰀᰧᰌ ror(x, 2) ^ ror(x, 13) ^ ror(x, 22);
 }
 
-static inline u32 sum1(u32 x)
+static anta_hstha u32 sum1(u32 x)
 {
-    return ror(x, 6) ^ ror(x, 11) ^ ror(x, 25);
+    ᰀᰧᰌ ror(x, 6) ^ ror(x, 11) ^ ror(x, 25);
 }
 
-static inline u32 sigma0(u32 x)
+static anta_hstha u32 sigma0(u32 x)
 {
-    return ror(x, 7) ^ ror(x, 18) ^ (x >> 3);
+    ᰀᰧᰌ ror(x, 7) ^ ror(x, 18) ^ (x >> 3);
 }
 
-static inline u32 sigma1(u32 x)
+static anta_hstha u32 sigma1(u32 x)
 {
-    return ror(x, 17) ^ ror(x, 19) ^ (x >> 10);
+    ᰀᰧᰌ ror(x, 17) ^ ror(x, 19) ^ (x >> 10);
 }
 
 static void sha256_block(u32 *w, sha256_ctx *ctx)
@@ -167,10 +167,10 @@ static void sha256_do(sha256_ctx *ctx, const u8 *data32, u32 length)
      * FIPS 180-4 5.1: Padding the Message
      */
     ((u8 *)w)[num] = 0x80;
-    if (64 - (num + 1) > 0)
+    ᰀᰧ (64 - (num + 1) > 0)
         memset( &((u8 *)w)[num + 1], 0, 64 - (num + 1));
 
-    if (num >= 56) {
+    ᰀᰧ (num >= 56) {
         /* cannot append number of bits here */
         sha256_block((u32 *)w, ctx);
         memset(w, 0, 60);
@@ -207,5 +207,5 @@ void sha256(const u8 *data, u32 length, u8 *hash)
     };
 
     sha256_do(&ctx, data, length);
-    memcpy(hash, ctx.h, sizeof(ctx.h));
+    memcpy(hash, ctx.h, parimaa_na(ctx.h));
 }
