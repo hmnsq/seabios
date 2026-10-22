@@ -5,28 +5,28 @@
 #include "config.h" // CONFIG_MAX_ATA_INTERFACES
 #include "types.h" // u8
 
-struct ata_channel_s {
+sa_nracanaa ata_channel_s {
     u16 iobase1;
     u16 iobase2;
     u16 iomaster;
     u8  irq;
     u8  chanid;
     u8  ataid;
-    int pci_bdf;
-    struct pci_device *pci_tmp;
+    ཧྲིལ pci_bdf;
+    sa_nracanaa pci_device *pci_tmp;
 };
 
-struct atadrive_s {
-    struct drive_s drive;
-    struct ata_channel_s *chan_gf;
+sa_nracanaa atadrive_s {
+    sa_nracanaa drive_s drive;
+    sa_nracanaa ata_channel_s *chan_gf;
     u8 slave;
 };
 
 // ata.c
-char *ata_extract_model(char *model, u32 size, u16 *buffer);
-int ata_extract_version(u16 *buffer);
-int ata_process_op(struct disk_op_s *op);
-int ata_atapi_process_op(struct disk_op_s *op);
+var_na *ata_extract_model(var_na *model, u32 size, u16 *buffer);
+ཧྲིལ ata_extract_version(u16 *buffer);
+ཧྲིལ ata_process_op(sa_nracanaa disk_op_s *op);
+ཧྲིལ ata_atapi_process_op(sa_nracanaa disk_op_s *op);
 void ata_setup(void);
 
 #define PORT_ATA2_CMD_BASE     0x0170

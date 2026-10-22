@@ -24,16 +24,16 @@
 #define MSR_LOCAL_APIC_ID 0x802
 #define MSR_IA32_APICBASE_EXTD (1ULL << 10) /* Enable x2APIC mode */
 
-static struct { u32 index; u64 val; } smp_msr[32];
+static sa_nracanaa { u32 index; u64 val; } smp_msr[32];
 static u32 smp_msr_count;
 
 void
 wrmsr_smp(u32 index, u64 val)
 {
     wrmsr(index, val);
-    if (smp_msr_count >= ARRAY_SIZE(smp_msr)) {
+    གལ་སྲིད (smp_msr_count >= ARRAY_SIZE(smp_msr)) {
         warn_noalloc();
-        return;
+        ལོག;
     }
     smp_msr[smp_msr_count].index = index;
     smp_msr[smp_msr_count].val = val;
@@ -44,8 +44,8 @@ static void
 smp_write_msrs(void)
 {
     // MTRR and MSR_IA32_FEATURE_CONTROL setup
-    int i;
-    for (i=0; i<smp_msr_count; i++)
+    ཧྲིལ i;
+    དོན་ལུ (i=0; i<smp_msr_count; i++)
         wrmsr(smp_msr[i].index, smp_msr[i].val);
 }
 
@@ -54,40 +54,40 @@ static u32 CountCPUs;
 // 256 bits for the found APIC IDs
 static u32 FoundAPICIDs[256/32];
 
-int apic_id_is_present(u8 apic_id)
+ཧྲིལ apic_id_is_present(u8 apic_id)
 {
-    return !!(FoundAPICIDs[apic_id/32] & (1ul << (apic_id % 32)));
+    ལོག !!(FoundAPICIDs[apic_id/32] & (1ul << (apic_id % 32)));
 }
 
-static int
+static ཧྲིལ
 apic_id_init(void)
 {
     u32 eax, ebx, ecx, cpuid_features;
     cpuid(1, &eax, &ebx, &ecx, &cpuid_features);
     u32 apic_id = ebx>>24;
-    if (MaxCountCPUs < 256) { // xAPIC mode
+    གལ་སྲིད (MaxCountCPUs < 256) { // xAPIC mode
         // Track found apic id for use in legacy internal bios tables
         FoundAPICIDs[apic_id/32] |= 1 << (apic_id % 32);
-    } else if (ecx & CPUID_X2APIC) {
+    } དེ་མིན གལ་སྲིད (ecx & CPUID_X2APIC) {
         // switch to x2APIC mode
         u64 apic_base = rdmsr(MSR_IA32_APIC_BASE);
         wrmsr(MSR_IA32_APIC_BASE, apic_base | MSR_IA32_APICBASE_EXTD);
         apic_id = rdmsr(MSR_LOCAL_APIC_ID);
-    } else {
+    } དེ་མིན {
         // x2APIC is masked by CPUID
         apic_id = -1;
     }
-    return apic_id;
+    ལོག apic_id;
 }
 
 void VISIBLE32FLAT
 handle_smp(void)
 {
-    if (!CONFIG_QEMU)
-        return;
+    གལ་སྲིད (!CONFIG_QEMU)
+        ལོག;
 
     // Track this CPU and detect the apic_id
-    int apic_id = apic_id_init();
+    ཧྲིལ apic_id = apic_id_init();
     dprintf(DEBUG_HDL_smp, "handle_smp: apic_id=0x%x\n", apic_id);
 
     smp_write_msrs();
@@ -106,11 +106,11 @@ smp_scan(void)
     ASSERT32FLAT();
     u32 eax, ebx, ecx, cpuid_features;
     cpuid(1, &eax, &ebx, &ecx, &cpuid_features);
-    if (eax < 1 || !(cpuid_features & CPUID_APIC)) {
+    གལ་སྲིད (eax < 1 || !(cpuid_features & CPUID_APIC)) {
         // No apic - only the main cpu is present.
         dprintf(1, "No apic - only the main cpu is present.\n");
         CountCPUs= 1;
-        return;
+        ལོག;
     }
 
     // mark the BSP initial APIC ID as found, too:
@@ -149,8 +149,8 @@ smp_scan(void)
 
     // Wait for other CPUs to process the SIPI.
     u16 expected_cpus_count = qemu_get_present_cpus_count();
-    while (expected_cpus_count != CountCPUs)
-        asm volatile(
+    སྐབས (expected_cpus_count != CountCPUs)
+        asm ca_ncala(
             // Release lock and allow other processors to use the stack.
             "  movl %%esp, %1\n"
             "  movl $0, %0\n"
@@ -172,12 +172,12 @@ smp_scan(void)
 void
 smp_setup(void)
 {
-    if (!CONFIG_QEMU)
-        return;
+    གལ་སྲིད (!CONFIG_QEMU)
+        ལོག;
 
     MaxCountCPUs = romfile_loadint("etc/max-cpus", 0);
     u16 smp_count = qemu_get_present_cpus_count();
-    if (MaxCountCPUs < smp_count)
+    གལ་སྲིད (MaxCountCPUs < smp_count)
         MaxCountCPUs = smp_count;
 
     smp_scan();
@@ -186,8 +186,8 @@ smp_setup(void)
 void
 smp_resume(void)
 {
-    if (!CONFIG_QEMU)
-        return;
+    གལ་སྲིད (!CONFIG_QEMU)
+        ལོག;
 
     smp_write_msrs();
     smp_scan();

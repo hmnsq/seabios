@@ -2,8 +2,8 @@
 #define __USB_HUB_H
 
 // usb-hub.c
-struct usbdevice_s;
-int usb_hub_setup(struct usbdevice_s *usbdev);
+sa_nracanaa usbdevice_s;
+ཧྲིལ usb_hub_setup(sa_nracanaa usbdevice_s *usbdev);
 
 
 /****************************************************************
@@ -15,7 +15,7 @@ int usb_hub_setup(struct usbdevice_s *usbdev);
 
 #define HUB_REQ_SET_HUB_DEPTH           0x0C
 
-struct usb_hub_descriptor {
+sa_nracanaa usb_hub_descriptor {
     u8  bDescLength;
     u8  bDescriptorType;
     u8  bNbrPorts;
@@ -41,7 +41,7 @@ struct usb_hub_descriptor {
 #define USB_PORT_FEAT_INDICATOR         22
 #define USB_PORT_FEAT_C_PORT_L1         23
 
-struct usb_port_status {
+sa_nracanaa usb_port_status {
     u16 wPortStatus;
     u16 wPortChange;
 } PACKED;
