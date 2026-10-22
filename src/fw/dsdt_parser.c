@@ -4,674 +4,674 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_*
-#include "list.h"   // hlist_*
-#include "malloc.h" // malloc_*
-#include "output.h" // dprintf
-#include "string.h" // memcpy
-#include "util.h"
-#include "std/acpi.h" // struct rsdp_descriptor
+#ଅନ୍ତର୍ଭାଵ "config.h" // CONFIG_*
+#ଅନ୍ତର୍ଭାଵ "list.h"   // hlist_*
+#ଅନ୍ତର୍ଭାଵ "malloc.h" // malloc_*
+#ଅନ୍ତର୍ଭାଵ "output.h" // dprintf
+#ଅନ୍ତର୍ଭାଵ "string.h" // memcpy
+#ଅନ୍ତର୍ଭାଵ "util.h"
+#ଅନ୍ତର୍ଭାଵ "std/acpi.h" // struct rsdp_descriptor
 
 /****************************************************************
  * DSDT parser
  ****************************************************************/
 
-struct acpi_device {
-    struct hlist_node node;
-    char name[16];
+ସଂରଚନା acpi_device {
+    ସଂରଚନା hlist_ଗଣ୍ଠି ଗଣ୍ଠି;
+    ଅକ୍ଷର name[16];
     u8 *hid_aml;
     u8 *sta_aml;
     u8 *crs_data;
-    int crs_size;
+    ପୂର୍ଣ୍ଣସଂଖ୍ୟା crs_size;
 };
-static struct hlist_head acpi_devices VARVERIFY32INIT;
-static const int parse_dumpdevs = 0;
+ସ୍ଥିର ସଂରଚନା hlist_head acpi_devices VARVERIFY32INIT;
+ସ୍ଥିର ଅଚଳ ପୂର୍ଣ୍ଣସଂଖ୍ୟା parse_dumpdevs = 0;
 
-struct parse_state {
-    char name[32];
-    struct acpi_device *dev;
-    int error;
-    int depth;
+ସଂରଚନା parse_state {
+    ଅକ୍ଷର name[32];
+    ସଂରଚନା acpi_device *dev;
+    ପୂର୍ଣ୍ଣସଂଖ୍ୟା error;
+    ପୂର୍ଣ୍ଣସଂଖ୍ୟା depth;
 };
 
-static void parse_termlist(struct parse_state *s,
-                           u8 *ptr, int offset, int pkglength);
+ସ୍ଥିର ଶୂନ୍ୟ parse_termlist(ସଂରଚନା parse_state *s,
+                           u8 *ptr, ପୂର୍ଣ୍ଣସଂଖ୍ୟା offset, ପୂର୍ଣ୍ଣସଂଖ୍ୟା pkglength);
 
-static void hex(const u8 *ptr, int count, int lvl, const char *item)
+ସ୍ଥିର ଶୂନ୍ୟ hex(ଅଚଳ u8 *ptr, ପୂର୍ଣ୍ଣସଂଖ୍ୟା ଗଣନା_2, ପୂର୍ଣ୍ଣସଂଖ୍ୟା lvl, ଅଚଳ ଅକ୍ଷର *item)
 {
-    int l = 0, i;
+    ପୂର୍ଣ୍ଣସଂଖ୍ୟା l = 0, i;
 
-    do {
+    କର {
         dprintf(lvl, "%s: %04x:  ", item, l);
-        for (i = l; i < l+16; i += 4)
+        ପାଇଁ (i = l; i < l+16; i += 4)
             dprintf(lvl, "%02x %02x %02x %02x  ",
                     ptr[i+0], ptr[i+1], ptr[i+2], ptr[i+3]);
-        for (i = l; i < l+16; i++)
+        ପାଇଁ (i = l; i < l+16; i++)
             dprintf(lvl, "%c", (ptr[i] > 0x20 && ptr[i] < 0x80)
                     ? ptr[i] : '.');
         dprintf(lvl, "\n");
         l += 16;
-    } while (l < count);
+    } ଯେତେବେଳେ (l < ଗଣନା_2);
 }
 
-static u64 parse_resource_int(u8 *ptr, int count)
+ସ୍ଥିର u64 parse_resource_int(u8 *ptr, ପୂର୍ଣ୍ଣସଂଖ୍ୟା ଗଣନା_2)
 {
-    u64 value = 0;
-    int index = 0;
+    u64 ମୂଲ୍ୟ = 0;
+    ପୂର୍ଣ୍ଣସଂଖ୍ୟା index = 0;
 
-    for (index = 0; index < count; index++)
-        value |= (u64)ptr[index] << (index * 8);
-    return value;
+    ପାଇଁ (index = 0; index < ଗଣନା_2; index++)
+        ମୂଲ୍ୟ |= (u64)ptr[index] << (index * 8);
+    ଫେରନ୍ତୁ ମୂଲ୍ୟ;
 }
 
-static int parse_resource_bit(u8 *ptr, int count)
+ସ୍ଥିର ପୂର୍ଣ୍ଣସଂଖ୍ୟା parse_resource_bit(u8 *ptr, ପୂର୍ଣ୍ଣସଂଖ୍ୟା ଗଣନା_2)
 {
-    int bit;
+    ପୂର୍ଣ୍ଣସଂଖ୍ୟା bit;
 
-    for (bit = 0; bit < count*8; bit++)
-        if (ptr[bit/8] & (1 << (bit%8)))
-            return bit;
-    return 0;
+    ପାଇଁ (bit = 0; bit < ଗଣନା_2*8; bit++)
+        ଯଦି (ptr[bit/8] & (1 << (bit%8)))
+            ଫେରନ୍ତୁ bit;
+    ଫେରନ୍ତୁ 0;
 }
 
-static int parse_resource(u8 *ptr, int length, int *type, u64 *min, u64 *max)
+ସ୍ଥିର ପୂର୍ଣ୍ଣସଂଖ୍ୟା parse_resource(u8 *ptr, ପୂର୍ଣ୍ଣସଂଖ୍ୟା length, ପୂର୍ଣ୍ଣସଂଖ୍ୟା *type, u64 *min, u64 *max)
 {
-    int rname, rsize;
+    ପୂର୍ଣ୍ଣସଂଖ୍ୟା rname, rsize;
     u64 len;
 
     *type = -1;
     *min = 0;
     *max = 0;
     len = 0;
-    if (!(ptr[0] & 0x80)) {
+    ଯଦି (!(ptr[0] & 0x80)) {
         /* small resource */
         rname = (ptr[0] >> 3) & 0x0f;
         rsize = ptr[0] & 0x07;
         rsize++;
-        switch (rname) {
-        case 0x04: /* irq */
+        ବାଛ (rname) {
+        ସ୍ଥିତି 0x04: /* irq */
             *min = parse_resource_bit(ptr + 1, rsize);
             *max = *min;
             *type = 3;
-            break;
-        case 0x0f: /* end marker */
-            return 0;
-        case 0x08: /* io */
+            ଭାଙ୍ଗ;
+        ସ୍ଥିତି 0x0f: /* end marker */
+            ଫେରନ୍ତୁ 0;
+        ସ୍ଥିତି 0x08: /* io */
             *min = parse_resource_int(ptr + 2, 2);
             *max = parse_resource_int(ptr + 4, 2);
-            if (*min == *max) {
+            ଯଦି (*min == *max) {
                 *max = *min + ptr[7] - 1;
                 *type = 1;
             }
-            break;
-        case 0x09: /* fixed io */
+            ଭାଙ୍ଗ;
+        ସ୍ଥିତି 0x09: /* fixed io */
             *min = parse_resource_int(ptr + 2, 2);
             *max = *min + ptr[4] - 1;
             *type = 1;
-            break;
-        default:
+            ଭାଙ୍ଗ;
+        ପୂର୍ବନିର୍ଦ୍ଧାରିତ:
             dprintf(3, "%s: small: 0x%x (len %d)\n",
                     __func__, rname, rsize);
-            break;
+            ଭାଙ୍ଗ;
         }
-    } else {
+    } ଅନ୍ୟଥା {
         /* large resource */
         rname = ptr[0] & 0x7f;
         rsize = ptr[2] << 8 | ptr[1];
         rsize += 3;
-        switch (rname) {
-        case 0x06: /* 32-bit Fixed Location Memory Range Descriptor */
+        ବାଛ (rname) {
+        ସ୍ଥିତି 0x06: /* 32-bit Fixed Location Memory Range Descriptor */
             *min = parse_resource_int(ptr + 4, 4);
             len = parse_resource_int(ptr + 8, 4);
             *max = *min + len - 1;
             *type = 0;
-            break;
-        case 0x07: /* DWORD Address Space Descriptor */
+            ଭାଙ୍ଗ;
+        ସ୍ଥିତି 0x07: /* DWORD Address Space Descriptor */
             *min = parse_resource_int(ptr + 10, 4);
             *max = parse_resource_int(ptr + 14, 4);
             *type = ptr[3];
-            break;
-        case 0x08: /* WORD Address Space Descriptor */
+            ଭାଙ୍ଗ;
+        ସ୍ଥିତି 0x08: /* WORD Address Space Descriptor */
             *min = parse_resource_int(ptr +  8, 2);
             *max = parse_resource_int(ptr + 10, 2);
             *type = ptr[3];
-            break;
-        case 0x09: /* irq */
+            ଭାଙ୍ଗ;
+        ସ୍ଥିତି 0x09: /* irq */
             *min = parse_resource_int(ptr +  5, 4);
             *max = *min;
             *type = 3;
-            break;
-        case 0x0a: /* QWORD Address Space Descriptor */
+            ଭାଙ୍ଗ;
+        ସ୍ଥିତି 0x0a: /* QWORD Address Space Descriptor */
             *min = parse_resource_int(ptr + 14, 8);
             *max = parse_resource_int(ptr + 22, 8);
             *type = ptr[3];
-            break;
-        default:
+            ଭାଙ୍ଗ;
+        ପୂର୍ବନିର୍ଦ୍ଧାରିତ:
             dprintf(3, "%s: large: 0x%x (len %d)\n", __func__, rname, rsize);
-            break;
+            ଭାଙ୍ଗ;
         }
     }
-    return rsize;
+    ଫେରନ୍ତୁ rsize;
 }
 
-static int find_resource(u8 *ptr, int len, int kind, u64 *min, u64 *max)
+ସ୍ଥିର ପୂର୍ଣ୍ଣସଂଖ୍ୟା find_resource(u8 *ptr, ପୂର୍ଣ୍ଣସଂଖ୍ୟା len, ପୂର୍ଣ୍ଣସଂଖ୍ୟା kind, u64 *min, u64 *max)
 {
-    int type, size, offset = 0;
+    ପୂର୍ଣ୍ଣସଂଖ୍ୟା type, size, offset = 0;
 
-    do {
+    କର {
         size = parse_resource(ptr + offset, len - offset,
                               &type, min, max);
-        if (kind == type)
-            return 0;
+        ଯଦି (kind == type)
+            ଫେରନ୍ତୁ 0;
         offset += size;
-    } while (size > 0 && offset < len);
-    return -1;
+    } ଯେତେବେଳେ (size > 0 && offset < len);
+    ଫେରନ୍ତୁ -1;
 }
 
-static int print_resources(const char *prefix, u8 *ptr, int len)
+ସ୍ଥିର ପୂର୍ଣ୍ଣସଂଖ୍ୟା print_resources(ଅଚଳ ଅକ୍ଷର *prefix, u8 *ptr, ପୂର୍ଣ୍ଣସଂଖ୍ୟା len)
 {
-    static const char *typename[] = { "mem", "i/o", "bus" };
-    int type, size, offset = 0;
+    ସ୍ଥିର ଅଚଳ ଅକ୍ଷର *typename[] = { "mem", "i/o", "bus" };
+    ପୂର୍ଣ୍ଣସଂଖ୍ୟା type, size, offset = 0;
     u64 min, max;
 
-    do {
+    କର {
         size = parse_resource(ptr + offset, len - offset,
                               &type, &min, &max);
-        switch (type) {
-        case 0:
-        case 1:
-        case 2:
+        ବାଛ (type) {
+        ସ୍ଥିତି 0:
+        ସ୍ଥିତି 1:
+        ସ୍ଥିତି 2:
             dprintf(1, "%s%s 0x%llx -> 0x%llx\n",
                     prefix, typename[type], min, max);
-            break;
-        case 3:
+            ଭାଙ୍ଗ;
+        ସ୍ଥିତି 3:
             dprintf(1, "%sirq %lld\n", prefix, min);
-            break;
+            ଭାଙ୍ଗ;
         }
         offset += size;
-    } while (size > 0 && offset < len);
-    return -1;
+    } ଯେତେବେଳେ (size > 0 && offset < len);
+    ଫେରନ୍ତୁ -1;
 }
 
-static int parse_nameseg(u8 *ptr, char **dst)
+ସ୍ଥିର ପୂର୍ଣ୍ଣସଂଖ୍ୟା parse_nameseg(u8 *ptr, ଅକ୍ଷର **dst)
 {
-    if (dst && *dst) {
+    ଯଦି (dst && *dst) {
         *(dst[0]++) = ptr[0];
-        if (ptr[1] != '_')
+        ଯଦି (ptr[1] != '_')
             *(dst[0]++) = ptr[1];
-        if (ptr[2] != '_')
+        ଯଦି (ptr[2] != '_')
             *(dst[0]++) = ptr[2];
-        if (ptr[3] != '_')
+        ଯଦି (ptr[3] != '_')
             *(dst[0]++) = ptr[3];
         *(dst[0]) = 0;
     }
-    return 4;
+    ଫେରନ୍ତୁ 4;
 }
 
-static int parse_namestring(struct parse_state *s,
-                            u8 *ptr, const char *item)
+ସ୍ଥିର ପୂର୍ଣ୍ଣସଂଖ୍ୟା parse_namestring(ସଂରଚନା parse_state *s,
+                            u8 *ptr, ଅଚଳ ଅକ୍ଷର *item)
 {
-    char *dst = s->name;
-    int offset = 0;
-    int i, count;
+    ଅକ୍ଷର *dst = s->name;
+    ପୂର୍ଣ୍ଣସଂଖ୍ୟା offset = 0;
+    ପୂର୍ଣ୍ଣସଂଖ୍ୟା i, ଗଣନା_2;
 
-    for (;;) {
-        switch (ptr[offset]) {
-        case 0: /* null name */
+    ପାଇଁ (;;) {
+        ବାଛ (ptr[offset]) {
+        ସ୍ଥିତି 0: /* null name */
             offset++;
             *(dst++) = 0;
-            break;
-        case 0x2e:
+            ଭାଙ୍ଗ;
+        ସ୍ଥିତି 0x2e:
             offset++;
             offset += parse_nameseg(ptr + offset, &dst);
             *(dst++) = '.';
             offset += parse_nameseg(ptr + offset, &dst);
-            break;
-        case 0x2f:
+            ଭାଙ୍ଗ;
+        ସ୍ଥିତି 0x2f:
             offset++;
-            count = ptr[offset];
+            ଗଣନା_2 = ptr[offset];
             offset++;
-            for (i = 0; i < count; i++) {
-                if (i)
+            ପାଇଁ (i = 0; i < ଗଣନା_2; i++) {
+                ଯଦି (i)
                     *(dst++) = '.';
                 offset += parse_nameseg(ptr + offset, &dst);
             }
-            break;
-        case '\\':
+            ଭାଙ୍ଗ;
+        ସ୍ଥିତି '\\':
             *(dst++) = '\\';
             offset++;
-            continue;
-        case '^':
+            ଜାରି;
+        ସ୍ଥିତି '^':
             *(dst++) = '^';
             offset++;
-            continue;
-        case 'A' ... 'Z':
-        case '_':
+            ଜାରି;
+        ସ୍ଥିତି 'A' ... 'Z':
+        ସ୍ଥିତି '_':
             offset += parse_nameseg(ptr, &dst);
-            break;
-        default:
+            ଭାଙ୍ଗ;
+        ପୂର୍ବନିର୍ଦ୍ଧାରିତ:
             hex(ptr, 16, 3, __func__);
             s->error = 1;
-            break;
+            ଭାଙ୍ଗ;
         }
-        break;
+        ଭାଙ୍ଗ;
     }
     dprintf(5, "%s: %d %s '%s'\n", __func__, s->depth,
             item, s->name);
-    return offset;
+    ଫେରନ୍ତୁ offset;
 }
 
-static int parse_termarg_int(u8 *ptr, int *error, u64 *dst)
+ସ୍ଥିର ପୂର୍ଣ୍ଣସଂଖ୍ୟା parse_termarg_int(u8 *ptr, ପୂର୍ଣ୍ଣସଂଖ୍ୟା *error, u64 *dst)
 {
-    u64 value;
-    int offset = 1;
+    u64 ମୂଲ୍ୟ;
+    ପୂର୍ଣ୍ଣସଂଖ୍ୟା offset = 1;
 
-    switch (ptr[0]) {
-    case 0x00: /* zero */
-        value = 0;
-        break;
-    case 0x01: /* one */
-        value = 1;
-        break;
-    case 0x0a: /* byte prefix */
-        value = ptr[1];
+    ବାଛ (ptr[0]) {
+    ସ୍ଥିତି 0x00: /* zero */
+        ମୂଲ୍ୟ = 0;
+        ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x01: /* one */
+        ମୂଲ୍ୟ = 1;
+        ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x0a: /* byte prefix */
+        ମୂଲ୍ୟ = ptr[1];
         offset++;
-        break;
-    case 0x0b: /* word prefix */
-        value = ptr[1] |
+        ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x0b: /* word prefix */
+        ମୂଲ୍ୟ = ptr[1] |
             ((unsigned long)ptr[2] << 8);
         offset += 2;
-        break;
-    case 0x0c: /* dword prefix */
-        value = ptr[1] |
+        ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x0c: /* dword prefix */
+        ମୂଲ୍ୟ = ptr[1] |
             ((unsigned long)ptr[2] << 8) |
             ((unsigned long)ptr[3] << 16) |
             ((unsigned long)ptr[4] << 24);
         offset += 4;
-        break;
-    default:
-        value = 0;
+        ଭାଙ୍ଗ;
+    ପୂର୍ବନିର୍ଦ୍ଧାରିତ:
+        ମୂଲ୍ୟ = 0;
         hex(ptr, 16, 3, __func__);
-        if (error)
+        ଯଦି (error)
             *error = 1;
-        break;
+        ଭାଙ୍ଗ;
     }
 
-    if (dst)
-        *dst = value;
-    dprintf(5, "%s: 0x%llx\n", __func__, value);
-    return offset;
+    ଯଦି (dst)
+        *dst = ମୂଲ୍ୟ;
+    dprintf(5, "%s: 0x%llx\n", __func__, ମୂଲ୍ୟ);
+    ଫେରନ୍ତୁ offset;
 }
 
-static int parse_pkglength(u8 *ptr, int *pkglength)
+ସ୍ଥିର ପୂର୍ଣ୍ଣସଂଖ୍ୟା parse_pkglength(u8 *ptr, ପୂର୍ଣ୍ଣସଂଖ୍ୟା *pkglength)
 {
-    int offset = 2;
+    ପୂର୍ଣ୍ଣସଂଖ୍ୟା offset = 2;
 
     *pkglength = 0;
-    switch (ptr[0] >> 6) {
-    case 3:
+    ବାଛ (ptr[0] >> 6) {
+    ସ୍ଥିତି 3:
         *pkglength |= ptr[3] << 20;
         offset++;
-    case 2:
+    ସ୍ଥିତି 2:
         *pkglength |= ptr[2] << 12;
         offset++;
-    case 1:
+    ସ୍ଥିତି 1:
         *pkglength |= ptr[1] << 4;
         *pkglength |= ptr[0] & 0x0f;
-        return offset;
-    case 0:
-    default:
+        ଫେରନ୍ତୁ offset;
+    ସ୍ଥିତି 0:
+    ପୂର୍ବନିର୍ଦ୍ଧାରିତ:
         *pkglength |= ptr[0] & 0x3f;
-        return 1;
+        ଫେରନ୍ତୁ 1;
     }
 }
 
-static int parse_pkg_common(struct parse_state *s,
-                            u8 *ptr, const char *item, int *pkglength)
+ସ୍ଥିର ପୂର୍ଣ୍ଣସଂଖ୍ୟା parse_pkg_common(ସଂରଚନା parse_state *s,
+                            u8 *ptr, ଅଚଳ ଅକ୍ଷର *item, ପୂର୍ଣ୍ଣସଂଖ୍ୟା *pkglength)
 {
-    int offset;
+    ପୂର୍ଣ୍ଣସଂଖ୍ୟା offset;
 
     offset = parse_pkglength(ptr, pkglength);
     offset += parse_namestring(s, ptr + offset, item);
-    return offset;
+    ଫେରନ୍ତୁ offset;
 }
 
-static int parse_pkg_scope(struct parse_state *s,
+ସ୍ଥିର ପୂର୍ଣ୍ଣସଂଖ୍ୟା parse_pkg_scope(ସଂରଚନା parse_state *s,
                            u8 *ptr)
 {
-    int offset, pkglength;
+    ପୂର୍ଣ୍ଣସଂଖ୍ୟା offset, pkglength;
 
     offset = parse_pkg_common(s, ptr, "scope", &pkglength);
     parse_termlist(s, ptr, offset, pkglength);
-    return pkglength;
+    ଫେରନ୍ତୁ pkglength;
 }
 
-static int parse_pkg_device(struct parse_state *s,
+ସ୍ଥିର ପୂର୍ଣ୍ଣସଂଖ୍ୟା parse_pkg_device(ସଂରଚନା parse_state *s,
                             u8 *ptr)
 {
-    int offset, pkglength;
+    ପୂର୍ଣ୍ଣସଂଖ୍ୟା offset, pkglength;
 
     offset = parse_pkg_common(s, ptr, "device", &pkglength);
 
-    s->dev = malloc_tmp(sizeof(struct acpi_device));
-    if (!s->dev) {
+    s->dev = malloc_tmp(ଆକାର(ସଂରଚନା acpi_device));
+    ଯଦି (!s->dev) {
         warn_noalloc();
         s->error = 1;
-        return pkglength;
+        ଫେରନ୍ତୁ pkglength;
     }
 
-    memset(s->dev, 0, sizeof(struct acpi_device));
-    hlist_add_head(&s->dev->node, &acpi_devices);
-    strtcpy(s->dev->name, s->name, sizeof(s->name));
+    memset(s->dev, 0, ଆକାର(ସଂରଚନା acpi_device));
+    hlist_add_head(&s->dev->ଗଣ୍ଠି, &acpi_devices);
+    strtcpy(s->dev->name, s->name, ଆକାର(s->name));
     parse_termlist(s, ptr, offset, pkglength);
-    s->dev = NULL;
+    s->dev = ଖାଲି;
 
-    return pkglength;
+    ଫେରନ୍ତୁ pkglength;
 }
 
-static int parse_pkg_buffer(struct parse_state *s,
+ସ୍ଥିର ପୂର୍ଣ୍ଣସଂଖ୍ୟା parse_pkg_buffer(ସଂରଚନା parse_state *s,
                             u8 *ptr)
 {
     u64 blen;
-    int pkglength, offset;
+    ପୂର୍ଣ୍ଣସଂଖ୍ୟା pkglength, offset;
 
     offset = parse_pkglength(ptr, &pkglength);
     offset += parse_termarg_int(ptr + offset, &s->error, &blen);
-    if (s->dev && strcmp(s->name, "_CRS") == 0) {
+    ଯଦି (s->dev && strcmp(s->name, "_CRS") == 0) {
         s->dev->crs_data = ptr + offset;
         s->dev->crs_size = blen;
     }
-    return pkglength;
+    ଫେରନ୍ତୁ pkglength;
 }
 
-static int parse_pkg_skip(struct parse_state *s,
-                          u8 *ptr, int op, int name)
+ସ୍ଥିର ପୂର୍ଣ୍ଣସଂଖ୍ୟା parse_pkg_skip(ସଂରଚନା parse_state *s,
+                          u8 *ptr, ପୂର୍ଣ୍ଣସଂଖ୍ୟା op, ପୂର୍ଣ୍ଣସଂଖ୍ୟା name)
 {
-    int pkglength, offset;
-    char item[8];
+    ପୂର୍ଣ୍ଣସଂଖ୍ୟା pkglength, offset;
+    ଅକ୍ଷର item[8];
 
-    snprintf(item, sizeof(item), "op %x", op);
+    snprintf(item, ଆକାର(item), "op %x", op);
     offset = parse_pkglength(ptr, &pkglength);
-    if (name) {
+    ଯଦି (name) {
         parse_namestring(s, ptr + offset, item);
-    } else {
+    } ଅନ୍ୟଥା {
         dprintf(5, "%s: %s (%d)\n", __func__, item, pkglength);
     }
-    return pkglength;
+    ଫେରନ୍ତୁ pkglength;
 }
 
-static int parse_termobj(struct parse_state *s,
+ସ୍ଥିର ପୂର୍ଣ୍ଣସଂଖ୍ୟା parse_termobj(ସଂରଚନା parse_state *s,
                          u8 *ptr)
 {
-    int offset = 1;
+    ପୂର୍ଣ୍ଣସଂଖ୍ୟା offset = 1;
 
-    if (s->depth == 16) {
+    ଯଦି (s->depth == 16) {
         dprintf(1, "%s: deep recursion\n", __func__);
         s->error = 1;
-        return offset;
+        ଫେରନ୍ତୁ offset;
     }
 
     s->depth++;
-    switch (ptr[0]) {
-    case 0x00: /* zero */
-        break;
-    case 0x01: /* one */
-        break;
-    case 0x06: /* AliasOp */
+    ବାଛ (ptr[0]) {
+    ସ୍ଥିତି 0x00: /* zero */
+        ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x01: /* one */
+        ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x06: /* AliasOp */
         offset += parse_namestring(s, ptr + offset, "SourceObject");
         offset += parse_namestring(s, ptr + offset, "AliasObject");
-        break;
-    case 0x08: /* name op */
+        ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x08: /* name op */
         offset += parse_namestring(s, ptr + offset, "name");
         offset += parse_termobj(s, ptr + offset);
-        if (s->dev && strcmp(s->name, "_HID") == 0)
+        ଯଦି (s->dev && strcmp(s->name, "_HID") == 0)
             s->dev->hid_aml = ptr;
-        if (s->dev && strcmp(s->name, "_STA") == 0)
+        ଯଦି (s->dev && strcmp(s->name, "_STA") == 0)
             s->dev->sta_aml = ptr;
-        break;
-    case 0x0a: /* byte prefix */
+        ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x0a: /* byte prefix */
         offset++;
-        break;
-    case 0x0b: /* word prefix */
+        ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x0b: /* word prefix */
         offset += 2;
-        break;
-    case 0x0c: /* dword prefix */
+        ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x0c: /* dword prefix */
         offset += 4;
-        break;
-    case 0x0d: /* string prefix */
-        while (ptr[offset])
+        ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x0d: /* string prefix */
+        ଯେତେବେଳେ (ptr[offset])
             offset++;
         offset++;
-        break;
-    case 0x10: /* scope op */
+        ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x10: /* scope op */
         offset += parse_pkg_scope(s, ptr + offset);
-        break;
-    case 0x11: /* buffer op */
+        ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x11: /* buffer op */
         offset += parse_pkg_buffer(s, ptr + offset);
-        break;
-    case 0x12: /* package op */
-    case 0x13: /* var package op */
+        ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x12: /* package op */
+    ସ୍ଥିତି 0x13: /* var package op */
         offset += parse_pkg_skip(s, ptr + offset, ptr[0], 0);
-        break;
-    case 0x14: /* method op */
+        ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x14: /* method op */
         offset += parse_pkg_skip(s, ptr + offset, ptr[0], 1);
-        if (s->dev && strcmp(s->name, "_STA") == 0)
+        ଯଦି (s->dev && strcmp(s->name, "_STA") == 0)
             s->dev->sta_aml = ptr;
-        break;
-    case 0x5b: /* ext op prefix */
+        ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x5b: /* ext op prefix */
         offset++;
-        switch (ptr[1]) {
-        case 0x01: /* mutex op */
+        ବାଛ (ptr[1]) {
+        ସ୍ଥିତି 0x01: /* mutex op */
             offset += parse_namestring(s, ptr + offset, "mutex");
             offset++; /* sync flags */
-            break;
-        case 0x80: /* op region op */
+            ଭାଙ୍ଗ;
+        ସ୍ଥିତି 0x80: /* op region op */
             offset += parse_namestring(s, ptr + offset, "op region");
             offset++; /* region space */
-            offset += parse_termarg_int(ptr + offset, &s->error, NULL);
-            offset += parse_termarg_int(ptr + offset, &s->error, NULL);
-            break;
-        case 0x81: /* field op */
-        case 0x83: /* processor op */
-        case 0x84: /* power resource op */
-        case 0x85: /* thermal zone op */
+            offset += parse_termarg_int(ptr + offset, &s->error, ଖାଲି);
+            offset += parse_termarg_int(ptr + offset, &s->error, ଖାଲି);
+            ଭାଙ୍ଗ;
+        ସ୍ଥିତି 0x81: /* field op */
+        ସ୍ଥିତି 0x83: /* processor op */
+        ସ୍ଥିତି 0x84: /* power resource op */
+        ସ୍ଥିତି 0x85: /* thermal zone op */
             offset += parse_pkg_skip(s, ptr + offset, 0x5b00 | ptr[1], 1);
-            break;
-        case 0x82: /* device op */
+            ଭାଙ୍ଗ;
+        ସ୍ଥିତି 0x82: /* device op */
             offset += parse_pkg_device(s, ptr + offset);
-            break;
-        default:
+            ଭାଙ୍ଗ;
+        ପୂର୍ବନିର୍ଦ୍ଧାରିତ:
             hex(ptr, 16, 3, __func__);
             s->error = 1;
-            break;
+            ଭାଙ୍ଗ;
         }
-        break;
-    default:
+        ଭାଙ୍ଗ;
+    ପୂର୍ବନିର୍ଦ୍ଧାରିତ:
         hex(ptr, 16, 3, __func__);
         s->error = 1;
-        break;
+        ଭାଙ୍ଗ;
     }
     s->depth--;
 
-    return offset;
+    ଫେରନ୍ତୁ offset;
 }
 
-static void parse_termlist(struct parse_state *s,
-                           u8 *ptr, int offset, int pkglength)
+ସ୍ଥିର ଶୂନ୍ୟ parse_termlist(ସଂରଚନା parse_state *s,
+                           u8 *ptr, ପୂର୍ଣ୍ଣସଂଖ୍ୟା offset, ପୂର୍ଣ୍ଣସଂଖ୍ୟା pkglength)
 {
-    for (;;) {
+    ପାଇଁ (;;) {
         offset += parse_termobj(s, ptr + offset);
-        if (offset == pkglength)
-            return;
-        if (offset > pkglength) {
+        ଯଦି (offset == pkglength)
+            ଫେରନ୍ତୁ;
+        ଯଦି (offset > pkglength) {
             dprintf(1, "%s: overrun: %d/%d\n", __func__,
                     offset, pkglength);
             s->error = 1;
-            return;
+            ଫେରନ୍ତୁ;
         }
-        if (s->error) {
+        ଯଦି (s->error) {
             dprintf(1, "%s: parse error, skip from %d/%d\n", __func__,
                     offset, pkglength);
             s->error = 0;
-            return;
+            ଫେରନ୍ତୁ;
         }
     }
 }
 
-static struct acpi_device *acpi_dsdt_find(struct acpi_device *prev,
-                                          const u8 *aml1, int size1,
-                                          const u8 *aml2, int size2)
+ସ୍ଥିର ସଂରଚନା acpi_device *acpi_dsdt_find(ସଂରଚନା acpi_device *prev,
+                                          ଅଚଳ u8 *aml1, ପୂର୍ଣ୍ଣସଂଖ୍ୟା size1,
+                                          ଅଚଳ u8 *aml2, ପୂର୍ଣ୍ଣସଂଖ୍ୟା size2)
 {
-    struct acpi_device *dev;
-    struct hlist_node *node;
+    ସଂରଚନା acpi_device *dev;
+    ସଂରଚନା hlist_ଗଣ୍ଠି *ଗଣ୍ଠି;
 
-    if (!prev)
-        node = acpi_devices.first;
-    else
-        node = prev->node.next;
+    ଯଦି (!prev)
+        ଗଣ୍ଠି = acpi_devices.first;
+    ଅନ୍ୟଥା
+        ଗଣ୍ଠି = prev->ଗଣ୍ଠି.next;
 
-    for (; node != NULL; node = dev->node.next) {
-        dev = container_of(node, struct acpi_device, node);
-        if (!aml1 && !aml2)
-            return dev;
-        if (!dev->hid_aml)
-            continue;
-        if (aml1 && memcmp(dev->hid_aml + 5, aml1, size1) == 0)
-            return dev;
-        if (aml2 && memcmp(dev->hid_aml + 5, aml2, size2) == 0)
-            return dev;
+    ପାଇଁ (; ଗଣ୍ଠି != ଖାଲି; ଗଣ୍ଠି = dev->ଗଣ୍ଠି.next) {
+        dev = container_of(ଗଣ୍ଠି, ସଂରଚନା acpi_device, ଗଣ୍ଠି);
+        ଯଦି (!aml1 && !aml2)
+            ଫେରନ୍ତୁ dev;
+        ଯଦି (!dev->hid_aml)
+            ଜାରି;
+        ଯଦି (aml1 && memcmp(dev->hid_aml + 5, aml1, size1) == 0)
+            ଫେରନ୍ତୁ dev;
+        ଯଦି (aml2 && memcmp(dev->hid_aml + 5, aml2, size2) == 0)
+            ଫେରନ୍ତୁ dev;
     }
-    return NULL;
+    ଫେରନ୍ତୁ ଖାଲି;
 }
 
-static int acpi_dsdt_present(struct acpi_device *dev)
+ସ୍ଥିର ପୂର୍ଣ୍ଣସଂଖ୍ୟା acpi_dsdt_present(ସଂରଚନା acpi_device *dev)
 {
-    if (!dev)
-        return 0; /* no */
-    if (!dev->sta_aml)
-        return 1; /* yes */
-    if (dev->sta_aml[0] == 0x14)
-        return -1; /* unknown (can't evaluate method) */
-    if (dev->sta_aml[0] == 0x08) {
-        u64 value = 0;
-        parse_termarg_int(dev->sta_aml + 5, NULL, &value);
-        if (value == 0)
-            return 0; /* no */
-        else
-            return 1; /* yes */
+    ଯଦି (!dev)
+        ଫେରନ୍ତୁ 0; /* no */
+    ଯଦି (!dev->sta_aml)
+        ଫେରନ୍ତୁ 1; /* yes */
+    ଯଦି (dev->sta_aml[0] == 0x14)
+        ଫେରନ୍ତୁ -1; /* unknown (can't evaluate method) */
+    ଯଦି (dev->sta_aml[0] == 0x08) {
+        u64 ମୂଲ୍ୟ = 0;
+        parse_termarg_int(dev->sta_aml + 5, ଖାଲି, &ମୂଲ୍ୟ);
+        ଯଦି (ମୂଲ୍ୟ == 0)
+            ଫେରନ୍ତୁ 0; /* no */
+        ଅନ୍ୟଥା
+            ଫେରନ୍ତୁ 1; /* yes */
     }
-    return -1; /* unknown (should not happen) */
+    ଫେରନ୍ତୁ -1; /* unknown (should not happen) */
 }
 
 /****************************************************************
  * DSDT parser, public interface
  ****************************************************************/
 
-struct acpi_device *acpi_dsdt_find_string(struct acpi_device *prev,
-                                          const char *hid)
+ସଂରଚନା acpi_device *acpi_dsdt_find_string(ସଂରଚନା acpi_device *prev,
+                                          ଅଚଳ ଅକ୍ଷର *hid)
 {
-    if (!CONFIG_ACPI_PARSE)
-        return NULL;
+    ଯଦି (!CONFIG_ACPI_PARSE)
+        ଫେରନ୍ତୁ ଖାଲି;
 
     u8 aml[10];
-    int len = snprintf((char*)aml, sizeof(aml), "\x0d%s", hid);
-    return acpi_dsdt_find(prev, aml, len, NULL, 0);
+    ପୂର୍ଣ୍ଣସଂଖ୍ୟା len = snprintf((ଅକ୍ଷର*)aml, ଆକାର(aml), "\x0d%s", hid);
+    ଫେରନ୍ତୁ acpi_dsdt_find(prev, aml, len, ଖାଲି, 0);
 }
 
-struct acpi_device *acpi_dsdt_find_eisaid(struct acpi_device *prev, u16 eisaid)
+ସଂରଚନା acpi_device *acpi_dsdt_find_eisaid(ସଂରଚନା acpi_device *prev, u16 eisaid)
 {
-    if (!CONFIG_ACPI_PARSE)
-        return NULL;
+    ଯଦି (!CONFIG_ACPI_PARSE)
+        ଫେରନ୍ତୁ ଖାଲି;
     u8 aml1[] = {
         0x0c, 0x41, 0xd0,
         eisaid >> 8,
         eisaid & 0xff
     };
     u8 aml2[10];
-    int len2 = snprintf((char*)aml2, sizeof(aml2), "\x0dPNP%04X", eisaid);
-    return acpi_dsdt_find(prev, aml1, 5, aml2, len2);
+    ପୂର୍ଣ୍ଣସଂଖ୍ୟା len2 = snprintf((ଅକ୍ଷର*)aml2, ଆକାର(aml2), "\x0dPNP%04X", eisaid);
+    ଫେରନ୍ତୁ acpi_dsdt_find(prev, aml1, 5, aml2, len2);
 }
 
-char *acpi_dsdt_name(struct acpi_device *dev)
+ଅକ୍ଷର *acpi_dsdt_name(ସଂରଚନା acpi_device *dev)
 {
-    if (!CONFIG_ACPI_PARSE || !dev)
-        return NULL;
-    return dev->name;
+    ଯଦି (!CONFIG_ACPI_PARSE || !dev)
+        ଫେରନ୍ତୁ ଖାଲି;
+    ଫେରନ୍ତୁ dev->name;
 }
 
-int acpi_dsdt_find_io(struct acpi_device *dev, u64 *min, u64 *max)
+ପୂର୍ଣ୍ଣସଂଖ୍ୟା acpi_dsdt_find_io(ସଂରଚନା acpi_device *dev, u64 *min, u64 *max)
 {
-    if (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
-        return -1;
-    return find_resource(dev->crs_data, dev->crs_size,
+    ଯଦି (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
+        ଫେରନ୍ତୁ -1;
+    ଫେରନ୍ତୁ find_resource(dev->crs_data, dev->crs_size,
                          1 /* I/O */, min, max);
 }
 
-int acpi_dsdt_find_mem(struct acpi_device *dev, u64 *min, u64 *max)
+ପୂର୍ଣ୍ଣସଂଖ୍ୟା acpi_dsdt_find_mem(ସଂରଚନା acpi_device *dev, u64 *min, u64 *max)
 {
-    if (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
-        return -1;
-    return find_resource(dev->crs_data, dev->crs_size,
+    ଯଦି (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
+        ଫେରନ୍ତୁ -1;
+    ଫେରନ୍ତୁ find_resource(dev->crs_data, dev->crs_size,
                          0 /* mem */, min, max);
 }
 
-int acpi_dsdt_find_irq(struct acpi_device *dev, u64 *irq)
+ପୂର୍ଣ୍ଣସଂଖ୍ୟା acpi_dsdt_find_irq(ସଂରଚନା acpi_device *dev, u64 *irq)
 {
     u64 max;
-    if (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
-        return -1;
-    return find_resource(dev->crs_data, dev->crs_size,
+    ଯଦି (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
+        ଫେରନ୍ତୁ -1;
+    ଫେରନ୍ତୁ find_resource(dev->crs_data, dev->crs_size,
                          3 /* irq */, irq, &max);
 }
 
-int acpi_dsdt_present_eisaid(u16 eisaid)
+ପୂର୍ଣ୍ଣସଂଖ୍ୟା acpi_dsdt_present_eisaid(u16 eisaid)
 {
-    if (!CONFIG_ACPI_PARSE)
-        return -1; /* unknown */
-    if (hlist_empty(&acpi_devices))
-        return -1; /* unknown (no dsdt table) */
+    ଯଦି (!CONFIG_ACPI_PARSE)
+        ଫେରନ୍ତୁ -1; /* unknown */
+    ଯଦି (hlist_empty(&acpi_devices))
+        ଫେରନ୍ତୁ -1; /* unknown (no dsdt table) */
 
-    struct acpi_device *dev = acpi_dsdt_find_eisaid(NULL, eisaid);
-    return acpi_dsdt_present(dev);
+    ସଂରଚନା acpi_device *dev = acpi_dsdt_find_eisaid(ଖାଲି, eisaid);
+    ଫେରନ୍ତୁ acpi_dsdt_present(dev);
 }
 
-void acpi_dsdt_parse(void)
+ଶୂନ୍ୟ acpi_dsdt_parse(ଶୂନ୍ୟ)
 {
-    if (!CONFIG_ACPI_PARSE)
-        return;
+    ଯଦି (!CONFIG_ACPI_PARSE)
+        ଫେରନ୍ତୁ;
 
-    struct fadt_descriptor_rev1 *fadt = find_acpi_table(FACP_SIGNATURE);
-    if (!fadt)
-        return;
-    u8 *dsdt = (void*)(fadt->dsdt);
-    if (!dsdt)
-        return;
+    ସଂରଚନା fadt_descriptor_rev1 *fadt = find_acpi_table(FACP_SIGNATURE);
+    ଯଦି (!fadt)
+        ଫେରନ୍ତୁ;
+    u8 *dsdt = (ଶୂନ୍ୟ*)(fadt->dsdt);
+    ଯଦି (!dsdt)
+        ଫେରନ୍ତୁ;
 
     u32 length = *(u32*)(dsdt + 4);
     u32 offset = 0x24;
     dprintf(1, "ACPI: parse DSDT at %p (len %d)\n", dsdt, length);
 
-    struct parse_state s;
-    memset(&s, 0, sizeof(s));
+    ସଂରଚନା parse_state s;
+    memset(&s, 0, ଆକାର(s));
     parse_termlist(&s, dsdt, offset, length);
 
-    if (!parse_dumpdevs)
-        return;
+    ଯଦି (!parse_dumpdevs)
+        ଫେରନ୍ତୁ;
 
-    struct acpi_device *dev;
+    ସଂରଚନା acpi_device *dev;
     dprintf(1, "ACPI: dumping dsdt devices\n");
-    for (dev = acpi_dsdt_find(NULL, NULL, 0, NULL, 0);
-         dev != NULL;
-         dev = acpi_dsdt_find(dev, NULL, 0, NULL, 0)) {
+    ପାଇଁ (dev = acpi_dsdt_find(ଖାଲି, ଖାଲି, 0, ଖାଲି, 0);
+         dev != ଖାଲି;
+         dev = acpi_dsdt_find(dev, ଖାଲି, 0, ଖାଲି, 0)) {
         dprintf(1, "    %s", acpi_dsdt_name(dev));
-        if (dev->hid_aml)
+        ଯଦି (dev->hid_aml)
             dprintf(1, ", hid");
-        if (dev->sta_aml)
+        ଯଦି (dev->sta_aml)
             dprintf(1, ", sta (0x%x)", dev->sta_aml[0]);
-        if (dev->crs_data)
+        ଯଦି (dev->crs_data)
             dprintf(1, ", crs");
         dprintf(1, "\n");
-        if (dev->crs_data)
+        ଯଦି (dev->crs_data)
             print_resources("        ", dev->crs_data, dev->crs_size);
     }
 }

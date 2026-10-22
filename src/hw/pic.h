@@ -7,7 +7,7 @@
 #ifndef __PIC_H
 #define __PIC_H
 
-#include "x86.h" // outb
+#ଅନ୍ତର୍ଭାଵ "x86.h" // outb
 
 #define PORT_PIC1_CMD          0x0020
 #define PORT_PIC1_DATA         0x0021
@@ -31,30 +31,30 @@
 #define BIOS_HWIRQ0_VECTOR 0x08
 #define BIOS_HWIRQ8_VECTOR 0x70
 
-static inline void
-pic_eoi1(void)
+ସ୍ଥିର ଧାଡ଼ିଭିତରେ ଶୂନ୍ୟ
+pic_eoi1(ଶୂନ୍ୟ)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return;
+    ଯଦି (!CONFIG_HARDWARE_IRQ)
+        ଫେରନ୍ତୁ;
     // Send eoi (select OCW2 + eoi)
     outb(0x20, PORT_PIC1_CMD);
 }
 
-static inline void
-pic_eoi2(void)
+ସ୍ଥିର ଧାଡ଼ିଭିତରେ ଶୂନ୍ୟ
+pic_eoi2(ଶୂନ୍ୟ)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return;
+    ଯଦି (!CONFIG_HARDWARE_IRQ)
+        ଫେରନ୍ତୁ;
     // Send eoi (select OCW2 + eoi)
     outb(0x20, PORT_PIC2_CMD);
     pic_eoi1();
 }
 
-u16 pic_irqmask_read(void);
-void pic_irqmask_write(u16 mask);
-void pic_irqmask_mask(u16 off, u16 on);
-void pic_reset(u8 irq0, u8 irq8);
-void pic_setup(void);
-void enable_hwirq(int hwirq, struct segoff_s func);
+u16 pic_irqmask_read(ଶୂନ୍ୟ);
+ଶୂନ୍ୟ pic_irqmask_write(u16 mask);
+ଶୂନ୍ୟ pic_irqmask_mask(u16 off, u16 on);
+ଶୂନ୍ୟ pic_reset(u8 irq0, u8 irq8);
+ଶୂନ୍ୟ pic_setup(ଶୂନ୍ୟ);
+ଶୂନ୍ୟ enable_hwirq(ପୂର୍ଣ୍ଣସଂଖ୍ୟା hwirq, ସଂରଚନା segoff_s func);
 
 #endif // pic.h

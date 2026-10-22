@@ -1,89 +1,89 @@
 #ifndef __LIST_H
 #define __LIST_H
 
-#include "types.h" // container_of
+#ଅନ୍ତର୍ଭାଵ "types.h" // container_of
 
 
 /****************************************************************
  * hlist - Double linked lists with a single pointer list head
  ****************************************************************/
 
-struct hlist_node {
-    struct hlist_node *next, **pprev;
+ସଂରଚନା hlist_ଗଣ୍ଠି {
+    ସଂରଚନା hlist_ଗଣ୍ଠି *next, **pprev;
 };
 
-struct hlist_head {
-    struct hlist_node *first;
+ସଂରଚନା hlist_head {
+    ସଂରଚନା hlist_ଗଣ୍ଠି *first;
 };
 
-static inline int
-hlist_empty(const struct hlist_head *h)
+ସ୍ଥିର ଧାଡ଼ିଭିତରେ ପୂର୍ଣ୍ଣସଂଖ୍ୟା
+hlist_empty(ଅଚଳ ସଂରଚନା hlist_head *h)
 {
-    return !h->first;
+    ଫେରନ୍ତୁ !h->first;
 }
 
-static inline void
-hlist_del(struct hlist_node *n)
+ସ୍ଥିର ଧାଡ଼ିଭିତରେ ଶୂନ୍ୟ
+hlist_del(ସଂରଚନା hlist_ଗଣ୍ଠି *n)
 {
-    struct hlist_node *next = n->next;
-    struct hlist_node **pprev = n->pprev;
+    ସଂରଚନା hlist_ଗଣ୍ଠି *next = n->next;
+    ସଂରଚନା hlist_ଗଣ୍ଠି **pprev = n->pprev;
     *pprev = next;
-    if (next)
+    ଯଦି (next)
         next->pprev = pprev;
 }
 
-static inline void
-hlist_add(struct hlist_node *n, struct hlist_node **pprev)
+ସ୍ଥିର ଧାଡ଼ିଭିତରେ ଶୂନ୍ୟ
+hlist_add(ସଂରଚନା hlist_ଗଣ୍ଠି *n, ସଂରଚନା hlist_ଗଣ୍ଠି **pprev)
 {
-    struct hlist_node *next = *pprev;
+    ସଂରଚନା hlist_ଗଣ୍ଠି *next = *pprev;
     n->pprev = pprev;
     n->next = next;
-    if (next)
+    ଯଦି (next)
         next->pprev = &n->next;
     *pprev = n;
 }
 
-static inline void
-hlist_add_head(struct hlist_node *n, struct hlist_head *h)
+ସ୍ଥିର ଧାଡ଼ିଭିତରେ ଶୂନ୍ୟ
+hlist_add_head(ସଂରଚନା hlist_ଗଣ୍ଠି *n, ସଂରଚନା hlist_head *h)
 {
     hlist_add(n, &h->first);
 }
 
-static inline void
-hlist_add_before(struct hlist_node *n, struct hlist_node *next)
+ସ୍ଥିର ଧାଡ଼ିଭିତରେ ଶୂନ୍ୟ
+hlist_add_before(ସଂରଚନା hlist_ଗଣ୍ଠି *n, ସଂରଚନା hlist_ଗଣ୍ଠି *next)
 {
     hlist_add(n, next->pprev);
 }
 
-static inline void
-hlist_add_after(struct hlist_node *n, struct hlist_node *prev)
+ସ୍ଥିର ଧାଡ଼ିଭିତରେ ଶୂନ୍ୟ
+hlist_add_after(ସଂରଚନା hlist_ଗଣ୍ଠି *n, ସଂରଚନା hlist_ଗଣ୍ଠି *prev)
 {
     hlist_add(n, &prev->next);
 }
 
-static inline void
-hlist_replace(struct hlist_node *old, struct hlist_node *new)
+ସ୍ଥିର ଧାଡ଼ିଭିତରେ ଶୂନ୍ୟ
+hlist_replace(ସଂରଚନା hlist_ଗଣ୍ଠି *old, ସଂରଚନା hlist_ଗଣ୍ଠି *new)
 {
     new->next = old->next;
-    if (new->next)
+    ଯଦି (new->next)
         new->next->pprev = &new->next;
     new->pprev = old->pprev;
     *new->pprev = new;
 }
 
 #define hlist_for_each_entry(pos, head, member)                         \
-    for (pos = container_of((head)->first, typeof(*pos), member)        \
-         ; pos != container_of(NULL, typeof(*pos), member)              \
+    ପାଇଁ (pos = container_of((head)->first, typeof(*pos), member)        \
+         ; pos != container_of(ଖାଲି, typeof(*pos), member)              \
          ; pos = container_of(pos->member.next, typeof(*pos), member))
 
 #define hlist_for_each_entry_safe(pos, n, head, member)                 \
-    for (pos = container_of((head)->first, typeof(*pos), member)        \
-         ; pos != container_of(NULL, typeof(*pos), member)              \
+    ପାଇଁ (pos = container_of((head)->first, typeof(*pos), member)        \
+         ; pos != container_of(ଖାଲି, typeof(*pos), member)              \
              && ({ n = pos->member.next; 1; })                          \
          ; pos = container_of(n, typeof(*pos), member))
 
 #define hlist_for_each_entry_pprev(pos, pprev, head, member)            \
-    for (pprev = &(head)->first                                         \
+    ପାଇଁ (pprev = &(head)->first                                         \
          ; *pprev && ({ pos=container_of(*pprev, typeof(*pos), member); 1; }) \
          ; pprev = &(*pprev)->next)
 

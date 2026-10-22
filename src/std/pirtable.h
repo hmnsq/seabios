@@ -1,22 +1,22 @@
 #ifndef __PIRTABLE_H
 #define __PIRTABLE_H
 
-#include "types.h" // u32
+#ଅନ୍ତର୍ଭାଵ "types.h" // u32
 
-struct link_info {
+ସଂରଚନା link_info {
     u8 link;
     u16 bitmap;
 } PACKED;
 
-struct pir_slot {
+ସଂରଚନା pir_slot {
     u8 bus;
     u8 dev;
-    struct link_info links[4];
+    ସଂରଚନା link_info links[4];
     u8 slot_nr;
     u8 reserved;
 } PACKED;
 
-struct pir_header {
+ସଂରଚନା pir_header {
     u32 signature;
     u16 version;
     u16 size;
@@ -27,7 +27,7 @@ struct pir_header {
     u32 miniport_data;
     u8 reserved[11];
     u8 checksum;
-    struct pir_slot slots[0];
+    ସଂରଚନା pir_slot slots[0];
 } PACKED;
 
 #define PIR_SIGNATURE 0x52495024 // $PIR

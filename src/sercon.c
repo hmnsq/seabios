@@ -4,39 +4,39 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // SET_BDA
-#include "bregs.h" // struct bregs
-#include "stacks.h" // yield
-#include "output.h" // dprintf
-#include "util.h" // irqtimer_calc_ticks
-#include "string.h" // memcpy
-#include "romfile.h" // romfile_loadint
-#include "hw/serialio.h" // SEROFF_IER
-#include "cp437.h"
+#ଅନ୍ତର୍ଭାଵ "biosvar.h" // SET_BDA
+#ଅନ୍ତର୍ଭାଵ "bregs.h" // struct bregs
+#ଅନ୍ତର୍ଭାଵ "stacks.h" // yield
+#ଅନ୍ତର୍ଭାଵ "output.h" // dprintf
+#ଅନ୍ତର୍ଭାଵ "util.h" // irqtimer_calc_ticks
+#ଅନ୍ତର୍ଭାଵ "string.h" // memcpy
+#ଅନ୍ତର୍ଭାଵ "romfile.h" // romfile_loadint
+#ଅନ୍ତର୍ଭାଵ "hw/serialio.h" // SEROFF_IER
+#ଅନ୍ତର୍ଭାଵ "cp437.h"
 
-static u8 video_rows(void)
+ସ୍ଥିର u8 video_rows(ଶୂନ୍ୟ)
 {
-    return GET_BDA(video_rows)+1;
+    ଫେରନ୍ତୁ GET_BDA(video_rows)+1;
 }
 
-static u8 video_cols(void)
+ସ୍ଥିର u8 video_cols(ଶୂନ୍ୟ)
 {
-    return GET_BDA(video_cols);
+    ଫେରନ୍ତୁ GET_BDA(video_cols);
 }
 
-static u8 cursor_pos_col(void)
-{
-    u16 pos = GET_BDA(cursor_pos[0]);
-    return pos & 0xff;
-}
-
-static u8 cursor_pos_row(void)
+ସ୍ଥିର u8 cursor_pos_col(ଶୂନ୍ୟ)
 {
     u16 pos = GET_BDA(cursor_pos[0]);
-    return (pos >> 8) & 0xff;
+    ଫେରନ୍ତୁ pos & 0xff;
 }
 
-static void cursor_pos_set(u8 row, u8 col)
+ସ୍ଥିର u8 cursor_pos_row(ଶୂନ୍ୟ)
+{
+    u16 pos = GET_BDA(cursor_pos[0]);
+    ଫେରନ୍ତୁ (pos >> 8) & 0xff;
+}
+
+ସ୍ଥିର ଶୂନ୍ୟ cursor_pos_set(u8 row, u8 col)
 {
     u16 pos = ((u16)row << 8) | col;
     SET_BDA(cursor_pos[0], pos);
@@ -49,7 +49,7 @@ static void cursor_pos_set(u8 row, u8 col)
 VARLOW u16 sercon_port;
 VARLOW u8 sercon_split;
 VARLOW u8 sercon_enable;
-VARFSEG struct segoff_s sercon_real_vga_handler;
+VARFSEG ସଂରଚନା segoff_s sercon_real_vga_handler;
 
 /*
  * We have a small output buffer here, for lazy output.  That allows
@@ -67,45 +67,45 @@ VARLOW u8 sercon_row_last;
 VARLOW u8 sercon_char;
 VARLOW u8 sercon_attr = 0x07;
 
-static VAR16 u8 sercon_cmap[8] = { '0', '4', '2', '6', '1', '5', '3', '7' };
+ସ୍ଥିର VAR16 u8 sercon_cmap[8] = { '0', '4', '2', '6', '1', '5', '3', '7' };
 
-static int sercon_splitmode(void)
+ସ୍ଥିର ପୂର୍ଣ୍ଣସଂଖ୍ୟା sercon_splitmode(ଶୂନ୍ୟ)
 {
-    return GET_LOW(sercon_split);
+    ଫେରନ୍ତୁ GET_ତଳ(sercon_split);
 }
 
-static void sercon_putchar(u8 chr)
+ସ୍ଥିର ଶୂନ୍ୟ sercon_putchar(u8 chr)
 {
-    u16 addr = GET_LOW(sercon_port);
+    u16 addr = GET_ତଳ(sercon_port);
     u32 end = irqtimer_calc_ticks(0x0a);
 
-#if 0
+#ଯଦି 0
     /* for visual control sequence debugging */
-    if (chr == '\x1b')
+    ଯଦି (chr == '\x1b')
         chr = '*';
 #endif
 
-    for (;;) {
+    ପାଇଁ (;;) {
         u8 lsr = inb(addr+SEROFF_LSR);
-        if ((lsr & 0x60) == 0x60) {
+        ଯଦି ((lsr & 0x60) == 0x60) {
             // Success - can write data
             outb(chr, addr+SEROFF_DATA);
-            break;
+            ଭାଙ୍ଗ;
         }
-        if (irqtimer_check(end)) {
-            break;
+        ଯଦି (irqtimer_check(end)) {
+            ଭାଙ୍ଗ;
         }
         yield();
     }
 }
 
-static void sercon_term_reset(void)
+ସ୍ଥିର ଶୂନ୍ୟ sercon_term_reset(ଶୂନ୍ୟ)
 {
     sercon_putchar('\x1b');
     sercon_putchar('c');
 }
 
-static void sercon_term_clear_screen(void)
+ସ୍ଥିର ଶୂନ୍ୟ sercon_term_clear_screen(ଶୂନ୍ୟ)
 {
     sercon_putchar('\x1b');
     sercon_putchar('[');
@@ -113,7 +113,7 @@ static void sercon_term_clear_screen(void)
     sercon_putchar('J');
 }
 
-static void sercon_term_no_linewrap(void)
+ସ୍ଥିର ଶୂନ୍ୟ sercon_term_no_linewrap(ଶୂନ୍ୟ)
 {
     sercon_putchar('\x1b');
     sercon_putchar('[');
@@ -122,7 +122,7 @@ static void sercon_term_no_linewrap(void)
     sercon_putchar('l');
 }
 
-static void sercon_term_cursor_goto(u8 row, u8 col)
+ସ୍ଥିର ଶୂନ୍ୟ sercon_term_cursor_goto(u8 row, u8 col)
 {
     row++; col++;
     sercon_putchar('\x1b');
@@ -135,238 +135,238 @@ static void sercon_term_cursor_goto(u8 row, u8 col)
     sercon_putchar('H');
 }
 
-static void sercon_term_set_color(u8 fg, u8 bg, u8 bold)
+ସ୍ଥିର ଶୂନ୍ୟ sercon_term_set_color(u8 fg, u8 bg, u8 bold)
 {
     sercon_putchar('\x1b');
     sercon_putchar('[');
     sercon_putchar('0');
-    if (fg != 7) {
+    ଯଦି (fg != 7) {
         sercon_putchar(';');
         sercon_putchar('3');
         sercon_putchar(GET_GLOBAL(sercon_cmap[fg & 7]));
     }
-    if (bg != 0) {
+    ଯଦି (bg != 0) {
         sercon_putchar(';');
         sercon_putchar('4');
         sercon_putchar(GET_GLOBAL(sercon_cmap[bg & 7]));
     }
-    if (bold) {
+    ଯଦି (bold) {
         sercon_putchar(';');
         sercon_putchar('1');
     }
     sercon_putchar('m');
 }
 
-static void sercon_set_attr(u8 attr)
+ସ୍ଥିର ଶୂନ୍ୟ sercon_set_attr(u8 attr)
 {
-    if (attr == GET_LOW(sercon_attr_last))
-        return;
+    ଯଦି (attr == GET_ତଳ(sercon_attr_last))
+        ଫେରନ୍ତୁ;
 
-    SET_LOW(sercon_attr_last, attr);
+    SET_ତଳ(sercon_attr_last, attr);
     sercon_term_set_color((attr >> 0) & 7,
                           (attr >> 4) & 7,
                           attr & 0x08);
 }
 
-static void sercon_print_utf8(u8 chr)
+ସ୍ଥିର ଶୂନ୍ୟ sercon_print_utf8(u8 chr)
 {
     u16 unicode = cp437_to_unicode(chr);
 
-    if (unicode < 0x7f) {
+    ଯଦି (unicode < 0x7f) {
         sercon_putchar(unicode);
-    } else if (unicode < 0x7ff) {
+    } ଅନ୍ୟଥା ଯଦି (unicode < 0x7ff) {
         sercon_putchar(0xc0 | ((unicode >>  6) & 0x1f));
         sercon_putchar(0x80 | ((unicode >>  0) & 0x3f));
-    } else {
+    } ଅନ୍ୟଥା {
         sercon_putchar(0xe0 | ((unicode >> 12) & 0x0f));
         sercon_putchar(0x80 | ((unicode >>  6) & 0x3f));
         sercon_putchar(0x80 | ((unicode >>  0) & 0x3f));
     }
 }
 
-static void sercon_cursor_pos_set(u8 row, u8 col)
+ସ୍ଥିର ଶୂନ୍ୟ sercon_cursor_pos_set(u8 row, u8 col)
 {
-    if (!sercon_splitmode()) {
+    ଯଦି (!sercon_splitmode()) {
         cursor_pos_set(row, col);
-    } else {
+    } ଅନ୍ୟଥା {
         /* let vgabios update cursor */
     }
 }
 
-static void sercon_lazy_cursor_sync(void)
+ସ୍ଥିର ଶୂନ୍ୟ sercon_lazy_cursor_sync(ଶୂନ୍ୟ)
 {
     u8 row = cursor_pos_row();
     u8 col = cursor_pos_col();
 
-    if (GET_LOW(sercon_row_last) == row &&
-        GET_LOW(sercon_col_last) == col)
-        return;
+    ଯଦି (GET_ତଳ(sercon_row_last) == row &&
+        GET_ତଳ(sercon_col_last) == col)
+        ଫେରନ୍ତୁ;
 
-    if (col == 0 && GET_LOW(sercon_row_last) <= row) {
-        if (GET_LOW(sercon_col_last) != 0) {
+    ଯଦି (col == 0 && GET_ତଳ(sercon_row_last) <= row) {
+        ଯଦି (GET_ତଳ(sercon_col_last) != 0) {
             sercon_putchar('\r');
-            SET_LOW(sercon_col_last, 0);
+            SET_ତଳ(sercon_col_last, 0);
         }
-        while (GET_LOW(sercon_row_last) < row) {
+        ଯେତେବେଳେ (GET_ତଳ(sercon_row_last) < row) {
             sercon_putchar('\n');
-            SET_LOW(sercon_row_last, GET_LOW(sercon_row_last)+1);
+            SET_ତଳ(sercon_row_last, GET_ତଳ(sercon_row_last)+1);
         }
-        if (GET_LOW(sercon_row_last) == row &&
-            GET_LOW(sercon_col_last) == col)
-            return;
+        ଯଦି (GET_ତଳ(sercon_row_last) == row &&
+            GET_ତଳ(sercon_col_last) == col)
+            ଫେରନ୍ତୁ;
     }
 
     sercon_term_cursor_goto(row, col);
-    SET_LOW(sercon_row_last, row);
-    SET_LOW(sercon_col_last, col);
+    SET_ତଳ(sercon_row_last, row);
+    SET_ତଳ(sercon_col_last, col);
 }
 
-static void sercon_lazy_flush(void)
+ସ୍ଥିର ଶୂନ୍ୟ sercon_lazy_flush(ଶୂନ୍ୟ)
 {
     u8 chr, attr;
 
-    chr = GET_LOW(sercon_char);
-    attr = GET_LOW(sercon_attr);
-    if (chr) {
+    chr = GET_ତଳ(sercon_char);
+    attr = GET_ତଳ(sercon_attr);
+    ଯଦି (chr) {
         sercon_set_attr(attr);
         sercon_print_utf8(chr);
-        SET_LOW(sercon_col_last, GET_LOW(sercon_col_last) + 1);
+        SET_ତଳ(sercon_col_last, GET_ତଳ(sercon_col_last) + 1);
     }
 
     sercon_lazy_cursor_sync();
 
-    SET_LOW(sercon_attr, 0x07);
-    SET_LOW(sercon_char, 0x00);
+    SET_ତଳ(sercon_attr, 0x07);
+    SET_ତଳ(sercon_char, 0x00);
 }
 
-static void sercon_lazy_cursor_update(u8 row, u8 col)
+ସ୍ଥିର ଶୂନ୍ୟ sercon_lazy_cursor_update(u8 row, u8 col)
 {
     sercon_cursor_pos_set(row, col);
-    SET_LOW(sercon_row_last, row);
-    SET_LOW(sercon_col_last, col);
+    SET_ତଳ(sercon_row_last, row);
+    SET_ତଳ(sercon_col_last, col);
 }
 
-static void sercon_lazy_backspace(void)
+ସ୍ଥିର ଶୂନ୍ୟ sercon_lazy_backspace(ଶୂନ୍ୟ)
 {
     u8 col;
 
     sercon_lazy_flush();
     col = cursor_pos_col();
-    if (col > 0) {
+    ଯଦି (col > 0) {
         sercon_putchar(8);
         sercon_lazy_cursor_update(cursor_pos_row(), col-1);
     }
 }
 
-static void sercon_lazy_cr(void)
+ସ୍ଥିର ଶୂନ୍ୟ sercon_lazy_cr(ଶୂନ୍ୟ)
 {
     sercon_cursor_pos_set(cursor_pos_row(), 0);
 }
 
-static void sercon_lazy_lf(void)
+ସ୍ଥିର ଶୂନ୍ୟ sercon_lazy_lf(ଶୂନ୍ୟ)
 {
     u8 row;
 
     row = cursor_pos_row() + 1;
-    if (row >= video_rows()) {
+    ଯଦି (row >= video_rows()) {
         /* scrolling up */
         row = video_rows()-1;
-        if (GET_LOW(sercon_row_last) > 0) {
-            SET_LOW(sercon_row_last, GET_LOW(sercon_row_last) - 1);
+        ଯଦି (GET_ତଳ(sercon_row_last) > 0) {
+            SET_ତଳ(sercon_row_last, GET_ତଳ(sercon_row_last) - 1);
         }
     }
     sercon_cursor_pos_set(row, cursor_pos_col());
 }
 
-static void sercon_lazy_move_cursor(void)
+ସ୍ଥିର ଶୂନ୍ୟ sercon_lazy_move_cursor(ଶୂନ୍ୟ)
 {
     u8 col;
 
     col = cursor_pos_col() + 1;
-    if (col >= video_cols()) {
+    ଯଦି (col >= video_cols()) {
         sercon_lazy_cr();
         sercon_lazy_lf();
-    } else {
+    } ଅନ୍ୟଥା {
         sercon_cursor_pos_set(cursor_pos_row(), col);
     }
 }
 
-static void sercon_lazy_putchar(u8 chr, u8 attr, u8 teletype)
+ସ୍ଥିର ଶୂନ୍ୟ sercon_lazy_putchar(u8 chr, u8 attr, u8 teletype)
 {
-    if (cursor_pos_row() != GET_LOW(sercon_row_last) ||
-        cursor_pos_col() != GET_LOW(sercon_col_last)) {
+    ଯଦି (cursor_pos_row() != GET_ତଳ(sercon_row_last) ||
+        cursor_pos_col() != GET_ତଳ(sercon_col_last)) {
         sercon_lazy_flush();
     }
 
-    SET_LOW(sercon_char, chr);
-    if (teletype)
+    SET_ତଳ(sercon_char, chr);
+    ଯଦି (teletype)
         sercon_lazy_move_cursor();
-    else
-        SET_LOW(sercon_attr, attr);
+    ଅନ୍ୟଥା
+        SET_ତଳ(sercon_attr, attr);
 }
 
 /* Set video mode */
-static void sercon_1000(struct bregs *regs)
+ସ୍ଥିର ଶୂନ୍ୟ sercon_1000(ସଂରଚନା bregs *regs)
 {
     u8 clearscreen = !(regs->al & 0x80);
     u8 mode = regs->al & 0x7f;
     u8 rows, cols;
 
-    if (!sercon_splitmode()) {
-        switch (mode) {
-        case 0x00:
-        case 0x01:
-        case 0x04: /* 320x200 */
-        case 0x05: /* 320x200 */
+    ଯଦି (!sercon_splitmode()) {
+        ବାଛ (mode) {
+        ସ୍ଥିତି 0x00:
+        ସ୍ଥିତି 0x01:
+        ସ୍ଥିତି 0x04: /* 320x200 */
+        ସ୍ଥିତି 0x05: /* 320x200 */
             cols = 40;
             rows = 25;
             regs->al = 0x30;
-            break;
-        case 0x02:
-        case 0x03:
-        case 0x06: /* 640x200 */
-        case 0x07:
-        default:
+            ଭାଙ୍ଗ;
+        ସ୍ଥିତି 0x02:
+        ସ୍ଥିତି 0x03:
+        ସ୍ଥିତି 0x06: /* 640x200 */
+        ସ୍ଥିତି 0x07:
+        ପୂର୍ବନିର୍ଦ୍ଧାରିତ:
             cols = 80;
             rows = 25;
             regs->al = 0x30;
-            break;
+            ଭାଙ୍ଗ;
         }
         cursor_pos_set(0, 0);
         SET_BDA(video_mode, mode);
         SET_BDA(video_cols, cols);
         SET_BDA(video_rows, rows-1);
         SET_BDA(cursor_type, 0x0007);
-    } else {
+    } ଅନ୍ୟଥା {
         /* let vgabios handle mode init */
     }
 
-    SET_LOW(sercon_enable, mode <= 0x07);
-    SET_LOW(sercon_col_last, 0);
-    SET_LOW(sercon_row_last, 0);
-    SET_LOW(sercon_attr_last, 0);
+    SET_ତଳ(sercon_enable, mode <= 0x07);
+    SET_ତଳ(sercon_col_last, 0);
+    SET_ତଳ(sercon_row_last, 0);
+    SET_ତଳ(sercon_attr_last, 0);
 
     sercon_term_reset();
     sercon_term_no_linewrap();
-    if (clearscreen)
+    ଯଦି (clearscreen)
         sercon_term_clear_screen();
 }
 
 /* Set text-mode cursor shape */
-static void sercon_1001(struct bregs *regs)
+ସ୍ଥିର ଶୂନ୍ୟ sercon_1001(ସଂରଚନା bregs *regs)
 {
     /* show/hide cursor? */
     SET_BDA(cursor_type, regs->cx);
 }
 
 /* Set cursor position */
-static void sercon_1002(struct bregs *regs)
+ସ୍ଥିର ଶୂନ୍ୟ sercon_1002(ସଂରଚନା bregs *regs)
 {
     sercon_cursor_pos_set(regs->dh, regs->dl);
 }
 
 /* Get cursor position */
-static void sercon_1003(struct bregs *regs)
+ସ୍ଥିର ଶୂନ୍ୟ sercon_1003(ସଂରଚନା bregs *regs)
 {
     regs->cx = GET_BDA(cursor_type);
     regs->dh = cursor_pos_row();
@@ -374,41 +374,41 @@ static void sercon_1003(struct bregs *regs)
 }
 
 /* Scroll up window */
-static void sercon_1006(struct bregs *regs)
+ସ୍ଥିର ଶୂନ୍ୟ sercon_1006(ସଂରଚନା bregs *regs)
 {
     sercon_lazy_flush();
-    if (regs->al == 0) {
+    ଯଦି (regs->al == 0) {
         /* clear rect, do only in case this looks like a fullscreen clear */
-        if (regs->ch == 0 &&
+        ଯଦି (regs->ch == 0 &&
             regs->cl == 0 &&
             regs->dh == video_rows()-1 &&
             regs->dl == video_cols()-1) {
             sercon_set_attr(regs->bh);
             sercon_term_clear_screen();
         }
-    } else {
+    } ଅନ୍ୟଥା {
         sercon_putchar('\r');
         sercon_putchar('\n');
     }
 }
 
 /* Read character and attribute at cursor position */
-static void sercon_1008(struct bregs *regs)
+ସ୍ଥିର ଶୂନ୍ୟ sercon_1008(ସଂରଚନା bregs *regs)
 {
     regs->ah = 0x07;
     regs->bh = ' ';
 }
 
 /* Write character and attribute at cursor position */
-static void sercon_1009(struct bregs *regs)
+ସ୍ଥିର ଶୂନ୍ୟ sercon_1009(ସଂରଚନା bregs *regs)
 {
-    u16 count = regs->cx;
+    u16 ଗଣନା_2 = regs->cx;
 
-    if (count == 1) {
+    ଯଦି (ଗଣନା_2 == 1) {
         sercon_lazy_putchar(regs->al, regs->bl, 0);
 
-    } else if (regs->al == 0x20 &&
-               video_rows() * video_cols() == count &&
+    } ଅନ୍ୟଥା ଯଦି (regs->al == 0x20 &&
+               video_rows() * video_cols() == ଗଣନା_2 &&
                cursor_pos_row() == 0 &&
                cursor_pos_col() == 0) {
         /* override everything with spaces -> this is clear screen */
@@ -416,12 +416,12 @@ static void sercon_1009(struct bregs *regs)
         sercon_set_attr(regs->bl);
         sercon_term_clear_screen();
 
-    } else {
+    } ଅନ୍ୟଥା {
         sercon_lazy_flush();
         sercon_set_attr(regs->bl);
-        while (count) {
+        ଯେତେବେଳେ (ଗଣନା_2) {
             sercon_print_utf8(regs->al);
-            count--;
+            ଗଣନା_2--;
         }
         sercon_term_cursor_goto(cursor_pos_row(),
                                 cursor_pos_col());
@@ -429,117 +429,117 @@ static void sercon_1009(struct bregs *regs)
 }
 
 /* Teletype output */
-static void sercon_100e(struct bregs *regs)
+ସ୍ଥିର ଶୂନ୍ୟ sercon_100e(ସଂରଚନା bregs *regs)
 {
-    switch (regs->al) {
-    case 7:
+    ବାଛ (regs->al) {
+    ସ୍ଥିତି 7:
         sercon_putchar(0x07);
-        break;
-    case 8:
+        ଭାଙ୍ଗ;
+    ସ୍ଥିତି 8:
         sercon_lazy_backspace();
-        break;
-    case '\r':
+        ଭାଙ୍ଗ;
+    ସ୍ଥିତି '\r':
         sercon_lazy_cr();
-        break;
-    case '\n':
+        ଭାଙ୍ଗ;
+    ସ୍ଥିତି '\n':
         sercon_lazy_lf();
-        break;
-    default:
+        ଭାଙ୍ଗ;
+    ପୂର୍ବନିର୍ଦ୍ଧାରିତ:
         sercon_lazy_putchar(regs->al, 0, 1);
-        break;
+        ଭାଙ୍ଗ;
     }
 }
 
 /* Get current video mode */
-static void sercon_100f(struct bregs *regs)
+ସ୍ଥିର ଶୂନ୍ୟ sercon_100f(ସଂରଚନା bregs *regs)
 {
     regs->al = GET_BDA(video_mode);
     regs->ah = GET_BDA(video_cols);
 }
 
 /* VBE 2.0 */
-static void sercon_104f(struct bregs *regs)
+ସ୍ଥିର ଶୂନ୍ୟ sercon_104f(ସଂରଚନା bregs *regs)
 {
-    if (!sercon_splitmode()) {
+    ଯଦି (!sercon_splitmode()) {
         regs->ax = 0x0100;
-    } else {
+    } ଅନ୍ୟଥା {
         // Disable sercon entry point on any vesa modeset
-        if (regs->al == 0x02)
-            SET_LOW(sercon_enable, 0);
+        ଯଦି (regs->al == 0x02)
+            SET_ତଳ(sercon_enable, 0);
     }
 }
 
-static void sercon_10XX(struct bregs *regs)
+ସ୍ଥିର ଶୂନ୍ୟ sercon_10XX(ସଂରଚନା bregs *regs)
 {
     warn_unimplemented(regs);
 }
 
-void VISIBLE16
-handle_sercon(struct bregs *regs)
+ଶୂନ୍ୟ VISIBLE16
+handle_sercon(ସଂରଚନା bregs *regs)
 {
-    if (!CONFIG_SERCON)
-        return;
-    if (!GET_LOW(sercon_port))
-        return;
+    ଯଦି (!CONFIG_SERCON)
+        ଫେରନ୍ତୁ;
+    ଯଦି (!GET_ତଳ(sercon_port))
+        ଫେରନ୍ତୁ;
 
-    switch (regs->ah) {
-    case 0x01:
-    case 0x02:
-    case 0x03:
-    case 0x08:
-    case 0x0f:
-        if (sercon_splitmode())
+    ବାଛ (regs->ah) {
+    ସ୍ଥିତି 0x01:
+    ସ୍ଥିତି 0x02:
+    ସ୍ଥିତି 0x03:
+    ସ୍ଥିତି 0x08:
+    ସ୍ଥିତି 0x0f:
+        ଯଦି (sercon_splitmode())
             /* nothing, vgabios handles it */
-            return;
+            ଫେରନ୍ତୁ;
     }
 
-    switch (regs->ah) {
-    case 0x00: sercon_1000(regs); break;
-    case 0x01: sercon_1001(regs); break;
-    case 0x02: sercon_1002(regs); break;
-    case 0x03: sercon_1003(regs); break;
-    case 0x06: sercon_1006(regs); break;
-    case 0x08: sercon_1008(regs); break;
-    case 0x09: sercon_1009(regs); break;
-    case 0x0e: sercon_100e(regs); break;
-    case 0x0f: sercon_100f(regs); break;
-    case 0x4f: sercon_104f(regs); break;
-    default:   sercon_10XX(regs); break;
+    ବାଛ (regs->ah) {
+    ସ୍ଥିତି 0x00: sercon_1000(regs); ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x01: sercon_1001(regs); ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x02: sercon_1002(regs); ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x03: sercon_1003(regs); ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x06: sercon_1006(regs); ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x08: sercon_1008(regs); ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x09: sercon_1009(regs); ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x0e: sercon_100e(regs); ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x0f: sercon_100f(regs); ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x4f: sercon_104f(regs); ଭାଙ୍ଗ;
+    ପୂର୍ବନିର୍ଦ୍ଧାରିତ:   sercon_10XX(regs); ଭାଙ୍ଗ;
     }
 }
 
-void sercon_setup(void)
+ଶୂନ୍ୟ sercon_setup(ଶୂନ୍ୟ)
 {
-    if (!CONFIG_SERCON)
-        return;
+    ଯଦି (!CONFIG_SERCON)
+        ଫେରନ୍ତୁ;
 
-    struct segoff_s seabios, vgabios;
+    ସଂରଚନା segoff_s seabios, vgabios;
     u16 addr;
 
     addr = romfile_loadint("etc/sercon-port", 0);
-    if (!addr)
-        return;
+    ଯଦି (!addr)
+        ଫେରନ୍ତୁ;
     dprintf(1, "sercon: using ioport 0x%x\n", addr);
 
-    if (CONFIG_DEBUG_SERIAL)
-        if (addr == CONFIG_DEBUG_SERIAL_PORT)
+    ଯଦି (CONFIG_DEBUG_SERIAL)
+        ଯଦି (addr == CONFIG_DEBUG_SERIAL_PORT)
             ScreenAndDebug = 0;
 
     vgabios = GET_IVT(0x10);
     seabios = FUNC16(entry_10);
-    if (vgabios.seg != seabios.seg ||
+    ଯଦି (vgabios.seg != seabios.seg ||
         vgabios.offset != seabios.offset) {
         dprintf(1, "sercon: configuring in splitmode (vgabios %04x:%04x)\n",
                 vgabios.seg, vgabios.offset);
         sercon_real_vga_handler = vgabios;
-        SET_LOW(sercon_split, 1);
-    } else {
+        SET_ତଳ(sercon_split, 1);
+    } ଅନ୍ୟଥା {
         dprintf(1, "sercon: configuring as primary display\n");
         sercon_real_vga_handler = seabios;
     }
 
     SET_IVT(0x10, FUNC16(entry_sercon));
-    SET_LOW(sercon_port, addr);
+    SET_ତଳ(sercon_port, addr);
     outb(0x03, addr + SEROFF_LCR); // 8N1
     outb(0x01, addr + 0x02);       // enable fifo
 }
@@ -551,8 +551,8 @@ void sercon_setup(void)
 VARLOW u8 rx_buf[16];
 VARLOW u8 rx_bytes;
 
-static VAR16 struct {
-    char seq[4];
+ସ୍ଥିର VAR16 ସଂରଚନା {
+    ଅକ୍ଷର seq[4];
     u8   len;
     u16  keycode;
 } termseq[] = {
@@ -570,110 +570,110 @@ static VAR16 struct {
     { .seq = "[23~", .len = 4, .keycode = 0x8500 },    // F11
     { .seq = "[24~", .len = 4, .keycode = 0x8600 },    // F12
 
-    { .seq = "[2~",  .len = 3, .keycode = 0x52e0 },    // insert
+    { .seq = "[2~",  .len = 3, .keycode = 0x52e0 },    //ଭର୍ତ୍ତି
     { .seq = "[3~",  .len = 3, .keycode = 0x53e0 },    // delete
     { .seq = "[5~",  .len = 3, .keycode = 0x49e0 },    // page up
     { .seq = "[6~",  .len = 3, .keycode = 0x51e0 },    // page down
 
     { .seq = "[A",   .len = 2, .keycode = 0x48e0 },    // up
     { .seq = "[B",   .len = 2, .keycode = 0x50e0 },    // down
-    { .seq = "[C",   .len = 2, .keycode = 0x4de0 },    // right
-    { .seq = "[D",   .len = 2, .keycode = 0x4be0 },    // left
+    { .seq = "[C",   .len = 2, .keycode = 0x4de0 },    //ଡାହାଣ
+    { .seq = "[D",   .len = 2, .keycode = 0x4be0 },    //ବାମ
 
     { .seq = "[H",   .len = 2, .keycode = 0x47e0 },    // home
     { .seq = "[F",   .len = 2, .keycode = 0x4fe0 },    // end
 };
 
-static void shiftbuf(int remove)
+ସ୍ଥିର ଶୂନ୍ୟ shiftbuf(ପୂର୍ଣ୍ଣସଂଖ୍ୟା remove)
 {
-    int i, remaining;
+    ପୂର୍ଣ୍ଣସଂଖ୍ୟା i, remaining;
 
-    remaining = GET_LOW(rx_bytes) - remove;
-    SET_LOW(rx_bytes, remaining);
-    for (i = 0; i < remaining; i++)
-        SET_LOW(rx_buf[i], GET_LOW(rx_buf[i + remove]));
+    remaining = GET_ତଳ(rx_bytes) - remove;
+    SET_ତଳ(rx_bytes, remaining);
+    ପାଇଁ (i = 0; i < remaining; i++)
+        SET_ତଳ(rx_buf[i], GET_ତଳ(rx_buf[i + remove]));
 }
 
-static int cmpbuf(int seq)
+ସ୍ଥିର ପୂର୍ଣ୍ଣସଂଖ୍ୟା cmpbuf(ପୂର୍ଣ୍ଣସଂଖ୍ୟା seq)
 {
-    int chr, len;
+    ପୂର୍ଣ୍ଣସଂଖ୍ୟା chr, len;
 
     len = GET_GLOBAL(termseq[seq].len);
-    if (GET_LOW(rx_bytes) < len + 1)
-        return 0;
-    for (chr = 0; chr < len; chr++)
-        if (GET_GLOBAL(termseq[seq].seq[chr]) != GET_LOW(rx_buf[chr + 1]))
-            return 0;
-    return 1;
+    ଯଦି (GET_ତଳ(rx_bytes) < len + 1)
+        ଫେରନ୍ତୁ 0;
+    ପାଇଁ (chr = 0; chr < len; chr++)
+        ଯଦି (GET_GLOBAL(termseq[seq].seq[chr]) != GET_ତଳ(rx_buf[chr + 1]))
+            ଫେରନ୍ତୁ 0;
+    ଫେରନ୍ତୁ 1;
 }
 
-static int findseq(void)
+ସ୍ଥିର ପୂର୍ଣ୍ଣସଂଖ୍ୟା findseq(ଶୂନ୍ୟ)
 {
-    int seq;
+    ପୂର୍ଣ୍ଣସଂଖ୍ୟା seq;
 
-    for (seq = 0; seq < ARRAY_SIZE(termseq); seq++)
-        if (cmpbuf(seq))
-            return seq;
-    return -1;
+    ପାଇଁ (seq = 0; seq < ARRAY_SIZE(termseq); seq++)
+        ଯଦି (cmpbuf(seq))
+            ଫେରନ୍ତୁ seq;
+    ଫେରନ୍ତୁ -1;
 }
 
-void
-sercon_check_event(void)
+ଶୂନ୍ୟ
+sercon_check_event(ଶୂନ୍ୟ)
 {
-    if (!CONFIG_SERCON)
-        return;
+    ଯଦି (!CONFIG_SERCON)
+        ଫେରନ୍ତୁ;
 
-    u16 addr = GET_LOW(sercon_port);
+    u16 addr = GET_ତଳ(sercon_port);
     u16 keycode;
-    u8 byte, count = 0;
-    int seq;
+    u8 byte, ଗଣନା_2 = 0;
+    ପୂର୍ଣ୍ଣସଂଖ୍ୟା seq;
 
     // check to see if there is a active serial port
-    if (!addr)
-        return;
-    if (inb(addr + SEROFF_LSR) == 0xFF)
-        return;
+    ଯଦି (!addr)
+        ଫେରନ୍ତୁ;
+    ଯଦି (inb(addr + SEROFF_LSR) == 0xFF)
+        ଫେରନ୍ତୁ;
 
     // flush pending output
     sercon_lazy_flush();
 
     // read all available data
-    while (inb(addr + SEROFF_LSR) & 0x01) {
+    ଯେତେବେଳେ (inb(addr + SEROFF_LSR) & 0x01) {
         byte = inb(addr + SEROFF_DATA);
-        u8 rb = GET_LOW(rx_bytes);
-        if (rb < sizeof(rx_buf)) {
-            SET_LOW(rx_buf[rb], byte);
-            SET_LOW(rx_bytes, rb + 1);
-            count++;
+        u8 rb = GET_ତଳ(rx_bytes);
+        ଯଦି (rb < ଆକାର(rx_buf)) {
+            SET_ତଳ(rx_buf[rb], byte);
+            SET_ତଳ(rx_bytes, rb + 1);
+            ଗଣନା_2++;
         }
     }
 
-    for (;;) {
+    ପାଇଁ (;;) {
         // no (more) input data
-        u8 rb = GET_LOW(rx_bytes);
-        if (!rb)
-            return;
+        u8 rb = GET_ତଳ(rx_bytes);
+        ଯଦି (!rb)
+            ଫେରନ୍ତୁ;
 
         // lookup escape sequences
-        u8 next_char = GET_LOW(rx_buf[0]);
-        if (rb > 1 && next_char == 0x1b) {
+        u8 next_char = GET_ତଳ(rx_buf[0]);
+        ଯଦି (rb > 1 && next_char == 0x1b) {
             seq = findseq();
-            if (seq >= 0) {
-                enqueue_key(GET_GLOBAL(termseq[seq].keycode));
+            ଯଦି (seq >= 0) {
+                enqueue_ଚାବି(GET_GLOBAL(termseq[seq].keycode));
                 shiftbuf(GET_GLOBAL(termseq[seq].len) + 1);
-                continue;
+                ଜାରି;
             }
         }
 
         // Seems we got a escape sequence we didn't recognise.
         //  -> If we received data wait for more, maybe it is just incomplete.
-        if (next_char == 0x1b && count)
-            return;
+        ଯଦି (next_char == 0x1b && ଗଣନା_2)
+            ଫେରନ୍ତୁ;
 
         // Handle input as individual char.
         keycode = ascii_to_keycode(next_char);
-        if (keycode)
-            enqueue_key(keycode);
+        ଯଦି (keycode)
+            enqueue_ଚାବି(keycode);
         shiftbuf(1);
     }
 }

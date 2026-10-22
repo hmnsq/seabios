@@ -1,8 +1,8 @@
 #ifndef _PVSCSI_H_
 #define _PVSCSI_H_
 
-struct disk_op_s;
-int pvscsi_process_op(struct disk_op_s *op);
-void pvscsi_setup(void);
+ସଂରଚନା disk_op_s;
+ପୂର୍ଣ୍ଣସଂଖ୍ୟା pvscsi_process_op(ସଂରଚନା disk_op_s *op);
+ଶୂନ୍ୟ pvscsi_setup(ଶୂନ୍ୟ);
 
 #endif /* _PVSCSI_H_ */

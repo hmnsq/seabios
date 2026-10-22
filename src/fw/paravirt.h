@@ -1,12 +1,12 @@
 #ifndef __PV_H
 #define __PV_H
 
-#include "config.h" // CONFIG_*
-#include "biosvar.h" // GET_GLOBAL
-#include "romfile.h" // struct romfile_s
+#ଅନ୍ତର୍ଭାଵ "config.h" // CONFIG_*
+#ଅନ୍ତର୍ଭାଵ "biosvar.h" // GET_GLOBAL
+#ଅନ୍ତର୍ଭାଵ "romfile.h" // struct romfile_s
 
 // kvmclock
-struct pvclock_vcpu_time_info {
+ସଂରଚନା pvclock_vcpu_time_info {
 	u32   version;
 	u32   pad0;
 	u64   tsc_timestamp;
@@ -22,27 +22,27 @@ struct pvclock_vcpu_time_info {
 #define PF_XEN      (1<<1)
 #define PF_KVM      (1<<2)
 
-typedef struct QemuCfgDmaAccess {
+ପ୍ରକାରବ୍ୟାଖ୍ୟା ସଂରଚନା QemuCfgDmaAccess {
     u32 control;
     u32 length;
     u64 address;
 } PACKED QemuCfgDmaAccess;
 
-extern u32 RamSize;
-extern u64 RamSizeOver4G;
-extern int PlatformRunningOn;
-extern u8 CPUPhysBits;
-extern u8 CPULongMode;
+ବାହ୍ୟ u32 RamSize;
+ବାହ୍ୟ u64 RamSizeOver4G;
+ବାହ୍ୟ ପୂର୍ଣ୍ଣସଂଖ୍ୟା PlatformRunningOn;
+ବାହ୍ୟ u8 CPUPhysBits;
+ବାହ୍ୟ u8 CPULongMode;
 
-static inline int runningOnQEMU(void) {
-    return CONFIG_QEMU || (
+ସ୍ଥିର ଧାଡ଼ିଭିତରେ ପୂର୍ଣ୍ଣସଂଖ୍ୟା runningOnQEMU(ଶୂନ୍ୟ) {
+    ଫେରନ୍ତୁ CONFIG_QEMU || (
         CONFIG_QEMU_HARDWARE && GET_GLOBAL(PlatformRunningOn) & PF_QEMU);
 }
-static inline int runningOnXen(void) {
-    return CONFIG_XEN && GET_GLOBAL(PlatformRunningOn) & PF_XEN;
+ସ୍ଥିର ଧାଡ଼ିଭିତରେ ପୂର୍ଣ୍ଣସଂଖ୍ୟା runningOnXen(ଶୂନ୍ୟ) {
+    ଫେରନ୍ତୁ CONFIG_XEN && GET_GLOBAL(PlatformRunningOn) & PF_XEN;
 }
-static inline int runningOnKVM(void) {
-    return CONFIG_QEMU && GET_GLOBAL(PlatformRunningOn) & PF_KVM;
+ସ୍ଥିର ଧାଡ଼ିଭିତରେ ପୂର୍ଣ୍ଣସଂଖ୍ୟା runningOnKVM(ଶୂନ୍ୟ) {
+    ଫେରନ୍ତୁ CONFIG_QEMU && GET_GLOBAL(PlatformRunningOn) & PF_KVM;
 }
 
 // Common paravirt ports.
@@ -50,8 +50,8 @@ static inline int runningOnKVM(void) {
 #define PORT_SMI_STATUS             0x00b3
 #define PORT_QEMU_CFG_CTL           0x0510
 #define PORT_QEMU_CFG_DATA          0x0511
-#define PORT_QEMU_CFG_DMA_ADDR_HIGH 0x0514
-#define PORT_QEMU_CFG_DMA_ADDR_LOW  0x0518
+#define PORT_QEMU_CFG_DMA_ADDR_ଉପର 0x0514
+#define PORT_QEMU_CFG_DMA_ADDR_ତଳ  0x0518
 
 // QEMU_CFG_DMA_CONTROL bits
 #define QEMU_CFG_DMA_CTL_ERROR   0x01
@@ -66,15 +66,15 @@ static inline int runningOnKVM(void) {
 // QEMU debugcon read value
 #define QEMU_DEBUGCON_READBACK  0xe9
 
-int qemu_cfg_enabled(void);
-int qemu_cfg_dma_enabled(void);
-void qemu_preinit(void);
-void qemu_platform_setup(void);
-void qemu_cfg_init(void);
+ପୂର୍ଣ୍ଣସଂଖ୍ୟା qemu_cfg_enabled(ଶୂନ୍ୟ);
+ପୂର୍ଣ୍ଣସଂଖ୍ୟା qemu_cfg_dma_enabled(ଶୂନ୍ୟ);
+ଶୂନ୍ୟ qemu_preinit(ଶୂନ୍ୟ);
+ଶୂନ୍ୟ qemu_platform_setup(ଶୂନ୍ୟ);
+ଶୂନ୍ୟ qemu_cfg_init(ଶୂନ୍ୟ);
 
-u16 qemu_get_present_cpus_count(void);
-int qemu_cfg_write_file(void *src, struct romfile_s *file, u32 offset, u32 len);
-int qemu_cfg_write_file_simple(void *src, u16 key, u32 offset, u32 len);
-u16 qemu_get_romfile_key(struct romfile_s *file);
+u16 qemu_get_present_cpus_ଗଣନା(ଶୂନ୍ୟ);
+ପୂର୍ଣ୍ଣସଂଖ୍ୟା qemu_cfg_write_file(ଶୂନ୍ୟ *src, ସଂରଚନା romfile_s *file, u32 offset, u32 len);
+ପୂର୍ଣ୍ଣସଂଖ୍ୟା qemu_cfg_write_file_simple(ଶୂନ୍ୟ *src, u16 ଚାବି, u32 offset, u32 len);
+u16 qemu_get_romfile_ଚାବି(ସଂରଚନା romfile_s *file);
 
 #endif

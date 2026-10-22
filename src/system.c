@@ -5,71 +5,71 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_GLOBAL
-#include "bregs.h" // struct bregs
-#include "e820map.h" // E820_RAM
-#include "hw/pic.h" // pic_reset
-#include "malloc.h" // LegacyRamSize
-#include "output.h" // debug_enter
-#include "string.h" // memcpy_far
-#include "util.h" // handle_1553
-#include "x86.h" // set_a20
+#ଅନ୍ତର୍ଭାଵ "biosvar.h" // GET_GLOBAL
+#ଅନ୍ତର୍ଭାଵ "bregs.h" // struct bregs
+#ଅନ୍ତର୍ଭାଵ "e820map.h" // E820_RAM
+#ଅନ୍ତର୍ଭାଵ "hw/pic.h" // pic_reset
+#ଅନ୍ତର୍ଭାଵ "malloc.h" // LegacyRamSize
+#ଅନ୍ତର୍ଭାଵ "output.h" // debug_enter
+#ଅନ୍ତର୍ଭାଵ "string.h" // memcpy_far
+#ଅନ୍ତର୍ଭାଵ "util.h" // handle_1553
+#ଅନ୍ତର୍ଭାଵ "x86.h" // set_a20
 
-static void
-handle_152400(struct bregs *regs)
+ସ୍ଥିର ଶୂନ୍ୟ
+handle_152400(ସଂରଚନା bregs *regs)
 {
     set_a20(0);
     set_code_success(regs);
 }
 
-static void
-handle_152401(struct bregs *regs)
+ସ୍ଥିର ଶୂନ୍ୟ
+handle_152401(ସଂରଚନା bregs *regs)
 {
     set_a20(1);
     set_code_success(regs);
 }
 
-static void
-handle_152402(struct bregs *regs)
+ସ୍ଥିର ଶୂନ୍ୟ
+handle_152402(ସଂରଚନା bregs *regs)
 {
     regs->al = get_a20();
     set_code_success(regs);
 }
 
-static void
-handle_152403(struct bregs *regs)
+ସ୍ଥିର ଶୂନ୍ୟ
+handle_152403(ସଂରଚନା bregs *regs)
 {
     regs->bx = 3;
     set_code_success(regs);
 }
 
-static void
-handle_1524XX(struct bregs *regs)
+ସ୍ଥିର ଶୂନ୍ୟ
+handle_1524XX(ସଂରଚନା bregs *regs)
 {
     set_code_unimplemented(regs, RET_EUNSUPPORTED);
 }
 
-static void
-handle_1524(struct bregs *regs)
+ସ୍ଥିର ଶୂନ୍ୟ
+handle_1524(ସଂରଚନା bregs *regs)
 {
-    switch (regs->al) {
-    case 0x00: handle_152400(regs); break;
-    case 0x01: handle_152401(regs); break;
-    case 0x02: handle_152402(regs); break;
-    case 0x03: handle_152403(regs); break;
-    default:   handle_1524XX(regs); break;
+    ବାଛ (regs->al) {
+    ସ୍ଥିତି 0x00: handle_152400(regs); ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x01: handle_152401(regs); ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x02: handle_152402(regs); ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x03: handle_152403(regs); ଭାଙ୍ଗ;
+    ପୂର୍ବନିର୍ଦ୍ଧାରିତ:   handle_1524XX(regs); ଭାଙ୍ଗ;
     }
 }
 
 // removable media eject
-static void
-handle_1552(struct bregs *regs)
+ସ୍ଥିର ଶୂନ୍ୟ
+handle_1552(ସଂରଚନା bregs *regs)
 {
     set_code_success(regs);
 }
 
-static void
-handle_1587(struct bregs *regs)
+ସ୍ଥିର ଶୂନ୍ୟ
+handle_1587(ସଂରଚନା bregs *regs)
 {
     // +++ should probably have descriptor checks
     // +++ should have exception handlers
@@ -92,14 +92,14 @@ handle_1587(struct bregs *regs)
 // check for access rights of source & dest here
 
     // Initialize GDT descriptor
-    u64 *gdt_far = (void*)(regs->si + 0);
+    u64 *gdt_far = (ଶୂନ୍ୟ*)(regs->si + 0);
     u16 gdt_seg = regs->es;
     u32 loc = (u32)MAKE_FLATPTR(gdt_seg, gdt_far);
-    SET_FARVAR(gdt_seg, gdt_far[1], GDT_DATA | GDT_LIMIT((6*sizeof(u64))-1)
+    SET_FARVAR(gdt_seg, gdt_far[1], GDT_DATA | GDT_LIMIT((6*ଆକାର(u64))-1)
                | GDT_BASE(loc));
     // Initialize CS descriptor
     u64 lim = GDT_LIMIT(0x0ffff);
-    if (in_post())
+    ଯଦି (in_post())
         lim = GDT_GRANLIMIT(0xffffffff);
     SET_FARVAR(gdt_seg, gdt_far[4], GDT_CODE | lim | GDT_BASE(BUILD_BIOS_ADDR));
     // Initialize SS descriptor
@@ -107,8 +107,8 @@ handle_1587(struct bregs *regs)
     SET_FARVAR(gdt_seg, gdt_far[5], GDT_DATA | lim | GDT_BASE(loc));
 
     SET_SEG(ES, gdt_seg);
-    u16 count = regs->cx, si = 0, di = 0;
-    asm volatile(
+    u16 ଗଣନା_2 = regs->cx, si = 0, di = 0;
+    asm ଅସ୍ଥିର(
         // Load new descriptor tables
         "  lgdtw %%es:(1<<3)(%%eax)\n"
         "  lidtw %%cs:pmode_IDT_info\n"
@@ -156,7 +156,7 @@ handle_1587(struct bregs *regs)
         // Restore %ds (from %ss)
         "  movw %%ss, %%ax\n"
         "  movw %%ax, %%ds\n"
-        : "+a" (gdt_far), "+c"(count), "+m" (__segment_ES)
+        : "+a" (gdt_far), "+c"(ଗଣନା_2), "+m" (__segment_ES)
         : "S" (si), "D" (di)
         : "cc");
 
@@ -166,30 +166,30 @@ handle_1587(struct bregs *regs)
 }
 
 // Get the amount of extended memory (above 1M)
-static void
-handle_1588(struct bregs *regs)
+ସ୍ଥିର ଶୂନ୍ୟ
+handle_1588(ସଂରଚନା bregs *regs)
 {
     u32 rs = GET_GLOBAL(LegacyRamSize);
 
     // According to Ralf Brown's interrupt the limit should be 15M,
     // but real machines mostly return max. 63M.
-    if (rs > 64*1024*1024)
+    ଯଦି (rs > 64*1024*1024)
         regs->ax = 63 * 1024;
-    else
+    ଅନ୍ୟଥା
         regs->ax = (rs - 1*1024*1024) / 1024;
     set_success(regs);
 }
 
 // Switch to protected mode
-void VISIBLE16
-handle_1589(struct bregs *regs)
+ଶୂନ୍ୟ VISIBLE16
+handle_1589(ସଂରଚନା bregs *regs)
 {
     debug_enter(regs, DEBUG_HDL_15);
     set_a20(1);
 
     pic_reset(regs->bl, regs->bh);
 
-    u64 *gdt_far = (void*)(regs->si + 0);
+    u64 *gdt_far = (ଶୂନ୍ୟ*)(regs->si + 0);
     u16 gdt_seg = regs->es;
     SET_FARVAR(gdt_seg, gdt_far[7], GDT_CODE | GDT_LIMIT(BUILD_BIOS_SIZE-1)
                | GDT_BASE(BUILD_BIOS_ADDR));
@@ -200,7 +200,7 @@ handle_1589(struct bregs *regs)
 
     set_code_success(regs);
 
-    asm volatile(
+    asm ଅସ୍ଥିର(
         // Load new descriptor tables
         "  lgdtw %%es:(1<<3)(%%si)\n"
         "  lidtw %%es:(2<<3)(%%si)\n"
@@ -223,41 +223,41 @@ handle_1589(struct bregs *regs)
 }
 
 // Device busy interrupt.  Called by Int 16h when no key available
-static void
-handle_1590(struct bregs *regs)
+ସ୍ଥିର ଶୂନ୍ୟ
+handle_1590(ସଂରଚନା bregs *regs)
 {
 }
 
 // Interrupt complete.  Called by Int 16h when key becomes available
-static void
-handle_1591(struct bregs *regs)
+ସ୍ଥିର ଶୂନ୍ୟ
+handle_1591(ସଂରଚନା bregs *regs)
 {
 }
 
 // keyboard intercept
-static void
-handle_154f(struct bregs *regs)
+ସ୍ଥିର ଶୂନ୍ୟ
+handle_154f(ସଂରଚନା bregs *regs)
 {
     set_invalid_silent(regs);
 }
 
-static void
-handle_15c0(struct bregs *regs)
+ସ୍ଥିର ଶୂନ୍ୟ
+handle_15c0(ସଂରଚନା bregs *regs)
 {
     regs->es = SEG_BIOS;
     regs->bx = (u32)&BIOS_CONFIG_TABLE;
     set_code_success(regs);
 }
 
-static void
-handle_15c1(struct bregs *regs)
+ସ୍ଥିର ଶୂନ୍ୟ
+handle_15c1(ସଂରଚନା bregs *regs)
 {
     regs->es = get_ebda_seg();
     set_success(regs);
 }
 
-static void
-handle_15e801(struct bregs *regs)
+ସ୍ଥିର ଶୂନ୍ୟ
+handle_15e801(ସଂରଚନା bregs *regs)
 {
     // my real system sets ax and bx to 0
     // this is confirmed by Ralph Brown list
@@ -269,12 +269,12 @@ handle_15e801(struct bregs *regs)
     u32 rs = GET_GLOBAL(LegacyRamSize);
 
     // Get the amount of extended memory (above 1M)
-    if (rs > 16*1024*1024) {
+    ଯଦି (rs > 16*1024*1024) {
         // limit to 15M
         regs->cx = 15*1024;
         // Get the amount of extended memory above 16M in 64k blocks
         regs->dx = (rs - 16*1024*1024) / (64*1024);
-    } else {
+    } ଅନ୍ୟଥା {
         regs->cx = (rs - 1*1024*1024) / 1024;
         regs->dx = 0;
     }
@@ -286,72 +286,72 @@ handle_15e801(struct bregs *regs)
     set_success(regs);
 }
 
-static void
-handle_15e820(struct bregs *regs)
+ସ୍ଥିର ଶୂନ୍ୟ
+handle_15e820(ସଂରଚନା bregs *regs)
 {
-    int count = GET_GLOBAL(e820_count);
-    if (regs->edx != 0x534D4150 || regs->bx >= count
-        || regs->ecx < sizeof(e820_list[0])) {
+    ପୂର୍ଣ୍ଣସଂଖ୍ୟା ଗଣନା_2 = GET_GLOBAL(e820_ଗଣନା);
+    ଯଦି (regs->edx != 0x534D4150 || regs->bx >= ଗଣନା_2
+        || regs->ecx < ଆକାର(e820_list[0])) {
         set_code_invalid(regs, RET_EUNSUPPORTED);
-        return;
+        ଫେରନ୍ତୁ;
     }
 
-    memcpy_far(regs->es, (void*)(regs->di+0)
+    memcpy_far(regs->es, (ଶୂନ୍ୟ*)(regs->di+0)
                , get_global_seg(), &e820_list[regs->bx]
-               , sizeof(e820_list[0]));
-    if (regs->bx == count-1)
+               , ଆକାର(e820_list[0]));
+    ଯଦି (regs->bx == ଗଣନା_2-1)
         regs->ebx = 0;
-    else
+    ଅନ୍ୟଥା
         regs->ebx++;
     regs->eax = 0x534D4150;
-    regs->ecx = sizeof(e820_list[0]);
+    regs->ecx = ଆକାର(e820_list[0]);
     set_success(regs);
 }
 
-static void
-handle_15e8XX(struct bregs *regs)
+ସ୍ଥିର ଶୂନ୍ୟ
+handle_15e8XX(ସଂରଚନା bregs *regs)
 {
     set_code_unimplemented(regs, RET_EUNSUPPORTED);
 }
 
-static void
-handle_15e8(struct bregs *regs)
+ସ୍ଥିର ଶୂନ୍ୟ
+handle_15e8(ସଂରଚନା bregs *regs)
 {
-    switch (regs->al) {
-    case 0x01: handle_15e801(regs); break;
-    case 0x20: handle_15e820(regs); break;
-    default:   handle_15e8XX(regs); break;
+    ବାଛ (regs->al) {
+    ସ୍ଥିତି 0x01: handle_15e801(regs); ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x20: handle_15e820(regs); ଭାଙ୍ଗ;
+    ପୂର୍ବନିର୍ଦ୍ଧାରିତ:   handle_15e8XX(regs); ଭାଙ୍ଗ;
     }
 }
 
-static void
-handle_15XX(struct bregs *regs)
+ସ୍ଥିର ଶୂନ୍ୟ
+handle_15XX(ସଂରଚନା bregs *regs)
 {
     set_code_unimplemented(regs, RET_EUNSUPPORTED);
 }
 
 // INT 15h System Services Entry Point
-void VISIBLE16
-handle_15(struct bregs *regs)
+ଶୂନ୍ୟ VISIBLE16
+handle_15(ସଂରଚନା bregs *regs)
 {
     debug_enter(regs, DEBUG_HDL_15);
-    switch (regs->ah) {
-    case 0x24: handle_1524(regs); break;
-    case 0x4f: handle_154f(regs); break;
-    case 0x52: handle_1552(regs); break;
-    case 0x53: handle_1553(regs); break;
-    case 0x5f: handle_155f(regs); break;
-    case 0x7f: handle_157f(regs); break;
-    case 0x83: handle_1583(regs); break;
-    case 0x86: handle_1586(regs); break;
-    case 0x87: handle_1587(regs); break;
-    case 0x88: handle_1588(regs); break;
-    case 0x90: handle_1590(regs); break;
-    case 0x91: handle_1591(regs); break;
-    case 0xc0: handle_15c0(regs); break;
-    case 0xc1: handle_15c1(regs); break;
-    case 0xc2: handle_15c2(regs); break;
-    case 0xe8: handle_15e8(regs); break;
-    default:   handle_15XX(regs); break;
+    ବାଛ (regs->ah) {
+    ସ୍ଥିତି 0x24: handle_1524(regs); ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x4f: handle_154f(regs); ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x52: handle_1552(regs); ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x53: handle_1553(regs); ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x5f: handle_155f(regs); ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x7f: handle_157f(regs); ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x83: handle_1583(regs); ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x86: handle_1586(regs); ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x87: handle_1587(regs); ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x88: handle_1588(regs); ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x90: handle_1590(regs); ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0x91: handle_1591(regs); ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0xc0: handle_15c0(regs); ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0xc1: handle_15c1(regs); ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0xc2: handle_15c2(regs); ଭାଙ୍ଗ;
+    ସ୍ଥିତି 0xe8: handle_15e8(regs); ଭାଙ୍ଗ;
+    ପୂର୍ବନିର୍ଦ୍ଧାରିତ:   handle_15XX(regs); ଭାଙ୍ଗ;
     }
 }
