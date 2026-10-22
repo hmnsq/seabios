@@ -14,27 +14,27 @@
 #include "usb-hid.h" // usb_keyboard_setup
 #include "util.h" // process_key
 
-struct pipe_node {
-    struct usb_pipe *pipe;
-    struct pipe_node *next;
+sa_nracanaa pipe_node {
+    sa_nracanaa usb_pipe *pipe;
+    sa_nracanaa pipe_node *next;
 };
 
-struct pipe_node *keyboards VARFSEG = NULL;
-struct pipe_node *mice VARFSEG = NULL;
+sa_nracanaa pipe_node *keyboards VARFSEG = NULL;
+sa_nracanaa pipe_node *mice VARFSEG = NULL;
 
-static int
-add_pipe_node(struct pipe_node **list
-              , struct usbdevice_s *usbdev
-              , struct usb_endpoint_descriptor *epdesc)
+static ကိန်းပြည့်
+add_pipe_node(sa_nracanaa pipe_node **list
+              , sa_nracanaa usbdevice_s *usbdev
+              , sa_nracanaa usb_endpoint_descriptor *epdesc)
 {
-    struct usb_pipe *pipe = usb_alloc_pipe(usbdev, epdesc);
-    if (!pipe)
-        return -1;
+    sa_nracanaa usb_pipe *pipe = usb_alloc_pipe(usbdev, epdesc);
+    အကယ်၍ (!pipe)
+        ပြန်ပေး -1;
 
-    struct pipe_node *new_node = malloc_fseg(sizeof(struct pipe_node));
-    if (!new_node) {
+    sa_nracanaa pipe_node *new_node = malloc_fseg(parimaa_na(sa_nracanaa pipe_node));
+    အကယ်၍ (!new_node) {
         warn_noalloc();
-        return -1;
+        ပြန်ပေး -1;
     }
 
     new_node->pipe = pipe;
@@ -42,7 +42,7 @@ add_pipe_node(struct pipe_node **list
     new_node->next = *list;
     *list = new_node;
 
-    return 0;
+    ပြန်ပေး 0;
 }
 
 /****************************************************************
@@ -50,36 +50,36 @@ add_pipe_node(struct pipe_node **list
  ****************************************************************/
 
 // Send USB HID protocol message.
-static int
-set_protocol(struct usb_pipe *pipe, u16 val, u16 inferface)
+static ကိန်းပြည့်
+set_protocol(sa_nracanaa usb_pipe *pipe, u16 val, u16 inferface)
 {
-    struct usb_ctrlrequest req;
+    sa_nracanaa usb_ctrlrequest req;
     req.bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE;
     req.bRequest = HID_REQ_SET_PROTOCOL;
     req.wValue = val;
     req.wIndex = inferface;
     req.wLength = 0;
-    return usb_send_default_control(pipe, &req, NULL);
+    ပြန်ပေး usb_send_default_control(pipe, &req, NULL);
 }
 
 // Send USB HID SetIdle request.
-static int
-set_idle(struct usb_pipe *pipe, int ms)
+static ကိန်းပြည့်
+set_idle(sa_nracanaa usb_pipe *pipe, ကိန်းပြည့် ms)
 {
-    struct usb_ctrlrequest req;
+    sa_nracanaa usb_ctrlrequest req;
     req.bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE;
     req.bRequest = HID_REQ_SET_IDLE;
     req.wValue = (ms/4)<<8;
     req.wIndex = 0;
     req.wLength = 0;
-    return usb_send_default_control(pipe, &req, NULL);
+    ပြန်ပေး usb_send_default_control(pipe, &req, NULL);
 }
 
 #define KEYREPEATWAITMS 500
 #define KEYREPEATMS 33
 
 // Format of USB keyboard event data
-struct keyevent {
+sa_nracanaa keyevent {
     u8 modifiers;
     u8 reserved;
     u8 keys[6];
@@ -87,96 +87,96 @@ struct keyevent {
 
 #define MAX_KBD_EVENT 16
 
-static int
-usb_kbd_setup(struct usbdevice_s *usbdev
-              , struct usb_endpoint_descriptor *epdesc)
+static ကိန်းပြည့်
+usb_kbd_setup(sa_nracanaa usbdevice_s *usbdev
+              , sa_nracanaa usb_endpoint_descriptor *epdesc)
 {
-    if (! CONFIG_USB_KEYBOARD)
-        return -1;
+    အကယ်၍ (! CONFIG_USB_KEYBOARD)
+        ပြန်ပေး -1;
 
-    if (epdesc->wMaxPacketSize < sizeof(struct keyevent)
+    အကယ်၍ (epdesc->wMaxPacketSize < parimaa_na(sa_nracanaa keyevent)
         || epdesc->wMaxPacketSize > MAX_KBD_EVENT) {
         dprintf(1, "USB keyboard wMaxPacketSize=%d; aborting\n"
                 , epdesc->wMaxPacketSize);
-        return -1;
+        ပြန်ပေး -1;
     }
 
     // Enable "boot" protocol.
-    if (set_protocol(usbdev->defpipe, 0, usbdev->iface->bInterfaceNumber)) {
+    အကယ်၍ (set_protocol(usbdev->defpipe, 0, usbdev->iface->bInterfaceNumber)) {
         dprintf(3, "Failed to set boot protocol\n");
-        return -1;
+        ပြန်ပေး -1;
     }
 
     // Periodically send reports to enable key repeat.
-    if (set_idle(usbdev->defpipe, KEYREPEATMS))
+    အကယ်၍ (set_idle(usbdev->defpipe, KEYREPEATMS))
         dprintf(3, "Warning: Failed to set key repeat rate\n");
 
-    if (add_pipe_node(&keyboards, usbdev, epdesc))
-        return -1;
+    အကယ်၍ (add_pipe_node(&keyboards, usbdev, epdesc))
+        ပြန်ပေး -1;
 
     dprintf(1, "USB keyboard initialized\n");
-    return 0;
+    ပြန်ပေး 0;
 }
 
 // Format of USB mouse event data
-struct mouseevent {
+sa_nracanaa mouseevent {
     u8 buttons;
     u8 x, y;
 };
 
 #define MAX_MOUSE_EVENT 8
 
-static int
-usb_mouse_setup(struct usbdevice_s *usbdev
-                , struct usb_endpoint_descriptor *epdesc)
+static ကိန်းပြည့်
+usb_mouse_setup(sa_nracanaa usbdevice_s *usbdev
+                , sa_nracanaa usb_endpoint_descriptor *epdesc)
 {
-    if (! CONFIG_USB_MOUSE)
-        return -1;
+    အကယ်၍ (! CONFIG_USB_MOUSE)
+        ပြန်ပေး -1;
 
-    if (epdesc->wMaxPacketSize < sizeof(struct mouseevent)
+    အကယ်၍ (epdesc->wMaxPacketSize < parimaa_na(sa_nracanaa mouseevent)
         || epdesc->wMaxPacketSize > MAX_MOUSE_EVENT) {
         dprintf(1, "USB mouse wMaxPacketSize=%d; aborting\n"
                 , epdesc->wMaxPacketSize);
-        return -1;
+        ပြန်ပေး -1;
     }
 
     // Enable "boot" protocol.
-    if (set_protocol(usbdev->defpipe, 0, usbdev->iface->bInterfaceNumber))
-        return -1;
+    အကယ်၍ (set_protocol(usbdev->defpipe, 0, usbdev->iface->bInterfaceNumber))
+        ပြန်ပေး -1;
 
-    if (add_pipe_node(&mice, usbdev, epdesc))
-        return -1;
+    အကယ်၍ (add_pipe_node(&mice, usbdev, epdesc))
+        ပြန်ပေး -1;
 
     dprintf(1, "USB mouse initialized\n");
-    return 0;
+    ပြန်ပေး 0;
 }
 
 // Initialize a found USB HID device (if applicable).
-int
-usb_hid_setup(struct usbdevice_s *usbdev)
+ကိန်းပြည့်
+usb_hid_setup(sa_nracanaa usbdevice_s *usbdev)
 {
-    if (! CONFIG_USB_KEYBOARD && ! CONFIG_USB_MOUSE)
-        return -1;
+    အကယ်၍ (! CONFIG_USB_KEYBOARD && ! CONFIG_USB_MOUSE)
+        ပြန်ပေး -1;
     dprintf(2, "usb_hid_setup %p\n", usbdev->defpipe);
 
-    struct usb_interface_descriptor *iface = usbdev->iface;
-    if (iface->bInterfaceSubClass != USB_INTERFACE_SUBCLASS_BOOT)
+    sa_nracanaa usb_interface_descriptor *iface = usbdev->iface;
+    အကယ်၍ (iface->bInterfaceSubClass != USB_INTERFACE_SUBCLASS_BOOT)
         // Doesn't support boot protocol.
-        return -1;
+        ပြန်ပေး -1;
 
     // Find intr in endpoint.
-    struct usb_endpoint_descriptor *epdesc = usb_find_desc(
+    sa_nracanaa usb_endpoint_descriptor *epdesc = usb_find_desc(
         usbdev, USB_ENDPOINT_XFER_INT, USB_DIR_IN);
-    if (!epdesc) {
+    အကယ်၍ (!epdesc) {
         dprintf(1, "No usb hid intr in?\n");
-        return -1;
+        ပြန်ပေး -1;
     }
 
-    if (iface->bInterfaceProtocol == USB_INTERFACE_PROTOCOL_KEYBOARD)
-        return usb_kbd_setup(usbdev, epdesc);
-    if (iface->bInterfaceProtocol == USB_INTERFACE_PROTOCOL_MOUSE)
-        return usb_mouse_setup(usbdev, epdesc);
-    return -1;
+    အကယ်၍ (iface->bInterfaceProtocol == USB_INTERFACE_PROTOCOL_KEYBOARD)
+        ပြန်ပေး usb_kbd_setup(usbdev, epdesc);
+    အကယ်၍ (iface->bInterfaceProtocol == USB_INTERFACE_PROTOCOL_MOUSE)
+        ပြန်ပေး usb_mouse_setup(usbdev, epdesc);
+    ပြန်ပေး -1;
 }
 
 
@@ -213,24 +213,24 @@ static u16 ModifierToScanCode[] VAR16 = {
 static void
 prockeys(u16 scancode, u8 key_release, u8 mods)
 {
-    if (scancode > 0xff) {
-        if (scancode == 0xe145) {
+    အကယ်၍ (scancode > 0xff) {
+        အကယ်၍ (scancode == 0xe145) {
             // XXX - a real AT keyboard would immediately send the key release
-            if (mods & ((1<<0) | (1<<4))) {
+            အကယ်၍ (mods & ((1<<0) | (1<<4))) {
                 // Cntr+Break key
                 process_key(0xe0);
                 process_key(0x46 | key_release);
-            } else {
+            } မဟုတ်ပါက {
                 // Pause key
                 process_key(0xe1);
                 process_key(0x1d | key_release);
                 process_key(0x45 | key_release);
             }
-            return;
-        } else if (scancode == 0xe037 && mods & ((1<<2) | (1<<6))) {
+            ပြန်ပေး;
+        } မဟုတ်ပါက အကယ်၍ (scancode == 0xe037 && mods & ((1<<2) | (1<<6))) {
             // Alt+SysReq key
             process_key(0x54 | key_release);
-            return;
+            ပြန်ပေး;
         }
         process_key(0xe0);
     }
@@ -241,10 +241,10 @@ prockeys(u16 scancode, u8 key_release, u8 mods)
 static void
 procscankey(u8 key, u8 key_release, u8 mods)
 {
-    if (key >= ARRAY_SIZE(KeyToScanCode))
-        return;
+    အကယ်၍ (key >= ARRAY_SIZE(KeyToScanCode))
+        ပြန်ပေး;
     u16 scancode = GET_GLOBAL(KeyToScanCode[key]);
-    if (scancode)
+    အကယ်၍ (scancode)
         prockeys(scancode, key_release, mods);
 }
 
@@ -252,18 +252,18 @@ procscankey(u8 key, u8 key_release, u8 mods)
 static void
 procmodkey(u8 mods, u8 key_release)
 {
-    int i;
-    for (i=0; mods; i++)
-        if (mods & (1<<i)) {
+    ကိန်းပြည့် i;
+    အတွက် (i=0; mods; i++)
+        အကယ်၍ (mods & (1<<i)) {
             // Modifier key change.
             prockeys(GET_GLOBAL(ModifierToScanCode[i]), key_release, 0);
             mods &= ~(1<<i);
         }
 }
 
-struct usbkeyinfo {
-    union {
-        struct {
+sa_nracanaa usbkeyinfo {
+    sa_ngha {
+        sa_nracanaa {
             u8 modifiers;
             u8 repeatcount;
             u8 keys[6];
@@ -271,40 +271,40 @@ struct usbkeyinfo {
         u64 data;
     };
 };
-struct usbkeyinfo LastUSBkey VARLOW;
+sa_nracanaa usbkeyinfo LastUSBkey VARLOW;
 
 // Process USB keyboard data.
 static void
-handle_key(struct keyevent *data)
+handle_key(sa_nracanaa keyevent *data)
 {
     dprintf(9, "Got key %x %x\n", data->modifiers, data->keys[0]);
 
     // Load old keys.
-    struct usbkeyinfo old;
+    sa_nracanaa usbkeyinfo old;
     old.data = GET_LOW(LastUSBkey.data);
 
     // Check for keys no longer pressed.
-    int addpos = 0;
-    int i;
-    for (i=0; i<ARRAY_SIZE(old.keys); i++) {
+    ကိန်းပြည့် addpos = 0;
+    ကိန်းပြည့် i;
+    အတွက် (i=0; i<ARRAY_SIZE(old.keys); i++) {
         u8 key = old.keys[i];
-        if (!key)
-            break;
-        int j;
-        for (j=0;; j++) {
-            if (j>=ARRAY_SIZE(data->keys)) {
+        အကယ်၍ (!key)
+            bha_nga;
+        ကိန်းပြည့် j;
+        အတွက် (j=0;; j++) {
+            အကယ်၍ (j>=ARRAY_SIZE(data->keys)) {
                 // Key released.
                 procscankey(key, RELEASEBIT, data->modifiers);
-                if (i+1 >= ARRAY_SIZE(old.keys) || !old.keys[i+1])
+                အကယ်၍ (i+1 >= ARRAY_SIZE(old.keys) || !old.keys[i+1])
                     // Last pressed key released - disable repeat.
                     old.repeatcount = 0xff;
-                break;
+                bha_nga;
             }
-            if (data->keys[j] == key) {
+            အကယ်၍ (data->keys[j] == key) {
                 // Key still pressed.
                 data->keys[j] = 0;
                 old.keys[addpos++] = key;
-                break;
+                bha_nga;
             }
         }
     }
@@ -313,23 +313,23 @@ handle_key(struct keyevent *data)
     // Process new keys
     procmodkey(data->modifiers & ~old.modifiers, 0);
     old.modifiers = data->modifiers;
-    for (i=0; i<ARRAY_SIZE(data->keys); i++) {
+    အတွက် (i=0; i<ARRAY_SIZE(data->keys); i++) {
         u8 key = data->keys[i];
-        if (!key)
+        အကယ်၍ (!key)
             continue;
         // New key pressed.
         procscankey(key, 0, data->modifiers);
         old.keys[addpos++] = key;
         old.repeatcount = KEYREPEATWAITMS / KEYREPEATMS + 1;
     }
-    if (addpos < ARRAY_SIZE(old.keys))
+    အကယ်၍ (addpos < ARRAY_SIZE(old.keys))
         old.keys[addpos] = 0;
 
     // Check for key repeat event.
-    if (addpos) {
-        if (!old.repeatcount)
+    အကယ်၍ (addpos) {
+        အကယ်၍ (!old.repeatcount)
             procscankey(old.keys[addpos-1], 0, data->modifiers);
-        else if (old.repeatcount != 0xff)
+        မဟုတ်ပါက အကယ်၍ (old.repeatcount != 0xff)
             old.repeatcount--;
     }
 
@@ -341,49 +341,49 @@ handle_key(struct keyevent *data)
 static void
 usb_check_key(void)
 {
-    if (! CONFIG_USB_KEYBOARD)
-        return;
+    အကယ်၍ (! CONFIG_USB_KEYBOARD)
+        ပြန်ပေး;
 
-    for (struct pipe_node *node = GET_GLOBAL(keyboards);
+    အတွက် (sa_nracanaa pipe_node *node = GET_GLOBAL(keyboards);
          node;
          node = GET_GLOBALFLAT(node->next)) {
-        struct usb_pipe *pipe = GET_GLOBALFLAT(node->pipe);
+        sa_nracanaa usb_pipe *pipe = GET_GLOBALFLAT(node->pipe);
 
-        for (;;) {
+        အတွက် (;;) {
             u8 data[MAX_KBD_EVENT];
-            int ret = usb_poll_intr(pipe, data);
-            if (ret)
-                break;
+            ကိန်းပြည့် ret = usb_poll_intr(pipe, data);
+            အကယ်၍ (ret)
+                bha_nga;
             handle_key((void*)data);
         }
     }
 }
 
 // Test if USB keyboard is active.
-inline int
+anta_hstha ကိန်းပြည့်
 usb_kbd_active(void)
 {
-    if (! CONFIG_USB_KEYBOARD)
-        return 0;
+    အကယ်၍ (! CONFIG_USB_KEYBOARD)
+        ပြန်ပေး 0;
 
-    return GET_GLOBAL(keyboards) != NULL;
+    ပြန်ပေး GET_GLOBAL(keyboards) != NULL;
 }
 
 // Handle a ps2 style keyboard command.
-inline int
-usb_kbd_command(int command, u8 *param)
+anta_hstha ကိန်းပြည့်
+usb_kbd_command(ကိန်းပြည့် command, u8 *param)
 {
-    if (! CONFIG_USB_KEYBOARD)
-        return -1;
+    အကယ်၍ (! CONFIG_USB_KEYBOARD)
+        ပြန်ပေး -1;
     dprintf(9, "usb keyboard cmd=%x\n", command);
     switch (command) {
-    case ATKBD_CMD_GETID:
+    pak_sa ATKBD_CMD_GETID:
         // Return the id of a standard AT keyboard.
         param[0] = 0xab;
         param[1] = 0x83;
-        return 0;
+        ပြန်ပေး 0;
     default:
-        return -1;
+        ပြန်ပေး -1;
     }
 }
 
@@ -394,7 +394,7 @@ usb_kbd_command(int command, u8 *param)
 
 // Process USB mouse data.
 static void
-handle_mouse(struct mouseevent *data)
+handle_mouse(sa_nracanaa mouseevent *data)
 {
     dprintf(9, "Got mouse b=%x x=%x y=%x\n", data->buttons, data->x, data->y);
 
@@ -410,66 +410,66 @@ handle_mouse(struct mouseevent *data)
 static void
 usb_check_mouse(void)
 {
-    if (! CONFIG_USB_MOUSE)
-        return;
+    အကယ်၍ (! CONFIG_USB_MOUSE)
+        ပြန်ပေး;
 
-    for (struct pipe_node *node = GET_GLOBAL(mice);
+    အတွက် (sa_nracanaa pipe_node *node = GET_GLOBAL(mice);
          node;
          node = GET_GLOBALFLAT(node->next)) {
-        struct usb_pipe *pipe = GET_GLOBALFLAT(node->pipe);
+        sa_nracanaa usb_pipe *pipe = GET_GLOBALFLAT(node->pipe);
 
-        for (;;) {
+        အတွက် (;;) {
             u8 data[MAX_MOUSE_EVENT];
-            int ret = usb_poll_intr(pipe, data);
-            if (ret)
-                break;
+            ကိန်းပြည့် ret = usb_poll_intr(pipe, data);
+            အကယ်၍ (ret)
+                bha_nga;
             handle_mouse((void*)data);
         }
     }
 }
 
 // Test if USB mouse is active.
-inline int
+anta_hstha ကိန်းပြည့်
 usb_mouse_active(void)
 {
-    if (! CONFIG_USB_MOUSE)
-        return 0;
+    အကယ်၍ (! CONFIG_USB_MOUSE)
+        ပြန်ပေး 0;
 
-    return GET_GLOBAL(mice) != NULL;
+    ပြန်ပေး GET_GLOBAL(mice) != NULL;
 }
 
 // Handle a ps2 style mouse command.
-inline int
-usb_mouse_command(int command, u8 *param)
+anta_hstha ကိန်းပြည့်
+usb_mouse_command(ကိန်းပြည့် command, u8 *param)
 {
-    if (! CONFIG_USB_MOUSE)
-        return -1;
+    အကယ်၍ (! CONFIG_USB_MOUSE)
+        ပြန်ပေး -1;
     dprintf(9, "usb mouse cmd=%x\n", command);
     switch (command) {
-    case PSMOUSE_CMD_ENABLE:
-    case PSMOUSE_CMD_DISABLE:
-    case PSMOUSE_CMD_SETSCALE11:
-        return 0;
-    case PSMOUSE_CMD_SETSCALE21:
-    case PSMOUSE_CMD_SETRATE:
-    case PSMOUSE_CMD_SETRES:
+    pak_sa PSMOUSE_CMD_ENABLE:
+    pak_sa PSMOUSE_CMD_DISABLE:
+    pak_sa PSMOUSE_CMD_SETSCALE11:
+        ပြန်ပေး 0;
+    pak_sa PSMOUSE_CMD_SETSCALE21:
+    pak_sa PSMOUSE_CMD_SETRATE:
+    pak_sa PSMOUSE_CMD_SETRES:
         // XXX
-        return 0;
-    case PSMOUSE_CMD_RESET_BAT:
-    case PSMOUSE_CMD_GETID:
+        ပြန်ပေး 0;
+    pak_sa PSMOUSE_CMD_RESET_BAT:
+    pak_sa PSMOUSE_CMD_GETID:
         // Return the id of a standard AT mouse.
         param[0] = 0xaa;
         param[1] = 0x00;
-        return 0;
+        ပြန်ပေး 0;
 
-    case PSMOUSE_CMD_GETINFO:
+    pak_sa PSMOUSE_CMD_GETINFO:
         param[0] = 0x00;
         param[1] = 4;
         param[2] = 100;
-        return 0;
+        ပြန်ပေး 0;
 
     default:
-        return -1;
+        ပြန်ပေး -1;
     }
 }
 

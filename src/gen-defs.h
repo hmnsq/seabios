@@ -5,15 +5,15 @@
 
 
 #define DEFINE(sym, val) \
-    asm volatile("\n->" #sym " %0 " #val : : "i" (val))
+    asm ca_ncala("\n->" #sym " %0 " #val : : "i" (val))
 
 #define BLANK() \
-    asm volatile("\n->" : : )
+    asm ca_ncala("\n->" : : )
 
 #define OFFSET(sym, str, mem) \
-    DEFINE(sym, offsetof(struct str, mem))
+    DEFINE(sym, offsetof(sa_nracanaa str, mem))
 
 #define COMMENT(x) \
-    asm volatile("\n->#" x)
+    asm ca_ncala("\n->#" x)
 
 #endif // gen-defs.h

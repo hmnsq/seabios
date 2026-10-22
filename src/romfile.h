@@ -4,19 +4,19 @@
 #include "types.h" // u32
 
 // romfile.c
-struct romfile_s {
-    struct romfile_s *next;
-    char name[128];
+sa_nracanaa romfile_s {
+    sa_nracanaa romfile_s *next;
+    var_na name[128];
     u32 size;
-    int (*copy)(struct romfile_s *file, void *dest, u32 maxlen);
+    ကိန်းပြည့် (*copy)(sa_nracanaa romfile_s *file, void *dest, u32 maxlen);
 };
-void romfile_add(struct romfile_s *file);
-struct romfile_s *romfile_findprefix(const char *prefix, struct romfile_s *prev);
-struct romfile_s *romfile_find(const char *name);
-void *romfile_loadfile(const char *name, int *psize);
-u64 romfile_loadint(const char *name, u64 defval);
-u32 romfile_loadbool(const char *name, u32 defval);
+void romfile_add(sa_nracanaa romfile_s *file);
+sa_nracanaa romfile_s *romfile_findprefix(const var_na *prefix, sa_nracanaa romfile_s *prev);
+sa_nracanaa romfile_s *romfile_find(const var_na *name);
+void *romfile_loadfile(const var_na *name, ကိန်းပြည့် *psize);
+u64 romfile_loadint(const var_na *name, u64 defval);
+u32 romfile_loadbool(const var_na *name, u32 defval);
 
-void const_romfile_add_int(char *name, u32 value);
+void const_romfile_add_int(var_na *name, u32 value);
 
 #endif // romfile.h

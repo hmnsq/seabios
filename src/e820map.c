@@ -15,46 +15,46 @@
  ****************************************************************/
 
 // Info on e820 map location and size.
-struct e820entry e820_list[BUILD_MAX_E820] VARFSEG;
-int e820_count VARFSEG;
+sa_nracanaa e820entry e820_list[BUILD_MAX_E820] VARFSEG;
+ကိန်းပြည့် e820_count VARFSEG;
 
 // Remove an entry from the e820_list.
 static void
-remove_e820(int i)
+remove_e820(ကိန်းပြည့် i)
 {
     e820_count--;
     memmove(&e820_list[i], &e820_list[i+1]
-            , sizeof(e820_list[0]) * (e820_count - i));
+            , parimaa_na(e820_list[0]) * (e820_count - i));
 }
 
 // Insert an entry in the e820_list at the given position.
 static void
-insert_e820(int i, u64 start, u64 size, u32 type)
+insert_e820(ကိန်းပြည့် i, u64 start, u64 size, u32 type)
 {
-    if (e820_count >= BUILD_MAX_E820) {
+    အကယ်၍ (e820_count >= BUILD_MAX_E820) {
         warn_noalloc();
-        return;
+        ပြန်ပေး;
     }
 
     memmove(&e820_list[i+1], &e820_list[i]
-            , sizeof(e820_list[0]) * (e820_count - i));
+            , parimaa_na(e820_list[0]) * (e820_count - i));
     e820_count++;
-    struct e820entry *e = &e820_list[i];
+    sa_nracanaa e820entry *e = &e820_list[i];
     e->start = start;
     e->size = size;
     e->type = type;
 }
 
-static const char *
+static const var_na *
 e820_type_name(u32 type)
 {
     switch (type) {
-    case E820_RAM:      return "RAM";
-    case E820_RESERVED: return "RESERVED";
-    case E820_ACPI:     return "ACPI";
-    case E820_NVS:      return "NVS";
-    case E820_UNUSABLE: return "UNUSABLE";
-    default:            return "UNKNOWN";
+    pak_sa E820_RAM:      ပြန်ပေး "RAM";
+    pak_sa E820_RESERVED: ပြန်ပေး "RESERVED";
+    pak_sa E820_ACPI:     ပြန်ပေး "ACPI";
+    pak_sa E820_NVS:      ပြန်ပေး "NVS";
+    pak_sa E820_UNUSABLE: ပြန်ပေး "UNUSABLE";
+    default:            ပြန်ပေး "UNKNOWN";
     }
 }
 
@@ -63,9 +63,9 @@ static void
 dump_map(void)
 {
     dprintf(1, "e820 map has %d items:\n", e820_count);
-    int i;
-    for (i=0; i<e820_count; i++) {
-        struct e820entry *e = &e820_list[i];
+    ကိန်းပြည့် i;
+    အတွက် (i=0; i<e820_count; i++) {
+        sa_nracanaa e820entry *e = &e820_list[i];
         u64 e_end = e->start + e->size;
         dprintf(1, "  %d: %016llx - %016llx = %d %s\n", i
                 , e->start, e_end, e->type, e820_type_name(e->type));
@@ -81,42 +81,42 @@ e820_add(u64 start, u64 size, u32 type)
 {
     dprintf(8, "Add to e820 map: %08llx %08llx %d\n", start, size, type);
 
-    if (! size)
+    အကယ်၍ (! size)
         // Huh?  Nothing to do.
-        return;
+        ပြန်ပေး;
 
     // Find position of new item (splitting existing item if needed).
     u64 end = start + size;
-    int i;
-    for (i=0; i<e820_count; i++) {
-        struct e820entry *e = &e820_list[i];
+    ကိန်းပြည့် i;
+    အတွက် (i=0; i<e820_count; i++) {
+        sa_nracanaa e820entry *e = &e820_list[i];
         u64 e_end = e->start + e->size;
-        if (start > e_end)
+        အကယ်၍ (start > e_end)
             continue;
         // Found position - check if an existing item needs to be split.
-        if (start > e->start) {
-            if (type == e->type) {
+        အကယ်၍ (start > e->start) {
+            အကယ်၍ (type == e->type) {
                 // Same type - merge them.
                 size += start - e->start;
                 start = e->start;
-            } else {
+            } မဟုတ်ပါက {
                 // Split existing item.
                 e->size = start - e->start;
                 i++;
-                if (e_end > end)
+                အကယ်၍ (e_end > end)
                     insert_e820(i, end, e_end - end, e->type);
             }
         }
-        break;
+        bha_nga;
     }
     // Remove/adjust existing items that are overlapping.
-    while (i<e820_count) {
-        struct e820entry *e = &e820_list[i];
-        if (end < e->start)
+    နေစဉ် (i<e820_count) {
+        sa_nracanaa e820entry *e = &e820_list[i];
+        အကယ်၍ (end < e->start)
             // No overlap - done.
-            break;
+            bha_nga;
         u64 e_end = e->start + e->size;
-        if (end >= e_end) {
+        အကယ်၍ (end >= e_end) {
             // Existing item completely overlapped - remove it.
             remove_e820(i);
             continue;
@@ -124,15 +124,15 @@ e820_add(u64 start, u64 size, u32 type)
         // Not completely overlapped - adjust its start.
         e->start = end;
         e->size = e_end - end;
-        if (type == e->type) {
+        အကယ်၍ (type == e->type) {
             // Same type - merge them.
             size += e->size;
             remove_e820(i);
         }
-        break;
+        bha_nga;
     }
     // Insert new item.
-    if (type != E820_HOLE)
+    အကယ်၍ (type != E820_HOLE)
         insert_e820(i, start, size, type);
     //dump_map();
 }
@@ -151,17 +151,17 @@ e820_prepboot(void)
     dump_map();
 }
 
-int
+ကိန်းပြည့်
 e820_is_used(u64 start, u64 size)
 {
-    int i;
-    for (i=0; i<e820_count; i++) {
-        struct e820entry *e = &e820_list[i];
-        if (start + size <= e->start)
+    ကိန်းပြည့် i;
+    အတွက် (i=0; i<e820_count; i++) {
+        sa_nracanaa e820entry *e = &e820_list[i];
+        အကယ်၍ (start + size <= e->start)
             continue;
-        if (start >= e->start + e->size)
+        အကယ်၍ (start >= e->start + e->size)
             continue;
-        return 1;
+        ပြန်ပေး 1;
     }
-    return 0;
+    ပြန်ပေး 0;
 }

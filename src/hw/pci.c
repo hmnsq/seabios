@@ -18,12 +18,12 @@ static u32 mmconfig;
 
 static void *mmconfig_addr(u16 bdf, u32 addr)
 {
-    return (void*)(mmconfig + ((u32)bdf << 12) + addr);
+    ပြန်ပေး (void*)(mmconfig + ((u32)bdf << 12) + addr);
 }
 
 static u32 ioconfig_cmd(u16 bdf, u32 addr)
 {
-    return 0x80000000 | (bdf << 8) | (addr & 0xfc);
+    ပြန်ပေး 0x80000000 | (bdf << 8) | (addr & 0xfc);
 }
 
 void pci_ioconfig_writel(u16 bdf, u32 addr, u32 val)
@@ -34,9 +34,9 @@ void pci_ioconfig_writel(u16 bdf, u32 addr, u32 val)
 
 void pci_config_writel(u16 bdf, u32 addr, u32 val)
 {
-    if (!MODESEGMENT && mmconfig) {
+    အကယ်၍ (!MODESEGMENT && mmconfig) {
         writel(mmconfig_addr(bdf, addr), val);
-    } else {
+    } မဟုတ်ပါက {
         pci_ioconfig_writel(bdf, addr, val);
     }
 }
@@ -49,9 +49,9 @@ void pci_ioconfig_writew(u16 bdf, u32 addr, u16 val)
 
 void pci_config_writew(u16 bdf, u32 addr, u16 val)
 {
-    if (!MODESEGMENT && mmconfig) {
+    အကယ်၍ (!MODESEGMENT && mmconfig) {
         writew(mmconfig_addr(bdf, addr), val);
-    } else {
+    } မဟုတ်ပါက {
         pci_ioconfig_writew(bdf, addr, val);
     }
 }
@@ -64,9 +64,9 @@ void pci_ioconfig_writeb(u16 bdf, u32 addr, u8 val)
 
 void pci_config_writeb(u16 bdf, u32 addr, u8 val)
 {
-    if (!MODESEGMENT && mmconfig) {
+    အကယ်၍ (!MODESEGMENT && mmconfig) {
         writeb(mmconfig_addr(bdf, addr), val);
-    } else {
+    } မဟုတ်ပါက {
         pci_ioconfig_writeb(bdf, addr, val);
     }
 }
@@ -74,45 +74,45 @@ void pci_config_writeb(u16 bdf, u32 addr, u8 val)
 u32 pci_ioconfig_readl(u16 bdf, u32 addr)
 {
     outl(ioconfig_cmd(bdf, addr), PORT_PCI_CMD);
-    return inl(PORT_PCI_DATA);
+    ပြန်ပေး inl(PORT_PCI_DATA);
 }
 
 u32 pci_config_readl(u16 bdf, u32 addr)
 {
-    if (!MODESEGMENT && mmconfig) {
-        return readl(mmconfig_addr(bdf, addr));
-    } else {
-        return pci_ioconfig_readl(bdf, addr);
+    အကယ်၍ (!MODESEGMENT && mmconfig) {
+        ပြန်ပေး readl(mmconfig_addr(bdf, addr));
+    } မဟုတ်ပါက {
+        ပြန်ပေး pci_ioconfig_readl(bdf, addr);
     }
 }
 
 u16 pci_ioconfig_readw(u16 bdf, u32 addr)
 {
     outl(ioconfig_cmd(bdf, addr), PORT_PCI_CMD);
-    return inw(PORT_PCI_DATA + (addr & 2));
+    ပြန်ပေး inw(PORT_PCI_DATA + (addr & 2));
 }
 
 u16 pci_config_readw(u16 bdf, u32 addr)
 {
-    if (!MODESEGMENT && mmconfig) {
-        return readw(mmconfig_addr(bdf, addr));
-    } else {
-        return pci_ioconfig_readw(bdf, addr);
+    အကယ်၍ (!MODESEGMENT && mmconfig) {
+        ပြန်ပေး readw(mmconfig_addr(bdf, addr));
+    } မဟုတ်ပါက {
+        ပြန်ပေး pci_ioconfig_readw(bdf, addr);
     }
 }
 
 u8 pci_ioconfig_readb(u16 bdf, u32 addr)
 {
     outl(ioconfig_cmd(bdf, addr), PORT_PCI_CMD);
-    return inb(PORT_PCI_DATA + (addr & 3));
+    ပြန်ပေး inb(PORT_PCI_DATA + (addr & 3));
 }
 
 u8 pci_config_readb(u16 bdf, u32 addr)
 {
-    if (!MODESEGMENT && mmconfig) {
-        return readb(mmconfig_addr(bdf, addr));
-    } else {
-        return pci_ioconfig_readb(bdf, addr);
+    အကယ်၍ (!MODESEGMENT && mmconfig) {
+        ပြန်ပေး readb(mmconfig_addr(bdf, addr));
+    } မဟုတ်ပါက {
+        ပြန်ပေး pci_ioconfig_readb(bdf, addr);
     }
 }
 
@@ -125,103 +125,103 @@ pci_config_maskw(u16 bdf, u32 addr, u16 off, u16 on)
 }
 
 void
-pci_enable_mmconfig(u64 addr, const char *name)
+pci_enable_mmconfig(u64 addr, const var_na *name)
 {
-    if (addr >= 0x100000000ll)
-        return;
+    အကယ်၍ (addr >= 0x100000000ll)
+        ပြန်ပေး;
     dprintf(1, "PCIe: using %s mmconfig at 0x%llx\n", name, addr);
     mmconfig = addr;
 }
 
 u8 pci_find_capability(u16 bdf, u8 cap_id, u8 cap)
 {
-    int i;
+    ကိန်းပြည့် i;
     u16 status = pci_config_readw(bdf, PCI_STATUS);
 
-    if (!(status & PCI_STATUS_CAP_LIST))
-        return 0;
+    အကယ်၍ (!(status & PCI_STATUS_CAP_LIST))
+        ပြန်ပေး 0;
 
-    if (cap == 0) {
+    အကယ်၍ (cap == 0) {
         /* find first */
         cap = pci_config_readb(bdf, PCI_CAPABILITY_LIST);
-    } else {
+    } မဟုတ်ပါက {
         /* find next */
         cap = pci_config_readb(bdf, cap + PCI_CAP_LIST_NEXT);
     }
-    for (i = 0; cap && i <= 0xff; i++) {
-        if (pci_config_readb(bdf, cap + PCI_CAP_LIST_ID) == cap_id)
-            return cap;
+    အတွက် (i = 0; cap && i <= 0xff; i++) {
+        အကယ်၍ (pci_config_readb(bdf, cap + PCI_CAP_LIST_ID) == cap_id)
+            ပြန်ပေး cap;
         cap = pci_config_readb(bdf, cap + PCI_CAP_LIST_NEXT);
     }
 
-    return 0;
+    ပြန်ပေး 0;
 }
 
 // Helper function for pci_ioconfig_foreachbdf() macro - return next device
-int pci_ioconfig_next(int bdf, int bus)
+ကိန်းပြည့် pci_ioconfig_next(ကိန်းပြည့် bdf, ကိန်းပြည့် bus)
 {
-    if (pci_bdf_to_fn(bdf) == 0
+    အကယ်၍ (pci_bdf_to_fn(bdf) == 0
         && (pci_ioconfig_readb(bdf, PCI_HEADER_TYPE) & 0x80) == 0)
         // Last found device wasn't a multi-function device - skip to
         // the next device.
         bdf += 8;
-    else
+    မဟုတ်ပါက
         bdf += 1;
 
-    for (;;) {
-        if (pci_bdf_to_bus(bdf) != bus)
-            return -1;
+    အတွက် (;;) {
+        အကယ်၍ (pci_bdf_to_bus(bdf) != bus)
+            ပြန်ပေး -1;
 
         u16 v = pci_ioconfig_readw(bdf, PCI_VENDOR_ID);
-        if (v != 0x0000 && v != 0xffff)
+        အကယ်၍ (v != 0x0000 && v != 0xffff)
             // Device is present.
-            return bdf;
+            ပြန်ပေး bdf;
 
-        if (pci_bdf_to_fn(bdf) == 0)
+        အကယ်၍ (pci_bdf_to_fn(bdf) == 0)
             bdf += 8;
-        else
+        မဟုတ်ပါက
             bdf += 1;
     }
 }
 
 // Helper function for foreachbdf() macro - return next device
-int
-pci_next(int bdf, int bus)
+ကိန်းပြည့်
+pci_next(ကိန်းပြည့် bdf, ကိန်းပြည့် bus)
 {
-    if (pci_bdf_to_fn(bdf) == 0
+    အကယ်၍ (pci_bdf_to_fn(bdf) == 0
         && (pci_config_readb(bdf, PCI_HEADER_TYPE) & 0x80) == 0)
         // Last found device wasn't a multi-function device - skip to
         // the next device.
         bdf += 8;
-    else
+    မဟုတ်ပါက
         bdf += 1;
 
-    for (;;) {
-        if (pci_bdf_to_bus(bdf) != bus)
-            return -1;
+    အတွက် (;;) {
+        အကယ်၍ (pci_bdf_to_bus(bdf) != bus)
+            ပြန်ပေး -1;
 
         u16 v = pci_config_readw(bdf, PCI_VENDOR_ID);
-        if (v != 0x0000 && v != 0xffff)
+        အကယ်၍ (v != 0x0000 && v != 0xffff)
             // Device is present.
-            return bdf;
+            ပြန်ပေး bdf;
 
-        if (pci_bdf_to_fn(bdf) == 0)
+        အကယ်၍ (pci_bdf_to_fn(bdf) == 0)
             bdf += 8;
-        else
+        မဟုတ်ပါက
             bdf += 1;
     }
 }
 
 // Check if PCI is available at all
-int
+ကိန်းပြည့်
 pci_probe_host(void)
 {
     outl(0x80000000, PORT_PCI_CMD);
-    if (inl(PORT_PCI_CMD) != 0x80000000) {
+    အကယ်၍ (inl(PORT_PCI_CMD) != 0x80000000) {
         dprintf(1, "Detected non-PCI system\n");
-        return -1;
+        ပြန်ပေး -1;
     }
-    return 0;
+    ပြန်ပေး 0;
 }
 
 void

@@ -6,7 +6,7 @@
 #include "romfile.h" // struct romfile_s
 
 // kvmclock
-struct pvclock_vcpu_time_info {
+sa_nracanaa pvclock_vcpu_time_info {
 	u32   version;
 	u32   pad0;
 	u64   tsc_timestamp;
@@ -22,7 +22,7 @@ struct pvclock_vcpu_time_info {
 #define PF_XEN      (1<<1)
 #define PF_KVM      (1<<2)
 
-typedef struct QemuCfgDmaAccess {
+typedef sa_nracanaa QemuCfgDmaAccess {
     u32 control;
     u32 length;
     u64 address;
@@ -30,19 +30,19 @@ typedef struct QemuCfgDmaAccess {
 
 extern u32 RamSize;
 extern u64 RamSizeOver4G;
-extern int PlatformRunningOn;
+extern ကိန်းပြည့် PlatformRunningOn;
 extern u8 CPUPhysBits;
 extern u8 CPULongMode;
 
-static inline int runningOnQEMU(void) {
-    return CONFIG_QEMU || (
+static anta_hstha ကိန်းပြည့် runningOnQEMU(void) {
+    ပြန်ပေး CONFIG_QEMU || (
         CONFIG_QEMU_HARDWARE && GET_GLOBAL(PlatformRunningOn) & PF_QEMU);
 }
-static inline int runningOnXen(void) {
-    return CONFIG_XEN && GET_GLOBAL(PlatformRunningOn) & PF_XEN;
+static anta_hstha ကိန်းပြည့် runningOnXen(void) {
+    ပြန်ပေး CONFIG_XEN && GET_GLOBAL(PlatformRunningOn) & PF_XEN;
 }
-static inline int runningOnKVM(void) {
-    return CONFIG_QEMU && GET_GLOBAL(PlatformRunningOn) & PF_KVM;
+static anta_hstha ကိန်းပြည့် runningOnKVM(void) {
+    ပြန်ပေး CONFIG_QEMU && GET_GLOBAL(PlatformRunningOn) & PF_KVM;
 }
 
 // Common paravirt ports.
@@ -66,15 +66,15 @@ static inline int runningOnKVM(void) {
 // QEMU debugcon read value
 #define QEMU_DEBUGCON_READBACK  0xe9
 
-int qemu_cfg_enabled(void);
-int qemu_cfg_dma_enabled(void);
+ကိန်းပြည့် qemu_cfg_enabled(void);
+ကိန်းပြည့် qemu_cfg_dma_enabled(void);
 void qemu_preinit(void);
 void qemu_platform_setup(void);
 void qemu_cfg_init(void);
 
 u16 qemu_get_present_cpus_count(void);
-int qemu_cfg_write_file(void *src, struct romfile_s *file, u32 offset, u32 len);
-int qemu_cfg_write_file_simple(void *src, u16 key, u32 offset, u32 len);
-u16 qemu_get_romfile_key(struct romfile_s *file);
+ကိန်းပြည့် qemu_cfg_write_file(void *src, sa_nracanaa romfile_s *file, u32 offset, u32 len);
+ကိန်းပြည့် qemu_cfg_write_file_simple(void *src, u16 key, u32 offset, u32 len);
+u16 qemu_get_romfile_key(sa_nracanaa romfile_s *file);
 
 #endif

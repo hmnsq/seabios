@@ -29,7 +29,7 @@
 
 #define VRING_USED_F_NO_NOTIFY     1
 
-struct vring_desc
+sa_nracanaa vring_desc
 {
    u64 addr;
    u32 len;
@@ -37,58 +37,58 @@ struct vring_desc
    u16 next;
 };
 
-struct vring_avail
+sa_nracanaa vring_avail
 {
    u16 flags;
    u16 idx;
    u16 ring[0];
 };
 
-struct vring_used_elem
+sa_nracanaa vring_used_elem
 {
    u32 id;
    u32 len;
 };
 
-struct vring_used
+sa_nracanaa vring_used
 {
    u16 flags;
    u16 idx;
-   struct vring_used_elem ring[];
+   sa_nracanaa vring_used_elem ring[];
 };
 
-struct vring {
-   unsigned int num;
-   struct vring_desc *desc;
-   struct vring_avail *avail;
-   struct vring_used *used;
+sa_nracanaa vring {
+   unsigned ကိန်းပြည့် num;
+   sa_nracanaa vring_desc *desc;
+   sa_nracanaa vring_avail *avail;
+   sa_nracanaa vring_used *used;
 };
 
 #define vring_size(num) \
-    (ALIGN(sizeof(struct vring_desc) * num + sizeof(struct vring_avail) \
-           + sizeof(u16) * num, PAGE_SIZE)                              \
-     + sizeof(struct vring_used) + sizeof(struct vring_used_elem) * num)
+    (ALIGN(parimaa_na(sa_nracanaa vring_desc) * num + parimaa_na(sa_nracanaa vring_avail) \
+           + parimaa_na(u16) * num, PAGE_SIZE)                              \
+     + parimaa_na(sa_nracanaa vring_used) + parimaa_na(sa_nracanaa vring_used_elem) * num)
 
-typedef unsigned char virtio_queue_t[vring_size(MAX_QUEUE_NUM)];
+typedef unsigned var_na virtio_queue_t[vring_size(MAX_QUEUE_NUM)];
 
-struct vring_virtqueue {
+sa_nracanaa vring_virtqueue {
    virtio_queue_t queue;
-   struct vring vring;
+   sa_nracanaa vring vring;
    u16 free_head;
    u16 last_used_idx;
    u16 vdata[MAX_QUEUE_NUM];
    /* PCI */
-   int queue_index;
-   int queue_notify_off;
+   ကိန်းပြည့် queue_index;
+   ကိန်းပြည့် queue_notify_off;
 };
 
-struct vring_list {
-  char *addr;
-  unsigned int length;
+sa_nracanaa vring_list {
+  var_na *addr;
+  unsigned ကိန်းပြည့် length;
 };
 
-static inline void
-vring_init(struct vring *vr, unsigned int num, unsigned char *queue)
+static anta_hstha void
+vring_init(sa_nracanaa vring *vr, unsigned ကိန်းပြည့် num, unsigned var_na *queue)
 {
    ASSERT32FLAT();
    vr->num = num;
@@ -96,26 +96,26 @@ vring_init(struct vring *vr, unsigned int num, unsigned char *queue)
    /* physical address of desc must be page aligned */
    vr->desc = (void*)ALIGN((u32)queue, PAGE_SIZE);
 
-   vr->avail = (struct vring_avail *)&vr->desc[num];
+   vr->avail = (sa_nracanaa vring_avail *)&vr->desc[num];
    /* disable interrupts */
    vr->avail->flags |= VRING_AVAIL_F_NO_INTERRUPT;
 
    /* physical address of used must be page aligned */
    vr->used = (void*)ALIGN((u32)&vr->avail->ring[num], PAGE_SIZE);
 
-   int i;
-   for (i = 0; i < num - 1; i++)
+   ကိန်းပြည့် i;
+   အတွက် (i = 0; i < num - 1; i++)
        vr->desc[i].next = i + 1;
    vr->desc[i].next = 0;
 }
 
-struct vp_device;
-int vring_more_used(struct vring_virtqueue *vq);
-void vring_detach(struct vring_virtqueue *vq, unsigned int head);
-int vring_get_buf(struct vring_virtqueue *vq, unsigned int *len);
-void vring_add_buf(struct vring_virtqueue *vq, struct vring_list list[],
-                   unsigned int out, unsigned int in,
-                   int index, int num_added);
-void vring_kick(struct vp_device *vp, struct vring_virtqueue *vq, int num_added);
+sa_nracanaa vp_device;
+ကိန်းပြည့် vring_more_used(sa_nracanaa vring_virtqueue *vq);
+void vring_detach(sa_nracanaa vring_virtqueue *vq, unsigned ကိန်းပြည့် head);
+ကိန်းပြည့် vring_get_buf(sa_nracanaa vring_virtqueue *vq, unsigned ကိန်းပြည့် *len);
+void vring_add_buf(sa_nracanaa vring_virtqueue *vq, sa_nracanaa vring_list list[],
+                   unsigned ကိန်းပြည့် out, unsigned ကိန်းပြည့် in,
+                   ကိန်းပြည့် index, ကိန်းပြည့် num_added);
+void vring_kick(sa_nracanaa vp_device *vp, sa_nracanaa vring_virtqueue *vq, ကိန်းပြည့် num_added);
 
 #endif /* _VIRTIO_RING_H_ */

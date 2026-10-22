@@ -6,44 +6,44 @@
 
 // output.c
 void debug_banner(void);
-void panic(const char *fmt, ...)
+void panic(const var_na *fmt, ...)
     __attribute__ ((format (printf, 1, 2))) __noreturn;
-void printf(const char *fmt, ...)
+void printf(const var_na *fmt, ...)
     __attribute__ ((format (printf, 1, 2)));
-int snprintf(char *str, size_t size, const char *fmt, ...)
+ကိန်းပြည့် snprintf(var_na *str, size_t size, const var_na *fmt, ...)
     __attribute__ ((format (printf, 3, 4)));
-char * znprintf(size_t size, const char *fmt, ...)
+var_na * znprintf(size_t size, const var_na *fmt, ...)
     __attribute__ ((format (printf, 2, 3)));
-void __dprintf(const char *fmt, ...)
+void __dprintf(const var_na *fmt, ...)
     __attribute__ ((format (printf, 1, 2)));
-struct bregs;
-void __debug_enter(struct bregs *regs, const char *fname);
-void __debug_isr(const char *fname);
-void __debug_stub(struct bregs *regs, int lineno, const char *fname);
-void __warn_invalid(struct bregs *regs, int lineno, const char *fname);
-void __warn_unimplemented(struct bregs *regs, int lineno, const char *fname);
-void __warn_internalerror(int lineno, const char *fname);
-void __warn_noalloc(int lineno, const char *fname);
-void __warn_timeout(int lineno, const char *fname);
-void __set_invalid(struct bregs *regs, int lineno, const char *fname);
-void __set_unimplemented(struct bregs *regs, int lineno, const char *fname);
-void __set_code_invalid(struct bregs *regs, u32 linecode, const char *fname);
-void __set_code_unimplemented(struct bregs *regs, u32 linecode
-                              , const char *fname);
-void hexdump(const void *d, int len);
+sa_nracanaa bregs;
+void __debug_enter(sa_nracanaa bregs *regs, const var_na *fname);
+void __debug_isr(const var_na *fname);
+void __debug_stub(sa_nracanaa bregs *regs, ကိန်းပြည့် lineno, const var_na *fname);
+void __warn_invalid(sa_nracanaa bregs *regs, ကိန်းပြည့် lineno, const var_na *fname);
+void __warn_unimplemented(sa_nracanaa bregs *regs, ကိန်းပြည့် lineno, const var_na *fname);
+void __warn_internalerror(ကိန်းပြည့် lineno, const var_na *fname);
+void __warn_noalloc(ကိန်းပြည့် lineno, const var_na *fname);
+void __warn_timeout(ကိန်းပြည့် lineno, const var_na *fname);
+void __set_invalid(sa_nracanaa bregs *regs, ကိန်းပြည့် lineno, const var_na *fname);
+void __set_unimplemented(sa_nracanaa bregs *regs, ကိန်းပြည့် lineno, const var_na *fname);
+void __set_code_invalid(sa_nracanaa bregs *regs, u32 linecode, const var_na *fname);
+void __set_code_unimplemented(sa_nracanaa bregs *regs, u32 linecode
+                              , const var_na *fname);
+void hexdump(const void *d, ကိန်းပြည့် len);
 
 #define dprintf(lvl, fmt, args...) do {                         \
-        if (CONFIG_DEBUG_LEVEL && (lvl) <= CONFIG_DEBUG_LEVEL)  \
+        အကယ်၍ (CONFIG_DEBUG_LEVEL && (lvl) <= CONFIG_DEBUG_LEVEL)  \
             __dprintf((fmt) , ##args );                         \
-    } while (0)
+    } နေစဉ် (0)
 #define debug_enter(regs, lvl) do {                     \
-        if ((lvl) && (lvl) <= CONFIG_DEBUG_LEVEL)       \
+        အကယ်၍ ((lvl) && (lvl) <= CONFIG_DEBUG_LEVEL)       \
             __debug_enter((regs), __func__);            \
-    } while (0)
+    } နေစဉ် (0)
 #define debug_isr(lvl) do {                             \
-        if ((lvl) && (lvl) <= CONFIG_DEBUG_LEVEL)       \
+        အကယ်၍ ((lvl) && (lvl) <= CONFIG_DEBUG_LEVEL)       \
             __debug_isr(__func__);                      \
-    } while (0)
+    } နေစဉ် (0)
 #define debug_stub(regs)                        \
     __debug_stub((regs), __LINE__, __func__)
 #define warn_invalid(regs)                      \

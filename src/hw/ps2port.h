@@ -59,8 +59,8 @@
 
 // ps2port.c
 void i8042_reboot(void);
-int ps2_kbd_command(int command, u8 *param);
-int ps2_mouse_command(int command, u8 *param);
+ကိန်းပြည့် ps2_kbd_command(ကိန်းပြည့် command, u8 *param);
+ကိန်းပြည့် ps2_mouse_command(ကိန်းပြည့် command, u8 *param);
 void ps2_check_event(void);
 void ps2port_setup(void);
 
