@@ -5,30 +5,30 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_EBDA
-#include "bregs.h" // struct bregs
-#include "hw/ps2port.h" // ps2_mouse_command
-#include "hw/usb-hid.h" // usb_mouse_command
-#include "output.h" // dprintf
-#include "stacks.h" // stack_hop_back
-#include "util.h" // mouse_init
+#अन्तर्भाव "biosvar.h" // GET_EBDA
+#अन्तर्भाव "bregs.h" // struct bregs
+#अन्तर्भाव "hw/ps2port.h" // ps2_mouse_command
+#अन्तर्भाव "hw/usb-hid.h" // usb_mouse_command
+#अन्तर्भाव "output.h" // dprintf
+#अन्तर्भाव "stacks.h" // stack_hop_back
+#अन्तर्भाव "util.h" // mouse_init
 
-void
-mouse_init(void)
+शून्य
+mouse_init(शून्य)
 {
-    if (! CONFIG_MOUSE)
-        return;
+    यदि (! CONFIG_MOUSE)
+        प्रत्यागम;
     dprintf(3, "init mouse\n");
     // pointing device installed
     set_equipment_flags(0x04, 0x04);
 }
 
-static int
-mouse_command(int command, u8 *param)
+स्थिर पूर्णाङ्क
+mouse_command(पूर्णाङ्क command, u8 *param)
 {
-    if (usb_mouse_active())
-        return usb_mouse_command(command, param);
-    return ps2_mouse_command(command, param);
+    यदि (usb_mouse_active())
+        प्रत्यागम usb_mouse_command(command, param);
+    प्रत्यागम ps2_mouse_command(command, param);
 }
 
 #define RET_SUCCESS      0x00
@@ -39,60 +39,60 @@ mouse_command(int command, u8 *param)
 #define RET_ENOHANDLER   0x05
 
 // Disable Mouse
-static void
-mouse_15c20000(struct bregs *regs)
+स्थिर शून्य
+mouse_15c20000(संरचना bregs *regs)
 {
-    int ret = mouse_command(PSMOUSE_CMD_DISABLE, NULL);
-    if (ret)
+    पूर्णाङ्क ret = mouse_command(PSMOUSE_CMD_DISABLE, रिक्त);
+    यदि (ret)
         set_code_invalid(regs, RET_ENEEDRESEND);
-    else
+    अन्यथा
         set_code_success(regs);
 }
 
 // Enable Mouse
-static void
-mouse_15c20001(struct bregs *regs)
+स्थिर शून्य
+mouse_15c20001(संरचना bregs *regs)
 {
     u16 ebda_seg = get_ebda_seg();
     u8 mouse_flags_2 = GET_EBDA(ebda_seg, mouse_flag2);
-    if ((mouse_flags_2 & 0x80) == 0) {
+    यदि ((mouse_flags_2 & 0x80) == 0) {
         set_code_invalid(regs, RET_ENOHANDLER);
-        return;
+        प्रत्यागम;
     }
 
-    int ret = mouse_command(PSMOUSE_CMD_ENABLE, NULL);
-    if (ret)
+    पूर्णाङ्क ret = mouse_command(PSMOUSE_CMD_ENABLE, रिक्त);
+    यदि (ret)
         set_code_invalid(regs, RET_ENEEDRESEND);
-    else
+    अन्यथा
         set_code_success(regs);
 }
 
-static void
-mouse_15c200XX(struct bregs *regs)
+स्थिर शून्य
+mouse_15c200XX(संरचना bregs *regs)
 {
     set_code_unimplemented(regs, RET_EINVFUNCTION);
 }
 
 // Disable/Enable Mouse
-static void
-mouse_15c200(struct bregs *regs)
+स्थिर शून्य
+mouse_15c200(संरचना bregs *regs)
 {
-    switch (regs->bh) {
-    case 0x00: mouse_15c20000(regs); break;
-    case 0x01: mouse_15c20001(regs); break;
-    default:   mouse_15c200XX(regs); break;
+    विकल्प (regs->bh) {
+    पक्ष 0x00: mouse_15c20000(regs); भङ्ग;
+    पक्ष 0x01: mouse_15c20001(regs); भङ्ग;
+    स्वभाव:   mouse_15c200XX(regs); भङ्ग;
     }
 }
 
 // Reset Mouse
-static void
-mouse_15c201(struct bregs *regs)
+स्थिर शून्य
+mouse_15c201(संरचना bregs *regs)
 {
     u8 param[2];
-    int ret = mouse_command(PSMOUSE_CMD_RESET_BAT, param);
-    if (ret) {
+    पूर्णाङ्क ret = mouse_command(PSMOUSE_CMD_RESET_BAT, param);
+    यदि (ret) {
         set_code_invalid(regs, RET_ENEEDRESEND);
-        return;
+        प्रत्यागम;
     }
     regs->bl = param[0];
     regs->bh = param[1];
@@ -100,64 +100,64 @@ mouse_15c201(struct bregs *regs)
 }
 
 // Set Sample Rate
-static void
-mouse_15c202(struct bregs *regs)
+स्थिर शून्य
+mouse_15c202(संरचना bregs *regs)
 {
-    static u8 VAR16 sample_rates[7] = {10, 20, 40, 60, 80, 100, 200};
-    if (regs->bh >= ARRAY_SIZE(sample_rates)) {
+    स्थिर u8 VAR16 sample_rates[7] = {10, 20, 40, 60, 80, 100, 200};
+    यदि (regs->bh >= ARRAY_SIZE(sample_rates)) {
         set_code_invalid(regs, RET_EINVINPUT);
-        return;
+        प्रत्यागम;
     }
     u8 mouse_data1 = GET_GLOBAL(sample_rates[regs->bh]);
-    int ret = mouse_command(PSMOUSE_CMD_SETRATE, &mouse_data1);
-    if (ret)
+    पूर्णाङ्क ret = mouse_command(PSMOUSE_CMD_SETRATE, &mouse_data1);
+    यदि (ret)
         set_code_invalid(regs, RET_ENEEDRESEND);
-    else
+    अन्यथा
         set_code_success(regs);
 }
 
 // Set Resolution
-static void
-mouse_15c203(struct bregs *regs)
+स्थिर शून्य
+mouse_15c203(संरचना bregs *regs)
 {
     // BH:
     //      0 =  25 dpi, 1 count  per millimeter
     //      1 =  50 dpi, 2 counts per millimeter
     //      2 = 100 dpi, 4 counts per millimeter
     //      3 = 200 dpi, 8 counts per millimeter
-    if (regs->bh >= 4) {
+    यदि (regs->bh >= 4) {
         set_code_invalid(regs, RET_EINVINPUT);
-        return;
+        प्रत्यागम;
     }
     u8 param = regs->bh;
-    int ret = mouse_command(PSMOUSE_CMD_SETRES, &param);
-    if (ret)
+    पूर्णाङ्क ret = mouse_command(PSMOUSE_CMD_SETRES, &param);
+    यदि (ret)
         set_code_invalid(regs, RET_ENEEDRESEND);
-    else
+    अन्यथा
         set_code_success(regs);
 }
 
 // Get Device ID
-static void
-mouse_15c204(struct bregs *regs)
+स्थिर शून्य
+mouse_15c204(संरचना bregs *regs)
 {
     u8 param[2];
-    int ret = mouse_command(PSMOUSE_CMD_GETID, param);
-    if (ret) {
+    पूर्णाङ्क ret = mouse_command(PSMOUSE_CMD_GETID, param);
+    यदि (ret) {
         set_code_invalid(regs, RET_ENEEDRESEND);
-        return;
+        प्रत्यागम;
     }
     regs->bh = param[0];
     set_code_success(regs);
 }
 
 // Initialize Mouse
-static void
-mouse_15c205(struct bregs *regs)
+स्थिर शून्य
+mouse_15c205(संरचना bregs *regs)
 {
-    if (regs->bh != 3) {
+    यदि (regs->bh != 3) {
         set_code_invalid(regs, RET_EINTERFACE);
-        return;
+        प्रत्यागम;
     }
     u16 ebda_seg = get_ebda_seg();
     SET_EBDA(ebda_seg, mouse_flag1, 0x00);
@@ -168,14 +168,14 @@ mouse_15c205(struct bregs *regs)
 }
 
 // Return Status
-static void
-mouse_15c20600(struct bregs *regs)
+स्थिर शून्य
+mouse_15c20600(संरचना bregs *regs)
 {
     u8 param[3];
-    int ret = mouse_command(PSMOUSE_CMD_GETINFO, param);
-    if (ret) {
+    पूर्णाङ्क ret = mouse_command(PSMOUSE_CMD_GETINFO, param);
+    यदि (ret) {
         set_code_invalid(regs, RET_ENEEDRESEND);
-        return;
+        प्रत्यागम;
     }
     regs->bl = param[0];
     regs->cl = param[1];
@@ -184,59 +184,59 @@ mouse_15c20600(struct bregs *regs)
 }
 
 // Set Scaling Factor to 1:1
-static void
-mouse_15c20601(struct bregs *regs)
+स्थिर शून्य
+mouse_15c20601(संरचना bregs *regs)
 {
-    int ret = mouse_command(PSMOUSE_CMD_SETSCALE11, NULL);
-    if (ret)
+    पूर्णाङ्क ret = mouse_command(PSMOUSE_CMD_SETSCALE11, रिक्त);
+    यदि (ret)
         set_code_invalid(regs, RET_ENEEDRESEND);
-    else
+    अन्यथा
         set_code_success(regs);
 }
 
 // Set Scaling Factor to 2:1
-static void
-mouse_15c20602(struct bregs *regs)
+स्थिर शून्य
+mouse_15c20602(संरचना bregs *regs)
 {
-    int ret = mouse_command(PSMOUSE_CMD_SETSCALE21, NULL);
-    if (ret)
+    पूर्णाङ्क ret = mouse_command(PSMOUSE_CMD_SETSCALE21, रिक्त);
+    यदि (ret)
         set_code_invalid(regs, RET_ENEEDRESEND);
-    else
+    अन्यथा
         set_code_success(regs);
 }
 
-static void
-mouse_15c206XX(struct bregs *regs)
+स्थिर शून्य
+mouse_15c206XX(संरचना bregs *regs)
 {
     set_code_unimplemented(regs, RET_EINVFUNCTION);
 }
 
 // Return Status & Set Scaling Factor...
-static void
-mouse_15c206(struct bregs *regs)
+स्थिर शून्य
+mouse_15c206(संरचना bregs *regs)
 {
-    switch (regs->bh) {
-    case 0x00: mouse_15c20600(regs); break;
-    case 0x01: mouse_15c20601(regs); break;
-    case 0x02: mouse_15c20602(regs); break;
-    default:   mouse_15c206XX(regs); break;
+    विकल्प (regs->bh) {
+    पक्ष 0x00: mouse_15c20600(regs); भङ्ग;
+    पक्ष 0x01: mouse_15c20601(regs); भङ्ग;
+    पक्ष 0x02: mouse_15c20602(regs); भङ्ग;
+    स्वभाव:   mouse_15c206XX(regs); भङ्ग;
     }
 }
 
 // Set Mouse Handler Address
-static void
-mouse_15c207(struct bregs *regs)
+स्थिर शून्य
+mouse_15c207(संरचना bregs *regs)
 {
-    struct segoff_s farptr = SEGOFF(regs->es, regs->bx);
+    संरचना segoff_s farptr = SEGOFF(regs->es, regs->bx);
     u16 ebda_seg = get_ebda_seg();
     u8 mouse_flags_2 = GET_EBDA(ebda_seg, mouse_flag2);
-    if (! farptr.segoff) {
+    यदि (! farptr.segoff) {
         /* remove handler */
-        if ((mouse_flags_2 & 0x80) != 0) {
+        यदि ((mouse_flags_2 & 0x80) != 0) {
             mouse_flags_2 &= ~0x80;
-            mouse_command(PSMOUSE_CMD_DISABLE, NULL);
+            mouse_command(PSMOUSE_CMD_DISABLE, रिक्त);
         }
-    } else {
+    } अन्यथा {
         /* install handler */
         mouse_flags_2 |= 0x80;
     }
@@ -245,43 +245,43 @@ mouse_15c207(struct bregs *regs)
     set_code_success(regs);
 }
 
-static void
-mouse_15c2XX(struct bregs *regs)
+स्थिर शून्य
+mouse_15c2XX(संरचना bregs *regs)
 {
     set_code_unimplemented(regs, RET_EINVFUNCTION);
 }
 
-void
-handle_15c2(struct bregs *regs)
+शून्य
+handle_15c2(संरचना bregs *regs)
 {
     //debug_stub(regs);
 
-    if (! CONFIG_MOUSE) {
+    यदि (! CONFIG_MOUSE) {
         set_code_invalid(regs, RET_EUNSUPPORTED);
-        return;
+        प्रत्यागम;
     }
 
-    switch (regs->al) {
-    case 0x00: mouse_15c200(regs); break;
-    case 0x01: mouse_15c201(regs); break;
-    case 0x02: mouse_15c202(regs); break;
-    case 0x03: mouse_15c203(regs); break;
-    case 0x04: mouse_15c204(regs); break;
-    case 0x05: mouse_15c205(regs); break;
-    case 0x06: mouse_15c206(regs); break;
-    case 0x07: mouse_15c207(regs); break;
-    default:   mouse_15c2XX(regs); break;
+    विकल्प (regs->al) {
+    पक्ष 0x00: mouse_15c200(regs); भङ्ग;
+    पक्ष 0x01: mouse_15c201(regs); भङ्ग;
+    पक्ष 0x02: mouse_15c202(regs); भङ्ग;
+    पक्ष 0x03: mouse_15c203(regs); भङ्ग;
+    पक्ष 0x04: mouse_15c204(regs); भङ्ग;
+    पक्ष 0x05: mouse_15c205(regs); भङ्ग;
+    पक्ष 0x06: mouse_15c206(regs); भङ्ग;
+    पक्ष 0x07: mouse_15c207(regs); भङ्ग;
+    स्वभाव:   mouse_15c2XX(regs); भङ्ग;
     }
 }
 
-void VISIBLE16
-invoke_mouse_handler(void)
+शून्य VISIBLE16
+invoke_mouse_handler(शून्य)
 {
-    if (!CONFIG_MOUSE)
-        return;
-    if (need_hop_back()) {
-        stack_hop_back(invoke_mouse_handler, 0, 0);
-        return;
+    यदि (!CONFIG_MOUSE)
+        प्रत्यागम;
+    यदि (need_hop_back()) {
+        चळत_hop_back(invoke_mouse_handler, 0, 0);
+        प्रत्यागम;
     }
     ASSERT16();
     u16 ebda_seg = get_ebda_seg();
@@ -289,11 +289,11 @@ invoke_mouse_handler(void)
     u16 X      = GET_EBDA(ebda_seg, mouse_data[1]);
     u16 Y      = GET_EBDA(ebda_seg, mouse_data[2]);
 
-    struct segoff_s func = GET_EBDA(ebda_seg, far_call_pointer);
+    संरचना segoff_s func = GET_EBDA(ebda_seg, far_call_pointer);
     dprintf(16, "mouse farcall s=%04x x=%04x y=%04x func=%04x:%04x\n"
             , status, X, Y, func.seg, func.offset);
 
-    asm volatile(
+    asm चञ्चल(
         "pushl %%ebp\n"
         "sti\n"
 
@@ -313,28 +313,28 @@ invoke_mouse_handler(void)
         : "edi", "esi", "cc", "memory");
 }
 
-void
+शून्य
 process_mouse(u8 data)
 {
-    if (!CONFIG_MOUSE)
-        return;
+    यदि (!CONFIG_MOUSE)
+        प्रत्यागम;
 
     u16 ebda_seg = get_ebda_seg();
     u8 mouse_flags_1 = GET_EBDA(ebda_seg, mouse_flag1);
     u8 mouse_flags_2 = GET_EBDA(ebda_seg, mouse_flag2);
 
-    if (! (mouse_flags_2 & 0x80))
+    यदि (! (mouse_flags_2 & 0x80))
         // far call handler not installed
-        return;
+        प्रत्यागम;
 
-    u8 package_count = mouse_flags_2 & 0x07;
+    u8 package_मोजणी = mouse_flags_2 & 0x07;
     u8 index = mouse_flags_1 & 0x07;
     SET_EBDA(ebda_seg, mouse_data[index], data);
 
-    if ((index+1) < package_count) {
+    यदि ((index+1) < package_मोजणी) {
         mouse_flags_1++;
         SET_EBDA(ebda_seg, mouse_flag1, mouse_flags_1);
-        return;
+        प्रत्यागम;
     }
 
     SET_EBDA(ebda_seg, mouse_flag1, 0);
