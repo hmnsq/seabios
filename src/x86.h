@@ -36,7 +36,7 @@ static inline u32 save_flags(void)
 {
     u32 flags;
     asm volatile("pushfl ; popl %0" : "=rm" (flags));
-    return flags;
+    врати flags;
 }
 
 static inline void restore_flags(u32 flags)
@@ -79,7 +79,7 @@ static inline void __cpuid(u32 index, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx)
 static inline u32 cr0_read(void) {
     u32 cr0;
     asm("movl %%cr0, %0" : "=r"(cr0));
-    return cr0;
+    врати cr0;
 }
 static inline void cr0_write(u32 cr0) {
     asm("movl %0, %%cr0" : : "r"(cr0));
@@ -90,14 +90,14 @@ static inline void cr0_mask(u32 off, u32 on) {
 static inline u16 cr0_vm86_read(void) {
     u16 cr0;
     asm("smsww %0" : "=r"(cr0));
-    return cr0;
+    врати cr0;
 }
 
 static inline u64 rdmsr(u32 index)
 {
     u64 ret;
     asm ("rdmsr" : "=A"(ret) : "c"(index));
-    return ret;
+    врати ret;
 }
 
 static inline void wrmsr(u32 index, u64 val)
@@ -109,7 +109,7 @@ static inline u64 rdtscll(void)
 {
     u64 val;
     asm volatile("rdtsc" : "=A" (val));
-    return val;
+    врати val;
 }
 
 static inline u32 __ffs(u32 word)
@@ -117,34 +117,34 @@ static inline u32 __ffs(u32 word)
     asm("bsf %1,%0"
         : "=r" (word)
         : "rm" (word));
-    return word;
+    врати word;
 }
 static inline u32 __fls(u32 word)
 {
     asm("bsr %1,%0"
         : "=r" (word)
         : "rm" (word));
-    return word;
+    врати word;
 }
 
 static inline u32 getesp(void) {
     u32 esp;
     asm("movl %%esp, %0" : "=rm"(esp));
-    return esp;
+    врати esp;
 }
 
 static inline u32 rol(u32 val, u16 rol) {
     u32 res;
     asm volatile("roll %%cl, %%eax"
                  : "=a" (res) : "a" (val), "c" (rol));
-    return res;
+    врати res;
 }
 
 static inline u32 ror(u32 val, u16 ror) {
     u32 res;
     asm volatile("rorl %%cl, %%eax"
                  : "=a" (res) : "a" (val), "c" (ror));
-    return res;
+    врати res;
 }
 
 static inline void outb(u8 value, u16 port) {
@@ -159,17 +159,17 @@ static inline void outl(u32 value, u16 port) {
 static inline u8 inb(u16 port) {
     u8 value;
     __asm__ __volatile__("inb %w1, %b0" : "=a"(value) : "Nd"(port));
-    return value;
+    врати value;
 }
 static inline u16 inw(u16 port) {
     u16 value;
     __asm__ __volatile__("inw %w1, %w0" : "=a"(value) : "Nd"(port));
-    return value;
+    врати value;
 }
 static inline u32 inl(u16 port) {
     u32 value;
     __asm__ __volatile__("inl %w1, %0" : "=a"(value) : "Nd"(port));
-    return value;
+    врати value;
 }
 
 static inline void insb(u16 port, u8 *data, u32 count) {
@@ -221,22 +221,22 @@ static inline void writeb(void *addr, u8 val) {
 static inline u64 readq(const void *addr) {
     u64 val = *(volatile const u64 *)addr;
     barrier();
-    return val;
+    врати val;
 }
 static inline u32 readl(const void *addr) {
     u32 val = *(volatile const u32 *)addr;
     barrier();
-    return val;
+    врати val;
 }
 static inline u16 readw(const void *addr) {
     u16 val = *(volatile const u16 *)addr;
     barrier();
-    return val;
+    врати val;
 }
 static inline u8 readb(const void *addr) {
     u8 val = *(volatile const u8 *)addr;
     barrier();
-    return val;
+    врати val;
 }
 
 // GDT bits
@@ -266,14 +266,14 @@ static inline void lgdt(struct descloc_s *desc) {
 }
 
 static inline u8 get_a20(void) {
-    return (inb(PORT_A20) & A20_ENABLE_BIT) != 0;
+    врати (inb(PORT_A20) & A20_ENABLE_BIT) != 0;
 }
 
 static inline u8 set_a20(u8 cond) {
     u8 val = inb(PORT_A20), a20_enabled = (val & A20_ENABLE_BIT) != 0;
-    if (a20_enabled != !!cond)
+    ако (a20_enabled != !!cond)
         outb(val ^ A20_ENABLE_BIT, PORT_A20);
-    return a20_enabled;
+    врати a20_enabled;
 }
 
 // x86.c

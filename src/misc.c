@@ -15,12 +15,12 @@
 #define PORT_MATH_CLEAR        0x00f0
 
 // Indicator if POST phase has been started (and if it has completed).
-int HaveRunPost VARFSEG;
+цео HaveRunPost VARFSEG;
 
-int
+цео
 in_post(void)
 {
-    return GET_GLOBAL(HaveRunPost) == 1;
+    врати GET_GLOBAL(HaveRunPost) == 1;
 }
 
 

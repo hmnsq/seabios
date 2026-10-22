@@ -10,8 +10,8 @@ typedef unsigned char u8;
 typedef signed char s8;
 typedef unsigned short u16;
 typedef signed short s16;
-typedef unsigned int u32;
-typedef signed int s32;
+typedef unsigned цео u32;
+typedef signed цео s32;
 typedef unsigned long long u64;
 typedef signed long long s64;
 typedef u32 size_t;
@@ -38,7 +38,7 @@ struct segoff_s {
 
 #ifdef WHOLE_PROGRAM
 # define __VISIBLE __attribute__((externally_visible))
-#else
+#инако
 # define __VISIBLE
 #endif
 
@@ -51,7 +51,7 @@ extern void __force_link_error__only_in_16bit(void) __noreturn;
 
 #define __ASM(code) asm(".section .text.asm." UNIQSEC "\n\t" code)
 
-#if MODE16 == 1
+#ако MODE16 == 1
 // Notes a function as externally visible in the 16bit code chunk.
 # define VISIBLE16 __VISIBLE
 // Notes a function as externally visible in the 32bit flat code chunk.
@@ -77,7 +77,7 @@ extern void __force_link_error__only_in_16bit(void) __noreturn;
 // Designate top-level assembler as 32bit flat only.
 # define ASM32FLAT(code)
 // Compile time check for a given mode.
-# define ASSERT16() do { } while (0)
+# define ASSERT16() do { } док (0)
 # define ASSERT32SEG() __force_link_error__only_in_32bit_segmented()
 # define ASSERT32FLAT() __force_link_error__only_in_32bit_flat()
 #elif MODESEGMENT == 1
@@ -94,9 +94,9 @@ extern void __force_link_error__only_in_16bit(void) __noreturn;
 # define ASM16(code)
 # define ASM32FLAT(code)
 # define ASSERT16() __force_link_error__only_in_16bit()
-# define ASSERT32SEG() do { } while (0)
+# define ASSERT32SEG() do { } док (0)
 # define ASSERT32FLAT() __force_link_error__only_in_32bit_flat()
-#else
+#инако
 # define VISIBLE16
 # define VISIBLE32FLAT __section(".text.runtime." UNIQSEC) __VISIBLE
 # define VISIBLE32INIT __section(".text.init." UNIQSEC) __VISIBLE
@@ -111,7 +111,7 @@ extern void __force_link_error__only_in_16bit(void) __noreturn;
 # define ASM32FLAT(code) __ASM(code)
 # define ASSERT16() __force_link_error__only_in_16bit()
 # define ASSERT32SEG() __force_link_error__only_in_32bit_segmented()
-# define ASSERT32FLAT() do { } while (0)
+# define ASSERT32FLAT() do { } док (0)
 #endif
 
 #define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)

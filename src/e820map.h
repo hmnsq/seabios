@@ -19,10 +19,10 @@ struct e820entry {
 void e820_add(u64 start, u64 size, u32 type);
 void e820_remove(u64 start, u64 size);
 void e820_prepboot(void);
-int e820_is_used(u64 start, u64 size);
+цео e820_is_used(u64 start, u64 size);
 
 // e820 map storage
 extern struct e820entry e820_list[];
-extern int e820_count;
+extern цео e820_count;
 
 #endif // e820map.h

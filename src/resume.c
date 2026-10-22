@@ -24,7 +24,7 @@ void VISIBLE16
 handle_resume(void)
 {
     ASSERT16();
-    int status = rtc_read(CMOS_RESET_CODE);
+    цео status = rtc_read(CMOS_RESET_CODE);
     rtc_write(CMOS_RESET_CODE, 0);
     dprintf(1, "In resume (status=%d)\n", status);
 
@@ -87,13 +87,13 @@ handle_resume(void)
 static void
 s3_resume(void)
 {
-    if (!CONFIG_S3_RESUME)
-        return;
+    ако (!CONFIG_S3_RESUME)
+        врати;
 
     u32 s3_resume_vector = find_resume_vector();
-    if (!s3_resume_vector) {
+    ако (!s3_resume_vector) {
         dprintf(1, "No resume vector set!\n");
-        return;
+        врати;
     }
 
     pic_setup();
@@ -144,12 +144,12 @@ tryReboot(void)
 }
 
 void VISIBLE32FLAT
-handle_resume32(int status)
+handle_resume32(цео status)
 {
     ASSERT32FLAT();
     dprintf(1, "In 32bit resume\n");
 
-    if (status == 0xfe)
+    ако (status == 0xfe)
         s3_resume();
 
     // Must be a soft reboot - invoke a hard reboot.

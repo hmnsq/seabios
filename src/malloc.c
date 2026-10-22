@@ -55,7 +55,7 @@ alloc_new(struct zone_s *zone, u32 size, u32 align, struct allocinfo_s *fill)
         u32 alloc_end = info->range_start + info->alloc_size;
         u32 range_end = info->range_end;
         u32 new_range_end = ALIGN_DOWN(range_end - size, align);
-        if (new_range_end >= alloc_end && new_range_end <= range_end) {
+        ако (new_range_end >= alloc_end && new_range_end <= range_end) {
             // Found space - now reserve it.
             fill->range_start = new_range_end;
             fill->range_end = range_end;
@@ -63,10 +63,10 @@ alloc_new(struct zone_s *zone, u32 size, u32 align, struct allocinfo_s *fill)
 
             info->range_end = new_range_end;
             hlist_add_before(&fill->node, &info->node);
-            return new_range_end;
+            врати new_range_end;
         }
     }
-    return 0;
+    врати 0;
 }
 
 // Reserve space for a 'struct allocdetail_s' and fill
@@ -75,12 +75,12 @@ alloc_new_detail(struct allocdetail_s *temp)
 {
     u32 detail_addr = alloc_new(&ZoneTmpHigh, sizeof(struct allocdetail_s)
                                 , MALLOC_MIN_ALIGN, &temp->detailinfo);
-    if (!detail_addr) {
+    ако (!detail_addr) {
         detail_addr = alloc_new(&ZoneTmpLow, sizeof(struct allocdetail_s)
                                 , MALLOC_MIN_ALIGN, &temp->detailinfo);
-        if (!detail_addr) {
+        ако (!detail_addr) {
             warn_noalloc();
-            return NULL;
+            врати NULL;
         }
     }
     struct allocdetail_s *detail = memremap(detail_addr, sizeof(*detail));
@@ -89,7 +89,7 @@ alloc_new_detail(struct allocdetail_s *temp)
     memcpy(detail, temp, sizeof(*detail));
     hlist_replace(&temp->detailinfo.node, &detail->detailinfo.node);
     hlist_replace(&temp->datainfo.node, &detail->datainfo.node);
-    return detail;
+    врати detail;
 }
 
 // Add new memory to a zone
@@ -100,7 +100,7 @@ alloc_add(struct zone_s *zone, u32 start, u32 end)
     struct allocinfo_s *info;
     struct hlist_node **pprev;
     hlist_for_each_entry_pprev(info, pprev, &zone->head, node) {
-        if (info->range_start < start)
+        ако (info->range_start < start)
             break;
     }
 
@@ -114,7 +114,7 @@ alloc_add(struct zone_s *zone, u32 start, u32 end)
 
     // Allocate final allocation info.
     struct allocdetail_s *detail = alloc_new_detail(&tempdetail);
-    if (!detail)
+    ако (!detail)
         hlist_del(&tempdetail.datainfo.node);
 }
 
@@ -124,7 +124,7 @@ alloc_free(struct allocinfo_s *info)
 {
     struct allocinfo_s *next = container_of_or_null(
         info->node.next, struct allocinfo_s, node);
-    if (next && next->range_end == info->range_start)
+    ако (next && next->range_end == info->range_start)
         next->range_end = info->range_end;
     hlist_del(&info->node);
 }
@@ -133,15 +133,15 @@ alloc_free(struct allocinfo_s *info)
 static struct allocinfo_s *
 alloc_find(u32 data)
 {
-    int i;
-    for (i=0; i<ARRAY_SIZE(Zones); i++) {
+    цео i;
+    за (i=0; i<ARRAY_SIZE(Zones); i++) {
         struct allocinfo_s *info;
         hlist_for_each_entry(info, &Zones[i]->head, node) {
-            if (info->range_start == data)
-                return info;
+            ако (info->range_start == data)
+                врати info;
         }
     }
-    return NULL;
+    врати NULL;
 }
 
 // Find the lowest memory range added by alloc_add()
@@ -152,7 +152,7 @@ alloc_find_lowest(struct zone_s *zone)
     hlist_for_each_entry(info, &zone->head, node) {
         last = info;
     }
-    return last;
+    врати last;
 }
 
 
@@ -161,13 +161,13 @@ alloc_find_lowest(struct zone_s *zone)
  ****************************************************************/
 
 // Move ebda
-static int
+static цео
 relocate_ebda(u32 newebda, u32 oldebda, u8 ebda_size)
 {
     u32 lowram = GET_BDA(mem_size_kb) * 1024;
-    if (oldebda != lowram)
+    ако (oldebda != lowram)
         // EBDA isn't at end of ram - give up.
-        return -1;
+        врати -1;
 
     // Do copy
     memmove((void*)newebda, (void*)oldebda, ebda_size * 1024);
@@ -176,7 +176,7 @@ relocate_ebda(u32 newebda, u32 oldebda, u8 ebda_size)
     dprintf(1, "ebda moved from %x to %x\n", oldebda, newebda);
     SET_BDA(mem_size_kb, newebda / 1024);
     SET_BDA(ebda_seg, FLATPTR_TO_SEG(newebda));
-    return 0;
+    врати 0;
 }
 
 // Support expanding the ZoneLow dynamically.
@@ -184,46 +184,46 @@ static u32
 zonelow_expand(u32 size, u32 align, struct allocinfo_s *fill)
 {
     // Make sure to not move ebda while an optionrom is running.
-    if (unlikely(wait_preempt())) {
+    ако (unlikely(wait_preempt())) {
         u32 data = alloc_new(&ZoneLow, size, align, fill);
-        if (data)
-            return data;
+        ако (data)
+            врати data;
     }
 
     struct allocinfo_s *info = alloc_find_lowest(&ZoneLow);
-    if (!info)
-        return 0;
+    ако (!info)
+        врати 0;
     u32 oldpos = info->range_end;
     u32 newpos = ALIGN_DOWN(oldpos - size, align);
     u32 bottom = info->range_start + info->alloc_size;
-    if (newpos >= bottom && newpos <= oldpos)
+    ако (newpos >= bottom && newpos <= oldpos)
         // Space already present.
-        return alloc_new(&ZoneLow, size, align, fill);
+        врати alloc_new(&ZoneLow, size, align, fill);
     u16 ebda_seg = get_ebda_seg();
     u32 ebda_pos = (u32)MAKE_FLATPTR(ebda_seg, 0);
     u8 ebda_size = GET_EBDA(ebda_seg, size);
     u32 ebda_end = ebda_pos + ebda_size * 1024;
-    if (ebda_end != bottom)
+    ако (ebda_end != bottom)
         // Something else is after ebda - can't use any existing space.
         newpos = ALIGN_DOWN(ebda_end - size, align);
     u32 newbottom = ALIGN_DOWN(newpos, 1024);
     u32 newebda = ALIGN_DOWN(newbottom - ebda_size * 1024, 1024);
-    if (newebda < BUILD_EBDA_MINIMUM)
+    ако (newebda < BUILD_EBDA_MINIMUM)
         // Not enough space.
-        return 0;
+        врати 0;
 
     // Move ebda
-    int ret = relocate_ebda(newebda, ebda_pos, ebda_size);
-    if (ret)
-        return 0;
+    цео ret = relocate_ebda(newebda, ebda_pos, ebda_size);
+    ако (ret)
+        врати 0;
 
     // Update zone
-    if (ebda_end == bottom)
+    ако (ebda_end == bottom)
         info->range_start = newbottom;
-    else
+    инако
         alloc_add(&ZoneLow, newbottom, ebda_end);
 
-    return alloc_new(&ZoneLow, size, align, fill);
+    врати alloc_new(&ZoneLow, size, align, fill);
 }
 
 
@@ -236,61 +236,61 @@ u32
 malloc_palloc(struct zone_s *zone, u32 size, u32 align)
 {
     ASSERT32FLAT();
-    if (!size)
-        return 0;
+    ако (!size)
+        врати 0;
 
     // Find and reserve space for main allocation
     struct allocdetail_s tempdetail;
     tempdetail.handle = MALLOC_DEFAULT_HANDLE;
     u32 data = alloc_new(zone, size, align, &tempdetail.datainfo);
-    if (!CONFIG_MALLOC_UPPERMEMORY && !data && zone == &ZoneLow)
+    ако (!CONFIG_MALLOC_UPPERMEMORY && !data && zone == &ZoneLow)
         data = zonelow_expand(size, align, &tempdetail.datainfo);
-    if (!data)
-        return 0;
+    ако (!data)
+        врати 0;
 
     // Find and reserve space for bookkeeping.
     struct allocdetail_s *detail = alloc_new_detail(&tempdetail);
-    if (!detail) {
+    ако (!detail) {
         alloc_free(&tempdetail.datainfo);
-        return 0;
+        врати 0;
     }
 
     dprintf(8, "phys_alloc zone=%p size=%d align=%x ret=%x (detail=%p)\n"
             , zone, size, align, data, detail);
 
-    return data;
+    врати data;
 }
 
 // Allocate virtual memory from the given zone
 void * __malloc
 _malloc(struct zone_s *zone, u32 size, u32 align)
 {
-    return memremap(malloc_palloc(zone, size, align), size);
+    врати memremap(malloc_palloc(zone, size, align), size);
 }
 
 // Free a data block allocated with phys_alloc
-int
+цео
 malloc_pfree(u32 data)
 {
     ASSERT32FLAT();
     struct allocinfo_s *info = alloc_find(data);
-    if (!info || data == virt_to_phys(info) || !info->alloc_size)
-        return -1;
+    ако (!info || data == virt_to_phys(info) || !info->alloc_size)
+        врати -1;
     struct allocdetail_s *detail = container_of(
         info, struct allocdetail_s, datainfo);
     dprintf(8, "phys_free %x (detail=%p)\n", data, detail);
     alloc_free(info);
     alloc_free(&detail->detailinfo);
-    return 0;
+    врати 0;
 }
 
 void
 free(void *data)
 {
-    if (!data)
-        return;
-    int ret = malloc_pfree(virt_to_phys(data));
-    if (ret)
+    ако (!data)
+        врати;
+    цео ret = malloc_pfree(virt_to_phys(data));
+    ако (ret)
         warn_internalerror();
 }
 
@@ -304,17 +304,17 @@ malloc_getspace(struct zone_s *zone)
     struct allocinfo_s *info;
     hlist_for_each_entry(info, &zone->head, node) {
         u32 space = info->range_end - info->range_start - info->alloc_size;
-        if (space > maxspace)
+        ако (space > maxspace)
             maxspace = space;
     }
 
-    if (zone != &ZoneTmpHigh && zone != &ZoneTmpLow)
-        return maxspace;
+    ако (zone != &ZoneTmpHigh && zone != &ZoneTmpLow)
+        врати maxspace;
     // Account for space needed for PMM tracking.
     u32 reserve = ALIGN(sizeof(struct allocdetail_s), MALLOC_MIN_ALIGN);
-    if (maxspace <= reserve)
-        return 0;
-    return maxspace - reserve;
+    ако (maxspace <= reserve)
+        врати 0;
+    врати maxspace - reserve;
 }
 
 // Set a handle associated with an allocation.
@@ -323,8 +323,8 @@ malloc_sethandle(u32 data, u32 handle)
 {
     ASSERT32FLAT();
     struct allocinfo_s *info = alloc_find(data);
-    if (!info || data == virt_to_phys(info) || !info->alloc_size)
-        return;
+    ако (!info || data == virt_to_phys(info) || !info->alloc_size)
+        врати;
     struct allocdetail_s *detail = container_of(
         info, struct allocdetail_s, datainfo);
     detail->handle = handle;
@@ -334,19 +334,19 @@ malloc_sethandle(u32 data, u32 handle)
 u32
 malloc_findhandle(u32 handle)
 {
-    int i;
-    for (i=0; i<ARRAY_SIZE(Zones); i++) {
+    цео i;
+    за (i=0; i<ARRAY_SIZE(Zones); i++) {
         struct allocinfo_s *info;
         hlist_for_each_entry(info, &Zones[i]->head, node) {
-            if (info->range_start != virt_to_phys(info))
+            ако (info->range_start != virt_to_phys(info))
                 continue;
             struct allocdetail_s *detail = container_of(
                 info, struct allocdetail_s, detailinfo);
-            if (detail->handle == handle)
-                return detail->datainfo.range_start;
+            ако (detail->handle == handle)
+                врати detail->datainfo.range_start;
         }
     }
-    return 0;
+    врати 0;
 }
 
 
@@ -363,17 +363,17 @@ static struct allocinfo_s *RomBase;
 u32
 rom_get_max(void)
 {
-    if (CONFIG_MALLOC_UPPERMEMORY)
-        return ALIGN_DOWN(RomBase->range_end - OPROM_HEADER_RESERVE
+    ако (CONFIG_MALLOC_UPPERMEMORY)
+        врати ALIGN_DOWN(RomBase->range_end - OPROM_HEADER_RESERVE
                           , OPTION_ROM_ALIGN);
-    return SYMBOL(final_readonly_start);
+    врати SYMBOL(final_readonly_start);
 }
 
 // Return the end of the last deployed option rom.
 u32
 rom_get_last(void)
 {
-    return RomEnd;
+    врати RomEnd;
 }
 
 // Request space for an optionrom in 0xc0000-0xf0000 area.
@@ -381,27 +381,27 @@ struct rom_header *
 rom_reserve(u32 size)
 {
     u32 newend = ALIGN(RomEnd + size, OPTION_ROM_ALIGN);
-    if (newend > rom_get_max())
-        return NULL;
-    if (CONFIG_MALLOC_UPPERMEMORY) {
-        if (newend < SYMBOL(zonelow_base))
+    ако (newend > rom_get_max())
+        врати NULL;
+    ако (CONFIG_MALLOC_UPPERMEMORY) {
+        ако (newend < SYMBOL(zonelow_base))
             newend = SYMBOL(zonelow_base);
         RomBase->range_start = newend + OPROM_HEADER_RESERVE;
     }
-    return (void*)RomEnd;
+    врати (void*)RomEnd;
 }
 
 // Confirm space as in use by an optionrom.
-int
+цео
 rom_confirm(u32 size)
 {
     void *new = rom_reserve(size);
-    if (!new) {
+    ако (!new) {
         warn_noalloc();
-        return -1;
+        врати -1;
     }
     RomEnd = ALIGN(RomEnd + size, OPTION_ROM_ALIGN);
-    return 0;
+    врати 0;
 }
 
 
@@ -424,22 +424,22 @@ malloc_preinit(void)
     // Populate temp high ram
     u32 highram_start = 0;
     u32 highram_size = 0;
-    int i;
-    for (i=e820_count-1; i>=0; i--) {
+    цео i;
+    за (i=e820_count-1; i>=0; i--) {
         struct e820entry *en = &e820_list[i];
         u64 end = en->start + en->size;
-        if (end < 1024*1024)
+        ако (end < 1024*1024)
             break;
-        if (en->type != E820_RAM || end > 0xffffffff)
+        ако (en->type != E820_RAM || end > 0xffffffff)
             continue;
         u32 s = en->start, e = end;
-        if (!highram_start) {
+        ако (!highram_start) {
             u32 new_max = ALIGN_DOWN(e - BUILD_MAX_HIGHTABLE, MALLOC_MIN_ALIGN);
             u32 new_min = ALIGN_DOWN(e - BUILD_MIN_HIGHTABLE, MALLOC_MIN_ALIGN);
-            if (new_max <= e && new_max >= s + BUILD_MAX_HIGHTABLE) {
+            ако (new_max <= e && new_max >= s + BUILD_MAX_HIGHTABLE) {
                 highram_start = e = new_max;
                 highram_size = BUILD_MAX_HIGHTABLE;
-            } else if (new_min <= e && new_min >= s) {
+            } инако ако (new_min <= e && new_min >= s) {
                 highram_start = e = new_min;
                 highram_size = BUILD_MIN_HIGHTABLE;
             }
@@ -449,7 +449,7 @@ malloc_preinit(void)
 
     // Populate regions
     alloc_add(&ZoneTmpLow, BUILD_STACK_ADDR, BUILD_EBDA_MINIMUM);
-    if (highram_start) {
+    ако (highram_start) {
         alloc_add(&ZoneHigh, highram_start, highram_start + highram_size);
         e820_add(highram_start, highram_size, E820_RESERVED);
     }
@@ -460,11 +460,11 @@ malloc_csm_preinit(u32 low_pmm, u32 low_pmm_size, u32 hi_pmm, u32 hi_pmm_size)
 {
     ASSERT32FLAT();
 
-    if (hi_pmm_size > BUILD_MIN_HIGHTABLE) {
+    ако (hi_pmm_size > BUILD_MIN_HIGHTABLE) {
         u32 hi_pmm_end = hi_pmm + hi_pmm_size;
         alloc_add(&ZoneTmpHigh, hi_pmm, hi_pmm_end - BUILD_MIN_HIGHTABLE);
         alloc_add(&ZoneHigh, hi_pmm_end - BUILD_MIN_HIGHTABLE, hi_pmm_end);
-    } else {
+    } инако {
         alloc_add(&ZoneTmpHigh, hi_pmm, hi_pmm + hi_pmm_size);
     }
     alloc_add(&ZoneTmpLow, low_pmm, low_pmm + low_pmm_size);
@@ -477,12 +477,12 @@ static void
 calcRamSize(void)
 {
     u32 rs = 0;
-    int i;
-    for (i=e820_count-1; i>=0; i--) {
+    цео i;
+    за (i=e820_count-1; i>=0; i--) {
         struct e820entry *en = &e820_list[i];
         u64 end = en->start + en->size;
         u32 type = en->type;
-        if (end <= 0xffffffff && (type == E820_ACPI || type == E820_RAM)) {
+        ако (end <= 0xffffffff && (type == E820_ACPI || type == E820_RAM)) {
             rs = end;
             break;
         }
@@ -497,12 +497,12 @@ malloc_init(void)
     ASSERT32FLAT();
     dprintf(3, "malloc init\n");
 
-    if (CONFIG_RELOCATE_INIT) {
+    ако (CONFIG_RELOCATE_INIT) {
         // Fixup malloc pointers after relocation
-        int i;
-        for (i=0; i<ARRAY_SIZE(Zones); i++) {
+        цео i;
+        за (i=0; i<ARRAY_SIZE(Zones); i++) {
             struct zone_s *zone = Zones[i];
-            if (zone->head.first)
+            ако (zone->head.first)
                 zone->head.first->pprev = &zone->head.first;
         }
     }
@@ -510,11 +510,11 @@ malloc_init(void)
     // Initialize low-memory region
     memmove(VSYMBOL(final_varlow_start), VSYMBOL(varlow_start)
             , SYMBOL(varlow_end) - SYMBOL(varlow_start));
-    if (CONFIG_MALLOC_UPPERMEMORY) {
+    ако (CONFIG_MALLOC_UPPERMEMORY) {
         alloc_add(&ZoneLow, SYMBOL(zonelow_base) + OPROM_HEADER_RESERVE
                   , SYMBOL(final_varlow_start));
         RomBase = alloc_find_lowest(&ZoneLow);
-    } else {
+    } инако {
         alloc_add(&ZoneLow, ALIGN_DOWN(SYMBOL(final_varlow_start), 1024)
                   , SYMBOL(final_varlow_start));
     }
@@ -535,11 +535,11 @@ malloc_prepboot(void)
 
     u32 base = rom_get_max();
     memset((void*)RomEnd, 0, base-RomEnd);
-    if (CONFIG_MALLOC_UPPERMEMORY) {
+    ако (CONFIG_MALLOC_UPPERMEMORY) {
         // Place an optionrom signature around used low mem area.
         struct rom_header *dummyrom = (void*)base;
         dummyrom->signature = OPTION_ROM_SIGNATURE;
-        int size = (BUILD_BIOS_ADDR - base) / 512;
+        цео size = (BUILD_BIOS_ADDR - base) / 512;
         dummyrom->size = (size > 255) ? 255 : size;
     }
 
@@ -556,7 +556,7 @@ malloc_prepboot(void)
 
     // Give back unused high ram.
     info = alloc_find_lowest(&ZoneHigh);
-    if (info) {
+    ако (info) {
         u32 giveback = ALIGN_DOWN(info->range_end-info->range_start, PAGE_SIZE);
         e820_add(info->range_start, giveback, E820_RAM);
         dprintf(1, "Returned %d bytes of ZoneHigh\n", giveback);

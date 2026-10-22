@@ -90,11 +90,11 @@ void
 apm_shutdown(void)
 {
     u16 pm1a_cnt = GET_GLOBAL(acpi_pm1a_cnt);
-    if (pm1a_cnt)
+    ако (pm1a_cnt)
         outw(0x2000, pm1a_cnt);
 
     irq_disable();
-    for (;;)
+    за (;;)
         hlt();
 }
 
@@ -102,9 +102,9 @@ apm_shutdown(void)
 static void
 handle_155307(struct bregs *regs)
 {
-    if (regs->bx != 1) {
+    ако (regs->bx != 1) {
         set_success(regs);
-        return;
+        врати;
     }
     switch (regs->cx) {
     case 1:
@@ -182,9 +182,9 @@ handle_1553XX(struct bregs *regs)
 void
 handle_1553(struct bregs *regs)
 {
-    if (! CONFIG_APMBIOS) {
+    ако (! CONFIG_APMBIOS) {
         set_code_invalid(regs, RET_EUNSUPPORTED);
-        return;
+        врати;
     }
 
     //debug_stub(regs);

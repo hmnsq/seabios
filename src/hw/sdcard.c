@@ -137,7 +137,7 @@ struct sdhci_s {
 struct sddrive_s {
     struct drive_s drive;
     struct sdhci_s *regs;
-    int card_type;
+    цео card_type;
 };
 
 // SD card types
@@ -145,149 +145,149 @@ struct sddrive_s {
 #define SF_HIGHCAPACITY (1<<1)
 
 // Repeatedly read a u16 register until any bit in a given mask is set
-static int
+static цео
 sdcard_waitw(u16 *reg, u16 mask)
 {
     u32 end = timer_calc(SDHCI_PIO_TIMEOUT);
-    for (;;) {
+    за (;;) {
         u16 v = readw(reg);
-        if (v & mask)
-            return v;
-        if (timer_check(end)) {
+        ако (v & mask)
+            врати v;
+        ако (timer_check(end)) {
             dprintf(1, "scard_waitw: %p %x %x\n", reg, mask, v);
             warn_timeout();
-            return -1;
+            врати -1;
         }
         yield();
     }
 }
 
 // Send an sdhci reset
-static int
-sdcard_reset(struct sdhci_s *regs, int flags)
+static цео
+sdcard_reset(struct sdhci_s *regs, цео flags)
 {
     writeb(&regs->software_reset, flags);
     u32 end = timer_calc(SDHCI_PIO_TIMEOUT);
-    while (readb(&regs->software_reset))
-        if (timer_check(end)) {
+    док (readb(&regs->software_reset))
+        ако (timer_check(end)) {
             warn_timeout();
-            return -1;
+            врати -1;
         }
-    return 0;
+    врати 0;
 }
 
 // Send a command to the card.
-static int
-sdcard_pio(struct sdhci_s *regs, int cmd, u32 *param)
+static цео
+sdcard_pio(struct sdhci_s *regs, цео cmd, u32 *param)
 {
     u32 state = readl(&regs->present_state);
     dprintf(9, "sdcard_pio cmd %x %x %x\n", cmd, *param, state);
-    if ((state & SP_CMD_INHIBIT)
+    ако ((state & SP_CMD_INHIBIT)
         || ((cmd & 0x03) == 0x03 && state & SP_DAT_INHIBIT)) {
         dprintf(1, "sdcard_pio not ready %x\n", state);
-        return -1;
+        врати -1;
     }
     // Send command
     writel(&regs->arg, *param);
     writew(&regs->cmd, cmd);
-    int ret = sdcard_waitw(&regs->irq_status, SI_ERROR|SI_CMD_COMPLETE);
-    if (ret < 0)
-        return ret;
-    if (ret & SI_ERROR) {
+    цео ret = sdcard_waitw(&regs->irq_status, SI_ERROR|SI_CMD_COMPLETE);
+    ако (ret < 0)
+        врати ret;
+    ако (ret & SI_ERROR) {
         u16 err = readw(&regs->error_irq_status);
         dprintf(3, "sdcard_pio command stop (code=%x)\n", err);
         sdcard_reset(regs, SRF_CMD|SRF_DATA);
         writew(&regs->error_irq_status, err);
-        return -1;
+        врати -1;
     }
     writew(&regs->irq_status, SI_CMD_COMPLETE);
     // Read response
     memcpy(param, regs->response, sizeof(regs->response));
     dprintf(9, "sdcard cmd %x response %x %x %x %x\n"
             , cmd, param[0], param[1], param[2], param[3]);
-    return 0;
+    врати 0;
 }
 
 // Send an "app specific" command to the card.
-static int
-sdcard_pio_app(struct sdhci_s *regs, int cmd, u32 *param)
+static цео
+sdcard_pio_app(struct sdhci_s *regs, цео cmd, u32 *param)
 {
     u32 aparam[4] = {};
-    int ret = sdcard_pio(regs, SC_APP_CMD, aparam);
-    if (ret)
-        return ret;
-    return sdcard_pio(regs, cmd, param);
+    цео ret = sdcard_pio(regs, SC_APP_CMD, aparam);
+    ако (ret)
+        врати ret;
+    врати sdcard_pio(regs, cmd, param);
 }
 
 // Send a command to the card which transfers data.
-static int
-sdcard_pio_transfer(struct sddrive_s *drive, int cmd, u32 addr
-                    , void *data, int count)
+static цео
+sdcard_pio_transfer(struct sddrive_s *drive, цео cmd, u32 addr
+                    , void *data, цео count)
 {
     // Send command
     writew(&drive->regs->block_size, DISK_SECTOR_SIZE);
     writew(&drive->regs->block_count, count);
-    int isread = cmd != SC_WRITE_SINGLE && cmd != SC_WRITE_MULTIPLE;
+    цео isread = cmd != SC_WRITE_SINGLE && cmd != SC_WRITE_MULTIPLE;
     u16 tmode = ((count > 1 ? ST_MULTIPLE|ST_AUTO_CMD12|ST_BLOCKCOUNT : 0)
                  | (isread ? ST_READ : 0));
     writew(&drive->regs->transfer_mode, tmode);
-    if (!(drive->card_type & SF_HIGHCAPACITY))
+    ако (!(drive->card_type & SF_HIGHCAPACITY))
         addr *= DISK_SECTOR_SIZE;
     u32 param[4] = { addr };
-    int ret = sdcard_pio(drive->regs, cmd, param);
-    if (ret)
-        return ret;
+    цео ret = sdcard_pio(drive->regs, cmd, param);
+    ако (ret)
+        врати ret;
     // Read/write data
     u16 cbit = isread ? SI_READ_READY : SI_WRITE_READY;
-    while (count--) {
+    док (count--) {
         ret = sdcard_waitw(&drive->regs->irq_status, cbit);
-        if (ret < 0)
-            return ret;
+        ако (ret < 0)
+            врати ret;
         writew(&drive->regs->irq_status, cbit);
-        int i;
-        for (i=0; i<DISK_SECTOR_SIZE/4; i++) {
-            if (isread)
+        цео i;
+        за (i=0; i<DISK_SECTOR_SIZE/4; i++) {
+            ако (isread)
                 *(u32*)data = readl(&drive->regs->data);
-            else
+            инако
                 writel(&drive->regs->data, *(u32*)data);
             data += 4;
         }
     }
     // Complete command
     ret = sdcard_waitw(&drive->regs->irq_status, SI_TRANS_DONE);
-    if (ret < 0)
-        return ret;
+    ако (ret < 0)
+        врати ret;
     writew(&drive->regs->irq_status, SI_TRANS_DONE);
-    return 0;
+    врати 0;
 }
 
 // Read/write a block of data to/from the card.
-static int
-sdcard_readwrite(struct disk_op_s *op, int iswrite)
+static цео
+sdcard_readwrite(struct disk_op_s *op, цео iswrite)
 {
     struct sddrive_s *drive = container_of(
         op->drive_fl, struct sddrive_s, drive);
-    int cmd = iswrite ? SC_WRITE_SINGLE : SC_READ_SINGLE;
-    if (op->count > 1)
+    цео cmd = iswrite ? SC_WRITE_SINGLE : SC_READ_SINGLE;
+    ако (op->count > 1)
         cmd = iswrite ? SC_WRITE_MULTIPLE : SC_READ_MULTIPLE;
-    int ret = sdcard_pio_transfer(drive, cmd, op->lba, op->buf_fl, op->count);
-    if (ret)
-        return DISK_RET_EBADTRACK;
-    return DISK_RET_SUCCESS;
+    цео ret = sdcard_pio_transfer(drive, cmd, op->lba, op->buf_fl, op->count);
+    ако (ret)
+        врати DISK_RET_EBADTRACK;
+    врати DISK_RET_SUCCESS;
 }
 
-int
+цео
 sdcard_process_op(struct disk_op_s *op)
 {
-    if (!CONFIG_SDCARD)
-        return 0;
+    ако (!CONFIG_SDCARD)
+        врати 0;
     switch (op->command) {
     case CMD_READ:
-        return sdcard_readwrite(op, 0);
+        врати sdcard_readwrite(op, 0);
     case CMD_WRITE:
-        return sdcard_readwrite(op, 1);
+        врати sdcard_readwrite(op, 1);
     default:
-        return default_process_op(op);
+        врати default_process_op(op);
     }
 }
 
@@ -296,48 +296,48 @@ sdcard_process_op(struct disk_op_s *op)
  * Setup
  ****************************************************************/
 
-static int
+static цео
 sdcard_set_power(struct sdhci_s *regs)
 {
     u32 cap = readl(&regs->cap_lo);
     u32 volt, vbits;
-    if (cap & SD_CAPLO_V33) {
+    ако (cap & SD_CAPLO_V33) {
         volt = 1<<20;
         vbits = SPC_V33;
-    } else if (cap & SD_CAPLO_V30) {
+    } инако ако (cap & SD_CAPLO_V30) {
         volt = 1<<18;
         vbits = SPC_V30;
-    } else if (cap & SD_CAPLO_V18) {
+    } инако ако (cap & SD_CAPLO_V18) {
         volt = 1<<7;
         vbits = SPC_V18;
-    } else {
+    } инако {
         dprintf(1, "SD controller unsupported volt range (%x)\n", cap);
-        return -1;
+        врати -1;
     }
     writeb(&regs->power_control, 0);
     msleep(SDHCI_POWER_OFF_TIME);
     writeb(&regs->power_control, vbits | SPC_POWER_ON);
     msleep(SDHCI_POWER_ON_TIME);
-    return volt;
+    врати volt;
 }
 
-static int
+static цео
 sdcard_set_frequency(struct sdhci_s *regs, u32 khz)
 {
     u16 ver = readw(&regs->controller_version);
     u32 cap = readl(&regs->cap_lo);
     u32 base_freq = (cap >> SD_CAPLO_BASECLOCK_SHIFT) & SD_CAPLO_BASECLOCK_MASK;
-    if (!base_freq) {
+    ако (!base_freq) {
         dprintf(1, "Unknown base frequency for SD controller\n");
-        return -1;
+        врати -1;
     }
     // Set new frequency
     u32 divisor = DIV_ROUND_UP(base_freq * 1000, khz);
     u16 creg;
-    if ((ver & 0xff) <= 0x01) {
+    ако ((ver & 0xff) <= 0x01) {
         divisor = divisor > 1 ? 1 << __fls(divisor-1) : 0;
         creg = (divisor & SCC_SDCLK_MASK) << SCC_SDCLK_SHIFT;
-    } else {
+    } инако {
         divisor = DIV_ROUND_UP(divisor, 2);
         creg = (divisor & SCC_SDCLK_MASK) << SCC_SDCLK_SHIFT;
         creg |= (divisor & SCC_SDCLK_HI_MASK) >> SCC_SDCLK_HI_RSHIFT;
@@ -346,16 +346,16 @@ sdcard_set_frequency(struct sdhci_s *regs, u32 khz)
     writew(&regs->clock_control, 0);
     writew(&regs->clock_control, creg | SCC_INTERNAL_ENABLE);
     // Wait for frequency to become active
-    int ret = sdcard_waitw(&regs->clock_control, SCC_STABLE);
-    if (ret < 0)
-        return ret;
+    цео ret = sdcard_waitw(&regs->clock_control, SCC_STABLE);
+    ако (ret < 0)
+        врати ret;
     // Enable SD clock
     writew(&regs->clock_control, creg | SCC_INTERNAL_ENABLE | SCC_CLOCK_ENABLE);
-    return 0;
+    врати 0;
 }
 
 // Obtain the disk size of an SD card
-static int
+static цео
 sdcard_get_capacity(struct sddrive_s *drive, u8 *csd)
 {
     // Original MMC/SD card capacity formula
@@ -365,14 +365,14 @@ sdcard_get_capacity(struct sddrive_s *drive, u8 *csd)
     u32 count = (C_SIZE+1) << (C_SIZE_MULT + 2 + READ_BL_LEN - 9);
     // Check for newer encoding formats.
     u8 CSD_STRUCTURE = csd[14] >> 6;
-    if ((drive->card_type & SF_MMC) && CSD_STRUCTURE >= 2) {
+    ако ((drive->card_type & SF_MMC) && CSD_STRUCTURE >= 2) {
         // Get capacity from EXT_CSD register
         u8 ext_csd[512];
-        int ret = sdcard_pio_transfer(drive, SC_SEND_EXT_CSD, 0, ext_csd, 1);
-        if (ret)
-            return ret;
+        цео ret = sdcard_pio_transfer(drive, SC_SEND_EXT_CSD, 0, ext_csd, 1);
+        ако (ret)
+            врати ret;
         count = *(u32*)&ext_csd[212];
-    } else if (!(drive->card_type & SF_MMC) && CSD_STRUCTURE >= 1) {
+    } инако ако (!(drive->card_type & SF_MMC) && CSD_STRUCTURE >= 1) {
         // High capacity SD card
         u32 C_SIZE2 = csd[5] | (csd[6] << 8) | ((csd[7] & 0x3f) << 16);
         count = (C_SIZE2+1) << (19-9);
@@ -380,57 +380,57 @@ sdcard_get_capacity(struct sddrive_s *drive, u8 *csd)
     // Fill drive struct and return
     drive->drive.blksize = DISK_SECTOR_SIZE;
     drive->drive.sectors = count;
-    return 0;
+    врати 0;
 }
 
 // Initialize an SD card
-static int
-sdcard_card_setup(struct sddrive_s *drive, int volt, int prio)
+static цео
+sdcard_card_setup(struct sddrive_s *drive, цео volt, цео prio)
 {
     struct sdhci_s *regs = drive->regs;
     // Set controller to initialization clock rate
-    int ret = sdcard_set_frequency(regs, 400);
-    if (ret)
-        return ret;
+    цео ret = sdcard_set_frequency(regs, 400);
+    ако (ret)
+        врати ret;
     msleep(SDHCI_CLOCK_ON_TIME);
     // Reset card
     u32 param[4] = { };
     ret = sdcard_pio(regs, SC_GO_IDLE_STATE, param);
-    if (ret)
-        return ret;
+    ако (ret)
+        врати ret;
     // Let card know SDHC/SDXC is supported and confirm voltage
     u32 hcs = 0, vrange = (volt >= (1<<15) ? 0x100 : 0x200) | 0xaa;
     param[0] = vrange;
     ret = sdcard_pio(regs, SC_SEND_IF_COND, param);
-    if (!ret && param[0] == vrange)
+    ако (!ret && param[0] == vrange)
         hcs = (1<<30);
     // Verify SD card (instead of MMC or SDIO)
     param[0] = 0x00;
     ret = sdcard_pio_app(regs, SC_APP_SEND_OP_COND, param);
-    if (ret) {
+    ако (ret) {
         // Check for MMC card
         param[0] = 0x00;
         ret = sdcard_pio(regs, SC_SEND_OP_COND, param);
-        if (ret)
-            return ret;
+        ако (ret)
+            врати ret;
         drive->card_type |= SF_MMC;
         hcs = (1<<30);
     }
     // Init card
     u32 end = timer_calc(SDHCI_POWERUP_TIMEOUT);
-    for (;;) {
+    за (;;) {
         param[0] = hcs | volt; // high-capacity support and voltage level
-        if (drive->card_type & SF_MMC)
+        ако (drive->card_type & SF_MMC)
             ret = sdcard_pio(regs, SC_SEND_OP_COND, param);
-        else
+        инако
             ret = sdcard_pio_app(regs, SC_APP_SEND_OP_COND, param);
-        if (ret)
-            return ret;
-        if (param[0] & SR_OCR_NOTBUSY)
+        ако (ret)
+            врати ret;
+        ако (param[0] & SR_OCR_NOTBUSY)
             break;
-        if (timer_check(end)) {
+        ако (timer_check(end)) {
             warn_timeout();
-            return -1;
+            врати -1;
         }
         msleep(5); // Avoid flooding log when debugging
     }
@@ -438,54 +438,54 @@ sdcard_card_setup(struct sddrive_s *drive, int volt, int prio)
     // Select card (get cid, set rca, get csd, select card)
     param[0] = 0x00;
     ret = sdcard_pio(regs, SC_ALL_SEND_CID, param);
-    if (ret)
-        return ret;
+    ако (ret)
+        врати ret;
     u8 cid[16];
     memcpy(cid, param, sizeof(cid));
     param[0] = drive->card_type & SF_MMC ? 0x0001 << 16 : 0x00;
     ret = sdcard_pio(regs, SC_SEND_RELATIVE_ADDR, param);
-    if (ret)
-        return ret;
+    ако (ret)
+        врати ret;
     u16 rca = drive->card_type & SF_MMC ? 0x0001 : param[0] >> 16;
     param[0] = rca << 16;
     ret = sdcard_pio(regs, SC_SEND_CSD, param);
-    if (ret)
-        return ret;
+    ако (ret)
+        врати ret;
     u8 csd[16];
     memcpy(csd, param, sizeof(csd));
     param[0] = rca << 16;
     ret = sdcard_pio(regs, SC_SELECT_DESELECT_CARD, param);
-    if (ret)
-        return ret;
+    ако (ret)
+        врати ret;
     // Set controller to data transfer clock rate
     ret = sdcard_set_frequency(regs, 25000);
-    if (ret)
-        return ret;
+    ако (ret)
+        врати ret;
     // Register drive
     ret = sdcard_get_capacity(drive, csd);
-    if (ret)
-        return ret;
+    ако (ret)
+        врати ret;
     char pnm[7] = {};
-    int i;
-    for (i=0; i < (drive->card_type & SF_MMC ? 6 : 5); i++)
+    цео i;
+    за (i=0; i < (drive->card_type & SF_MMC ? 6 : 5); i++)
         pnm[i] = cid[11-i];
     char *desc = znprintf(MAXDESCSIZE, "%s %s %dMiB"
                           , drive->card_type & SF_MMC ? "MMC drive" : "SD card"
                           , pnm, (u32)(drive->drive.sectors >> 11));
     dprintf(1, "Found sdcard at %p: %s\n", regs, desc);
     boot_add_hd(&drive->drive, desc, prio);
-    return 0;
+    врати 0;
 }
 
 // Setup and configure an SD card controller
 static void
-sdcard_controller_setup(struct sdhci_s *regs, int prio)
+sdcard_controller_setup(struct sdhci_s *regs, цео prio)
 {
     // Initialize controller
     u32 present_state = readl(&regs->present_state);
-    if (!(present_state & SP_CARD_INSERTED))
+    ако (!(present_state & SP_CARD_INSERTED))
         // No card present
-        return;
+        врати;
     dprintf(3, "sdhci@%p ver=%x cap=%x %x\n", regs
             , readw(&regs->controller_version)
             , readl(&regs->cap_lo), readl(&regs->cap_hi));
@@ -497,25 +497,25 @@ sdcard_controller_setup(struct sdhci_s *regs, int prio)
     writew(&regs->error_irq_enable, 0x01ff);
     writew(&regs->error_irq_status, readw(&regs->error_irq_status));
     writeb(&regs->timeout_control, 0x0e); // Set to max timeout
-    int volt = sdcard_set_power(regs);
-    if (volt < 0)
-        return;
+    цео volt = sdcard_set_power(regs);
+    ако (volt < 0)
+        врати;
 
     // Initialize card
     struct sddrive_s *drive = malloc_fseg(sizeof(*drive));
-    if (!drive) {
+    ако (!drive) {
         warn_noalloc();
         goto fail;
     }
     memset(drive, 0, sizeof(*drive));
     drive->drive.type = DTYPE_SDCARD;
     drive->regs = regs;
-    int ret = sdcard_card_setup(drive, volt, prio);
-    if (ret) {
+    цео ret = sdcard_card_setup(drive, volt, prio);
+    ако (ret) {
         free(drive);
         goto fail;
     }
-    return;
+    врати;
 fail:
     writeb(&regs->power_control, 0);
     writew(&regs->clock_control, 0);
@@ -527,9 +527,9 @@ sdcard_pci_setup(void *data)
     struct pci_device *pci = data;
     // XXX - bars dependent on slot index register in pci config space
     struct sdhci_s *regs = pci_enable_membar(pci, PCI_BASE_ADDRESS_0);
-    if (!regs)
-        return;
-    int prio = bootprio_find_pci_device(pci);
+    ако (!regs)
+        врати;
+    цео prio = bootprio_find_pci_device(pci);
     sdcard_controller_setup(regs, prio);
 }
 
@@ -537,7 +537,7 @@ static void
 sdcard_romfile_setup(void *data)
 {
     struct romfile_s *file = data;
-    int prio = bootprio_find_named_rom(file->name, 0);
+    цео prio = bootprio_find_named_rom(file->name, 0);
     u32 addr = romfile_loadint(file->name, 0);
     dprintf(1, "Starting sdcard controller check at addr %x\n", addr);
     sdcard_controller_setup((void*)addr, prio);
@@ -546,25 +546,25 @@ sdcard_romfile_setup(void *data)
 void
 sdcard_setup(void)
 {
-    if (!CONFIG_SDCARD)
-        return;
+    ако (!CONFIG_SDCARD)
+        врати;
 
     struct romfile_s *file = NULL;
-    int num_romfiles = 0;
-    for (;;) {
+    цео num_romfiles = 0;
+    за (;;) {
         file = romfile_findprefix("etc/sdcard", file);
-        if (!file)
+        ако (!file)
             break;
         run_thread(sdcard_romfile_setup, file);
         num_romfiles++;
     }
-    if (num_romfiles)
+    ако (num_romfiles)
         // only scan for PCI controllers if etc/sdcard not used
-        return;
+        врати;
 
     struct pci_device *pci;
     foreachpci(pci) {
-        if (pci->class != PCI_CLASS_SYSTEM_SDHCI || pci->prog_if >= 2)
+        ако (pci->class != PCI_CLASS_SYSTEM_SDHCI || pci->prog_if >= 2)
             // Not an SDHCI controller following SDHCI spec
             continue;
         run_thread(sdcard_pci_setup, pci);

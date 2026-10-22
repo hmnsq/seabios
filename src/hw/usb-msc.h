@@ -3,8 +3,8 @@
 
 // usb-msc.c
 struct disk_op_s;
-int usb_process_op(struct disk_op_s *op);
+цео usb_process_op(struct disk_op_s *op);
 struct usbdevice_s;
-int usb_msc_setup(struct usbdevice_s *usbdev);
+цео usb_msc_setup(struct usbdevice_s *usbdev);
 
 #endif // ush-msc.h
