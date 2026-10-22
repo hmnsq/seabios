@@ -3,55 +3,55 @@
 // Copyright (C) 2008-2010  Kevin O'Connor <kevin@koconnor.net>
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
-#ifndef __TYPES_H
-#define __TYPES_H
+#ವ್ಯಾಖ್ಯಾನಿತವಾಗದಿದ್ದರೆ __TYPES_H
+#ವ್ಯಾಖ್ಯಾನಿಸು __TYPES_H
 
-typedef unsigned char u8;
-typedef signed char s8;
-typedef unsigned short u16;
-typedef signed short s16;
-typedef unsigned int u32;
-typedef signed int s32;
-typedef unsigned long long u64;
-typedef signed long long s64;
-typedef u32 size_t;
+ಪ್ರಕಾರವ್ಯಾಖ್ಯೆ ಚಿಹ್ನೆರಹಿತ ಅಕ್ಷರ u8;
+ಪ್ರಕಾರವ್ಯಾಖ್ಯೆ ಚಿಹ್ನೆಯುಳ್ಳ ಅಕ್ಷರ s8;
+ಪ್ರಕಾರವ್ಯಾಖ್ಯೆ ಚಿಹ್ನೆರಹಿತ ಗಿಡ್ಡ u16;
+ಪ್ರಕಾರವ್ಯಾಖ್ಯೆ ಚಿಹ್ನೆಯುಳ್ಳ ಗಿಡ್ಡ s16;
+ಪ್ರಕಾರವ್ಯಾಖ್ಯೆ ಚಿಹ್ನೆರಹಿತ ಪೂರ್ಣಾಂಕ u32;
+ಪ್ರಕಾರವ್ಯಾಖ್ಯೆ ಚಿಹ್ನೆಯುಳ್ಳ ಪೂರ್ಣಾಂಕ s32;
+ಪ್ರಕಾರವ್ಯಾಖ್ಯೆ ಚಿಹ್ನೆರಹಿತ ದೀರ್ಘ ದೀರ್ಘ u64;
+ಪ್ರಕಾರವ್ಯಾಖ್ಯೆ ಚಿಹ್ನೆಯುಳ್ಳ ದೀರ್ಘ ದೀರ್ಘ s64;
+ಪ್ರಕಾರವ್ಯಾಖ್ಯೆ u32 ಗಾತ್ರ_t;
 
-union u64_u32_u {
-    struct { u32 lo, hi; };
+ಒಕ್ಕೂಟ u64_u32_u {
+    ರಚನೆ { u32 lo, hi; };
     u64 val;
 };
 
 // Definition for common 16bit segment/offset pointers.
-struct segoff_s {
-    union {
-        struct {
-            u16 offset;
+ರಚನೆ segoff_s {
+    ಒಕ್ಕೂಟ {
+        ರಚನೆ {
+            u16 ಸ್ಥಾನಾಂತರ_2;
             u16 seg;
         };
         u32 segoff;
     };
 };
 
-#ifdef MANUAL_NO_JUMP_TABLE
-# define default case 775324556: asm(""); default
-#endif
+#ವ್ಯಾಖ್ಯಾನಿತವಾದರೆ MANUAL_NO_JUMP_ಕೋಷ್ಟಕ
+# define ಪೂರ್ವನಿಯೋಜಿತ ಸ್ಥಿತಿ 775324556: asm(""); ಪೂರ್ವನಿಯೋಜಿತ
+#ಆದರೆ_ಅಂತ್ಯ
 
-#ifdef WHOLE_PROGRAM
+#ವ್ಯಾಖ್ಯಾನಿತವಾದರೆ ಸಂಪೂರ್ಣ_ಕಾರ್ಯಕ್ರಮ
 # define __VISIBLE __attribute__((externally_visible))
-#else
+#ಇಲ್ಲದಿದ್ದರೆ
 # define __VISIBLE
-#endif
+#ಆದರೆ_ಅಂತ್ಯ
 
-#define UNIQSEC __FILE__ "." __stringify(__LINE__)
+#ವ್ಯಾಖ್ಯಾನಿಸು UNIQSEC __FILE__ "." __stringify(__LINE__)
 
-#define __noreturn __attribute__((noreturn))
-extern void __force_link_error__only_in_32bit_flat(void) __noreturn;
-extern void __force_link_error__only_in_32bit_segmented(void) __noreturn;
-extern void __force_link_error__only_in_16bit(void) __noreturn;
+#ವ್ಯಾಖ್ಯಾನಿಸು __noreturn __attribute__((noreturn))
+ಬಾಹ್ಯ ಶೂನ್ಯ __force_link_error__only_in_32bit_flat(ಶೂನ್ಯ) __noreturn;
+ಬಾಹ್ಯ ಶೂನ್ಯ __force_link_error__only_in_32bit_segmented(ಶೂನ್ಯ) __noreturn;
+ಬಾಹ್ಯ ಶೂನ್ಯ __force_link_error__only_in_16bit(ಶೂನ್ಯ) __noreturn;
 
-#define __ASM(code) asm(".section .text.asm." UNIQSEC "\n\t" code)
+#ವ್ಯಾಖ್ಯಾನಿಸು __ASM(ಸಂಕೇತ_2) asm(".section .text.asm." UNIQSEC "\n\t" ಸಂಕೇತ_2)
 
-#if MODE16 == 1
+#ಆದರೆ MODE16 == 1
 // Notes a function as externally visible in the 16bit code chunk.
 # define VISIBLE16 __VISIBLE
 // Notes a function as externally visible in the 32bit flat code chunk.
@@ -73,14 +73,14 @@ extern void __force_link_error__only_in_16bit(void) __noreturn;
 // Verify a variable is only accessible via 32bit "init" functions
 # define VARVERIFY32INIT __section(".discard.varinit." UNIQSEC)
 // Designate top-level assembler as 16bit only.
-# define ASM16(code) __ASM(code)
+# define ASM16(ಸಂಕೇತ_2) __ASM(ಸಂಕೇತ_2)
 // Designate top-level assembler as 32bit flat only.
-# define ASM32FLAT(code)
+# define ASM32FLAT(ಸಂಕೇತ_2)
 // Compile time check for a given mode.
-# define ASSERT16() do { } while (0)
+# define ASSERT16() ಮಾಡು { } ಆಗ (0)
 # define ASSERT32SEG() __force_link_error__only_in_32bit_segmented()
 # define ASSERT32FLAT() __force_link_error__only_in_32bit_flat()
-#elif MODESEGMENT == 1
+#ಅಥವಾಆದರೆ MODESEGMENT == 1
 # define VISIBLE16
 # define VISIBLE32FLAT
 # define VISIBLE32INIT
@@ -91,12 +91,12 @@ extern void __force_link_error__only_in_16bit(void) __noreturn;
 # define VARFSEG __section(".discard.varfseg." UNIQSEC) __VISIBLE __weak
 # define VARFSEGFIXED(addr) __section(".discard.varfixed." UNIQSEC) __VISIBLE __weak
 # define VARVERIFY32INIT __section(".discard.varinit." UNIQSEC)
-# define ASM16(code)
-# define ASM32FLAT(code)
+# define ASM16(ಸಂಕೇತ_2)
+# define ASM32FLAT(ಸಂಕೇತ_2)
 # define ASSERT16() __force_link_error__only_in_16bit()
-# define ASSERT32SEG() do { } while (0)
+# define ASSERT32SEG() ಮಾಡು { } ಆಗ (0)
 # define ASSERT32FLAT() __force_link_error__only_in_32bit_flat()
-#else
+#ಇಲ್ಲದಿದ್ದರೆ
 # define VISIBLE16
 # define VISIBLE32FLAT __section(".text.runtime." UNIQSEC) __VISIBLE
 # define VISIBLE32INIT __section(".text.init." UNIQSEC) __VISIBLE
@@ -107,50 +107,50 @@ extern void __force_link_error__only_in_16bit(void) __noreturn;
 # define VARFSEG __section(".data.varfseg." UNIQSEC) __VISIBLE
 # define VARFSEGFIXED(addr) __section(".fixedaddr." __stringify(addr)) __VISIBLE __aligned(1)
 # define VARVERIFY32INIT __section(".data.varinit." UNIQSEC)
-# define ASM16(code)
-# define ASM32FLAT(code) __ASM(code)
+# define ASM16(ಸಂಕೇತ_2)
+# define ASM32FLAT(ಸಂಕೇತ_2) __ASM(ಸಂಕೇತ_2)
 # define ASSERT16() __force_link_error__only_in_16bit()
 # define ASSERT32SEG() __force_link_error__only_in_32bit_segmented()
-# define ASSERT32FLAT() do { } while (0)
-#endif
+# define ASSERT32FLAT() ಮಾಡು { } ಆಗ (0)
+#ಆದರೆ_ಅಂತ್ಯ
 
-#define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
-#define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
-#define FIELD_SIZEOF(t, f) (sizeof(((t*)0)->f))
-#define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
-#define DIV_ROUND_CLOSEST(x, divisor)({                 \
-            typeof(divisor) __divisor = divisor;        \
+#ವ್ಯಾಖ್ಯಾನಿಸು offsetof(TYPE, MEMBER) ((ಗಾತ್ರ_t) &((TYPE *)0)->MEMBER)
+#ವ್ಯಾಖ್ಯಾನಿಸು ARRAY_ಗಾತ್ರ(a) (ಗಾತ್ರ(a) / ಗಾತ್ರ(a[0]))
+#ವ್ಯಾಖ್ಯಾನಿಸು ಕ್ಷೇತ್ರ_SIZEOF(t, f) (ಗಾತ್ರ(((t*)0)->f))
+#ವ್ಯಾಖ್ಯಾನಿಸು DIV_ಸುತ್ತು_ಮೇಲೆ(n,d) (((n) + (d) - 1) / (d))
+#ವ್ಯಾಖ್ಯಾನಿಸು DIV_ಸುತ್ತು_CLOSEST(x, ಭಾಜಕ)({                 \
+            typeof(ಭಾಜಕ) __divisor = ಭಾಜಕ;        \
             (((x) + ((__divisor) / 2)) / (__divisor));  \
         })
-#define ALIGN(x,a)              __ALIGN_MASK(x,(typeof(x))(a)-1)
-#define __ALIGN_MASK(x,mask)    (((x)+(mask))&~(mask))
-#define ALIGN_DOWN(x,a)         ((x) & ~((typeof(x))(a)-1))
-#define container_of(ptr, type, member) ({                      \
-        const typeof( ((type *)0)->member ) *__mptr = (ptr);    \
-        (type *)( (char *)__mptr - offsetof(type,member) );})
-#define container_of_or_null(ptr, type, member) ({              \
-        const typeof( ((type *)0)->member ) *___mptr = (ptr);   \
-        ___mptr ? container_of(___mptr, type, member) : NULL; })
+#ವ್ಯಾಖ್ಯಾನಿಸು ALIGN(x,a)              __ALIGN_MASK(x,(typeof(x))(a)-1)
+#ವ್ಯಾಖ್ಯಾನಿಸು __ALIGN_MASK(x,ಮುಖವಾಡ)    (((x)+(ಮುಖವಾಡ))&~(ಮುಖವಾಡ))
+#ವ್ಯಾಖ್ಯಾನಿಸು ALIGN_ಕೆಳಕ್ಕೆ(x,a)         ((x) & ~((typeof(x))(a)-1))
+#ವ್ಯಾಖ್ಯಾನಿಸು container_ದ(ptr, type, member) ({                      \
+        ಸ್ಥಿರಾಂಕ typeof( ((type *)0)->member ) *__mptr = (ptr);    \
+        (type *)( (ಅಕ್ಷರ *)__mptr - offsetof(type,member) );})
+#ವ್ಯಾಖ್ಯಾನಿಸು container_ದ_or_null(ptr, type, member) ({              \
+        ಸ್ಥಿರಾಂಕ typeof( ((type *)0)->member ) *___mptr = (ptr);   \
+        ___mptr ? container_ದ(___mptr, type, member) : ಖಾಲಿ; })
 
-#define likely(x)       __builtin_expect(!!(x), 1)
-#define unlikely(x)     __builtin_expect(!!(x), 0)
+#ವ್ಯಾಖ್ಯಾನಿಸು likely(x)       __builtin_expect(!!(x), 1)
+#ವ್ಯಾಖ್ಯಾನಿಸು unlikely(x)     __builtin_expect(!!(x), 0)
 
-#define NULL ((void*)0)
+#ವ್ಯಾಖ್ಯಾನಿಸು ಖಾಲಿ ((ಶೂನ್ಯ*)0)
 
-#define __weak __attribute__((weak))
-#define __section(S) __attribute__((section(S)))
+#ವ್ಯಾಖ್ಯಾನಿಸು __weak __attribute__((weak))
+#ವ್ಯಾಖ್ಯಾನಿಸು __section(S) __attribute__((section(S)))
 
-#define PACKED __attribute__((packed))
-#define __aligned(x) __attribute__((aligned(x)))
+#ವ್ಯಾಖ್ಯಾನಿಸು PACKED __attribute__((packed))
+#ವ್ಯಾಖ್ಯಾನಿಸು __aligned(x) __attribute__((aligned(x)))
 
-#define barrier() __asm__ __volatile__("": : :"memory")
+#ವ್ಯಾಖ್ಯಾನಿಸು barrier() __asm__ __volatile__("": : :"memory")
 
-#define noinline __attribute__((noinline))
-#define __always_inline inline __attribute__((always_inline))
-#define __malloc __attribute__((__malloc__))
-#define __attribute_const __attribute__((__const__))
+#ವ್ಯಾಖ್ಯಾನಿಸು noinline __attribute__((noinline))
+#ವ್ಯಾಖ್ಯಾನಿಸು __always_inline ಸಾಲೊಳಗೆ __attribute__((always_inline))
+#ವ್ಯಾಖ್ಯಾನಿಸು __malloc __attribute__((__malloc__))
+#ವ್ಯಾಖ್ಯಾನಿಸು __attribute_const __attribute__((__const__))
 
-#define __stringify_1(x)        #x
-#define __stringify(x)          __stringify_1(x)
+#ವ್ಯಾಖ್ಯಾನಿಸು __stringify_1(x)        #x
+#ವ್ಯಾಖ್ಯಾನಿಸು __stringify(x)          __stringify_1(x)
 
-#endif // types.h
+#ಆದರೆ_ಅಂತ್ಯ // types.h

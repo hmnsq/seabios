@@ -14,69 +14,69 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_GLOBALFLAT
-#include "block.h" // DTYPE_USB
-#include "blockcmd.h" // cdb_read
-#include "config.h" // CONFIG_USB_UAS
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "std/disk.h" // DISK_RET_SUCCESS
-#include "string.h" // memset
-#include "usb.h" // struct usb_s
-#include "usb-uas.h" // usb_uas_init
-#include "util.h" // bootprio_find_usb
+#ಅನ್ತರ್ಭಾವ "biosvar.h" // GET_GLOBALFLAT
+#ಅನ್ತರ್ಭಾವ "block.h" // DTYPE_USB
+#ಅನ್ತರ್ಭಾವ "blockcmd.h" // cdb_read
+#ಅನ್ತರ್ಭಾವ "config.h" // CONFIG_USB_UAS
+#ಅನ್ತರ್ಭಾವ "malloc.h" // free
+#ಅನ್ತರ್ಭಾವ "output.h" // dprintf
+#ಅನ್ತರ್ಭಾವ "std/disk.h" // DISK_RET_SUCCESS
+#ಅನ್ತರ್ಭಾವ "string.h" // memset
+#ಅನ್ತರ್ಭಾವ "usb.h" // struct usb_s
+#ಅನ್ತರ್ಭಾವ "usb-uas.h" // usb_uas_init
+#ಅನ್ತರ್ಭಾವ "util.h" // bootprio_find_usb
 
-#define UAS_UI_COMMAND              0x01
-#define UAS_UI_SENSE                0x03
-#define UAS_UI_RESPONSE             0x04
-#define UAS_UI_TASK_MGMT            0x05
-#define UAS_UI_READ_READY           0x06
-#define UAS_UI_WRITE_READY          0x07
+#ವ್ಯಾಖ್ಯಾನಿಸು UAS_UI_COMMAND              0x01
+#ವ್ಯಾಖ್ಯಾನಿಸು UAS_UI_SENSE                0x03
+#ವ್ಯಾಖ್ಯಾನಿಸು UAS_UI_RESPONSE             0x04
+#ವ್ಯಾಖ್ಯಾನಿಸು UAS_UI_TASK_MGMT            0x05
+#ವ್ಯಾಖ್ಯಾನಿಸು UAS_UI_READ_READY           0x06
+#ವ್ಯಾಖ್ಯಾನಿಸು UAS_UI_WRITE_READY          0x07
 
-#define UAS_PIPE_ID_COMMAND         0x01
-#define UAS_PIPE_ID_STATUS          0x02
-#define UAS_PIPE_ID_DATA_IN         0x03
-#define UAS_PIPE_ID_DATA_OUT        0x04
+#ವ್ಯಾಖ್ಯಾನಿಸು UAS_PIPE_ID_COMMAND         0x01
+#ವ್ಯಾಖ್ಯಾನಿಸು UAS_PIPE_ID_ಸ್ಥಿತಿ          0x02
+#ವ್ಯಾಖ್ಯಾನಿಸು UAS_PIPE_ID_ದತ್ತಾಂಶ_ಒಳ         0x03
+#ವ್ಯಾಖ್ಯಾನಿಸು UAS_PIPE_ID_ದತ್ತಾಂಶ_ಹೊರಹೋಗು        0x04
 
-typedef struct {
+ಪ್ರಕಾರವ್ಯಾಖ್ಯೆ ರಚನೆ {
     u8    id;
     u8    reserved;
-    u16   tag;
-} PACKED  uas_ui_header;
+    u16   ಟ್ಯಾಗ್;
+} PACKED  uas_ui_ಶೀರ್ಷಿಕೆ;
 
-typedef struct {
+ಪ್ರಕಾರವ್ಯಾಖ್ಯೆ ರಚನೆ {
     u8    prio_taskattr;   /* 6:3 priority, 2:0 task attribute   */
     u8    reserved_1;
-    u8    add_cdb_length;  /* 7:2 additional adb length (dwords) */
+    u8    ಕೂಡಿಸು_cdb_ಉದ್ದಳತೆ;  /* 7:2 additional adb length (dwords) */
     u8    reserved_2;
     u8    lun[8];
     u8    cdb[16];
-    u8    add_cdb[];
+    u8    ಕೂಡಿಸು_cdb[];
 } PACKED  uas_ui_command;
 
-typedef struct {
-    u16   status_qualifier;
-    u8    status;
+ಪ್ರಕಾರವ್ಯಾಖ್ಯೆ ರಚನೆ {
+    u16   ಸ್ಥಿತಿ_qualifier;
+    u8    ಸ್ಥಿತಿ_2;
     u8    reserved[7];
-    u16   sense_length;
-    u8    sense_data[18];
+    u16   sense_ಉದ್ದಳತೆ;
+    u8    sense_ದತ್ತಾಂಶ[18];
 } PACKED  uas_ui_sense;
 
-typedef struct {
-    u16   add_response_info;
-    u8    response_code;
+ಪ್ರಕಾರವ್ಯಾಖ್ಯೆ ರಚನೆ {
+    u16   ಕೂಡಿಸು_response_info;
+    u8    response_ಸಂಕೇತ;
 } PACKED  uas_ui_response;
 
-typedef struct {
+ಪ್ರಕಾರವ್ಯಾಖ್ಯೆ ರಚನೆ {
     u8    function;
     u8    reserved;
-    u16   task_tag;
+    u16   task_ಟ್ಯಾಗ್;
     u8    lun[8];
 } PACKED  uas_ui_task_mgmt;
 
-typedef struct {
-    uas_ui_header  hdr;
-    union {
+ಪ್ರಕಾರವ್ಯಾಖ್ಯೆ ರಚನೆ {
+    uas_ui_ಶೀರ್ಷಿಕೆ  hdr;
+    ಒಕ್ಕೂಟ {
         uas_ui_command   command;
         uas_ui_sense     sense;
         uas_ui_task_mgmt task;
@@ -84,206 +84,206 @@ typedef struct {
     };
 } PACKED  uas_ui;
 
-struct uasdrive_s {
-    struct drive_s drive;
-    struct usbdevice_s *usbdev;
-    struct usb_pipe *command, *status, *data_in, *data_out;
+ರಚನೆ uasdrive_s {
+    ರಚನೆ drive_s drive;
+    ರಚನೆ usbdevice_s *usbdev;
+    ರಚನೆ usb_pipe *command, *ಸ್ಥಿತಿ_2, *ದತ್ತಾಂಶ_ಒಳ, *ದತ್ತಾಂಶ_ಹೊರಹೋಗು;
     u32 lun;
 };
 
-int
-uas_process_op(struct disk_op_s *op)
+ಪೂರ್ಣಾಂಕ
+uas_process_op(ರಚನೆ disk_op_s *op)
 {
-    if (!CONFIG_USB_UAS)
-        return DISK_RET_EBADTRACK;
+    ಆದರೆ (!CONFIG_USB_UAS)
+        ಹಿಂತಿರುಗಿ DISK_RET_EBADTRACK;
 
-    struct uasdrive_s *drive_gf = container_of(
-        op->drive_fl, struct uasdrive_s, drive);
+    ರಚನೆ uasdrive_s *drive_gf = container_ದ(
+        op->drive_fl, ರಚನೆ uasdrive_s, drive);
 
     uas_ui ui;
-    memset(&ui, 0, sizeof(ui));
+    memset(&ui, 0, ಗಾತ್ರ(ui));
     ui.hdr.id = UAS_UI_COMMAND;
-    ui.hdr.tag = 0xdead;
+    ui.hdr.ಟ್ಯಾಗ್ = 0xdead;
     ui.command.lun[1] = GET_GLOBALFLAT(drive_gf->lun);
-    int blocksize = scsi_fill_cmd(op, ui.command.cdb, sizeof(ui.command.cdb));
-    if (blocksize < 0)
-        return default_process_op(op);
-    int ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->command),
-                            USB_DIR_OUT, MAKE_FLATPTR(GET_SEG(SS), &ui),
-                            sizeof(ui.hdr) + sizeof(ui.command));
-    if (ret) {
+    ಪೂರ್ಣಾಂಕ blocksize = scsi_fill_cmd(op, ui.command.cdb, ಗಾತ್ರ(ui.command.cdb));
+    ಆದರೆ (blocksize < 0)
+        ಹಿಂತಿರುಗಿ default_process_op(op);
+    ಪೂರ್ಣಾಂಕ ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->command),
+                            USB_DIR_ಹೊರಹೋಗು, MAKE_FLATPTR(GET_SEG(SS), &ui),
+                            ಗಾತ್ರ(ui.hdr) + ಗಾತ್ರ(ui.command));
+    ಆದರೆ (ret) {
         dprintf(1, "uas: command send fail");
-        goto fail;
+        ಹೋಗು fail;
     }
 
-    memset(&ui, 0xff, sizeof(ui));
-    ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->status),
-                        USB_DIR_IN, MAKE_FLATPTR(GET_SEG(SS), &ui), sizeof(ui));
-    if (ret) {
+    memset(&ui, 0xff, ಗಾತ್ರ(ui));
+    ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->ಸ್ಥಿತಿ_2),
+                        USB_DIR_ಒಳ, MAKE_FLATPTR(GET_SEG(SS), &ui), ಗಾತ್ರ(ui));
+    ಆದರೆ (ret) {
         dprintf(1, "uas: status recv fail");
-        goto fail;
+        ಹೋಗು fail;
     }
 
-    switch (ui.hdr.id) {
-    case UAS_UI_SENSE:
-        goto have_sense;
-    case UAS_UI_READ_READY:
-        ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->data_in),
-                            USB_DIR_IN, op->buf_fl, op->count * blocksize);
-        if (ret) {
+    ಆಯ್ಕೆ (ui.hdr.id) {
+    ಸ್ಥಿತಿ UAS_UI_SENSE:
+        ಹೋಗು have_sense;
+    ಸ್ಥಿತಿ UAS_UI_READ_READY:
+        ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->ದತ್ತಾಂಶ_ಒಳ),
+                            USB_DIR_ಒಳ, op->buf_fl, op->ಎಣಿಕೆ_2 * blocksize);
+        ಆದರೆ (ret) {
             dprintf(1, "uas: data read fail");
-            goto fail;
+            ಹೋಗು fail;
         }
-        break;
-    case UAS_UI_WRITE_READY:
-        ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->data_out),
-                            USB_DIR_OUT, op->buf_fl, op->count * blocksize);
-        if (ret) {
+        ನಿಲ್ಲಿಸು;
+    ಸ್ಥಿತಿ UAS_UI_WRITE_READY:
+        ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->ದತ್ತಾಂಶ_ಹೊರಹೋಗು),
+                            USB_DIR_ಹೊರಹೋಗು, op->buf_fl, op->ಎಣಿಕೆ_2 * blocksize);
+        ಆದರೆ (ret) {
             dprintf(1, "uas: data write fail");
-            goto fail;
+            ಹೋಗು fail;
         }
-        break;
-    default:
+        ನಿಲ್ಲಿಸು;
+    ಪೂರ್ವನಿಯೋಜಿತ:
         dprintf(1, "uas: unknown status ui id %d", ui.hdr.id);
-        goto fail;
+        ಹೋಗು fail;
     }
 
-    memset(&ui, 0xff, sizeof(ui));
-    ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->status),
-                        USB_DIR_IN, MAKE_FLATPTR(GET_SEG(SS), &ui), sizeof(ui));
-    if (ret) {
+    memset(&ui, 0xff, ಗಾತ್ರ(ui));
+    ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->ಸ್ಥಿತಿ_2),
+                        USB_DIR_ಒಳ, MAKE_FLATPTR(GET_SEG(SS), &ui), ಗಾತ್ರ(ui));
+    ಆದರೆ (ret) {
         dprintf(1, "uas: status recv fail");
-        goto fail;
+        ಹೋಗು fail;
     }
-    if (ui.hdr.id != UAS_UI_SENSE) {
+    ಆದರೆ (ui.hdr.id != UAS_UI_SENSE) {
         dprintf(1, "uas: expected sense ui, got ui id %d", ui.hdr.id);
-        goto fail;
+        ಹೋಗು fail;
     }
 
 have_sense:
-    if (ui.sense.status == 0) {
-        return DISK_RET_SUCCESS;
+    ಆದರೆ (ui.sense.ಸ್ಥಿತಿ_2 == 0) {
+        ಹಿಂತಿರುಗಿ DISK_RET_SUCCESS;
     }
 
 fail:
-    return DISK_RET_EBADTRACK;
+    ಹಿಂತಿರುಗಿ DISK_RET_EBADTRACK;
 }
 
-static void
-uas_init_lun(struct uasdrive_s *drive, struct usbdevice_s *usbdev,
-             struct usb_pipe *command, struct usb_pipe *status,
-             struct usb_pipe *data_in, struct usb_pipe *data_out,
+ಸ್ಥಿರ ಶೂನ್ಯ
+uas_init_lun(ರಚನೆ uasdrive_s *drive, ರಚನೆ usbdevice_s *usbdev,
+             ರಚನೆ usb_pipe *command, ರಚನೆ usb_pipe *ಸ್ಥಿತಿ_2,
+             ರಚನೆ usb_pipe *ದತ್ತಾಂಶ_ಒಳ, ರಚನೆ usb_pipe *ದತ್ತಾಂಶ_ಹೊರಹೋಗು,
              u32 lun)
 {
-    memset(drive, 0, sizeof(*drive));
-    if (usb_32bit_pipe(data_in))
+    memset(drive, 0, ಗಾತ್ರ(*drive));
+    ಆದರೆ (usb_32bit_pipe(ದತ್ತಾಂಶ_ಒಳ))
         drive->drive.type = DTYPE_UAS_32;
-    else
+    ಇಲ್ಲದಿದ್ದರೆ
         drive->drive.type = DTYPE_UAS;
     drive->usbdev = usbdev;
     drive->command = command;
-    drive->status = status;
-    drive->data_in = data_in;
-    drive->data_out = data_out;
+    drive->ಸ್ಥಿತಿ_2 = ಸ್ಥಿತಿ_2;
+    drive->ದತ್ತಾಂಶ_ಒಳ = ದತ್ತಾಂಶ_ಒಳ;
+    drive->ದತ್ತಾಂಶ_ಹೊರಹೋಗು = ದತ್ತಾಂಶ_ಹೊರಹೋಗು;
     drive->lun = lun;
 }
 
-static int
-uas_add_lun(u32 lun, struct drive_s *tmpl_drv)
+ಸ್ಥಿರ ಪೂರ್ಣಾಂಕ
+uas_ಕೂಡಿಸು_lun(u32 lun, ರಚನೆ drive_s *tmpl_drv)
 {
-    struct uasdrive_s *tmpl_lun =
-        container_of(tmpl_drv, struct uasdrive_s, drive);
-    struct uasdrive_s *drive = malloc_fseg(sizeof(*drive));
-    if (!drive) {
+    ರಚನೆ uasdrive_s *tmpl_lun =
+        container_ದ(tmpl_drv, ರಚನೆ uasdrive_s, drive);
+    ರಚನೆ uasdrive_s *drive = malloc_fseg(ಗಾತ್ರ(*drive));
+    ಆದರೆ (!drive) {
         warn_noalloc();
-        return -1;
+        ಹಿಂತಿರುಗಿ -1;
     }
     uas_init_lun(drive, tmpl_lun->usbdev,
-                 tmpl_lun->command, tmpl_lun->status,
-                 tmpl_lun->data_in, tmpl_lun->data_out,
+                 tmpl_lun->command, tmpl_lun->ಸ್ಥಿತಿ_2,
+                 tmpl_lun->ದತ್ತಾಂಶ_ಒಳ, tmpl_lun->ದತ್ತಾಂಶ_ಹೊರಹೋಗು,
                  lun);
 
-    int prio = bootprio_find_usb(drive->usbdev, drive->lun);
-    int ret = scsi_drive_setup(&drive->drive, "USB UAS", prio);
-    if (ret) {
-        free(drive);
-        return -1;
+    ಪೂರ್ಣಾಂಕ prio = bootprio_ಕಂಡುಹಿಡಿ_usb(drive->usbdev, drive->lun);
+    ಪೂರ್ಣಾಂಕ ret = scsi_drive_ಸಿದ್ಧತೆ(&drive->drive, "USB UAS", prio);
+    ಆದರೆ (ret) {
+        ಬಿಡುಗಡೆ(drive);
+        ಹಿಂತಿರುಗಿ -1;
     }
-    return 0;
+    ಹಿಂತಿರುಗಿ 0;
 }
 
-int
-usb_uas_setup(struct usbdevice_s *usbdev)
+ಪೂರ್ಣಾಂಕ
+usb_uas_ಸಿದ್ಧತೆ(ರಚನೆ usbdevice_s *usbdev)
 {
-    if (!CONFIG_USB_UAS)
-        return -1;
+    ಆದರೆ (!CONFIG_USB_UAS)
+        ಹಿಂತಿರುಗಿ -1;
 
     // Verify right kind of device
-    struct usb_interface_descriptor *iface = usbdev->iface;
-    if (iface->bInterfaceSubClass != US_SC_SCSI ||
+    ರಚನೆ usb_interface_descriptor *iface = usbdev->iface;
+    ಆದರೆ (iface->bInterfaceSubClass != US_SC_SCSI ||
         iface->bInterfaceProtocol != US_PR_UAS) {
         dprintf(1, "Unsupported UAS device (subclass=%02x proto=%02x)\n"
                 , iface->bInterfaceSubClass, iface->bInterfaceProtocol);
-        return -1;
+        ಹಿಂತಿರುಗಿ -1;
     }
 
     /* find & allocate pipes */
-    struct usb_endpoint_descriptor *ep = NULL;
-    struct usb_pipe *command = NULL;
-    struct usb_pipe *status = NULL;
-    struct usb_pipe *data_in = NULL;
-    struct usb_pipe *data_out = NULL;
+    ರಚನೆ usb_endpoint_descriptor *ep = ಖಾಲಿ;
+    ರಚನೆ usb_pipe *command = ಖಾಲಿ;
+    ರಚನೆ usb_pipe *ಸ್ಥಿತಿ_2 = ಖಾಲಿ;
+    ರಚನೆ usb_pipe *ದತ್ತಾಂಶ_ಒಳ = ಖಾಲಿ;
+    ರಚನೆ usb_pipe *ದತ್ತಾಂಶ_ಹೊರಹೋಗು = ಖಾಲಿ;
     u8 *desc = (u8*)iface;
-    while (desc) {
+    ಆಗ (desc) {
         desc += desc[0];
-        switch (desc[1]) {
-        case USB_DT_ENDPOINT:
-            ep = (void*)desc;
-            break;
-        case USB_DT_ENDPOINT_COMPANION:
+        ಆಯ್ಕೆ (desc[1]) {
+        ಸ್ಥಿತಿ USB_DT_ENDPOINT:
+            ep = (ಶೂನ್ಯ*)desc;
+            ನಿಲ್ಲಿಸು;
+        ಸ್ಥಿತಿ USB_DT_ENDPOINT_COMPANION:
             /* No support (yet) for usb3 streams */
             dprintf(1, "Superspeed UAS devices not supported (yet)\n");
-            goto fail;
-        case 0x24:
-            switch (desc[2]) {
-            case UAS_PIPE_ID_COMMAND:
+            ಹೋಗು fail;
+        ಸ್ಥಿತಿ 0x24:
+            ಆಯ್ಕೆ (desc[2]) {
+            ಸ್ಥಿತಿ UAS_PIPE_ID_COMMAND:
                 command = usb_alloc_pipe(usbdev, ep);
-                break;
-            case UAS_PIPE_ID_STATUS:
-                status = usb_alloc_pipe(usbdev, ep);
-                break;
-            case UAS_PIPE_ID_DATA_IN:
-                data_in = usb_alloc_pipe(usbdev, ep);
-                break;
-            case UAS_PIPE_ID_DATA_OUT:
-                data_out = usb_alloc_pipe(usbdev, ep);
-                break;
-            default:
-                goto fail;
+                ನಿಲ್ಲಿಸು;
+            ಸ್ಥಿತಿ UAS_PIPE_ID_ಸ್ಥಿತಿ:
+                ಸ್ಥಿತಿ_2 = usb_alloc_pipe(usbdev, ep);
+                ನಿಲ್ಲಿಸು;
+            ಸ್ಥಿತಿ UAS_PIPE_ID_ದತ್ತಾಂಶ_ಒಳ:
+                ದತ್ತಾಂಶ_ಒಳ = usb_alloc_pipe(usbdev, ep);
+                ನಿಲ್ಲಿಸು;
+            ಸ್ಥಿತಿ UAS_PIPE_ID_ದತ್ತಾಂಶ_ಹೊರಹೋಗು:
+                ದತ್ತಾಂಶ_ಹೊರಹೋಗು = usb_alloc_pipe(usbdev, ep);
+                ನಿಲ್ಲಿಸು;
+            ಪೂರ್ವನಿಯೋಜಿತ:
+                ಹೋಗು fail;
             }
-            break;
-        default:
-            desc = NULL;
-            break;
+            ನಿಲ್ಲಿಸು;
+        ಪೂರ್ವನಿಯೋಜಿತ:
+            desc = ಖಾಲಿ;
+            ನಿಲ್ಲಿಸು;
         }
     }
-    if (!command || !status || !data_in || !data_out)
-        goto fail;
+    ಆದರೆ (!command || !ಸ್ಥಿತಿ_2 || !ದತ್ತಾಂಶ_ಒಳ || !ದತ್ತಾಂಶ_ಹೊರಹೋಗು)
+        ಹೋಗು fail;
 
-    struct uasdrive_s lun0;
-    uas_init_lun(&lun0, usbdev, command, status, data_in, data_out, 0);
-    int ret = scsi_rep_luns_scan(&lun0.drive, uas_add_lun);
-    if (ret <= 0) {
+    ರಚನೆ uasdrive_s lun0;
+    uas_init_lun(&lun0, usbdev, command, ಸ್ಥಿತಿ_2, ದತ್ತಾಂಶ_ಒಳ, ದತ್ತಾಂಶ_ಹೊರಹೋಗು, 0);
+    ಪೂರ್ಣಾಂಕ ret = scsi_rep_luns_ಪರಿಶೀಲನೆ(&lun0.drive, uas_ಕೂಡಿಸು_lun);
+    ಆದರೆ (ret <= 0) {
         dprintf(1, "Unable to configure UAS drive.\n");
-        goto fail;
+        ಹೋಗು fail;
     }
 
-    return 0;
+    ಹಿಂತಿರುಗಿ 0;
 
 fail:
     usb_free_pipe(usbdev, command);
-    usb_free_pipe(usbdev, status);
-    usb_free_pipe(usbdev, data_in);
-    usb_free_pipe(usbdev, data_out);
-    return -1;
+    usb_free_pipe(usbdev, ಸ್ಥಿತಿ_2);
+    usb_free_pipe(usbdev, ದತ್ತಾಂಶ_ಒಳ);
+    usb_free_pipe(usbdev, ದತ್ತಾಂಶ_ಹೊರಹೋಗು);
+    ಹಿಂತಿರುಗಿ -1;
 }

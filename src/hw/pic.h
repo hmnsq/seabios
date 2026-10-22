@@ -4,57 +4,57 @@
 // Copyright (C) 2002  MandrakeSoft S.A.
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
-#ifndef __PIC_H
-#define __PIC_H
+#ವ್ಯಾಖ್ಯಾನಿತವಾಗದಿದ್ದರೆ __PIC_H
+#ವ್ಯಾಖ್ಯಾನಿಸು __PIC_H
 
-#include "x86.h" // outb
+#ಅನ್ತರ್ಭಾವ "x86.h" // outb
 
-#define PORT_PIC1_CMD          0x0020
-#define PORT_PIC1_DATA         0x0021
-#define PORT_PIC2_CMD          0x00a0
-#define PORT_PIC2_DATA         0x00a1
+#ವ್ಯಾಖ್ಯಾನಿಸು ಪೋರ್ಟ್_PIC1_CMD          0x0020
+#ವ್ಯಾಖ್ಯಾನಿಸು ಪೋರ್ಟ್_PIC1_ದತ್ತಾಂಶ         0x0021
+#ವ್ಯಾಖ್ಯಾನಿಸು ಪೋರ್ಟ್_PIC2_CMD          0x00a0
+#ವ್ಯಾಖ್ಯಾನಿಸು ಪೋರ್ಟ್_PIC2_ದತ್ತಾಂಶ         0x00a1
 
 // PORT_PIC1 bitdefs
-#define PIC1_IRQ0  (1<<0)
-#define PIC1_IRQ1  (1<<1)
-#define PIC1_IRQ2  (1<<2)
-#define PIC1_IRQ5  (1<<5)
-#define PIC1_IRQ6  (1<<6)
+#ವ್ಯಾಖ್ಯಾನಿಸು PIC1_IRQ0  (1<<0)
+#ವ್ಯಾಖ್ಯಾನಿಸು PIC1_IRQ1  (1<<1)
+#ವ್ಯಾಖ್ಯಾನಿಸು PIC1_IRQ2  (1<<2)
+#ವ್ಯಾಖ್ಯಾನಿಸು PIC1_IRQ5  (1<<5)
+#ವ್ಯಾಖ್ಯಾನಿಸು PIC1_IRQ6  (1<<6)
 // PORT_PIC2 bitdefs
-#define PIC2_IRQ8  (1<<8)
-#define PIC2_IRQ12 (1<<12)
-#define PIC2_IRQ13 (1<<13)
-#define PIC2_IRQ14 (1<<14)
+#ವ್ಯಾಖ್ಯಾನಿಸು PIC2_IRQ8  (1<<8)
+#ವ್ಯಾಖ್ಯಾನಿಸು PIC2_IRQ12 (1<<12)
+#ವ್ಯಾಖ್ಯಾನಿಸು PIC2_IRQ13 (1<<13)
+#ವ್ಯಾಖ್ಯಾನಿಸು PIC2_IRQ14 (1<<14)
 
-#define PIC_IRQMASK_DEFAULT ((u16)~PIC1_IRQ2)
+#ವ್ಯಾಖ್ಯಾನಿಸು PIC_IRQMASK_DEFAULT ((u16)~PIC1_IRQ2)
 
-#define BIOS_HWIRQ0_VECTOR 0x08
-#define BIOS_HWIRQ8_VECTOR 0x70
+#ವ್ಯಾಖ್ಯಾನಿಸು BIOS_HWIRQ0_ಸದಿಶ 0x08
+#ವ್ಯಾಖ್ಯಾನಿಸು BIOS_HWIRQ8_ಸದಿಶ 0x70
 
-static inline void
-pic_eoi1(void)
+ಸ್ಥಿರ ಸಾಲೊಳಗೆ ಶೂನ್ಯ
+pic_eoi1(ಶೂನ್ಯ)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return;
+    ಆದರೆ (!CONFIG_HARDWARE_IRQ)
+        ಹಿಂತಿರುಗಿ;
     // Send eoi (select OCW2 + eoi)
-    outb(0x20, PORT_PIC1_CMD);
+    outb(0x20, ಪೋರ್ಟ್_PIC1_CMD);
 }
 
-static inline void
-pic_eoi2(void)
+ಸ್ಥಿರ ಸಾಲೊಳಗೆ ಶೂನ್ಯ
+pic_eoi2(ಶೂನ್ಯ)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return;
+    ಆದರೆ (!CONFIG_HARDWARE_IRQ)
+        ಹಿಂತಿರುಗಿ;
     // Send eoi (select OCW2 + eoi)
-    outb(0x20, PORT_PIC2_CMD);
+    outb(0x20, ಪೋರ್ಟ್_PIC2_CMD);
     pic_eoi1();
 }
 
-u16 pic_irqmask_read(void);
-void pic_irqmask_write(u16 mask);
-void pic_irqmask_mask(u16 off, u16 on);
-void pic_reset(u8 irq0, u8 irq8);
-void pic_setup(void);
-void enable_hwirq(int hwirq, struct segoff_s func);
+u16 pic_irqmask_read(ಶೂನ್ಯ);
+ಶೂನ್ಯ pic_irqmask_write(u16 ಮುಖವಾಡ);
+ಶೂನ್ಯ pic_irqmask_ಮುಖವಾಡ(u16 off, u16 on);
+ಶೂನ್ಯ pic_reset(u8 irq0, u8 irq8);
+ಶೂನ್ಯ pic_ಸಿದ್ಧತೆ(ಶೂನ್ಯ);
+ಶೂನ್ಯ enable_hwirq(ಪೂರ್ಣಾಂಕ hwirq, ರಚನೆ segoff_s func);
 
-#endif // pic.h
+#ಆದರೆ_ಅಂತ್ಯ // pic.h

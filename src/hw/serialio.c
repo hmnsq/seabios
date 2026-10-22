@@ -4,49 +4,49 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_DEBUG_SERIAL
-#include "fw/paravirt.h" // RunningOnQEMU
-#include "output.h" // dprintf
-#include "serialio.h" // serial_debug_preinit
-#include "x86.h" // outb
+#ಅನ್ತರ್ಭಾವ "config.h" // CONFIG_DEBUG_SERIAL
+#ಅನ್ತರ್ಭಾವ "fw/paravirt.h" // RunningOnQEMU
+#ಅನ್ತರ್ಭಾವ "output.h" // dprintf
+#ಅನ್ತರ್ಭಾವ "serialio.h" // serial_debug_preinit
+#ಅನ್ತರ್ಭಾವ "x86.h" // outb
 
 
 /****************************************************************
  * Serial port debug output
  ****************************************************************/
 
-#define DEBUG_TIMEOUT 100000
+#ವ್ಯಾಖ್ಯಾನಿಸು DEBUG_TIMEOUT 100000
 
 // Write to a serial port register
-static void
-serial_debug_write(u8 offset, u8 val)
+ಸ್ಥಿರ ಶೂನ್ಯ
+serial_debug_write(u8 ಸ್ಥಾನಾಂತರ_2, u8 val)
 {
-    if (CONFIG_DEBUG_SERIAL) {
-        outb(val, CONFIG_DEBUG_SERIAL_PORT + offset);
-    } else if (CONFIG_DEBUG_SERIAL_MMIO) {
+    ಆದರೆ (CONFIG_DEBUG_SERIAL) {
+        outb(val, CONFIG_DEBUG_SERIAL_ಪೋರ್ಟ್ + ಸ್ಥಾನಾಂತರ_2);
+    } ಇಲ್ಲದಿದ್ದರೆ ಆದರೆ (CONFIG_DEBUG_SERIAL_MMIO) {
         ASSERT32FLAT();
-        writeb((void*)CONFIG_DEBUG_SERIAL_MEM_ADDRESS + 4*offset, val);
+        writeb((ಶೂನ್ಯ*)CONFIG_DEBUG_SERIAL_MEM_ವಿಳಾಸ + 4*ಸ್ಥಾನಾಂತರ_2, val);
     }
 }
 
 // Read from a serial port register
-static u8
-serial_debug_read(u8 offset)
+ಸ್ಥಿರ u8
+serial_debug_read(u8 ಸ್ಥಾನಾಂತರ_2)
 {
-    if (CONFIG_DEBUG_SERIAL)
-        return inb(CONFIG_DEBUG_SERIAL_PORT + offset);
-    if (CONFIG_DEBUG_SERIAL_MMIO) {
+    ಆದರೆ (CONFIG_DEBUG_SERIAL)
+        ಹಿಂತಿರುಗಿ inb(CONFIG_DEBUG_SERIAL_ಪೋರ್ಟ್ + ಸ್ಥಾನಾಂತರ_2);
+    ಆದರೆ (CONFIG_DEBUG_SERIAL_MMIO) {
         ASSERT32FLAT();
-        return readb((void*)CONFIG_DEBUG_SERIAL_MEM_ADDRESS + 4*offset);
+        ಹಿಂತಿರುಗಿ readb((ಶೂನ್ಯ*)CONFIG_DEBUG_SERIAL_MEM_ವಿಳಾಸ + 4*ಸ್ಥಾನಾಂತರ_2);
     }
 }
 
 // Setup the debug serial port for output.
-void
-serial_debug_preinit(void)
+ಶೂನ್ಯ
+serial_debug_preinit(ಶೂನ್ಯ)
 {
-    if (!CONFIG_DEBUG_SERIAL && (!CONFIG_DEBUG_SERIAL_MMIO || MODESEGMENT))
-        return;
+    ಆದರೆ (!CONFIG_DEBUG_SERIAL && (!CONFIG_DEBUG_SERIAL_MMIO || MODESEGMENT))
+        ಹಿಂತಿರುಗಿ;
     // setup for serial logging: 8N1
     u8 oldparam, newparam = 0x03;
     oldparam = serial_debug_read(SEROFF_LCR);
@@ -56,44 +56,44 @@ serial_debug_preinit(void)
     oldier = serial_debug_read(SEROFF_IER);
     serial_debug_write(SEROFF_IER, newier);
 
-    if (oldparam != newparam || oldier != newier)
+    ಆದರೆ (oldparam != newparam || oldier != newier)
         dprintf(1, "Changing serial settings was %x/%x now %x/%x\n"
                 , oldparam, oldier, newparam, newier);
 }
 
 // Write a character to the serial port.
-static void
-serial_debug(char c)
+ಸ್ಥಿರ ಶೂನ್ಯ
+serial_debug(ಅಕ್ಷರ c)
 {
-    if (!CONFIG_DEBUG_SERIAL && (!CONFIG_DEBUG_SERIAL_MMIO || MODESEGMENT))
-        return;
-    int timeout = DEBUG_TIMEOUT;
-    while ((serial_debug_read(SEROFF_LSR) & 0x20) != 0x20)
-        if (!timeout--)
+    ಆದರೆ (!CONFIG_DEBUG_SERIAL && (!CONFIG_DEBUG_SERIAL_MMIO || MODESEGMENT))
+        ಹಿಂತಿರುಗಿ;
+    ಪೂರ್ಣಾಂಕ timeout = DEBUG_TIMEOUT;
+    ಆಗ ((serial_debug_read(SEROFF_LSR) & 0x20) != 0x20)
+        ಆದರೆ (!timeout--)
             // Ran out of time.
-            return;
-    serial_debug_write(SEROFF_DATA, c);
+            ಹಿಂತಿರುಗಿ;
+    serial_debug_write(SEROFF_ದತ್ತಾಂಶ, c);
 }
 
-void
-serial_debug_putc(char c)
+ಶೂನ್ಯ
+serial_debug_putc(ಅಕ್ಷರ c)
 {
-    if (c == '\n')
+    ಆದರೆ (c == '\n')
         serial_debug('\r');
     serial_debug(c);
 }
 
 // Make sure all serial port writes have been completely sent.
-void
-serial_debug_flush(void)
+ಶೂನ್ಯ
+serial_debug_flush(ಶೂನ್ಯ)
 {
-    if (!CONFIG_DEBUG_SERIAL && (!CONFIG_DEBUG_SERIAL_MMIO || MODESEGMENT))
-        return;
-    int timeout = DEBUG_TIMEOUT;
-    while ((serial_debug_read(SEROFF_LSR) & 0x60) != 0x60)
-        if (!timeout--)
+    ಆದರೆ (!CONFIG_DEBUG_SERIAL && (!CONFIG_DEBUG_SERIAL_MMIO || MODESEGMENT))
+        ಹಿಂತಿರುಗಿ;
+    ಪೂರ್ಣಾಂಕ timeout = DEBUG_TIMEOUT;
+    ಆಗ ((serial_debug_read(SEROFF_LSR) & 0x60) != 0x60)
+        ಆದರೆ (!timeout--)
             // Ran out of time.
-            return;
+            ಹಿಂತಿರುಗಿ;
 }
 
 
@@ -101,29 +101,29 @@ serial_debug_flush(void)
  * QEMU debug port
  ****************************************************************/
 
-u16 DebugOutputPort VARFSEG = 0x402;
+u16 Debug_Output_ಪೋರ್ಟ್ VARFSEG = 0x402;
 
-void
-qemu_debug_preinit(void)
+ಶೂನ್ಯ
+qemu_debug_preinit(ಶೂನ್ಯ)
 {
     /* Xen doesn't support checking if debug output is active. */
-    if (runningOnXen())
-        return;
+    ಆದರೆ (runningOnXen())
+        ಹಿಂತಿರುಗಿ;
 
     /* Check if the QEMU debug output port is active */
-    if (CONFIG_DEBUG_IO &&
-        inb(GET_GLOBAL(DebugOutputPort)) != QEMU_DEBUGCON_READBACK)
-        DebugOutputPort = 0;
+    ಆದರೆ (CONFIG_DEBUG_IO &&
+        inb(GET_GLOBAL(Debug_Output_ಪೋರ್ಟ್)) != QEMU_DEBUGCON_READBACK)
+        Debug_Output_ಪೋರ್ಟ್ = 0;
 }
 
 // Write a character to the special debugging port.
-void
-qemu_debug_putc(char c)
+ಶೂನ್ಯ
+qemu_debug_putc(ಅಕ್ಷರ c)
 {
-    if (!CONFIG_DEBUG_IO || !runningOnQEMU())
-        return;
-    u16 port = GET_GLOBAL(DebugOutputPort);
-    if (port)
+    ಆದರೆ (!CONFIG_DEBUG_IO || !runningOnQEMU())
+        ಹಿಂತಿರುಗಿ;
+    u16 ಪೋರ್ಟ್ = GET_GLOBAL(Debug_Output_ಪೋರ್ಟ್);
+    ಆದರೆ (ಪೋರ್ಟ್)
         // Send character to debug port.
-        outb(c, port);
+        outb(c, ಪೋರ್ಟ್);
 }

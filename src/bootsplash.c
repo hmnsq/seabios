@@ -5,16 +5,16 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "bregs.h" // struct bregs
-#include "config.h" // CONFIG_*
-#include "farptr.h" // FLATPTR_TO_SEG
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "romfile.h" // romfile_loadfile
-#include "stacks.h" // call16_int
-#include "std/vbe.h" // struct vbe_info
-#include "string.h" // memset
-#include "util.h" // enable_bootsplash
+#ಅನ್ತರ್ಭಾವ "bregs.h" // struct bregs
+#ಅನ್ತರ್ಭಾವ "config.h" // CONFIG_*
+#ಅನ್ತರ್ಭಾವ "farptr.h" // FLATPTR_TO_SEG
+#ಅನ್ತರ್ಭಾವ "malloc.h" // free
+#ಅನ್ತರ್ಭಾವ "output.h" // dprintf
+#ಅನ್ತರ್ಭಾವ "romfile.h" // romfile_loadfile
+#ಅನ್ತರ್ಭಾವ "stacks.h" // call16_int
+#ಅನ್ತರ್ಭಾವ "std/vbe.h" // struct vbe_info
+#ಅನ್ತರ್ಭಾವ "string.h" // memset
+#ಅನ್ತರ್ಭಾವ "util.h" // enable_bootsplash
 
 
 /****************************************************************
@@ -22,13 +22,13 @@
  ****************************************************************/
 
 // Call int10 vga handler.
-static void
-call16_int10(struct bregs *br)
+ಸ್ಥಿರ ಶೂನ್ಯ
+call16_int10(ರಚನೆ bregs *br)
 {
     br->flags = F_IF;
-    start_preempt();
+    ಆರಂಭ_preempt();
     call16_int(0x10, br);
-    finish_preempt();
+    ಮುಕ್ತಾಯ_preempt();
 }
 
 
@@ -36,220 +36,220 @@ call16_int10(struct bregs *br)
  * VGA text / graphics console
  ****************************************************************/
 
-void
-enable_vga_console(void)
+ಶೂನ್ಯ
+enable_vga_console(ಶೂನ್ಯ)
 {
     dprintf(1, "Turning on vga text mode console\n");
-    struct bregs br;
+    ರಚನೆ bregs br;
 
     /* Enable VGA text mode */
-    memset(&br, 0, sizeof(br));
+    memset(&br, 0, ಗಾತ್ರ(br));
     br.ax = 0x0003;
     call16_int10(&br);
 
     // Write to screen.
-    printf("SeaBIOS (version %s)\n", VERSION);
+    ಬರೆ("SeaBIOS (version %s)\n", ಆವೃತ್ತಿ);
     display_uuid();
 }
 
-static int
-find_videomode(struct vbe_info *vesa_info, struct vbe_mode_info *mode_info
-               , int width, int height, int bpp_req)
+ಸ್ಥಿರ ಪೂರ್ಣಾಂಕ
+ಕಂಡುಹಿಡಿ_videomode(ರಚನೆ vbe_info *vesa_info, ರಚನೆ vbe_ಬಹುಲಕ_info *ಬಹುಲಕ_info
+               , ಪೂರ್ಣಾಂಕ ಅಗಲ, ಪೂರ್ಣಾಂಕ ಎತ್ತರ, ಪೂರ್ಣಾಂಕ bpp_req)
 {
-    dprintf(3, "Finding vesa mode with dimensions %d/%d\n", width, height);
-    u16 *videomodes = SEGOFF_TO_FLATPTR(vesa_info->video_mode);
-    for (;; videomodes++) {
+    dprintf(3, "Finding vesa mode with dimensions %d/%d\n", ಅಗಲ, ಎತ್ತರ);
+    u16 *videomodes = SEGOFF_ಗಮ್ಯ_FLATPTR(vesa_info->video_ಬಹುಲಕ);
+    ಗಾಗಿ (;; videomodes++) {
         u16 videomode = *videomodes;
-        if (videomode == 0xffff) {
+        ಆದರೆ (videomode == 0xffff) {
             dprintf(1, "Unable to find vesa video mode dimensions %d/%d\n"
-                    , width, height);
-            return -1;
+                    , ಅಗಲ, ಎತ್ತರ);
+            ಹಿಂತಿರುಗಿ -1;
         }
-        struct bregs br;
-        memset(&br, 0, sizeof(br));
+        ರಚನೆ bregs br;
+        memset(&br, 0, ಗಾತ್ರ(br));
         br.ax = 0x4f01;
         br.cx = videomode;
-        br.di = FLATPTR_TO_OFFSET(mode_info);
-        br.es = FLATPTR_TO_SEG(mode_info);
+        br.di = FLATPTR_ಗಮ್ಯ_ಸ್ಥಾನಾಂತರ(ಬಹುಲಕ_info);
+        br.es = FLATPTR_ಗಮ್ಯ_SEG(ಬಹುಲಕ_info);
         call16_int10(&br);
-        if (br.ax != 0x4f) {
+        ಆದರೆ (br.ax != 0x4f) {
             dprintf(1, "get_mode failed.\n");
-            continue;
+            ಮುಂದುವರಿ;
         }
-        if (mode_info->xres != width
-            || mode_info->yres != height)
-            continue;
-        u8 depth = mode_info->bits_per_pixel;
-        if (bpp_req == 0) {
-            if ((depth != 16 && depth != 24 && depth != 32)
-                || mode_info->green_size == 5)
-                continue;
-        } else {
-            if (depth != bpp_req)
-                continue;
+        ಆದರೆ (ಬಹುಲಕ_info->xres != ಅಗಲ
+            || ಬಹುಲಕ_info->yres != ಎತ್ತರ)
+            ಮುಂದುವರಿ;
+        u8 ಆಳ = ಬಹುಲಕ_info->ಬಿಟ್ಟುಗಳು_ಪ್ರತಿ_pixel;
+        ಆದರೆ (bpp_req == 0) {
+            ಆದರೆ ((ಆಳ != 16 && ಆಳ != 24 && ಆಳ != 32)
+                || ಬಹುಲಕ_info->green_ಗಾತ್ರ == 5)
+                ಮುಂದುವರಿ;
+        } ಇಲ್ಲದಿದ್ದರೆ {
+            ಆದರೆ (ಆಳ != bpp_req)
+                ಮುಂದುವರಿ;
         }
-        return videomode;
+        ಹಿಂತಿರುಗಿ videomode;
     }
 }
 
-static int BootsplashActive;
+ಸ್ಥಿರ ಪೂರ್ಣಾಂಕ Bootsplash_ಸಕ್ರಿಯ;
 
-void
-enable_bootsplash(void)
+ಶೂನ್ಯ
+enable_bootsplash(ಶೂನ್ಯ)
 {
-    if (!CONFIG_BOOTSPLASH)
-        return;
+    ಆದರೆ (!CONFIG_BOOTSPLASH)
+        ಹಿಂತಿರುಗಿ;
     /* splash picture can be bmp or jpeg file */
     dprintf(3, "Checking for bootsplash\n");
     u8 type = 0; /* 0 means jpg, 1 means bmp, default is 0=jpg */
-    int filesize;
+    ಪೂರ್ಣಾಂಕ filesize;
     u8 *filedata = romfile_loadfile("bootsplash.jpg", &filesize);
-    if (!filedata) {
+    ಆದರೆ (!filedata) {
         filedata = romfile_loadfile("bootsplash.bmp", &filesize);
-        if (!filedata)
-            return;
+        ಆದರೆ (!filedata)
+            ಹಿಂತಿರುಗಿ;
         type = 1;
     }
     dprintf(3, "start showing bootsplash\n");
 
-    u8 *picture = NULL; /* data buff used to be flushed to the video buf */
-    struct jpeg_decdata *jpeg = NULL;
-    struct bmp_decdata *bmp = NULL;
-    struct vbe_info *vesa_info = malloc_tmplow(sizeof(*vesa_info));
-    struct vbe_mode_info *mode_info = malloc_tmplow(sizeof(*mode_info));
-    if (!vesa_info || !mode_info) {
+    u8 *picture = ಖಾಲಿ; /* data buff used to be flushed to the video buf */
+    ರಚನೆ jpeg_decdata *jpeg = ಖಾಲಿ;
+    ರಚನೆ bmp_decdata *bmp = ಖಾಲಿ;
+    ರಚನೆ vbe_info *vesa_info = malloc_tmplow(ಗಾತ್ರ(*vesa_info));
+    ರಚನೆ vbe_ಬಹುಲಕ_info *ಬಹುಲಕ_info = malloc_tmplow(ಗಾತ್ರ(*ಬಹುಲಕ_info));
+    ಆದರೆ (!vesa_info || !ಬಹುಲಕ_info) {
         warn_noalloc();
-        goto done;
+        ಹೋಗು ಮುಗಿದ;
     }
 
     /* Check whether we have a VESA 2.0 compliant BIOS */
-    memset(vesa_info, 0, sizeof(struct vbe_info));
+    memset(vesa_info, 0, ಗಾತ್ರ(ರಚನೆ vbe_info));
     vesa_info->signature = VBE2_SIGNATURE;
-    struct bregs br;
-    memset(&br, 0, sizeof(br));
+    ರಚನೆ bregs br;
+    memset(&br, 0, ಗಾತ್ರ(br));
     br.ax = 0x4f00;
-    br.di = FLATPTR_TO_OFFSET(vesa_info);
-    br.es = FLATPTR_TO_SEG(vesa_info);
+    br.di = FLATPTR_ಗಮ್ಯ_ಸ್ಥಾನಾಂತರ(vesa_info);
+    br.es = FLATPTR_ಗಮ್ಯ_SEG(vesa_info);
     call16_int10(&br);
-    if (vesa_info->signature != VESA_SIGNATURE) {
+    ಆದರೆ (vesa_info->signature != VESA_SIGNATURE) {
         dprintf(1,"No VBE2 found.\n");
-        goto done;
+        ಹೋಗು ಮುಗಿದ;
     }
 
     /* Print some debugging information about our card. */
-    char *vendor = SEGOFF_TO_FLATPTR(vesa_info->oem_vendor_string);
-    char *product = SEGOFF_TO_FLATPTR(vesa_info->oem_product_string);
+    ಅಕ್ಷರ *vendor = SEGOFF_ಗಮ್ಯ_FLATPTR(vesa_info->oem_vendor_string);
+    ಅಕ್ಷರ *ಗುಣಲಬ್ಧ = SEGOFF_ಗಮ್ಯ_FLATPTR(vesa_info->oem_ಗುಣಲಬ್ಧ_string);
     dprintf(3, "VESA %d.%d\nVENDOR: %s\nPRODUCT: %s\n",
-            vesa_info->version>>8, vesa_info->version&0xff,
-            vendor, product);
+            vesa_info->ಆವೃತ್ತಿ_2>>8, vesa_info->ಆವೃತ್ತಿ_2&0xff,
+            vendor, ಗುಣಲಬ್ಧ);
 
-    int ret, width, height;
-    int bpp_require = 0;
-    if (type == 0) {
+    ಪೂರ್ಣಾಂಕ ret, ಅಗಲ, ಎತ್ತರ;
+    ಪೂರ್ಣಾಂಕ bpp_require = 0;
+    ಆದರೆ (type == 0) {
         jpeg = jpeg_alloc();
-        if (!jpeg) {
+        ಆದರೆ (!jpeg) {
             warn_noalloc();
-            goto done;
+            ಹೋಗು ಮುಗಿದ;
         }
         /* Parse jpeg and get image size. */
         dprintf(5, "Decoding bootsplash.jpg\n");
         ret = jpeg_decode(jpeg, filedata);
-        if (ret) {
+        ಆದರೆ (ret) {
             dprintf(1, "jpeg_decode failed with return code %d...\n", ret);
-            goto done;
+            ಹೋಗು ಮುಗಿದ;
         }
-        jpeg_get_size(jpeg, &width, &height);
-    } else {
+        jpeg_get_ಗಾತ್ರ(jpeg, &ಅಗಲ, &ಎತ್ತರ);
+    } ಇಲ್ಲದಿದ್ದರೆ {
         bmp = bmp_alloc();
-        if (!bmp) {
+        ಆದರೆ (!bmp) {
             warn_noalloc();
-            goto done;
+            ಹೋಗು ಮುಗಿದ;
         }
         /* Parse bmp and get image size. */
         dprintf(5, "Decoding bootsplash.bmp\n");
         ret = bmp_decode(bmp, filedata, filesize);
-        if (ret) {
+        ಆದರೆ (ret) {
             dprintf(1, "bmp_decode failed with return code %d...\n", ret);
-            goto done;
+            ಹೋಗು ಮುಗಿದ;
         }
-        bmp_get_info(bmp, &width, &height, &bpp_require);
+        bmp_get_info(bmp, &ಅಗಲ, &ಎತ್ತರ, &bpp_require);
     }
 
     // jpeg would use 16 or 24 bpp video mode, BMP uses 16/24/32 bpp mode.
 
     // Try to find a graphics mode with the corresponding dimensions.
-    int videomode = find_videomode(vesa_info, mode_info, width, height,
+    ಪೂರ್ಣಾಂಕ videomode = ಕಂಡುಹಿಡಿ_videomode(vesa_info, ಬಹುಲಕ_info, ಅಗಲ, ಎತ್ತರ,
                                        bpp_require);
-    if (videomode < 0) {
+    ಆದರೆ (videomode < 0) {
         dprintf(1, "failed to find a videomode with %dx%d %dbpp (0=any).\n",
-                    width, height, bpp_require);
-        goto done;
+                    ಅಗಲ, ಎತ್ತರ, bpp_require);
+        ಹೋಗು ಮುಗಿದ;
     }
-    void *framebuffer = (void *)mode_info->phys_base;
-    int depth = mode_info->bits_per_pixel;
+    ಶೂನ್ಯ *framebuffer = (ಶೂನ್ಯ *)ಬಹುಲಕ_info->phys_ತಳ;
+    ಪೂರ್ಣಾಂಕ ಆಳ = ಬಹುಲಕ_info->ಬಿಟ್ಟುಗಳು_ಪ್ರತಿ_pixel;
     dprintf(3, "mode: %04x\n", videomode);
     dprintf(3, "framebuffer: %p\n", framebuffer);
-    dprintf(3, "bytes per scanline: %d\n", mode_info->bytes_per_scanline);
-    dprintf(3, "bits per pixel: %d\n", depth);
+    dprintf(3, "bytes per scanline: %d\n", ಬಹುಲಕ_info->ಬೈಟುಗಳು_ಪ್ರತಿ_scanline);
+    dprintf(3, "bits per pixel: %d\n", ಆಳ);
 
     // Allocate space for image and decompress it.
-    int imagesize = height * mode_info->bytes_per_scanline;
+    ಪೂರ್ಣಾಂಕ imagesize = ಎತ್ತರ * ಬಹುಲಕ_info->ಬೈಟುಗಳು_ಪ್ರತಿ_scanline;
     picture = malloc_tmphigh(imagesize);
-    if (!picture) {
+    ಆದರೆ (!picture) {
         warn_noalloc();
-        goto done;
+        ಹೋಗು ಮುಗಿದ;
     }
 
-    if (type == 0) {
+    ಆದರೆ (type == 0) {
         dprintf(5, "Decompressing bootsplash.jpg\n");
-        ret = jpeg_show(jpeg, picture, width, height, depth,
-                            mode_info->bytes_per_scanline);
-        if (ret) {
+        ret = jpeg_show(jpeg, picture, ಅಗಲ, ಎತ್ತರ, ಆಳ,
+                            ಬಹುಲಕ_info->ಬೈಟುಗಳು_ಪ್ರತಿ_scanline);
+        ಆದರೆ (ret) {
             dprintf(1, "jpeg_show failed with return code %d...\n", ret);
-            goto done;
+            ಹೋಗು ಮುಗಿದ;
         }
-    } else {
+    } ಇಲ್ಲದಿದ್ದರೆ {
         dprintf(5, "Decompressing bootsplash.bmp\n");
-        ret = bmp_show(bmp, picture, width, height, depth,
-                           mode_info->bytes_per_scanline);
-        if (ret) {
+        ret = bmp_show(bmp, picture, ಅಗಲ, ಎತ್ತರ, ಆಳ,
+                           ಬಹುಲಕ_info->ಬೈಟುಗಳು_ಪ್ರತಿ_scanline);
+        ಆದರೆ (ret) {
             dprintf(1, "bmp_show failed with return code %d...\n", ret);
-            goto done;
+            ಹೋಗು ಮುಗಿದ;
         }
     }
 
     /* Switch to graphics mode */
     dprintf(5, "Switching to graphics mode\n");
-    memset(&br, 0, sizeof(br));
+    memset(&br, 0, ಗಾತ್ರ(br));
     br.ax = 0x4f02;
-    br.bx = videomode | VBE_MODE_LINEAR_FRAME_BUFFER;
+    br.bx = videomode | VBE_ಬಹುಲಕ_ರೇಖೀಯ_ಚೌಕಟ್ಟು_ಬಫರ್;
     call16_int10(&br);
-    if (br.ax != 0x4f) {
+    ಆದರೆ (br.ax != 0x4f) {
         dprintf(1, "set_mode failed.\n");
-        goto done;
+        ಹೋಗು ಮುಗಿದ;
     }
 
     /* Show the picture */
     dprintf(5, "Showing bootsplash picture\n");
     iomemcpy(framebuffer, picture, imagesize);
     dprintf(5, "Bootsplash copy complete\n");
-    BootsplashActive = 1;
+    Bootsplash_ಸಕ್ರಿಯ = 1;
 
-done:
-    free(filedata);
-    free(picture);
-    free(vesa_info);
-    free(mode_info);
-    free(jpeg);
-    free(bmp);
-    return;
+ಮುಗಿದ:
+    ಬಿಡುಗಡೆ(filedata);
+    ಬಿಡುಗಡೆ(picture);
+    ಬಿಡುಗಡೆ(vesa_info);
+    ಬಿಡುಗಡೆ(ಬಹುಲಕ_info);
+    ಬಿಡುಗಡೆ(jpeg);
+    ಬಿಡುಗಡೆ(bmp);
+    ಹಿಂತಿರುಗಿ;
 }
 
-void
-disable_bootsplash(void)
+ಶೂನ್ಯ
+disable_bootsplash(ಶೂನ್ಯ)
 {
-    if (!CONFIG_BOOTSPLASH || !BootsplashActive)
-        return;
-    BootsplashActive = 0;
+    ಆದರೆ (!CONFIG_BOOTSPLASH || !Bootsplash_ಸಕ್ರಿಯ)
+        ಹಿಂತಿರುಗಿ;
+    Bootsplash_ಸಕ್ರಿಯ = 0;
     enable_vga_console();
 }

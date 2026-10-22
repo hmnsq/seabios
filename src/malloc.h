@@ -1,70 +1,70 @@
-#ifndef __MALLOC_H
-#define __MALLOC_H
+#ವ್ಯಾಖ್ಯಾನಿತವಾಗದಿದ್ದರೆ __MALLOC_H
+#ವ್ಯಾಖ್ಯಾನಿಸು __MALLOC_H
 
-#include "types.h" // u32
+#ಅನ್ತರ್ಭಾವ "types.h" // u32
 
 // malloc.c
-extern struct zone_s ZoneLow, ZoneHigh, ZoneFSeg, ZoneTmpLow, ZoneTmpHigh;
-u32 rom_get_max(void);
-u32 rom_get_last(void);
-struct rom_header *rom_reserve(u32 size);
-int rom_confirm(u32 size);
-void malloc_csm_preinit(u32 low_pmm, u32 low_pmm_size, u32 hi_pmm,
-                        u32 hi_pmm_size);
-void malloc_preinit(void);
-extern u32 LegacyRamSize;
-void malloc_init(void);
-void malloc_prepboot(void);
-u32 malloc_palloc(struct zone_s *zone, u32 size, u32 align);
-void *_malloc(struct zone_s *zone, u32 size, u32 align);
-int malloc_pfree(u32 data);
-void free(void *data);
-u32 malloc_getspace(struct zone_s *zone);
-void malloc_sethandle(u32 data, u32 handle);
+ಬಾಹ್ಯ ರಚನೆ zone_s Zone_ಕೆಳಗಿನ, Zone_ಮೇಲಿನ, ZoneFSeg, Zone_Tmp_ಕೆಳಗಿನ, Zone_Tmp_ಮೇಲಿನ;
+u32 rom_get_max(ಶೂನ್ಯ);
+u32 rom_get_ಕೊನೆಯ(ಶೂನ್ಯ);
+ರಚನೆ rom_ಶೀರ್ಷಿಕೆ *rom_reserve(u32 ಗಾತ್ರ_2);
+ಪೂರ್ಣಾಂಕ rom_confirm(u32 ಗಾತ್ರ_2);
+ಶೂನ್ಯ malloc_csm_preinit(u32 ಕೆಳಗಿನ_pmm, u32 ಕೆಳಗಿನ_pmm_ಗಾತ್ರ, u32 hi_pmm,
+                        u32 hi_pmm_ಗಾತ್ರ);
+ಶೂನ್ಯ malloc_preinit(ಶೂನ್ಯ);
+ಬಾಹ್ಯ u32 Legacy_Ram_ಗಾತ್ರ;
+ಶೂನ್ಯ malloc_init(ಶೂನ್ಯ);
+ಶೂನ್ಯ malloc_prepboot(ಶೂನ್ಯ);
+u32 malloc_palloc(ರಚನೆ zone_s *zone, u32 ಗಾತ್ರ_2, u32 align);
+ಶೂನ್ಯ *_malloc(ರಚನೆ zone_s *zone, u32 ಗಾತ್ರ_2, u32 align);
+ಪೂರ್ಣಾಂಕ malloc_pfree(u32 ದತ್ತಾಂಶ);
+ಶೂನ್ಯ ಬಿಡುಗಡೆ(ಶೂನ್ಯ *ದತ್ತಾಂಶ);
+u32 malloc_getspace(ರಚನೆ zone_s *zone);
+ಶೂನ್ಯ malloc_sethandle(u32 ದತ್ತಾಂಶ, u32 handle);
 u32 malloc_findhandle(u32 handle);
 
-#define MALLOC_DEFAULT_HANDLE 0xFFFFFFFF
+#ವ್ಯಾಖ್ಯಾನಿಸು MALLOC_DEFAULT_HANDLE 0xFFFFFFFF
 // Minimum alignment of malloc'd memory
-#define MALLOC_MIN_ALIGN 16
+#ವ್ಯಾಖ್ಯಾನಿಸು MALLOC_MIN_ALIGN 16
 // Helper functions for memory allocation.
-static inline void *malloc_low(u32 size) {
-    return _malloc(&ZoneLow, size, MALLOC_MIN_ALIGN);
+ಸ್ಥಿರ ಸಾಲೊಳಗೆ ಶೂನ್ಯ *malloc_ಕೆಳಗಿನ(u32 ಗಾತ್ರ_2) {
+    ಹಿಂತಿರುಗಿ _malloc(&Zone_ಕೆಳಗಿನ, ಗಾತ್ರ_2, MALLOC_MIN_ALIGN);
 }
-static inline void *malloc_high(u32 size) {
-    return _malloc(&ZoneHigh, size, MALLOC_MIN_ALIGN);
+ಸ್ಥಿರ ಸಾಲೊಳಗೆ ಶೂನ್ಯ *malloc_ಮೇಲಿನ(u32 ಗಾತ್ರ_2) {
+    ಹಿಂತಿರುಗಿ _malloc(&Zone_ಮೇಲಿನ, ಗಾತ್ರ_2, MALLOC_MIN_ALIGN);
 }
-static inline void *malloc_fseg(u32 size) {
-    return _malloc(&ZoneFSeg, size, MALLOC_MIN_ALIGN);
+ಸ್ಥಿರ ಸಾಲೊಳಗೆ ಶೂನ್ಯ *malloc_fseg(u32 ಗಾತ್ರ_2) {
+    ಹಿಂತಿರುಗಿ _malloc(&ZoneFSeg, ಗಾತ್ರ_2, MALLOC_MIN_ALIGN);
 }
-static inline void *malloc_tmplow(u32 size) {
-    return _malloc(&ZoneTmpLow, size, MALLOC_MIN_ALIGN);
+ಸ್ಥಿರ ಸಾಲೊಳಗೆ ಶೂನ್ಯ *malloc_tmplow(u32 ಗಾತ್ರ_2) {
+    ಹಿಂತಿರುಗಿ _malloc(&Zone_Tmp_ಕೆಳಗಿನ, ಗಾತ್ರ_2, MALLOC_MIN_ALIGN);
 }
-static inline void *malloc_tmphigh(u32 size) {
-    return _malloc(&ZoneTmpHigh, size, MALLOC_MIN_ALIGN);
+ಸ್ಥಿರ ಸಾಲೊಳಗೆ ಶೂನ್ಯ *malloc_tmphigh(u32 ಗಾತ್ರ_2) {
+    ಹಿಂತಿರುಗಿ _malloc(&Zone_Tmp_ಮೇಲಿನ, ಗಾತ್ರ_2, MALLOC_MIN_ALIGN);
 }
-static inline void *malloc_tmp(u32 size) {
-    void *ret = malloc_tmphigh(size);
-    if (ret)
-        return ret;
-    return malloc_tmplow(size);
+ಸ್ಥಿರ ಸಾಲೊಳಗೆ ಶೂನ್ಯ *malloc_tmp(u32 ಗಾತ್ರ_2) {
+    ಶೂನ್ಯ *ret = malloc_tmphigh(ಗಾತ್ರ_2);
+    ಆದರೆ (ret)
+        ಹಿಂತಿರುಗಿ ret;
+    ಹಿಂತಿರುಗಿ malloc_tmplow(ಗಾತ್ರ_2);
 }
-static inline void *memalign_low(u32 align, u32 size) {
-    return _malloc(&ZoneLow, size, align);
+ಸ್ಥಿರ ಸಾಲೊಳಗೆ ಶೂನ್ಯ *memalign_ಕೆಳಗಿನ(u32 align, u32 ಗಾತ್ರ_2) {
+    ಹಿಂತಿರುಗಿ _malloc(&Zone_ಕೆಳಗಿನ, ಗಾತ್ರ_2, align);
 }
-static inline void *memalign_high(u32 align, u32 size) {
-    return _malloc(&ZoneHigh, size, align);
+ಸ್ಥಿರ ಸಾಲೊಳಗೆ ಶೂನ್ಯ *memalign_ಮೇಲಿನ(u32 align, u32 ಗಾತ್ರ_2) {
+    ಹಿಂತಿರುಗಿ _malloc(&Zone_ಮೇಲಿನ, ಗಾತ್ರ_2, align);
 }
-static inline void *memalign_tmplow(u32 align, u32 size) {
-    return _malloc(&ZoneTmpLow, size, align);
+ಸ್ಥಿರ ಸಾಲೊಳಗೆ ಶೂನ್ಯ *memalign_tmplow(u32 align, u32 ಗಾತ್ರ_2) {
+    ಹಿಂತಿರುಗಿ _malloc(&Zone_Tmp_ಕೆಳಗಿನ, ಗಾತ್ರ_2, align);
 }
-static inline void *memalign_tmphigh(u32 align, u32 size) {
-    return _malloc(&ZoneTmpHigh, size, align);
+ಸ್ಥಿರ ಸಾಲೊಳಗೆ ಶೂನ್ಯ *memalign_tmphigh(u32 align, u32 ಗಾತ್ರ_2) {
+    ಹಿಂತಿರುಗಿ _malloc(&Zone_Tmp_ಮೇಲಿನ, ಗಾತ್ರ_2, align);
 }
-static inline void *memalign_tmp(u32 align, u32 size) {
-    void *ret = memalign_tmphigh(align, size);
-    if (ret)
-        return ret;
-    return memalign_tmplow(align, size);
+ಸ್ಥಿರ ಸಾಲೊಳಗೆ ಶೂನ್ಯ *memalign_tmp(u32 align, u32 ಗಾತ್ರ_2) {
+    ಶೂನ್ಯ *ret = memalign_tmphigh(align, ಗಾತ್ರ_2);
+    ಆದರೆ (ret)
+        ಹಿಂತಿರುಗಿ ret;
+    ಹಿಂತಿರುಗಿ memalign_tmplow(align, ಗಾತ್ರ_2);
 }
 
-#endif // malloc.h
+#ಆದರೆ_ಅಂತ್ಯ // malloc.h

@@ -4,41 +4,41 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_BDA
-#include "config.h" // BUILD_BIOS_ADDR
-#include "e820map.h" // struct e820entry
-#include "list.h" // hlist_node
-#include "malloc.h" // _malloc
-#include "memmap.h" // PAGE_SIZE
-#include "output.h" // dprintf
-#include "stacks.h" // wait_preempt
-#include "std/optionrom.h" // OPTION_ROM_ALIGN
-#include "string.h" // memset
+#ಅನ್ತರ್ಭಾವ "biosvar.h" // GET_BDA
+#ಅನ್ತರ್ಭಾವ "config.h" // BUILD_BIOS_ADDR
+#ಅನ್ತರ್ಭಾವ "e820map.h" // struct e820entry
+#ಅನ್ತರ್ಭಾವ "list.h" // hlist_node
+#ಅನ್ತರ್ಭಾವ "malloc.h" // _malloc
+#ಅನ್ತರ್ಭಾವ "memmap.h" // PAGE_SIZE
+#ಅನ್ತರ್ಭಾವ "output.h" // dprintf
+#ಅನ್ತರ್ಭಾವ "stacks.h" // wait_preempt
+#ಅನ್ತರ್ಭಾವ "std/optionrom.h" // OPTION_ROM_ALIGN
+#ಅನ್ತರ್ಭಾವ "string.h" // memset
 
 // Information on a reserved area.
-struct allocinfo_s {
-    struct hlist_node node;
-    u32 range_start, range_end, alloc_size;
+ರಚನೆ allocinfo_s {
+    ರಚನೆ hlist_ಗಂಟು ಗಂಟು;
+    u32 range_ಆರಂಭ, range_ಕೊನೆ, alloc_ಗಾತ್ರ;
 };
 
 // Information on a tracked memory allocation.
-struct allocdetail_s {
-    struct allocinfo_s detailinfo;
-    struct allocinfo_s datainfo;
+ರಚನೆ allocdetail_s {
+    ರಚನೆ allocinfo_s detailinfo;
+    ರಚನೆ allocinfo_s datainfo;
     u32 handle;
 };
 
 // The various memory zones.
-struct zone_s {
-    struct hlist_head head;
+ರಚನೆ zone_s {
+    ರಚನೆ hlist_ತಲೆ ತಲೆ;
 };
 
-struct zone_s ZoneLow VARVERIFY32INIT, ZoneHigh VARVERIFY32INIT;
-struct zone_s ZoneFSeg VARVERIFY32INIT;
-struct zone_s ZoneTmpLow VARVERIFY32INIT, ZoneTmpHigh VARVERIFY32INIT;
+ರಚನೆ zone_s Zone_ಕೆಳಗಿನ VARVERIFY32INIT, Zone_ಮೇಲಿನ VARVERIFY32INIT;
+ರಚನೆ zone_s ZoneFSeg VARVERIFY32INIT;
+ರಚನೆ zone_s Zone_Tmp_ಕೆಳಗಿನ VARVERIFY32INIT, Zone_Tmp_ಮೇಲಿನ VARVERIFY32INIT;
 
-static struct zone_s *Zones[] VARVERIFY32INIT = {
-    &ZoneTmpLow, &ZoneLow, &ZoneFSeg, &ZoneTmpHigh, &ZoneHigh
+ಸ್ಥಿರ ರಚನೆ zone_s *Zones[] VARVERIFY32INIT = {
+    &Zone_Tmp_ಕೆಳಗಿನ, &Zone_ಕೆಳಗಿನ, &ZoneFSeg, &Zone_Tmp_ಮೇಲಿನ, &Zone_ಮೇಲಿನ
 };
 
 
@@ -47,112 +47,112 @@ static struct zone_s *Zones[] VARVERIFY32INIT = {
  ****************************************************************/
 
 // Find and reserve space from a given zone
-static u32
-alloc_new(struct zone_s *zone, u32 size, u32 align, struct allocinfo_s *fill)
+ಸ್ಥಿರ u32
+alloc_new(ರಚನೆ zone_s *zone, u32 ಗಾತ್ರ_2, u32 align, ರಚನೆ allocinfo_s *fill)
 {
-    struct allocinfo_s *info;
-    hlist_for_each_entry(info, &zone->head, node) {
-        u32 alloc_end = info->range_start + info->alloc_size;
-        u32 range_end = info->range_end;
-        u32 new_range_end = ALIGN_DOWN(range_end - size, align);
-        if (new_range_end >= alloc_end && new_range_end <= range_end) {
+    ರಚನೆ allocinfo_s *info;
+    hlist_for_each_ನಮೂದು(info, &zone->ತಲೆ, ಗಂಟು) {
+        u32 alloc_ಕೊನೆ = info->range_ಆರಂಭ + info->alloc_ಗಾತ್ರ;
+        u32 range_ಕೊನೆ = info->range_ಕೊನೆ;
+        u32 new_range_ಕೊನೆ = ALIGN_ಕೆಳಕ್ಕೆ(range_ಕೊನೆ - ಗಾತ್ರ_2, align);
+        ಆದರೆ (new_range_ಕೊನೆ >= alloc_ಕೊನೆ && new_range_ಕೊನೆ <= range_ಕೊನೆ) {
             // Found space - now reserve it.
-            fill->range_start = new_range_end;
-            fill->range_end = range_end;
-            fill->alloc_size = size;
+            fill->range_ಆರಂಭ = new_range_ಕೊನೆ;
+            fill->range_ಕೊನೆ = range_ಕೊನೆ;
+            fill->alloc_ಗಾತ್ರ = ಗಾತ್ರ_2;
 
-            info->range_end = new_range_end;
-            hlist_add_before(&fill->node, &info->node);
-            return new_range_end;
+            info->range_ಕೊನೆ = new_range_ಕೊನೆ;
+            hlist_ಕೂಡಿಸು_before(&fill->ಗಂಟು, &info->ಗಂಟು);
+            ಹಿಂತಿರುಗಿ new_range_ಕೊನೆ;
         }
     }
-    return 0;
+    ಹಿಂತಿರುಗಿ 0;
 }
 
 // Reserve space for a 'struct allocdetail_s' and fill
-static struct allocdetail_s *
-alloc_new_detail(struct allocdetail_s *temp)
+ಸ್ಥಿರ ರಚನೆ allocdetail_s *
+alloc_new_detail(ರಚನೆ allocdetail_s *ತಾತ್ಕಾಲಿಕ)
 {
-    u32 detail_addr = alloc_new(&ZoneTmpHigh, sizeof(struct allocdetail_s)
-                                , MALLOC_MIN_ALIGN, &temp->detailinfo);
-    if (!detail_addr) {
-        detail_addr = alloc_new(&ZoneTmpLow, sizeof(struct allocdetail_s)
-                                , MALLOC_MIN_ALIGN, &temp->detailinfo);
-        if (!detail_addr) {
+    u32 detail_addr = alloc_new(&Zone_Tmp_ಮೇಲಿನ, ಗಾತ್ರ(ರಚನೆ allocdetail_s)
+                                , MALLOC_MIN_ALIGN, &ತಾತ್ಕಾಲಿಕ->detailinfo);
+    ಆದರೆ (!detail_addr) {
+        detail_addr = alloc_new(&Zone_Tmp_ಕೆಳಗಿನ, ಗಾತ್ರ(ರಚನೆ allocdetail_s)
+                                , MALLOC_MIN_ALIGN, &ತಾತ್ಕಾಲಿಕ->detailinfo);
+        ಆದರೆ (!detail_addr) {
             warn_noalloc();
-            return NULL;
+            ಹಿಂತಿರುಗಿ ಖಾಲಿ;
         }
     }
-    struct allocdetail_s *detail = memremap(detail_addr, sizeof(*detail));
+    ರಚನೆ allocdetail_s *detail = memremap(detail_addr, ಗಾತ್ರ(*detail));
 
     // Fill final 'detail' allocation from data in 'temp'
-    memcpy(detail, temp, sizeof(*detail));
-    hlist_replace(&temp->detailinfo.node, &detail->detailinfo.node);
-    hlist_replace(&temp->datainfo.node, &detail->datainfo.node);
-    return detail;
+    ಸ್ಮರಣೆ_ನಕಲು(detail, ತಾತ್ಕಾಲಿಕ, ಗಾತ್ರ(*detail));
+    hlist_replace(&ತಾತ್ಕಾಲಿಕ->detailinfo.ಗಂಟು, &detail->detailinfo.ಗಂಟು);
+    hlist_replace(&ತಾತ್ಕಾಲಿಕ->datainfo.ಗಂಟು, &detail->datainfo.ಗಂಟು);
+    ಹಿಂತಿರುಗಿ detail;
 }
 
 // Add new memory to a zone
-static void
-alloc_add(struct zone_s *zone, u32 start, u32 end)
+ಸ್ಥಿರ ಶೂನ್ಯ
+alloc_ಕೂಡಿಸು(ರಚನೆ zone_s *zone, u32 ಆರಂಭ, u32 ಕೊನೆ)
 {
     // Find position to add space
-    struct allocinfo_s *info;
-    struct hlist_node **pprev;
-    hlist_for_each_entry_pprev(info, pprev, &zone->head, node) {
-        if (info->range_start < start)
-            break;
+    ರಚನೆ allocinfo_s *info;
+    ರಚನೆ hlist_ಗಂಟು **pprev;
+    hlist_for_each_ನಮೂದು_pprev(info, pprev, &zone->ತಲೆ, ಗಂಟು) {
+        ಆದರೆ (info->range_ಆರಂಭ < ಆರಂಭ)
+            ನಿಲ್ಲಿಸು;
     }
 
     // Add space using temporary allocation info.
-    struct allocdetail_s tempdetail;
+    ರಚನೆ allocdetail_s tempdetail;
     tempdetail.handle = MALLOC_DEFAULT_HANDLE;
-    tempdetail.datainfo.range_start = start;
-    tempdetail.datainfo.range_end = end;
-    tempdetail.datainfo.alloc_size = 0;
-    hlist_add(&tempdetail.datainfo.node, pprev);
+    tempdetail.datainfo.range_ಆರಂಭ = ಆರಂಭ;
+    tempdetail.datainfo.range_ಕೊನೆ = ಕೊನೆ;
+    tempdetail.datainfo.alloc_ಗಾತ್ರ = 0;
+    hlist_ಕೂಡಿಸು(&tempdetail.datainfo.ಗಂಟು, pprev);
 
     // Allocate final allocation info.
-    struct allocdetail_s *detail = alloc_new_detail(&tempdetail);
-    if (!detail)
-        hlist_del(&tempdetail.datainfo.node);
+    ರಚನೆ allocdetail_s *detail = alloc_new_detail(&tempdetail);
+    ಆದರೆ (!detail)
+        hlist_del(&tempdetail.datainfo.ಗಂಟು);
 }
 
 // Release space allocated with alloc_new()
-static void
-alloc_free(struct allocinfo_s *info)
+ಸ್ಥಿರ ಶೂನ್ಯ
+alloc_free(ರಚನೆ allocinfo_s *info)
 {
-    struct allocinfo_s *next = container_of_or_null(
-        info->node.next, struct allocinfo_s, node);
-    if (next && next->range_end == info->range_start)
-        next->range_end = info->range_end;
-    hlist_del(&info->node);
+    ರಚನೆ allocinfo_s *ಮುಂದಿನ = container_ದ_or_null(
+        info->ಗಂಟು.ಮುಂದಿನ, ರಚನೆ allocinfo_s, ಗಂಟು);
+    ಆದರೆ (ಮುಂದಿನ && ಮುಂದಿನ->range_ಕೊನೆ == info->range_ಆರಂಭ)
+        ಮುಂದಿನ->range_ಕೊನೆ = info->range_ಕೊನೆ;
+    hlist_del(&info->ಗಂಟು);
 }
 
 // Search all zones for an allocation obtained from alloc_new()
-static struct allocinfo_s *
-alloc_find(u32 data)
+ಸ್ಥಿರ ರಚನೆ allocinfo_s *
+alloc_ಕಂಡುಹಿಡಿ(u32 ದತ್ತಾಂಶ)
 {
-    int i;
-    for (i=0; i<ARRAY_SIZE(Zones); i++) {
-        struct allocinfo_s *info;
-        hlist_for_each_entry(info, &Zones[i]->head, node) {
-            if (info->range_start == data)
-                return info;
+    ಪೂರ್ಣಾಂಕ i;
+    ಗಾಗಿ (i=0; i<ARRAY_ಗಾತ್ರ(Zones); i++) {
+        ರಚನೆ allocinfo_s *info;
+        hlist_for_each_ನಮೂದು(info, &Zones[i]->ತಲೆ, ಗಂಟು) {
+            ಆದರೆ (info->range_ಆರಂಭ == ದತ್ತಾಂಶ)
+                ಹಿಂತಿರುಗಿ info;
         }
     }
-    return NULL;
+    ಹಿಂತಿರುಗಿ ಖಾಲಿ;
 }
 
 // Find the lowest memory range added by alloc_add()
-static struct allocinfo_s *
-alloc_find_lowest(struct zone_s *zone)
+ಸ್ಥಿರ ರಚನೆ allocinfo_s *
+alloc_ಕಂಡುಹಿಡಿ_ಅತಿಕಡಿಮೆ(ರಚನೆ zone_s *zone)
 {
-    struct allocinfo_s *info, *last = NULL;
-    hlist_for_each_entry(info, &zone->head, node) {
-        last = info;
+    ರಚನೆ allocinfo_s *info, *ಕೊನೆಯ = ಖಾಲಿ;
+    hlist_for_each_ನಮೂದು(info, &zone->ತಲೆ, ಗಂಟು) {
+        ಕೊನೆಯ = info;
     }
-    return last;
+    ಹಿಂತಿರುಗಿ ಕೊನೆಯ;
 }
 
 
@@ -161,69 +161,69 @@ alloc_find_lowest(struct zone_s *zone)
  ****************************************************************/
 
 // Move ebda
-static int
-relocate_ebda(u32 newebda, u32 oldebda, u8 ebda_size)
+ಸ್ಥಿರ ಪೂರ್ಣಾಂಕ
+relocate_ebda(u32 newebda, u32 oldebda, u8 ebda_ಗಾತ್ರ)
 {
-    u32 lowram = GET_BDA(mem_size_kb) * 1024;
-    if (oldebda != lowram)
+    u32 lowram = GET_BDA(mem_ಗಾತ್ರ_kb) * 1024;
+    ಆದರೆ (oldebda != lowram)
         // EBDA isn't at end of ram - give up.
-        return -1;
+        ಹಿಂತಿರುಗಿ -1;
 
     // Do copy
-    memmove((void*)newebda, (void*)oldebda, ebda_size * 1024);
+    memmove((ಶೂನ್ಯ*)newebda, (ಶೂನ್ಯ*)oldebda, ebda_ಗಾತ್ರ * 1024);
 
     // Update indexes
     dprintf(1, "ebda moved from %x to %x\n", oldebda, newebda);
-    SET_BDA(mem_size_kb, newebda / 1024);
-    SET_BDA(ebda_seg, FLATPTR_TO_SEG(newebda));
-    return 0;
+    ಗಣ_BDA(mem_ಗಾತ್ರ_kb, newebda / 1024);
+    ಗಣ_BDA(ebda_seg, FLATPTR_ಗಮ್ಯ_SEG(newebda));
+    ಹಿಂತಿರುಗಿ 0;
 }
 
 // Support expanding the ZoneLow dynamically.
-static u32
-zonelow_expand(u32 size, u32 align, struct allocinfo_s *fill)
+ಸ್ಥಿರ u32
+zonelow_expand(u32 ಗಾತ್ರ_2, u32 align, ರಚನೆ allocinfo_s *fill)
 {
     // Make sure to not move ebda while an optionrom is running.
-    if (unlikely(wait_preempt())) {
-        u32 data = alloc_new(&ZoneLow, size, align, fill);
-        if (data)
-            return data;
+    ಆದರೆ (unlikely(wait_preempt())) {
+        u32 ದತ್ತಾಂಶ = alloc_new(&Zone_ಕೆಳಗಿನ, ಗಾತ್ರ_2, align, fill);
+        ಆದರೆ (ದತ್ತಾಂಶ)
+            ಹಿಂತಿರುಗಿ ದತ್ತಾಂಶ;
     }
 
-    struct allocinfo_s *info = alloc_find_lowest(&ZoneLow);
-    if (!info)
-        return 0;
-    u32 oldpos = info->range_end;
-    u32 newpos = ALIGN_DOWN(oldpos - size, align);
-    u32 bottom = info->range_start + info->alloc_size;
-    if (newpos >= bottom && newpos <= oldpos)
+    ರಚನೆ allocinfo_s *info = alloc_ಕಂಡುಹಿಡಿ_ಅತಿಕಡಿಮೆ(&Zone_ಕೆಳಗಿನ);
+    ಆದರೆ (!info)
+        ಹಿಂತಿರುಗಿ 0;
+    u32 oldpos = info->range_ಕೊನೆ;
+    u32 newpos = ALIGN_ಕೆಳಕ್ಕೆ(oldpos - ಗಾತ್ರ_2, align);
+    u32 bottom = info->range_ಆರಂಭ + info->alloc_ಗಾತ್ರ;
+    ಆದರೆ (newpos >= bottom && newpos <= oldpos)
         // Space already present.
-        return alloc_new(&ZoneLow, size, align, fill);
+        ಹಿಂತಿರುಗಿ alloc_new(&Zone_ಕೆಳಗಿನ, ಗಾತ್ರ_2, align, fill);
     u16 ebda_seg = get_ebda_seg();
     u32 ebda_pos = (u32)MAKE_FLATPTR(ebda_seg, 0);
-    u8 ebda_size = GET_EBDA(ebda_seg, size);
-    u32 ebda_end = ebda_pos + ebda_size * 1024;
-    if (ebda_end != bottom)
+    u8 ebda_ಗಾತ್ರ = GET_EBDA(ebda_seg, ಗಾತ್ರ_2);
+    u32 ebda_ಕೊನೆ = ebda_pos + ebda_ಗಾತ್ರ * 1024;
+    ಆದರೆ (ebda_ಕೊನೆ != bottom)
         // Something else is after ebda - can't use any existing space.
-        newpos = ALIGN_DOWN(ebda_end - size, align);
-    u32 newbottom = ALIGN_DOWN(newpos, 1024);
-    u32 newebda = ALIGN_DOWN(newbottom - ebda_size * 1024, 1024);
-    if (newebda < BUILD_EBDA_MINIMUM)
+        newpos = ALIGN_ಕೆಳಕ್ಕೆ(ebda_ಕೊನೆ - ಗಾತ್ರ_2, align);
+    u32 newbottom = ALIGN_ಕೆಳಕ್ಕೆ(newpos, 1024);
+    u32 newebda = ALIGN_ಕೆಳಕ್ಕೆ(newbottom - ebda_ಗಾತ್ರ * 1024, 1024);
+    ಆದರೆ (newebda < BUILD_EBDA_MINIMUM)
         // Not enough space.
-        return 0;
+        ಹಿಂತಿರುಗಿ 0;
 
     // Move ebda
-    int ret = relocate_ebda(newebda, ebda_pos, ebda_size);
-    if (ret)
-        return 0;
+    ಪೂರ್ಣಾಂಕ ret = relocate_ebda(newebda, ebda_pos, ebda_ಗಾತ್ರ);
+    ಆದರೆ (ret)
+        ಹಿಂತಿರುಗಿ 0;
 
     // Update zone
-    if (ebda_end == bottom)
-        info->range_start = newbottom;
-    else
-        alloc_add(&ZoneLow, newbottom, ebda_end);
+    ಆದರೆ (ebda_ಕೊನೆ == bottom)
+        info->range_ಆರಂಭ = newbottom;
+    ಇಲ್ಲದಿದ್ದರೆ
+        alloc_ಕೂಡಿಸು(&Zone_ಕೆಳಗಿನ, newbottom, ebda_ಕೊನೆ);
 
-    return alloc_new(&ZoneLow, size, align, fill);
+    ಹಿಂತಿರುಗಿ alloc_new(&Zone_ಕೆಳಗಿನ, ಗಾತ್ರ_2, align, fill);
 }
 
 
@@ -233,100 +233,100 @@ zonelow_expand(u32 size, u32 align, struct allocinfo_s *fill)
 
 // Allocate physical memory from the given zone and track it as a PMM allocation
 u32
-malloc_palloc(struct zone_s *zone, u32 size, u32 align)
+malloc_palloc(ರಚನೆ zone_s *zone, u32 ಗಾತ್ರ_2, u32 align)
 {
     ASSERT32FLAT();
-    if (!size)
-        return 0;
+    ಆದರೆ (!ಗಾತ್ರ_2)
+        ಹಿಂತಿರುಗಿ 0;
 
     // Find and reserve space for main allocation
-    struct allocdetail_s tempdetail;
+    ರಚನೆ allocdetail_s tempdetail;
     tempdetail.handle = MALLOC_DEFAULT_HANDLE;
-    u32 data = alloc_new(zone, size, align, &tempdetail.datainfo);
-    if (!CONFIG_MALLOC_UPPERMEMORY && !data && zone == &ZoneLow)
-        data = zonelow_expand(size, align, &tempdetail.datainfo);
-    if (!data)
-        return 0;
+    u32 ದತ್ತಾಂಶ = alloc_new(zone, ಗಾತ್ರ_2, align, &tempdetail.datainfo);
+    ಆದರೆ (!CONFIG_MALLOC_UPPERMEMORY && !ದತ್ತಾಂಶ && zone == &Zone_ಕೆಳಗಿನ)
+        ದತ್ತಾಂಶ = zonelow_expand(ಗಾತ್ರ_2, align, &tempdetail.datainfo);
+    ಆದರೆ (!ದತ್ತಾಂಶ)
+        ಹಿಂತಿರುಗಿ 0;
 
     // Find and reserve space for bookkeeping.
-    struct allocdetail_s *detail = alloc_new_detail(&tempdetail);
-    if (!detail) {
+    ರಚನೆ allocdetail_s *detail = alloc_new_detail(&tempdetail);
+    ಆದರೆ (!detail) {
         alloc_free(&tempdetail.datainfo);
-        return 0;
+        ಹಿಂತಿರುಗಿ 0;
     }
 
     dprintf(8, "phys_alloc zone=%p size=%d align=%x ret=%x (detail=%p)\n"
-            , zone, size, align, data, detail);
+            , zone, ಗಾತ್ರ_2, align, ದತ್ತಾಂಶ, detail);
 
-    return data;
+    ಹಿಂತಿರುಗಿ ದತ್ತಾಂಶ;
 }
 
 // Allocate virtual memory from the given zone
-void * __malloc
-_malloc(struct zone_s *zone, u32 size, u32 align)
+ಶೂನ್ಯ * __malloc
+_malloc(ರಚನೆ zone_s *zone, u32 ಗಾತ್ರ_2, u32 align)
 {
-    return memremap(malloc_palloc(zone, size, align), size);
+    ಹಿಂತಿರುಗಿ memremap(malloc_palloc(zone, ಗಾತ್ರ_2, align), ಗಾತ್ರ_2);
 }
 
 // Free a data block allocated with phys_alloc
-int
-malloc_pfree(u32 data)
+ಪೂರ್ಣಾಂಕ
+malloc_pfree(u32 ದತ್ತಾಂಶ)
 {
     ASSERT32FLAT();
-    struct allocinfo_s *info = alloc_find(data);
-    if (!info || data == virt_to_phys(info) || !info->alloc_size)
-        return -1;
-    struct allocdetail_s *detail = container_of(
-        info, struct allocdetail_s, datainfo);
-    dprintf(8, "phys_free %x (detail=%p)\n", data, detail);
+    ರಚನೆ allocinfo_s *info = alloc_ಕಂಡುಹಿಡಿ(ದತ್ತಾಂಶ);
+    ಆದರೆ (!info || ದತ್ತಾಂಶ == virt_ಗಮ್ಯ_phys(info) || !info->alloc_ಗಾತ್ರ)
+        ಹಿಂತಿರುಗಿ -1;
+    ರಚನೆ allocdetail_s *detail = container_ದ(
+        info, ರಚನೆ allocdetail_s, datainfo);
+    dprintf(8, "phys_free %x (detail=%p)\n", ದತ್ತಾಂಶ, detail);
     alloc_free(info);
     alloc_free(&detail->detailinfo);
-    return 0;
+    ಹಿಂತಿರುಗಿ 0;
 }
 
-void
-free(void *data)
+ಶೂನ್ಯ
+ಬಿಡುಗಡೆ(ಶೂನ್ಯ *ದತ್ತಾಂಶ)
 {
-    if (!data)
-        return;
-    int ret = malloc_pfree(virt_to_phys(data));
-    if (ret)
+    ಆದರೆ (!ದತ್ತಾಂಶ)
+        ಹಿಂತಿರುಗಿ;
+    ಪೂರ್ಣಾಂಕ ret = malloc_pfree(virt_ಗಮ್ಯ_phys(ದತ್ತಾಂಶ));
+    ಆದರೆ (ret)
         warn_internalerror();
 }
 
 // Find the amount of free space in a given zone.
 u32
-malloc_getspace(struct zone_s *zone)
+malloc_getspace(ರಚನೆ zone_s *zone)
 {
     // XXX - doesn't account for ZoneLow being able to grow.
     // XXX - results not reliable when CONFIG_THREAD_OPTIONROMS
     u32 maxspace = 0;
-    struct allocinfo_s *info;
-    hlist_for_each_entry(info, &zone->head, node) {
-        u32 space = info->range_end - info->range_start - info->alloc_size;
-        if (space > maxspace)
+    ರಚನೆ allocinfo_s *info;
+    hlist_for_each_ನಮೂದು(info, &zone->ತಲೆ, ಗಂಟು) {
+        u32 space = info->range_ಕೊನೆ - info->range_ಆರಂಭ - info->alloc_ಗಾತ್ರ;
+        ಆದರೆ (space > maxspace)
             maxspace = space;
     }
 
-    if (zone != &ZoneTmpHigh && zone != &ZoneTmpLow)
-        return maxspace;
+    ಆದರೆ (zone != &Zone_Tmp_ಮೇಲಿನ && zone != &Zone_Tmp_ಕೆಳಗಿನ)
+        ಹಿಂತಿರುಗಿ maxspace;
     // Account for space needed for PMM tracking.
-    u32 reserve = ALIGN(sizeof(struct allocdetail_s), MALLOC_MIN_ALIGN);
-    if (maxspace <= reserve)
-        return 0;
-    return maxspace - reserve;
+    u32 reserve = ALIGN(ಗಾತ್ರ(ರಚನೆ allocdetail_s), MALLOC_MIN_ALIGN);
+    ಆದರೆ (maxspace <= reserve)
+        ಹಿಂತಿರುಗಿ 0;
+    ಹಿಂತಿರುಗಿ maxspace - reserve;
 }
 
 // Set a handle associated with an allocation.
-void
-malloc_sethandle(u32 data, u32 handle)
+ಶೂನ್ಯ
+malloc_sethandle(u32 ದತ್ತಾಂಶ, u32 handle)
 {
     ASSERT32FLAT();
-    struct allocinfo_s *info = alloc_find(data);
-    if (!info || data == virt_to_phys(info) || !info->alloc_size)
-        return;
-    struct allocdetail_s *detail = container_of(
-        info, struct allocdetail_s, datainfo);
+    ರಚನೆ allocinfo_s *info = alloc_ಕಂಡುಹಿಡಿ(ದತ್ತಾಂಶ);
+    ಆದರೆ (!info || ದತ್ತಾಂಶ == virt_ಗಮ್ಯ_phys(info) || !info->alloc_ಗಾತ್ರ)
+        ಹಿಂತಿರುಗಿ;
+    ರಚನೆ allocdetail_s *detail = container_ದ(
+        info, ರಚನೆ allocdetail_s, datainfo);
     detail->handle = handle;
 }
 
@@ -334,19 +334,19 @@ malloc_sethandle(u32 data, u32 handle)
 u32
 malloc_findhandle(u32 handle)
 {
-    int i;
-    for (i=0; i<ARRAY_SIZE(Zones); i++) {
-        struct allocinfo_s *info;
-        hlist_for_each_entry(info, &Zones[i]->head, node) {
-            if (info->range_start != virt_to_phys(info))
-                continue;
-            struct allocdetail_s *detail = container_of(
-                info, struct allocdetail_s, detailinfo);
-            if (detail->handle == handle)
-                return detail->datainfo.range_start;
+    ಪೂರ್ಣಾಂಕ i;
+    ಗಾಗಿ (i=0; i<ARRAY_ಗಾತ್ರ(Zones); i++) {
+        ರಚನೆ allocinfo_s *info;
+        hlist_for_each_ನಮೂದು(info, &Zones[i]->ತಲೆ, ಗಂಟು) {
+            ಆದರೆ (info->range_ಆರಂಭ != virt_ಗಮ್ಯ_phys(info))
+                ಮುಂದುವರಿ;
+            ರಚನೆ allocdetail_s *detail = container_ದ(
+                info, ರಚನೆ allocdetail_s, detailinfo);
+            ಆದರೆ (detail->handle == handle)
+                ಹಿಂತಿರುಗಿ detail->datainfo.range_ಆರಂಭ;
         }
     }
-    return 0;
+    ಹಿಂತಿರುಗಿ 0;
 }
 
 
@@ -354,54 +354,54 @@ malloc_findhandle(u32 handle)
  * 0xc0000-0xf0000 management
  ****************************************************************/
 
-static u32 RomEnd = BUILD_ROM_START;
-static struct allocinfo_s *RomBase;
+ಸ್ಥಿರ u32 Rom_ಕೊನೆ = BUILD_ROM_ಆರಂಭ;
+ಸ್ಥಿರ ರಚನೆ allocinfo_s *Rom_ತಳ;
 
-#define OPROM_HEADER_RESERVE 16
+#ವ್ಯಾಖ್ಯಾನಿಸು OPROM_ಶೀರ್ಷಿಕೆ_RESERVE 16
 
 // Return the maximum memory position option roms may use.
 u32
-rom_get_max(void)
+rom_get_max(ಶೂನ್ಯ)
 {
-    if (CONFIG_MALLOC_UPPERMEMORY)
-        return ALIGN_DOWN(RomBase->range_end - OPROM_HEADER_RESERVE
+    ಆದರೆ (CONFIG_MALLOC_UPPERMEMORY)
+        ಹಿಂತಿರುಗಿ ALIGN_ಕೆಳಕ್ಕೆ(Rom_ತಳ->range_ಕೊನೆ - OPROM_ಶೀರ್ಷಿಕೆ_RESERVE
                           , OPTION_ROM_ALIGN);
-    return SYMBOL(final_readonly_start);
+    ಹಿಂತಿರುಗಿ ಚಿಹ್ನೆ(final_readonly_ಆರಂಭ);
 }
 
 // Return the end of the last deployed option rom.
 u32
-rom_get_last(void)
+rom_get_ಕೊನೆಯ(ಶೂನ್ಯ)
 {
-    return RomEnd;
+    ಹಿಂತಿರುಗಿ Rom_ಕೊನೆ;
 }
 
 // Request space for an optionrom in 0xc0000-0xf0000 area.
-struct rom_header *
-rom_reserve(u32 size)
+ರಚನೆ rom_ಶೀರ್ಷಿಕೆ *
+rom_reserve(u32 ಗಾತ್ರ_2)
 {
-    u32 newend = ALIGN(RomEnd + size, OPTION_ROM_ALIGN);
-    if (newend > rom_get_max())
-        return NULL;
-    if (CONFIG_MALLOC_UPPERMEMORY) {
-        if (newend < SYMBOL(zonelow_base))
-            newend = SYMBOL(zonelow_base);
-        RomBase->range_start = newend + OPROM_HEADER_RESERVE;
+    u32 newend = ALIGN(Rom_ಕೊನೆ + ಗಾತ್ರ_2, OPTION_ROM_ALIGN);
+    ಆದರೆ (newend > rom_get_max())
+        ಹಿಂತಿರುಗಿ ಖಾಲಿ;
+    ಆದರೆ (CONFIG_MALLOC_UPPERMEMORY) {
+        ಆದರೆ (newend < ಚಿಹ್ನೆ(zonelow_ತಳ))
+            newend = ಚಿಹ್ನೆ(zonelow_ತಳ);
+        Rom_ತಳ->range_ಆರಂಭ = newend + OPROM_ಶೀರ್ಷಿಕೆ_RESERVE;
     }
-    return (void*)RomEnd;
+    ಹಿಂತಿರುಗಿ (ಶೂನ್ಯ*)Rom_ಕೊನೆ;
 }
 
 // Confirm space as in use by an optionrom.
-int
-rom_confirm(u32 size)
+ಪೂರ್ಣಾಂಕ
+rom_confirm(u32 ಗಾತ್ರ_2)
 {
-    void *new = rom_reserve(size);
-    if (!new) {
+    ಶೂನ್ಯ *new = rom_reserve(ಗಾತ್ರ_2);
+    ಆದರೆ (!new) {
         warn_noalloc();
-        return -1;
+        ಹಿಂತಿರುಗಿ -1;
     }
-    RomEnd = ALIGN(RomEnd + size, OPTION_ROM_ALIGN);
-    return 0;
+    Rom_ಕೊನೆ = ALIGN(Rom_ಕೊನೆ + ಗಾತ್ರ_2, OPTION_ROM_ALIGN);
+    ಹಿಂತಿರುಗಿ 0;
 }
 
 
@@ -409,158 +409,158 @@ rom_confirm(u32 size)
  * Setup
  ****************************************************************/
 
-void
-malloc_preinit(void)
+ಶೂನ್ಯ
+malloc_preinit(ಶೂನ್ಯ)
 {
     ASSERT32FLAT();
     dprintf(3, "malloc preinit\n");
 
     // Don't declare any memory between 0xa0000 and 0x100000
-    e820_remove(BUILD_LOWRAM_END, BUILD_BIOS_ADDR-BUILD_LOWRAM_END);
+    e820_remove(BUILD_LOWRAM_ಕೊನೆ, BUILD_BIOS_ADDR-BUILD_LOWRAM_ಕೊನೆ);
 
     // Mark known areas as reserved.
-    e820_add(BUILD_BIOS_ADDR, BUILD_BIOS_SIZE, E820_RESERVED);
+    e820_ಕೂಡಿಸು(BUILD_BIOS_ADDR, BUILD_BIOS_ಗಾತ್ರ, E820_RESERVED);
 
     // Populate temp high ram
-    u32 highram_start = 0;
-    u32 highram_size = 0;
-    int i;
-    for (i=e820_count-1; i>=0; i--) {
-        struct e820entry *en = &e820_list[i];
-        u64 end = en->start + en->size;
-        if (end < 1024*1024)
-            break;
-        if (en->type != E820_RAM || end > 0xffffffff)
-            continue;
-        u32 s = en->start, e = end;
-        if (!highram_start) {
-            u32 new_max = ALIGN_DOWN(e - BUILD_MAX_HIGHTABLE, MALLOC_MIN_ALIGN);
-            u32 new_min = ALIGN_DOWN(e - BUILD_MIN_HIGHTABLE, MALLOC_MIN_ALIGN);
-            if (new_max <= e && new_max >= s + BUILD_MAX_HIGHTABLE) {
-                highram_start = e = new_max;
-                highram_size = BUILD_MAX_HIGHTABLE;
-            } else if (new_min <= e && new_min >= s) {
-                highram_start = e = new_min;
-                highram_size = BUILD_MIN_HIGHTABLE;
+    u32 highram_ಆರಂಭ = 0;
+    u32 highram_ಗಾತ್ರ = 0;
+    ಪೂರ್ಣಾಂಕ i;
+    ಗಾಗಿ (i=e820_ಎಣಿಕೆ-1; i>=0; i--) {
+        ರಚನೆ e820entry *en = &e820_list[i];
+        u64 ಕೊನೆ = en->ಆರಂಭ + en->ಗಾತ್ರ_2;
+        ಆದರೆ (ಕೊನೆ < 1024*1024)
+            ನಿಲ್ಲಿಸು;
+        ಆದರೆ (en->type != E820_RAM || ಕೊನೆ > 0xffffffff)
+            ಮುಂದುವರಿ;
+        u32 s = en->ಆರಂಭ, e = ಕೊನೆ;
+        ಆದರೆ (!highram_ಆರಂಭ) {
+            u32 new_max = ALIGN_ಕೆಳಕ್ಕೆ(e - BUILD_MAX_HIGHTABLE, MALLOC_MIN_ALIGN);
+            u32 new_min = ALIGN_ಕೆಳಕ್ಕೆ(e - BUILD_MIN_HIGHTABLE, MALLOC_MIN_ALIGN);
+            ಆದರೆ (new_max <= e && new_max >= s + BUILD_MAX_HIGHTABLE) {
+                highram_ಆರಂಭ = e = new_max;
+                highram_ಗಾತ್ರ = BUILD_MAX_HIGHTABLE;
+            } ಇಲ್ಲದಿದ್ದರೆ ಆದರೆ (new_min <= e && new_min >= s) {
+                highram_ಆರಂಭ = e = new_min;
+                highram_ಗಾತ್ರ = BUILD_MIN_HIGHTABLE;
             }
         }
-        alloc_add(&ZoneTmpHigh, s, e);
+        alloc_ಕೂಡಿಸು(&Zone_Tmp_ಮೇಲಿನ, s, e);
     }
 
     // Populate regions
-    alloc_add(&ZoneTmpLow, BUILD_STACK_ADDR, BUILD_EBDA_MINIMUM);
-    if (highram_start) {
-        alloc_add(&ZoneHigh, highram_start, highram_start + highram_size);
-        e820_add(highram_start, highram_size, E820_RESERVED);
+    alloc_ಕೂಡಿಸು(&Zone_Tmp_ಕೆಳಗಿನ, BUILD_ರಾಶಿ_ADDR, BUILD_EBDA_MINIMUM);
+    ಆದರೆ (highram_ಆರಂಭ) {
+        alloc_ಕೂಡಿಸು(&Zone_ಮೇಲಿನ, highram_ಆರಂಭ, highram_ಆರಂಭ + highram_ಗಾತ್ರ);
+        e820_ಕೂಡಿಸು(highram_ಆರಂಭ, highram_ಗಾತ್ರ, E820_RESERVED);
     }
 }
 
-void
-malloc_csm_preinit(u32 low_pmm, u32 low_pmm_size, u32 hi_pmm, u32 hi_pmm_size)
+ಶೂನ್ಯ
+malloc_csm_preinit(u32 ಕೆಳಗಿನ_pmm, u32 ಕೆಳಗಿನ_pmm_ಗಾತ್ರ, u32 hi_pmm, u32 hi_pmm_ಗಾತ್ರ)
 {
     ASSERT32FLAT();
 
-    if (hi_pmm_size > BUILD_MIN_HIGHTABLE) {
-        u32 hi_pmm_end = hi_pmm + hi_pmm_size;
-        alloc_add(&ZoneTmpHigh, hi_pmm, hi_pmm_end - BUILD_MIN_HIGHTABLE);
-        alloc_add(&ZoneHigh, hi_pmm_end - BUILD_MIN_HIGHTABLE, hi_pmm_end);
-    } else {
-        alloc_add(&ZoneTmpHigh, hi_pmm, hi_pmm + hi_pmm_size);
+    ಆದರೆ (hi_pmm_ಗಾತ್ರ > BUILD_MIN_HIGHTABLE) {
+        u32 hi_pmm_ಕೊನೆ = hi_pmm + hi_pmm_ಗಾತ್ರ;
+        alloc_ಕೂಡಿಸು(&Zone_Tmp_ಮೇಲಿನ, hi_pmm, hi_pmm_ಕೊನೆ - BUILD_MIN_HIGHTABLE);
+        alloc_ಕೂಡಿಸು(&Zone_ಮೇಲಿನ, hi_pmm_ಕೊನೆ - BUILD_MIN_HIGHTABLE, hi_pmm_ಕೊನೆ);
+    } ಇಲ್ಲದಿದ್ದರೆ {
+        alloc_ಕೂಡಿಸು(&Zone_Tmp_ಮೇಲಿನ, hi_pmm, hi_pmm + hi_pmm_ಗಾತ್ರ);
     }
-    alloc_add(&ZoneTmpLow, low_pmm, low_pmm + low_pmm_size);
+    alloc_ಕೂಡಿಸು(&Zone_Tmp_ಕೆಳಗಿನ, ಕೆಳಗಿನ_pmm, ಕೆಳಗಿನ_pmm + ಕೆಳಗಿನ_pmm_ಗಾತ್ರ);
 }
 
-u32 LegacyRamSize VARFSEG;
+u32 Legacy_Ram_ಗಾತ್ರ VARFSEG;
 
 // Calculate the maximum ramsize (less than 4gig) from e820 map.
-static void
-calcRamSize(void)
+ಸ್ಥಿರ ಶೂನ್ಯ
+calc_Ram_ಗಾತ್ರ(ಶೂನ್ಯ)
 {
     u32 rs = 0;
-    int i;
-    for (i=e820_count-1; i>=0; i--) {
-        struct e820entry *en = &e820_list[i];
-        u64 end = en->start + en->size;
+    ಪೂರ್ಣಾಂಕ i;
+    ಗಾಗಿ (i=e820_ಎಣಿಕೆ-1; i>=0; i--) {
+        ರಚನೆ e820entry *en = &e820_list[i];
+        u64 ಕೊನೆ = en->ಆರಂಭ + en->ಗಾತ್ರ_2;
         u32 type = en->type;
-        if (end <= 0xffffffff && (type == E820_ACPI || type == E820_RAM)) {
-            rs = end;
-            break;
+        ಆದರೆ (ಕೊನೆ <= 0xffffffff && (type == E820_ACPI || type == E820_RAM)) {
+            rs = ಕೊನೆ;
+            ನಿಲ್ಲಿಸು;
         }
     }
-    LegacyRamSize = rs >= 1024*1024 ? rs : 1024*1024;
+    Legacy_Ram_ಗಾತ್ರ = rs >= 1024*1024 ? rs : 1024*1024;
 }
 
 // Update pointers after code relocation.
-void
-malloc_init(void)
+ಶೂನ್ಯ
+malloc_init(ಶೂನ್ಯ)
 {
     ASSERT32FLAT();
     dprintf(3, "malloc init\n");
 
-    if (CONFIG_RELOCATE_INIT) {
+    ಆದರೆ (CONFIG_RELOCATE_INIT) {
         // Fixup malloc pointers after relocation
-        int i;
-        for (i=0; i<ARRAY_SIZE(Zones); i++) {
-            struct zone_s *zone = Zones[i];
-            if (zone->head.first)
-                zone->head.first->pprev = &zone->head.first;
+        ಪೂರ್ಣಾಂಕ i;
+        ಗಾಗಿ (i=0; i<ARRAY_ಗಾತ್ರ(Zones); i++) {
+            ರಚನೆ zone_s *zone = Zones[i];
+            ಆದರೆ (zone->ತಲೆ.ಮೊದಲ)
+                zone->ತಲೆ.ಮೊದಲ->pprev = &zone->ತಲೆ.ಮೊದಲ;
         }
     }
 
     // Initialize low-memory region
-    memmove(VSYMBOL(final_varlow_start), VSYMBOL(varlow_start)
-            , SYMBOL(varlow_end) - SYMBOL(varlow_start));
-    if (CONFIG_MALLOC_UPPERMEMORY) {
-        alloc_add(&ZoneLow, SYMBOL(zonelow_base) + OPROM_HEADER_RESERVE
-                  , SYMBOL(final_varlow_start));
-        RomBase = alloc_find_lowest(&ZoneLow);
-    } else {
-        alloc_add(&ZoneLow, ALIGN_DOWN(SYMBOL(final_varlow_start), 1024)
-                  , SYMBOL(final_varlow_start));
+    memmove(VSYMBOL(final_varlow_ಆರಂಭ), VSYMBOL(varlow_ಆರಂಭ)
+            , ಚಿಹ್ನೆ(varlow_ಕೊನೆ) - ಚಿಹ್ನೆ(varlow_ಆರಂಭ));
+    ಆದರೆ (CONFIG_MALLOC_UPPERMEMORY) {
+        alloc_ಕೂಡಿಸು(&Zone_ಕೆಳಗಿನ, ಚಿಹ್ನೆ(zonelow_ತಳ) + OPROM_ಶೀರ್ಷಿಕೆ_RESERVE
+                  , ಚಿಹ್ನೆ(final_varlow_ಆರಂಭ));
+        Rom_ತಳ = alloc_ಕಂಡುಹಿಡಿ_ಅತಿಕಡಿಮೆ(&Zone_ಕೆಳಗಿನ);
+    } ಇಲ್ಲದಿದ್ದರೆ {
+        alloc_ಕೂಡಿಸು(&Zone_ಕೆಳಗಿನ, ALIGN_ಕೆಳಕ್ಕೆ(ಚಿಹ್ನೆ(final_varlow_ಆರಂಭ), 1024)
+                  , ಚಿಹ್ನೆ(final_varlow_ಆರಂಭ));
     }
 
     // Add space available in f-segment to ZoneFSeg
-    memset(VSYMBOL(zonefseg_start), 0
-           , SYMBOL(zonefseg_end) - SYMBOL(zonefseg_start));
-    alloc_add(&ZoneFSeg, SYMBOL(zonefseg_start), SYMBOL(zonefseg_end));
+    memset(VSYMBOL(zonefseg_ಆರಂಭ), 0
+           , ಚಿಹ್ನೆ(zonefseg_ಕೊನೆ) - ಚಿಹ್ನೆ(zonefseg_ಆರಂಭ));
+    alloc_ಕೂಡಿಸು(&ZoneFSeg, ಚಿಹ್ನೆ(zonefseg_ಆರಂಭ), ಚಿಹ್ನೆ(zonefseg_ಕೊನೆ));
 
-    calcRamSize();
+    calc_Ram_ಗಾತ್ರ();
 }
 
-void
-malloc_prepboot(void)
+ಶೂನ್ಯ
+malloc_prepboot(ಶೂನ್ಯ)
 {
     ASSERT32FLAT();
     dprintf(3, "malloc finalize\n");
 
-    u32 base = rom_get_max();
-    memset((void*)RomEnd, 0, base-RomEnd);
-    if (CONFIG_MALLOC_UPPERMEMORY) {
+    u32 ತಳ = rom_get_max();
+    memset((ಶೂನ್ಯ*)Rom_ಕೊನೆ, 0, ತಳ-Rom_ಕೊನೆ);
+    ಆದರೆ (CONFIG_MALLOC_UPPERMEMORY) {
         // Place an optionrom signature around used low mem area.
-        struct rom_header *dummyrom = (void*)base;
+        ರಚನೆ rom_ಶೀರ್ಷಿಕೆ *dummyrom = (ಶೂನ್ಯ*)ತಳ;
         dummyrom->signature = OPTION_ROM_SIGNATURE;
-        int size = (BUILD_BIOS_ADDR - base) / 512;
-        dummyrom->size = (size > 255) ? 255 : size;
+        ಪೂರ್ಣಾಂಕ ಗಾತ್ರ_2 = (BUILD_BIOS_ADDR - ತಳ) / 512;
+        dummyrom->ಗಾತ್ರ_2 = (ಗಾತ್ರ_2 > 255) ? 255 : ಗಾತ್ರ_2;
     }
 
     // Reserve more low-mem if needed.
-    u32 endlow = GET_BDA(mem_size_kb)*1024;
-    e820_add(endlow, BUILD_LOWRAM_END-endlow, E820_RESERVED);
+    u32 endlow = GET_BDA(mem_ಗಾತ್ರ_kb)*1024;
+    e820_ಕೂಡಿಸು(endlow, BUILD_LOWRAM_ಕೊನೆ-endlow, E820_RESERVED);
 
     // Clear unused f-seg ram.
-    struct allocinfo_s *info = alloc_find_lowest(&ZoneFSeg);
-    u32 size = info->range_end - info->range_start;
-    memset(memremap(info->range_start, size), 0, size);
+    ರಚನೆ allocinfo_s *info = alloc_ಕಂಡುಹಿಡಿ_ಅತಿಕಡಿಮೆ(&ZoneFSeg);
+    u32 ಗಾತ್ರ_2 = info->range_ಕೊನೆ - info->range_ಆರಂಭ;
+    memset(memremap(info->range_ಆರಂಭ, ಗಾತ್ರ_2), 0, ಗಾತ್ರ_2);
     dprintf(1, "Space available for UMB: %x-%x, %x-%x\n"
-            , RomEnd, base, info->range_start, info->range_end);
+            , Rom_ಕೊನೆ, ತಳ, info->range_ಆರಂಭ, info->range_ಕೊನೆ);
 
     // Give back unused high ram.
-    info = alloc_find_lowest(&ZoneHigh);
-    if (info) {
-        u32 giveback = ALIGN_DOWN(info->range_end-info->range_start, PAGE_SIZE);
-        e820_add(info->range_start, giveback, E820_RAM);
+    info = alloc_ಕಂಡುಹಿಡಿ_ಅತಿಕಡಿಮೆ(&Zone_ಮೇಲಿನ);
+    ಆದರೆ (info) {
+        u32 giveback = ALIGN_ಕೆಳಕ್ಕೆ(info->range_ಕೊನೆ-info->range_ಆರಂಭ, ಪುಟ_ಗಾತ್ರ);
+        e820_ಕೂಡಿಸು(info->range_ಆರಂಭ, giveback, E820_RAM);
         dprintf(1, "Returned %d bytes of ZoneHigh\n", giveback);
     }
 
-    calcRamSize();
+    calc_Ram_ಗಾತ್ರ();
 }

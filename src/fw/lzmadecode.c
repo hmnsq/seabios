@@ -19,105 +19,105 @@
   to this file, however, are subject to the LGPL or CPL terms.
 */
 
-#include "lzmadecode.h"
+#ಅನ್ತರ್ಭಾವ "lzmadecode.h"
 
-#define kNumTopBits 24
-#define kTopValue ((UInt32)1 << kNumTopBits)
+#ವ್ಯಾಖ್ಯಾನಿಸು k_ಅಂಕೆ_ತುದಿ_ಬಿಟ್ಟುಗಳು 24
+#ವ್ಯಾಖ್ಯಾನಿಸು k_ತುದಿ_ಮೌಲ್ಯ ((UInt32)1 << k_ಅಂಕೆ_ತುದಿ_ಬಿಟ್ಟುಗಳು)
 
-#define kNumBitModelTotalBits 11
-#define kBitModelTotal (1 << kNumBitModelTotalBits)
-#define kNumMoveBits 5
+#ವ್ಯಾಖ್ಯಾನಿಸು k_ಅಂಕೆ_ಬಿಟ್_Model_ಒಟ್ಟು_ಬಿಟ್ಟುಗಳು 11
+#ವ್ಯಾಖ್ಯಾನಿಸು k_ಬಿಟ್_Model_ಒಟ್ಟು (1 << k_ಅಂಕೆ_ಬಿಟ್_Model_ಒಟ್ಟು_ಬಿಟ್ಟುಗಳು)
+#ವ್ಯಾಖ್ಯಾನಿಸು k_ಅಂಕೆ_Move_ಬಿಟ್ಟುಗಳು 5
 
-#define RC_READ_BYTE (*Buffer++)
+#ವ್ಯಾಖ್ಯಾನಿಸು RC_READ_BYTE (*ಬಫರ್_2++)
 
-#define RC_INIT2 Code = 0; Range = 0xFFFFFFFF; \
-  { int i; for(i = 0; i < 5; i++) { RC_TEST; Code = (Code << 8) | RC_READ_BYTE; }}
+#ವ್ಯಾಖ್ಯಾನಿಸು RC_INIT2 ಸಂಕೇತ_3 = 0; Range = 0xFFFFFFFF; \
+  { ಪೂರ್ಣಾಂಕ i; ಗಾಗಿ(i = 0; i < 5; i++) { RC_TEST; ಸಂಕೇತ_3 = (ಸಂಕೇತ_3 << 8) | RC_READ_BYTE; }}
 
 
-#define RC_TEST { if (Buffer == BufferLim) return LZMA_RESULT_DATA_ERROR; }
+#ವ್ಯಾಖ್ಯಾನಿಸು RC_TEST { ಆದರೆ (ಬಫರ್_2 == ಬಫರ್_Lim) ಹಿಂತಿರುಗಿ LZMA_ಫಲಿತಾಂಶ_ದತ್ತಾಂಶ_ERROR; }
 
-#define RC_INIT(buffer, bufferSize) Buffer = buffer; BufferLim = buffer + bufferSize; RC_INIT2
+#ವ್ಯಾಖ್ಯಾನಿಸು RC_INIT(ಬಫರ್, ಬಫರ್_ಗಾತ್ರ) ಬಫರ್_2 = ಬಫರ್; ಬಫರ್_Lim = ಬಫರ್ + ಬಫರ್_ಗಾತ್ರ; RC_INIT2
  
 
-#define RC_NORMALIZE if (Range < kTopValue) { RC_TEST; Range <<= 8; Code = (Code << 8) | RC_READ_BYTE; }
+#ವ್ಯಾಖ್ಯಾನಿಸು RC_NORMALIZE ಆದರೆ (Range < k_ತುದಿ_ಮೌಲ್ಯ) { RC_TEST; Range <<= 8; ಸಂಕೇತ_3 = (ಸಂಕೇತ_3 << 8) | RC_READ_BYTE; }
 
-#define IfBit0(p) RC_NORMALIZE; bound = (Range >> kNumBitModelTotalBits) * *(p); if (Code < bound)
-#define UpdateBit0(p) Range = bound; *(p) += (kBitModelTotal - *(p)) >> kNumMoveBits;
-#define UpdateBit1(p) Range -= bound; Code -= bound; *(p) -= (*(p)) >> kNumMoveBits;
+#ವ್ಯಾಖ್ಯಾನಿಸು IfBit0(p) RC_NORMALIZE; bound = (Range >> k_ಅಂಕೆ_ಬಿಟ್_Model_ಒಟ್ಟು_ಬಿಟ್ಟುಗಳು) * *(p); ಆದರೆ (ಸಂಕೇತ_3 < bound)
+#ವ್ಯಾಖ್ಯಾನಿಸು UpdateBit0(p) Range = bound; *(p) += (k_ಬಿಟ್_Model_ಒಟ್ಟು - *(p)) >> k_ಅಂಕೆ_Move_ಬಿಟ್ಟುಗಳು;
+#ವ್ಯಾಖ್ಯಾನಿಸು UpdateBit1(p) Range -= bound; ಸಂಕೇತ_3 -= bound; *(p) -= (*(p)) >> k_ಅಂಕೆ_Move_ಬಿಟ್ಟುಗಳು;
 
-#define RC_GET_BIT2(p, mi, A0, A1) IfBit0(p) \
-  { UpdateBit0(p); mi <<= 1; A0; } else \
+#ವ್ಯಾಖ್ಯಾನಿಸು RC_GET_BIT2(p, mi, A0, A1) IfBit0(p) \
+  { UpdateBit0(p); mi <<= 1; A0; } ಇಲ್ಲದಿದ್ದರೆ \
   { UpdateBit1(p); mi = (mi + mi) + 1; A1; } 
   
-#define RC_GET_BIT(p, mi) RC_GET_BIT2(p, mi, ; , ;)               
+#ವ್ಯಾಖ್ಯಾನಿಸು RC_GET_ಬಿಟ್(p, mi) RC_GET_BIT2(p, mi, ; , ;)               
 
-#define RangeDecoderBitTreeDecode(probs, numLevels, res) \
-  { int i = numLevels; res = 1; \
-  do { CProb *cp = probs + res; RC_GET_BIT(cp, res) } while(--i != 0); \
-  res -= (1 << numLevels); }
-
-
-#define kNumPosBitsMax 4
-#define kNumPosStatesMax (1 << kNumPosBitsMax)
-
-#define kLenNumLowBits 3
-#define kLenNumLowSymbols (1 << kLenNumLowBits)
-#define kLenNumMidBits 3
-#define kLenNumMidSymbols (1 << kLenNumMidBits)
-#define kLenNumHighBits 8
-#define kLenNumHighSymbols (1 << kLenNumHighBits)
-
-#define LenChoice 0
-#define LenChoice2 (LenChoice + 1)
-#define LenLow (LenChoice2 + 1)
-#define LenMid (LenLow + (kNumPosStatesMax << kLenNumLowBits))
-#define LenHigh (LenMid + (kNumPosStatesMax << kLenNumMidBits))
-#define kNumLenProbs (LenHigh + kLenNumHighSymbols) 
+#ವ್ಯಾಖ್ಯಾನಿಸು Range_Decoder_ಬಿಟ್_ವೃಕ್ಷ_Decode(probs, ಅಂಕೆ_ಮಟ್ಟಗಳು, res) \
+  { ಪೂರ್ಣಾಂಕ i = ಅಂಕೆ_ಮಟ್ಟಗಳು; res = 1; \
+  ಮಾಡು { CProb *cp = probs + res; RC_GET_ಬಿಟ್(cp, res) } ಆಗ(--i != 0); \
+  res -= (1 << ಅಂಕೆ_ಮಟ್ಟಗಳು); }
 
 
-#define kNumStates 12
-#define kNumLitStates 7
+#ವ್ಯಾಖ್ಯಾನಿಸು k_ಅಂಕೆ_Pos_ಬಿಟ್ಟುಗಳು_Max 4
+#ವ್ಯಾಖ್ಯಾನಿಸು k_ಅಂಕೆ_Pos_ಸ್ಥಿತಿಗಳು_Max (1 << k_ಅಂಕೆ_Pos_ಬಿಟ್ಟುಗಳು_Max)
 
-#define kStartPosModelIndex 4
-#define kEndPosModelIndex 14
-#define kNumFullDistances (1 << (kEndPosModelIndex >> 1))
+#ವ್ಯಾಖ್ಯಾನಿಸು k_Len_ಅಂಕೆ_ಕೆಳಗಿನ_ಬಿಟ್ಟುಗಳು 3
+#ವ್ಯಾಖ್ಯಾನಿಸು k_Len_ಅಂಕೆ_ಕೆಳಗಿನ_Symbols (1 << k_Len_ಅಂಕೆ_ಕೆಳಗಿನ_ಬಿಟ್ಟುಗಳು)
+#ವ್ಯಾಖ್ಯಾನಿಸು k_Len_ಅಂಕೆ_Mid_ಬಿಟ್ಟುಗಳು 3
+#ವ್ಯಾಖ್ಯಾನಿಸು k_Len_ಅಂಕೆ_Mid_Symbols (1 << k_Len_ಅಂಕೆ_Mid_ಬಿಟ್ಟುಗಳು)
+#ವ್ಯಾಖ್ಯಾನಿಸು k_Len_ಅಂಕೆ_ಮೇಲಿನ_ಬಿಟ್ಟುಗಳು 8
+#ವ್ಯಾಖ್ಯಾನಿಸು k_Len_ಅಂಕೆ_ಮೇಲಿನ_Symbols (1 << k_Len_ಅಂಕೆ_ಮೇಲಿನ_ಬಿಟ್ಟುಗಳು)
 
-#define kNumPosSlotBits 6
-#define kNumLenToPosStates 4
+#ವ್ಯಾಖ್ಯಾನಿಸು LenChoice 0
+#ವ್ಯಾಖ್ಯಾನಿಸು LenChoice2 (LenChoice + 1)
+#ವ್ಯಾಖ್ಯಾನಿಸು Len_ಕೆಳಗಿನ (LenChoice2 + 1)
+#ವ್ಯಾಖ್ಯಾನಿಸು LenMid (Len_ಕೆಳಗಿನ + (k_ಅಂಕೆ_Pos_ಸ್ಥಿತಿಗಳು_Max << k_Len_ಅಂಕೆ_ಕೆಳಗಿನ_ಬಿಟ್ಟುಗಳು))
+#ವ್ಯಾಖ್ಯಾನಿಸು Len_ಮೇಲಿನ (LenMid + (k_ಅಂಕೆ_Pos_ಸ್ಥಿತಿಗಳು_Max << k_Len_ಅಂಕೆ_Mid_ಬಿಟ್ಟುಗಳು))
+#ವ್ಯಾಖ್ಯಾನಿಸು k_ಅಂಕೆ_Len_Probs (Len_ಮೇಲಿನ + k_Len_ಅಂಕೆ_ಮೇಲಿನ_Symbols) 
 
-#define kNumAlignBits 4
-#define kAlignTableSize (1 << kNumAlignBits)
 
-#define kMatchMinLen 2
+#ವ್ಯಾಖ್ಯಾನಿಸು k_ಅಂಕೆ_ಸ್ಥಿತಿಗಳು 12
+#ವ್ಯಾಖ್ಯಾನಿಸು k_ಅಂಕೆ_Lit_ಸ್ಥಿತಿಗಳು 7
 
-#define IsMatch 0
-#define IsRep (IsMatch + (kNumStates << kNumPosBitsMax))
-#define IsRepG0 (IsRep + kNumStates)
-#define IsRepG1 (IsRepG0 + kNumStates)
-#define IsRepG2 (IsRepG1 + kNumStates)
-#define IsRep0Long (IsRepG2 + kNumStates)
-#define PosSlot (IsRep0Long + (kNumStates << kNumPosBitsMax))
-#define SpecPos (PosSlot + (kNumLenToPosStates << kNumPosSlotBits))
-#define Align (SpecPos + kNumFullDistances - kEndPosModelIndex)
-#define LenCoder (Align + kAlignTableSize)
-#define RepLenCoder (LenCoder + kNumLenProbs)
-#define Literal (RepLenCoder + kNumLenProbs)
+#ವ್ಯಾಖ್ಯಾನಿಸು k_ಆರಂಭ_Pos_Model_ಸೂಚ್ಯಂಕ 4
+#ವ್ಯಾಖ್ಯಾನಿಸು k_ಕೊನೆ_Pos_Model_ಸೂಚ್ಯಂಕ 14
+#ವ್ಯಾಖ್ಯಾನಿಸು k_ಅಂಕೆ_ತುಂಬಿದ_Distances (1 << (k_ಕೊನೆ_Pos_Model_ಸೂಚ್ಯಂಕ >> 1))
 
-#if Literal != LZMA_BASE_SIZE
+#ವ್ಯಾಖ್ಯಾನಿಸು k_ಅಂಕೆ_Pos_ಸ್ಥಾನ_ಬಿಟ್ಟುಗಳು 6
+#ವ್ಯಾಖ್ಯಾನಿಸು k_ಅಂಕೆ_Len_ಗಮ್ಯ_Pos_ಸ್ಥಿತಿಗಳು 4
+
+#ವ್ಯಾಖ್ಯಾನಿಸು k_ಅಂಕೆ_Align_ಬಿಟ್ಟುಗಳು 4
+#ವ್ಯಾಖ್ಯಾನಿಸು k_Align_ಕೋಷ್ಟಕ_ಗಾತ್ರ (1 << k_ಅಂಕೆ_Align_ಬಿಟ್ಟುಗಳು)
+
+#ವ್ಯಾಖ್ಯಾನಿಸು k_ಹೊಂದಿಕೆ_Min_Len 2
+
+#ವ್ಯಾಖ್ಯಾನಿಸು Is_ಹೊಂದಿಕೆ 0
+#ವ್ಯಾಖ್ಯಾನಿಸು IsRep (Is_ಹೊಂದಿಕೆ + (k_ಅಂಕೆ_ಸ್ಥಿತಿಗಳು << k_ಅಂಕೆ_Pos_ಬಿಟ್ಟುಗಳು_Max))
+#ವ್ಯಾಖ್ಯಾನಿಸು IsRepG0 (IsRep + k_ಅಂಕೆ_ಸ್ಥಿತಿಗಳು)
+#ವ್ಯಾಖ್ಯಾನಿಸು IsRepG1 (IsRepG0 + k_ಅಂಕೆ_ಸ್ಥಿತಿಗಳು)
+#ವ್ಯಾಖ್ಯಾನಿಸು IsRepG2 (IsRepG1 + k_ಅಂಕೆ_ಸ್ಥಿತಿಗಳು)
+#ವ್ಯಾಖ್ಯಾನಿಸು IsRep0Long (IsRepG2 + k_ಅಂಕೆ_ಸ್ಥಿತಿಗಳು)
+#ವ್ಯಾಖ್ಯಾನಿಸು Pos_ಸ್ಥಾನ (IsRep0Long + (k_ಅಂಕೆ_ಸ್ಥಿತಿಗಳು << k_ಅಂಕೆ_Pos_ಬಿಟ್ಟುಗಳು_Max))
+#ವ್ಯಾಖ್ಯಾನಿಸು SpecPos (Pos_ಸ್ಥಾನ + (k_ಅಂಕೆ_Len_ಗಮ್ಯ_Pos_ಸ್ಥಿತಿಗಳು << k_ಅಂಕೆ_Pos_ಸ್ಥಾನ_ಬಿಟ್ಟುಗಳು))
+#ವ್ಯಾಖ್ಯಾನಿಸು Align (SpecPos + k_ಅಂಕೆ_ತುಂಬಿದ_Distances - k_ಕೊನೆ_Pos_Model_ಸೂಚ್ಯಂಕ)
+#ವ್ಯಾಖ್ಯಾನಿಸು LenCoder (Align + k_Align_ಕೋಷ್ಟಕ_ಗಾತ್ರ)
+#ವ್ಯಾಖ್ಯಾನಿಸು RepLenCoder (LenCoder + k_ಅಂಕೆ_Len_Probs)
+#ವ್ಯಾಖ್ಯಾನಿಸು Literal (RepLenCoder + k_ಅಂಕೆ_Len_Probs)
+
+#ಆದರೆ Literal != LZMA_ತಳ_ಗಾತ್ರ
 StopCompilingDueBUG
-#endif
+#ಆದರೆ_ಅಂತ್ಯ
 
-int LzmaDecodeProperties(CLzmaProperties *propsRes, const unsigned char *propsData, int size)
+ಪೂರ್ಣಾಂಕ LzmaDecodeProperties(CLzmaProperties *propsRes, ಸ್ಥಿರಾಂಕ ಚಿಹ್ನೆರಹಿತ ಅಕ್ಷರ *props_ದತ್ತಾಂಶ, ಪೂರ್ಣಾಂಕ ಗಾತ್ರ_2)
 {
-  unsigned char prop0;
-  if (size < LZMA_PROPERTIES_SIZE)
-    return LZMA_RESULT_DATA_ERROR;
-  prop0 = propsData[0];
-  if (prop0 >= (9 * 5 * 5))
-    return LZMA_RESULT_DATA_ERROR;
+  ಚಿಹ್ನೆರಹಿತ ಅಕ್ಷರ prop0;
+  ಆದರೆ (ಗಾತ್ರ_2 < LZMA_PROPERTIES_ಗಾತ್ರ)
+    ಹಿಂತಿರುಗಿ LZMA_ಫಲಿತಾಂಶ_ದತ್ತಾಂಶ_ERROR;
+  prop0 = props_ದತ್ತಾಂಶ[0];
+  ಆದರೆ (prop0 >= (9 * 5 * 5))
+    ಹಿಂತಿರುಗಿ LZMA_ಫಲಿತಾಂಶ_ದತ್ತಾಂಶ_ERROR;
   {
-    for (propsRes->pb = 0; prop0 >= (9 * 5); propsRes->pb++, prop0 -= (9 * 5));
-    for (propsRes->lp = 0; prop0 >= 9; propsRes->lp++, prop0 -= 9);
+    ಗಾಗಿ (propsRes->pb = 0; prop0 >= (9 * 5); propsRes->pb++, prop0 -= (9 * 5));
+    ಗಾಗಿ (propsRes->lp = 0; prop0 >= 9; propsRes->lp++, prop0 -= 9);
     propsRes->lc = prop0;
     /*
     unsigned char remainder = (unsigned char)(prop0 / 9);
@@ -127,92 +127,92 @@ int LzmaDecodeProperties(CLzmaProperties *propsRes, const unsigned char *propsDa
     */
   }
 
-  return LZMA_RESULT_OK;
+  ಹಿಂತಿರುಗಿ LZMA_ಫಲಿತಾಂಶ_OK;
 }
 
-#define kLzmaStreamWasFinishedId (-1)
+#ವ್ಯಾಖ್ಯಾನಿಸು k_Lzma_ಹರಿವು_Was_ಪೂರ್ಣಗೊಂಡ_Id (-1)
 
-int LzmaDecode(CLzmaDecoderState *vs,
-    const unsigned char *inStream, SizeT inSize, SizeT *inSizeProcessed,
-    unsigned char *outStream, SizeT outSize, SizeT *outSizeProcessed)
+ಪೂರ್ಣಾಂಕ LzmaDecode(CLzmaDecoderState *vs,
+    ಸ್ಥಿರಾಂಕ ಚಿಹ್ನೆರಹಿತ ಅಕ್ಷರ *ಒಳ_ಹರಿವು, ಗಾತ್ರ_T ಒಳ_ಗಾತ್ರ, ಗಾತ್ರ_T *ಒಳ_ಗಾತ್ರ_Processed,
+    ಚಿಹ್ನೆರಹಿತ ಅಕ್ಷರ *ಹೊರಹೋಗು_ಹರಿವು, ಗಾತ್ರ_T ಹೊರಹೋಗು_ಗಾತ್ರ, ಗಾತ್ರ_T *ಹೊರಹೋಗು_ಗಾತ್ರ_Processed)
 {
   CProb *p = vs->Probs;
-  SizeT nowPos = 0;
-  Byte previousByte = 0;
-  UInt32 posStateMask = (1 << (vs->Properties.pb)) - 1;
-  UInt32 literalPosMask = (1 << (vs->Properties.lp)) - 1;
-  int lc = vs->Properties.lc;
+  ಗಾತ್ರ_T nowPos = 0;
+  Byte ಹಿಂದಿನ_Byte = 0;
+  UInt32 pos_State_ಮುಖವಾಡ = (1 << (vs->Properties.pb)) - 1;
+  UInt32 literal_Pos_ಮುಖವಾಡ = (1 << (vs->Properties.lp)) - 1;
+  ಪೂರ್ಣಾಂಕ lc = vs->Properties.lc;
 
 
-  int state = 0;
+  ಪೂರ್ಣಾಂಕ state = 0;
   UInt32 rep0 = 1, rep1 = 1, rep2 = 1, rep3 = 1;
-  int len = 0;
-  const Byte *Buffer;
-  const Byte *BufferLim;
+  ಪೂರ್ಣಾಂಕ len = 0;
+  ಸ್ಥಿರಾಂಕ Byte *ಬಫರ್_2;
+  ಸ್ಥಿರಾಂಕ Byte *ಬಫರ್_Lim;
   UInt32 Range;
-  UInt32 Code;
+  UInt32 ಸಂಕೇತ_3;
 
-  *inSizeProcessed = 0;
-  *outSizeProcessed = 0;
+  *ಒಳ_ಗಾತ್ರ_Processed = 0;
+  *ಹೊರಹೋಗು_ಗಾತ್ರ_Processed = 0;
 
   {
     UInt32 i;
-    UInt32 numProbs = Literal + ((UInt32)LZMA_LIT_SIZE << (lc + vs->Properties.lp));
-    for (i = 0; i < numProbs; i++)
-      p[i] = kBitModelTotal >> 1;
+    UInt32 ಅಂಕೆ_Probs = Literal + ((UInt32)LZMA_LIT_ಗಾತ್ರ << (lc + vs->Properties.lp));
+    ಗಾಗಿ (i = 0; i < ಅಂಕೆ_Probs; i++)
+      p[i] = k_ಬಿಟ್_Model_ಒಟ್ಟು >> 1;
   }
   
-  RC_INIT(inStream, inSize);
+  RC_INIT(ಒಳ_ಹರಿವು, ಒಳ_ಗಾತ್ರ);
 
 
-  while(nowPos < outSize)
+  ಆಗ(nowPos < ಹೊರಹೋಗು_ಗಾತ್ರ)
   {
     CProb *prob;
     UInt32 bound;
-    int posState = (int)(
+    ಪೂರ್ಣಾಂಕ posState = (ಪೂರ್ಣಾಂಕ)(
         (nowPos 
         )
-        & posStateMask);
+        & pos_State_ಮುಖವಾಡ);
 
-    prob = p + IsMatch + (state << kNumPosBitsMax) + posState;
+    prob = p + Is_ಹೊಂದಿಕೆ + (state << k_ಅಂಕೆ_Pos_ಬಿಟ್ಟುಗಳು_Max) + posState;
     IfBit0(prob)
     {
-      int symbol = 1;
+      ಪೂರ್ಣಾಂಕ ಚಿಹ್ನೆ_2 = 1;
       UpdateBit0(prob)
-      prob = p + Literal + (LZMA_LIT_SIZE * 
+      prob = p + Literal + (LZMA_LIT_ಗಾತ್ರ * 
         (((
         (nowPos 
         )
-        & literalPosMask) << lc) + (previousByte >> (8 - lc))));
+        & literal_Pos_ಮುಖವಾಡ) << lc) + (ಹಿಂದಿನ_Byte >> (8 - lc))));
 
-      if (state >= kNumLitStates)
+      ಆದರೆ (state >= k_ಅಂಕೆ_Lit_ಸ್ಥಿತಿಗಳು)
       {
-        int matchByte;
-        matchByte = outStream[nowPos - rep0];
-        do
+        ಪೂರ್ಣಾಂಕ ಹೊಂದಿಕೆ_Byte;
+        ಹೊಂದಿಕೆ_Byte = ಹೊರಹೋಗು_ಹರಿವು[nowPos - rep0];
+        ಮಾಡು
         {
-          int bit;
+          ಪೂರ್ಣಾಂಕ ಬಿಟ್;
           CProb *probLit;
-          matchByte <<= 1;
-          bit = (matchByte & 0x100);
-          probLit = prob + 0x100 + bit + symbol;
-          RC_GET_BIT2(probLit, symbol, if (bit != 0) break, if (bit == 0) break)
+          ಹೊಂದಿಕೆ_Byte <<= 1;
+          ಬಿಟ್ = (ಹೊಂದಿಕೆ_Byte & 0x100);
+          probLit = prob + 0x100 + ಬಿಟ್ + ಚಿಹ್ನೆ_2;
+          RC_GET_BIT2(probLit, ಚಿಹ್ನೆ_2, ಆದರೆ (ಬಿಟ್ != 0) ನಿಲ್ಲಿಸು, ಆದರೆ (ಬಿಟ್ == 0) ನಿಲ್ಲಿಸು)
         }
-        while (symbol < 0x100);
+        ಆಗ (ಚಿಹ್ನೆ_2 < 0x100);
       }
-      while (symbol < 0x100)
+      ಆಗ (ಚಿಹ್ನೆ_2 < 0x100)
       {
-        CProb *probLit = prob + symbol;
-        RC_GET_BIT(probLit, symbol)
+        CProb *probLit = prob + ಚಿಹ್ನೆ_2;
+        RC_GET_ಬಿಟ್(probLit, ಚಿಹ್ನೆ_2)
       }
-      previousByte = (Byte)symbol;
+      ಹಿಂದಿನ_Byte = (Byte)ಚಿಹ್ನೆ_2;
 
-      outStream[nowPos++] = previousByte;
-      if (state < 4) state = 0;
-      else if (state < 10) state -= 3;
-      else state -= 6;
+      ಹೊರಹೋಗು_ಹರಿವು[nowPos++] = ಹಿಂದಿನ_Byte;
+      ಆದರೆ (state < 4) state = 0;
+      ಇಲ್ಲದಿದ್ದರೆ ಆದರೆ (state < 10) state -= 3;
+      ಇಲ್ಲದಿದ್ದರೆ state -= 6;
     }
-    else             
+    ಇಲ್ಲದಿದ್ದರೆ             
     {
       UpdateBit1(prob);
       prob = p + IsRep + state;
@@ -222,177 +222,177 @@ int LzmaDecode(CLzmaDecoderState *vs,
         rep3 = rep2;
         rep2 = rep1;
         rep1 = rep0;
-        state = state < kNumLitStates ? 0 : 3;
+        state = state < k_ಅಂಕೆ_Lit_ಸ್ಥಿತಿಗಳು ? 0 : 3;
         prob = p + LenCoder;
       }
-      else
+      ಇಲ್ಲದಿದ್ದರೆ
       {
         UpdateBit1(prob);
         prob = p + IsRepG0 + state;
         IfBit0(prob)
         {
           UpdateBit0(prob);
-          prob = p + IsRep0Long + (state << kNumPosBitsMax) + posState;
+          prob = p + IsRep0Long + (state << k_ಅಂಕೆ_Pos_ಬಿಟ್ಟುಗಳು_Max) + posState;
           IfBit0(prob)
           {
             UpdateBit0(prob);
             
-            if (nowPos == 0)
-              return LZMA_RESULT_DATA_ERROR;
+            ಆದರೆ (nowPos == 0)
+              ಹಿಂತಿರುಗಿ LZMA_ಫಲಿತಾಂಶ_ದತ್ತಾಂಶ_ERROR;
             
-            state = state < kNumLitStates ? 9 : 11;
-            previousByte = outStream[nowPos - rep0];
-            outStream[nowPos++] = previousByte;
+            state = state < k_ಅಂಕೆ_Lit_ಸ್ಥಿತಿಗಳು ? 9 : 11;
+            ಹಿಂದಿನ_Byte = ಹೊರಹೋಗು_ಹರಿವು[nowPos - rep0];
+            ಹೊರಹೋಗು_ಹರಿವು[nowPos++] = ಹಿಂದಿನ_Byte;
 
-            continue;
+            ಮುಂದುವರಿ;
           }
-          else
+          ಇಲ್ಲದಿದ್ದರೆ
           {
             UpdateBit1(prob);
           }
         }
-        else
+        ಇಲ್ಲದಿದ್ದರೆ
         {
-          UInt32 distance;
+          UInt32 ದೂರ;
           UpdateBit1(prob);
           prob = p + IsRepG1 + state;
           IfBit0(prob)
           {
             UpdateBit0(prob);
-            distance = rep1;
+            ದೂರ = rep1;
           }
-          else 
+          ಇಲ್ಲದಿದ್ದರೆ 
           {
             UpdateBit1(prob);
             prob = p + IsRepG2 + state;
             IfBit0(prob)
             {
               UpdateBit0(prob);
-              distance = rep2;
+              ದೂರ = rep2;
             }
-            else
+            ಇಲ್ಲದಿದ್ದರೆ
             {
               UpdateBit1(prob);
-              distance = rep3;
+              ದೂರ = rep3;
               rep3 = rep2;
             }
             rep2 = rep1;
           }
           rep1 = rep0;
-          rep0 = distance;
+          rep0 = ದೂರ;
         }
-        state = state < kNumLitStates ? 8 : 11;
+        state = state < k_ಅಂಕೆ_Lit_ಸ್ಥಿತಿಗಳು ? 8 : 11;
         prob = p + RepLenCoder;
       }
       {
-        int numBits, offset;
+        ಪೂರ್ಣಾಂಕ ಅಂಕೆ_ಬಿಟ್ಟುಗಳು, ಸ್ಥಾನಾಂತರ_2;
         CProb *probLen = prob + LenChoice;
         IfBit0(probLen)
         {
           UpdateBit0(probLen);
-          probLen = prob + LenLow + (posState << kLenNumLowBits);
-          offset = 0;
-          numBits = kLenNumLowBits;
+          probLen = prob + Len_ಕೆಳಗಿನ + (posState << k_Len_ಅಂಕೆ_ಕೆಳಗಿನ_ಬಿಟ್ಟುಗಳು);
+          ಸ್ಥಾನಾಂತರ_2 = 0;
+          ಅಂಕೆ_ಬಿಟ್ಟುಗಳು = k_Len_ಅಂಕೆ_ಕೆಳಗಿನ_ಬಿಟ್ಟುಗಳು;
         }
-        else
+        ಇಲ್ಲದಿದ್ದರೆ
         {
           UpdateBit1(probLen);
           probLen = prob + LenChoice2;
           IfBit0(probLen)
           {
             UpdateBit0(probLen);
-            probLen = prob + LenMid + (posState << kLenNumMidBits);
-            offset = kLenNumLowSymbols;
-            numBits = kLenNumMidBits;
+            probLen = prob + LenMid + (posState << k_Len_ಅಂಕೆ_Mid_ಬಿಟ್ಟುಗಳು);
+            ಸ್ಥಾನಾಂತರ_2 = k_Len_ಅಂಕೆ_ಕೆಳಗಿನ_Symbols;
+            ಅಂಕೆ_ಬಿಟ್ಟುಗಳು = k_Len_ಅಂಕೆ_Mid_ಬಿಟ್ಟುಗಳು;
           }
-          else
+          ಇಲ್ಲದಿದ್ದರೆ
           {
             UpdateBit1(probLen);
-            probLen = prob + LenHigh;
-            offset = kLenNumLowSymbols + kLenNumMidSymbols;
-            numBits = kLenNumHighBits;
+            probLen = prob + Len_ಮೇಲಿನ;
+            ಸ್ಥಾನಾಂತರ_2 = k_Len_ಅಂಕೆ_ಕೆಳಗಿನ_Symbols + k_Len_ಅಂಕೆ_Mid_Symbols;
+            ಅಂಕೆ_ಬಿಟ್ಟುಗಳು = k_Len_ಅಂಕೆ_ಮೇಲಿನ_ಬಿಟ್ಟುಗಳು;
           }
         }
-        RangeDecoderBitTreeDecode(probLen, numBits, len);
-        len += offset;
+        Range_Decoder_ಬಿಟ್_ವೃಕ್ಷ_Decode(probLen, ಅಂಕೆ_ಬಿಟ್ಟುಗಳು, len);
+        len += ಸ್ಥಾನಾಂತರ_2;
       }
 
-      if (state < 4)
+      ಆದರೆ (state < 4)
       {
-        int posSlot;
-        state += kNumLitStates;
-        prob = p + PosSlot +
-            ((len < kNumLenToPosStates ? len : kNumLenToPosStates - 1) << 
-            kNumPosSlotBits);
-        RangeDecoderBitTreeDecode(prob, kNumPosSlotBits, posSlot);
-        if (posSlot >= kStartPosModelIndex)
+        ಪೂರ್ಣಾಂಕ pos_ಸ್ಥಾನ;
+        state += k_ಅಂಕೆ_Lit_ಸ್ಥಿತಿಗಳು;
+        prob = p + Pos_ಸ್ಥಾನ +
+            ((len < k_ಅಂಕೆ_Len_ಗಮ್ಯ_Pos_ಸ್ಥಿತಿಗಳು ? len : k_ಅಂಕೆ_Len_ಗಮ್ಯ_Pos_ಸ್ಥಿತಿಗಳು - 1) << 
+            k_ಅಂಕೆ_Pos_ಸ್ಥಾನ_ಬಿಟ್ಟುಗಳು);
+        Range_Decoder_ಬಿಟ್_ವೃಕ್ಷ_Decode(prob, k_ಅಂಕೆ_Pos_ಸ್ಥಾನ_ಬಿಟ್ಟುಗಳು, pos_ಸ್ಥಾನ);
+        ಆದರೆ (pos_ಸ್ಥಾನ >= k_ಆರಂಭ_Pos_Model_ಸೂಚ್ಯಂಕ)
         {
-          int numDirectBits = ((posSlot >> 1) - 1);
-          rep0 = (2 | ((UInt32)posSlot & 1));
-          if (posSlot < kEndPosModelIndex)
+          ಪೂರ್ಣಾಂಕ ಅಂಕೆ_ನೇರ_ಬಿಟ್ಟುಗಳು = ((pos_ಸ್ಥಾನ >> 1) - 1);
+          rep0 = (2 | ((UInt32)pos_ಸ್ಥಾನ & 1));
+          ಆದರೆ (pos_ಸ್ಥಾನ < k_ಕೊನೆ_Pos_Model_ಸೂಚ್ಯಂಕ)
           {
-            rep0 <<= numDirectBits;
-            prob = p + SpecPos + rep0 - posSlot - 1;
+            rep0 <<= ಅಂಕೆ_ನೇರ_ಬಿಟ್ಟುಗಳು;
+            prob = p + SpecPos + rep0 - pos_ಸ್ಥಾನ - 1;
           }
-          else
+          ಇಲ್ಲದಿದ್ದರೆ
           {
-            numDirectBits -= kNumAlignBits;
-            do
+            ಅಂಕೆ_ನೇರ_ಬಿಟ್ಟುಗಳು -= k_ಅಂಕೆ_Align_ಬಿಟ್ಟುಗಳು;
+            ಮಾಡು
             {
               RC_NORMALIZE
               Range >>= 1;
               rep0 <<= 1;
-              if (Code >= Range)
+              ಆದರೆ (ಸಂಕೇತ_3 >= Range)
               {
-                Code -= Range;
+                ಸಂಕೇತ_3 -= Range;
                 rep0 |= 1;
               }
             }
-            while (--numDirectBits != 0);
+            ಆಗ (--ಅಂಕೆ_ನೇರ_ಬಿಟ್ಟುಗಳು != 0);
             prob = p + Align;
-            rep0 <<= kNumAlignBits;
-            numDirectBits = kNumAlignBits;
+            rep0 <<= k_ಅಂಕೆ_Align_ಬಿಟ್ಟುಗಳು;
+            ಅಂಕೆ_ನೇರ_ಬಿಟ್ಟುಗಳು = k_ಅಂಕೆ_Align_ಬಿಟ್ಟುಗಳು;
           }
           {
-            int i = 1;
-            int mi = 1;
-            do
+            ಪೂರ್ಣಾಂಕ i = 1;
+            ಪೂರ್ಣಾಂಕ mi = 1;
+            ಮಾಡು
             {
               CProb *prob3 = prob + mi;
               RC_GET_BIT2(prob3, mi, ; , rep0 |= i);
               i <<= 1;
             }
-            while(--numDirectBits != 0);
+            ಆಗ(--ಅಂಕೆ_ನೇರ_ಬಿಟ್ಟುಗಳು != 0);
           }
         }
-        else
-          rep0 = posSlot;
-        if (++rep0 == (UInt32)(0))
+        ಇಲ್ಲದಿದ್ದರೆ
+          rep0 = pos_ಸ್ಥಾನ;
+        ಆದರೆ (++rep0 == (UInt32)(0))
         {
           /* it's for stream version */
-          len = kLzmaStreamWasFinishedId;
-          break;
+          len = k_Lzma_ಹರಿವು_Was_ಪೂರ್ಣಗೊಂಡ_Id;
+          ನಿಲ್ಲಿಸು;
         }
       }
 
-      len += kMatchMinLen;
-      if (rep0 > nowPos)
-        return LZMA_RESULT_DATA_ERROR;
+      len += k_ಹೊಂದಿಕೆ_Min_Len;
+      ಆದರೆ (rep0 > nowPos)
+        ಹಿಂತಿರುಗಿ LZMA_ಫಲಿತಾಂಶ_ದತ್ತಾಂಶ_ERROR;
 
 
-      do
+      ಮಾಡು
       {
-        previousByte = outStream[nowPos - rep0];
+        ಹಿಂದಿನ_Byte = ಹೊರಹೋಗು_ಹರಿವು[nowPos - rep0];
         len--;
-        outStream[nowPos++] = previousByte;
+        ಹೊರಹೋಗು_ಹರಿವು[nowPos++] = ಹಿಂದಿನ_Byte;
       }
-      while(len != 0 && nowPos < outSize);
+      ಆಗ(len != 0 && nowPos < ಹೊರಹೋಗು_ಗಾತ್ರ);
     }
   }
   RC_NORMALIZE;
 
 
-  *inSizeProcessed = (SizeT)(Buffer - inStream);
-  *outSizeProcessed = nowPos;
-  return LZMA_RESULT_OK;
+  *ಒಳ_ಗಾತ್ರ_Processed = (ಗಾತ್ರ_T)(ಬಫರ್_2 - ಒಳ_ಹರಿವು);
+  *ಹೊರಹೋಗು_ಗಾತ್ರ_Processed = nowPos;
+  ಹಿಂತಿರುಗಿ LZMA_ಫಲಿತಾಂಶ_OK;
 }

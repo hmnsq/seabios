@@ -5,59 +5,59 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // SET_BDA
-#include "bregs.h" // struct bregs
-#include "hw/pic.h" // pic_eoi1
-#include "hw/ps2port.h" // ps2_check_event
-#include "hw/rtc.h" // rtc_read
-#include "hw/usb-hid.h" // usb_check_event
-#include "output.h" // debug_enter
-#include "stacks.h" // yield
-#include "string.h" // memset
-#include "util.h" // clock_setup
+#ಅನ್ತರ್ಭಾವ "biosvar.h" // SET_BDA
+#ಅನ್ತರ್ಭಾವ "bregs.h" // struct bregs
+#ಅನ್ತರ್ಭಾವ "hw/pic.h" // pic_eoi1
+#ಅನ್ತರ್ಭಾವ "hw/ps2port.h" // ps2_check_event
+#ಅನ್ತರ್ಭಾವ "hw/rtc.h" // rtc_read
+#ಅನ್ತರ್ಭಾವ "hw/usb-hid.h" // usb_check_event
+#ಅನ್ತರ್ಭಾವ "output.h" // debug_enter
+#ಅನ್ತರ್ಭಾವ "stacks.h" // yield
+#ಅನ್ತರ್ಭಾವ "string.h" // memset
+#ಅನ್ತರ್ಭಾವ "util.h" // clock_setup
 
 
 /****************************************************************
  * Init
  ****************************************************************/
 
-static u32
+ಸ್ಥಿರ u32
 bcd2bin(u8 val)
 {
-    return (val & 0xf) + ((val >> 4) * 10);
+    ಹಿಂತಿರುಗಿ (val & 0xf) + ((val >> 4) * 10);
 }
 
 u8 Century VARLOW;
 
-void
-clock_setup(void)
+ಶೂನ್ಯ
+clock_ಸಿದ್ಧತೆ(ಶೂನ್ಯ)
 {
     dprintf(3, "init timer\n");
-    pit_setup();
+    pit_ಸಿದ್ಧತೆ();
 
-    rtc_setup();
+    rtc_ಸಿದ್ಧತೆ();
     rtc_updating();
     u32 seconds = bcd2bin(rtc_read(CMOS_RTC_SECONDS));
     u32 minutes = bcd2bin(rtc_read(CMOS_RTC_MINUTES));
     u32 hours = bcd2bin(rtc_read(CMOS_RTC_HOURS));
     u32 ticks = ticks_from_ms(((hours * 60 + minutes) * 60 + seconds) * 1000);
-    SET_BDA(timer_counter, ticks % TICKS_PER_DAY);
+    ಗಣ_BDA(timer_counter, ticks % TICKS_ಪ್ರತಿ_DAY);
 
     // Setup Century storage
-    if (CONFIG_QEMU) {
+    ಆದರೆ (CONFIG_QEMU) {
         Century = rtc_read(CMOS_CENTURY);
-    } else {
+    } ಇಲ್ಲದಿದ್ದರೆ {
         // Infer current century from the year.
         u8 year = rtc_read(CMOS_RTC_YEAR);
-        if (year > 0x80)
+        ಆದರೆ (year > 0x80)
             Century = 0x19;
-        else
+        ಇಲ್ಲದಿದ್ದರೆ
             Century = 0x20;
     }
 
-    enable_hwirq(0, FUNC16(entry_08));
-    if (CONFIG_RTC_TIMER)
-        enable_hwirq(8, FUNC16(entry_70));
+    enable_hwirq(0, FUNC16(ನಮೂದು_08));
+    ಆದರೆ (CONFIG_RTC_TIMER)
+        enable_hwirq(8, FUNC16(ನಮೂದು_70));
 }
 
 
@@ -66,51 +66,51 @@ clock_setup(void)
  ****************************************************************/
 
 // get current clock count
-static void
-handle_1a00(struct bregs *regs)
+ಸ್ಥಿರ ಶೂನ್ಯ
+handle_1a00(ರಚನೆ bregs *regs)
 {
     yield();
     u32 ticks = GET_BDA(timer_counter);
     regs->cx = ticks >> 16;
     regs->dx = ticks;
     regs->al = GET_BDA(timer_rollover);
-    SET_BDA(timer_rollover, 0); // reset flag
-    set_success(regs);
+    ಗಣ_BDA(timer_rollover, 0); // reset flag
+    ಗಣ_success(regs);
 }
 
 // Set Current Clock Count
-static void
-handle_1a01(struct bregs *regs)
+ಸ್ಥಿರ ಶೂನ್ಯ
+handle_1a01(ರಚನೆ bregs *regs)
 {
     u32 ticks = (regs->cx << 16) | regs->dx;
-    SET_BDA(timer_counter, ticks);
-    SET_BDA(timer_rollover, 0); // reset flag
+    ಗಣ_BDA(timer_counter, ticks);
+    ಗಣ_BDA(timer_rollover, 0); // reset flag
     // XXX - should use set_code_success()?
     regs->ah = 0;
-    set_success(regs);
+    ಗಣ_success(regs);
 }
 
 // Read CMOS Time
-static void
-handle_1a02(struct bregs *regs)
+ಸ್ಥಿರ ಶೂನ್ಯ
+handle_1a02(ರಚನೆ bregs *regs)
 {
-    if (rtc_updating()) {
-        set_invalid(regs);
-        return;
+    ಆದರೆ (rtc_updating()) {
+        ಗಣ_invalid(regs);
+        ಹಿಂತಿರುಗಿ;
     }
 
     regs->dh = rtc_read(CMOS_RTC_SECONDS);
     regs->cl = rtc_read(CMOS_RTC_MINUTES);
     regs->ch = rtc_read(CMOS_RTC_HOURS);
-    regs->dl = rtc_read(CMOS_STATUS_B) & RTC_B_DSE;
+    regs->dl = rtc_read(CMOS_ಸ್ಥಿತಿ_B) & RTC_B_DSE;
     regs->ah = 0;
     regs->al = regs->ch;
-    set_success(regs);
+    ಗಣ_success(regs);
 }
 
 // Set CMOS Time
-static void
-handle_1a03(struct bregs *regs)
+ಸ್ಥಿರ ಶೂನ್ಯ
+handle_1a03(ರಚನೆ bregs *regs)
 {
     // Using a debugger, I notice the following masking/setting
     // of bits in Status Register B, by setting Reg B to
@@ -122,42 +122,42 @@ handle_1a03(struct bregs *regs)
     //
     // Bit4 in try#1 flipped in hardware (forced low) due to bit7=1
     // My assumption: RegB = ((RegB & 01100000b) | 00000010b)
-    if (rtc_updating()) {
-        rtc_setup();
+    ಆದರೆ (rtc_updating()) {
+        rtc_ಸಿದ್ಧತೆ();
         // fall through as if an update were not in progress
     }
     rtc_write(CMOS_RTC_SECONDS, regs->dh);
     rtc_write(CMOS_RTC_MINUTES, regs->cl);
     rtc_write(CMOS_RTC_HOURS, regs->ch);
     // Set Daylight Savings time enabled bit to requested value
-    u8 val8 = ((rtc_read(CMOS_STATUS_B) & (RTC_B_PIE|RTC_B_AIE))
+    u8 val8 = ((rtc_read(CMOS_ಸ್ಥಿತಿ_B) & (RTC_B_PIE|RTC_B_AIE))
                | RTC_B_24HR | (regs->dl & RTC_B_DSE));
-    rtc_write(CMOS_STATUS_B, val8);
+    rtc_write(CMOS_ಸ್ಥಿತಿ_B, val8);
     regs->ah = 0;
     regs->al = val8; // val last written to Reg B
-    set_success(regs);
+    ಗಣ_success(regs);
 }
 
 // Read CMOS Date
-static void
-handle_1a04(struct bregs *regs)
+ಸ್ಥಿರ ಶೂನ್ಯ
+handle_1a04(ರಚನೆ bregs *regs)
 {
     regs->ah = 0;
-    if (rtc_updating()) {
-        set_invalid(regs);
-        return;
+    ಆದರೆ (rtc_updating()) {
+        ಗಣ_invalid(regs);
+        ಹಿಂತಿರುಗಿ;
     }
     regs->cl = rtc_read(CMOS_RTC_YEAR);
     regs->dh = rtc_read(CMOS_RTC_MONTH);
     regs->dl = rtc_read(CMOS_RTC_DAY_MONTH);
-    regs->ch = GET_LOW(Century);
+    regs->ch = GET_ಕೆಳಗಿನ(Century);
     regs->al = regs->ch;
-    set_success(regs);
+    ಗಣ_success(regs);
 }
 
 // Set CMOS Date
-static void
-handle_1a05(struct bregs *regs)
+ಸ್ಥಿರ ಶೂನ್ಯ
+handle_1a05(ರಚನೆ bregs *regs)
 {
     // Using a debugger, I notice the following masking/setting
     // of bits in Status Register B, by setting Reg B to
@@ -169,26 +169,26 @@ handle_1a05(struct bregs *regs)
     //
     // Bit4 in try#1 flipped in hardware (forced low) due to bit7=1
     // My assumption: RegB = (RegB & 01111111b)
-    if (rtc_updating()) {
-        rtc_setup();
-        set_invalid(regs);
-        return;
+    ಆದರೆ (rtc_updating()) {
+        rtc_ಸಿದ್ಧತೆ();
+        ಗಣ_invalid(regs);
+        ಹಿಂತಿರುಗಿ;
     }
     rtc_write(CMOS_RTC_YEAR, regs->cl);
     rtc_write(CMOS_RTC_MONTH, regs->dh);
     rtc_write(CMOS_RTC_DAY_MONTH, regs->dl);
-    SET_LOW(Century, regs->ch);
+    ಗಣ_ಕೆಳಗಿನ(Century, regs->ch);
     // clear halt-clock bit
-    u8 val8 = rtc_read(CMOS_STATUS_B) & ~RTC_B_SET;
-    rtc_write(CMOS_STATUS_B, val8);
+    u8 val8 = rtc_read(CMOS_ಸ್ಥಿತಿ_B) & ~RTC_B_ಗಣ;
+    rtc_write(CMOS_ಸ್ಥಿತಿ_B, val8);
     regs->ah = 0;
     regs->al = val8; // AL = val last written to Reg B
-    set_success(regs);
+    ಗಣ_success(regs);
 }
 
 // Set Alarm Time in CMOS
-static void
-handle_1a06(struct bregs *regs)
+ಸ್ಥಿರ ಶೂನ್ಯ
+handle_1a06(ರಚನೆ bregs *regs)
 {
     // Using a debugger, I notice the following masking/setting
     // of bits in Status Register B, by setting Reg B to
@@ -200,28 +200,28 @@ handle_1a06(struct bregs *regs)
     //
     // Bit4 in try#1 flipped in hardware (forced low) due to bit7=1
     // My assumption: RegB = ((RegB & 01111111b) | 00100000b)
-    u8 val8 = rtc_read(CMOS_STATUS_B); // Get Status Reg B
+    u8 val8 = rtc_read(CMOS_ಸ್ಥಿತಿ_B); // Get Status Reg B
     regs->ax = 0;
-    if (val8 & RTC_B_AIE) {
+    ಆದರೆ (val8 & RTC_B_AIE) {
         // Alarm interrupt enabled already
-        set_invalid(regs);
-        return;
+        ಗಣ_invalid(regs);
+        ಹಿಂತಿರುಗಿ;
     }
-    if (rtc_updating()) {
-        rtc_setup();
+    ಆದರೆ (rtc_updating()) {
+        rtc_ಸಿದ್ಧತೆ();
         // fall through as if an update were not in progress
     }
     rtc_write(CMOS_RTC_SECONDS_ALARM, regs->dh);
     rtc_write(CMOS_RTC_MINUTES_ALARM, regs->cl);
     rtc_write(CMOS_RTC_HOURS_ALARM, regs->ch);
     // enable Status Reg B alarm bit, clear halt clock bit
-    rtc_write(CMOS_STATUS_B, (val8 & ~RTC_B_SET) | RTC_B_AIE);
-    set_success(regs);
+    rtc_write(CMOS_ಸ್ಥಿತಿ_B, (val8 & ~RTC_B_ಗಣ) | RTC_B_AIE);
+    ಗಣ_success(regs);
 }
 
 // Turn off Alarm
-static void
-handle_1a07(struct bregs *regs)
+ಸ್ಥಿರ ಶೂನ್ಯ
+handle_1a07(ರಚನೆ bregs *regs)
 {
     // Using a debugger, I notice the following masking/setting
     // of bits in Status Register B, by setting Reg B to
@@ -233,63 +233,63 @@ handle_1a07(struct bregs *regs)
     //
     // Bit4 in try#1 flipped in hardware (forced low) due to bit7=1
     // My assumption: RegB = (RegB & 01010111b)
-    u8 val8 = rtc_read(CMOS_STATUS_B); // Get Status Reg B
+    u8 val8 = rtc_read(CMOS_ಸ್ಥಿತಿ_B); // Get Status Reg B
     // clear clock-halt bit, disable alarm bit
-    rtc_write(CMOS_STATUS_B, val8 & ~(RTC_B_SET|RTC_B_AIE));
+    rtc_write(CMOS_ಸ್ಥಿತಿ_B, val8 & ~(RTC_B_ಗಣ|RTC_B_AIE));
     regs->ah = 0;
     regs->al = val8; // val last written to Reg B
-    set_success(regs);
+    ಗಣ_success(regs);
 }
 
-static void
-handle_1abb(struct bregs *regs)
+ಸ್ಥಿರ ಶೂನ್ಯ
+handle_1abb(ರಚನೆ bregs *regs)
 {
-    if (!CONFIG_TCGBIOS)
-        return;
+    ಆದರೆ (!CONFIG_TCGBIOS)
+        ಹಿಂತಿರುಗಿ;
 
     dprintf(DEBUG_tcg, "16: Calling tpm_interrupt_handler\n");
-    call32(tpm_interrupt_handler32, MAKE_FLATPTR(GET_SEG(SS), regs), 0);
+    call32(tpm_ಅಡಚಣೆ_handler32, MAKE_FLATPTR(GET_SEG(SS), regs), 0);
 }
 
 // Unsupported
-static void
-handle_1aXX(struct bregs *regs)
+ಸ್ಥಿರ ಶೂನ್ಯ
+handle_1aXX(ರಚನೆ bregs *regs)
 {
-    set_unimplemented(regs);
+    ಗಣ_unimplemented(regs);
 }
 
 // INT 1Ah Time-of-day Service Entry Point
-void VISIBLE16
-handle_1a(struct bregs *regs)
+ಶೂನ್ಯ VISIBLE16
+handle_1a(ರಚನೆ bregs *regs)
 {
     debug_enter(regs, DEBUG_HDL_1a);
-    switch (regs->ah) {
-    case 0x00: handle_1a00(regs); break;
-    case 0x01: handle_1a01(regs); break;
-    case 0x02: handle_1a02(regs); break;
-    case 0x03: handle_1a03(regs); break;
-    case 0x04: handle_1a04(regs); break;
-    case 0x05: handle_1a05(regs); break;
-    case 0x06: handle_1a06(regs); break;
-    case 0x07: handle_1a07(regs); break;
-    case 0xbb: handle_1abb(regs); break;
-    default:   handle_1aXX(regs); break;
+    ಆಯ್ಕೆ (regs->ah) {
+    ಸ್ಥಿತಿ 0x00: handle_1a00(regs); ನಿಲ್ಲಿಸು;
+    ಸ್ಥಿತಿ 0x01: handle_1a01(regs); ನಿಲ್ಲಿಸು;
+    ಸ್ಥಿತಿ 0x02: handle_1a02(regs); ನಿಲ್ಲಿಸು;
+    ಸ್ಥಿತಿ 0x03: handle_1a03(regs); ನಿಲ್ಲಿಸು;
+    ಸ್ಥಿತಿ 0x04: handle_1a04(regs); ನಿಲ್ಲಿಸು;
+    ಸ್ಥಿತಿ 0x05: handle_1a05(regs); ನಿಲ್ಲಿಸು;
+    ಸ್ಥಿತಿ 0x06: handle_1a06(regs); ನಿಲ್ಲಿಸು;
+    ಸ್ಥಿತಿ 0x07: handle_1a07(regs); ನಿಲ್ಲಿಸು;
+    ಸ್ಥಿತಿ 0xbb: handle_1abb(regs); ನಿಲ್ಲಿಸು;
+    ಪೂರ್ವನಿಯೋಜಿತ:   handle_1aXX(regs); ನಿಲ್ಲಿಸು;
     }
 }
 
 // Update main tick counter
-static void
-clock_update(void)
+ಸ್ಥಿರ ಶೂನ್ಯ
+clock_update(ಶೂನ್ಯ)
 {
     u32 counter = GET_BDA(timer_counter);
     counter++;
     // compare to one days worth of timer ticks at 18.2 hz
-    if (counter >= TICKS_PER_DAY) {
+    ಆದರೆ (counter >= TICKS_ಪ್ರತಿ_DAY) {
         // there has been a midnight rollover at this point
         counter = 0;
-        SET_BDA(timer_rollover, GET_BDA(timer_rollover) + 1);
+        ಗಣ_BDA(timer_rollover, GET_BDA(timer_rollover) + 1);
     }
-    SET_BDA(timer_counter, counter);
+    ಗಣ_BDA(timer_counter, counter);
 
     // Check for internal events.
     floppy_tick();
@@ -299,32 +299,32 @@ clock_update(void)
 }
 
 // INT 08h System Timer ISR Entry Point
-void VISIBLE16
-handle_08(void)
+ಶೂನ್ಯ VISIBLE16
+handle_08(ಶೂನ್ಯ)
 {
     debug_isr(DEBUG_ISR_08);
     clock_update();
 
     // chain to user timer tick INT #0x1c
-    struct bregs br;
-    memset(&br, 0, sizeof(br));
+    ರಚನೆ bregs br;
+    memset(&br, 0, ಗಾತ್ರ(br));
     br.flags = F_IF;
     call16_int(0x1c, &br);
 
     pic_eoi1();
 }
 
-u32 last_timer_check VARLOW;
+u32 ಕೊನೆಯ_timer_check VARLOW;
 
 // Simulate timer irq on machines without hardware irqs
-void
-clock_poll_irq(void)
+ಶೂನ್ಯ
+clock_poll_irq(ಶೂನ್ಯ)
 {
-    if (CONFIG_HARDWARE_IRQ)
-        return;
-    if (!timer_check(GET_LOW(last_timer_check)))
-        return;
-    SET_LOW(last_timer_check, timer_calc(ticks_to_ms(1)));
+    ಆದರೆ (CONFIG_HARDWARE_IRQ)
+        ಹಿಂತಿರುಗಿ;
+    ಆದರೆ (!timer_check(GET_ಕೆಳಗಿನ(ಕೊನೆಯ_timer_check)))
+        ಹಿಂತಿರುಗಿ;
+    ಗಣ_ಕೆಳಗಿನ(ಕೊನೆಯ_timer_check, timer_calc(ticks_ಗಮ್ಯ_ms(1)));
     clock_update();
 }
 
@@ -336,26 +336,26 @@ clock_poll_irq(void)
 // Calculate the timer value at 'count' number of full timer ticks in
 // the future.
 u32
-irqtimer_calc_ticks(u32 count)
+irqtimer_calc_ticks(u32 ಎಣಿಕೆ_2)
 {
-    return (GET_BDA(timer_counter) + count + 1) % TICKS_PER_DAY;
+    ಹಿಂತಿರುಗಿ (GET_BDA(timer_counter) + ಎಣಿಕೆ_2 + 1) % TICKS_ಪ್ರತಿ_DAY;
 }
 
 // Return the timer value that is 'msecs' time in the future.
 u32
 irqtimer_calc(u32 msecs)
 {
-    if (!msecs)
-        return GET_BDA(timer_counter);
-    return irqtimer_calc_ticks(ticks_from_ms(msecs));
+    ಆದರೆ (!msecs)
+        ಹಿಂತಿರುಗಿ GET_BDA(timer_counter);
+    ಹಿಂತಿರುಗಿ irqtimer_calc_ticks(ticks_from_ms(msecs));
 }
 
 // Check if the given timer value has passed.
-int
-irqtimer_check(u32 end)
+ಪೂರ್ಣಾಂಕ
+irqtimer_check(u32 ಕೊನೆ)
 {
-    return (((GET_BDA(timer_counter) + TICKS_PER_DAY - end) % TICKS_PER_DAY)
-            < (TICKS_PER_DAY/2));
+    ಹಿಂತಿರುಗಿ (((GET_BDA(timer_counter) + TICKS_ಪ್ರತಿ_DAY - ಕೊನೆ) % TICKS_ಪ್ರತಿ_DAY)
+            < (TICKS_ಪ್ರತಿ_DAY/2));
 }
 
 
@@ -363,144 +363,144 @@ irqtimer_check(u32 end)
  * Periodic timer
  ****************************************************************/
 
-static int
-set_usertimer(u32 usecs, u16 seg, u16 offset)
+ಸ್ಥಿರ ಪೂರ್ಣಾಂಕ
+ಗಣ_usertimer(u32 usecs, u16 seg, u16 ಸ್ಥಾನಾಂತರ_2)
 {
-    if (GET_BDA(rtc_wait_flag) & RWS_WAIT_PENDING)
-        return -1;
+    ಆದರೆ (GET_BDA(rtc_wait_flag) & RWS_WAIT_PENDING)
+        ಹಿಂತಿರುಗಿ -1;
 
     // Interval not already set.
-    SET_BDA(rtc_wait_flag, RWS_WAIT_PENDING);  // Set status byte.
-    SET_BDA(user_wait_complete_flag, SEGOFF(seg, offset));
-    SET_BDA(user_wait_timeout, usecs);
+    ಗಣ_BDA(rtc_wait_flag, RWS_WAIT_PENDING);  // Set status byte.
+    ಗಣ_BDA(user_wait_complete_flag, SEGOFF(seg, ಸ್ಥಾನಾಂತರ_2));
+    ಗಣ_BDA(user_wait_timeout, usecs);
     rtc_use();
-    return 0;
+    ಹಿಂತಿರುಗಿ 0;
 }
 
-static void
-clear_usertimer(void)
+ಸ್ಥಿರ ಶೂನ್ಯ
+clear_usertimer(ಶೂನ್ಯ)
 {
-    if (!(GET_BDA(rtc_wait_flag) & RWS_WAIT_PENDING))
-        return;
+    ಆದರೆ (!(GET_BDA(rtc_wait_flag) & RWS_WAIT_PENDING))
+        ಹಿಂತಿರುಗಿ;
     // Turn off status byte.
-    SET_BDA(rtc_wait_flag, 0);
+    ಗಣ_BDA(rtc_wait_flag, 0);
     rtc_release();
 }
 
-#define RET_ECLOCKINUSE  0x83
+#ವ್ಯಾಖ್ಯಾನಿಸು RET_ECLOCKINUSE  0x83
 
 // Wait for CX:DX microseconds
-void
-handle_1586(struct bregs *regs)
+ಶೂನ್ಯ
+handle_1586(ರಚನೆ bregs *regs)
 {
-    if (!CONFIG_RTC_TIMER) {
-        set_code_unimplemented(regs, RET_EUNSUPPORTED);
-        return;
+    ಆದರೆ (!CONFIG_RTC_TIMER) {
+        ಗಣ_ಸಂಕೇತ_unimplemented(regs, RET_EUNSUPPORTED);
+        ಹಿಂತಿರುಗಿ;
     }
     // Use the rtc to wait for the specified time.
     u8 statusflag = 0;
-    u32 count = (regs->cx << 16) | regs->dx;
-    int ret = set_usertimer(count, GET_SEG(SS), (u32)&statusflag);
-    if (ret) {
-        set_code_invalid(regs, RET_ECLOCKINUSE);
-        return;
+    u32 ಎಣಿಕೆ_2 = (regs->cx << 16) | regs->dx;
+    ಪೂರ್ಣಾಂಕ ret = ಗಣ_usertimer(ಎಣಿಕೆ_2, GET_SEG(SS), (u32)&statusflag);
+    ಆದರೆ (ret) {
+        ಗಣ_ಸಂಕೇತ_invalid(regs, RET_ECLOCKINUSE);
+        ಹಿಂತಿರುಗಿ;
     }
-    while (!statusflag)
+    ಆಗ (!statusflag)
         yield_toirq();
-    set_success(regs);
+    ಗಣ_success(regs);
 }
 
 // Set Interval requested.
-static void
-handle_158300(struct bregs *regs)
+ಸ್ಥಿರ ಶೂನ್ಯ
+handle_158300(ರಚನೆ bregs *regs)
 {
-    int ret = set_usertimer((regs->cx << 16) | regs->dx, regs->es, regs->bx);
-    if (ret)
+    ಪೂರ್ಣಾಂಕ ret = ಗಣ_usertimer((regs->cx << 16) | regs->dx, regs->es, regs->bx);
+    ಆದರೆ (ret)
         // Interval already set.
-        set_code_invalid(regs, RET_EUNSUPPORTED);
-    else
-        set_success(regs);
+        ಗಣ_ಸಂಕೇತ_invalid(regs, RET_EUNSUPPORTED);
+    ಇಲ್ಲದಿದ್ದರೆ
+        ಗಣ_success(regs);
 }
 
 // Clear interval requested
-static void
-handle_158301(struct bregs *regs)
+ಸ್ಥಿರ ಶೂನ್ಯ
+handle_158301(ರಚನೆ bregs *regs)
 {
     clear_usertimer();
-    set_success(regs);
+    ಗಣ_success(regs);
 }
 
-static void
-handle_1583XX(struct bregs *regs)
+ಸ್ಥಿರ ಶೂನ್ಯ
+handle_1583XX(ರಚನೆ bregs *regs)
 {
-    set_code_unimplemented(regs, RET_EUNSUPPORTED);
+    ಗಣ_ಸಂಕೇತ_unimplemented(regs, RET_EUNSUPPORTED);
     regs->al--;
 }
 
-void
-handle_1583(struct bregs *regs)
+ಶೂನ್ಯ
+handle_1583(ರಚನೆ bregs *regs)
 {
-    if (!CONFIG_RTC_TIMER) {
+    ಆದರೆ (!CONFIG_RTC_TIMER) {
         handle_1583XX(regs);
-        return;
+        ಹಿಂತಿರುಗಿ;
     }
-    switch (regs->al) {
-    case 0x00: handle_158300(regs); break;
-    case 0x01: handle_158301(regs); break;
-    default:   handle_1583XX(regs); break;
+    ಆಯ್ಕೆ (regs->al) {
+    ಸ್ಥಿತಿ 0x00: handle_158300(regs); ನಿಲ್ಲಿಸು;
+    ಸ್ಥಿತಿ 0x01: handle_158301(regs); ನಿಲ್ಲಿಸು;
+    ಪೂರ್ವನಿಯೋಜಿತ:   handle_1583XX(regs); ನಿಲ್ಲಿಸು;
     }
 }
 
-#define USEC_PER_RTC DIV_ROUND_CLOSEST(1000000, 1024)
+#ವ್ಯಾಖ್ಯಾನಿಸು USEC_ಪ್ರತಿ_RTC DIV_ಸುತ್ತು_CLOSEST(1000000, 1024)
 
 // int70h: IRQ8 - CMOS RTC
-void VISIBLE16
-handle_70(void)
+ಶೂನ್ಯ VISIBLE16
+handle_70(ಶೂನ್ಯ)
 {
-    if (!CONFIG_RTC_TIMER)
-        return;
+    ಆದರೆ (!CONFIG_RTC_TIMER)
+        ಹಿಂತಿರುಗಿ;
     debug_isr(DEBUG_ISR_70);
 
     // Check which modes are enabled and have occurred.
-    u8 registerB = rtc_read(CMOS_STATUS_B);
-    u8 registerC = rtc_read(CMOS_STATUS_C);
+    u8 ರಿಜಿಸ್ಟರ್_B = rtc_read(CMOS_ಸ್ಥಿತಿ_B);
+    u8 ರಿಜಿಸ್ಟರ್_C = rtc_read(CMOS_ಸ್ಥಿತಿ_C);
 
-    if (!(registerB & (RTC_B_PIE|RTC_B_AIE)))
-        goto done;
-    if (registerC & RTC_B_AIE) {
+    ಆದರೆ (!(ರಿಜಿಸ್ಟರ್_B & (RTC_B_PIE|RTC_B_AIE)))
+        ಹೋಗು ಮುಗಿದ;
+    ಆದರೆ (ರಿಜಿಸ್ಟರ್_C & RTC_B_AIE) {
         // Handle Alarm Interrupt.
-        struct bregs br;
-        memset(&br, 0, sizeof(br));
+        ರಚನೆ bregs br;
+        memset(&br, 0, ಗಾತ್ರ(br));
         br.flags = F_IF;
         call16_int(0x4a, &br);
     }
-    if (!(registerC & RTC_B_PIE))
-        goto done;
+    ಆದರೆ (!(ರಿಜಿಸ್ಟರ್_C & RTC_B_PIE))
+        ಹೋಗು ಮುಗಿದ;
 
     // Handle Periodic Interrupt.
 
     check_preempt();
 
-    if (!GET_BDA(rtc_wait_flag))
-        goto done;
+    ಆದರೆ (!GET_BDA(rtc_wait_flag))
+        ಹೋಗು ಮುಗಿದ;
 
     // Wait Interval (Int 15, AH=83) active.
-    u32 time = GET_BDA(user_wait_timeout);  // Time left in microseconds.
-    if (time < USEC_PER_RTC) {
+    u32 ಸಮಯ = GET_BDA(user_wait_timeout);  // Time left in microseconds.
+    ಆದರೆ (ಸಮಯ < USEC_ಪ್ರತಿ_RTC) {
         // Done waiting - write to specified flag byte.
-        struct segoff_s segoff = GET_BDA(user_wait_complete_flag);
+        ರಚನೆ segoff_s segoff = GET_BDA(user_wait_complete_flag);
         u16 ptr_seg = segoff.seg;
-        u8 *ptr_far = (u8*)(segoff.offset+0);
+        u8 *ptr_far = (u8*)(segoff.ಸ್ಥಾನಾಂತರ_2+0);
         u8 oldval = GET_FARVAR(ptr_seg, *ptr_far);
-        SET_FARVAR(ptr_seg, *ptr_far, oldval | 0x80);
+        ಗಣ_FARVAR(ptr_seg, *ptr_far, oldval | 0x80);
 
         clear_usertimer();
-    } else {
+    } ಇಲ್ಲದಿದ್ದರೆ {
         // Continue waiting.
-        time -= USEC_PER_RTC;
-        SET_BDA(user_wait_timeout, time);
+        ಸಮಯ -= USEC_ಪ್ರತಿ_RTC;
+        ಗಣ_BDA(user_wait_timeout, ಸಮಯ);
     }
 
-done:
+ಮುಗಿದ:
     pic_eoi2();
 }

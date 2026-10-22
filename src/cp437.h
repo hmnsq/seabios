@@ -1,1 +1,1 @@
-u16 cp437_to_unicode(u8 cp437);
+u16 cp437_ಗಮ್ಯ_unicode(u8 cp437);

@@ -5,208 +5,208 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_GLOBAL
-#include "bregs.h" // struct bregs
-#include "hw/pci.h" // pci_config_readl
-#include "hw/pcidevice.h" // MaxPCIBus
-#include "hw/pci_regs.h" // PCI_VENDOR_ID
-#include "output.h" // dprintf
-#include "std/pirtable.h" // struct pir_header
-#include "string.h" // checksum
-#include "util.h" // handle_1ab1
+#ಅನ್ತರ್ಭಾವ "biosvar.h" // GET_GLOBAL
+#ಅನ್ತರ್ಭಾವ "bregs.h" // struct bregs
+#ಅನ್ತರ್ಭಾವ "hw/pci.h" // pci_config_readl
+#ಅನ್ತರ್ಭಾವ "hw/pcidevice.h" // MaxPCIBus
+#ಅನ್ತರ್ಭಾವ "hw/pci_regs.h" // PCI_VENDOR_ID
+#ಅನ್ತರ್ಭಾವ "output.h" // dprintf
+#ಅನ್ತರ್ಭಾವ "std/pirtable.h" // struct pir_header
+#ಅನ್ತರ್ಭಾವ "string.h" // checksum
+#ಅನ್ತರ್ಭಾವ "util.h" // handle_1ab1
 
 // romlayout.S
-extern void entry_bios32(void);
-extern void entry_pcibios32(void);
+ಬಾಹ್ಯ ಶೂನ್ಯ ನಮೂದು_bios32(ಶೂನ್ಯ);
+ಬಾಹ್ಯ ಶೂನ್ಯ ನಮೂದು_pcibios32(ಶೂನ್ಯ);
 
-#define RET_FUNC_NOT_SUPPORTED 0x81
-#define RET_BAD_VENDOR_ID      0x83
-#define RET_DEVICE_NOT_FOUND   0x86
-#define RET_BUFFER_TOO_SMALL   0x89
+#ವ್ಯಾಖ್ಯಾನಿಸು RET_FUNC_NOT_SUPPORTED 0x81
+#ವ್ಯಾಖ್ಯಾನಿಸು RET_BAD_VENDOR_ID      0x83
+#ವ್ಯಾಖ್ಯಾನಿಸು RET_DEVICE_NOT_ಸಿಕ್ಕಿತು   0x86
+#ವ್ಯಾಖ್ಯಾನಿಸು RET_ಬಫರ್_TOO_SMALL   0x89
 
 // installation check
-static void
-handle_1ab101(struct bregs *regs)
+ಸ್ಥಿರ ಶೂನ್ಯ
+handle_1ab101(ರಚನೆ bregs *regs)
 {
     regs->al = 0x01; // Flags - "Config Mechanism #1" supported.
     regs->bx = 0x0210; // PCI version 2.10
     regs->cl = GET_GLOBAL(MaxPCIBus);
     regs->edx = 0x20494350; // "PCI "
-    regs->edi = (u32)entry_pcibios32 + BUILD_BIOS_ADDR;
-    set_code_success(regs);
+    regs->edi = (u32)ನಮೂದು_pcibios32 + BUILD_BIOS_ADDR;
+    ಗಣ_ಸಂಕೇತ_success(regs);
 }
 
 // find pci device
-static void
-handle_1ab102(struct bregs *regs)
+ಸ್ಥಿರ ಶೂನ್ಯ
+handle_1ab102(ರಚನೆ bregs *regs)
 {
     u32 id = (regs->cx << 16) | regs->dx;
-    int count = regs->si;
-    int bus = -1;
-    while (bus < GET_GLOBAL(MaxPCIBus)) {
+    ಪೂರ್ಣಾಂಕ ಎಣಿಕೆ_2 = regs->si;
+    ಪೂರ್ಣಾಂಕ bus = -1;
+    ಆಗ (bus < GET_GLOBAL(MaxPCIBus)) {
         bus++;
-        int bdf;
+        ಪೂರ್ಣಾಂಕ bdf;
         foreachbdf(bdf, bus) {
             u32 v = pci_config_readl(bdf, PCI_VENDOR_ID);
-            if (v != id)
-                continue;
-            if (count--)
-                continue;
+            ಆದರೆ (v != id)
+                ಮುಂದುವರಿ;
+            ಆದರೆ (ಎಣಿಕೆ_2--)
+                ಮುಂದುವರಿ;
             regs->bx = bdf;
-            set_code_success(regs);
-            return;
+            ಗಣ_ಸಂಕೇತ_success(regs);
+            ಹಿಂತಿರುಗಿ;
         }
     }
-    set_code_invalid(regs, RET_DEVICE_NOT_FOUND);
+    ಗಣ_ಸಂಕೇತ_invalid(regs, RET_DEVICE_NOT_ಸಿಕ್ಕಿತು);
 }
 
 // find class code
-static void
-handle_1ab103(struct bregs *regs)
+ಸ್ಥಿರ ಶೂನ್ಯ
+handle_1ab103(ರಚನೆ bregs *regs)
 {
-    int count = regs->si;
+    ಪೂರ್ಣಾಂಕ ಎಣಿಕೆ_2 = regs->si;
     u32 classprog = regs->ecx;
-    int bus = -1;
-    while (bus < GET_GLOBAL(MaxPCIBus)) {
+    ಪೂರ್ಣಾಂಕ bus = -1;
+    ಆಗ (bus < GET_GLOBAL(MaxPCIBus)) {
         bus++;
-        int bdf;
+        ಪೂರ್ಣಾಂಕ bdf;
         foreachbdf(bdf, bus) {
             u32 v = pci_config_readl(bdf, PCI_CLASS_REVISION);
-            if ((v>>8) != classprog)
-                continue;
-            if (count--)
-                continue;
+            ಆದರೆ ((v>>8) != classprog)
+                ಮುಂದುವರಿ;
+            ಆದರೆ (ಎಣಿಕೆ_2--)
+                ಮುಂದುವರಿ;
             regs->bx = bdf;
-            set_code_success(regs);
-            return;
+            ಗಣ_ಸಂಕೇತ_success(regs);
+            ಹಿಂತಿರುಗಿ;
         }
     }
-    set_code_invalid(regs, RET_DEVICE_NOT_FOUND);
+    ಗಣ_ಸಂಕೇತ_invalid(regs, RET_DEVICE_NOT_ಸಿಕ್ಕಿತು);
 }
 
 // read configuration byte
-static void
-handle_1ab108(struct bregs *regs)
+ಸ್ಥಿರ ಶೂನ್ಯ
+handle_1ab108(ರಚನೆ bregs *regs)
 {
     regs->cl = pci_config_readb(regs->bx, regs->di);
-    set_code_success(regs);
+    ಗಣ_ಸಂಕೇತ_success(regs);
 }
 
 // read configuration word
-static void
-handle_1ab109(struct bregs *regs)
+ಸ್ಥಿರ ಶೂನ್ಯ
+handle_1ab109(ರಚನೆ bregs *regs)
 {
     regs->cx = pci_config_readw(regs->bx, regs->di);
-    set_code_success(regs);
+    ಗಣ_ಸಂಕೇತ_success(regs);
 }
 
 // read configuration dword
-static void
-handle_1ab10a(struct bregs *regs)
+ಸ್ಥಿರ ಶೂನ್ಯ
+handle_1ab10a(ರಚನೆ bregs *regs)
 {
     regs->ecx = pci_config_readl(regs->bx, regs->di);
-    set_code_success(regs);
+    ಗಣ_ಸಂಕೇತ_success(regs);
 }
 
 // write configuration byte
-static void
-handle_1ab10b(struct bregs *regs)
+ಸ್ಥಿರ ಶೂನ್ಯ
+handle_1ab10b(ರಚನೆ bregs *regs)
 {
     pci_config_writeb(regs->bx, regs->di, regs->cl);
-    set_code_success(regs);
+    ಗಣ_ಸಂಕೇತ_success(regs);
 }
 
 // write configuration word
-static void
-handle_1ab10c(struct bregs *regs)
+ಸ್ಥಿರ ಶೂನ್ಯ
+handle_1ab10c(ರಚನೆ bregs *regs)
 {
     pci_config_writew(regs->bx, regs->di, regs->cx);
-    set_code_success(regs);
+    ಗಣ_ಸಂಕೇತ_success(regs);
 }
 
 // write configuration dword
-static void
-handle_1ab10d(struct bregs *regs)
+ಸ್ಥಿರ ಶೂನ್ಯ
+handle_1ab10d(ರಚನೆ bregs *regs)
 {
     pci_config_writel(regs->bx, regs->di, regs->ecx);
-    set_code_success(regs);
+    ಗಣ_ಸಂಕೇತ_success(regs);
 }
 
 // get irq routing options
-static void
-handle_1ab10e(struct bregs *regs)
+ಸ್ಥಿರ ಶೂನ್ಯ
+handle_1ab10e(ರಚನೆ bregs *regs)
 {
-    struct pir_header *pirtable_gf = GET_GLOBAL(PirAddr);
-    if (! pirtable_gf) {
-        set_code_invalid(regs, RET_FUNC_NOT_SUPPORTED);
-        return;
+    ರಚನೆ pir_ಶೀರ್ಷಿಕೆ *pirtable_gf = GET_GLOBAL(PirAddr);
+    ಆದರೆ (! pirtable_gf) {
+        ಗಣ_ಸಂಕೇತ_invalid(regs, RET_FUNC_NOT_SUPPORTED);
+        ಹಿಂತಿರುಗಿ;
     }
-    struct pir_header *pirtable_g = GLOBALFLAT2GLOBAL(pirtable_gf);
+    ರಚನೆ pir_ಶೀರ್ಷಿಕೆ *pirtable_g = GLOBALFLAT2GLOBAL(pirtable_gf);
 
-    struct param_s {
-        u16 size;
+    ರಚನೆ param_s {
+        u16 ಗಾತ್ರ_2;
         u16 buf_off;
         u16 buf_seg;
-    } *param_far = (void*)(regs->di+0);
+    } *param_far = (ಶೂನ್ಯ*)(regs->di+0);
 
     // Validate and update size.
-    u16 bufsize = GET_FARVAR(regs->es, param_far->size);
-    u16 pirsize = GET_GLOBAL(pirtable_g->size) - sizeof(struct pir_header);
-    SET_FARVAR(regs->es, param_far->size, pirsize);
-    if (bufsize < pirsize) {
-        set_code_invalid(regs, RET_BUFFER_TOO_SMALL);
-        return;
+    u16 bufsize = GET_FARVAR(regs->es, param_far->ಗಾತ್ರ_2);
+    u16 pirsize = GET_GLOBAL(pirtable_g->ಗಾತ್ರ_2) - ಗಾತ್ರ(ರಚನೆ pir_ಶೀರ್ಷಿಕೆ);
+    ಗಣ_FARVAR(regs->es, param_far->ಗಾತ್ರ_2, pirsize);
+    ಆದರೆ (bufsize < pirsize) {
+        ಗಣ_ಸಂಕೇತ_invalid(regs, RET_ಬಫರ್_TOO_SMALL);
+        ಹಿಂತಿರುಗಿ;
     }
 
     // Get dest buffer.
-    void *buf_far = (void*)(GET_FARVAR(regs->es, param_far->buf_off)+0);
+    ಶೂನ್ಯ *buf_far = (ಶೂನ್ಯ*)(GET_FARVAR(regs->es, param_far->buf_off)+0);
     u16 buf_seg = GET_FARVAR(regs->es, param_far->buf_seg);
 
     // Memcpy pir table slots to dest buffer.
     memcpy_far(buf_seg, buf_far
                , get_global_seg()
-               , (void*)(pirtable_g->slots) + get_global_offset()
+               , (ಶೂನ್ಯ*)(pirtable_g->slots) + get_global_ಸ್ಥಾನಾಂತರ()
                , pirsize);
 
     // XXX - bochs bios sets bx to (1 << 9) | (1 << 11)
     regs->bx = GET_GLOBAL(pirtable_g->exclusive_irqs);
-    set_code_success(regs);
+    ಗಣ_ಸಂಕೇತ_success(regs);
 }
 
-static void
-handle_1ab1XX(struct bregs *regs)
+ಸ್ಥಿರ ಶೂನ್ಯ
+handle_1ab1XX(ರಚನೆ bregs *regs)
 {
-    set_code_unimplemented(regs, RET_FUNC_NOT_SUPPORTED);
+    ಗಣ_ಸಂಕೇತ_unimplemented(regs, RET_FUNC_NOT_SUPPORTED);
 }
 
-void
-handle_1ab1(struct bregs *regs)
+ಶೂನ್ಯ
+handle_1ab1(ರಚನೆ bregs *regs)
 {
     //debug_stub(regs);
 
-    if (! CONFIG_PCIBIOS) {
-        set_invalid(regs);
-        return;
+    ಆದರೆ (! CONFIG_PCIBIOS) {
+        ಗಣ_invalid(regs);
+        ಹಿಂತಿರುಗಿ;
     }
 
-    switch (regs->al) {
-    case 0x01: handle_1ab101(regs); break;
-    case 0x02: handle_1ab102(regs); break;
-    case 0x03: handle_1ab103(regs); break;
-    case 0x08: handle_1ab108(regs); break;
-    case 0x09: handle_1ab109(regs); break;
-    case 0x0a: handle_1ab10a(regs); break;
-    case 0x0b: handle_1ab10b(regs); break;
-    case 0x0c: handle_1ab10c(regs); break;
-    case 0x0d: handle_1ab10d(regs); break;
-    case 0x0e: handle_1ab10e(regs); break;
-    default:   handle_1ab1XX(regs); break;
+    ಆಯ್ಕೆ (regs->al) {
+    ಸ್ಥಿತಿ 0x01: handle_1ab101(regs); ನಿಲ್ಲಿಸು;
+    ಸ್ಥಿತಿ 0x02: handle_1ab102(regs); ನಿಲ್ಲಿಸು;
+    ಸ್ಥಿತಿ 0x03: handle_1ab103(regs); ನಿಲ್ಲಿಸು;
+    ಸ್ಥಿತಿ 0x08: handle_1ab108(regs); ನಿಲ್ಲಿಸು;
+    ಸ್ಥಿತಿ 0x09: handle_1ab109(regs); ನಿಲ್ಲಿಸು;
+    ಸ್ಥಿತಿ 0x0a: handle_1ab10a(regs); ನಿಲ್ಲಿಸು;
+    ಸ್ಥಿತಿ 0x0b: handle_1ab10b(regs); ನಿಲ್ಲಿಸು;
+    ಸ್ಥಿತಿ 0x0c: handle_1ab10c(regs); ನಿಲ್ಲಿಸು;
+    ಸ್ಥಿತಿ 0x0d: handle_1ab10d(regs); ನಿಲ್ಲಿಸು;
+    ಸ್ಥಿತಿ 0x0e: handle_1ab10e(regs); ನಿಲ್ಲಿಸು;
+    ಪೂರ್ವನಿಯೋಜಿತ:   handle_1ab1XX(regs); ನಿಲ್ಲಿಸು;
     }
 }
 
 // Entry point for pci bios functions.
-void VISIBLE16 VISIBLE32SEG
-handle_pcibios(struct bregs *regs)
+ಶೂನ್ಯ VISIBLE16 VISIBLE32SEG
+handle_pcibios(ರಚನೆ bregs *regs)
 {
     debug_enter(regs, DEBUG_HDL_pcibios);
     handle_1ab1(regs);
@@ -217,25 +217,25 @@ handle_pcibios(struct bregs *regs)
  * 32bit interface
  ****************************************************************/
 
-struct bios32_s {
+ರಚನೆ bios32_s {
     u32 signature;
-    u32 entry;
-    u8 version;
-    u8 length;
+    u32 ನಮೂದು;
+    u8 ಆವೃತ್ತಿ_2;
+    u8 ಉದ್ದಳತೆ;
     u8 checksum;
     u8 reserved[5];
 } PACKED;
 
-struct bios32_s BIOS32HEADER __aligned(16) VARFSEG = {
+ರಚನೆ bios32_s BIOS32_ಶೀರ್ಷಿಕೆ __aligned(16) VARFSEG = {
     .signature = 0x5f32335f, // _32_
-    .length = sizeof(BIOS32HEADER) / 16,
+    .ಉದ್ದಳತೆ = ಗಾತ್ರ(BIOS32_ಶೀರ್ಷಿಕೆ) / 16,
 };
 
-void
-bios32_init(void)
+ಶೂನ್ಯ
+bios32_init(ಶೂನ್ಯ)
 {
     dprintf(3, "init bios32\n");
 
-    BIOS32HEADER.entry = (u32)entry_bios32;
-    BIOS32HEADER.checksum -= checksum(&BIOS32HEADER, sizeof(BIOS32HEADER));
+    BIOS32_ಶೀರ್ಷಿಕೆ.ನಮೂದು = (u32)ನಮೂದು_bios32;
+    BIOS32_ಶೀರ್ಷಿಕೆ.checksum -= checksum(&BIOS32_ಶೀರ್ಷಿಕೆ, ಗಾತ್ರ(BIOS32_ಶೀರ್ಷಿಕೆ));
 }

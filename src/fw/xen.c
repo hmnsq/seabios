@@ -4,26 +4,26 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_XEN
-#include "e820map.h" // e820_add
-#include "hw/serialio.h" // DebugOutputPort
-#include "malloc.h" // memalign_high
-#include "memmap.h" // PAGE_SIZE
-#include "output.h" // dprintf
-#include "paravirt.h" // PlatformRunningOn
-#include "string.h" // memcpy
-#include "util.h" // copy_acpi_rsdp
-#include "x86.h" // cpuid
-#include "xen.h" // xen_extraversion_t
+#ಅನ್ತರ್ಭಾವ "config.h" // CONFIG_XEN
+#ಅನ್ತರ್ಭಾವ "e820map.h" // e820_add
+#ಅನ್ತರ್ಭಾವ "hw/serialio.h" // DebugOutputPort
+#ಅನ್ತರ್ಭಾವ "malloc.h" // memalign_high
+#ಅನ್ತರ್ಭಾವ "memmap.h" // PAGE_SIZE
+#ಅನ್ತರ್ಭಾವ "output.h" // dprintf
+#ಅನ್ತರ್ಭಾವ "paravirt.h" // PlatformRunningOn
+#ಅನ್ತರ್ಭಾವ "string.h" // memcpy
+#ಅನ್ತರ್ಭಾವ "util.h" // copy_acpi_rsdp
+#ಅನ್ತರ್ಭಾವ "x86.h" // cpuid
+#ಅನ್ತರ್ಭಾವ "xen.h" // xen_extraversion_t
 
-#define INFO_PHYSICAL_ADDRESS 0x00001000
+#ವ್ಯಾಖ್ಯಾನಿಸು INFO_PHYSICAL_ವಿಳಾಸ 0x00001000
 
-u32 xen_cpuid_base = 0;
-unsigned long xen_hypercall_page = 0;
+u32 xen_cpuid_ತಳ = 0;
+ಚಿಹ್ನೆರಹಿತ ದೀರ್ಘ xen_hypercall_ಪುಟ = 0;
 
-struct xen_seabios_info {
-    char signature[14]; /* XenHVMSeaBIOS\0 */
-    u8 length;     /* Length of this struct */
+ರಚನೆ xen_seabios_info {
+    ಅಕ್ಷರ signature[14]; /* XenHVMSeaBIOS\0 */
+    u8 ಉದ್ದಳತೆ;     /* Length of this struct */
     u8 checksum;   /* Set such that the sum over bytes 0..length == 0 */
     /*
      * Physical address of an array of tables_nr elements.
@@ -40,129 +40,129 @@ struct xen_seabios_info {
     u32 e820_nr;
 } PACKED;
 
-static struct xen_seabios_info *validate_info(void)
+ಸ್ಥಿರ ರಚನೆ xen_seabios_info *validate_info(ಶೂನ್ಯ)
 {
-    struct xen_seabios_info *t = (void *)INFO_PHYSICAL_ADDRESS;
+    ರಚನೆ xen_seabios_info *t = (ಶೂನ್ಯ *)INFO_PHYSICAL_ವಿಳಾಸ;
 
-    if ( memcmp(t->signature, "XenHVMSeaBIOS", 14) ) {
+    ಆದರೆ ( memcmp(t->signature, "XenHVMSeaBIOS", 14) ) {
         dprintf(1, "Bad Xen info signature\n");
-        return NULL;
+        ಹಿಂತಿರುಗಿ ಖಾಲಿ;
     }
 
-    if ( t->length < sizeof(struct xen_seabios_info) ) {
+    ಆದರೆ ( t->ಉದ್ದಳತೆ < ಗಾತ್ರ(ರಚನೆ xen_seabios_info) ) {
         dprintf(1, "Bad Xen info length\n");
-        return NULL;
+        ಹಿಂತಿರುಗಿ ಖಾಲಿ;
     }
 
-    if (checksum(t, t->length) != 0) {
+    ಆದರೆ (checksum(t, t->ಉದ್ದಳತೆ) != 0) {
         dprintf(1, "Bad Xen info checksum\n");
-        return NULL;
+        ಹಿಂತಿರುಗಿ ಖಾಲಿ;
     }
-    return t;
+    ಹಿಂತಿರುಗಿ t;
 }
 
-void xen_preinit(void)
+ಶೂನ್ಯ xen_preinit(ಶೂನ್ಯ)
 {
-    u32 base, eax, ebx, ecx, edx;
-    char signature[13];
+    u32 ತಳ, eax, ebx, ecx, edx;
+    ಅಕ್ಷರ signature[13];
 
-    if (!CONFIG_XEN)
-        return;
+    ಆದರೆ (!CONFIG_XEN)
+        ಹಿಂತಿರುಗಿ;
 
-    for (base = 0x40000000; base < 0x40010000; base += 0x100) {
-        cpuid(base, &eax, &ebx, &ecx, &edx);
-        memcpy(signature + 0, &ebx, 4);
-        memcpy(signature + 4, &ecx, 4);
-        memcpy(signature + 8, &edx, 4);
+    ಗಾಗಿ (ತಳ = 0x40000000; ತಳ < 0x40010000; ತಳ += 0x100) {
+        cpuid(ತಳ, &eax, &ebx, &ecx, &edx);
+        ಸ್ಮರಣೆ_ನಕಲು(signature + 0, &ebx, 4);
+        ಸ್ಮರಣೆ_ನಕಲು(signature + 4, &ecx, 4);
+        ಸ್ಮರಣೆ_ನಕಲು(signature + 8, &edx, 4);
         signature[12] = 0;
 
         dprintf(9, "Found hypervisor signature \"%s\" at %x\n",
-                signature, base);
-        if (strcmp(signature, "XenVMMXenVMM") == 0) {
+                signature, ತಳ);
+        ಆದರೆ (strcmp(signature, "XenVMMXenVMM") == 0) {
             /* Set debug_io_port first, so the following messages work. */
-            code_mutable_preinit();
-            DebugOutputPort = 0xe9;
+            ಸಂಕೇತ_mutable_preinit();
+            Debug_Output_ಪೋರ್ಟ್ = 0xe9;
             debug_banner();
-            dprintf(1, "\nFound Xen hypervisor signature at %x\n", base);
-            if ((eax - base) < 2)
+            dprintf(1, "\nFound Xen hypervisor signature at %x\n", ತಳ);
+            ಆದರೆ ((eax - ತಳ) < 2)
                 panic("Insufficient Xen cpuid leaves. eax=%x at base %x\n",
-                      eax, base);
-            xen_cpuid_base = base;
-            break;
+                      eax, ತಳ);
+            xen_cpuid_ತಳ = ತಳ;
+            ನಿಲ್ಲಿಸು;
         }
     }
-    if (!xen_cpuid_base) {
+    ಆದರೆ (!xen_cpuid_ತಳ) {
         dprintf(1, "No Xen hypervisor found.\n");
-        return;
+        ಹಿಂತಿರುಗಿ;
     }
-    if (validate_info())
+    ಆದರೆ (validate_info())
         PlatformRunningOn = PF_QEMU|PF_XEN;
-    else
+    ಇಲ್ಲದಿದ್ದರೆ
         dprintf(1, "Not enabling Xen support due to lack of Xen info\n");
 }
 
-static int hypercall_xen_version( int cmd, void *arg)
+ಸ್ಥಿರ ಪೂರ್ಣಾಂಕ hypercall_xen_ಆವೃತ್ತಿ( ಪೂರ್ಣಾಂಕ cmd, ಶೂನ್ಯ *arg)
 {
-    return _hypercall2(int, xen_version, cmd, arg);
+    ಹಿಂತಿರುಗಿ _hypercall2(ಪೂರ್ಣಾಂಕ, xen_ಆವೃತ್ತಿ, cmd, arg);
 }
 
 /* Fill in hypercall transfer pages. */
-void xen_hypercall_setup(void)
+ಶೂನ್ಯ xen_hypercall_ಸಿದ್ಧತೆ(ಶೂನ್ಯ)
 {
     u32 eax, ebx, ecx, edx;
     xen_extraversion_t extraversion;
-    unsigned long i;
+    ಚಿಹ್ನೆರಹಿತ ದೀರ್ಘ i;
 
-    if (!runningOnXen())
-        return;
+    ಆದರೆ (!runningOnXen())
+        ಹಿಂತಿರುಗಿ;
 
-    cpuid(xen_cpuid_base + 2, &eax, &ebx, &ecx, &edx);
+    cpuid(xen_cpuid_ತಳ + 2, &eax, &ebx, &ecx, &edx);
 
-    xen_hypercall_page = (unsigned long)memalign_high(PAGE_SIZE, eax*PAGE_SIZE);
-    if (!xen_hypercall_page)
+    xen_hypercall_ಪುಟ = (ಚಿಹ್ನೆರಹಿತ ದೀರ್ಘ)memalign_ಮೇಲಿನ(ಪುಟ_ಗಾತ್ರ, eax*ಪುಟ_ಗಾತ್ರ);
+    ಆದರೆ (!xen_hypercall_ಪುಟ)
         panic("unable to allocate Xen hypercall page\n");
 
-    dprintf(1, "Allocated Xen hypercall page at %lx\n", xen_hypercall_page);
-    for ( i = 0; i < eax; i++ )
-        wrmsr(ebx, xen_hypercall_page + (i << 12) + i);
+    dprintf(1, "Allocated Xen hypercall page at %lx\n", xen_hypercall_ಪುಟ);
+    ಗಾಗಿ ( i = 0; i < eax; i++ )
+        wrmsr(ebx, xen_hypercall_ಪುಟ + (i << 12) + i);
 
     /* Print version information. */
-    cpuid(xen_cpuid_base + 1, &eax, &ebx, &ecx, &edx);
-    hypercall_xen_version(XENVER_extraversion, extraversion);
+    cpuid(xen_cpuid_ತಳ + 1, &eax, &ebx, &ecx, &edx);
+    hypercall_xen_ಆವೃತ್ತಿ(XENVER_extraversion, extraversion);
     dprintf(1, "Detected Xen v%u.%u%s\n", eax >> 16, eax & 0xffff, extraversion);
 }
 
-void xen_biostable_setup(void)
+ಶೂನ್ಯ xen_biostable_ಸಿದ್ಧತೆ(ಶೂನ್ಯ)
 {
-    struct xen_seabios_info *info = validate_info();
-    void **tables;
-    int i;
+    ರಚನೆ xen_seabios_info *info = validate_info();
+    ಶೂನ್ಯ **tables;
+    ಪೂರ್ಣಾಂಕ i;
 
-    if (!info)
+    ಆದರೆ (!info)
         panic("Xen info corrupted\n");
 
-    tables = (void*)info->tables;
+    tables = (ಶೂನ್ಯ*)info->tables;
     dprintf(1, "xen: copy BIOS tables...\n");
-    for (i=0; i<info->tables_nr; i++)
-        copy_table(tables[i]);
+    ಗಾಗಿ (i=0; i<info->tables_nr; i++)
+        copy_ಕೋಷ್ಟಕ(tables[i]);
 
-    find_acpi_features();
+    ಕಂಡುಹಿಡಿ_acpi_features();
 }
 
-void xen_ramsize_preinit(void)
+ಶೂನ್ಯ xen_ramsize_preinit(ಶೂನ್ಯ)
 {
-    int i;
-    struct xen_seabios_info *info = validate_info();
-    struct e820entry *e820;
+    ಪೂರ್ಣಾಂಕ i;
+    ರಚನೆ xen_seabios_info *info = validate_info();
+    ರಚನೆ e820entry *e820;
 
-    if (!info)
+    ಆದರೆ (!info)
         panic("Xen info corrupted\n");
 
     dprintf(1, "xen: copy e820...\n");
 
-    e820 = (struct e820entry *)info->e820;
-    for (i = 0; i < info->e820_nr; i++) {
-        struct e820entry *e = &e820[i];
-        e820_add(e->start, e->size, e->type);
+    e820 = (ರಚನೆ e820entry *)info->e820;
+    ಗಾಗಿ (i = 0; i < info->e820_nr; i++) {
+        ರಚನೆ e820entry *e = &e820[i];
+        e820_ಕೂಡಿಸು(e->ಆರಂಭ, e->ಗಾತ್ರ_2, e->type);
     }
 }

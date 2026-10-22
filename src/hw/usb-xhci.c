@@ -5,151 +5,151 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_*
-#include "malloc.h" // memalign_low
-#include "memmap.h" // PAGE_SIZE
-#include "output.h" // dprintf
-#include "pcidevice.h" // foreachpci
-#include "pci_ids.h" // PCI_CLASS_SERIAL_USB_XHCI
-#include "pci_regs.h" // PCI_BASE_ADDRESS_0
-#include "string.h" // memcpy
-#include "usb.h" // struct usb_s
-#include "usb-xhci.h" // struct ehci_qh
-#include "util.h" // timer_calc
-#include "x86.h" // readl
+#ಅನ್ತರ್ಭಾವ "config.h" // CONFIG_*
+#ಅನ್ತರ್ಭಾವ "malloc.h" // memalign_low
+#ಅನ್ತರ್ಭಾವ "memmap.h" // PAGE_SIZE
+#ಅನ್ತರ್ಭಾವ "output.h" // dprintf
+#ಅನ್ತರ್ಭಾವ "pcidevice.h" // foreachpci
+#ಅನ್ತರ್ಭಾವ "pci_ids.h" // PCI_CLASS_SERIAL_USB_XHCI
+#ಅನ್ತರ್ಭಾವ "pci_regs.h" // PCI_BASE_ADDRESS_0
+#ಅನ್ತರ್ಭಾವ "string.h" // memcpy
+#ಅನ್ತರ್ಭಾವ "usb.h" // struct usb_s
+#ಅನ್ತರ್ಭಾವ "usb-xhci.h" // struct ehci_qh
+#ಅನ್ತರ್ಭಾವ "util.h" // timer_calc
+#ಅನ್ತರ್ಭಾವ "x86.h" // readl
 
 // --------------------------------------------------------------
 // configuration
 
-#define XHCI_RING_ITEMS          16
-#define XHCI_RING_SIZE           (XHCI_RING_ITEMS*sizeof(struct xhci_trb))
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_RING_ವಸ್ತುಗಳು          16
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_RING_ಗಾತ್ರ           (XHCI_RING_ವಸ್ತುಗಳು*ಗಾತ್ರ(ರಚನೆ xhci_trb))
 
 /*
  *  xhci_ring structs are allocated with XHCI_RING_SIZE alignment,
  *  then we can get it from a trb pointer (provided by evt ring).
  */
-#define XHCI_RING(_trb)          \
-    ((struct xhci_ring*)((u32)(_trb) & ~(XHCI_RING_SIZE-1)))
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_RING(_trb)          \
+    ((ರಚನೆ xhci_ring*)((u32)(_trb) & ~(XHCI_RING_ಗಾತ್ರ-1)))
 
 // --------------------------------------------------------------
 // bit definitions
 
-#define XHCI_CMD_RS              (1<<0)
-#define XHCI_CMD_HCRST           (1<<1)
-#define XHCI_CMD_INTE            (1<<2)
-#define XHCI_CMD_HSEE            (1<<3)
-#define XHCI_CMD_LHCRST          (1<<7)
-#define XHCI_CMD_CSS             (1<<8)
-#define XHCI_CMD_CRS             (1<<9)
-#define XHCI_CMD_EWE             (1<<10)
-#define XHCI_CMD_EU3S            (1<<11)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_CMD_RS              (1<<0)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_CMD_HCRST           (1<<1)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_CMD_INTE            (1<<2)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_CMD_HSEE            (1<<3)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_CMD_LHCRST          (1<<7)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_CMD_CSS             (1<<8)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_CMD_CRS             (1<<9)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_CMD_EWE             (1<<10)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_CMD_EU3S            (1<<11)
 
-#define XHCI_STS_HCH             (1<<0)
-#define XHCI_STS_HSE             (1<<2)
-#define XHCI_STS_EINT            (1<<3)
-#define XHCI_STS_PCD             (1<<4)
-#define XHCI_STS_SSS             (1<<8)
-#define XHCI_STS_RSS             (1<<9)
-#define XHCI_STS_SRE             (1<<10)
-#define XHCI_STS_CNR             (1<<11)
-#define XHCI_STS_HCE             (1<<12)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_STS_HCH             (1<<0)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_STS_HSE             (1<<2)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_STS_EINT            (1<<3)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_STS_PCD             (1<<4)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_STS_SSS             (1<<8)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_STS_RSS             (1<<9)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_STS_SRE             (1<<10)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_STS_CNR             (1<<11)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_STS_HCE             (1<<12)
 
-#define XHCI_PORTSC_CCS          (1<<0)
-#define XHCI_PORTSC_PED          (1<<1)
-#define XHCI_PORTSC_OCA          (1<<3)
-#define XHCI_PORTSC_PR           (1<<4)
-#define XHCI_PORTSC_PLS_SHIFT        5
-#define XHCI_PORTSC_PLS_MASK     0xf
-#define XHCI_PORTSC_PP           (1<<9)
-#define XHCI_PORTSC_SPEED_SHIFT      10
-#define XHCI_PORTSC_SPEED_MASK   0xf
-#define XHCI_PORTSC_SPEED_FULL   (1<<10)
-#define XHCI_PORTSC_SPEED_LOW    (2<<10)
-#define XHCI_PORTSC_SPEED_HIGH   (3<<10)
-#define XHCI_PORTSC_SPEED_SUPER  (4<<10)
-#define XHCI_PORTSC_PIC_SHIFT        14
-#define XHCI_PORTSC_PIC_MASK     0x3
-#define XHCI_PORTSC_LWS          (1<<16)
-#define XHCI_PORTSC_CSC          (1<<17)
-#define XHCI_PORTSC_PEC          (1<<18)
-#define XHCI_PORTSC_WRC          (1<<19)
-#define XHCI_PORTSC_OCC          (1<<20)
-#define XHCI_PORTSC_PRC          (1<<21)
-#define XHCI_PORTSC_PLC          (1<<22)
-#define XHCI_PORTSC_CEC          (1<<23)
-#define XHCI_PORTSC_CAS          (1<<24)
-#define XHCI_PORTSC_WCE          (1<<25)
-#define XHCI_PORTSC_WDE          (1<<26)
-#define XHCI_PORTSC_WOE          (1<<27)
-#define XHCI_PORTSC_DR           (1<<30)
-#define XHCI_PORTSC_WPR          (1<<31)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_PORTSC_CCS          (1<<0)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_PORTSC_PED          (1<<1)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_PORTSC_OCA          (1<<3)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_PORTSC_PR           (1<<4)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_PORTSC_PLS_ಸರಿಸು        5
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_PORTSC_PLS_ಮುಖವಾಡ     0xf
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_PORTSC_PP           (1<<9)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_PORTSC_ವೇಗ_ಸರಿಸು      10
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_PORTSC_ವೇಗ_ಮುಖವಾಡ   0xf
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_PORTSC_ವೇಗ_ತುಂಬಿದ   (1<<10)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_PORTSC_ವೇಗ_ಕೆಳಗಿನ    (2<<10)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_PORTSC_ವೇಗ_ಮೇಲಿನ   (3<<10)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_PORTSC_ವೇಗ_SUPER  (4<<10)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_PORTSC_PIC_ಸರಿಸು        14
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_PORTSC_PIC_ಮುಖವಾಡ     0x3
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_PORTSC_LWS          (1<<16)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_PORTSC_CSC          (1<<17)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_PORTSC_PEC          (1<<18)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_PORTSC_WRC          (1<<19)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_PORTSC_OCC          (1<<20)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_PORTSC_PRC          (1<<21)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_PORTSC_PLC          (1<<22)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_PORTSC_CEC          (1<<23)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_PORTSC_CAS          (1<<24)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_PORTSC_WCE          (1<<25)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_PORTSC_WDE          (1<<26)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_PORTSC_WOE          (1<<27)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_PORTSC_DR           (1<<30)
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_PORTSC_WPR          (1<<31)
 
-#define TRB_C               (1<<0)
-#define TRB_TYPE_SHIFT          10
-#define TRB_TYPE_MASK       0x3f
-#define TRB_TYPE(t)         (((t) >> TRB_TYPE_SHIFT) & TRB_TYPE_MASK)
+#ವ್ಯಾಖ್ಯಾನಿಸು TRB_C               (1<<0)
+#ವ್ಯಾಖ್ಯಾನಿಸು TRB_TYPE_ಸರಿಸು          10
+#ವ್ಯಾಖ್ಯಾನಿಸು TRB_TYPE_ಮುಖವಾಡ       0x3f
+#ವ್ಯಾಖ್ಯಾನಿಸು TRB_TYPE(t)         (((t) >> TRB_TYPE_ಸರಿಸು) & TRB_TYPE_ಮುಖವಾಡ)
 
-#define TRB_EV_ED           (1<<2)
+#ವ್ಯಾಖ್ಯಾನಿಸು TRB_EV_ED           (1<<2)
 
-#define TRB_TR_ENT          (1<<1)
-#define TRB_TR_ISP          (1<<2)
-#define TRB_TR_NS           (1<<3)
-#define TRB_TR_CH           (1<<4)
-#define TRB_TR_IOC          (1<<5)
-#define TRB_TR_IDT          (1<<6)
-#define TRB_TR_TBC_SHIFT        7
-#define TRB_TR_TBC_MASK     0x3
-#define TRB_TR_BEI          (1<<9)
-#define TRB_TR_TLBPC_SHIFT      16
-#define TRB_TR_TLBPC_MASK   0xf
-#define TRB_TR_FRAMEID_SHIFT    20
-#define TRB_TR_FRAMEID_MASK 0x7ff
-#define TRB_TR_SIA          (1<<31)
+#ವ್ಯಾಖ್ಯಾನಿಸು TRB_TR_ENT          (1<<1)
+#ವ್ಯಾಖ್ಯಾನಿಸು TRB_TR_ISP          (1<<2)
+#ವ್ಯಾಖ್ಯಾನಿಸು TRB_TR_NS           (1<<3)
+#ವ್ಯಾಖ್ಯಾನಿಸು TRB_TR_CH           (1<<4)
+#ವ್ಯಾಖ್ಯಾನಿಸು TRB_TR_IOC          (1<<5)
+#ವ್ಯಾಖ್ಯಾನಿಸು TRB_TR_IDT          (1<<6)
+#ವ್ಯಾಖ್ಯಾನಿಸು TRB_TR_TBC_ಸರಿಸು        7
+#ವ್ಯಾಖ್ಯಾನಿಸು TRB_TR_TBC_ಮುಖವಾಡ     0x3
+#ವ್ಯಾಖ್ಯಾನಿಸು TRB_TR_BEI          (1<<9)
+#ವ್ಯಾಖ್ಯಾನಿಸು TRB_TR_TLBPC_ಸರಿಸು      16
+#ವ್ಯಾಖ್ಯಾನಿಸು TRB_TR_TLBPC_ಮುಖವಾಡ   0xf
+#ವ್ಯಾಖ್ಯಾನಿಸು TRB_TR_FRAMEID_ಸರಿಸು    20
+#ವ್ಯಾಖ್ಯಾನಿಸು TRB_TR_FRAMEID_ಮುಖವಾಡ 0x7ff
+#ವ್ಯಾಖ್ಯಾನಿಸು TRB_TR_SIA          (1<<31)
 
-#define TRB_TR_DIR          (1<<16)
+#ವ್ಯಾಖ್ಯಾನಿಸು TRB_TR_DIR          (1<<16)
 
-#define TRB_CR_SLOTID_SHIFT     24
-#define TRB_CR_SLOTID_MASK  0xff
-#define TRB_CR_EPID_SHIFT       16
-#define TRB_CR_EPID_MASK    0x1f
+#ವ್ಯಾಖ್ಯಾನಿಸು TRB_CR_SLOTID_ಸರಿಸು     24
+#ವ್ಯಾಖ್ಯಾನಿಸು TRB_CR_SLOTID_ಮುಖವಾಡ  0xff
+#ವ್ಯಾಖ್ಯಾನಿಸು TRB_CR_EPID_ಸರಿಸು       16
+#ವ್ಯಾಖ್ಯಾನಿಸು TRB_CR_EPID_ಮುಖವಾಡ    0x1f
 
-#define TRB_CR_BSR          (1<<9)
-#define TRB_CR_DC           (1<<9)
+#ವ್ಯಾಖ್ಯಾನಿಸು TRB_CR_BSR          (1<<9)
+#ವ್ಯಾಖ್ಯಾನಿಸು TRB_CR_DC           (1<<9)
 
-#define TRB_LK_TC           (1<<1)
+#ವ್ಯಾಖ್ಯಾನಿಸು TRB_LK_TC           (1<<1)
 
-#define TRB_INTR_SHIFT          22
-#define TRB_INTR_MASK       0x3ff
-#define TRB_INTR(t)         (((t).status >> TRB_INTR_SHIFT) & TRB_INTR_MASK)
+#ವ್ಯಾಖ್ಯಾನಿಸು TRB_INTR_ಸರಿಸು          22
+#ವ್ಯಾಖ್ಯಾನಿಸು TRB_INTR_ಮುಖವಾಡ       0x3ff
+#ವ್ಯಾಖ್ಯಾನಿಸು TRB_INTR(t)         (((t).ಸ್ಥಿತಿ_2 >> TRB_INTR_ಸರಿಸು) & TRB_INTR_ಮುಖವಾಡ)
 
-typedef enum TRBType {
+ಪ್ರಕಾರವ್ಯಾಖ್ಯೆ ಎಣಿಕೆ TRBType {
     TRB_RESERVED = 0,
-    TR_NORMAL,
-    TR_SETUP,
-    TR_DATA,
-    TR_STATUS,
+    TR_ಸಾಮಾನ್ಯ,
+    TR_ಸಿದ್ಧತೆ,
+    TR_ದತ್ತಾಂಶ,
+    TR_ಸ್ಥಿತಿ,
     TR_ISOCH,
     TR_LINK,
     TR_EVDATA,
     TR_NOOP,
-    CR_ENABLE_SLOT,
-    CR_DISABLE_SLOT,
-    CR_ADDRESS_DEVICE,
+    CR_ENABLE_ಸ್ಥಾನ,
+    CR_DISABLE_ಸ್ಥಾನ,
+    CR_ವಿಳಾಸ_DEVICE,
     CR_CONFIGURE_ENDPOINT,
     CR_EVALUATE_CONTEXT,
     CR_RESET_ENDPOINT,
     CR_STOP_ENDPOINT,
-    CR_SET_TR_DEQUEUE,
+    CR_ಗಣ_TR_ಸರತಿಯಿಂದ_ತೆಗೆ,
     CR_RESET_DEVICE,
     CR_FORCE_EVENT,
     CR_NEGOTIATE_BW,
-    CR_SET_LATENCY_TOLERANCE,
-    CR_GET_PORT_BANDWIDTH,
-    CR_FORCE_HEADER,
+    CR_ಗಣ_LATENCY_TOLERANCE,
+    CR_GET_ಪೋರ್ಟ್_BANDWIDTH,
+    CR_FORCE_ಶೀರ್ಷಿಕೆ,
     CR_NOOP,
     ER_TRANSFER = 32,
     ER_COMMAND_COMPLETE,
-    ER_PORT_STATUS_CHANGE,
+    ER_ಪೋರ್ಟ್_ಸ್ಥಿತಿ_CHANGE,
     ER_BANDWIDTH_REQUEST,
     ER_DOORBELL,
     ER_HOST_CONTROLLER,
@@ -157,10 +157,10 @@ typedef enum TRBType {
     ER_MFINDEX_WRAP,
 } TRBType;
 
-typedef enum TRBCCode {
+ಪ್ರಕಾರವ್ಯಾಖ್ಯೆ ಎಣಿಕೆ TRBCCode {
     CC_INVALID = 0,
     CC_SUCCESS,
-    CC_DATA_BUFFER_ERROR,
+    CC_ದತ್ತಾಂಶ_ಬಫರ್_ERROR,
     CC_BABBLE_DETECTED,
     CC_USB_TRANSACTION_ERROR,
     CC_TRB_ERROR,
@@ -168,34 +168,34 @@ typedef enum TRBCCode {
     CC_RESOURCE_ERROR,
     CC_BANDWIDTH_ERROR,
     CC_NO_SLOTS_ERROR,
-    CC_INVALID_STREAM_TYPE_ERROR,
-    CC_SLOT_NOT_ENABLED_ERROR,
+    CC_INVALID_ಹರಿವು_TYPE_ERROR,
+    CC_ಸ್ಥಾನ_NOT_ENABLED_ERROR,
     CC_EP_NOT_ENABLED_ERROR,
     CC_SHORT_PACKET,
     CC_RING_UNDERRUN,
     CC_RING_OVERRUN,
-    CC_VF_ER_FULL,
+    CC_VF_ER_ತುಂಬಿದ,
     CC_PARAMETER_ERROR,
     CC_BANDWIDTH_OVERRUN,
     CC_CONTEXT_STATE_ERROR,
     CC_NO_PING_RESPONSE_ERROR,
-    CC_EVENT_RING_FULL_ERROR,
+    CC_EVENT_RING_ತುಂಬಿದ_ERROR,
     CC_INCOMPATIBLE_DEVICE_ERROR,
     CC_MISSED_SERVICE_ERROR,
     CC_COMMAND_RING_STOPPED,
     CC_COMMAND_ABORTED,
     CC_STOPPED,
-    CC_STOPPED_LENGTH_INVALID,
+    CC_STOPPED_ಉದ್ದಳತೆ_INVALID,
     CC_MAX_EXIT_LATENCY_TOO_LARGE_ERROR = 29,
-    CC_ISOCH_BUFFER_OVERRUN = 31,
-    CC_EVENT_LOST_ERROR,
+    CC_ISOCH_ಬಫರ್_OVERRUN = 31,
+    CC_EVENT_ಕಳೆದುಹೋದ_ERROR,
     CC_UNDEFINED_ERROR,
-    CC_INVALID_STREAM_ID_ERROR,
+    CC_INVALID_ಹರಿವು_ID_ERROR,
     CC_SECONDARY_BANDWIDTH_ERROR,
-    CC_SPLIT_TRANSACTION_ERROR
+    CC_ವಿಭಜಿಸು_TRANSACTION_ERROR
 } TRBCCode;
 
-enum {
+ಎಣಿಕೆ {
     PLS_U0              =  0,
     PLS_U1              =  1,
     PLS_U2              =  2,
@@ -206,70 +206,70 @@ enum {
     PLS_POLLING         =  7,
     PLS_RECOVERY        =  8,
     PLS_HOT_RESET       =  9,
-    PLS_COMPILANCE_MODE = 10,
-    PLS_TEST_MODE       = 11,
+    PLS_COMPILANCE_ಬಹುಲಕ = 10,
+    PLS_TEST_ಬಹುಲಕ       = 11,
     PLS_RESUME          = 15,
 };
 
-#define xhci_get_field(data, field)             \
-    (((data) >> field##_SHIFT) & field##_MASK)
+#ವ್ಯಾಖ್ಯಾನಿಸು xhci_get_ಕ್ಷೇತ್ರ(ದತ್ತಾಂಶ, ಕ್ಷೇತ್ರ)             \
+    (((ದತ್ತಾಂಶ) >> ಕ್ಷೇತ್ರ##_SHIFT) & ಕ್ಷೇತ್ರ##_MASK)
 
 // --------------------------------------------------------------
 // state structs
 
-struct xhci_ring {
-    struct xhci_trb      ring[XHCI_RING_ITEMS];
-    struct xhci_trb      evt;
+ರಚನೆ xhci_ring {
+    ರಚನೆ xhci_trb      ring[XHCI_RING_ವಸ್ತುಗಳು];
+    ರಚನೆ xhci_trb      evt;
     u32                  eidx;
     u32                  nidx;
     u32                  cs;
-    struct mutex_s       lock;
+    ರಚನೆ mutex_s       ಬೀಗ_2;
 };
 
-struct xhci_portmap {
-    u8 start;
-    u8 count;
+ರಚನೆ xhci_portmap {
+    u8 ಆರಂಭ;
+    u8 ಎಣಿಕೆ_2;
 };
 
-struct usb_xhci_s {
-    struct usb_s         usb;
+ರಚನೆ usb_xhci_s {
+    ರಚನೆ usb_s         usb;
 
     /* devinfo */
     u32                  xcap;
     u32                  ports;
     u32                  slots;
     u8                   context64;
-    struct xhci_portmap  usb2;
-    struct xhci_portmap  usb3;
+    ರಚನೆ xhci_portmap  usb2;
+    ರಚನೆ xhci_portmap  usb3;
 
     /* xhci registers */
-    struct xhci_caps     *caps;
-    struct xhci_op       *op;
-    struct xhci_pr       *pr;
-    struct xhci_ir       *ir;
-    struct xhci_db       *db;
+    ರಚನೆ xhci_caps     *caps;
+    ರಚನೆ xhci_op       *op;
+    ರಚನೆ xhci_pr       *pr;
+    ರಚನೆ xhci_ir       *ir;
+    ರಚನೆ xhci_db       *db;
 
     /* xhci data structures */
-    struct xhci_devlist  *devs;
-    struct xhci_ring     *cmds;
-    struct xhci_ring     *evts;
-    struct xhci_er_seg   *eseg;
+    ರಚನೆ xhci_devlist  *devs;
+    ರಚನೆ xhci_ring     *cmds;
+    ರಚನೆ xhci_ring     *evts;
+    ರಚನೆ xhci_er_seg   *eseg;
 };
 
-struct xhci_pipe {
-    struct xhci_ring     reqs;
+ರಚನೆ xhci_pipe {
+    ರಚನೆ xhci_ring     reqs;
 
-    struct usb_pipe      pipe;
+    ರಚನೆ usb_pipe      pipe;
     u32                  slotid;
     u32                  epid;
-    void                 *buf;
-    int                  bufused;
+    ಶೂನ್ಯ                 *buf;
+    ಪೂರ್ಣಾಂಕ                  bufused;
 };
 
 // --------------------------------------------------------------
 // tables
 
-static const char *speed_name[16] = {
+ಸ್ಥಿರ ಸ್ಥಿರಾಂಕ ಅಕ್ಷರ *ವೇಗ_name[16] = {
     [ 0 ] = " - ",
     [ 1 ] = "Full",
     [ 2 ] = "Low",
@@ -277,7 +277,7 @@ static const char *speed_name[16] = {
     [ 4 ] = "Super",
 };
 
-static const int speed_from_xhci[16] = {
+ಸ್ಥಿರ ಸ್ಥಿರಾಂಕ ಪೂರ್ಣಾಂಕ ವೇಗ_from_xhci[16] = {
     [ 0 ] = -1,
     [ 1 ] = USB_FULLSPEED,
     [ 2 ] = USB_LOWSPEED,
@@ -286,25 +286,25 @@ static const int speed_from_xhci[16] = {
     [ 5 ... 15 ] = -1,
 };
 
-static const int speed_to_xhci[] = {
+ಸ್ಥಿರ ಸ್ಥಿರಾಂಕ ಪೂರ್ಣಾಂಕ ವೇಗ_ಗಮ್ಯ_xhci[] = {
     [ USB_FULLSPEED  ] = 1,
     [ USB_LOWSPEED   ] = 2,
     [ USB_HIGHSPEED  ] = 3,
     [ USB_SUPERSPEED ] = 4,
 };
 
-static int wait_bit(u32 *reg, u32 mask, int value, u32 timeout)
+ಸ್ಥಿರ ಪೂರ್ಣಾಂಕ wait_ಬಿಟ್(u32 *reg, u32 ಮುಖವಾಡ, ಪೂರ್ಣಾಂಕ ಮೌಲ್ಯ, u32 timeout)
 {
-    u32 end = timer_calc(timeout);
+    u32 ಕೊನೆ = timer_calc(timeout);
 
-    while ((readl(reg) & mask) != value) {
-        if (timer_check(end)) {
+    ಆಗ ((readl(reg) & ಮುಖವಾಡ) != ಮೌಲ್ಯ) {
+        ಆದರೆ (timer_check(ಕೊನೆ)) {
             warn_timeout();
-            return -1;
+            ಹಿಂತಿರುಗಿ -1;
         }
         yield();
     }
-    return 0;
+    ಹಿಂತಿರುಗಿ 0;
 }
 
 
@@ -312,99 +312,99 @@ static int wait_bit(u32 *reg, u32 mask, int value, u32 timeout)
  * Root hub
  ****************************************************************/
 
-#define XHCI_TIME_POSTPOWER 20
+#ವ್ಯಾಖ್ಯಾನಿಸು XHCI_ಸಮಯ_POSTPOWER 20
 
 // Check if device attached to port
-static void
-xhci_print_port_state(int loglevel, const char *prefix, u32 port, u32 portsc)
+ಸ್ಥಿರ ಶೂನ್ಯ
+xhci_print_ಪೋರ್ಟ್_state(ಪೂರ್ಣಾಂಕ loglevel, ಸ್ಥಿರಾಂಕ ಅಕ್ಷರ *ಪೂರ್ವಪ್ರತ್ಯಯ, u32 ಪೋರ್ಟ್, u32 portsc)
 {
-    u32 pls = xhci_get_field(portsc, XHCI_PORTSC_PLS);
-    u32 speed = xhci_get_field(portsc, XHCI_PORTSC_SPEED);
+    u32 pls = xhci_get_ಕ್ಷೇತ್ರ(portsc, XHCI_PORTSC_PLS);
+    u32 ವೇಗ = xhci_get_ಕ್ಷೇತ್ರ(portsc, XHCI_PORTSC_ವೇಗ);
 
     dprintf(loglevel, "%s port #%d: 0x%08x,%s%s pls %d, speed %d [%s]\n",
-            prefix, port + 1, portsc,
+            ಪೂರ್ವಪ್ರತ್ಯಯ, ಪೋರ್ಟ್ + 1, portsc,
             (portsc & XHCI_PORTSC_PP)  ? " powered," : "",
             (portsc & XHCI_PORTSC_PED) ? " enabled," : "",
-            pls, speed, speed_name[speed]);
+            pls, ವೇಗ, ವೇಗ_name[ವೇಗ]);
 }
 
-static int
-xhci_hub_detect(struct usbhub_s *hub, u32 port)
+ಸ್ಥಿರ ಪೂರ್ಣಾಂಕ
+xhci_hub_detect(ರಚನೆ usbhub_s *hub, u32 ಪೋರ್ಟ್)
 {
-    struct usb_xhci_s *xhci = container_of(hub->cntl, struct usb_xhci_s, usb);
-    u32 portsc = readl(&xhci->pr[port].portsc);
-    return (portsc & XHCI_PORTSC_CCS) ? 1 : 0;
+    ರಚನೆ usb_xhci_s *xhci = container_ದ(hub->cntl, ರಚನೆ usb_xhci_s, usb);
+    u32 portsc = readl(&xhci->pr[ಪೋರ್ಟ್].portsc);
+    ಹಿಂತಿರುಗಿ (portsc & XHCI_PORTSC_CCS) ? 1 : 0;
 }
 
 // Reset device on port
-static int
-xhci_hub_reset(struct usbhub_s *hub, u32 port)
+ಸ್ಥಿರ ಪೂರ್ಣಾಂಕ
+xhci_hub_reset(ರಚನೆ usbhub_s *hub, u32 ಪೋರ್ಟ್)
 {
-    struct usb_xhci_s *xhci = container_of(hub->cntl, struct usb_xhci_s, usb);
-    u32 portsc = readl(&xhci->pr[port].portsc);
-    if (!(portsc & XHCI_PORTSC_CCS))
+    ರಚನೆ usb_xhci_s *xhci = container_ದ(hub->cntl, ರಚನೆ usb_xhci_s, usb);
+    u32 portsc = readl(&xhci->pr[ಪೋರ್ಟ್].portsc);
+    ಆದರೆ (!(portsc & XHCI_PORTSC_CCS))
         // Device no longer connected?!
-        return -1;
+        ಹಿಂತಿರುಗಿ -1;
 
-    switch (xhci_get_field(portsc, XHCI_PORTSC_PLS)) {
-    case PLS_U0:
+    ಆಯ್ಕೆ (xhci_get_ಕ್ಷೇತ್ರ(portsc, XHCI_PORTSC_PLS)) {
+    ಸ್ಥಿತಿ PLS_U0:
         // A USB3 port - controller automatically performs reset
-        break;
-    case PLS_POLLING:
+        ನಿಲ್ಲಿಸು;
+    ಸ್ಥಿತಿ PLS_POLLING:
         // A USB2 port - perform device reset
-        xhci_print_port_state(3, __func__, port, portsc);
-        writel(&xhci->pr[port].portsc, portsc | XHCI_PORTSC_PR);
-        break;
-    default:
-        return -1;
+        xhci_print_ಪೋರ್ಟ್_state(3, __func__, ಪೋರ್ಟ್, portsc);
+        writel(&xhci->pr[ಪೋರ್ಟ್].portsc, portsc | XHCI_PORTSC_PR);
+        ನಿಲ್ಲಿಸು;
+    ಪೂರ್ವನಿಯೋಜಿತ:
+        ಹಿಂತಿರುಗಿ -1;
     }
 
     // Wait for device to complete reset and be enabled
-    u32 end = timer_calc(100);
-    for (;;) {
-        portsc = readl(&xhci->pr[port].portsc);
-        if (!(portsc & XHCI_PORTSC_CCS))
+    u32 ಕೊನೆ = timer_calc(100);
+    ಗಾಗಿ (;;) {
+        portsc = readl(&xhci->pr[ಪೋರ್ಟ್].portsc);
+        ಆದರೆ (!(portsc & XHCI_PORTSC_CCS))
             // Device disconnected during reset
-            return -1;
-        if (portsc & XHCI_PORTSC_PED)
+            ಹಿಂತಿರುಗಿ -1;
+        ಆದರೆ (portsc & XHCI_PORTSC_PED)
             // Reset complete
-            break;
-        if (timer_check(end)) {
+            ನಿಲ್ಲಿಸು;
+        ಆದರೆ (timer_check(ಕೊನೆ)) {
             warn_timeout();
-            return -1;
+            ಹಿಂತಿರುಗಿ -1;
         }
         yield();
     }
 
-    int rc = speed_from_xhci[xhci_get_field(portsc, XHCI_PORTSC_SPEED)];
-    xhci_print_port_state(1, "XHCI", port, portsc);
-    return rc;
+    ಪೂರ್ಣಾಂಕ rc = ವೇಗ_from_xhci[xhci_get_ಕ್ಷೇತ್ರ(portsc, XHCI_PORTSC_ವೇಗ)];
+    xhci_print_ಪೋರ್ಟ್_state(1, "XHCI", ಪೋರ್ಟ್, portsc);
+    ಹಿಂತಿರುಗಿ rc;
 }
 
-static int
-xhci_hub_portmap(struct usbhub_s *hub, u32 vport)
+ಸ್ಥಿರ ಪೂರ್ಣಾಂಕ
+xhci_hub_portmap(ರಚನೆ usbhub_s *hub, u32 vport)
 {
-    struct usb_xhci_s *xhci = container_of(hub->cntl, struct usb_xhci_s, usb);
+    ರಚನೆ usb_xhci_s *xhci = container_ದ(hub->cntl, ರಚನೆ usb_xhci_s, usb);
     u32 pport = vport + 1;
 
-    if (vport + 1 >= xhci->usb3.start &&
-        vport + 1 < xhci->usb3.start + xhci->usb3.count)
-        pport = vport + 2 - xhci->usb3.start;
+    ಆದರೆ (vport + 1 >= xhci->usb3.ಆರಂಭ &&
+        vport + 1 < xhci->usb3.ಆರಂಭ + xhci->usb3.ಎಣಿಕೆ_2)
+        pport = vport + 2 - xhci->usb3.ಆರಂಭ;
 
-    if (vport + 1 >= xhci->usb2.start &&
-        vport + 1 < xhci->usb2.start + xhci->usb2.count)
-        pport = vport + 2 - xhci->usb2.start;
+    ಆದರೆ (vport + 1 >= xhci->usb2.ಆರಂಭ &&
+        vport + 1 < xhci->usb2.ಆರಂಭ + xhci->usb2.ಎಣಿಕೆ_2)
+        pport = vport + 2 - xhci->usb2.ಆರಂಭ;
 
-    return pport;
+    ಹಿಂತಿರುಗಿ pport;
 }
 
-static void
-xhci_hub_disconnect(struct usbhub_s *hub, u32 port)
+ಸ್ಥಿರ ಶೂನ್ಯ
+xhci_hub_disconnect(ರಚನೆ usbhub_s *hub, u32 ಪೋರ್ಟ್)
 {
     // XXX - should turn the port power off.
 }
 
-static struct usbhub_op_s xhci_hub_ops = {
+ಸ್ಥಿರ ರಚನೆ usbhub_op_s xhci_hub_ops = {
     .detect = xhci_hub_detect,
     .reset = xhci_hub_reset,
     .portmap = xhci_hub_portmap,
@@ -412,19 +412,19 @@ static struct usbhub_op_s xhci_hub_ops = {
 };
 
 // Find any devices connected to the root hub.
-static int
-xhci_check_ports(struct usb_xhci_s *xhci)
+ಸ್ಥಿರ ಪೂರ್ಣಾಂಕ
+xhci_check_ports(ರಚನೆ usb_xhci_s *xhci)
 {
     // Wait for port power to stabilize.
-    msleep(XHCI_TIME_POSTPOWER);
+    msleep(XHCI_ಸಮಯ_POSTPOWER);
 
-    struct usbhub_s hub;
-    memset(&hub, 0, sizeof(hub));
+    ರಚನೆ usbhub_s hub;
+    memset(&hub, 0, ಗಾತ್ರ(hub));
     hub.cntl = &xhci->usb;
     hub.portcount = xhci->ports;
     hub.op = &xhci_hub_ops;
     usb_enumerate(&hub);
-    return hub.devcount;
+    ಹಿಂತಿರುಗಿ hub.devcount;
 }
 
 
@@ -432,80 +432,80 @@ xhci_check_ports(struct usb_xhci_s *xhci)
  * Setup
  ****************************************************************/
 
-static void
-xhci_free_pipes(struct usb_xhci_s *xhci)
+ಸ್ಥಿರ ಶೂನ್ಯ
+xhci_free_pipes(ರಚನೆ usb_xhci_s *xhci)
 {
     // XXX - should walk list of pipes and free unused pipes.
 }
 
-static void
-configure_xhci(void *data)
+ಸ್ಥಿರ ಶೂನ್ಯ
+configure_xhci(ಶೂನ್ಯ *ದತ್ತಾಂಶ)
 {
-    struct usb_xhci_s *xhci = data;
+    ರಚನೆ usb_xhci_s *xhci = ದತ್ತಾಂಶ;
     u32 reg;
 
-    xhci->devs = memalign_high(64, sizeof(*xhci->devs) * (xhci->slots + 1));
-    xhci->eseg = memalign_high(64, sizeof(*xhci->eseg));
-    xhci->cmds = memalign_high(XHCI_RING_SIZE, sizeof(*xhci->cmds));
-    xhci->evts = memalign_high(XHCI_RING_SIZE, sizeof(*xhci->evts));
-    if (!xhci->devs || !xhci->cmds || !xhci->evts || !xhci->eseg) {
+    xhci->devs = memalign_ಮೇಲಿನ(64, ಗಾತ್ರ(*xhci->devs) * (xhci->slots + 1));
+    xhci->eseg = memalign_ಮೇಲಿನ(64, ಗಾತ್ರ(*xhci->eseg));
+    xhci->cmds = memalign_ಮೇಲಿನ(XHCI_RING_ಗಾತ್ರ, ಗಾತ್ರ(*xhci->cmds));
+    xhci->evts = memalign_ಮೇಲಿನ(XHCI_RING_ಗಾತ್ರ, ಗಾತ್ರ(*xhci->evts));
+    ಆದರೆ (!xhci->devs || !xhci->cmds || !xhci->evts || !xhci->eseg) {
         warn_noalloc();
-        goto fail;
+        ಹೋಗು fail;
     }
-    memset(xhci->devs, 0, sizeof(*xhci->devs) * (xhci->slots + 1));
-    memset(xhci->cmds, 0, sizeof(*xhci->cmds));
-    memset(xhci->evts, 0, sizeof(*xhci->evts));
-    memset(xhci->eseg, 0, sizeof(*xhci->eseg));
+    memset(xhci->devs, 0, ಗಾತ್ರ(*xhci->devs) * (xhci->slots + 1));
+    memset(xhci->cmds, 0, ಗಾತ್ರ(*xhci->cmds));
+    memset(xhci->evts, 0, ಗಾತ್ರ(*xhci->evts));
+    memset(xhci->eseg, 0, ಗಾತ್ರ(*xhci->eseg));
 
     reg = readl(&xhci->op->usbcmd);
-    if (reg & XHCI_CMD_RS) {
+    ಆದರೆ (reg & XHCI_CMD_RS) {
         reg &= ~XHCI_CMD_RS;
         writel(&xhci->op->usbcmd, reg);
-        if (wait_bit(&xhci->op->usbsts, XHCI_STS_HCH, XHCI_STS_HCH, 32) != 0)
-            goto fail;
+        ಆದರೆ (wait_ಬಿಟ್(&xhci->op->usbsts, XHCI_STS_HCH, XHCI_STS_HCH, 32) != 0)
+            ಹೋಗು fail;
     }
 
     dprintf(3, "%s: resetting\n", __func__);
     writel(&xhci->op->usbcmd, XHCI_CMD_HCRST);
-    if (wait_bit(&xhci->op->usbcmd, XHCI_CMD_HCRST, 0, 1000) != 0)
-        goto fail;
-    if (wait_bit(&xhci->op->usbsts, XHCI_STS_CNR, 0, 1000) != 0)
-        goto fail;
+    ಆದರೆ (wait_ಬಿಟ್(&xhci->op->usbcmd, XHCI_CMD_HCRST, 0, 1000) != 0)
+        ಹೋಗು fail;
+    ಆದರೆ (wait_ಬಿಟ್(&xhci->op->usbsts, XHCI_STS_CNR, 0, 1000) != 0)
+        ಹೋಗು fail;
 
     writel(&xhci->op->config, xhci->slots);
-    writel(&xhci->op->dcbaap_low, (u32)xhci->devs);
-    writel(&xhci->op->dcbaap_high, 0);
-    writel(&xhci->op->crcr_low, (u32)xhci->cmds | 1);
-    writel(&xhci->op->crcr_high, 0);
+    writel(&xhci->op->dcbaap_ಕೆಳಗಿನ, (u32)xhci->devs);
+    writel(&xhci->op->dcbaap_ಮೇಲಿನ, 0);
+    writel(&xhci->op->crcr_ಕೆಳಗಿನ, (u32)xhci->cmds | 1);
+    writel(&xhci->op->crcr_ಮೇಲಿನ, 0);
     xhci->cmds->cs = 1;
 
-    xhci->eseg->ptr_low = (u32)xhci->evts;
-    xhci->eseg->ptr_high = 0;
-    xhci->eseg->size = XHCI_RING_ITEMS;
+    xhci->eseg->ptr_ಕೆಳಗಿನ = (u32)xhci->evts;
+    xhci->eseg->ptr_ಮೇಲಿನ = 0;
+    xhci->eseg->ಗಾತ್ರ_2 = XHCI_RING_ವಸ್ತುಗಳು;
     writel(&xhci->ir->erstsz, 1);
-    writel(&xhci->ir->erdp_low, (u32)xhci->evts);
-    writel(&xhci->ir->erdp_high, 0);
-    writel(&xhci->ir->erstba_low, (u32)xhci->eseg);
-    writel(&xhci->ir->erstba_high, 0);
+    writel(&xhci->ir->erdp_ಕೆಳಗಿನ, (u32)xhci->evts);
+    writel(&xhci->ir->erdp_ಮೇಲಿನ, 0);
+    writel(&xhci->ir->erstba_ಕೆಳಗಿನ, (u32)xhci->eseg);
+    writel(&xhci->ir->erstba_ಮೇಲಿನ, 0);
     xhci->evts->cs = 1;
 
     reg = readl(&xhci->caps->hcsparams2);
     u32 spb = (reg >> 21 & 0x1f) << 5 | reg >> 27;
-    if (spb) {
+    ಆದರೆ (spb) {
         dprintf(3, "%s: setup %d scratch pad buffers\n", __func__, spb);
-        u64 *spba = memalign_high(64, sizeof(*spba) * spb);
-        void *pad = memalign_high(PAGE_SIZE, PAGE_SIZE * spb);
-        if (!spba || !pad) {
+        u64 *spba = memalign_ಮೇಲಿನ(64, ಗಾತ್ರ(*spba) * spb);
+        ಶೂನ್ಯ *pad = memalign_ಮೇಲಿನ(ಪುಟ_ಗಾತ್ರ, ಪುಟ_ಗಾತ್ರ * spb);
+        ಆದರೆ (!spba || !pad) {
             warn_noalloc();
-            free(spba);
-            free(pad);
-            goto fail;
+            ಬಿಡುಗಡೆ(spba);
+            ಬಿಡುಗಡೆ(pad);
+            ಹೋಗು fail;
         }
-        int i;
-        for (i = 0; i < spb; i++)
-            spba[i] = (u32)pad + (i * PAGE_SIZE);
-        xhci->devs[0].ptr_low = (u32)spba;
-        xhci->devs[0].ptr_high = 0;
+        ಪೂರ್ಣಾಂಕ i;
+        ಗಾಗಿ (i = 0; i < spb; i++)
+            spba[i] = (u32)pad + (i * ಪುಟ_ಗಾತ್ರ);
+        xhci->devs[0].ptr_ಕೆಳಗಿನ = (u32)spba;
+        xhci->devs[0].ptr_ಮೇಲಿನ = 0;
     }
 
     reg = readl(&xhci->op->usbcmd);
@@ -513,36 +513,36 @@ configure_xhci(void *data)
     writel(&xhci->op->usbcmd, reg);
 
     // Find devices
-    int count = xhci_check_ports(xhci);
+    ಪೂರ್ಣಾಂಕ ಎಣಿಕೆ_2 = xhci_check_ports(xhci);
     xhci_free_pipes(xhci);
-    if (count)
+    ಆದರೆ (ಎಣಿಕೆ_2)
         // Success
-        return;
+        ಹಿಂತಿರುಗಿ;
 
     // No devices found - shutdown and free controller.
     dprintf(1, "XHCI no devices found\n");
     reg = readl(&xhci->op->usbcmd);
     reg &= ~XHCI_CMD_RS;
     writel(&xhci->op->usbcmd, reg);
-    wait_bit(&xhci->op->usbsts, XHCI_STS_HCH, XHCI_STS_HCH, 32);
+    wait_ಬಿಟ್(&xhci->op->usbsts, XHCI_STS_HCH, XHCI_STS_HCH, 32);
 
 fail:
-    free(xhci->eseg);
-    free(xhci->evts);
-    free(xhci->cmds);
-    free(xhci->devs);
-    free(xhci);
+    ಬಿಡುಗಡೆ(xhci->eseg);
+    ಬಿಡುಗಡೆ(xhci->evts);
+    ಬಿಡುಗಡೆ(xhci->cmds);
+    ಬಿಡುಗಡೆ(xhci->devs);
+    ಬಿಡುಗಡೆ(xhci);
 }
 
-static struct usb_xhci_s*
-xhci_controller_setup(void *baseaddr)
+ಸ್ಥಿರ ರಚನೆ usb_xhci_s*
+xhci_controller_ಸಿದ್ಧತೆ(ಶೂನ್ಯ *baseaddr)
 {
-    struct usb_xhci_s *xhci = malloc_high(sizeof(*xhci));
-    if (!xhci) {
+    ರಚನೆ usb_xhci_s *xhci = malloc_ಮೇಲಿನ(ಗಾತ್ರ(*xhci));
+    ಆದರೆ (!xhci) {
         warn_noalloc();
-        return NULL;
+        ಹಿಂತಿರುಗಿ ಖಾಲಿ;
     }
-    memset(xhci, 0, sizeof(*xhci));
+    memset(xhci, 0, ಗಾತ್ರ(*xhci));
     xhci->caps  = baseaddr;
     xhci->op    = baseaddr + readb(&xhci->caps->caplength);
     xhci->pr    = baseaddr + readb(&xhci->caps->caplength) + 0x400;
@@ -562,20 +562,20 @@ xhci_controller_setup(void *baseaddr)
             , xhci->caps, xhci->ports, xhci->slots
             , xhci->context64 ? 64 : 32);
 
-    if (xhci->xcap) {
+    ಆದರೆ (xhci->xcap) {
         u32 off;
-        void *addr = baseaddr + xhci->xcap;
-        do {
-            struct xhci_xcap *xcap = addr;
+        ಶೂನ್ಯ *addr = baseaddr + xhci->xcap;
+        ಮಾಡು {
+            ರಚನೆ xhci_xcap *xcap = addr;
             u32 ports, name, cap = readl(&xcap->cap);
-            switch (cap & 0xff) {
-            case 0x02:
-                name  = readl(&xcap->data[0]);
-                ports = readl(&xcap->data[1]);
+            ಆಯ್ಕೆ (cap & 0xff) {
+            ಸ್ಥಿತಿ 0x02:
+                name  = readl(&xcap->ದತ್ತಾಂಶ[0]);
+                ports = readl(&xcap->ದತ್ತಾಂಶ[1]);
                 u8 major = (cap >> 24) & 0xff;
                 u8 minor = (cap >> 16) & 0xff;
-                u8 count = (ports >> 8) & 0xff;
-                u8 start = (ports >> 0) & 0xff;
+                u8 ಎಣಿಕೆ_2 = (ports >> 8) & 0xff;
+                u8 ಆರಂಭ = (ports >> 0) & 0xff;
                 dprintf(1, "XHCI    protocol %c%c%c%c %x.%02x"
                         ", %d ports (offset %d), def %x\n"
                         , (name >>  0) & 0xff
@@ -583,101 +583,101 @@ xhci_controller_setup(void *baseaddr)
                         , (name >> 16) & 0xff
                         , (name >> 24) & 0xff
                         , major, minor
-                        , count, start
+                        , ಎಣಿಕೆ_2, ಆರಂಭ
                         , ports >> 16);
-                if (name == 0x20425355 /* "USB " */) {
-                    if (major == 2) {
-                        xhci->usb2.start = start;
-                        xhci->usb2.count = count;
+                ಆದರೆ (name == 0x20425355 /* "USB " */) {
+                    ಆದರೆ (major == 2) {
+                        xhci->usb2.ಆರಂಭ = ಆರಂಭ;
+                        xhci->usb2.ಎಣಿಕೆ_2 = ಎಣಿಕೆ_2;
                     }
-                    if (major == 3) {
-                        xhci->usb3.start = start;
-                        xhci->usb3.count = count;
+                    ಆದರೆ (major == 3) {
+                        xhci->usb3.ಆರಂಭ = ಆರಂಭ;
+                        xhci->usb3.ಎಣಿಕೆ_2 = ಎಣಿಕೆ_2;
                     }
                 }
-                break;
-            default:
+                ನಿಲ್ಲಿಸು;
+            ಪೂರ್ವನಿಯೋಜಿತ:
                 dprintf(1, "XHCI    extcap 0x%x @ %p\n", cap & 0xff, addr);
-                break;
+                ನಿಲ್ಲಿಸು;
             }
             off = (cap >> 8) & 0xff;
             addr += off << 2;
-        } while (off > 0);
+        } ಆಗ (off > 0);
     }
 
     u32 pagesize = readl(&xhci->op->pagesize);
-    if (PAGE_SIZE != (pagesize<<12)) {
+    ಆದರೆ (ಪುಟ_ಗಾತ್ರ != (pagesize<<12)) {
         dprintf(1, "XHCI driver does not support page size code %d\n"
                 , pagesize<<12);
-        free(xhci);
-        return NULL;
+        ಬಿಡುಗಡೆ(xhci);
+        ಹಿಂತಿರುಗಿ ಖಾಲಿ;
     }
 
-    return xhci;
+    ಹಿಂತಿರುಗಿ xhci;
 }
 
-static void
-xhci_controller_setup_pci(struct pci_device *pci)
+ಸ್ಥಿರ ಶೂನ್ಯ
+xhci_controller_ಸಿದ್ಧತೆ_pci(ರಚನೆ pci_device *pci)
 {
-    struct usb_xhci_s *xhci;
-    void *baseaddr;
+    ರಚನೆ usb_xhci_s *xhci;
+    ಶೂನ್ಯ *baseaddr;
 
-    baseaddr = pci_enable_membar(pci, PCI_BASE_ADDRESS_0);
-    if (!baseaddr)
-        return;
+    baseaddr = pci_enable_membar(pci, PCI_ತಳ_ವಿಳಾಸ_0);
+    ಆದರೆ (!baseaddr)
+        ಹಿಂತಿರುಗಿ;
 
     dprintf(1, "PCI: XHCI at %pP (mmio %p)\n", pci, baseaddr);
     pci_enable_busmaster(pci);
 
-    xhci = xhci_controller_setup(baseaddr);
-    if (!xhci)
-        return;
+    xhci = xhci_controller_ಸಿದ್ಧತೆ(baseaddr);
+    ಆದರೆ (!xhci)
+        ಹಿಂತಿರುಗಿ;
 
     xhci->usb.pci = pci;
-    run_thread(configure_xhci, xhci);
+    ಸತತ_thread(configure_xhci, xhci);
 }
 
-static void
-xhci_controller_setup_acpi(struct acpi_device *dev)
+ಸ್ಥಿರ ಶೂನ್ಯ
+xhci_controller_ಸಿದ್ಧತೆ_acpi(ರಚನೆ acpi_device *dev)
 {
-    struct usb_xhci_s *xhci;
-    u64 mem, unused;
-    void *baseaddr;
+    ರಚನೆ usb_xhci_s *xhci;
+    u64 mem, ಬಳಸದ;
+    ಶೂನ್ಯ *baseaddr;
 
-    if (acpi_dsdt_find_mem(dev, &mem, &unused) < 0)
-        return;
-    if (mem >= 0x100000000ll)
-        return;
+    ಆದರೆ (acpi_dsdt_ಕಂಡುಹಿಡಿ_mem(dev, &mem, &ಬಳಸದ) < 0)
+        ಹಿಂತಿರುಗಿ;
+    ಆದರೆ (mem >= 0x100000000ll)
+        ಹಿಂತಿರುಗಿ;
 
-    baseaddr = (void*)(u32)mem;
+    baseaddr = (ಶೂನ್ಯ*)(u32)mem;
     dprintf(1, "ACPI: XHCI at mmio %p\n", baseaddr);
 
-    xhci = xhci_controller_setup(baseaddr);
-    if (!xhci)
-        return;
+    xhci = xhci_controller_ಸಿದ್ಧತೆ(baseaddr);
+    ಆದರೆ (!xhci)
+        ಹಿಂತಿರುಗಿ;
 
     xhci->usb.mmio = baseaddr;
-    run_thread(configure_xhci, xhci);
+    ಸತತ_thread(configure_xhci, xhci);
 }
 
-void
-xhci_setup(void)
+ಶೂನ್ಯ
+xhci_ಸಿದ್ಧತೆ(ಶೂನ್ಯ)
 {
-    if (! CONFIG_USB_XHCI)
-        return;
+    ಆದರೆ (! CONFIG_USB_XHCI)
+        ಹಿಂತಿರುಗಿ;
 
-    struct pci_device *pci;
+    ರಚನೆ pci_device *pci;
     foreachpci(pci) {
-        if (pci_classprog(pci) == PCI_CLASS_SERIAL_USB_XHCI)
-            xhci_controller_setup_pci(pci);
+        ಆದರೆ (pci_classprog(pci) == PCI_CLASS_SERIAL_USB_XHCI)
+            xhci_controller_ಸಿದ್ಧತೆ_pci(pci);
     }
 
     u16 xhci_eisaid = 0x0d10;
-    struct acpi_device *dev;
-    for (dev = acpi_dsdt_find_eisaid(NULL, xhci_eisaid);
-         dev != NULL;
-         dev = acpi_dsdt_find_eisaid(dev, xhci_eisaid)) {
-        xhci_controller_setup_acpi(dev);
+    ರಚನೆ acpi_device *dev;
+    ಗಾಗಿ (dev = acpi_dsdt_ಕಂಡುಹಿಡಿ_eisaid(ಖಾಲಿ, xhci_eisaid);
+         dev != ಖಾಲಿ;
+         dev = acpi_dsdt_ಕಂಡುಹಿಡಿ_eisaid(dev, xhci_eisaid)) {
+        xhci_controller_ಸಿದ್ಧತೆ_acpi(dev);
     }
 }
 
@@ -687,520 +687,520 @@ xhci_setup(void)
  ****************************************************************/
 
 // Signal the hardware to process events on a TRB ring
-static void xhci_doorbell(struct usb_xhci_s *xhci, u32 slotid, u32 value)
+ಸ್ಥಿರ ಶೂನ್ಯ xhci_doorbell(ರಚನೆ usb_xhci_s *xhci, u32 slotid, u32 ಮೌಲ್ಯ)
 {
-    dprintf(5, "%s: slotid %d, epid %d\n", __func__, slotid, value);
-    struct xhci_db *db = xhci->db;
-    void *addr = &db[slotid].doorbell;
-    writel(addr, value);
+    dprintf(5, "%s: slotid %d, epid %d\n", __func__, slotid, ಮೌಲ್ಯ);
+    ರಚನೆ xhci_db *db = xhci->db;
+    ಶೂನ್ಯ *addr = &db[slotid].doorbell;
+    writel(addr, ಮೌಲ್ಯ);
 }
 
 // Dequeue events on the XHCI command ring generated by the hardware
-static void xhci_process_events(struct usb_xhci_s *xhci)
+ಸ್ಥಿರ ಶೂನ್ಯ xhci_process_events(ರಚನೆ usb_xhci_s *xhci)
 {
-    struct xhci_ring *evts = xhci->evts;
+    ರಚನೆ xhci_ring *evts = xhci->evts;
 
-    for (;;) {
+    ಗಾಗಿ (;;) {
         /* check for event */
         u32 nidx = evts->nidx;
         u32 cs = evts->cs;
-        struct xhci_trb *etrb = evts->ring + nidx;
+        ರಚನೆ xhci_trb *etrb = evts->ring + nidx;
         u32 control = etrb->control;
-        if ((control & TRB_C) != (cs ? 1 : 0))
-            return;
+        ಆದರೆ ((control & TRB_C) != (cs ? 1 : 0))
+            ಹಿಂತಿರುಗಿ;
 
         /* process event */
         u32 evt_type = TRB_TYPE(control);
-        u32 evt_cc = (etrb->status >> 24) & 0xff;
-        switch (evt_type) {
-        case ER_TRANSFER:
-        case ER_COMMAND_COMPLETE:
+        u32 evt_cc = (etrb->ಸ್ಥಿತಿ_2 >> 24) & 0xff;
+        ಆಯ್ಕೆ (evt_type) {
+        ಸ್ಥಿತಿ ER_TRANSFER:
+        ಸ್ಥಿತಿ ER_COMMAND_COMPLETE:
         {
-            struct xhci_trb  *rtrb = (void*)etrb->ptr_low;
-            struct xhci_ring *ring = XHCI_RING(rtrb);
-            struct xhci_trb  *evt = &ring->evt;
+            ರಚನೆ xhci_trb  *rtrb = (ಶೂನ್ಯ*)etrb->ptr_ಕೆಳಗಿನ;
+            ರಚನೆ xhci_ring *ring = XHCI_RING(rtrb);
+            ರಚನೆ xhci_trb  *evt = &ring->evt;
             u32 eidx = rtrb - ring->ring + 1;
             dprintf(5, "%s: ring %p [trb %p, evt %p, type %d, eidx %d, cc %d]\n",
                     __func__, ring, rtrb, evt, evt_type, eidx, evt_cc);
-            memcpy(evt, etrb, sizeof(*etrb));
+            ಸ್ಮರಣೆ_ನಕಲು(evt, etrb, ಗಾತ್ರ(*etrb));
             ring->eidx = eidx;
-            break;
+            ನಿಲ್ಲಿಸು;
         }
-        case ER_PORT_STATUS_CHANGE:
+        ಸ್ಥಿತಿ ER_ಪೋರ್ಟ್_ಸ್ಥಿತಿ_CHANGE:
         {
-            u32 port = ((etrb->ptr_low >> 24) & 0xff) - 1;
+            u32 ಪೋರ್ಟ್ = ((etrb->ptr_ಕೆಳಗಿನ >> 24) & 0xff) - 1;
             // Read status, and clear port status change bits
-            u32 portsc = readl(&xhci->pr[port].portsc);
+            u32 portsc = readl(&xhci->pr[ಪೋರ್ಟ್].portsc);
             u32 pclear = (((portsc & ~(XHCI_PORTSC_PED|XHCI_PORTSC_PR))
-                           & ~(XHCI_PORTSC_PLS_MASK<<XHCI_PORTSC_PLS_SHIFT))
-                          | (1<<XHCI_PORTSC_PLS_SHIFT));
-            writel(&xhci->pr[port].portsc, pclear);
+                           & ~(XHCI_PORTSC_PLS_ಮುಖವಾಡ<<XHCI_PORTSC_PLS_ಸರಿಸು))
+                          | (1<<XHCI_PORTSC_PLS_ಸರಿಸು));
+            writel(&xhci->pr[ಪೋರ್ಟ್].portsc, pclear);
 
-            xhci_print_port_state(3, __func__, port, portsc);
-            break;
+            xhci_print_ಪೋರ್ಟ್_state(3, __func__, ಪೋರ್ಟ್, portsc);
+            ನಿಲ್ಲಿಸು;
         }
-        default:
+        ಪೂರ್ವನಿಯೋಜಿತ:
             dprintf(1, "%s: unknown event, type %d, cc %d\n",
                     __func__, evt_type, evt_cc);
-            break;
+            ನಿಲ್ಲಿಸು;
         }
 
         /* move ring index, notify xhci */
         nidx++;
-        if (nidx == XHCI_RING_ITEMS) {
+        ಆದರೆ (nidx == XHCI_RING_ವಸ್ತುಗಳು) {
             nidx = 0;
             cs = cs ? 0 : 1;
             evts->cs = cs;
         }
         evts->nidx = nidx;
-        struct xhci_ir *ir = xhci->ir;
+        ರಚನೆ xhci_ir *ir = xhci->ir;
         u32 erdp = (u32)(evts->ring + nidx);
-        writel(&ir->erdp_low, erdp);
-        writel(&ir->erdp_high, 0);
+        writel(&ir->erdp_ಕೆಳಗಿನ, erdp);
+        writel(&ir->erdp_ಮೇಲಿನ, 0);
     }
 }
 
 // Check if a ring has any pending TRBs
-static int xhci_ring_busy(struct xhci_ring *ring)
+ಸ್ಥಿರ ಪೂರ್ಣಾಂಕ xhci_ring_busy(ರಚನೆ xhci_ring *ring)
 {
     u32 eidx = ring->eidx;
     u32 nidx = ring->nidx;
-    return (eidx != nidx);
+    ಹಿಂತಿರುಗಿ (eidx != nidx);
 }
 
 // Wait for a ring to empty (all TRBs processed by hardware)
-static int xhci_event_wait(struct usb_xhci_s *xhci,
-                           struct xhci_ring *ring,
+ಸ್ಥಿರ ಪೂರ್ಣಾಂಕ xhci_event_wait(ರಚನೆ usb_xhci_s *xhci,
+                           ರಚನೆ xhci_ring *ring,
                            u32 timeout)
 {
-    u32 end = timer_calc(timeout);
+    u32 ಕೊನೆ = timer_calc(timeout);
 
-    for (;;) {
+    ಗಾಗಿ (;;) {
         xhci_process_events(xhci);
-        if (!xhci_ring_busy(ring)) {
-            u32 status = ring->evt.status;
-            return (status >> 24) & 0xff;
+        ಆದರೆ (!xhci_ring_busy(ring)) {
+            u32 ಸ್ಥಿತಿ_2 = ring->evt.ಸ್ಥಿತಿ_2;
+            ಹಿಂತಿರುಗಿ (ಸ್ಥಿತಿ_2 >> 24) & 0xff;
         }
-        if (timer_check(end)) {
+        ಆದರೆ (timer_check(ಕೊನೆ)) {
             warn_timeout();
-            return -1;
+            ಹಿಂತಿರುಗಿ -1;
         }
         yield();
     }
 }
 
 // Add a TRB to the given ring
-static void xhci_trb_fill(struct xhci_ring *ring
-                          , void *data, u32 xferlen, u32 flags)
+ಸ್ಥಿರ ಶೂನ್ಯ xhci_trb_fill(ರಚನೆ xhci_ring *ring
+                          , ಶೂನ್ಯ *ದತ್ತಾಂಶ, u32 xferlen, u32 flags)
 {
-    struct xhci_trb *dst = &ring->ring[ring->nidx];
-    if (flags & TRB_TR_IDT) {
-        memcpy(&dst->ptr_low, data, xferlen);
-    } else {
-        dst->ptr_low = (u32)data;
-        dst->ptr_high = 0;
+    ರಚನೆ xhci_trb *dst = &ring->ring[ring->nidx];
+    ಆದರೆ (flags & TRB_TR_IDT) {
+        ಸ್ಮರಣೆ_ನಕಲು(&dst->ptr_ಕೆಳಗಿನ, ದತ್ತಾಂಶ, xferlen);
+    } ಇಲ್ಲದಿದ್ದರೆ {
+        dst->ptr_ಕೆಳಗಿನ = (u32)ದತ್ತಾಂಶ;
+        dst->ptr_ಮೇಲಿನ = 0;
     }
-    dst->status = xferlen;
+    dst->ಸ್ಥಿತಿ_2 = xferlen;
     dst->control = flags | (ring->cs ? TRB_C : 0);
 }
 
 // Queue a TRB onto a ring, wrapping ring as needed
-static void xhci_trb_queue(struct xhci_ring *ring,
-                           void *data, u32 xferlen, u32 flags)
+ಸ್ಥಿರ ಶೂನ್ಯ xhci_trb_ಸರತಿ(ರಚನೆ xhci_ring *ring,
+                           ಶೂನ್ಯ *ದತ್ತಾಂಶ, u32 xferlen, u32 flags)
 {
-    if (ring->nidx >= ARRAY_SIZE(ring->ring) - 1) {
+    ಆದರೆ (ring->nidx >= ARRAY_ಗಾತ್ರ(ring->ring) - 1) {
         xhci_trb_fill(ring, ring->ring, 0, (TR_LINK << 10) | TRB_LK_TC);
         ring->nidx = 0;
         ring->cs ^= 1;
         dprintf(5, "%s: ring %p [linked]\n", __func__, ring);
     }
 
-    xhci_trb_fill(ring, data, xferlen, flags);
+    xhci_trb_fill(ring, ದತ್ತಾಂಶ, xferlen, flags);
     ring->nidx++;
     dprintf(5, "%s: ring %p [nidx %d, len %d]\n",
             __func__, ring, ring->nidx, xferlen);
 }
 
 // Submit a command to the xhci controller ring
-static int xhci_cmd_submit(struct usb_xhci_s *xhci, struct xhci_inctx *inctx
+ಸ್ಥಿರ ಪೂರ್ಣಾಂಕ xhci_cmd_submit(ರಚನೆ usb_xhci_s *xhci, ರಚನೆ xhci_inctx *inctx
                            , u32 flags)
 {
-    if (inctx) {
-        struct xhci_slotctx *slot = (void*)&inctx[1 << xhci->context64];
-        u32 port = ((slot->ctx[1] >> 16) & 0xff) - 1;
-        u32 portsc = readl(&xhci->pr[port].portsc);
-        if (!(portsc & XHCI_PORTSC_CCS)) {
+    ಆದರೆ (inctx) {
+        ರಚನೆ xhci_slotctx *ಸ್ಥಾನ = (ಶೂನ್ಯ*)&inctx[1 << xhci->context64];
+        u32 ಪೋರ್ಟ್ = ((ಸ್ಥಾನ->ctx[1] >> 16) & 0xff) - 1;
+        u32 portsc = readl(&xhci->pr[ಪೋರ್ಟ್].portsc);
+        ಆದರೆ (!(portsc & XHCI_PORTSC_CCS)) {
             // Device no longer connected?!
-            xhci_print_port_state(1, __func__, port, portsc);
-            return -1;
+            xhci_print_ಪೋರ್ಟ್_state(1, __func__, ಪೋರ್ಟ್, portsc);
+            ಹಿಂತಿರುಗಿ -1;
         }
     }
 
-    mutex_lock(&xhci->cmds->lock);
-    xhci_trb_queue(xhci->cmds, inctx, 0, flags);
+    mutex_ಬೀಗ(&xhci->cmds->ಬೀಗ_2);
+    xhci_trb_ಸರತಿ(xhci->cmds, inctx, 0, flags);
     xhci_doorbell(xhci, 0, 0);
-    int rc = xhci_event_wait(xhci, xhci->cmds, 1000);
-    mutex_unlock(&xhci->cmds->lock);
-    return rc;
+    ಪೂರ್ಣಾಂಕ rc = xhci_event_wait(xhci, xhci->cmds, 1000);
+    mutex_unlock(&xhci->cmds->ಬೀಗ_2);
+    ಹಿಂತಿರುಗಿ rc;
 }
 
-static int xhci_cmd_enable_slot(struct usb_xhci_s *xhci)
+ಸ್ಥಿರ ಪೂರ್ಣಾಂಕ xhci_cmd_enable_ಸ್ಥಾನ(ರಚನೆ usb_xhci_s *xhci)
 {
     dprintf(3, "%s:\n", __func__);
-    int cc = xhci_cmd_submit(xhci, NULL, CR_ENABLE_SLOT << 10);
-    if (cc != CC_SUCCESS)
-        return -1;
-    return (xhci->cmds->evt.control >> 24) & 0xff;
+    ಪೂರ್ಣಾಂಕ cc = xhci_cmd_submit(xhci, ಖಾಲಿ, CR_ENABLE_ಸ್ಥಾನ << 10);
+    ಆದರೆ (cc != CC_SUCCESS)
+        ಹಿಂತಿರುಗಿ -1;
+    ಹಿಂತಿರುಗಿ (xhci->cmds->evt.control >> 24) & 0xff;
 }
 
-static int xhci_cmd_disable_slot(struct usb_xhci_s *xhci, u32 slotid)
+ಸ್ಥಿರ ಪೂರ್ಣಾಂಕ xhci_cmd_disable_ಸ್ಥಾನ(ರಚನೆ usb_xhci_s *xhci, u32 slotid)
 {
     dprintf(3, "%s: slotid %d\n", __func__, slotid);
-    return xhci_cmd_submit(xhci, NULL, (CR_DISABLE_SLOT << 10) | (slotid << 24));
+    ಹಿಂತಿರುಗಿ xhci_cmd_submit(xhci, ಖಾಲಿ, (CR_DISABLE_ಸ್ಥಾನ << 10) | (slotid << 24));
 }
 
-static int xhci_cmd_address_device(struct usb_xhci_s *xhci, u32 slotid
-                                   , struct xhci_inctx *inctx)
+ಸ್ಥಿರ ಪೂರ್ಣಾಂಕ xhci_cmd_ವಿಳಾಸ_device(ರಚನೆ usb_xhci_s *xhci, u32 slotid
+                                   , ರಚನೆ xhci_inctx *inctx)
 {
     dprintf(3, "%s: slotid %d\n", __func__, slotid);
-    return xhci_cmd_submit(xhci, inctx
-                           , (CR_ADDRESS_DEVICE << 10) | (slotid << 24));
+    ಹಿಂತಿರುಗಿ xhci_cmd_submit(xhci, inctx
+                           , (CR_ವಿಳಾಸ_DEVICE << 10) | (slotid << 24));
 }
 
-static int xhci_cmd_configure_endpoint(struct usb_xhci_s *xhci, u32 slotid
-                                       , struct xhci_inctx *inctx)
+ಸ್ಥಿರ ಪೂರ್ಣಾಂಕ xhci_cmd_configure_endpoint(ರಚನೆ usb_xhci_s *xhci, u32 slotid
+                                       , ರಚನೆ xhci_inctx *inctx)
 {
     dprintf(3, "%s: slotid %d, add 0x%x, del 0x%x\n", __func__,
-            slotid, inctx->add, inctx->del);
-    return xhci_cmd_submit(xhci, inctx
+            slotid, inctx->ಕೂಡಿಸು, inctx->del);
+    ಹಿಂತಿರುಗಿ xhci_cmd_submit(xhci, inctx
                            , (CR_CONFIGURE_ENDPOINT << 10) | (slotid << 24));
 }
 
-static int xhci_cmd_evaluate_context(struct usb_xhci_s *xhci, u32 slotid
-                                     , struct xhci_inctx *inctx)
+ಸ್ಥಿರ ಪೂರ್ಣಾಂಕ xhci_cmd_evaluate_context(ರಚನೆ usb_xhci_s *xhci, u32 slotid
+                                     , ರಚನೆ xhci_inctx *inctx)
 {
     dprintf(3, "%s: slotid %d, add 0x%x, del 0x%x\n", __func__,
-            slotid, inctx->add, inctx->del);
-    return xhci_cmd_submit(xhci, inctx
+            slotid, inctx->ಕೂಡಿಸು, inctx->del);
+    ಹಿಂತಿರುಗಿ xhci_cmd_submit(xhci, inctx
                            , (CR_EVALUATE_CONTEXT << 10) | (slotid << 24));
 }
 
-static struct xhci_inctx *
-xhci_alloc_inctx(struct usbdevice_s *usbdev, int maxepid)
+ಸ್ಥಿರ ರಚನೆ xhci_inctx *
+xhci_alloc_inctx(ರಚನೆ usbdevice_s *usbdev, ಪೂರ್ಣಾಂಕ maxepid)
 {
-    struct usb_xhci_s *xhci = container_of(
-        usbdev->hub->cntl, struct usb_xhci_s, usb);
-    int size = (sizeof(struct xhci_inctx) * 33) << xhci->context64;
-    struct xhci_inctx *in = memalign_tmphigh(2048 << xhci->context64, size);
-    if (!in) {
+    ರಚನೆ usb_xhci_s *xhci = container_ದ(
+        usbdev->hub->cntl, ರಚನೆ usb_xhci_s, usb);
+    ಪೂರ್ಣಾಂಕ ಗಾತ್ರ_2 = (ಗಾತ್ರ(ರಚನೆ xhci_inctx) * 33) << xhci->context64;
+    ರಚನೆ xhci_inctx *ಒಳ = memalign_tmphigh(2048 << xhci->context64, ಗಾತ್ರ_2);
+    ಆದರೆ (!ಒಳ) {
         warn_noalloc();
-        return NULL;
+        ಹಿಂತಿರುಗಿ ಖಾಲಿ;
     }
-    memset(in, 0, size);
+    memset(ಒಳ, 0, ಗಾತ್ರ_2);
 
-    struct xhci_slotctx *slot = (void*)&in[1 << xhci->context64];
-    slot->ctx[0]    |= maxepid << 27; // context entries
-    slot->ctx[0]    |= speed_to_xhci[usbdev->speed] << 20;
+    ರಚನೆ xhci_slotctx *ಸ್ಥಾನ = (ಶೂನ್ಯ*)&ಒಳ[1 << xhci->context64];
+    ಸ್ಥಾನ->ctx[0]    |= maxepid << 27; // context entries
+    ಸ್ಥಾನ->ctx[0]    |= ವೇಗ_ಗಮ್ಯ_xhci[usbdev->ವೇಗ] << 20;
 
     // Set high-speed hub flags.
-    struct usbdevice_s *hubdev = usbdev->hub->usbdev;
-    if (hubdev) {
-        if (usbdev->speed == USB_LOWSPEED || usbdev->speed == USB_FULLSPEED) {
-            struct xhci_pipe *hpipe = container_of(
-                hubdev->defpipe, struct xhci_pipe, pipe);
-            if (hubdev->speed == USB_HIGHSPEED) {
-                slot->ctx[2] |= hpipe->slotid;
-                slot->ctx[2] |= (usbdev->port+1) << 8;
-            } else {
-                struct xhci_slotctx *hslot = (void*)xhci->devs[hpipe->slotid].ptr_low;
-                slot->ctx[2] = hslot->ctx[2];
+    ರಚನೆ usbdevice_s *hubdev = usbdev->hub->usbdev;
+    ಆದರೆ (hubdev) {
+        ಆದರೆ (usbdev->ವೇಗ == USB_LOWSPEED || usbdev->ವೇಗ == USB_FULLSPEED) {
+            ರಚನೆ xhci_pipe *hpipe = container_ದ(
+                hubdev->defpipe, ರಚನೆ xhci_pipe, pipe);
+            ಆದರೆ (hubdev->ವೇಗ == USB_HIGHSPEED) {
+                ಸ್ಥಾನ->ctx[2] |= hpipe->slotid;
+                ಸ್ಥಾನ->ctx[2] |= (usbdev->ಪೋರ್ಟ್+1) << 8;
+            } ಇಲ್ಲದಿದ್ದರೆ {
+                ರಚನೆ xhci_slotctx *hslot = (ಶೂನ್ಯ*)xhci->devs[hpipe->slotid].ptr_ಕೆಳಗಿನ;
+                ಸ್ಥಾನ->ctx[2] = hslot->ctx[2];
             }
         }
         u32 route = 0;
-        while (usbdev->hub->usbdev) {
+        ಆಗ (usbdev->hub->usbdev) {
             route <<= 4;
-            route |= (usbdev->port+1) & 0xf;
+            route |= (usbdev->ಪೋರ್ಟ್+1) & 0xf;
             usbdev = usbdev->hub->usbdev;
         }
-        slot->ctx[0]    |= route;
+        ಸ್ಥಾನ->ctx[0]    |= route;
     }
 
-    slot->ctx[1]    |= (usbdev->port+1) << 16;
+    ಸ್ಥಾನ->ctx[1]    |= (usbdev->ಪೋರ್ಟ್+1) << 16;
 
-    return in;
+    ಹಿಂತಿರುಗಿ ಒಳ;
 }
 
-static int xhci_config_hub(struct usbhub_s *hub)
+ಸ್ಥಿರ ಪೂರ್ಣಾಂಕ xhci_config_hub(ರಚನೆ usbhub_s *hub)
 {
-    struct usb_xhci_s *xhci = container_of(
-        hub->cntl, struct usb_xhci_s, usb);
-    struct xhci_pipe *pipe = container_of(
-        hub->usbdev->defpipe, struct xhci_pipe, pipe);
-    struct xhci_slotctx *hdslot = (void*)xhci->devs[pipe->slotid].ptr_low;
-    if ((hdslot->ctx[3] >> 27) == 3)
+    ರಚನೆ usb_xhci_s *xhci = container_ದ(
+        hub->cntl, ರಚನೆ usb_xhci_s, usb);
+    ರಚನೆ xhci_pipe *pipe = container_ದ(
+        hub->usbdev->defpipe, ರಚನೆ xhci_pipe, pipe);
+    ರಚನೆ xhci_slotctx *hdslot = (ಶೂನ್ಯ*)xhci->devs[pipe->slotid].ptr_ಕೆಳಗಿನ;
+    ಆದರೆ ((hdslot->ctx[3] >> 27) == 3)
         // Already configured
-        return 0;
-    struct xhci_inctx *in = xhci_alloc_inctx(hub->usbdev, 1);
-    if (!in)
-        return -1;
-    in->add = 0x01;
-    struct xhci_slotctx *slot = (void*)&in[1 << xhci->context64];
-    slot->ctx[0] |= 1 << 26;
-    slot->ctx[1] |= hub->portcount << 24;
+        ಹಿಂತಿರುಗಿ 0;
+    ರಚನೆ xhci_inctx *ಒಳ = xhci_alloc_inctx(hub->usbdev, 1);
+    ಆದರೆ (!ಒಳ)
+        ಹಿಂತಿರುಗಿ -1;
+    ಒಳ->ಕೂಡಿಸು = 0x01;
+    ರಚನೆ xhci_slotctx *ಸ್ಥಾನ = (ಶೂನ್ಯ*)&ಒಳ[1 << xhci->context64];
+    ಸ್ಥಾನ->ctx[0] |= 1 << 26;
+    ಸ್ಥಾನ->ctx[1] |= hub->portcount << 24;
 
-    int cc = xhci_cmd_configure_endpoint(xhci, pipe->slotid, in);
-    free(in);
-    if (cc != CC_SUCCESS) {
+    ಪೂರ್ಣಾಂಕ cc = xhci_cmd_configure_endpoint(xhci, pipe->slotid, ಒಳ);
+    ಬಿಡುಗಡೆ(ಒಳ);
+    ಆದರೆ (cc != CC_SUCCESS) {
         dprintf(1, "%s: configure hub: failed (cc %d)\n", __func__, cc);
-        return -1;
+        ಹಿಂತಿರುಗಿ -1;
     }
-    return 0;
+    ಹಿಂತಿರುಗಿ 0;
 }
 
-static struct usb_pipe *
-xhci_alloc_pipe(struct usbdevice_s *usbdev
-                , struct usb_endpoint_descriptor *epdesc)
+ಸ್ಥಿರ ರಚನೆ usb_pipe *
+xhci_alloc_pipe(ರಚನೆ usbdevice_s *usbdev
+                , ರಚನೆ usb_endpoint_descriptor *epdesc)
 {
-    u8 eptype = epdesc->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK;
-    struct usb_xhci_s *xhci = container_of(
-        usbdev->hub->cntl, struct usb_xhci_s, usb);
-    struct xhci_pipe *pipe;
+    u8 eptype = epdesc->bm_ಗುಣಲಕ್ಷಣಗಳು & USB_ENDPOINT_XFERTYPE_ಮುಖವಾಡ;
+    ರಚನೆ usb_xhci_s *xhci = container_ದ(
+        usbdev->hub->cntl, ರಚನೆ usb_xhci_s, usb);
+    ರಚನೆ xhci_pipe *pipe;
     u32 epid;
 
-    if (epdesc->bEndpointAddress == 0) {
+    ಆದರೆ (epdesc->b_Endpoint_ವಿಳಾಸ == 0) {
         epid = 1;
-    } else {
-        epid = (epdesc->bEndpointAddress & 0x0f) * 2;
-        epid += (epdesc->bEndpointAddress & USB_DIR_IN) ? 1 : 0;
+    } ಇಲ್ಲದಿದ್ದರೆ {
+        epid = (epdesc->b_Endpoint_ವಿಳಾಸ & 0x0f) * 2;
+        epid += (epdesc->b_Endpoint_ವಿಳಾಸ & USB_DIR_ಒಳ) ? 1 : 0;
     }
 
-    if (eptype == USB_ENDPOINT_XFER_CONTROL)
-        pipe = memalign_high(XHCI_RING_SIZE, sizeof(*pipe));
-    else
-        pipe = memalign_low(XHCI_RING_SIZE, sizeof(*pipe));
-    if (!pipe) {
+    ಆದರೆ (eptype == USB_ENDPOINT_XFER_CONTROL)
+        pipe = memalign_ಮೇಲಿನ(XHCI_RING_ಗಾತ್ರ, ಗಾತ್ರ(*pipe));
+    ಇಲ್ಲದಿದ್ದರೆ
+        pipe = memalign_ಕೆಳಗಿನ(XHCI_RING_ಗಾತ್ರ, ಗಾತ್ರ(*pipe));
+    ಆದರೆ (!pipe) {
         warn_noalloc();
-        return NULL;
+        ಹಿಂತಿರುಗಿ ಖಾಲಿ;
     }
-    memset(pipe, 0, sizeof(*pipe));
+    memset(pipe, 0, ಗಾತ್ರ(*pipe));
 
     usb_desc2pipe(&pipe->pipe, usbdev, epdesc);
     pipe->epid = epid;
     pipe->reqs.cs = 1;
-    if (eptype == USB_ENDPOINT_XFER_INT) {
-        pipe->buf = malloc_high(pipe->pipe.maxpacket);
-        if (!pipe->buf) {
+    ಆದರೆ (eptype == USB_ENDPOINT_XFER_INT) {
+        pipe->buf = malloc_ಮೇಲಿನ(pipe->pipe.maxpacket);
+        ಆದರೆ (!pipe->buf) {
             warn_noalloc();
-            free(pipe);
-            return NULL;
+            ಬಿಡುಗಡೆ(pipe);
+            ಹಿಂತಿರುಗಿ ಖಾಲಿ;
         }
     }
 
     // Allocate input context and initialize endpoint info.
-    struct xhci_inctx *in = xhci_alloc_inctx(usbdev, epid);
-    if (!in)
-        goto fail;
-    in->add = 0x01 | (1 << epid);
-    struct xhci_epctx *ep = (void*)&in[(pipe->epid+1) << xhci->context64];
-    if (eptype == USB_ENDPOINT_XFER_INT)
+    ರಚನೆ xhci_inctx *ಒಳ = xhci_alloc_inctx(usbdev, epid);
+    ಆದರೆ (!ಒಳ)
+        ಹೋಗು fail;
+    ಒಳ->ಕೂಡಿಸು = 0x01 | (1 << epid);
+    ರಚನೆ xhci_epctx *ep = (ಶೂನ್ಯ*)&ಒಳ[(pipe->epid+1) << xhci->context64];
+    ಆದರೆ (eptype == USB_ENDPOINT_XFER_INT)
         ep->ctx[0] = (usb_get_period(usbdev, epdesc) + 3) << 16;
     ep->ctx[1]   |= eptype << 3;
-    if (epdesc->bEndpointAddress & USB_DIR_IN
+    ಆದರೆ (epdesc->b_Endpoint_ವಿಳಾಸ & USB_DIR_ಒಳ
         || eptype == USB_ENDPOINT_XFER_CONTROL)
         ep->ctx[1] |= 1 << 5;
     ep->ctx[1]   |= pipe->pipe.maxpacket << 16;
-    ep->deq_low  = (u32)&pipe->reqs.ring[0];
-    ep->deq_low  |= 1;         // dcs
-    ep->length   = pipe->pipe.maxpacket;
+    ep->deq_ಕೆಳಗಿನ  = (u32)&pipe->reqs.ring[0];
+    ep->deq_ಕೆಳಗಿನ  |= 1;         // dcs
+    ep->ಉದ್ದಳತೆ   = pipe->pipe.maxpacket;
 
     dprintf(3, "%s: usbdev %p, ring %p, slotid %d, epid %d\n", __func__,
             usbdev, &pipe->reqs, pipe->slotid, pipe->epid);
-    if (pipe->epid == 1) {
-        if (usbdev->hub->usbdev) {
+    ಆದರೆ (pipe->epid == 1) {
+        ಆದರೆ (usbdev->hub->usbdev) {
             // Make sure parent hub is configured.
-            int ret = xhci_config_hub(usbdev->hub);
-            if (ret)
-                goto fail;
+            ಪೂರ್ಣಾಂಕ ret = xhci_config_hub(usbdev->hub);
+            ಆದರೆ (ret)
+                ಹೋಗು fail;
         }
         // Enable slot.
-        u32 size = (sizeof(struct xhci_slotctx) * 32) << xhci->context64;
-        struct xhci_slotctx *dev = memalign_high(1024 << xhci->context64, size);
-        if (!dev) {
+        u32 ಗಾತ್ರ_2 = (ಗಾತ್ರ(ರಚನೆ xhci_slotctx) * 32) << xhci->context64;
+        ರಚನೆ xhci_slotctx *dev = memalign_ಮೇಲಿನ(1024 << xhci->context64, ಗಾತ್ರ_2);
+        ಆದರೆ (!dev) {
             warn_noalloc();
-            goto fail;
+            ಹೋಗು fail;
         }
-        int slotid = xhci_cmd_enable_slot(xhci);
-        if (slotid < 0) {
+        ಪೂರ್ಣಾಂಕ slotid = xhci_cmd_enable_ಸ್ಥಾನ(xhci);
+        ಆದರೆ (slotid < 0) {
             dprintf(1, "%s: enable slot: failed\n", __func__);
-            free(dev);
-            goto fail;
+            ಬಿಡುಗಡೆ(dev);
+            ಹೋಗು fail;
         }
         dprintf(3, "%s: enable slot: got slotid %d\n", __func__, slotid);
-        memset(dev, 0, size);
-        xhci->devs[slotid].ptr_low = (u32)dev;
-        xhci->devs[slotid].ptr_high = 0;
+        memset(dev, 0, ಗಾತ್ರ_2);
+        xhci->devs[slotid].ptr_ಕೆಳಗಿನ = (u32)dev;
+        xhci->devs[slotid].ptr_ಮೇಲಿನ = 0;
 
         // Send set_address command.
-        int cc = xhci_cmd_address_device(xhci, slotid, in);
-        if (cc != CC_SUCCESS) {
+        ಪೂರ್ಣಾಂಕ cc = xhci_cmd_ವಿಳಾಸ_device(xhci, slotid, ಒಳ);
+        ಆದರೆ (cc != CC_SUCCESS) {
             dprintf(1, "%s: address device: failed (cc %d)\n", __func__, cc);
-            cc = xhci_cmd_disable_slot(xhci, slotid);
-            if (cc != CC_SUCCESS) {
+            cc = xhci_cmd_disable_ಸ್ಥಾನ(xhci, slotid);
+            ಆದರೆ (cc != CC_SUCCESS) {
                 dprintf(1, "%s: disable failed (cc %d)\n", __func__, cc);
-                goto fail;
+                ಹೋಗು fail;
             }
-            xhci->devs[slotid].ptr_low = 0;
-            free(dev);
-            goto fail;
+            xhci->devs[slotid].ptr_ಕೆಳಗಿನ = 0;
+            ಬಿಡುಗಡೆ(dev);
+            ಹೋಗು fail;
         }
         pipe->slotid = slotid;
-    } else {
-        struct xhci_pipe *defpipe = container_of(
-            usbdev->defpipe, struct xhci_pipe, pipe);
+    } ಇಲ್ಲದಿದ್ದರೆ {
+        ರಚನೆ xhci_pipe *defpipe = container_ದ(
+            usbdev->defpipe, ರಚನೆ xhci_pipe, pipe);
         pipe->slotid = defpipe->slotid;
         // Send configure command.
-        int cc = xhci_cmd_configure_endpoint(xhci, pipe->slotid, in);
-        if (cc != CC_SUCCESS) {
+        ಪೂರ್ಣಾಂಕ cc = xhci_cmd_configure_endpoint(xhci, pipe->slotid, ಒಳ);
+        ಆದರೆ (cc != CC_SUCCESS) {
             dprintf(1, "%s: configure endpoint: failed (cc %d)\n", __func__, cc);
-            goto fail;
+            ಹೋಗು fail;
         }
     }
-    free(in);
-    return &pipe->pipe;
+    ಬಿಡುಗಡೆ(ಒಳ);
+    ಹಿಂತಿರುಗಿ &pipe->pipe;
 
 fail:
-    free(pipe->buf);
-    free(pipe);
-    free(in);
-    return NULL;
+    ಬಿಡುಗಡೆ(pipe->buf);
+    ಬಿಡುಗಡೆ(pipe);
+    ಬಿಡುಗಡೆ(ಒಳ);
+    ಹಿಂತಿರುಗಿ ಖಾಲಿ;
 }
 
-struct usb_pipe *
-xhci_realloc_pipe(struct usbdevice_s *usbdev, struct usb_pipe *upipe
-                  , struct usb_endpoint_descriptor *epdesc)
+ರಚನೆ usb_pipe *
+xhci_realloc_pipe(ರಚನೆ usbdevice_s *usbdev, ರಚನೆ usb_pipe *upipe
+                  , ರಚನೆ usb_endpoint_descriptor *epdesc)
 {
-    if (!CONFIG_USB_XHCI)
-        return NULL;
-    if (!epdesc) {
-        usb_add_freelist(upipe);
-        return NULL;
+    ಆದರೆ (!CONFIG_USB_XHCI)
+        ಹಿಂತಿರುಗಿ ಖಾಲಿ;
+    ಆದರೆ (!epdesc) {
+        usb_ಕೂಡಿಸು_freelist(upipe);
+        ಹಿಂತಿರುಗಿ ಖಾಲಿ;
     }
-    if (!upipe)
-        return xhci_alloc_pipe(usbdev, epdesc);
-    u8 eptype = epdesc->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK;
-    int oldmaxpacket = upipe->maxpacket;
+    ಆದರೆ (!upipe)
+        ಹಿಂತಿರುಗಿ xhci_alloc_pipe(usbdev, epdesc);
+    u8 eptype = epdesc->bm_ಗುಣಲಕ್ಷಣಗಳು & USB_ENDPOINT_XFERTYPE_ಮುಖವಾಡ;
+    ಪೂರ್ಣಾಂಕ oldmaxpacket = upipe->maxpacket;
     usb_desc2pipe(upipe, usbdev, epdesc);
-    struct xhci_pipe *pipe = container_of(upipe, struct xhci_pipe, pipe);
-    struct usb_xhci_s *xhci = container_of(
-        pipe->pipe.cntl, struct usb_xhci_s, usb);
+    ರಚನೆ xhci_pipe *pipe = container_ದ(upipe, ರಚನೆ xhci_pipe, pipe);
+    ರಚನೆ usb_xhci_s *xhci = container_ದ(
+        pipe->pipe.cntl, ರಚನೆ usb_xhci_s, usb);
     dprintf(3, "%s: usbdev %p, ring %p, slotid %d, epid %d\n", __func__,
             usbdev, &pipe->reqs, pipe->slotid, pipe->epid);
-    if (eptype != USB_ENDPOINT_XFER_CONTROL || upipe->maxpacket == oldmaxpacket)
-        return upipe;
+    ಆದರೆ (eptype != USB_ENDPOINT_XFER_CONTROL || upipe->maxpacket == oldmaxpacket)
+        ಹಿಂತಿರುಗಿ upipe;
 
     // maxpacket has changed on control endpoint - update controller.
     dprintf(1, "%s: reconf ctl endpoint pkt size: %d -> %d\n",
             __func__, oldmaxpacket, pipe->pipe.maxpacket);
-    struct xhci_inctx *in = xhci_alloc_inctx(usbdev, 1);
-    if (!in)
-        return upipe;
-    in->add = (1 << 1);
-    struct xhci_epctx *ep = (void*)&in[2 << xhci->context64];
+    ರಚನೆ xhci_inctx *ಒಳ = xhci_alloc_inctx(usbdev, 1);
+    ಆದರೆ (!ಒಳ)
+        ಹಿಂತಿರುಗಿ upipe;
+    ಒಳ->ಕೂಡಿಸು = (1 << 1);
+    ರಚನೆ xhci_epctx *ep = (ಶೂನ್ಯ*)&ಒಳ[2 << xhci->context64];
     ep->ctx[1] |= (pipe->pipe.maxpacket << 16);
-    int cc = xhci_cmd_evaluate_context(xhci, pipe->slotid, in);
-    if (cc != CC_SUCCESS) {
+    ಪೂರ್ಣಾಂಕ cc = xhci_cmd_evaluate_context(xhci, pipe->slotid, ಒಳ);
+    ಆದರೆ (cc != CC_SUCCESS) {
         dprintf(1, "%s: reconf ctl endpoint: failed (cc %d)\n",
                 __func__, cc);
     }
-    free(in);
+    ಬಿಡುಗಡೆ(ಒಳ);
 
-    return upipe;
+    ಹಿಂತಿರುಗಿ upipe;
 }
 
 // Submit a USB "setup" message request to the pipe's ring
-static void xhci_xfer_setup(struct xhci_pipe *pipe, int dir, void *cmd
-                            , void *data, int datalen)
+ಸ್ಥಿರ ಶೂನ್ಯ xhci_xfer_ಸಿದ್ಧತೆ(ರಚನೆ xhci_pipe *pipe, ಪೂರ್ಣಾಂಕ dir, ಶೂನ್ಯ *cmd
+                            , ಶೂನ್ಯ *ದತ್ತಾಂಶ, ಪೂರ್ಣಾಂಕ datalen)
 {
-    struct usb_xhci_s *xhci = container_of(
-        pipe->pipe.cntl, struct usb_xhci_s, usb);
-    xhci_trb_queue(&pipe->reqs, cmd, USB_CONTROL_SETUP_SIZE
-                   , (TR_SETUP << 10) | TRB_TR_IDT
+    ರಚನೆ usb_xhci_s *xhci = container_ದ(
+        pipe->pipe.cntl, ರಚನೆ usb_xhci_s, usb);
+    xhci_trb_ಸರತಿ(&pipe->reqs, cmd, USB_CONTROL_ಸಿದ್ಧತೆ_ಗಾತ್ರ
+                   , (TR_ಸಿದ್ಧತೆ << 10) | TRB_TR_IDT
                    | ((datalen ? (dir ? 3 : 2) : 0) << 16));
-    if (datalen)
-        xhci_trb_queue(&pipe->reqs, data, datalen, (TR_DATA << 10)
+    ಆದರೆ (datalen)
+        xhci_trb_ಸರತಿ(&pipe->reqs, ದತ್ತಾಂಶ, datalen, (TR_ದತ್ತಾಂಶ << 10)
                        | ((dir ? 1 : 0) << 16));
-    xhci_trb_queue(&pipe->reqs, NULL, 0, (TR_STATUS << 10) | TRB_TR_IOC
+    xhci_trb_ಸರತಿ(&pipe->reqs, ಖಾಲಿ, 0, (TR_ಸ್ಥಿತಿ << 10) | TRB_TR_IOC
                    | ((dir ? 0 : 1) << 16));
     xhci_doorbell(xhci, pipe->slotid, pipe->epid);
 }
 
 // Submit a USB transfer request to the pipe's ring
-static void xhci_xfer_normal(struct xhci_pipe *pipe,
-                             void *data, int datalen)
+ಸ್ಥಿರ ಶೂನ್ಯ xhci_xfer_ಸಾಮಾನ್ಯ(ರಚನೆ xhci_pipe *pipe,
+                             ಶೂನ್ಯ *ದತ್ತಾಂಶ, ಪೂರ್ಣಾಂಕ datalen)
 {
-    struct usb_xhci_s *xhci = container_of(
-        pipe->pipe.cntl, struct usb_xhci_s, usb);
-    xhci_trb_queue(&pipe->reqs, data, datalen, (TR_NORMAL << 10) | TRB_TR_IOC);
+    ರಚನೆ usb_xhci_s *xhci = container_ದ(
+        pipe->pipe.cntl, ರಚನೆ usb_xhci_s, usb);
+    xhci_trb_ಸರತಿ(&pipe->reqs, ದತ್ತಾಂಶ, datalen, (TR_ಸಾಮಾನ್ಯ << 10) | TRB_TR_IOC);
     xhci_doorbell(xhci, pipe->slotid, pipe->epid);
 }
 
-int
-xhci_send_pipe(struct usb_pipe *p, int dir, const void *cmd
-               , void *data, int datalen)
+ಪೂರ್ಣಾಂಕ
+xhci_send_pipe(ರಚನೆ usb_pipe *p, ಪೂರ್ಣಾಂಕ dir, ಸ್ಥಿರಾಂಕ ಶೂನ್ಯ *cmd
+               , ಶೂನ್ಯ *ದತ್ತಾಂಶ, ಪೂರ್ಣಾಂಕ datalen)
 {
-    if (!CONFIG_USB_XHCI)
-        return -1;
-    struct xhci_pipe *pipe = container_of(p, struct xhci_pipe, pipe);
-    struct usb_xhci_s *xhci = container_of(
-        pipe->pipe.cntl, struct usb_xhci_s, usb);
+    ಆದರೆ (!CONFIG_USB_XHCI)
+        ಹಿಂತಿರುಗಿ -1;
+    ರಚನೆ xhci_pipe *pipe = container_ದ(p, ರಚನೆ xhci_pipe, pipe);
+    ರಚನೆ usb_xhci_s *xhci = container_ದ(
+        pipe->pipe.cntl, ರಚನೆ usb_xhci_s, usb);
 
-    if (cmd) {
-        const struct usb_ctrlrequest *req = cmd;
-        if (req->bRequest == USB_REQ_SET_ADDRESS)
+    ಆದರೆ (cmd) {
+        ಸ್ಥಿರಾಂಕ ರಚನೆ usb_ctrlrequest *req = cmd;
+        ಆದರೆ (req->bRequest == USB_REQ_ಗಣ_ವಿಳಾಸ)
             // Set address command sent during xhci_alloc_pipe.
-            return 0;
-        xhci_xfer_setup(pipe, dir, (void*)req, data, datalen);
-    } else {
-        xhci_xfer_normal(pipe, data, datalen);
+            ಹಿಂತಿರುಗಿ 0;
+        xhci_xfer_ಸಿದ್ಧತೆ(pipe, dir, (ಶೂನ್ಯ*)req, ದತ್ತಾಂಶ, datalen);
+    } ಇಲ್ಲದಿದ್ದರೆ {
+        xhci_xfer_ಸಾಮಾನ್ಯ(pipe, ದತ್ತಾಂಶ, datalen);
     }
 
-    int cc = xhci_event_wait(xhci, &pipe->reqs, usb_xfer_time(p, datalen));
-    if (cc != CC_SUCCESS) {
+    ಪೂರ್ಣಾಂಕ cc = xhci_event_wait(xhci, &pipe->reqs, usb_xfer_ಸಮಯ(p, datalen));
+    ಆದರೆ (cc != CC_SUCCESS) {
         dprintf(1, "%s: xfer failed (cc %d)\n", __func__, cc);
-        return -1;
+        ಹಿಂತಿರುಗಿ -1;
     }
 
-    return 0;
+    ಹಿಂತಿರುಗಿ 0;
 }
 
-int VISIBLE32FLAT
-xhci_poll_intr(struct usb_pipe *p, void *data)
+ಪೂರ್ಣಾಂಕ VISIBLE32FLAT
+xhci_poll_intr(ರಚನೆ usb_pipe *p, ಶೂನ್ಯ *ದತ್ತಾಂಶ)
 {
-    if (!CONFIG_USB_XHCI)
-        return -1;
+    ಆದರೆ (!CONFIG_USB_XHCI)
+        ಹಿಂತಿರುಗಿ -1;
 
-    struct xhci_pipe *pipe = container_of(p, struct xhci_pipe, pipe);
-    struct usb_xhci_s *xhci = container_of(
-        pipe->pipe.cntl, struct usb_xhci_s, usb);
+    ರಚನೆ xhci_pipe *pipe = container_ದ(p, ರಚನೆ xhci_pipe, pipe);
+    ರಚನೆ usb_xhci_s *xhci = container_ದ(
+        pipe->pipe.cntl, ರಚನೆ usb_xhci_s, usb);
     u32 len = pipe->pipe.maxpacket;
-    void *buf = pipe->buf;
-    int bufused = pipe->bufused;
+    ಶೂನ್ಯ *buf = pipe->buf;
+    ಪೂರ್ಣಾಂಕ bufused = pipe->bufused;
 
-    if (!bufused) {
-        xhci_xfer_normal(pipe, buf, len);
+    ಆದರೆ (!bufused) {
+        xhci_xfer_ಸಾಮಾನ್ಯ(pipe, buf, len);
         bufused = 1;
         pipe->bufused = bufused;
-        return -1;
+        ಹಿಂತಿರುಗಿ -1;
     }
 
     xhci_process_events(xhci);
-    if (xhci_ring_busy(&pipe->reqs))
-        return -1;
+    ಆದರೆ (xhci_ring_busy(&pipe->reqs))
+        ಹಿಂತಿರುಗಿ -1;
     dprintf(5, "%s: st %x ct %x [ %p <= %p / %d ]\n", __func__,
-            pipe->reqs.evt.status,
+            pipe->reqs.evt.ಸ್ಥಿತಿ_2,
             pipe->reqs.evt.control,
-            data, buf, len);
-    memcpy(data, buf, len);
-    xhci_xfer_normal(pipe, buf, len);
-    return 0;
+            ದತ್ತಾಂಶ, buf, len);
+    ಸ್ಮರಣೆ_ನಕಲು(ದತ್ತಾಂಶ, buf, len);
+    xhci_xfer_ಸಾಮಾನ್ಯ(pipe, buf, len);
+    ಹಿಂತಿರುಗಿ 0;
 }

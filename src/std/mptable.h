@@ -1,14 +1,14 @@
-#ifndef __MPTABLE_H
-#define __MPTABLE_H
+#ವ್ಯಾಖ್ಯಾನಿತವಾಗದಿದ್ದರೆ __MPTABLE_H
+#ವ್ಯಾಖ್ಯಾನಿಸು __MPTABLE_H
 
-#include "types.h" // u32
+#ಅನ್ತರ್ಭಾವ "types.h" // u32
 
-#define MPTABLE_SIGNATURE 0x5f504d5f  // "_MP_"
+#ವ್ಯಾಖ್ಯಾನಿಸು MPTABLE_SIGNATURE 0x5f504d5f  // "_MP_"
 
-struct mptable_floating_s {
+ರಚನೆ mptable_floating_s {
     u32 signature;
     u32 physaddr;
-    u8 length;
+    u8 ಉದ್ದಳತೆ;
     u8 spec_rev;
     u8 checksum;
     u8 feature1;
@@ -16,31 +16,31 @@ struct mptable_floating_s {
     u8 reserved[3];
 };
 
-#define MPCONFIG_SIGNATURE 0x504d4350  // "PCMP"
+#ವ್ಯಾಖ್ಯಾನಿಸು MPCONFIG_SIGNATURE 0x504d4350  // "PCMP"
 
-struct mptable_config_s {
+ರಚನೆ mptable_config_s {
     u32 signature;
-    u16 length;
+    u16 ಉದ್ದಳತೆ;
     u8 spec;
     u8 checksum;
-    char oemid[8];
-    char productid[12];
+    ಅಕ್ಷರ oemid[8];
+    ಅಕ್ಷರ productid[12];
     u32 oemptr;
     u16 oemsize;
     u16 entrycount;
     u32 lapic;
-    u16 exttable_length;
+    u16 exttable_ಉದ್ದಳತೆ;
     u8 exttable_checksum;
     u8 reserved;
 } PACKED;
 
-#define MPT_TYPE_CPU 0
-#define MPT_TYPE_BUS 1
-#define MPT_TYPE_IOAPIC 2
-#define MPT_TYPE_INTSRC 3
-#define MPT_TYPE_LOCAL_INT 4
+#ವ್ಯಾಖ್ಯಾನಿಸು MPT_TYPE_CPU 0
+#ವ್ಯಾಖ್ಯಾನಿಸು MPT_TYPE_BUS 1
+#ವ್ಯಾಖ್ಯಾನಿಸು MPT_TYPE_IOAPIC 2
+#ವ್ಯಾಖ್ಯಾನಿಸು MPT_TYPE_INTSRC 3
+#ವ್ಯಾಖ್ಯಾನಿಸು MPT_TYPE_LOCAL_INT 4
 
-struct mpt_cpu {
+ರಚನೆ mpt_cpu {
     u8 type;
     u8 apicid;
     u8 apicver;
@@ -50,13 +50,13 @@ struct mpt_cpu {
     u32 reserved[2];
 } PACKED;
 
-struct mpt_bus {
+ರಚನೆ mpt_bus {
     u8 type;
     u8 busid;
-    char bustype[6];
+    ಅಕ್ಷರ bustype[6];
 } PACKED;
 
-struct mpt_ioapic {
+ರಚನೆ mpt_ioapic {
     u8 type;
     u8 apicid;
     u8 apicver;
@@ -64,7 +64,7 @@ struct mpt_ioapic {
     u32 apicaddr;
 } PACKED;
 
-struct mpt_intsrc {
+ರಚನೆ mpt_intsrc {
     u8 type;
     u8 irqtype;
     u16 irqflag;
@@ -74,4 +74,4 @@ struct mpt_intsrc {
     u8 dstirq;
 } PACKED;
 
-#endif // mptable.h
+#ಆದರೆ_ಅಂತ್ಯ // mptable.h

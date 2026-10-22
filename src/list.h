@@ -1,91 +1,91 @@
-#ifndef __LIST_H
-#define __LIST_H
+#ವ್ಯಾಖ್ಯಾನಿತವಾಗದಿದ್ದರೆ __LIST_H
+#ವ್ಯಾಖ್ಯಾನಿಸು __LIST_H
 
-#include "types.h" // container_of
+#ಅನ್ತರ್ಭಾವ "types.h" // container_of
 
 
 /****************************************************************
  * hlist - Double linked lists with a single pointer list head
  ****************************************************************/
 
-struct hlist_node {
-    struct hlist_node *next, **pprev;
+ರಚನೆ hlist_ಗಂಟು {
+    ರಚನೆ hlist_ಗಂಟು *ಮುಂದಿನ, **pprev;
 };
 
-struct hlist_head {
-    struct hlist_node *first;
+ರಚನೆ hlist_ತಲೆ {
+    ರಚನೆ hlist_ಗಂಟು *ಮೊದಲ;
 };
 
-static inline int
-hlist_empty(const struct hlist_head *h)
+ಸ್ಥಿರ ಸಾಲೊಳಗೆ ಪೂರ್ಣಾಂಕ
+hlist_ಖಾಲಿಗಳು(ಸ್ಥಿರಾಂಕ ರಚನೆ hlist_ತಲೆ *h)
 {
-    return !h->first;
+    ಹಿಂತಿರುಗಿ !h->ಮೊದಲ;
 }
 
-static inline void
-hlist_del(struct hlist_node *n)
+ಸ್ಥಿರ ಸಾಲೊಳಗೆ ಶೂನ್ಯ
+hlist_del(ರಚನೆ hlist_ಗಂಟು *n)
 {
-    struct hlist_node *next = n->next;
-    struct hlist_node **pprev = n->pprev;
-    *pprev = next;
-    if (next)
-        next->pprev = pprev;
+    ರಚನೆ hlist_ಗಂಟು *ಮುಂದಿನ = n->ಮುಂದಿನ;
+    ರಚನೆ hlist_ಗಂಟು **pprev = n->pprev;
+    *pprev = ಮುಂದಿನ;
+    ಆದರೆ (ಮುಂದಿನ)
+        ಮುಂದಿನ->pprev = pprev;
 }
 
-static inline void
-hlist_add(struct hlist_node *n, struct hlist_node **pprev)
+ಸ್ಥಿರ ಸಾಲೊಳಗೆ ಶೂನ್ಯ
+hlist_ಕೂಡಿಸು(ರಚನೆ hlist_ಗಂಟು *n, ರಚನೆ hlist_ಗಂಟು **pprev)
 {
-    struct hlist_node *next = *pprev;
+    ರಚನೆ hlist_ಗಂಟು *ಮುಂದಿನ = *pprev;
     n->pprev = pprev;
-    n->next = next;
-    if (next)
-        next->pprev = &n->next;
+    n->ಮುಂದಿನ = ಮುಂದಿನ;
+    ಆದರೆ (ಮುಂದಿನ)
+        ಮುಂದಿನ->pprev = &n->ಮುಂದಿನ;
     *pprev = n;
 }
 
-static inline void
-hlist_add_head(struct hlist_node *n, struct hlist_head *h)
+ಸ್ಥಿರ ಸಾಲೊಳಗೆ ಶೂನ್ಯ
+hlist_ಕೂಡಿಸು_ತಲೆ(ರಚನೆ hlist_ಗಂಟು *n, ರಚನೆ hlist_ತಲೆ *h)
 {
-    hlist_add(n, &h->first);
+    hlist_ಕೂಡಿಸು(n, &h->ಮೊದಲ);
 }
 
-static inline void
-hlist_add_before(struct hlist_node *n, struct hlist_node *next)
+ಸ್ಥಿರ ಸಾಲೊಳಗೆ ಶೂನ್ಯ
+hlist_ಕೂಡಿಸು_before(ರಚನೆ hlist_ಗಂಟು *n, ರಚನೆ hlist_ಗಂಟು *ಮುಂದಿನ)
 {
-    hlist_add(n, next->pprev);
+    hlist_ಕೂಡಿಸು(n, ಮುಂದಿನ->pprev);
 }
 
-static inline void
-hlist_add_after(struct hlist_node *n, struct hlist_node *prev)
+ಸ್ಥಿರ ಸಾಲೊಳಗೆ ಶೂನ್ಯ
+hlist_ಕೂಡಿಸು_after(ರಚನೆ hlist_ಗಂಟು *n, ರಚನೆ hlist_ಗಂಟು *prev)
 {
-    hlist_add(n, &prev->next);
+    hlist_ಕೂಡಿಸು(n, &prev->ಮುಂದಿನ);
 }
 
-static inline void
-hlist_replace(struct hlist_node *old, struct hlist_node *new)
+ಸ್ಥಿರ ಸಾಲೊಳಗೆ ಶೂನ್ಯ
+hlist_replace(ರಚನೆ hlist_ಗಂಟು *old, ರಚನೆ hlist_ಗಂಟು *new)
 {
-    new->next = old->next;
-    if (new->next)
-        new->next->pprev = &new->next;
+    new->ಮುಂದಿನ = old->ಮುಂದಿನ;
+    ಆದರೆ (new->ಮುಂದಿನ)
+        new->ಮುಂದಿನ->pprev = &new->ಮುಂದಿನ;
     new->pprev = old->pprev;
     *new->pprev = new;
 }
 
-#define hlist_for_each_entry(pos, head, member)                         \
-    for (pos = container_of((head)->first, typeof(*pos), member)        \
-         ; pos != container_of(NULL, typeof(*pos), member)              \
-         ; pos = container_of(pos->member.next, typeof(*pos), member))
+#ವ್ಯಾಖ್ಯಾನಿಸು hlist_for_each_ನಮೂದು(pos, ತಲೆ, member)                         \
+    ಗಾಗಿ (pos = container_ದ((ತಲೆ)->ಮೊದಲ, typeof(*pos), member)        \
+         ; pos != container_ದ(ಖಾಲಿ, typeof(*pos), member)              \
+         ; pos = container_ದ(pos->member.ಮುಂದಿನ, typeof(*pos), member))
 
-#define hlist_for_each_entry_safe(pos, n, head, member)                 \
-    for (pos = container_of((head)->first, typeof(*pos), member)        \
-         ; pos != container_of(NULL, typeof(*pos), member)              \
-             && ({ n = pos->member.next; 1; })                          \
-         ; pos = container_of(n, typeof(*pos), member))
+#ವ್ಯಾಖ್ಯಾನಿಸು hlist_for_each_ನಮೂದು_ಸುರಕ್ಷಿತ(pos, n, ತಲೆ, member)                 \
+    ಗಾಗಿ (pos = container_ದ((ತಲೆ)->ಮೊದಲ, typeof(*pos), member)        \
+         ; pos != container_ದ(ಖಾಲಿ, typeof(*pos), member)              \
+             && ({ n = pos->member.ಮುಂದಿನ; 1; })                          \
+         ; pos = container_ದ(n, typeof(*pos), member))
 
-#define hlist_for_each_entry_pprev(pos, pprev, head, member)            \
-    for (pprev = &(head)->first                                         \
-         ; *pprev && ({ pos=container_of(*pprev, typeof(*pos), member); 1; }) \
-         ; pprev = &(*pprev)->next)
+#ವ್ಯಾಖ್ಯಾನಿಸು hlist_for_each_ನಮೂದು_pprev(pos, pprev, ತಲೆ, member)            \
+    ಗಾಗಿ (pprev = &(ತಲೆ)->ಮೊದಲ                                         \
+         ; *pprev && ({ pos=container_ದ(*pprev, typeof(*pos), member); 1; }) \
+         ; pprev = &(*pprev)->ಮುಂದಿನ)
 
 
-#endif // list.h
+#ಆದರೆ_ಅಂತ್ಯ // list.h

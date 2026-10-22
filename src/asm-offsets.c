@@ -1,23 +1,23 @@
 // Generate assembler offsets.
 
-#include "gen-defs.h" // OFFSET
-#include "bregs.h" // struct bregs
+#ಅನ್ತರ್ಭಾವ "gen-defs.h" //ಸ್ಥಾನಾಂತರ
+#ಅನ್ತರ್ಭಾವ "bregs.h" // struct bregs
 
 /* workaround for a warning with -Wmissing-prototypes */
-void foo(void) VISIBLE16;
+ಶೂನ್ಯ foo(ಶೂನ್ಯ) VISIBLE16;
 
-void foo(void)
+ಶೂನ್ಯ foo(ಶೂನ್ಯ)
 {
     COMMENT("BREGS");
-    OFFSET(BREGS_es, bregs, es);
-    OFFSET(BREGS_ds, bregs, ds);
-    OFFSET(BREGS_eax, bregs, eax);
-    OFFSET(BREGS_ebx, bregs, ebx);
-    OFFSET(BREGS_ecx, bregs, ecx);
-    OFFSET(BREGS_edx, bregs, edx);
-    OFFSET(BREGS_ebp, bregs, ebp);
-    OFFSET(BREGS_esi, bregs, esi);
-    OFFSET(BREGS_edi, bregs, edi);
-    OFFSET(BREGS_flags, bregs, flags);
-    OFFSET(BREGS_code, bregs, code);
+    ಸ್ಥಾನಾಂತರ(BREGS_es, bregs, es);
+    ಸ್ಥಾನಾಂತರ(BREGS_ds, bregs, ds);
+    ಸ್ಥಾನಾಂತರ(BREGS_eax, bregs, eax);
+    ಸ್ಥಾನಾಂತರ(BREGS_ebx, bregs, ebx);
+    ಸ್ಥಾನಾಂತರ(BREGS_ecx, bregs, ecx);
+    ಸ್ಥಾನಾಂತರ(BREGS_edx, bregs, edx);
+    ಸ್ಥಾನಾಂತರ(BREGS_ebp, bregs, ebp);
+    ಸ್ಥಾನಾಂತರ(BREGS_esi, bregs, esi);
+    ಸ್ಥಾನಾಂತರ(BREGS_edi, bregs, edi);
+    ಸ್ಥಾನಾಂತರ(BREGS_flags, bregs, flags);
+    ಸ್ಥಾನಾಂತರ(BREGS_ಸಂಕೇತ, bregs, ಸಂಕೇತ_2);
 }

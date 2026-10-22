@@ -14,47 +14,47 @@
  *  See: NIST standard for SHA-256 in FIPS PUB 180-4
  */
 
-#include "config.h"
-#include "byteorder.h"
-#include "sha.h"
-#include "string.h"
-#include "x86.h"
+#ಅನ್ತರ್ಭಾವ "config.h"
+#ಅನ್ತರ್ಭಾವ "byteorder.h"
+#ಅನ್ತರ್ಭಾವ "sha.h"
+#ಅನ್ತರ್ಭಾವ "string.h"
+#ಅನ್ತರ್ಭಾವ "x86.h"
 
-typedef struct _sha256_ctx {
+ಪ್ರಕಾರವ್ಯಾಖ್ಯೆ ರಚನೆ _sha256_ctx {
     u32 h[8];
 } sha256_ctx;
 
-static inline u32 Ch(u32 x, u32 y, u32 z)
+ಸ್ಥಿರ ಸಾಲೊಳಗೆ u32 Ch(u32 x, u32 y, u32 z)
 {
-    return (x & y) | ((x ^ 0xffffffff) & z);
+    ಹಿಂತಿರುಗಿ (x & y) | ((x ^ 0xffffffff) & z);
 }
 
-static inline u32 Maj(u32 x, u32 y, u32 z)
+ಸ್ಥಿರ ಸಾಲೊಳಗೆ u32 Maj(u32 x, u32 y, u32 z)
 {
-    return (x & y) | (x & z) | (y & z);
+    ಹಿಂತಿರುಗಿ (x & y) | (x & z) | (y & z);
 }
 
-static inline u32 sum0(u32 x)
+ಸ್ಥಿರ ಸಾಲೊಳಗೆ u32 sum0(u32 x)
 {
-    return ror(x, 2) ^ ror(x, 13) ^ ror(x, 22);
+    ಹಿಂತಿರುಗಿ ror(x, 2) ^ ror(x, 13) ^ ror(x, 22);
 }
 
-static inline u32 sum1(u32 x)
+ಸ್ಥಿರ ಸಾಲೊಳಗೆ u32 sum1(u32 x)
 {
-    return ror(x, 6) ^ ror(x, 11) ^ ror(x, 25);
+    ಹಿಂತಿರುಗಿ ror(x, 6) ^ ror(x, 11) ^ ror(x, 25);
 }
 
-static inline u32 sigma0(u32 x)
+ಸ್ಥಿರ ಸಾಲೊಳಗೆ u32 sigma0(u32 x)
 {
-    return ror(x, 7) ^ ror(x, 18) ^ (x >> 3);
+    ಹಿಂತಿರುಗಿ ror(x, 7) ^ ror(x, 18) ^ (x >> 3);
 }
 
-static inline u32 sigma1(u32 x)
+ಸ್ಥಿರ ಸಾಲೊಳಗೆ u32 sigma1(u32 x)
 {
-    return ror(x, 17) ^ ror(x, 19) ^ (x >> 10);
+    ಹಿಂತಿರುಗಿ ror(x, 17) ^ ror(x, 19) ^ (x >> 10);
 }
 
-static void sha256_block(u32 *w, sha256_ctx *ctx)
+ಸ್ಥಿರ ಶೂನ್ಯ sha256_ಖಂಡ(u32 *w, sha256_ctx *ctx)
 {
     u32 t;
     u32 a, b, c, d, e, f, g, h;
@@ -63,7 +63,7 @@ static void sha256_block(u32 *w, sha256_ctx *ctx)
     /*
      * FIPS 180-4 4.2.2: SHA256 Constants
      */
-    static const u32 sha_ko[64] = {
+    ಸ್ಥಿರ ಸ್ಥಿರಾಂಕ u32 sha_ko[64] = {
         0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
         0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
         0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
@@ -92,10 +92,10 @@ static void sha256_block(u32 *w, sha256_ctx *ctx)
      */
 
     /* w(0)..w(15) are in big endian format */
-    for (t = 0; t <= 15; t++)
-        w[t] = be32_to_cpu(w[t]);
+    ಗಾಗಿ (t = 0; t <= 15; t++)
+        w[t] = be32_ಗಮ್ಯ_cpu(w[t]);
 
-    for (t = 16; t <= 63; t++)
+    ಗಾಗಿ (t = 16; t <= 63; t++)
         w[t] = sigma1(w[t-2]) + w[t-7] + sigma0(w[t-15]) + w[t-16];
 
     /*
@@ -116,7 +116,7 @@ static void sha256_block(u32 *w, sha256_ctx *ctx)
      *    T2 = sum0(a) + Maj(a,b,c)
      *    h = g; g = f; f = e; e = d + T1; d = c; c = b; b = a; a + T1 + T2
      */
-    for (t = 0; t <= 63; t++) {
+    ಗಾಗಿ (t = 0; t <= 63; t++) {
         T1 = h + sum1(e) + Ch(e, f, g) + sha_ko[t] + w[t];
         T2 = sum0(a) + Maj(a, b, c);
         h = g;
@@ -143,51 +143,51 @@ static void sha256_block(u32 *w, sha256_ctx *ctx)
     ctx->h[7] += h;
 }
 
-static void sha256_do(sha256_ctx *ctx, const u8 *data32, u32 length)
+ಸ್ಥಿರ ಶೂನ್ಯ sha256_do(sha256_ctx *ctx, ಸ್ಥಿರಾಂಕ u8 *data32, u32 ಉದ್ದಳತೆ)
 {
-    u32 offset;
-    u16 num;
-    u32 bits = 0;
+    u32 ಸ್ಥಾನಾಂತರ_2;
+    u16 ಅಂಕೆ;
+    u32 ಬಿಟ್ಟುಗಳು = 0;
     u32 w[64];
     u64 tmp;
 
     /* treat data in 64-byte chunks */
-    for (offset = 0; length - offset >= 64; offset += 64) {
-        memcpy(w, data32 + offset, 64);
-        sha256_block((u32 *)w, ctx);
-        bits += (64 * 8);
+    ಗಾಗಿ (ಸ್ಥಾನಾಂತರ_2 = 0; ಉದ್ದಳತೆ - ಸ್ಥಾನಾಂತರ_2 >= 64; ಸ್ಥಾನಾಂತರ_2 += 64) {
+        ಸ್ಮರಣೆ_ನಕಲು(w, data32 + ಸ್ಥಾನಾಂತರ_2, 64);
+        sha256_ಖಂಡ((u32 *)w, ctx);
+        ಬಿಟ್ಟುಗಳು += (64 * 8);
     }
 
     /* last block with less than 64 bytes */
-    num = length - offset;
-    bits += (num << 3);
+    ಅಂಕೆ = ಉದ್ದಳತೆ - ಸ್ಥಾನಾಂತರ_2;
+    ಬಿಟ್ಟುಗಳು += (ಅಂಕೆ << 3);
 
-    memcpy(w, data32 + offset, num);
+    ಸ್ಮರಣೆ_ನಕಲು(w, data32 + ಸ್ಥಾನಾಂತರ_2, ಅಂಕೆ);
     /*
      * FIPS 180-4 5.1: Padding the Message
      */
-    ((u8 *)w)[num] = 0x80;
-    if (64 - (num + 1) > 0)
-        memset( &((u8 *)w)[num + 1], 0, 64 - (num + 1));
+    ((u8 *)w)[ಅಂಕೆ] = 0x80;
+    ಆದರೆ (64 - (ಅಂಕೆ + 1) > 0)
+        memset( &((u8 *)w)[ಅಂಕೆ + 1], 0, 64 - (ಅಂಕೆ + 1));
 
-    if (num >= 56) {
+    ಆದರೆ (ಅಂಕೆ >= 56) {
         /* cannot append number of bits here */
-        sha256_block((u32 *)w, ctx);
+        sha256_ಖಂಡ((u32 *)w, ctx);
         memset(w, 0, 60);
     }
 
     /* write number of bits to end of block */
-    tmp = cpu_to_be64(bits);
-    memcpy(&w[14], &tmp, 8);
+    tmp = cpu_ಗಮ್ಯ_be64(ಬಿಟ್ಟುಗಳು);
+    ಸ್ಮರಣೆ_ನಕಲು(&w[14], &tmp, 8);
 
-    sha256_block(w, ctx);
+    sha256_ಖಂಡ(w, ctx);
 
     /* need to switch result's endianness */
-    for (num = 0; num < 8; num++)
-        ctx->h[num] = cpu_to_be32(ctx->h[num]);
+    ಗಾಗಿ (ಅಂಕೆ = 0; ಅಂಕೆ < 8; ಅಂಕೆ++)
+        ctx->h[ಅಂಕೆ] = cpu_ಗಮ್ಯ_be32(ctx->h[ಅಂಕೆ]);
 }
 
-void sha256(const u8 *data, u32 length, u8 *hash)
+ಶೂನ್ಯ sha256(ಸ್ಥಿರಾಂಕ u8 *ದತ್ತಾಂಶ, u32 ಉದ್ದಳತೆ, u8 *hash)
 {
     sha256_ctx ctx = {
         .h = {
@@ -206,6 +206,6 @@ void sha256(const u8 *data, u32 length, u8 *hash)
         }
     };
 
-    sha256_do(&ctx, data, length);
-    memcpy(hash, ctx.h, sizeof(ctx.h));
+    sha256_do(&ctx, ದತ್ತಾಂಶ, ಉದ್ದಳತೆ);
+    ಸ್ಮರಣೆ_ನಕಲು(hash, ctx.h, ಗಾತ್ರ(ctx.h));
 }

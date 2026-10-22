@@ -1,11 +1,11 @@
-#ifndef __SHA_H
-#define __SHA_H
+#ವ್ಯಾಖ್ಯಾನಿತವಾಗದಿದ್ದರೆ __SHA_H
+#ವ್ಯಾಖ್ಯಾನಿಸು __SHA_H
 
-#include "types.h" // u32
+#ಅನ್ತರ್ಭಾವ "types.h" // u32
 
-void sha1(const u8 *data, u32 length, u8 *hash);
-void sha256(const u8 *data, u32 length, u8 *hash);
-void sha384(const u8 *data, u32 length, u8 *hash);
-void sha512(const u8 *data, u32 length, u8 *hash);
+ಶೂನ್ಯ sha1(ಸ್ಥಿರಾಂಕ u8 *ದತ್ತಾಂಶ, u32 ಉದ್ದಳತೆ, u8 *hash);
+ಶೂನ್ಯ sha256(ಸ್ಥಿರಾಂಕ u8 *ದತ್ತಾಂಶ, u32 ಉದ್ದಳತೆ, u8 *hash);
+ಶೂನ್ಯ sha384(ಸ್ಥಿರಾಂಕ u8 *ದತ್ತಾಂಶ, u32 ಉದ್ದಳತೆ, u8 *hash);
+ಶೂನ್ಯ sha512(ಸ್ಥಿರಾಂಕ u8 *ದತ್ತಾಂಶ, u32 ಉದ್ದಳತೆ, u8 *hash);
 
-#endif // sha.h
+#ಆದರೆ_ಅಂತ್ಯ // sha.h

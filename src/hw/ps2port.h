@@ -1,67 +1,67 @@
 // Basic ps2 port (keyboard/mouse) command handling.
-#ifndef __PS2PORT_H
-#define __PS2PORT_H
+#ವ್ಯಾಖ್ಯಾನಿತವಾಗದಿದ್ದರೆ __PS2PORT_H
+#ವ್ಯಾಖ್ಯಾನಿಸು __PS2PORT_H
 
-#include "types.h" // u8
+#ಅನ್ತರ್ಭಾವ "types.h" // u8
 
-#define PORT_PS2_DATA          0x0060
-#define PORT_PS2_STATUS        0x0064
+#ವ್ಯಾಖ್ಯಾನಿಸು ಪೋರ್ಟ್_PS2_ದತ್ತಾಂಶ          0x0060
+#ವ್ಯಾಖ್ಯಾನಿಸು ಪೋರ್ಟ್_PS2_ಸ್ಥಿತಿ        0x0064
 
 // Standard commands.
-#define I8042_CMD_CTL_RCTR      0x0120
-#define I8042_CMD_CTL_WCTR      0x1060
-#define I8042_CMD_CTL_TEST      0x01aa
+#ವ್ಯಾಖ್ಯಾನಿಸು I8042_CMD_CTL_RCTR      0x0120
+#ವ್ಯಾಖ್ಯಾನಿಸು I8042_CMD_CTL_WCTR      0x1060
+#ವ್ಯಾಖ್ಯಾನಿಸು I8042_CMD_CTL_TEST      0x01aa
 
-#define I8042_CMD_KBD_TEST      0x01ab
-#define I8042_CMD_KBD_DISABLE   0x00ad
-#define I8042_CMD_KBD_ENABLE    0x00ae
+#ವ್ಯಾಖ್ಯಾನಿಸು I8042_CMD_KBD_TEST      0x01ab
+#ವ್ಯಾಖ್ಯಾನಿಸು I8042_CMD_KBD_DISABLE   0x00ad
+#ವ್ಯಾಖ್ಯಾನಿಸು I8042_CMD_KBD_ENABLE    0x00ae
 
-#define I8042_CMD_AUX_DISABLE   0x00a7
-#define I8042_CMD_AUX_ENABLE    0x00a8
-#define I8042_CMD_AUX_SEND      0x10d4
+#ವ್ಯಾಖ್ಯಾನಿಸು I8042_CMD_AUX_DISABLE   0x00a7
+#ವ್ಯಾಖ್ಯಾನಿಸು I8042_CMD_AUX_ENABLE    0x00a8
+#ವ್ಯಾಖ್ಯಾನಿಸು I8042_CMD_AUX_SEND      0x10d4
 
 // Keyboard commands
-#define ATKBD_CMD_SETLEDS       0x10ed
-#define ATKBD_CMD_SSCANSET      0x10f0
-#define ATKBD_CMD_GETID         0x02f2
-#define ATKBD_CMD_ENABLE        0x00f4
-#define ATKBD_CMD_RESET_DIS     0x00f5
-#define ATKBD_CMD_RESET_BAT     0x01ff
+#ವ್ಯಾಖ್ಯಾನಿಸು ATKBD_CMD_SETLEDS       0x10ed
+#ವ್ಯಾಖ್ಯಾನಿಸು ATKBD_CMD_SSCANSET      0x10f0
+#ವ್ಯಾಖ್ಯಾನಿಸು ATKBD_CMD_GETID         0x02f2
+#ವ್ಯಾಖ್ಯಾನಿಸು ATKBD_CMD_ENABLE        0x00f4
+#ವ್ಯಾಖ್ಯಾನಿಸು ATKBD_CMD_RESET_DIS     0x00f5
+#ವ್ಯಾಖ್ಯಾನಿಸು ATKBD_CMD_RESET_BAT     0x01ff
 
 // Mouse commands
-#define PSMOUSE_CMD_SETSCALE11  0x00e6
-#define PSMOUSE_CMD_SETSCALE21  0x00e7
-#define PSMOUSE_CMD_SETRES      0x10e8
-#define PSMOUSE_CMD_GETINFO     0x03e9
-#define PSMOUSE_CMD_GETID       0x02f2
-#define PSMOUSE_CMD_SETRATE     0x10f3
-#define PSMOUSE_CMD_ENABLE      0x00f4
-#define PSMOUSE_CMD_DISABLE     0x00f5
-#define PSMOUSE_CMD_RESET_BAT   0x02ff
+#ವ್ಯಾಖ್ಯಾನಿಸು PSMOUSE_CMD_SETSCALE11  0x00e6
+#ವ್ಯಾಖ್ಯಾನಿಸು PSMOUSE_CMD_SETSCALE21  0x00e7
+#ವ್ಯಾಖ್ಯಾನಿಸು PSMOUSE_CMD_SETRES      0x10e8
+#ವ್ಯಾಖ್ಯಾನಿಸು PSMOUSE_CMD_GETINFO     0x03e9
+#ವ್ಯಾಖ್ಯಾನಿಸು PSMOUSE_CMD_GETID       0x02f2
+#ವ್ಯಾಖ್ಯಾನಿಸು PSMOUSE_CMD_SETRATE     0x10f3
+#ವ್ಯಾಖ್ಯಾನಿಸು PSMOUSE_CMD_ENABLE      0x00f4
+#ವ್ಯಾಖ್ಯಾನಿಸು PSMOUSE_CMD_DISABLE     0x00f5
+#ವ್ಯಾಖ್ಯಾನಿಸು PSMOUSE_CMD_RESET_BAT   0x02ff
 
 // Status register bits.
-#define I8042_STR_PARITY        0x80
-#define I8042_STR_TIMEOUT       0x40
-#define I8042_STR_AUXDATA       0x20
-#define I8042_STR_KEYLOCK       0x10
-#define I8042_STR_CMDDAT        0x08
-#define I8042_STR_MUXERR        0x04
-#define I8042_STR_IBF           0x02
-#define I8042_STR_OBF           0x01
+#ವ್ಯಾಖ್ಯಾನಿಸು I8042_STR_PARITY        0x80
+#ವ್ಯಾಖ್ಯಾನಿಸು I8042_STR_TIMEOUT       0x40
+#ವ್ಯಾಖ್ಯಾನಿಸು I8042_STR_AUXDATA       0x20
+#ವ್ಯಾಖ್ಯಾನಿಸು I8042_STR_KEYLOCK       0x10
+#ವ್ಯಾಖ್ಯಾನಿಸು I8042_STR_CMDDAT        0x08
+#ವ್ಯಾಖ್ಯಾನಿಸು I8042_STR_MUXERR        0x04
+#ವ್ಯಾಖ್ಯಾನಿಸು I8042_STR_IBF           0x02
+#ವ್ಯಾಖ್ಯಾನಿಸು I8042_STR_OBF           0x01
 
 // Control register bits.
-#define I8042_CTR_KBDINT        0x01
-#define I8042_CTR_AUXINT        0x02
-#define I8042_CTR_IGNKEYLOCK    0x08
-#define I8042_CTR_KBDDIS        0x10
-#define I8042_CTR_AUXDIS        0x20
-#define I8042_CTR_XLATE         0x40
+#ವ್ಯಾಖ್ಯಾನಿಸು I8042_CTR_KBDINT        0x01
+#ವ್ಯಾಖ್ಯಾನಿಸು I8042_CTR_AUXINT        0x02
+#ವ್ಯಾಖ್ಯಾನಿಸು I8042_CTR_IGNKEYLOCK    0x08
+#ವ್ಯಾಖ್ಯಾನಿಸು I8042_CTR_KBDDIS        0x10
+#ವ್ಯಾಖ್ಯಾನಿಸು I8042_CTR_AUXDIS        0x20
+#ವ್ಯಾಖ್ಯಾನಿಸು I8042_CTR_XLATE         0x40
 
 // ps2port.c
-void i8042_reboot(void);
-int ps2_kbd_command(int command, u8 *param);
-int ps2_mouse_command(int command, u8 *param);
-void ps2_check_event(void);
-void ps2port_setup(void);
+ಶೂನ್ಯ i8042_reboot(ಶೂನ್ಯ);
+ಪೂರ್ಣಾಂಕ ps2_kbd_command(ಪೂರ್ಣಾಂಕ command, u8 *param);
+ಪೂರ್ಣಾಂಕ ps2_mouse_command(ಪೂರ್ಣಾಂಕ command, u8 *param);
+ಶೂನ್ಯ ps2_check_event(ಶೂನ್ಯ);
+ಶೂನ್ಯ ps2port_ಸಿದ್ಧತೆ(ಶೂನ್ಯ);
 
-#endif // ps2port.h
+#ಆದರೆ_ಅಂತ್ಯ // ps2port.h

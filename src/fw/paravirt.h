@@ -1,80 +1,80 @@
-#ifndef __PV_H
-#define __PV_H
+#ವ್ಯಾಖ್ಯಾನಿತವಾಗದಿದ್ದರೆ __PV_H
+#ವ್ಯಾಖ್ಯಾನಿಸು __PV_H
 
-#include "config.h" // CONFIG_*
-#include "biosvar.h" // GET_GLOBAL
-#include "romfile.h" // struct romfile_s
+#ಅನ್ತರ್ಭಾವ "config.h" // CONFIG_*
+#ಅನ್ತರ್ಭಾವ "biosvar.h" // GET_GLOBAL
+#ಅನ್ತರ್ಭಾವ "romfile.h" // struct romfile_s
 
 // kvmclock
-struct pvclock_vcpu_time_info {
-	u32   version;
+ರಚನೆ pvclock_vcpu_ಸಮಯ_info {
+	u32   ಆವೃತ್ತಿ_2;
 	u32   pad0;
 	u64   tsc_timestamp;
-	u64   system_time;
-	u32   tsc_to_system_mul;
-	s8    tsc_shift;
+	u64   system_ಸಮಯ;
+	u32   tsc_ಗಮ್ಯ_system_mul;
+	s8    tsc_ಸರಿಸು;
 	u8    flags;
 	u8    pad[2];
 } __attribute__((__packed__)); /* 32 bytes */
 
 // Types of paravirtualized platforms.
-#define PF_QEMU     (1<<0)
-#define PF_XEN      (1<<1)
-#define PF_KVM      (1<<2)
+#ವ್ಯಾಖ್ಯಾನಿಸು PF_QEMU     (1<<0)
+#ವ್ಯಾಖ್ಯಾನಿಸು PF_XEN      (1<<1)
+#ವ್ಯಾಖ್ಯಾನಿಸು PF_KVM      (1<<2)
 
-typedef struct QemuCfgDmaAccess {
+ಪ್ರಕಾರವ್ಯಾಖ್ಯೆ ರಚನೆ QemuCfgDmaAccess {
     u32 control;
-    u32 length;
-    u64 address;
+    u32 ಉದ್ದಳತೆ;
+    u64 ವಿಳಾಸ;
 } PACKED QemuCfgDmaAccess;
 
-extern u32 RamSize;
-extern u64 RamSizeOver4G;
-extern int PlatformRunningOn;
-extern u8 CPUPhysBits;
-extern u8 CPULongMode;
+ಬಾಹ್ಯ u32 Ram_ಗಾತ್ರ;
+ಬಾಹ್ಯ u64 Ram_ಗಾತ್ರ_Over4_G;
+ಬಾಹ್ಯ ಪೂರ್ಣಾಂಕ PlatformRunningOn;
+ಬಾಹ್ಯ u8 CPUPhys_ಬಿಟ್ಟುಗಳು;
+ಬಾಹ್ಯ u8 CPULong_ಬಹುಲಕ;
 
-static inline int runningOnQEMU(void) {
-    return CONFIG_QEMU || (
+ಸ್ಥಿರ ಸಾಲೊಳಗೆ ಪೂರ್ಣಾಂಕ runningOnQEMU(ಶೂನ್ಯ) {
+    ಹಿಂತಿರುಗಿ CONFIG_QEMU || (
         CONFIG_QEMU_HARDWARE && GET_GLOBAL(PlatformRunningOn) & PF_QEMU);
 }
-static inline int runningOnXen(void) {
-    return CONFIG_XEN && GET_GLOBAL(PlatformRunningOn) & PF_XEN;
+ಸ್ಥಿರ ಸಾಲೊಳಗೆ ಪೂರ್ಣಾಂಕ runningOnXen(ಶೂನ್ಯ) {
+    ಹಿಂತಿರುಗಿ CONFIG_XEN && GET_GLOBAL(PlatformRunningOn) & PF_XEN;
 }
-static inline int runningOnKVM(void) {
-    return CONFIG_QEMU && GET_GLOBAL(PlatformRunningOn) & PF_KVM;
+ಸ್ಥಿರ ಸಾಲೊಳಗೆ ಪೂರ್ಣಾಂಕ runningOnKVM(ಶೂನ್ಯ) {
+    ಹಿಂತಿರುಗಿ CONFIG_QEMU && GET_GLOBAL(PlatformRunningOn) & PF_KVM;
 }
 
 // Common paravirt ports.
-#define PORT_SMI_CMD                0x00b2
-#define PORT_SMI_STATUS             0x00b3
-#define PORT_QEMU_CFG_CTL           0x0510
-#define PORT_QEMU_CFG_DATA          0x0511
-#define PORT_QEMU_CFG_DMA_ADDR_HIGH 0x0514
-#define PORT_QEMU_CFG_DMA_ADDR_LOW  0x0518
+#ವ್ಯಾಖ್ಯಾನಿಸು ಪೋರ್ಟ್_SMI_CMD                0x00b2
+#ವ್ಯಾಖ್ಯಾನಿಸು ಪೋರ್ಟ್_SMI_ಸ್ಥಿತಿ             0x00b3
+#ವ್ಯಾಖ್ಯಾನಿಸು ಪೋರ್ಟ್_QEMU_CFG_CTL           0x0510
+#ವ್ಯಾಖ್ಯಾನಿಸು ಪೋರ್ಟ್_QEMU_CFG_ದತ್ತಾಂಶ          0x0511
+#ವ್ಯಾಖ್ಯಾನಿಸು ಪೋರ್ಟ್_QEMU_CFG_DMA_ADDR_ಮೇಲಿನ 0x0514
+#ವ್ಯಾಖ್ಯಾನಿಸು ಪೋರ್ಟ್_QEMU_CFG_DMA_ADDR_ಕೆಳಗಿನ  0x0518
 
 // QEMU_CFG_DMA_CONTROL bits
-#define QEMU_CFG_DMA_CTL_ERROR   0x01
-#define QEMU_CFG_DMA_CTL_READ    0x02
-#define QEMU_CFG_DMA_CTL_SKIP    0x04
-#define QEMU_CFG_DMA_CTL_SELECT  0x08
-#define QEMU_CFG_DMA_CTL_WRITE   0x10
+#ವ್ಯಾಖ್ಯಾನಿಸು QEMU_CFG_DMA_CTL_ERROR   0x01
+#ವ್ಯಾಖ್ಯಾನಿಸು QEMU_CFG_DMA_CTL_READ    0x02
+#ವ್ಯಾಖ್ಯಾನಿಸು QEMU_CFG_DMA_CTL_SKIP    0x04
+#ವ್ಯಾಖ್ಯಾನಿಸು QEMU_CFG_DMA_CTL_SELECT  0x08
+#ವ್ಯಾಖ್ಯಾನಿಸು QEMU_CFG_DMA_CTL_WRITE   0x10
 
 // QEMU_CFG_DMA ID bit
-#define QEMU_CFG_VERSION_DMA    2
+#ವ್ಯಾಖ್ಯಾನಿಸು QEMU_CFG_ಆವೃತ್ತಿ_DMA    2
 
 // QEMU debugcon read value
-#define QEMU_DEBUGCON_READBACK  0xe9
+#ವ್ಯಾಖ್ಯಾನಿಸು QEMU_DEBUGCON_READBACK  0xe9
 
-int qemu_cfg_enabled(void);
-int qemu_cfg_dma_enabled(void);
-void qemu_preinit(void);
-void qemu_platform_setup(void);
-void qemu_cfg_init(void);
+ಪೂರ್ಣಾಂಕ qemu_cfg_enabled(ಶೂನ್ಯ);
+ಪೂರ್ಣಾಂಕ qemu_cfg_dma_enabled(ಶೂನ್ಯ);
+ಶೂನ್ಯ qemu_preinit(ಶೂನ್ಯ);
+ಶೂನ್ಯ qemu_platform_ಸಿದ್ಧತೆ(ಶೂನ್ಯ);
+ಶೂನ್ಯ qemu_cfg_init(ಶೂನ್ಯ);
 
-u16 qemu_get_present_cpus_count(void);
-int qemu_cfg_write_file(void *src, struct romfile_s *file, u32 offset, u32 len);
-int qemu_cfg_write_file_simple(void *src, u16 key, u32 offset, u32 len);
-u16 qemu_get_romfile_key(struct romfile_s *file);
+u16 qemu_get_present_cpus_ಎಣಿಕೆ(ಶೂನ್ಯ);
+ಪೂರ್ಣಾಂಕ qemu_cfg_write_file(ಶೂನ್ಯ *src, ರಚನೆ romfile_s *file, u32 ಸ್ಥಾನಾಂತರ_2, u32 len);
+ಪೂರ್ಣಾಂಕ qemu_cfg_write_file_simple(ಶೂನ್ಯ *src, u16 ಕೀಲಿ, u32 ಸ್ಥಾನಾಂತರ_2, u32 len);
+u16 qemu_get_romfile_ಕೀಲಿ(ರಚನೆ romfile_s *file);
 
-#endif
+#ಆದರೆ_ಅಂತ್ಯ

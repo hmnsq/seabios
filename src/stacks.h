@@ -1,57 +1,57 @@
 // Misc function and variable declarations.
-#ifndef __STACKS_H
-#define __STACKS_H
+#ವ್ಯಾಖ್ಯಾನಿತವಾಗದಿದ್ದರೆ __STACKS_H
+#ವ್ಯಾಖ್ಯಾನಿಸು __STACKS_H
 
-#include "types.h" // u32
+#ಅನ್ತರ್ಭಾವ "types.h" // u32
 
-#define CALL32SMM_CMDID    0xb5
-#define CALL32SMM_ENTERID  0x1234
-#define CALL32SMM_RETURNID 0x5678
+#ವ್ಯಾಖ್ಯಾನಿಸು CALL32SMM_CMDID    0xb5
+#ವ್ಯಾಖ್ಯಾನಿಸು CALL32SMM_ENTERID  0x1234
+#ವ್ಯಾಖ್ಯಾನಿಸು CALL32SMM_RETURNID 0x5678
 
 // stacks.c
-extern int HaveSmmCall32;
-u32 __call32(void *func, u32 eax, u32 errret);
-#define call32(func, eax, errret) ({                            \
-        extern void _cfunc32flat_ ##func (void);                \
+ಬಾಹ್ಯ ಪೂರ್ಣಾಂಕ HaveSmmCall32;
+u32 __call32(ಶೂನ್ಯ *func, u32 eax, u32 errret);
+#ವ್ಯಾಖ್ಯಾನಿಸು call32(func, eax, errret) ({                            \
+        ಬಾಹ್ಯ ಶೂನ್ಯ _cfunc32flat_ ##func (ಶೂನ್ಯ);                \
         __call32( _cfunc32flat_ ##func , (u32)(eax), (errret)); \
     })
-extern u8 ExtraStack[], *StackPos;
-u32 __stack_hop(u32 eax, u32 edx, void *func);
-#define stack_hop(func, eax, edx)               \
+ಬಾಹ್ಯ u8 Extra_ರಾಶಿ[], *ರಾಶಿ_Pos;
+u32 __stack_hop(u32 eax, u32 edx, ಶೂನ್ಯ *func);
+#ವ್ಯಾಖ್ಯಾನಿಸು ರಾಶಿ_hop(func, eax, edx)               \
     __stack_hop((u32)(eax), (u32)(edx), (func))
-u32 __stack_hop_back(u32 eax, u32 edx, void *func);
-#define stack_hop_back(func, eax, edx) ({                               \
-        extern void _cfunc16_ ##func (void);                            \
+u32 __stack_hop_back(u32 eax, u32 edx, ಶೂನ್ಯ *func);
+#ವ್ಯಾಖ್ಯಾನಿಸು ರಾಶಿ_hop_ಹಿಂಭಾಗ(func, eax, edx) ({                               \
+        ಬಾಹ್ಯ ಶೂನ್ಯ _cfunc16_ ##func (ಶೂನ್ಯ);                            \
         __stack_hop_back((u32)(eax), (u32)(edx), _cfunc16_ ##func );    \
     })
-int on_extra_stack(void);
-struct bregs;
-void farcall16(struct bregs *callregs);
-void farcall16big(struct bregs *callregs);
-void __call16_int(struct bregs *callregs, u16 offset);
-#define call16_int(nr, callregs) do {                           \
-        extern void irq_trampoline_ ##nr (void);                \
+ಪೂರ್ಣಾಂಕ on_extra_ರಾಶಿ(ಶೂನ್ಯ);
+ರಚನೆ bregs;
+ಶೂನ್ಯ farcall16(ರಚನೆ bregs *callregs);
+ಶೂನ್ಯ farcall16big(ರಚನೆ bregs *callregs);
+ಶೂನ್ಯ __call16_int(ರಚನೆ bregs *callregs, u16 ಸ್ಥಾನಾಂತರ_2);
+#ವ್ಯಾಖ್ಯಾನಿಸು call16_int(nr, callregs) ಮಾಡು {                           \
+        ಬಾಹ್ಯ ಶೂನ್ಯ irq_trampoline_ ##nr (ಶೂನ್ಯ);                \
         __call16_int((callregs), (u32)&irq_trampoline_ ##nr );  \
-    } while (0)
-void reset(void);
-extern struct thread_info MainThread;
-struct thread_info *getCurThread(void);
-void yield(void);
-void yield_toirq(void);
-void thread_setup(void);
-int threads_during_optionroms(void);
-void run_thread(void (*func)(void*), void *data);
-void wait_threads(void);
-struct mutex_s { u32 isLocked; };
-void mutex_lock(struct mutex_s *mutex);
-void mutex_unlock(struct mutex_s *mutex);
-void start_preempt(void);
-void finish_preempt(void);
-int wait_preempt(void);
-void check_preempt(void);
-u32 __call32_params(void *func, u32 eax, u32 edx, u32 ecx, u32 errret);
-#define call32_params(func, eax, edx, ecx, errret) ({                   \
-        extern void _cfunc32flat_ ##func (void);                        \
+    } ಆಗ (0)
+ಶೂನ್ಯ reset(ಶೂನ್ಯ);
+ಬಾಹ್ಯ ರಚನೆ thread_info MainThread;
+ರಚನೆ thread_info *getCurThread(ಶೂನ್ಯ);
+ಶೂನ್ಯ yield(ಶೂನ್ಯ);
+ಶೂನ್ಯ yield_toirq(ಶೂನ್ಯ);
+ಶೂನ್ಯ thread_ಸಿದ್ಧತೆ(ಶೂನ್ಯ);
+ಪೂರ್ಣಾಂಕ ಎಳೆಗಳು_during_optionroms(ಶೂನ್ಯ);
+ಶೂನ್ಯ ಸತತ_thread(ಶೂನ್ಯ (*func)(ಶೂನ್ಯ*), ಶೂನ್ಯ *ದತ್ತಾಂಶ);
+ಶೂನ್ಯ wait_ಎಳೆಗಳು(ಶೂನ್ಯ);
+ರಚನೆ mutex_s { u32 isLocked; };
+ಶೂನ್ಯ mutex_ಬೀಗ(ರಚನೆ mutex_s *mutex);
+ಶೂನ್ಯ mutex_unlock(ರಚನೆ mutex_s *mutex);
+ಶೂನ್ಯ ಆರಂಭ_preempt(ಶೂನ್ಯ);
+ಶೂನ್ಯ ಮುಕ್ತಾಯ_preempt(ಶೂನ್ಯ);
+ಪೂರ್ಣಾಂಕ wait_preempt(ಶೂನ್ಯ);
+ಶೂನ್ಯ check_preempt(ಶೂನ್ಯ);
+u32 __call32_params(ಶೂನ್ಯ *func, u32 eax, u32 edx, u32 ecx, u32 errret);
+#ವ್ಯಾಖ್ಯಾನಿಸು call32_params(func, eax, edx, ecx, errret) ({                   \
+        ಬಾಹ್ಯ ಶೂನ್ಯ _cfunc32flat_ ##func (ಶೂನ್ಯ);                        \
         __call32_params( _cfunc32flat_ ##func , (u32)(eax), (u32)(edx)  \
                         , (u32)(ecx), (errret));                        \
     })
@@ -59,10 +59,10 @@ u32 __call32_params(void *func, u32 eax, u32 edx, u32 ecx, u32 errret);
 // Inline functions
 
 // Check if a call to stack_hop_back is needed.
-static inline int
-need_hop_back(void)
+ಸ್ಥಿರ ಸಾಲೊಳಗೆ ಪೂರ್ಣಾಂಕ
+need_hop_ಹಿಂಭಾಗ(ಶೂನ್ಯ)
 {
-    return !MODESEGMENT || on_extra_stack();
+    ಹಿಂತಿರುಗಿ !MODESEGMENT || on_extra_ರಾಶಿ();
 }
 
-#endif // stacks.h
+#ಆದರೆ_ಅಂತ್ಯ // stacks.h

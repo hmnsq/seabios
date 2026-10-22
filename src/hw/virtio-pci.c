@@ -15,448 +15,448 @@
  * See the COPYING file in the top-level directory.
  */
 
-#include "config.h" // CONFIG_DEBUG_LEVEL
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "pci.h" // pci_config_readl
-#include "pcidevice.h" // struct pci_device
-#include "pci_regs.h" // PCI_BASE_ADDRESS_0
-#include "string.h" // memset
-#include "virtio-pci.h"
-#include "virtio-mmio.h"
-#include "virtio-ring.h"
+#ಅನ್ತರ್ಭಾವ "config.h" // CONFIG_DEBUG_LEVEL
+#ಅನ್ತರ್ಭಾವ "malloc.h" // free
+#ಅನ್ತರ್ಭಾವ "output.h" // dprintf
+#ಅನ್ತರ್ಭಾವ "pci.h" // pci_config_readl
+#ಅನ್ತರ್ಭಾವ "pcidevice.h" // struct pci_device
+#ಅನ್ತರ್ಭಾವ "pci_regs.h" // PCI_BASE_ADDRESS_0
+#ಅನ್ತರ್ಭಾವ "string.h" // memset
+#ಅನ್ತರ್ಭಾವ "virtio-pci.h"
+#ಅನ್ತರ್ಭಾವ "virtio-mmio.h"
+#ಅನ್ತರ್ಭಾವ "virtio-ring.h"
 
-u64 _vp_read(struct vp_cap *cap, u32 offset, u8 size)
+u64 _vp_read(ರಚನೆ vp_cap *cap, u32 ಸ್ಥಾನಾಂತರ_2, u8 ಗಾತ್ರ_2)
 {
     u64 var = 0;
 
-    switch (cap->mode) {
-    case VP_ACCESS_IO:
+    ಆಯ್ಕೆ (cap->ಬಹುಲಕ) {
+    ಸ್ಥಿತಿ VP_ACCESS_IO:
     {
-        u32 addr = cap->ioaddr + offset;
-        switch (size) {
-        case 8:
+        u32 addr = cap->ioaddr + ಸ್ಥಾನಾಂತರ_2;
+        ಆಯ್ಕೆ (ಗಾತ್ರ_2) {
+        ಸ್ಥಿತಿ 8:
             var = inl(addr);
             var |= (u64)inl(addr+4) << 32;
-            break;
-        case 4:
+            ನಿಲ್ಲಿಸು;
+        ಸ್ಥಿತಿ 4:
             var = inl(addr);
-            break;
-        case 2:
+            ನಿಲ್ಲಿಸು;
+        ಸ್ಥಿತಿ 2:
             var = inw(addr);
-            break;
-        case 1:
+            ನಿಲ್ಲಿಸು;
+        ಸ್ಥಿತಿ 1:
             var = inb(addr);
-            break;
+            ನಿಲ್ಲಿಸು;
         }
-        break;
+        ನಿಲ್ಲಿಸು;
     }
 
-    case VP_ACCESS_MMIO:
+    ಸ್ಥಿತಿ VP_ACCESS_MMIO:
     {
-        void *addr = cap->memaddr + offset;
-        switch (size) {
-        case 8:
+        ಶೂನ್ಯ *addr = cap->memaddr + ಸ್ಥಾನಾಂತರ_2;
+        ಆಯ್ಕೆ (ಗಾತ್ರ_2) {
+        ಸ್ಥಿತಿ 8:
             var = readl(addr);
             var |= (u64)readl(addr+4) << 32;
-            break;
-        case 4:
+            ನಿಲ್ಲಿಸು;
+        ಸ್ಥಿತಿ 4:
             var = readl(addr);
-            break;
-        case 2:
+            ನಿಲ್ಲಿಸು;
+        ಸ್ಥಿತಿ 2:
             var = readw(addr);
-            break;
-        case 1:
+            ನಿಲ್ಲಿಸು;
+        ಸ್ಥಿತಿ 1:
             var = readb(addr);
-            break;
+            ನಿಲ್ಲಿಸು;
         }
-        break;
+        ನಿಲ್ಲಿಸು;
     }
 
-    case VP_ACCESS_PCICFG:
+    ಸ್ಥಿತಿ VP_ACCESS_PCICFG:
     {
-        u32 addr = cap->baroff + offset;
+        u32 addr = cap->baroff + ಸ್ಥಾನಾಂತರ_2;
         pci_config_writeb(cap->bdf, cap->cfg +
-                          offsetof(struct virtio_pci_cfg_cap, cap.bar),
+                          offsetof(ರಚನೆ virtio_pci_cfg_cap, cap.bar),
                           cap->bar);
         pci_config_writel(cap->bdf, cap->cfg +
-                          offsetof(struct virtio_pci_cfg_cap, cap.offset),
+                          offsetof(ರಚನೆ virtio_pci_cfg_cap, cap.ಸ್ಥಾನಾಂತರ_2),
                           addr);
         pci_config_writel(cap->bdf, cap->cfg +
-                          offsetof(struct virtio_pci_cfg_cap, cap.length),
-                          (size > 4) ? 4 : size);
-        switch (size) {
-        case 8:
+                          offsetof(ರಚನೆ virtio_pci_cfg_cap, cap.ಉದ್ದಳತೆ),
+                          (ಗಾತ್ರ_2 > 4) ? 4 : ಗಾತ್ರ_2);
+        ಆಯ್ಕೆ (ಗಾತ್ರ_2) {
+        ಸ್ಥಿತಿ 8:
             var = pci_config_readl(cap->bdf, cap->cfg +
-                                   offsetof(struct virtio_pci_cfg_cap, pci_cfg_data));
+                                   offsetof(ರಚನೆ virtio_pci_cfg_cap, pci_cfg_ದತ್ತಾಂಶ));
             pci_config_writel(cap->bdf, cap->cfg +
-                              offsetof(struct virtio_pci_cfg_cap, cap.offset),
+                              offsetof(ರಚನೆ virtio_pci_cfg_cap, cap.ಸ್ಥಾನಾಂತರ_2),
                               addr + 4);
             var |= (u64)pci_config_readl(cap->bdf, cap->cfg +
-                                         offsetof(struct virtio_pci_cfg_cap, pci_cfg_data)) << 32;
-            break;
-        case 4:
+                                         offsetof(ರಚನೆ virtio_pci_cfg_cap, pci_cfg_ದತ್ತಾಂಶ)) << 32;
+            ನಿಲ್ಲಿಸು;
+        ಸ್ಥಿತಿ 4:
             var = pci_config_readl(cap->bdf, cap->cfg +
-                                   offsetof(struct virtio_pci_cfg_cap, pci_cfg_data));
-            break;
-        case 2:
+                                   offsetof(ರಚನೆ virtio_pci_cfg_cap, pci_cfg_ದತ್ತಾಂಶ));
+            ನಿಲ್ಲಿಸು;
+        ಸ್ಥಿತಿ 2:
             var = pci_config_readw(cap->bdf, cap->cfg +
-                                   offsetof(struct virtio_pci_cfg_cap, pci_cfg_data));
-            break;
-        case 1:
+                                   offsetof(ರಚನೆ virtio_pci_cfg_cap, pci_cfg_ದತ್ತಾಂಶ));
+            ನಿಲ್ಲಿಸು;
+        ಸ್ಥಿತಿ 1:
             var = pci_config_readb(cap->bdf, cap->cfg +
-                                   offsetof(struct virtio_pci_cfg_cap, pci_cfg_data));
-            break;
+                                   offsetof(ರಚನೆ virtio_pci_cfg_cap, pci_cfg_ದತ್ತಾಂಶ));
+            ನಿಲ್ಲಿಸು;
         }
     }
     }
-    dprintf(9, "vp read   %x (%d) -> 0x%llx\n", cap->ioaddr + offset, size, var);
-    return var;
+    dprintf(9, "vp read   %x (%d) -> 0x%llx\n", cap->ioaddr + ಸ್ಥಾನಾಂತರ_2, ಗಾತ್ರ_2, var);
+    ಹಿಂತಿರುಗಿ var;
 }
 
-void _vp_write(struct vp_cap *cap, u32 offset, u8 size, u64 var)
+ಶೂನ್ಯ _vp_write(ರಚನೆ vp_cap *cap, u32 ಸ್ಥಾನಾಂತರ_2, u8 ಗಾತ್ರ_2, u64 var)
 {
-    dprintf(9, "vp write  %x (%d) <- 0x%llx\n", cap->ioaddr + offset, size, var);
+    dprintf(9, "vp write  %x (%d) <- 0x%llx\n", cap->ioaddr + ಸ್ಥಾನಾಂತರ_2, ಗಾತ್ರ_2, var);
 
-    switch (cap->mode) {
-    case VP_ACCESS_IO:
+    ಆಯ್ಕೆ (cap->ಬಹುಲಕ) {
+    ಸ್ಥಿತಿ VP_ACCESS_IO:
     {
-        u32 addr = cap->ioaddr + offset;
-        switch (size) {
-        case 4:
+        u32 addr = cap->ioaddr + ಸ್ಥಾನಾಂತರ_2;
+        ಆಯ್ಕೆ (ಗಾತ್ರ_2) {
+        ಸ್ಥಿತಿ 4:
             outl(var, addr);
-            break;
-        case 2:
+            ನಿಲ್ಲಿಸು;
+        ಸ್ಥಿತಿ 2:
             outw(var, addr);
-            break;
-        case 1:
+            ನಿಲ್ಲಿಸು;
+        ಸ್ಥಿತಿ 1:
             outb(var, addr);
-            break;
+            ನಿಲ್ಲಿಸು;
         }
-        break;
+        ನಿಲ್ಲಿಸು;
     }
 
-    case VP_ACCESS_MMIO:
+    ಸ್ಥಿತಿ VP_ACCESS_MMIO:
     {
-        void *addr = cap->memaddr + offset;
-        switch (size) {
-        case 4:
+        ಶೂನ್ಯ *addr = cap->memaddr + ಸ್ಥಾನಾಂತರ_2;
+        ಆಯ್ಕೆ (ಗಾತ್ರ_2) {
+        ಸ್ಥಿತಿ 4:
             writel(addr, var);
-            break;
-        case 2:
+            ನಿಲ್ಲಿಸು;
+        ಸ್ಥಿತಿ 2:
             writew(addr, var);
-            break;
-        case 1:
+            ನಿಲ್ಲಿಸು;
+        ಸ್ಥಿತಿ 1:
             writeb(addr, var);
-            break;
+            ನಿಲ್ಲಿಸು;
         }
-        break;
+        ನಿಲ್ಲಿಸು;
     }
 
-    case VP_ACCESS_PCICFG:
+    ಸ್ಥಿತಿ VP_ACCESS_PCICFG:
     {
-        u32 addr = cap->baroff + offset;
+        u32 addr = cap->baroff + ಸ್ಥಾನಾಂತರ_2;
         pci_config_writeb(cap->bdf, cap->cfg +
-                          offsetof(struct virtio_pci_cfg_cap, cap.bar),
+                          offsetof(ರಚನೆ virtio_pci_cfg_cap, cap.bar),
                           cap->bar);
         pci_config_writel(cap->bdf, cap->cfg +
-                          offsetof(struct virtio_pci_cfg_cap, cap.offset),
+                          offsetof(ರಚನೆ virtio_pci_cfg_cap, cap.ಸ್ಥಾನಾಂತರ_2),
                           addr);
         pci_config_writel(cap->bdf, cap->cfg +
-                          offsetof(struct virtio_pci_cfg_cap, cap.length),
-                          size);
-        switch (size) {
-        case 4:
+                          offsetof(ರಚನೆ virtio_pci_cfg_cap, cap.ಉದ್ದಳತೆ),
+                          ಗಾತ್ರ_2);
+        ಆಯ್ಕೆ (ಗಾತ್ರ_2) {
+        ಸ್ಥಿತಿ 4:
             pci_config_writel(cap->bdf, cap->cfg +
-                              offsetof(struct virtio_pci_cfg_cap, pci_cfg_data),
+                              offsetof(ರಚನೆ virtio_pci_cfg_cap, pci_cfg_ದತ್ತಾಂಶ),
                               var);
-            break;
-        case 2:
+            ನಿಲ್ಲಿಸು;
+        ಸ್ಥಿತಿ 2:
             pci_config_writew(cap->bdf, cap->cfg +
-                              offsetof(struct virtio_pci_cfg_cap, pci_cfg_data),
+                              offsetof(ರಚನೆ virtio_pci_cfg_cap, pci_cfg_ದತ್ತಾಂಶ),
                               var);
-            break;
-        case 1:
+            ನಿಲ್ಲಿಸು;
+        ಸ್ಥಿತಿ 1:
             pci_config_writeb(cap->bdf, cap->cfg +
-                              offsetof(struct virtio_pci_cfg_cap, pci_cfg_data),
+                              offsetof(ರಚನೆ virtio_pci_cfg_cap, pci_cfg_ದತ್ತಾಂಶ),
                               var);
-            break;
+            ನಿಲ್ಲಿಸು;
         }
     }
     }
 }
 
-u64 vp_get_features(struct vp_device *vp)
+u64 vp_get_features(ರಚನೆ vp_device *vp)
 {
     u32 f0, f1;
 
-    if (vp->use_mmio) {
+    ಆದರೆ (vp->use_mmio) {
         vp_write(&vp->common, virtio_mmio_cfg, device_feature_select, 0);
         f0 = vp_read(&vp->common, virtio_mmio_cfg, device_feature);
         vp_write(&vp->common, virtio_mmio_cfg, device_feature_select, 1);
         f1 = vp_read(&vp->common, virtio_mmio_cfg, device_feature);
-    } else if (vp->use_modern) {
+    } ಇಲ್ಲದಿದ್ದರೆ ಆದರೆ (vp->use_modern) {
         vp_write(&vp->common, virtio_pci_common_cfg, device_feature_select, 0);
         f0 = vp_read(&vp->common, virtio_pci_common_cfg, device_feature);
         vp_write(&vp->common, virtio_pci_common_cfg, device_feature_select, 1);
         f1 = vp_read(&vp->common, virtio_pci_common_cfg, device_feature);
-    } else {
+    } ಇಲ್ಲದಿದ್ದರೆ {
         f0 = vp_read(&vp->legacy, virtio_pci_legacy, host_features);
         f1 = 0;
     }
-    return ((u64)f1 << 32) | f0;
+    ಹಿಂತಿರುಗಿ ((u64)f1 << 32) | f0;
 }
 
-void vp_set_features(struct vp_device *vp, u64 features)
+ಶೂನ್ಯ vp_ಗಣ_features(ರಚನೆ vp_device *vp, u64 features)
 {
     u32 f0, f1;
 
     f0 = features;
     f1 = features >> 32;
 
-    if (vp->use_mmio) {
+    ಆದರೆ (vp->use_mmio) {
         vp_write(&vp->common, virtio_mmio_cfg, guest_feature_select, 0);
         vp_write(&vp->common, virtio_mmio_cfg, guest_feature, f0);
         vp_write(&vp->common, virtio_mmio_cfg, guest_feature_select, 1);
         vp_write(&vp->common, virtio_mmio_cfg, guest_feature, f1);
-    } else if (vp->use_modern) {
+    } ಇಲ್ಲದಿದ್ದರೆ ಆದರೆ (vp->use_modern) {
         vp_write(&vp->common, virtio_pci_common_cfg, guest_feature_select, 0);
         vp_write(&vp->common, virtio_pci_common_cfg, guest_feature, f0);
         vp_write(&vp->common, virtio_pci_common_cfg, guest_feature_select, 1);
         vp_write(&vp->common, virtio_pci_common_cfg, guest_feature, f1);
-    } else {
+    } ಇಲ್ಲದಿದ್ದರೆ {
         vp_write(&vp->legacy, virtio_pci_legacy, guest_features, f0);
     }
 }
 
-u8 vp_get_status(struct vp_device *vp)
+u8 vp_get_ಸ್ಥಿತಿ(ರಚನೆ vp_device *vp)
 {
-    if (vp->use_mmio) {
-        return vp_read(&vp->common, virtio_mmio_cfg, device_status);
-    } else if (vp->use_modern) {
-        return vp_read(&vp->common, virtio_pci_common_cfg, device_status);
-    } else {
-        return vp_read(&vp->legacy, virtio_pci_legacy, status);
+    ಆದರೆ (vp->use_mmio) {
+        ಹಿಂತಿರುಗಿ vp_read(&vp->common, virtio_mmio_cfg, device_ಸ್ಥಿತಿ);
+    } ಇಲ್ಲದಿದ್ದರೆ ಆದರೆ (vp->use_modern) {
+        ಹಿಂತಿರುಗಿ vp_read(&vp->common, virtio_pci_common_cfg, device_ಸ್ಥಿತಿ);
+    } ಇಲ್ಲದಿದ್ದರೆ {
+        ಹಿಂತಿರುಗಿ vp_read(&vp->legacy, virtio_pci_legacy, ಸ್ಥಿತಿ_2);
     }
 }
 
-void vp_set_status(struct vp_device *vp, u8 status)
+ಶೂನ್ಯ vp_ಗಣ_ಸ್ಥಿತಿ(ರಚನೆ vp_device *vp, u8 ಸ್ಥಿತಿ_2)
 {
-    if (status == 0)        /* reset */
-        return;
-    if (vp->use_mmio) {
-        vp_write(&vp->common, virtio_mmio_cfg, device_status, status);
-    } else if (vp->use_modern) {
-        vp_write(&vp->common, virtio_pci_common_cfg, device_status, status);
-    } else {
-        vp_write(&vp->legacy, virtio_pci_legacy, status, status);
+    ಆದರೆ (ಸ್ಥಿತಿ_2 == 0)        /* reset */
+        ಹಿಂತಿರುಗಿ;
+    ಆದರೆ (vp->use_mmio) {
+        vp_write(&vp->common, virtio_mmio_cfg, device_ಸ್ಥಿತಿ, ಸ್ಥಿತಿ_2);
+    } ಇಲ್ಲದಿದ್ದರೆ ಆದರೆ (vp->use_modern) {
+        vp_write(&vp->common, virtio_pci_common_cfg, device_ಸ್ಥಿತಿ, ಸ್ಥಿತಿ_2);
+    } ಇಲ್ಲದಿದ್ದರೆ {
+        vp_write(&vp->legacy, virtio_pci_legacy, ಸ್ಥಿತಿ_2, ಸ್ಥಿತಿ_2);
     }
 }
 
-u8 vp_get_isr(struct vp_device *vp)
+u8 vp_get_isr(ರಚನೆ vp_device *vp)
 {
-    if (vp->use_mmio) {
-        return vp_read(&vp->common, virtio_mmio_cfg, irq_status);
-    } else if (vp->use_modern) {
-        return vp_read(&vp->isr, virtio_pci_isr, isr);
-    } else {
-        return vp_read(&vp->legacy, virtio_pci_legacy, isr);
+    ಆದರೆ (vp->use_mmio) {
+        ಹಿಂತಿರುಗಿ vp_read(&vp->common, virtio_mmio_cfg, irq_ಸ್ಥಿತಿ);
+    } ಇಲ್ಲದಿದ್ದರೆ ಆದರೆ (vp->use_modern) {
+        ಹಿಂತಿರುಗಿ vp_read(&vp->isr, virtio_pci_isr, isr);
+    } ಇಲ್ಲದಿದ್ದರೆ {
+        ಹಿಂತಿರುಗಿ vp_read(&vp->legacy, virtio_pci_legacy, isr);
     }
 }
 
-void vp_reset(struct vp_device *vp)
+ಶೂನ್ಯ vp_reset(ರಚನೆ vp_device *vp)
 {
-    if (vp->use_mmio) {
-        vp_write(&vp->common, virtio_mmio_cfg, device_status, 0);
-        vp_read(&vp->common, virtio_mmio_cfg, irq_status);
-    } else if (vp->use_modern) {
-        vp_write(&vp->common, virtio_pci_common_cfg, device_status, 0);
+    ಆದರೆ (vp->use_mmio) {
+        vp_write(&vp->common, virtio_mmio_cfg, device_ಸ್ಥಿತಿ, 0);
+        vp_read(&vp->common, virtio_mmio_cfg, irq_ಸ್ಥಿತಿ);
+    } ಇಲ್ಲದಿದ್ದರೆ ಆದರೆ (vp->use_modern) {
+        vp_write(&vp->common, virtio_pci_common_cfg, device_ಸ್ಥಿತಿ, 0);
         vp_read(&vp->isr, virtio_pci_isr, isr);
-    } else {
-        vp_write(&vp->legacy, virtio_pci_legacy, status, 0);
+    } ಇಲ್ಲದಿದ್ದರೆ {
+        vp_write(&vp->legacy, virtio_pci_legacy, ಸ್ಥಿತಿ_2, 0);
         vp_read(&vp->legacy, virtio_pci_legacy, isr);
     }
 }
 
-void vp_notify(struct vp_device *vp, struct vring_virtqueue *vq)
+ಶೂನ್ಯ vp_notify(ರಚನೆ vp_device *vp, ರಚನೆ vring_virtqueue *vq)
 {
-    if (vp->use_mmio) {
-        vp_write(&vp->common, virtio_mmio_cfg, queue_notify, vq->queue_index);
-    } else if (vp->use_modern) {
-        u32 offset = vq->queue_notify_off * vp->notify_off_multiplier;
-        switch (vp->notify.mode) {
-        case VP_ACCESS_IO:
-            outw(vq->queue_index, vp->notify.ioaddr + offset);
-            break;
-        case VP_ACCESS_MMIO:
-            writew(vp->notify.memaddr + offset, vq->queue_index);
-            break;
-        case VP_ACCESS_PCICFG:
+    ಆದರೆ (vp->use_mmio) {
+        vp_write(&vp->common, virtio_mmio_cfg, ಸರತಿ_notify, vq->ಸರತಿ_ಸೂಚ್ಯಂಕ);
+    } ಇಲ್ಲದಿದ್ದರೆ ಆದರೆ (vp->use_modern) {
+        u32 ಸ್ಥಾನಾಂತರ_2 = vq->ಸರತಿ_notify_off * vp->notify_off_multiplier;
+        ಆಯ್ಕೆ (vp->notify.ಬಹುಲಕ) {
+        ಸ್ಥಿತಿ VP_ACCESS_IO:
+            outw(vq->ಸರತಿ_ಸೂಚ್ಯಂಕ, vp->notify.ioaddr + ಸ್ಥಾನಾಂತರ_2);
+            ನಿಲ್ಲಿಸು;
+        ಸ್ಥಿತಿ VP_ACCESS_MMIO:
+            writew(vp->notify.memaddr + ಸ್ಥಾನಾಂತರ_2, vq->ಸರತಿ_ಸೂಚ್ಯಂಕ);
+            ನಿಲ್ಲಿಸು;
+        ಸ್ಥಿತಿ VP_ACCESS_PCICFG:
             pci_config_writeb(vp->notify.bdf, vp->notify.cfg +
-                              offsetof(struct virtio_pci_cfg_cap, cap.bar),
+                              offsetof(ರಚನೆ virtio_pci_cfg_cap, cap.bar),
                               vp->notify.bar);
             pci_config_writel(vp->notify.bdf, vp->notify.cfg +
-                              offsetof(struct virtio_pci_cfg_cap, cap.offset),
-                              vp->notify.baroff + offset);
+                              offsetof(ರಚನೆ virtio_pci_cfg_cap, cap.ಸ್ಥಾನಾಂತರ_2),
+                              vp->notify.baroff + ಸ್ಥಾನಾಂತರ_2);
             pci_config_writel(vp->notify.bdf, vp->notify.cfg +
-                              offsetof(struct virtio_pci_cfg_cap, cap.length),
+                              offsetof(ರಚನೆ virtio_pci_cfg_cap, cap.ಉದ್ದಳತೆ),
                               2);
             pci_config_writew(vp->notify.bdf, vp->notify.cfg +
-                              offsetof(struct virtio_pci_cfg_cap, pci_cfg_data),
-                              vq->queue_index);
+                              offsetof(ರಚನೆ virtio_pci_cfg_cap, pci_cfg_ದತ್ತಾಂಶ),
+                              vq->ಸರತಿ_ಸೂಚ್ಯಂಕ);
         }
         dprintf(9, "vp notify %x (%d) -- 0x%x\n",
-                vp->notify.ioaddr, 2, vq->queue_index);
-    } else {
-        vp_write(&vp->legacy, virtio_pci_legacy, queue_notify, vq->queue_index);
+                vp->notify.ioaddr, 2, vq->ಸರತಿ_ಸೂಚ್ಯಂಕ);
+    } ಇಲ್ಲದಿದ್ದರೆ {
+        vp_write(&vp->legacy, virtio_pci_legacy, ಸರತಿ_notify, vq->ಸರತಿ_ಸೂಚ್ಯಂಕ);
     }
 }
 
-int vp_find_vq(struct vp_device *vp, int queue_index,
-               struct vring_virtqueue **p_vq)
+ಪೂರ್ಣಾಂಕ vp_ಕಂಡುಹಿಡಿ_vq(ರಚನೆ vp_device *vp, ಪೂರ್ಣಾಂಕ ಸರತಿ_ಸೂಚ್ಯಂಕ,
+               ರಚನೆ vring_virtqueue **p_vq)
 {
-   u16 num;
+   u16 ಅಂಕೆ;
 
    ASSERT32FLAT();
-   struct vring_virtqueue *vq = *p_vq = memalign_high(PAGE_SIZE, sizeof(*vq));
-   if (!vq) {
+   ರಚನೆ vring_virtqueue *vq = *p_vq = memalign_ಮೇಲಿನ(ಪುಟ_ಗಾತ್ರ, ಗಾತ್ರ(*vq));
+   ಆದರೆ (!vq) {
        warn_noalloc();
-       goto fail;
+       ಹೋಗು fail;
    }
-   memset(vq, 0, sizeof(*vq));
+   memset(vq, 0, ಗಾತ್ರ(*vq));
 
 
    /* select the queue */
-   if (vp->use_mmio) {
-       vp_write(&vp->common, virtio_mmio_cfg, queue_select, queue_index);
-   } else if (vp->use_modern) {
-       vp_write(&vp->common, virtio_pci_common_cfg, queue_select, queue_index);
-   } else {
-       vp_write(&vp->legacy, virtio_pci_legacy, queue_sel, queue_index);
+   ಆದರೆ (vp->use_mmio) {
+       vp_write(&vp->common, virtio_mmio_cfg, ಸರತಿ_select, ಸರತಿ_ಸೂಚ್ಯಂಕ);
+   } ಇಲ್ಲದಿದ್ದರೆ ಆದರೆ (vp->use_modern) {
+       vp_write(&vp->common, virtio_pci_common_cfg, ಸರತಿ_select, ಸರತಿ_ಸೂಚ್ಯಂಕ);
+   } ಇಲ್ಲದಿದ್ದರೆ {
+       vp_write(&vp->legacy, virtio_pci_legacy, ಸರತಿ_sel, ಸರತಿ_ಸೂಚ್ಯಂಕ);
    }
 
    /* check if the queue is available */
-   if (vp->use_mmio) {
-       num = vp_read(&vp->common, virtio_mmio_cfg, queue_num_max);
-       if (num > MAX_QUEUE_NUM)
-           num = MAX_QUEUE_NUM;
-       vp_write(&vp->common, virtio_mmio_cfg, queue_num, num);
-   } else if (vp->use_modern) {
-       num = vp_read(&vp->common, virtio_pci_common_cfg, queue_size);
-       if (num > MAX_QUEUE_NUM) {
-           vp_write(&vp->common, virtio_pci_common_cfg, queue_size,
-                    MAX_QUEUE_NUM);
-           num = vp_read(&vp->common, virtio_pci_common_cfg, queue_size);
+   ಆದರೆ (vp->use_mmio) {
+       ಅಂಕೆ = vp_read(&vp->common, virtio_mmio_cfg, ಸರತಿ_ಅಂಕೆ_max);
+       ಆದರೆ (ಅಂಕೆ > MAX_ಸರತಿ_ಅಂಕೆ)
+           ಅಂಕೆ = MAX_ಸರತಿ_ಅಂಕೆ;
+       vp_write(&vp->common, virtio_mmio_cfg, ಸರತಿ_ಅಂಕೆ, ಅಂಕೆ);
+   } ಇಲ್ಲದಿದ್ದರೆ ಆದರೆ (vp->use_modern) {
+       ಅಂಕೆ = vp_read(&vp->common, virtio_pci_common_cfg, ಸರತಿ_ಗಾತ್ರ);
+       ಆದರೆ (ಅಂಕೆ > MAX_ಸರತಿ_ಅಂಕೆ) {
+           vp_write(&vp->common, virtio_pci_common_cfg, ಸರತಿ_ಗಾತ್ರ,
+                    MAX_ಸರತಿ_ಅಂಕೆ);
+           ಅಂಕೆ = vp_read(&vp->common, virtio_pci_common_cfg, ಸರತಿ_ಗಾತ್ರ);
        }
-   } else {
-       num = vp_read(&vp->legacy, virtio_pci_legacy, queue_num);
+   } ಇಲ್ಲದಿದ್ದರೆ {
+       ಅಂಕೆ = vp_read(&vp->legacy, virtio_pci_legacy, ಸರತಿ_ಅಂಕೆ);
    }
-   if (!num) {
+   ಆದರೆ (!ಅಂಕೆ) {
        dprintf(1, "ERROR: queue size is 0\n");
-       goto fail;
+       ಹೋಗು fail;
    }
-   if (num > MAX_QUEUE_NUM) {
-       dprintf(1, "ERROR: queue size %d > %d\n", num, MAX_QUEUE_NUM);
-       goto fail;
+   ಆದರೆ (ಅಂಕೆ > MAX_ಸರತಿ_ಅಂಕೆ) {
+       dprintf(1, "ERROR: queue size %d > %d\n", ಅಂಕೆ, MAX_ಸರತಿ_ಅಂಕೆ);
+       ಹೋಗು fail;
    }
 
    /* check if the queue is already active */
-   if (vp->use_mmio) {
+   ಆದರೆ (vp->use_mmio) {
        /* TODO */;
-   } else if (vp->use_modern) {
-       if (vp_read(&vp->common, virtio_pci_common_cfg, queue_enable)) {
+   } ಇಲ್ಲದಿದ್ದರೆ ಆದರೆ (vp->use_modern) {
+       ಆದರೆ (vp_read(&vp->common, virtio_pci_common_cfg, ಸರತಿ_enable)) {
            dprintf(1, "ERROR: queue already active\n");
-           goto fail;
+           ಹೋಗು fail;
        }
-   } else {
-       if (vp_read(&vp->legacy, virtio_pci_legacy, queue_pfn)) {
+   } ಇಲ್ಲದಿದ್ದರೆ {
+       ಆದರೆ (vp_read(&vp->legacy, virtio_pci_legacy, ಸರತಿ_pfn)) {
            dprintf(1, "ERROR: queue already active\n");
-           goto fail;
+           ಹೋಗು fail;
        }
    }
-   vq->queue_index = queue_index;
+   vq->ಸರತಿ_ಸೂಚ್ಯಂಕ = ಸರತಿ_ಸೂಚ್ಯಂಕ;
 
    /* initialize the queue */
-   struct vring * vr = &vq->vring;
-   vring_init(vr, num, (unsigned char*)&vq->queue);
+   ರಚನೆ vring * vr = &vq->vring;
+   vring_init(vr, ಅಂಕೆ, (ಚಿಹ್ನೆರಹಿತ ಅಕ್ಷರ*)&vq->ಸರತಿ);
 
    /* activate the queue
     *
     * NOTE: vr->desc is initialized by vring_init()
     */
 
-   if (vp->use_mmio) {
-       if (vp_read(&vp->common, virtio_mmio_cfg, version) == 2) {
-           vp_write(&vp->common, virtio_mmio_cfg, queue_desc_lo,
-                    (unsigned long)virt_to_phys(vr->desc));
-           vp_write(&vp->common, virtio_mmio_cfg, queue_desc_hi, 0);
-           vp_write(&vp->common, virtio_mmio_cfg, queue_driver_lo,
-                    (unsigned long)virt_to_phys(vr->avail));
-           vp_write(&vp->common, virtio_mmio_cfg, queue_driver_hi, 0);
-           vp_write(&vp->common, virtio_mmio_cfg, queue_device_lo,
-                    (unsigned long)virt_to_phys(vr->used));
-           vp_write(&vp->common, virtio_mmio_cfg, queue_device_hi, 0);
-           vp_write(&vp->common, virtio_mmio_cfg, queue_ready, 1);
-       } else {
-           vp_write(&vp->common, virtio_mmio_cfg, legacy_guest_page_size,
-                    (unsigned long)1 << PAGE_SHIFT);
-           vp_write(&vp->common, virtio_mmio_cfg, legacy_queue_pfn,
-                    (unsigned long)virt_to_phys(vr->desc) >> PAGE_SHIFT);
+   ಆದರೆ (vp->use_mmio) {
+       ಆದರೆ (vp_read(&vp->common, virtio_mmio_cfg, ಆವೃತ್ತಿ_2) == 2) {
+           vp_write(&vp->common, virtio_mmio_cfg, ಸರತಿ_desc_lo,
+                    (ಚಿಹ್ನೆರಹಿತ ದೀರ್ಘ)virt_ಗಮ್ಯ_phys(vr->desc));
+           vp_write(&vp->common, virtio_mmio_cfg, ಸರತಿ_desc_hi, 0);
+           vp_write(&vp->common, virtio_mmio_cfg, ಸರತಿ_driver_lo,
+                    (ಚಿಹ್ನೆರಹಿತ ದೀರ್ಘ)virt_ಗಮ್ಯ_phys(vr->avail));
+           vp_write(&vp->common, virtio_mmio_cfg, ಸರತಿ_driver_hi, 0);
+           vp_write(&vp->common, virtio_mmio_cfg, ಸರತಿ_device_lo,
+                    (ಚಿಹ್ನೆರಹಿತ ದೀರ್ಘ)virt_ಗಮ್ಯ_phys(vr->ಬಳಸಿದ));
+           vp_write(&vp->common, virtio_mmio_cfg, ಸರತಿ_device_hi, 0);
+           vp_write(&vp->common, virtio_mmio_cfg, ಸರತಿ_ready, 1);
+       } ಇಲ್ಲದಿದ್ದರೆ {
+           vp_write(&vp->common, virtio_mmio_cfg, legacy_guest_ಪುಟ_ಗಾತ್ರ,
+                    (ಚಿಹ್ನೆರಹಿತ ದೀರ್ಘ)1 << ಪುಟ_ಸರಿಸು);
+           vp_write(&vp->common, virtio_mmio_cfg, legacy_ಸರತಿ_pfn,
+                    (ಚಿಹ್ನೆರಹಿತ ದೀರ್ಘ)virt_ಗಮ್ಯ_phys(vr->desc) >> ಪುಟ_ಸರಿಸು);
        }
-   } else if (vp->use_modern) {
-       vp_write(&vp->common, virtio_pci_common_cfg, queue_desc_lo,
-                (unsigned long)virt_to_phys(vr->desc));
-       vp_write(&vp->common, virtio_pci_common_cfg, queue_desc_hi, 0);
-       vp_write(&vp->common, virtio_pci_common_cfg, queue_avail_lo,
-                (unsigned long)virt_to_phys(vr->avail));
-       vp_write(&vp->common, virtio_pci_common_cfg, queue_avail_hi, 0);
-       vp_write(&vp->common, virtio_pci_common_cfg, queue_used_lo,
-                (unsigned long)virt_to_phys(vr->used));
-       vp_write(&vp->common, virtio_pci_common_cfg, queue_used_hi, 0);
-       vp_write(&vp->common, virtio_pci_common_cfg, queue_enable, 1);
-       vq->queue_notify_off = vp_read(&vp->common, virtio_pci_common_cfg,
-                                      queue_notify_off);
-   } else {
-       vp_write(&vp->legacy, virtio_pci_legacy, queue_pfn,
-                (unsigned long)virt_to_phys(vr->desc) >> PAGE_SHIFT);
+   } ಇಲ್ಲದಿದ್ದರೆ ಆದರೆ (vp->use_modern) {
+       vp_write(&vp->common, virtio_pci_common_cfg, ಸರತಿ_desc_lo,
+                (ಚಿಹ್ನೆರಹಿತ ದೀರ್ಘ)virt_ಗಮ್ಯ_phys(vr->desc));
+       vp_write(&vp->common, virtio_pci_common_cfg, ಸರತಿ_desc_hi, 0);
+       vp_write(&vp->common, virtio_pci_common_cfg, ಸರತಿ_avail_lo,
+                (ಚಿಹ್ನೆರಹಿತ ದೀರ್ಘ)virt_ಗಮ್ಯ_phys(vr->avail));
+       vp_write(&vp->common, virtio_pci_common_cfg, ಸರತಿ_avail_hi, 0);
+       vp_write(&vp->common, virtio_pci_common_cfg, ಸರತಿ_ಬಳಸಿದ_lo,
+                (ಚಿಹ್ನೆರಹಿತ ದೀರ್ಘ)virt_ಗಮ್ಯ_phys(vr->ಬಳಸಿದ));
+       vp_write(&vp->common, virtio_pci_common_cfg, ಸರತಿ_ಬಳಸಿದ_hi, 0);
+       vp_write(&vp->common, virtio_pci_common_cfg, ಸರತಿ_enable, 1);
+       vq->ಸರತಿ_notify_off = vp_read(&vp->common, virtio_pci_common_cfg,
+                                      ಸರತಿ_notify_off);
+   } ಇಲ್ಲದಿದ್ದರೆ {
+       vp_write(&vp->legacy, virtio_pci_legacy, ಸರತಿ_pfn,
+                (ಚಿಹ್ನೆರಹಿತ ದೀರ್ಘ)virt_ಗಮ್ಯ_phys(vr->desc) >> ಪುಟ_ಸರಿಸು);
    }
-   return num;
+   ಹಿಂತಿರುಗಿ ಅಂಕೆ;
 
 fail:
-   free(vq);
-   *p_vq = NULL;
-   return -1;
+   ಬಿಡುಗಡೆ(vq);
+   *p_vq = ಖಾಲಿ;
+   ಹಿಂತಿರುಗಿ -1;
 }
 
-void vp_init_simple(struct vp_device *vp, struct pci_device *pci)
+ಶೂನ್ಯ vp_init_simple(ರಚನೆ vp_device *vp, ರಚನೆ pci_device *pci)
 {
-    u8 cap = pci_find_capability(pci->bdf, PCI_CAP_ID_VNDR, 0);
-    struct vp_cap *vp_cap;
-    const char *mode;
-    u32 offset, base, mul;
+    u8 cap = pci_ಕಂಡುಹಿಡಿ_capability(pci->bdf, PCI_CAP_ID_VNDR, 0);
+    ರಚನೆ vp_cap *vp_cap;
+    ಸ್ಥಿರಾಂಕ ಅಕ್ಷರ *ಬಹುಲಕ;
+    u32 ಸ್ಥಾನಾಂತರ_2, ತಳ, mul;
     u64 addr;
     u8 type;
 
-    memset(vp, 0, sizeof(*vp));
-    while (cap != 0) {
+    memset(vp, 0, ಗಾತ್ರ(*vp));
+    ಆಗ (cap != 0) {
         type = pci_config_readb(pci->bdf, cap +
-                                offsetof(struct virtio_pci_cap, cfg_type));
-        switch (type) {
-        case VIRTIO_PCI_CAP_COMMON_CFG:
+                                offsetof(ರಚನೆ virtio_pci_cap, cfg_type));
+        ಆಯ್ಕೆ (type) {
+        ಸ್ಥಿತಿ VIRTIO_PCI_CAP_COMMON_CFG:
             vp_cap = &vp->common;
-            break;
-        case VIRTIO_PCI_CAP_NOTIFY_CFG:
+            ನಿಲ್ಲಿಸು;
+        ಸ್ಥಿತಿ VIRTIO_PCI_CAP_NOTIFY_CFG:
             vp_cap = &vp->notify;
-            mul = offsetof(struct virtio_pci_notify_cap, notify_off_multiplier);
+            mul = offsetof(ರಚನೆ virtio_pci_notify_cap, notify_off_multiplier);
             vp->notify_off_multiplier = pci_config_readl(pci->bdf, cap + mul);
-            break;
-        case VIRTIO_PCI_CAP_ISR_CFG:
+            ನಿಲ್ಲಿಸು;
+        ಸ್ಥಿತಿ VIRTIO_PCI_CAP_ISR_CFG:
             vp_cap = &vp->isr;
-            break;
-        case VIRTIO_PCI_CAP_DEVICE_CFG:
+            ನಿಲ್ಲಿಸು;
+        ಸ್ಥಿತಿ VIRTIO_PCI_CAP_DEVICE_CFG:
             vp_cap = &vp->device;
-            break;
-        case VIRTIO_PCI_CAP_PCI_CFG:
+            ನಿಲ್ಲಿಸು;
+        ಸ್ಥಿತಿ VIRTIO_PCI_CAP_PCI_CFG:
             vp->common.cfg = cap;
             vp->common.bdf = pci->bdf;
             vp->notify.cfg = cap;
@@ -465,84 +465,84 @@ void vp_init_simple(struct vp_device *vp, struct pci_device *pci)
             vp->isr.bdf = pci->bdf;
             vp->device.cfg = cap;
             vp->device.bdf = pci->bdf;
-            vp_cap = NULL;
+            vp_cap = ಖಾಲಿ;
             dprintf(1, "pci dev %pP virtio cap at 0x%x type %d"
                     " [pci cfg access]\n", pci, cap, type);
-            break;
-        default:
-            vp_cap = NULL;
-            break;
+            ನಿಲ್ಲಿಸು;
+        ಪೂರ್ವನಿಯೋಜಿತ:
+            vp_cap = ಖಾಲಿ;
+            ನಿಲ್ಲಿಸು;
         }
-        if (vp_cap && !vp_cap->cap) {
+        ಆದರೆ (vp_cap && !vp_cap->cap) {
             vp_cap->cap = cap;
             vp_cap->bar = pci_config_readb(pci->bdf, cap +
-                                           offsetof(struct virtio_pci_cap, bar));
-            offset = pci_config_readl(pci->bdf, cap +
-                                      offsetof(struct virtio_pci_cap, offset));
-            base = PCI_BASE_ADDRESS_0 + 4 * vp_cap->bar;
-            addr = pci_config_readl(pci->bdf, base);
-            if (addr & PCI_BASE_ADDRESS_SPACE_IO) {
-                addr &= PCI_BASE_ADDRESS_IO_MASK;
-                vp_cap->mode = VP_ACCESS_IO;
-            } else if ((addr & PCI_BASE_ADDRESS_MEM_TYPE_MASK) ==
-                       PCI_BASE_ADDRESS_MEM_TYPE_64) {
-                addr &= PCI_BASE_ADDRESS_MEM_MASK;
-                addr |= (u64)pci_config_readl(pci->bdf, base + 4) << 32;
-                vp_cap->mode = (addr > 0xffffffffll) ?
+                                           offsetof(ರಚನೆ virtio_pci_cap, bar));
+            ಸ್ಥಾನಾಂತರ_2 = pci_config_readl(pci->bdf, cap +
+                                      offsetof(ರಚನೆ virtio_pci_cap, ಸ್ಥಾನಾಂತರ_2));
+            ತಳ = PCI_ತಳ_ವಿಳಾಸ_0 + 4 * vp_cap->bar;
+            addr = pci_config_readl(pci->bdf, ತಳ);
+            ಆದರೆ (addr & PCI_ತಳ_ವಿಳಾಸ_SPACE_IO) {
+                addr &= PCI_ತಳ_ವಿಳಾಸ_IO_ಮುಖವಾಡ;
+                vp_cap->ಬಹುಲಕ = VP_ACCESS_IO;
+            } ಇಲ್ಲದಿದ್ದರೆ ಆದರೆ ((addr & PCI_ತಳ_ವಿಳಾಸ_MEM_TYPE_ಮುಖವಾಡ) ==
+                       PCI_ತಳ_ವಿಳಾಸ_MEM_TYPE_64) {
+                addr &= PCI_ತಳ_ವಿಳಾಸ_MEM_ಮುಖವಾಡ;
+                addr |= (u64)pci_config_readl(pci->bdf, ತಳ + 4) << 32;
+                vp_cap->ಬಹುಲಕ = (addr > 0xffffffffll) ?
                     VP_ACCESS_PCICFG : VP_ACCESS_MMIO;
-            } else {
-                addr &= PCI_BASE_ADDRESS_MEM_MASK;
-                vp_cap->mode = VP_ACCESS_MMIO;
+            } ಇಲ್ಲದಿದ್ದರೆ {
+                addr &= PCI_ತಳ_ವಿಳಾಸ_MEM_ಮುಖವಾಡ;
+                vp_cap->ಬಹುಲಕ = VP_ACCESS_MMIO;
             }
-            switch (vp_cap->mode) {
-            case VP_ACCESS_IO:
+            ಆಯ್ಕೆ (vp_cap->ಬಹುಲಕ) {
+            ಸ್ಥಿತಿ VP_ACCESS_IO:
             {
-                u32 addr = pci_enable_iobar(pci, base);
-                if (!addr)
-                    return;
-                vp_cap->ioaddr = addr + offset;
-                mode = "io";
-                break;
+                u32 addr = pci_enable_iobar(pci, ತಳ);
+                ಆದರೆ (!addr)
+                    ಹಿಂತಿರುಗಿ;
+                vp_cap->ioaddr = addr + ಸ್ಥಾನಾಂತರ_2;
+                ಬಹುಲಕ = "io";
+                ನಿಲ್ಲಿಸು;
             }
-            case VP_ACCESS_MMIO:
+            ಸ್ಥಿತಿ VP_ACCESS_MMIO:
             {
-                void *addr = pci_enable_membar(pci, base);
-                if (!addr)
-                    return;
-                vp_cap->memaddr = addr + offset;
-                mode = "mmio";
-                break;
+                ಶೂನ್ಯ *addr = pci_enable_membar(pci, ತಳ);
+                ಆದರೆ (!addr)
+                    ಹಿಂತಿರುಗಿ;
+                vp_cap->memaddr = addr + ಸ್ಥಾನಾಂತರ_2;
+                ಬಹುಲಕ = "mmio";
+                ನಿಲ್ಲಿಸು;
             }
-            case VP_ACCESS_PCICFG:
-                mode = "pcicfg";
-                vp_cap->baroff = offset;
-                break;
-            default:
-                mode = "Huh?";
-                break;
+            ಸ್ಥಿತಿ VP_ACCESS_PCICFG:
+                ಬಹುಲಕ = "pcicfg";
+                vp_cap->baroff = ಸ್ಥಾನಾಂತರ_2;
+                ನಿಲ್ಲಿಸು;
+            ಪೂರ್ವನಿಯೋಜಿತ:
+                ಬಹುಲಕ = "Huh?";
+                ನಿಲ್ಲಿಸು;
             }
             dprintf(1, "pci dev %pP virtio cap at 0x%x type %d "
                     "bar %d at 0x%08llx off +0x%04x [%s]\n",
-                    pci, vp_cap->cap, type, vp_cap->bar, addr, offset, mode);
+                    pci, vp_cap->cap, type, vp_cap->bar, addr, ಸ್ಥಾನಾಂತರ_2, ಬಹುಲಕ);
         }
 
-        cap = pci_find_capability(pci->bdf, PCI_CAP_ID_VNDR, cap);
+        cap = pci_ಕಂಡುಹಿಡಿ_capability(pci->bdf, PCI_CAP_ID_VNDR, cap);
     }
 
-    if (vp->common.cap && vp->notify.cap && vp->isr.cap && vp->device.cap) {
+    ಆದರೆ (vp->common.cap && vp->notify.cap && vp->isr.cap && vp->device.cap) {
         dprintf(1, "pci dev %pP using modern (1.0) virtio mode\n", pci);
         vp->use_modern = 1;
-    } else {
+    } ಇಲ್ಲದಿದ್ದರೆ {
         dprintf(1, "pci dev %pP using legacy (0.9.5) virtio mode\n", pci);
         vp->legacy.bar = 0;
-        vp->legacy.ioaddr = pci_enable_iobar(pci, PCI_BASE_ADDRESS_0);
-        if (!vp->legacy.ioaddr)
-            return;
-        vp->legacy.mode = VP_ACCESS_IO;
+        vp->legacy.ioaddr = pci_enable_iobar(pci, PCI_ತಳ_ವಿಳಾಸ_0);
+        ಆದರೆ (!vp->legacy.ioaddr)
+            ಹಿಂತಿರುಗಿ;
+        vp->legacy.ಬಹುಲಕ = VP_ACCESS_IO;
     }
 
     vp_reset(vp);
     pci_enable_busmaster(pci);
-    vp_set_status(vp, VIRTIO_CONFIG_S_ACKNOWLEDGE |
+    vp_ಗಣ_ಸ್ಥಿತಿ(vp, VIRTIO_CONFIG_S_ACKNOWLEDGE |
                   VIRTIO_CONFIG_S_DRIVER );
 }

@@ -1,22 +1,22 @@
-#ifndef __OPTIONROMS_H
-#define __OPTIONROMS_H
+#ವ್ಯಾಖ್ಯಾನಿತವಾಗದಿದ್ದರೆ __OPTIONROMS_H
+#ವ್ಯಾಖ್ಯಾನಿಸು __OPTIONROMS_H
 
-#include "types.h" // u32
+#ಅನ್ತರ್ಭಾವ "types.h" // u32
 
-#define OPTION_ROM_SIGNATURE 0xaa55
+#ವ್ಯಾಖ್ಯಾನಿಸು OPTION_ROM_SIGNATURE 0xaa55
 
-struct rom_header {
+ರಚನೆ rom_ಶೀರ್ಷಿಕೆ {
     u16 signature;
-    u8 size;
-    u8 initVector[4];
+    u8 ಗಾತ್ರ_2;
+    u8 init_ಸದಿಶ[4];
     u8 reserved[17];
     u16 pcioffset;
     u16 pnpoffset;
 } PACKED;
 
-#define PCI_ROM_SIGNATURE 0x52494350 // "PCIR"
+#ವ್ಯಾಖ್ಯಾನಿಸು PCI_ROM_SIGNATURE 0x52494350 // "PCIR"
 
-struct pci_data {
+ರಚನೆ pci_ದತ್ತಾಂಶ {
     u32 signature;
     u16 vendor;
     u16 device;
@@ -32,7 +32,7 @@ struct pci_data {
     u16 reserved;
 } PACKED;
 
-struct pnp_data {
+ರಚನೆ pnp_ದತ್ತಾಂಶ {
     u32 signature;
     u8 revision;
     u8 len;
@@ -52,8 +52,8 @@ struct pnp_data {
     u16 staticresource;
 } PACKED;
 
-#define OPTION_ROM_ALIGN 2048
-#define OPTION_ROM_INITVECTOR offsetof(struct rom_header, initVector[0])
-#define PCIROM_CODETYPE_X86 0
+#ವ್ಯಾಖ್ಯಾನಿಸು OPTION_ROM_ALIGN 2048
+#ವ್ಯಾಖ್ಯಾನಿಸು OPTION_ROM_INITVECTOR offsetof(ರಚನೆ rom_ಶೀರ್ಷಿಕೆ, init_ಸದಿಶ[0])
+#ವ್ಯಾಖ್ಯಾನಿಸು PCIROM_CODETYPE_X86 0
 
-#endif
+#ಆದರೆ_ಅಂತ್ಯ

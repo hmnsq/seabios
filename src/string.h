@@ -1,31 +1,31 @@
 // String manipulation function defs.
-#ifndef __STRING_H
-#define __STRING_H
+#ವ್ಯಾಖ್ಯಾನಿತವಾಗದಿದ್ದರೆ __STRING_H
+#ವ್ಯಾಖ್ಯಾನಿಸು __STRING_H
 
-#include "types.h" // u32
+#ಅನ್ತರ್ಭಾವ "types.h" // u32
 
 // string.c
-u8 checksum_far(u16 buf_seg, void *buf_far, u32 len);
-u8 checksum(void *buf, u32 len);
-size_t strlen(const char *s);
-int memcmp_far(u16 s1seg, const void *s1, u16 s2seg, const void *s2, size_t n);
-int memcmp(const void *s1, const void *s2, size_t n);
-int strcmp(const char *s1, const char *s2);
-void memset_far(u16 d_seg, void *d_far, u8 c, size_t len);
-void memset16_far(u16 d_seg, void *d_far, u16 c, size_t len);
-void *memset(void *s, int c, size_t n);
-void memset_fl(void *ptr, u8 val, size_t size);
-void memcpy_far(u16 d_seg, void *d_far
-                , u16 s_seg, const void *s_far, size_t len);
-void memcpy_fl(void *d_fl, const void *s_fl, size_t len);
-void *memcpy(void *d1, const void *s1, size_t len);
-#if MODESEGMENT == 0
-#define memcpy __builtin_memcpy
-#endif
-void iomemcpy(void *d, const void *s, u32 len);
-void *memmove(void *d, const void *s, size_t len);
-char *strtcpy(char *dest, const char *src, size_t len);
-char *strchr(const char *s, int c);
-char *nullTrailingSpace(char *buf);
+u8 checksum_far(u16 buf_seg, ಶೂನ್ಯ *buf_far, u32 len);
+u8 checksum(ಶೂನ್ಯ *buf, u32 len);
+ಗಾತ್ರ_t ಅಕ್ಷರಸರಣಿ_ಉದ್ದ(ಸ್ಥಿರಾಂಕ ಅಕ್ಷರ *s);
+ಪೂರ್ಣಾಂಕ memcmp_far(u16 s1seg, ಸ್ಥಿರಾಂಕ ಶೂನ್ಯ *s1, u16 s2seg, ಸ್ಥಿರಾಂಕ ಶೂನ್ಯ *s2, ಗಾತ್ರ_t n);
+ಪೂರ್ಣಾಂಕ memcmp(ಸ್ಥಿರಾಂಕ ಶೂನ್ಯ *s1, ಸ್ಥಿರಾಂಕ ಶೂನ್ಯ *s2, ಗಾತ್ರ_t n);
+ಪೂರ್ಣಾಂಕ strcmp(ಸ್ಥಿರಾಂಕ ಅಕ್ಷರ *s1, ಸ್ಥಿರಾಂಕ ಅಕ್ಷರ *s2);
+ಶೂನ್ಯ memset_far(u16 d_seg, ಶೂನ್ಯ *d_far, u8 c, ಗಾತ್ರ_t len);
+ಶೂನ್ಯ memset16_far(u16 d_seg, ಶೂನ್ಯ *d_far, u16 c, ಗಾತ್ರ_t len);
+ಶೂನ್ಯ *memset(ಶೂನ್ಯ *s, ಪೂರ್ಣಾಂಕ c, ಗಾತ್ರ_t n);
+ಶೂನ್ಯ memset_fl(ಶೂನ್ಯ *ptr, u8 val, ಗಾತ್ರ_t ಗಾತ್ರ_2);
+ಶೂನ್ಯ memcpy_far(u16 d_seg, ಶೂನ್ಯ *d_far
+                , u16 s_seg, ಸ್ಥಿರಾಂಕ ಶೂನ್ಯ *s_far, ಗಾತ್ರ_t len);
+ಶೂನ್ಯ memcpy_fl(ಶೂನ್ಯ *d_fl, ಸ್ಥಿರಾಂಕ ಶೂನ್ಯ *s_fl, ಗಾತ್ರ_t len);
+ಶೂನ್ಯ *ಸ್ಮರಣೆ_ನಕಲು(ಶೂನ್ಯ *d1, ಸ್ಥಿರಾಂಕ ಶೂನ್ಯ *s1, ಗಾತ್ರ_t len);
+#ಆದರೆ MODESEGMENT == 0
+#ವ್ಯಾಖ್ಯಾನಿಸು ಸ್ಮರಣೆ_ನಕಲು __builtin_memcpy
+#ಆದರೆ_ಅಂತ್ಯ
+ಶೂನ್ಯ iomemcpy(ಶೂನ್ಯ *d, ಸ್ಥಿರಾಂಕ ಶೂನ್ಯ *s, u32 len);
+ಶೂನ್ಯ *memmove(ಶೂನ್ಯ *d, ಸ್ಥಿರಾಂಕ ಶೂನ್ಯ *s, ಗಾತ್ರ_t len);
+ಅಕ್ಷರ *strtcpy(ಅಕ್ಷರ *dest, ಸ್ಥಿರಾಂಕ ಅಕ್ಷರ *src, ಗಾತ್ರ_t len);
+ಅಕ್ಷರ *strchr(ಸ್ಥಿರಾಂಕ ಅಕ್ಷರ *s, ಪೂರ್ಣಾಂಕ c);
+ಅಕ್ಷರ *nullTrailingSpace(ಅಕ್ಷರ *buf);
 
-#endif // string.h
+#ಆದರೆ_ಅಂತ್ಯ // string.h

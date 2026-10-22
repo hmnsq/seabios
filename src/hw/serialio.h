@@ -1,30 +1,30 @@
-#ifndef __SERIALIO_H
-#define __SERIALIO_H
+#ವ್ಯಾಖ್ಯಾನಿತವಾಗದಿದ್ದರೆ __SERIALIO_H
+#ವ್ಯಾಖ್ಯಾನಿಸು __SERIALIO_H
 
-#include "types.h" // u16
+#ಅನ್ತರ್ಭಾವ "types.h" // u16
 
-#define PORT_LPT2              0x0278
-#define PORT_SERIAL4           0x02e8
-#define PORT_SERIAL2           0x02f8
-#define PORT_LPT1              0x0378
-#define PORT_SERIAL3           0x03e8
-#define PORT_SERIAL1           0x03f8
+#ವ್ಯಾಖ್ಯಾನಿಸು ಪೋರ್ಟ್_LPT2              0x0278
+#ವ್ಯಾಖ್ಯಾನಿಸು ಪೋರ್ಟ್_SERIAL4           0x02e8
+#ವ್ಯಾಖ್ಯಾನಿಸು ಪೋರ್ಟ್_SERIAL2           0x02f8
+#ವ್ಯಾಖ್ಯಾನಿಸು ಪೋರ್ಟ್_LPT1              0x0378
+#ವ್ಯಾಖ್ಯಾನಿಸು ಪೋರ್ಟ್_SERIAL3           0x03e8
+#ವ್ಯಾಖ್ಯಾನಿಸು ಪೋರ್ಟ್_SERIAL1           0x03f8
 
 // Serial port offsets
-#define SEROFF_DATA    0
-#define SEROFF_DLL     0
-#define SEROFF_IER     1
-#define SEROFF_DLH     1
-#define SEROFF_IIR     2
-#define SEROFF_LCR     3
-#define SEROFF_LSR     5
-#define SEROFF_MSR     6
+#ವ್ಯಾಖ್ಯಾನಿಸು SEROFF_ದತ್ತಾಂಶ    0
+#ವ್ಯಾಖ್ಯಾನಿಸು SEROFF_DLL     0
+#ವ್ಯಾಖ್ಯಾನಿಸು SEROFF_IER     1
+#ವ್ಯಾಖ್ಯಾನಿಸು SEROFF_DLH     1
+#ವ್ಯಾಖ್ಯಾನಿಸು SEROFF_IIR     2
+#ವ್ಯಾಖ್ಯಾನಿಸು SEROFF_LCR     3
+#ವ್ಯಾಖ್ಯಾನಿಸು SEROFF_LSR     5
+#ವ್ಯಾಖ್ಯಾನಿಸು SEROFF_MSR     6
 
-void serial_debug_preinit(void);
-void serial_debug_putc(char c);
-void serial_debug_flush(void);
-extern u16 DebugOutputPort;
-void qemu_debug_preinit(void);
-void qemu_debug_putc(char c);
+ಶೂನ್ಯ serial_debug_preinit(ಶೂನ್ಯ);
+ಶೂನ್ಯ serial_debug_putc(ಅಕ್ಷರ c);
+ಶೂನ್ಯ serial_debug_flush(ಶೂನ್ಯ);
+ಬಾಹ್ಯ u16 Debug_Output_ಪೋರ್ಟ್;
+ಶೂನ್ಯ qemu_debug_preinit(ಶೂನ್ಯ);
+ಶೂನ್ಯ qemu_debug_putc(ಅಕ್ಷರ c);
 
-#endif // serialio.h
+#ಆದರೆ_ಅಂತ್ಯ // serialio.h

@@ -4,128 +4,128 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_GLOBAL
-#include "bregs.h" // CR0_PE
-#include "fw/paravirt.h" // PORT_SMI_CMD
-#include "hw/rtc.h" // rtc_use
-#include "list.h" // hlist_node
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "romfile.h" // romfile_loadint
-#include "stacks.h" // struct mutex_s
-#include "string.h" // memset
-#include "util.h" // useRTC
+#ಅನ್ತರ್ಭಾವ "biosvar.h" // GET_GLOBAL
+#ಅನ್ತರ್ಭಾವ "bregs.h" // CR0_PE
+#ಅನ್ತರ್ಭಾವ "fw/paravirt.h" // PORT_SMI_CMD
+#ಅನ್ತರ್ಭಾವ "hw/rtc.h" // rtc_use
+#ಅನ್ತರ್ಭಾವ "list.h" // hlist_node
+#ಅನ್ತರ್ಭಾವ "malloc.h" // free
+#ಅನ್ತರ್ಭಾವ "output.h" // dprintf
+#ಅನ್ತರ್ಭಾವ "romfile.h" // romfile_loadint
+#ಅನ್ತರ್ಭಾವ "stacks.h" // struct mutex_s
+#ಅನ್ತರ್ಭಾವ "string.h" // memset
+#ಅನ್ತರ್ಭಾವ "util.h" // useRTC
 
-#define MAIN_STACK_MAX (1024*1024)
+#ವ್ಯಾಖ್ಯಾನಿಸು MAIN_ರಾಶಿ_MAX (1024*1024)
 
 
 /****************************************************************
  * 16bit / 32bit calling
  ****************************************************************/
 
-struct {
-    u8 method;
+ರಚನೆ {
+    u8 ವಿಧಾನ_2;
     u8 cmosindex;
     u8 a20;
     u16 ss, fs, gs;
     u32 cr0;
-    struct descloc_s gdt;
-} Call16Data VARLOW;
+    ರಚನೆ descloc_s gdt;
+} Call16_ದತ್ತಾಂಶ VARLOW;
 
-#define C16_BIG 1
-#define C16_SMM 2
+#ವ್ಯಾಖ್ಯಾನಿಸು C16_BIG 1
+#ವ್ಯಾಖ್ಯಾನಿಸು C16_SMM 2
 
-int HaveSmmCall32 VARFSEG;
+ಪೂರ್ಣಾಂಕ HaveSmmCall32 VARFSEG;
 
 // Backup state in preparation for call32
-static int
-call32_prep(u8 method)
+ಸ್ಥಿರ ಪೂರ್ಣಾಂಕ
+call32_prep(u8 ವಿಧಾನ_2)
 {
-    if (!CONFIG_CALL32_SMM || method != C16_SMM) {
+    ಆದರೆ (!CONFIG_CALL32_SMM || ವಿಧಾನ_2 != C16_SMM) {
         // Backup cr0
         u32 cr0 = cr0_read();
-        if (cr0 & CR0_PE)
+        ಆದರೆ (cr0 & CR0_PE)
             // Called in 16bit protected mode?!
-            return -1;
-        SET_LOW(Call16Data.cr0, cr0);
+            ಹಿಂತಿರುಗಿ -1;
+        ಗಣ_ಕೆಳಗಿನ(Call16_ದತ್ತಾಂಶ.cr0, cr0);
 
         // Backup fs/gs and gdt
-        SET_LOW(Call16Data.fs, GET_SEG(FS));
-        SET_LOW(Call16Data.gs, GET_SEG(GS));
-        struct descloc_s gdt;
+        ಗಣ_ಕೆಳಗಿನ(Call16_ದತ್ತಾಂಶ.fs, GET_SEG(FS));
+        ಗಣ_ಕೆಳಗಿನ(Call16_ದತ್ತಾಂಶ.gs, GET_SEG(GS));
+        ರಚನೆ descloc_s gdt;
         sgdt(&gdt);
-        SET_LOW(Call16Data.gdt.length, gdt.length);
-        SET_LOW(Call16Data.gdt.addr, gdt.addr);
+        ಗಣ_ಕೆಳಗಿನ(Call16_ದತ್ತಾಂಶ.gdt.ಉದ್ದಳತೆ, gdt.ಉದ್ದಳತೆ);
+        ಗಣ_ಕೆಳಗಿನ(Call16_ದತ್ತಾಂಶ.gdt.addr, gdt.addr);
 
         // Enable a20 and backup its previous state
-        SET_LOW(Call16Data.a20, set_a20(1));
+        ಗಣ_ಕೆಳಗಿನ(Call16_ದತ್ತಾಂಶ.a20, ಗಣ_a20(1));
     }
 
     // Backup ss
-    SET_LOW(Call16Data.ss, GET_SEG(SS));
+    ಗಣ_ಕೆಳಗಿನ(Call16_ದತ್ತಾಂಶ.ss, GET_SEG(SS));
 
     // Backup cmos index register and disable nmi
-    u8 cmosindex = inb(PORT_CMOS_INDEX);
-    if (!(cmosindex & NMI_DISABLE_BIT)) {
-        outb(cmosindex | NMI_DISABLE_BIT, PORT_CMOS_INDEX);
-        inb(PORT_CMOS_DATA);
+    u8 cmosindex = inb(ಪೋರ್ಟ್_CMOS_ಸೂಚ್ಯಂಕ);
+    ಆದರೆ (!(cmosindex & NMI_DISABLE_ಬಿಟ್)) {
+        outb(cmosindex | NMI_DISABLE_ಬಿಟ್, ಪೋರ್ಟ್_CMOS_ಸೂಚ್ಯಂಕ);
+        inb(ಪೋರ್ಟ್_CMOS_ದತ್ತಾಂಶ);
     }
-    SET_LOW(Call16Data.cmosindex, cmosindex);
+    ಗಣ_ಕೆಳಗಿನ(Call16_ದತ್ತಾಂಶ.cmosindex, cmosindex);
 
-    SET_LOW(Call16Data.method, method);
-    return 0;
+    ಗಣ_ಕೆಳಗಿನ(Call16_ದತ್ತಾಂಶ.ವಿಧಾನ_2, ವಿಧಾನ_2);
+    ಹಿಂತಿರುಗಿ 0;
 }
 
 // Restore state backed up during call32
-static u8
-call32_post(void)
+ಸ್ಥಿರ u8
+call32_post(ಶೂನ್ಯ)
 {
-    u8 method = GET_LOW(Call16Data.method);
-    SET_LOW(Call16Data.method, 0);
-    SET_LOW(Call16Data.ss, 0);
+    u8 ವಿಧಾನ_2 = GET_ಕೆಳಗಿನ(Call16_ದತ್ತಾಂಶ.ವಿಧಾನ_2);
+    ಗಣ_ಕೆಳಗಿನ(Call16_ದತ್ತಾಂಶ.ವಿಧಾನ_2, 0);
+    ಗಣ_ಕೆಳಗಿನ(Call16_ದತ್ತಾಂಶ.ss, 0);
 
-    if (!CONFIG_CALL32_SMM || method != C16_SMM) {
+    ಆದರೆ (!CONFIG_CALL32_SMM || ವಿಧಾನ_2 != C16_SMM) {
         // Restore a20
-        u8 a20 = GET_LOW(Call16Data.a20);
-        if (!a20)
-            set_a20(0);
+        u8 a20 = GET_ಕೆಳಗಿನ(Call16_ದತ್ತಾಂಶ.a20);
+        ಆದರೆ (!a20)
+            ಗಣ_a20(0);
 
         // Restore gdt and fs/gs
-        struct descloc_s gdt;
-        gdt.length = GET_LOW(Call16Data.gdt.length);
-        gdt.addr = GET_LOW(Call16Data.gdt.addr);
+        ರಚನೆ descloc_s gdt;
+        gdt.ಉದ್ದಳತೆ = GET_ಕೆಳಗಿನ(Call16_ದತ್ತಾಂಶ.gdt.ಉದ್ದಳತೆ);
+        gdt.addr = GET_ಕೆಳಗಿನ(Call16_ದತ್ತಾಂಶ.gdt.addr);
         lgdt(&gdt);
-        SET_SEG(FS, GET_LOW(Call16Data.fs));
-        SET_SEG(GS, GET_LOW(Call16Data.gs));
+        ಗಣ_SEG(FS, GET_ಕೆಳಗಿನ(Call16_ದತ್ತಾಂಶ.fs));
+        ಗಣ_SEG(GS, GET_ಕೆಳಗಿನ(Call16_ದತ್ತಾಂಶ.gs));
 
         // Restore cr0
-        u32 cr0_caching = GET_LOW(Call16Data.cr0) & (CR0_CD|CR0_NW);
-        if (cr0_caching)
-            cr0_mask(CR0_CD|CR0_NW, cr0_caching);
+        u32 cr0_caching = GET_ಕೆಳಗಿನ(Call16_ದತ್ತಾಂಶ.cr0) & (CR0_CD|CR0_NW);
+        ಆದರೆ (cr0_caching)
+            cr0_ಮುಖವಾಡ(CR0_CD|CR0_NW, cr0_caching);
     }
 
     // Restore cmos index register
-    u8 cmosindex = GET_LOW(Call16Data.cmosindex);
-    if (!(cmosindex & NMI_DISABLE_BIT)) {
-        outb(cmosindex, PORT_CMOS_INDEX);
-        inb(PORT_CMOS_DATA);
+    u8 cmosindex = GET_ಕೆಳಗಿನ(Call16_ದತ್ತಾಂಶ.cmosindex);
+    ಆದರೆ (!(cmosindex & NMI_DISABLE_ಬಿಟ್)) {
+        outb(cmosindex, ಪೋರ್ಟ್_CMOS_ಸೂಚ್ಯಂಕ);
+        inb(ಪೋರ್ಟ್_CMOS_ದತ್ತಾಂಶ);
     }
-    return method;
+    ಹಿಂತಿರುಗಿ ವಿಧಾನ_2;
 }
 
 // Force next call16() to restore to a pristine cpu environment state
-static void
-call16_override(int big)
+ಸ್ಥಿರ ಶೂನ್ಯ
+call16_override(ಪೂರ್ಣಾಂಕ big)
 {
     ASSERT32FLAT();
-    if (getesp() > BUILD_STACK_ADDR)
+    ಆದರೆ (getesp() > BUILD_ರಾಶಿ_ADDR)
         panic("call16_override with invalid stack\n");
-    memset(&Call16Data, 0, sizeof(Call16Data));
-    if (big) {
-        Call16Data.method = C16_BIG;
-        Call16Data.a20 = 1;
-    } else {
-        Call16Data.a20 = !CONFIG_DISABLE_A20;
+    memset(&Call16_ದತ್ತಾಂಶ, 0, ಗಾತ್ರ(Call16_ದತ್ತಾಂಶ));
+    ಆದರೆ (big) {
+        Call16_ದತ್ತಾಂಶ.ವಿಧಾನ_2 = C16_BIG;
+        Call16_ದತ್ತಾಂಶ.a20 = 1;
+    } ಇಲ್ಲದಿದ್ದರೆ {
+        Call16_ದತ್ತಾಂಶ.a20 = !CONFIG_DISABLE_A20;
     }
 }
 
@@ -133,26 +133,26 @@ call16_override(int big)
 u32 VISIBLE16
 call16_helper(u32 eax, u32 edx, u32 (*func)(u32 eax, u32 edx))
 {
-    u8 method = call32_post();
+    u8 ವಿಧಾನ_2 = call32_post();
     u32 ret = func(eax, edx);
-    call32_prep(method);
-    return ret;
+    call32_prep(ವಿಧಾನ_2);
+    ಹಿಂತಿರುಗಿ ret;
 }
 
-#define ASM32_SWITCH16 "  .pushsection .text.32fseg." UNIQSEC "\n  .code16\n"
-#define ASM32_BACK32   "  .popsection\n  .code32\n"
-#define ASM16_SWITCH32 "  .code32\n"
-#define ASM16_BACK16   "  .code16gcc\n"
+#ವ್ಯಾಖ್ಯಾನಿಸು ASM32_SWITCH16 "  .pushsection .text.32fseg." UNIQSEC "\n  .code16\n"
+#ವ್ಯಾಖ್ಯಾನಿಸು ASM32_BACK32   "  .popsection\n  .code32\n"
+#ವ್ಯಾಖ್ಯಾನಿಸು ASM16_SWITCH32 "  .code32\n"
+#ವ್ಯಾಖ್ಯಾನಿಸು ASM16_BACK16   "  .code16gcc\n"
 
 // Call a SeaBIOS C function in 32bit mode using smm trampoline
-static u32
-call32_smm(void *func, u32 eax)
+ಸ್ಥಿರ u32
+call32_smm(ಶೂನ್ಯ *func, u32 eax)
 {
     ASSERT16();
     dprintf(9, "call32_smm %p %x\n", func, eax);
     call32_prep(C16_SMM);
     u32 bkup_esp;
-    asm volatile(
+    asm ಅಸ್ಥಿರ(
         // Backup esp / set esp to flat stack location
         "  movl %%esp, %0\n"
         "  movl %%ss, %%eax\n"
@@ -163,7 +163,7 @@ call32_smm(void *func, u32 eax)
         "  movl $" __stringify(CALL32SMM_CMDID) ", %%eax\n"
         "  movl $" __stringify(CALL32SMM_ENTERID) ", %%ecx\n"
         "  movl $(" __stringify(BUILD_BIOS_ADDR) " + 1f), %%ebx\n"
-        "  outb %%al, $" __stringify(PORT_SMI_CMD) "\n"
+        "  outb %%al, $" __stringify(ಪೋರ್ಟ್_SMI_CMD) "\n"
         "  rep; nop\n"
         "  hlt\n"
 
@@ -175,7 +175,7 @@ call32_smm(void *func, u32 eax)
         "  movl $" __stringify(CALL32SMM_CMDID) ", %%eax\n"
         "  movl $" __stringify(CALL32SMM_RETURNID) ", %%ecx\n"
         "  movl $2f, %%ebx\n"
-        "  outb %%al, $" __stringify(PORT_SMI_CMD) "\n"
+        "  outb %%al, $" __stringify(ಪೋರ್ಟ್_SMI_CMD) "\n"
         "  rep; nop\n"
         "  hlt\n"
 
@@ -188,19 +188,19 @@ call32_smm(void *func, u32 eax)
     call32_post();
 
     dprintf(9, "call32_smm done %p %x\n", func, eax);
-    return eax;
+    ಹಿಂತಿರುಗಿ eax;
 }
 
-static u32
-call16_smm(u32 eax, u32 edx, void *func)
+ಸ್ಥಿರ u32
+call16_smm(u32 eax, u32 edx, ಶೂನ್ಯ *func)
 {
     ASSERT32FLAT();
-    if (!CONFIG_CALL32_SMM)
-        return eax;
+    ಆದರೆ (!CONFIG_CALL32_SMM)
+        ಹಿಂತಿರುಗಿ eax;
     func -= BUILD_BIOS_ADDR;
     dprintf(9, "call16_smm %p %x %x\n", func, eax, edx);
-    u32 stackoffset = Call16Data.ss << 4;
-    asm volatile(
+    u32 stackoffset = Call16_ದತ್ತಾಂಶ.ss << 4;
+    asm ಅಸ್ಥಿರ(
         // Restore esp
         "  subl %0, %%esp\n"
 
@@ -208,7 +208,7 @@ call16_smm(u32 eax, u32 edx, void *func)
         "  movl $" __stringify(CALL32SMM_CMDID) ", %%eax\n"
         "  movl $" __stringify(CALL32SMM_RETURNID) ", %%ecx\n"
         "  movl $(1f - " __stringify(BUILD_BIOS_ADDR) "), %%ebx\n"
-        "  outb %%al, $" __stringify(PORT_SMI_CMD) "\n"
+        "  outb %%al, $" __stringify(ಪೋರ್ಟ್_SMI_CMD) "\n"
         "  rep; nop\n"
         "  hlt\n"
 
@@ -221,7 +221,7 @@ call16_smm(u32 eax, u32 edx, void *func)
         "  movl $" __stringify(CALL32SMM_CMDID) ", %%eax\n"
         "  movl $" __stringify(CALL32SMM_ENTERID) ", %%ecx\n"
         "  movl $2f, %%ebx\n"
-        "  outb %%al, $" __stringify(PORT_SMI_CMD) "\n"
+        "  outb %%al, $" __stringify(ಪೋರ್ಟ್_SMI_CMD) "\n"
         "  rep; nop\n"
         "  hlt\n"
 
@@ -231,23 +231,23 @@ call16_smm(u32 eax, u32 edx, void *func)
         : "+r" (stackoffset), "+r" (eax), "+d" (edx)
         : "r" (func)
         : "eax", "ecx", "ebx", "cc", "memory");
-    return eax;
+    ಹಿಂತಿರುಗಿ eax;
 }
 
 // Call a 32bit SeaBIOS function from a 16bit SeaBIOS function.
 u32 VISIBLE16
-__call32(void *func, u32 eax, u32 errret)
+__call32(ಶೂನ್ಯ *func, u32 eax, u32 errret)
 {
     ASSERT16();
-    if (CONFIG_CALL32_SMM && GET_GLOBAL(HaveSmmCall32))
-        return call32_smm(func, eax);
+    ಆದರೆ (CONFIG_CALL32_SMM && GET_GLOBAL(HaveSmmCall32))
+        ಹಿಂತಿರುಗಿ call32_smm(func, eax);
     // Jump direclty to 32bit mode - this clobbers the 16bit segment
     // selector registers.
-    int ret = call32_prep(C16_BIG);
-    if (ret)
-        return errret;
+    ಪೂರ್ಣಾಂಕ ret = call32_prep(C16_BIG);
+    ಆದರೆ (ret)
+        ಹಿಂತಿರುಗಿ errret;
     u32 bkup_ss, bkup_esp;
-    asm volatile(
+    asm ಅಸ್ಥಿರ(
         // Backup ss/esp / set esp to flat stack location
         "  movl %%ss, %0\n"
         "  movl %%esp, %1\n"
@@ -272,27 +272,27 @@ __call32(void *func, u32 eax, u32 errret)
         : "r" (func)
         : "ecx", "edx", "cc", "memory");
     call32_post();
-    return eax;
+    ಹಿಂತಿರುಗಿ eax;
 }
 
 // Call a 16bit SeaBIOS function, restoring the mode from last call32().
-static u32
-call16(u32 eax, u32 edx, void *func)
+ಸ್ಥಿರ u32
+call16(u32 eax, u32 edx, ಶೂನ್ಯ *func)
 {
     ASSERT32FLAT();
-    if (getesp() > MAIN_STACK_MAX)
+    ಆದರೆ (getesp() > MAIN_ರಾಶಿ_MAX)
         panic("call16 with invalid stack\n");
-    if (CONFIG_CALL32_SMM && Call16Data.method == C16_SMM)
-        return call16_smm(eax, edx, func);
+    ಆದರೆ (CONFIG_CALL32_SMM && Call16_ದತ್ತಾಂಶ.ವಿಧಾನ_2 == C16_SMM)
+        ಹಿಂತಿರುಗಿ call16_smm(eax, edx, func);
 
-    extern void transition16big(void);
-    extern void transition16(void);
-    void *thunk = transition16;
-    if (Call16Data.method == C16_BIG || in_post())
+    ಬಾಹ್ಯ ಶೂನ್ಯ transition16big(ಶೂನ್ಯ);
+    ಬಾಹ್ಯ ಶೂನ್ಯ transition16(ಶೂನ್ಯ);
+    ಶೂನ್ಯ *thunk = transition16;
+    ಆದರೆ (Call16_ದತ್ತಾಂಶ.ವಿಧಾನ_2 == C16_BIG || ಒಳ_post())
         thunk = transition16big;
     func -= BUILD_BIOS_ADDR;
-    u32 stackseg = Call16Data.ss;
-    asm volatile(
+    u32 stackseg = Call16_ದತ್ತಾಂಶ.ss;
+    asm ಅಸ್ಥಿರ(
         // Transition to 16bit mode
         "  movl $(1f - " __stringify(BUILD_BIOS_ADDR) "), %%edx\n"
         "  jmp *%%ecx\n"
@@ -314,7 +314,7 @@ call16(u32 eax, u32 edx, void *func)
         : "+a" (eax), "+c"(thunk), "+r"(stackseg)
         : "r" (func), "r" (edx)
         : "edx", "cc", "memory");
-    return eax;
+    ಹಿಂತಿರುಗಿ eax;
 }
 
 
@@ -323,26 +323,26 @@ call16(u32 eax, u32 edx, void *func)
  ****************************************************************/
 
 // Space for a stack for 16bit code.
-u8 ExtraStack[BUILD_EXTRA_STACK_SIZE+1] VARLOW __aligned(8);
-u8 *StackPos VARLOW;
+u8 Extra_ರಾಶಿ[BUILD_EXTRA_ರಾಶಿ_ಗಾತ್ರ+1] VARLOW __aligned(8);
+u8 *ರಾಶಿ_Pos VARLOW;
 
 // Test if currently on the extra stack
-int
-on_extra_stack(void)
+ಪೂರ್ಣಾಂಕ
+on_extra_ರಾಶಿ(ಶೂನ್ಯ)
 {
-    return MODE16 && GET_SEG(SS) == SEG_LOW && getesp() > (u32)ExtraStack;
+    ಹಿಂತಿರುಗಿ MODE16 && GET_SEG(SS) == SEG_ಕೆಳಗಿನ && getesp() > (u32)Extra_ರಾಶಿ;
 }
 
 // Switch to the extra stack and call a function.
 u32
-__stack_hop(u32 eax, u32 edx, void *func)
+__stack_hop(u32 eax, u32 edx, ಶೂನ್ಯ *func)
 {
-    if (on_extra_stack())
-        return ((u32 (*)(u32, u32))func)(eax, edx);
+    ಆದರೆ (on_extra_ರಾಶಿ())
+        ಹಿಂತಿರುಗಿ ((u32 (*)(u32, u32))func)(eax, edx);
     ASSERT16();
-    u16 stack_seg = SEG_LOW;
+    u16 ರಾಶಿ_seg = SEG_ಕೆಳಗಿನ;
     u32 bkup_ss, bkup_esp;
-    asm volatile(
+    asm ಅಸ್ಥಿರ(
         // Backup current %ss/%esp values.
         "movw %%ss, %w3\n"
         "movl %%esp, %4\n"
@@ -361,23 +361,23 @@ __stack_hop(u32 eax, u32 edx, void *func)
         "movw %w3, %%ss\n"
         "movl %4, %%esp"
         : "+a" (eax), "+d" (edx), "+c" (func), "=&r" (bkup_ss), "=&r" (bkup_esp)
-        : "m" (StackPos), "r" (stack_seg)
+        : "m" (ರಾಶಿ_Pos), "r" (ರಾಶಿ_seg)
         : "cc", "memory");
-    return eax;
+    ಹಿಂತಿರುಗಿ eax;
 }
 
 // Switch back to original caller's stack and call a function.
 u32
-__stack_hop_back(u32 eax, u32 edx, void *func)
+__stack_hop_back(u32 eax, u32 edx, ಶೂನ್ಯ *func)
 {
-    if (!MODESEGMENT)
-        return call16(eax, edx, func);
-    if (!MODE16 || !on_extra_stack())
-        return ((u32 (*)(u32, u32))func)(eax, edx);
+    ಆದರೆ (!MODESEGMENT)
+        ಹಿಂತಿರುಗಿ call16(eax, edx, func);
+    ಆದರೆ (!MODE16 || !on_extra_ರಾಶಿ())
+        ಹಿಂತಿರುಗಿ ((u32 (*)(u32, u32))func)(eax, edx);
     ASSERT16();
     u16 bkup_ss;
-    u32 bkup_stack_pos, temp;
-    asm volatile(
+    u32 bkup_ರಾಶಿ_pos, ತಾತ್ಕಾಲಿಕ;
+    asm ಅಸ್ಥಿರ(
         // Backup stack_pos and current %ss/%esp
         "movl %6, %4\n"
         "movw %%ss, %w3\n"
@@ -395,10 +395,10 @@ __stack_hop_back(u32 eax, u32 edx, void *func)
         "movl %6, %%esp\n"
         "movl %4, %6"
         : "+a" (eax), "+d" (edx), "+c" (func), "=&r" (bkup_ss)
-          , "=&r" (bkup_stack_pos), "=&r" (temp), "+m" (StackPos)
+          , "=&r" (bkup_ರಾಶಿ_pos), "=&r" (ತಾತ್ಕಾಲಿಕ), "+m" (ರಾಶಿ_Pos)
         :
         : "cc", "memory");
-    return eax;
+    ಹಿಂತಿರುಗಿ eax;
 }
 
 
@@ -407,15 +407,15 @@ __stack_hop_back(u32 eax, u32 edx, void *func)
  ****************************************************************/
 
 // Far call 16bit code with a specified register state.
-void VISIBLE16
-_farcall16(struct bregs *callregs, u16 callregseg)
+ಶೂನ್ಯ VISIBLE16
+_farcall16(ರಚನೆ bregs *callregs, u16 callregseg)
 {
-    if (need_hop_back()) {
-        stack_hop_back(_farcall16, callregs, callregseg);
-        return;
+    ಆದರೆ (need_hop_ಹಿಂಭಾಗ()) {
+        ರಾಶಿ_hop_ಹಿಂಭಾಗ(_farcall16, callregs, callregseg);
+        ಹಿಂತಿರುಗಿ;
     }
     ASSERT16();
-    asm volatile(
+    asm ಅಸ್ಥಿರ(
         "calll __farcall16\n"
         : "+a" (callregs), "+m" (*callregs), "+d" (callregseg)
         :
@@ -423,43 +423,43 @@ _farcall16(struct bregs *callregs, u16 callregseg)
 }
 
 // Invoke external 16bit code.
-void
-farcall16(struct bregs *callregs)
+ಶೂನ್ಯ
+farcall16(ರಚನೆ bregs *callregs)
 {
     call16_override(0);
     _farcall16(callregs, 0);
 }
 
 // Invoke external 16bit code in "big real" mode.
-void
-farcall16big(struct bregs *callregs)
+ಶೂನ್ಯ
+farcall16big(ರಚನೆ bregs *callregs)
 {
     call16_override(1);
     _farcall16(callregs, 0);
 }
 
 // Invoke a 16bit software interrupt.
-void
-__call16_int(struct bregs *callregs, u16 offset)
+ಶೂನ್ಯ
+__call16_int(ರಚನೆ bregs *callregs, u16 ಸ್ಥಾನಾಂತರ_2)
 {
-    callregs->code.offset = offset;
-    if (!MODESEGMENT) {
-        callregs->code.seg = SEG_BIOS;
-        _farcall16((void*)callregs - Call16Data.ss * 16, Call16Data.ss);
-        return;
+    callregs->ಸಂಕೇತ_2.ಸ್ಥಾನಾಂತರ_2 = ಸ್ಥಾನಾಂತರ_2;
+    ಆದರೆ (!MODESEGMENT) {
+        callregs->ಸಂಕೇತ_2.seg = SEG_BIOS;
+        _farcall16((ಶೂನ್ಯ*)callregs - Call16_ದತ್ತಾಂಶ.ss * 16, Call16_ದತ್ತಾಂಶ.ss);
+        ಹಿಂತಿರುಗಿ;
     }
-    callregs->code.seg = GET_SEG(CS);
+    callregs->ಸಂಕೇತ_2.seg = GET_SEG(CS);
     _farcall16(callregs, GET_SEG(SS));
 }
 
 // Reset the machine
-void
-reset(void)
+ಶೂನ್ಯ
+reset(ಶೂನ್ಯ)
 {
-    extern void reset_vector(void) __noreturn;
-    if (!MODE16)
-        call16(0, 0, reset_vector);
-    reset_vector();
+    ಬಾಹ್ಯ ಶೂನ್ಯ reset_ಸದಿಶ(ಶೂನ್ಯ) __noreturn;
+    ಆದರೆ (!MODE16)
+        call16(0, 0, reset_ಸದಿಶ);
+    reset_ಸದಿಶ();
 }
 
 
@@ -469,63 +469,63 @@ reset(void)
 
 // Thread info - stored at bottom of each thread stack - don't change
 // without also updating the inline assembler below.
-struct thread_info {
-    void *stackpos;
-    struct hlist_node node;
+ರಚನೆ thread_info {
+    ಶೂನ್ಯ *stackpos;
+    ರಚನೆ hlist_ಗಂಟು ಗಂಟು;
 };
-struct thread_info MainThread VARFSEG = {
-    NULL, { &MainThread.node, &MainThread.node.next }
+ರಚನೆ thread_info MainThread VARFSEG = {
+    ಖಾಲಿ, { &MainThread.ಗಂಟು, &MainThread.ಗಂಟು.ಮುಂದಿನ }
 };
-#define THREADSTACKSIZE 4096
+#ವ್ಯಾಖ್ಯಾನಿಸು THREADSTACKSIZE 4096
 
 // Check if any threads are running.
-static int
-have_threads(void)
+ಸ್ಥಿರ ಪೂರ್ಣಾಂಕ
+have_ಎಳೆಗಳು(ಶೂನ್ಯ)
 {
-    return (CONFIG_THREADS
-            && GET_FLATPTR(MainThread.node.next) != &MainThread.node);
+    ಹಿಂತಿರುಗಿ (CONFIG_ಎಳೆಗಳು
+            && GET_FLATPTR(MainThread.ಗಂಟು.ಮುಂದಿನ) != &MainThread.ಗಂಟು);
 }
 
 // Return the 'struct thread_info' for the currently running thread.
-struct thread_info *
-getCurThread(void)
+ರಚನೆ thread_info *
+getCurThread(ಶೂನ್ಯ)
 {
     u32 esp = getesp();
-    if (esp <= MAIN_STACK_MAX)
-        return &MainThread;
-    return (void*)ALIGN_DOWN(esp, THREADSTACKSIZE);
+    ಆದರೆ (esp <= MAIN_ರಾಶಿ_MAX)
+        ಹಿಂತಿರುಗಿ &MainThread;
+    ಹಿಂತಿರುಗಿ (ಶೂನ್ಯ*)ALIGN_ಕೆಳಕ್ಕೆ(esp, THREADSTACKSIZE);
 }
 
-static u8 CanInterrupt, ThreadControl;
+ಸ್ಥಿರ u8 Can_ಅಡಚಣೆ, ThreadControl;
 
 // Initialize the support for internal threads.
-void
-thread_setup(void)
+ಶೂನ್ಯ
+thread_ಸಿದ್ಧತೆ(ಶೂನ್ಯ)
 {
-    CanInterrupt = 1;
+    Can_ಅಡಚಣೆ = 1;
     call16_override(1);
-    if (! CONFIG_THREADS)
-        return;
+    ಆದರೆ (! CONFIG_ಎಳೆಗಳು)
+        ಹಿಂತಿರುಗಿ;
     ThreadControl = romfile_loadint("etc/threads", 1);
 }
 
 // Should hardware initialization threads run during optionrom execution.
-int
-threads_during_optionroms(void)
+ಪೂರ್ಣಾಂಕ
+ಎಳೆಗಳು_during_optionroms(ಶೂನ್ಯ)
 {
-    return CONFIG_THREADS && CONFIG_RTC_TIMER && ThreadControl == 2 && in_post();
+    ಹಿಂತಿರುಗಿ CONFIG_ಎಳೆಗಳು && CONFIG_RTC_TIMER && ThreadControl == 2 && ಒಳ_post();
 }
 
 // Switch to next thread stack.
-static void
-switch_next(struct thread_info *cur)
+ಸ್ಥಿರ ಶೂನ್ಯ
+switch_ಮುಂದಿನ(ರಚನೆ thread_info *cur)
 {
-    struct thread_info *next = container_of(
-        cur->node.next, struct thread_info, node);
-    if (cur == next)
+    ರಚನೆ thread_info *ಮುಂದಿನ = container_ದ(
+        cur->ಗಂಟು.ಮುಂದಿನ, ರಚನೆ thread_info, ಗಂಟು);
+    ಆದರೆ (cur == ಮುಂದಿನ)
         // Nothing to do.
-        return;
-    asm volatile(
+        ಹಿಂತಿರುಗಿ;
+    asm ಅಸ್ಥಿರ(
         "  pushl $1f\n"                 // store return pc
         "  pushl %%ebp\n"               // backup %ebp
         "  movl %%esp, (%%eax)\n"       // cur->stackpos = %esp
@@ -533,42 +533,42 @@ switch_next(struct thread_info *cur)
         "  popl %%ebp\n"                // restore %ebp
         "  retl\n"                      // restore pc
         "1:\n"
-        : "+a"(cur), "+c"(next)
+        : "+a"(cur), "+c"(ಮುಂದಿನ)
         :
         : "ebx", "edx", "esi", "edi", "cc", "memory");
 }
 
 // Last thing called from a thread (called on MainThread stack).
-static void
-__end_thread(struct thread_info *old)
+ಸ್ಥಿರ ಶೂನ್ಯ
+__end_thread(ರಚನೆ thread_info *old)
 {
-    hlist_del(&old->node);
+    hlist_del(&old->ಗಂಟು);
     dprintf(DEBUG_thread, "\\%08x/ End thread\n", (u32)old);
-    free(old);
-    if (!have_threads())
+    ಬಿಡುಗಡೆ(old);
+    ಆದರೆ (!have_ಎಳೆಗಳು())
         dprintf(1, "All threads complete.\n");
 }
 
-void VISIBLE16 check_irqs(void);
+ಶೂನ್ಯ VISIBLE16 check_irqs(ಶೂನ್ಯ);
 
 // Create a new thread and start executing 'func' in it.
-void
-run_thread(void (*func)(void*), void *data)
+ಶೂನ್ಯ
+ಸತತ_thread(ಶೂನ್ಯ (*func)(ಶೂನ್ಯ*), ಶೂನ್ಯ *ದತ್ತಾಂಶ)
 {
     ASSERT32FLAT();
-    if (! CONFIG_THREADS || ! ThreadControl)
-        goto fail;
-    struct thread_info *thread;
+    ಆದರೆ (! CONFIG_ಎಳೆಗಳು || ! ThreadControl)
+        ಹೋಗು fail;
+    ರಚನೆ thread_info *thread;
     thread = memalign_tmphigh(THREADSTACKSIZE, THREADSTACKSIZE);
-    if (!thread)
-        goto fail;
+    ಆದರೆ (!thread)
+        ಹೋಗು fail;
 
     dprintf(DEBUG_thread, "/%08x\\ Start thread\n", (u32)thread);
-    thread->stackpos = (void*)thread + THREADSTACKSIZE;
-    struct thread_info *cur = getCurThread();
-    struct thread_info *edx = cur;
-    hlist_add_after(&thread->node, &cur->node);
-    asm volatile(
+    thread->stackpos = (ಶೂನ್ಯ*)thread + THREADSTACKSIZE;
+    ರಚನೆ thread_info *cur = getCurThread();
+    ರಚನೆ thread_info *edx = cur;
+    hlist_ಕೂಡಿಸು_after(&thread->ಗಂಟು, &cur->ಗಂಟು);
+    asm ಅಸ್ಥಿರ(
         // Start thread
         "  pushl $1f\n"                 // store return pc
         "  pushl %%ebp\n"               // backup %ebp
@@ -585,16 +585,16 @@ run_thread(void (*func)(void*), void *data)
         "  popl %%ebp\n"                // restore %ebp
         "  retl\n"                      // restore pc
         "1:\n"
-        : "+a"(data), "+c"(func), "+b"(thread), "+d"(edx)
+        : "+a"(ದತ್ತಾಂಶ), "+c"(func), "+b"(thread), "+d"(edx)
         : "m"(*(u8*)__end_thread), "m"(MainThread)
         : "esi", "edi", "cc", "memory");
-    if (cur == &MainThread)
+    ಆದರೆ (cur == &MainThread)
         // Permit irqs to fire
         check_irqs();
-    return;
+    ಹಿಂತಿರುಗಿ;
 
 fail:
-    func(data);
+    func(ದತ್ತಾಂಶ);
 }
 
 
@@ -603,88 +603,88 @@ fail:
  ****************************************************************/
 
 // Low-level irq enable.
-void VISIBLE16
-check_irqs(void)
+ಶೂನ್ಯ VISIBLE16
+check_irqs(ಶೂನ್ಯ)
 {
-    if (!MODESEGMENT && !CanInterrupt) {
+    ಆದರೆ (!MODESEGMENT && !Can_ಅಡಚಣೆ) {
         // Can't enable interrupts (PIC and/or IVT not yet setup)
         cpu_relax();
-        return;
+        ಹಿಂತಿರುಗಿ;
     }
-    if (need_hop_back()) {
-        stack_hop_back(check_irqs, 0, 0);
-        return;
+    ಆದರೆ (need_hop_ಹಿಂಭಾಗ()) {
+        ರಾಶಿ_hop_ಹಿಂಭಾಗ(check_irqs, 0, 0);
+        ಹಿಂತಿರುಗಿ;
     }
-    if (MODE16)
+    ಆದರೆ (MODE16)
         clock_poll_irq();
-    asm volatile("sti ; nop ; rep ; nop ; cli ; cld" : : :"memory");
+    asm ಅಸ್ಥಿರ("sti ; nop ; rep ; nop ; cli ; cld" : : :"memory");
 }
 
 // Briefly permit irqs to occur.
-void
-yield(void)
+ಶೂನ್ಯ
+yield(ಶೂನ್ಯ)
 {
-    if (MODESEGMENT || !CONFIG_THREADS) {
+    ಆದರೆ (MODESEGMENT || !CONFIG_ಎಳೆಗಳು) {
         check_irqs();
-        return;
+        ಹಿಂತಿರುಗಿ;
     }
-    struct thread_info *cur = getCurThread();
+    ರಚನೆ thread_info *cur = getCurThread();
     // Switch to the next thread
-    switch_next(cur);
-    if (cur == &MainThread)
+    switch_ಮುಂದಿನ(cur);
+    ಆದರೆ (cur == &MainThread)
         // Permit irqs to fire
         check_irqs();
 }
 
-void VISIBLE16
-wait_irq(void)
+ಶೂನ್ಯ VISIBLE16
+wait_irq(ಶೂನ್ಯ)
 {
-    if (need_hop_back()) {
-        stack_hop_back(wait_irq, 0, 0);
-        return;
+    ಆದರೆ (need_hop_ಹಿಂಭಾಗ()) {
+        ರಾಶಿ_hop_ಹಿಂಭಾಗ(wait_irq, 0, 0);
+        ಹಿಂತಿರುಗಿ;
     }
-    asm volatile("sti ; hlt ; cli ; cld": : :"memory");
+    asm ಅಸ್ಥಿರ("sti ; hlt ; cli ; cld": : :"memory");
 }
 
 // Wait for next irq to occur.
-void
-yield_toirq(void)
+ಶೂನ್ಯ
+yield_toirq(ಶೂನ್ಯ)
 {
-    if (!CONFIG_HARDWARE_IRQ
-        || (!MODESEGMENT && (have_threads() || !CanInterrupt))) {
+    ಆದರೆ (!CONFIG_HARDWARE_IRQ
+        || (!MODESEGMENT && (have_ಎಳೆಗಳು() || !Can_ಅಡಚಣೆ))) {
         // Threads still active or irqs not available - do a yield instead.
         yield();
-        return;
+        ಹಿಂತಿರುಗಿ;
     }
     wait_irq();
 }
 
 // Wait for all threads (other than the main thread) to complete.
-void
-wait_threads(void)
+ಶೂನ್ಯ
+wait_ಎಳೆಗಳು(ಶೂನ್ಯ)
 {
     ASSERT32FLAT();
-    while (have_threads())
+    ಆಗ (have_ಎಳೆಗಳು())
         yield();
 }
 
-void
-mutex_lock(struct mutex_s *mutex)
+ಶೂನ್ಯ
+mutex_ಬೀಗ(ರಚನೆ mutex_s *mutex)
 {
     ASSERT32FLAT();
-    if (! CONFIG_THREADS)
-        return;
-    while (mutex->isLocked)
+    ಆದರೆ (! CONFIG_ಎಳೆಗಳು)
+        ಹಿಂತಿರುಗಿ;
+    ಆಗ (mutex->isLocked)
         yield();
     mutex->isLocked = 1;
 }
 
-void
-mutex_unlock(struct mutex_s *mutex)
+ಶೂನ್ಯ
+mutex_unlock(ರಚನೆ mutex_s *mutex)
 {
     ASSERT32FLAT();
-    if (! CONFIG_THREADS)
-        return;
+    ಆದರೆ (! CONFIG_ಎಳೆಗಳು)
+        ಹಿಂತಿರುಗಿ;
     mutex->isLocked = 0;
 }
 
@@ -693,59 +693,59 @@ mutex_unlock(struct mutex_s *mutex)
  * Thread preemption
  ****************************************************************/
 
-int CanPreempt VARFSEG;
-static u32 PreemptCount;
+ಪೂರ್ಣಾಂಕ CanPreempt VARFSEG;
+ಸ್ಥಿರ u32 Preempt_ಎಣಿಕೆ;
 
 // Turn on RTC irqs and arrange for them to check the 32bit threads.
-void
-start_preempt(void)
+ಶೂನ್ಯ
+ಆರಂಭ_preempt(ಶೂನ್ಯ)
 {
-    if (! threads_during_optionroms())
-        return;
+    ಆದರೆ (! ಎಳೆಗಳು_during_optionroms())
+        ಹಿಂತಿರುಗಿ;
     CanPreempt = 1;
-    PreemptCount = 0;
+    Preempt_ಎಣಿಕೆ = 0;
     rtc_use();
 }
 
 // Turn off RTC irqs / stop checking for thread execution.
-void
-finish_preempt(void)
+ಶೂನ್ಯ
+ಮುಕ್ತಾಯ_preempt(ಶೂನ್ಯ)
 {
-    if (! threads_during_optionroms()) {
+    ಆದರೆ (! ಎಳೆಗಳು_during_optionroms()) {
         yield();
-        return;
+        ಹಿಂತಿರುಗಿ;
     }
     CanPreempt = 0;
     rtc_release();
-    dprintf(9, "Done preempt - %d checks\n", PreemptCount);
+    dprintf(9, "Done preempt - %d checks\n", Preempt_ಎಣಿಕೆ);
     yield();
 }
 
 // Check if preemption is on, and wait for it to complete if so.
-int
-wait_preempt(void)
+ಪೂರ್ಣಾಂಕ
+wait_preempt(ಶೂನ್ಯ)
 {
-    if (MODESEGMENT || !CONFIG_THREADS || !CanPreempt
-        || getesp() < MAIN_STACK_MAX)
-        return 0;
-    while (CanPreempt)
+    ಆದರೆ (MODESEGMENT || !CONFIG_ಎಳೆಗಳು || !CanPreempt
+        || getesp() < MAIN_ರಾಶಿ_MAX)
+        ಹಿಂತಿರುಗಿ 0;
+    ಆಗ (CanPreempt)
         yield();
-    return 1;
+    ಹಿಂತಿರುಗಿ 1;
 }
 
 // Try to execute 32bit threads.
-void VISIBLE32INIT
-yield_preempt(void)
+ಶೂನ್ಯ VISIBLE32INIT
+yield_preempt(ಶೂನ್ಯ)
 {
-    PreemptCount++;
-    switch_next(&MainThread);
+    Preempt_ಎಣಿಕೆ++;
+    switch_ಮುಂದಿನ(&MainThread);
 }
 
 // 16bit code that checks if threads are pending and executes them if so.
-void
-check_preempt(void)
+ಶೂನ್ಯ
+check_preempt(ಶೂನ್ಯ)
 {
-    if (CONFIG_THREADS && GET_GLOBAL(CanPreempt) && have_threads())
+    ಆದರೆ (CONFIG_ಎಳೆಗಳು && GET_GLOBAL(CanPreempt) && have_ಎಳೆಗಳು())
         call32(yield_preempt, 0, 0);
 }
 
@@ -754,23 +754,23 @@ check_preempt(void)
  * call32 helper
  ****************************************************************/
 
-struct call32_params_s {
-    void *func;
+ರಚನೆ call32_params_s {
+    ಶೂನ್ಯ *func;
     u32 eax, edx, ecx;
 };
 
 u32 VISIBLE32FLAT
-call32_params_helper(struct call32_params_s *params)
+call32_params_helper(ರಚನೆ call32_params_s *params)
 {
-    return ((u32 (*)(u32, u32, u32))params->func)(
+    ಹಿಂತಿರುಗಿ ((u32 (*)(u32, u32, u32))params->func)(
         params->eax, params->edx, params->ecx);
 }
 
 u32
-__call32_params(void *func, u32 eax, u32 edx, u32 ecx, u32 errret)
+__call32_params(ಶೂನ್ಯ *func, u32 eax, u32 edx, u32 ecx, u32 errret)
 {
     ASSERT16();
-    struct call32_params_s params = {func, eax, edx, ecx};
-    return call32(call32_params_helper, MAKE_FLATPTR(GET_SEG(SS), &params)
+    ರಚನೆ call32_params_s params = {func, eax, edx, ecx};
+    ಹಿಂತಿರುಗಿ call32(call32_params_helper, MAKE_FLATPTR(GET_SEG(SS), &params)
                   , errret);
 }
