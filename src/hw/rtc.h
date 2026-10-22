@@ -59,16 +59,16 @@
 
 #ifndef __ASSEMBLY__
 
-#include "types.h" // u8
+#ضمن "types.h" // u8
 
 // rtc.c
 u8 rtc_read(u8 index);
-void rtc_write(u8 index, u8 val);
-void rtc_mask(u8 index, u8 off, u8 on);
-int rtc_updating(void);
-void rtc_setup(void);
-void rtc_use(void);
-void rtc_release(void);
+فراغ rtc_write(u8 index, u8 val);
+فراغ rtc_mask(u8 index, u8 off, u8 on);
+صحيح rtc_updating(فراغ);
+فراغ rtc_setup(فراغ);
+فراغ rtc_use(فراغ);
+فراغ rtc_release(فراغ);
 
 #endif // !__ASSEMBLY__
 
