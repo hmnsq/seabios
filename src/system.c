@@ -5,71 +5,71 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_GLOBAL
-#include "bregs.h" // struct bregs
-#include "e820map.h" // E820_RAM
-#include "hw/pic.h" // pic_reset
-#include "malloc.h" // LegacyRamSize
-#include "output.h" // debug_enter
-#include "string.h" // memcpy_far
-#include "util.h" // handle_1553
-#include "x86.h" // set_a20
+#अन्तर्भाव "biosvar.h" // GET_GLOBAL
+#अन्तर्भाव "bregs.h" // struct bregs
+#अन्तर्भाव "e820map.h" // E820_RAM
+#अन्तर्भाव "hw/pic.h" // pic_reset
+#अन्तर्भाव "malloc.h" // LegacyRamSize
+#अन्तर्भाव "output.h" // debug_enter
+#अन्तर्भाव "string.h" // memcpy_far
+#अन्तर्भाव "util.h" // handle_1553
+#अन्तर्भाव "x86.h" // set_a20
 
-static void
-handle_152400(struct bregs *regs)
+स्थिर शून्य
+handle_152400(संरचना bregs *regs)
 {
     set_a20(0);
     set_code_success(regs);
 }
 
-static void
-handle_152401(struct bregs *regs)
+स्थिर शून्य
+handle_152401(संरचना bregs *regs)
 {
     set_a20(1);
     set_code_success(regs);
 }
 
-static void
-handle_152402(struct bregs *regs)
+स्थिर शून्य
+handle_152402(संरचना bregs *regs)
 {
     regs->al = get_a20();
     set_code_success(regs);
 }
 
-static void
-handle_152403(struct bregs *regs)
+स्थिर शून्य
+handle_152403(संरचना bregs *regs)
 {
     regs->bx = 3;
     set_code_success(regs);
 }
 
-static void
-handle_1524XX(struct bregs *regs)
+स्थिर शून्य
+handle_1524XX(संरचना bregs *regs)
 {
     set_code_unimplemented(regs, RET_EUNSUPPORTED);
 }
 
-static void
-handle_1524(struct bregs *regs)
+स्थिर शून्य
+handle_1524(संरचना bregs *regs)
 {
-    switch (regs->al) {
-    case 0x00: handle_152400(regs); break;
-    case 0x01: handle_152401(regs); break;
-    case 0x02: handle_152402(regs); break;
-    case 0x03: handle_152403(regs); break;
-    default:   handle_1524XX(regs); break;
+    विकल्प (regs->al) {
+    पक्ष 0x00: handle_152400(regs); भङ्ग;
+    पक्ष 0x01: handle_152401(regs); भङ्ग;
+    पक्ष 0x02: handle_152402(regs); भङ्ग;
+    पक्ष 0x03: handle_152403(regs); भङ्ग;
+    स्वभाव:   handle_1524XX(regs); भङ्ग;
     }
 }
 
 // removable media eject
-static void
-handle_1552(struct bregs *regs)
+स्थिर शून्य
+handle_1552(संरचना bregs *regs)
 {
     set_code_success(regs);
 }
 
-static void
-handle_1587(struct bregs *regs)
+स्थिर शून्य
+handle_1587(संरचना bregs *regs)
 {
     // +++ should probably have descriptor checks
     // +++ should have exception handlers
@@ -92,14 +92,14 @@ handle_1587(struct bregs *regs)
 // check for access rights of source & dest here
 
     // Initialize GDT descriptor
-    u64 *gdt_far = (void*)(regs->si + 0);
+    u64 *gdt_far = (शून्य*)(regs->si + 0);
     u16 gdt_seg = regs->es;
     u32 loc = (u32)MAKE_FLATPTR(gdt_seg, gdt_far);
-    SET_FARVAR(gdt_seg, gdt_far[1], GDT_DATA | GDT_LIMIT((6*sizeof(u64))-1)
+    SET_FARVAR(gdt_seg, gdt_far[1], GDT_DATA | GDT_LIMIT((6*परिमाण(u64))-1)
                | GDT_BASE(loc));
     // Initialize CS descriptor
     u64 lim = GDT_LIMIT(0x0ffff);
-    if (in_post())
+    यदि (in_post())
         lim = GDT_GRANLIMIT(0xffffffff);
     SET_FARVAR(gdt_seg, gdt_far[4], GDT_CODE | lim | GDT_BASE(BUILD_BIOS_ADDR));
     // Initialize SS descriptor
@@ -107,8 +107,8 @@ handle_1587(struct bregs *regs)
     SET_FARVAR(gdt_seg, gdt_far[5], GDT_DATA | lim | GDT_BASE(loc));
 
     SET_SEG(ES, gdt_seg);
-    u16 count = regs->cx, si = 0, di = 0;
-    asm volatile(
+    u16 गिनती = regs->cx, si = 0, di = 0;
+    यंत्र चञ्चल(
         // Load new descriptor tables
         "  lgdtw %%es:(1<<3)(%%eax)\n"
         "  lidtw %%cs:pmode_IDT_info\n"
@@ -156,7 +156,7 @@ handle_1587(struct bregs *regs)
         // Restore %ds (from %ss)
         "  movw %%ss, %%ax\n"
         "  movw %%ax, %%ds\n"
-        : "+a" (gdt_far), "+c"(count), "+m" (__segment_ES)
+        : "+a" (gdt_far), "+c"(गिनती), "+m" (__segment_ES)
         : "S" (si), "D" (di)
         : "cc");
 
@@ -166,30 +166,30 @@ handle_1587(struct bregs *regs)
 }
 
 // Get the amount of extended memory (above 1M)
-static void
-handle_1588(struct bregs *regs)
+स्थिर शून्य
+handle_1588(संरचना bregs *regs)
 {
     u32 rs = GET_GLOBAL(LegacyRamSize);
 
     // According to Ralf Brown's interrupt the limit should be 15M,
     // but real machines mostly return max. 63M.
-    if (rs > 64*1024*1024)
+    यदि (rs > 64*1024*1024)
         regs->ax = 63 * 1024;
-    else
+    अन्यथा
         regs->ax = (rs - 1*1024*1024) / 1024;
     set_success(regs);
 }
 
 // Switch to protected mode
-void VISIBLE16
-handle_1589(struct bregs *regs)
+शून्य VISIBLE16
+handle_1589(संरचना bregs *regs)
 {
     debug_enter(regs, DEBUG_HDL_15);
     set_a20(1);
 
     pic_reset(regs->bl, regs->bh);
 
-    u64 *gdt_far = (void*)(regs->si + 0);
+    u64 *gdt_far = (शून्य*)(regs->si + 0);
     u16 gdt_seg = regs->es;
     SET_FARVAR(gdt_seg, gdt_far[7], GDT_CODE | GDT_LIMIT(BUILD_BIOS_SIZE-1)
                | GDT_BASE(BUILD_BIOS_ADDR));
@@ -200,7 +200,7 @@ handle_1589(struct bregs *regs)
 
     set_code_success(regs);
 
-    asm volatile(
+    यंत्र चञ्चल(
         // Load new descriptor tables
         "  lgdtw %%es:(1<<3)(%%si)\n"
         "  lidtw %%es:(2<<3)(%%si)\n"
@@ -223,41 +223,41 @@ handle_1589(struct bregs *regs)
 }
 
 // Device busy interrupt.  Called by Int 16h when no key available
-static void
-handle_1590(struct bregs *regs)
+स्थिर शून्य
+handle_1590(संरचना bregs *regs)
 {
 }
 
 // Interrupt complete.  Called by Int 16h when key becomes available
-static void
-handle_1591(struct bregs *regs)
+स्थिर शून्य
+handle_1591(संरचना bregs *regs)
 {
 }
 
 // keyboard intercept
-static void
-handle_154f(struct bregs *regs)
+स्थिर शून्य
+handle_154f(संरचना bregs *regs)
 {
     set_invalid_silent(regs);
 }
 
-static void
-handle_15c0(struct bregs *regs)
+स्थिर शून्य
+handle_15c0(संरचना bregs *regs)
 {
     regs->es = SEG_BIOS;
     regs->bx = (u32)&BIOS_CONFIG_TABLE;
     set_code_success(regs);
 }
 
-static void
-handle_15c1(struct bregs *regs)
+स्थिर शून्य
+handle_15c1(संरचना bregs *regs)
 {
     regs->es = get_ebda_seg();
     set_success(regs);
 }
 
-static void
-handle_15e801(struct bregs *regs)
+स्थिर शून्य
+handle_15e801(संरचना bregs *regs)
 {
     // my real system sets ax and bx to 0
     // this is confirmed by Ralph Brown list
@@ -269,12 +269,12 @@ handle_15e801(struct bregs *regs)
     u32 rs = GET_GLOBAL(LegacyRamSize);
 
     // Get the amount of extended memory (above 1M)
-    if (rs > 16*1024*1024) {
+    यदि (rs > 16*1024*1024) {
         // limit to 15M
         regs->cx = 15*1024;
         // Get the amount of extended memory above 16M in 64k blocks
         regs->dx = (rs - 16*1024*1024) / (64*1024);
-    } else {
+    } अन्यथा {
         regs->cx = (rs - 1*1024*1024) / 1024;
         regs->dx = 0;
     }
@@ -286,72 +286,72 @@ handle_15e801(struct bregs *regs)
     set_success(regs);
 }
 
-static void
-handle_15e820(struct bregs *regs)
+स्थिर शून्य
+handle_15e820(संरचना bregs *regs)
 {
-    int count = GET_GLOBAL(e820_count);
-    if (regs->edx != 0x534D4150 || regs->bx >= count
-        || regs->ecx < sizeof(e820_list[0])) {
+    पूर्णाङ्क गिनती = GET_GLOBAL(e820_गिनती);
+    यदि (regs->edx != 0x534D4150 || regs->bx >= गिनती
+        || regs->ecx < परिमाण(e820_list[0])) {
         set_code_invalid(regs, RET_EUNSUPPORTED);
-        return;
+        प्रत्यागम;
     }
 
-    memcpy_far(regs->es, (void*)(regs->di+0)
+    memcpy_far(regs->es, (शून्य*)(regs->di+0)
                , get_global_seg(), &e820_list[regs->bx]
-               , sizeof(e820_list[0]));
-    if (regs->bx == count-1)
+               , परिमाण(e820_list[0]));
+    यदि (regs->bx == गिनती-1)
         regs->ebx = 0;
-    else
+    अन्यथा
         regs->ebx++;
     regs->eax = 0x534D4150;
-    regs->ecx = sizeof(e820_list[0]);
+    regs->ecx = परिमाण(e820_list[0]);
     set_success(regs);
 }
 
-static void
-handle_15e8XX(struct bregs *regs)
+स्थिर शून्य
+handle_15e8XX(संरचना bregs *regs)
 {
     set_code_unimplemented(regs, RET_EUNSUPPORTED);
 }
 
-static void
-handle_15e8(struct bregs *regs)
+स्थिर शून्य
+handle_15e8(संरचना bregs *regs)
 {
-    switch (regs->al) {
-    case 0x01: handle_15e801(regs); break;
-    case 0x20: handle_15e820(regs); break;
-    default:   handle_15e8XX(regs); break;
+    विकल्प (regs->al) {
+    पक्ष 0x01: handle_15e801(regs); भङ्ग;
+    पक्ष 0x20: handle_15e820(regs); भङ्ग;
+    स्वभाव:   handle_15e8XX(regs); भङ्ग;
     }
 }
 
-static void
-handle_15XX(struct bregs *regs)
+स्थिर शून्य
+handle_15XX(संरचना bregs *regs)
 {
     set_code_unimplemented(regs, RET_EUNSUPPORTED);
 }
 
 // INT 15h System Services Entry Point
-void VISIBLE16
-handle_15(struct bregs *regs)
+शून्य VISIBLE16
+handle_15(संरचना bregs *regs)
 {
     debug_enter(regs, DEBUG_HDL_15);
-    switch (regs->ah) {
-    case 0x24: handle_1524(regs); break;
-    case 0x4f: handle_154f(regs); break;
-    case 0x52: handle_1552(regs); break;
-    case 0x53: handle_1553(regs); break;
-    case 0x5f: handle_155f(regs); break;
-    case 0x7f: handle_157f(regs); break;
-    case 0x83: handle_1583(regs); break;
-    case 0x86: handle_1586(regs); break;
-    case 0x87: handle_1587(regs); break;
-    case 0x88: handle_1588(regs); break;
-    case 0x90: handle_1590(regs); break;
-    case 0x91: handle_1591(regs); break;
-    case 0xc0: handle_15c0(regs); break;
-    case 0xc1: handle_15c1(regs); break;
-    case 0xc2: handle_15c2(regs); break;
-    case 0xe8: handle_15e8(regs); break;
-    default:   handle_15XX(regs); break;
+    विकल्प (regs->ah) {
+    पक्ष 0x24: handle_1524(regs); भङ्ग;
+    पक्ष 0x4f: handle_154f(regs); भङ्ग;
+    पक्ष 0x52: handle_1552(regs); भङ्ग;
+    पक्ष 0x53: handle_1553(regs); भङ्ग;
+    पक्ष 0x5f: handle_155f(regs); भङ्ग;
+    पक्ष 0x7f: handle_157f(regs); भङ्ग;
+    पक्ष 0x83: handle_1583(regs); भङ्ग;
+    पक्ष 0x86: handle_1586(regs); भङ्ग;
+    पक्ष 0x87: handle_1587(regs); भङ्ग;
+    पक्ष 0x88: handle_1588(regs); भङ्ग;
+    पक्ष 0x90: handle_1590(regs); भङ्ग;
+    पक्ष 0x91: handle_1591(regs); भङ्ग;
+    पक्ष 0xc0: handle_15c0(regs); भङ्ग;
+    पक्ष 0xc1: handle_15c1(regs); भङ्ग;
+    पक्ष 0xc2: handle_15c2(regs); भङ्ग;
+    पक्ष 0xe8: handle_15e8(regs); भङ्ग;
+    स्वभाव:   handle_15XX(regs); भङ्ग;
     }
 }
