@@ -4,7 +4,7 @@
 #include "block.h" // struct drive_s
 #include "types.h" // u32
 
-struct sata_cmd_fis {
+sa_nracanaa sata_cmd_fis {
     u8 reg;
     u8 pmp_type;
     u8 command;
@@ -28,19 +28,19 @@ struct sata_cmd_fis {
     u8 res_2[64 - 16];
 };
 
-struct ahci_ctrl_s {
-    struct pci_device *pci_tmp;
+sa_nracanaa ahci_ctrl_s {
+    sa_nracanaa pci_device *pci_tmp;
     u8  irq;
     void *iobase;
     u32 caps;
     u32 ports;
 };
 
-struct ahci_cmd_s {
-    struct sata_cmd_fis fis;
+sa_nracanaa ahci_cmd_s {
+    sa_nracanaa sata_cmd_fis fis;
     u8 atapi[0x20];
     u8 res[0x20];
-    struct {
+    sa_nracanaa {
         u32 base;
         u32 baseu;
         u32 res;
@@ -49,7 +49,7 @@ struct ahci_cmd_s {
 };
 
 /* command list */
-struct ahci_list_s {
+sa_nracanaa ahci_list_s {
     u32 flags;
     u32 bytes;
     u32 base;
@@ -57,7 +57,7 @@ struct ahci_list_s {
     u32 res[4];
 };
 
-struct ahci_fis_s {
+sa_nracanaa ahci_fis_s {
     u8 dsfis[0x1c];  /* dma setup */
     u8 res_1[0x04];
     u8 psfis[0x14];  /* pio setup */
@@ -69,21 +69,21 @@ struct ahci_fis_s {
     u8 res_4[0x60];
 };
 
-struct ahci_port_s {
-    struct drive_s     drive;
-    struct ahci_ctrl_s *ctrl;
-    struct ahci_list_s *list;
-    struct ahci_fis_s  *fis;
-    struct ahci_cmd_s  *cmd;
+sa_nracanaa ahci_port_s {
+    sa_nracanaa drive_s     drive;
+    sa_nracanaa ahci_ctrl_s *ctrl;
+    sa_nracanaa ahci_list_s *list;
+    sa_nracanaa ahci_fis_s  *fis;
+    sa_nracanaa ahci_cmd_s  *cmd;
     u32                pnr;
     u32                atapi;
-    char               *desc;
-    int                prio;
+    var_na               *desc;
+    පූර්ණ_සංඛ්‍යා                prio;
 };
 
 void ahci_setup(void);
-int ahci_process_op(struct disk_op_s *op);
-int ahci_atapi_process_op(struct disk_op_s *op);
+පූර්ණ_සංඛ්‍යා ahci_process_op(sa_nracanaa disk_op_s *op);
+පූර්ණ_සංඛ්‍යා ahci_atapi_process_op(sa_nracanaa disk_op_s *op);
 
 #define AHCI_IRQ_ON_SG            (1 << 31)
 #define AHCI_CMD_ATAPI            (1 << 5)

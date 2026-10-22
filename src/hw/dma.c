@@ -20,17 +20,17 @@
 #define PORT_DMA2_MASTER_CLEAR 0x00da
 
 // Setup the DMA controller for a floppy transfer.
-int
-dma_floppy(u32 addr, int count, int isWrite)
+පූර්ණ_සංඛ්‍යා
+dma_floppy(u32 addr, පූර්ණ_සංඛ්‍යා count, පූර්ණ_සංඛ්‍යා isWrite)
 {
     // check for 64K boundary overrun
     u16 end = count - 1;
     u32 last_addr = addr + end;
-    if ((addr >> 16) != (last_addr >> 16))
-        return -1;
+    නම් ((addr >> 16) != (last_addr >> 16))
+        ආපසු -1;
 
     u8 mode_register = 0x46; // single mode, increment, autoinit disable,
-    if (isWrite)
+    නම් (isWrite)
         mode_register = 0x4a;
 
     outb(0x06, PORT_DMA1_MASK_REG);
@@ -50,7 +50,7 @@ dma_floppy(u32 addr, int count, int isWrite)
 
     outb(0x02, PORT_DMA1_MASK_REG); // unmask channel 2
 
-    return 0;
+    ආපසු 0;
 }
 
 // Reset DMA controller

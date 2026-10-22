@@ -4,7 +4,7 @@
 #include "types.h" // u32
 
 
-enum tpmDurationType {
+ga_nanaa tpmDurationType {
     TPM_DURATION_TYPE_SHORT = 0,
     TPM_DURATION_TYPE_MEDIUM,
     TPM_DURATION_TYPE_LONG,
@@ -17,11 +17,11 @@ typedef u8 TPMVersion;
 #define TPM_VERSION_2    2
 
 TPMVersion tpmhw_probe(void);
-int tpmhw_is_present(void);
-struct tpm_req_header;
-int tpmhw_transmit(u8 locty, struct tpm_req_header *req,
+පූර්ණ_සංඛ්‍යා tpmhw_is_present(void);
+sa_nracanaa tpm_req_header;
+පූර්ණ_සංඛ්‍යා tpmhw_transmit(u8 locty, sa_nracanaa tpm_req_header *req,
                    void *respbuffer, u32 *respbufferlen,
-                   enum tpmDurationType to_t);
+                   ga_nanaa tpmDurationType to_t);
 void tpmhw_set_timeouts(u32 timeouts[4], u32 durations[3]);
 
 /* CRB driver */
@@ -100,7 +100,7 @@ void tpmhw_set_timeouts(u32 timeouts[4], u32 durations[3]);
 #define TIS2_DEFAULT_TIMEOUT_C          200000 /* us */
 #define TIS2_DEFAULT_TIMEOUT_D           30000 /* us */
 
-enum tisTimeoutType {
+ga_nanaa tisTimeoutType {
     TIS_TIMEOUT_TYPE_A = 0,
     TIS_TIMEOUT_TYPE_B,
     TIS_TIMEOUT_TYPE_C,

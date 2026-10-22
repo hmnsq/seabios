@@ -21,10 +21,10 @@
 #define SEROFF_MSR     6
 
 void serial_debug_preinit(void);
-void serial_debug_putc(char c);
+void serial_debug_putc(var_na c);
 void serial_debug_flush(void);
 extern u16 DebugOutputPort;
 void qemu_debug_preinit(void);
-void qemu_debug_putc(char c);
+void qemu_debug_putc(var_na c);
 
 #endif // serialio.h

@@ -14,13 +14,13 @@
 #include "util.h" // pmm_init
 #include "x86.h" // __ffs
 
-extern struct pmmheader PMMHEADER;
+extern sa_nracanaa pmmheader PMMHEADER;
 
-#if CONFIG_PMM
-struct pmmheader PMMHEADER __aligned(16) VARFSEG = {
+#නම් CONFIG_PMM
+sa_nracanaa pmmheader PMMHEADER __aligned(16) VARFSEG = {
     .signature = PMM_SIGNATURE,
     .version = 0x01,
-    .length = sizeof(PMMHEADER),
+    .length = parimaa_na(PMMHEADER),
 };
 #endif
 
@@ -32,51 +32,51 @@ handle_pmm00(u16 *args)
     u16 flags = args[5];
     dprintf(3, "pmm00: length=%x handle=%x flags=%x\n"
             , length, handle, flags);
-    struct zone_s *lowzone = &ZoneTmpLow, *highzone = &ZoneTmpHigh;
-    if (flags & 8) {
+    sa_nracanaa zone_s *lowzone = &ZoneTmpLow, *highzone = &ZoneTmpHigh;
+    නම් (flags & 8) {
         // Permanent memory request.
         lowzone = &ZoneLow;
         highzone = &ZoneHigh;
     }
-    if (!length) {
+    නම් (!length) {
         // Memory size request
         switch (flags & 3) {
         default:
-        case 0:
-            return 0;
-        case 1:
-            return malloc_getspace(lowzone);
-        case 2:
-            return malloc_getspace(highzone);
-        case 3: {
+        pak_sa 0:
+            ආපසු 0;
+        pak_sa 1:
+            ආපසු malloc_getspace(lowzone);
+        pak_sa 2:
+            ආපසු malloc_getspace(highzone);
+        pak_sa 3: {
             u32 spacelow = malloc_getspace(lowzone);
             u32 spacehigh = malloc_getspace(highzone);
-            if (spacelow > spacehigh)
-                return spacelow;
-            return spacehigh;
+            නම් (spacelow > spacehigh)
+                ආපසු spacelow;
+            ආපසු spacehigh;
         }
         }
     }
     u32 size = length * 16;
-    if ((s32)size <= 0)
-        return 0;
+    නම් ((s32)size <= 0)
+        ආපසු 0;
     u32 align = MALLOC_MIN_ALIGN;
-    if (flags & 4) {
+    නම් (flags & 4) {
         align = 1<<__ffs(size);
-        if (align < MALLOC_MIN_ALIGN)
+        නම් (align < MALLOC_MIN_ALIGN)
             align = MALLOC_MIN_ALIGN;
     }
     u32 data;
     switch (flags & 3) {
     default:
-    case 0:
-        return 0;
-    case 1:
+    pak_sa 0:
+        ආපසු 0;
+    pak_sa 1:
         data = malloc_palloc(lowzone, size, align);
-        break;
-    case 2:
+        bha_nga;
+    pak_sa 2:
         data = malloc_palloc(highzone, size, align);
-        if (!data && (flags & 8)) {
+        නම් (!data && (flags & 8)) {
             /*
              * We are out of meory.  So go allocate from the (big)
              * ZoneTmpHigh instead and reserve the block in the e820
@@ -85,19 +85,19 @@ handle_pmm00(u16 *args)
              * ZoneHigh.
              */
             data = malloc_palloc(&ZoneTmpHigh, size, align);
-            if (data)
+            නම් (data)
                 e820_add(data, size, E820_RESERVED);
         }
-        break;
-    case 3: {
+        bha_nga;
+    pak_sa 3: {
         data = malloc_palloc(lowzone, size, align);
-        if (!data)
+        නම් (!data)
             data = malloc_palloc(highzone, size, align);
     }
     }
-    if (data && handle != MALLOC_DEFAULT_HANDLE)
+    නම් (data && handle != MALLOC_DEFAULT_HANDLE)
         malloc_sethandle(data, handle);
-    return data;
+    ආපසු data;
 }
 
 // PMM - find
@@ -106,9 +106,9 @@ handle_pmm01(u16 *args)
 {
     u32 handle = *(u32*)&args[1];
     dprintf(3, "pmm01: handle=%x\n", handle);
-    if (handle == MALLOC_DEFAULT_HANDLE)
-        return 0;
-    return malloc_findhandle(handle);
+    නම් (handle == MALLOC_DEFAULT_HANDLE)
+        ආපසු 0;
+    ආපසු malloc_findhandle(handle);
 }
 
 // PMM - deallocate
@@ -117,57 +117,57 @@ handle_pmm02(u16 *args)
 {
     u32 buffer = *(u32*)&args[1];
     dprintf(3, "pmm02: buffer=%x\n", buffer);
-    int ret = malloc_pfree(buffer);
-    if (ret)
+    පූර්ණ_සංඛ්‍යා ret = malloc_pfree(buffer);
+    නම් (ret)
         // Error
-        return 1;
-    return 0;
+        ආපසු 1;
+    ආපසු 0;
 }
 
 static u32
 handle_pmmXX(u16 *args)
 {
-    return PMM_FUNCTION_NOT_SUPPORTED;
+    ආපසු PMM_FUNCTION_NOT_SUPPORTED;
 }
 
 u32 VISIBLE32INIT
 handle_pmm(u16 *args)
 {
     ASSERT32FLAT();
-    if (! CONFIG_PMM)
-        return PMM_FUNCTION_NOT_SUPPORTED;
+    නම් (! CONFIG_PMM)
+        ආපසු PMM_FUNCTION_NOT_SUPPORTED;
 
     u16 arg1 = args[0];
     dprintf(DEBUG_HDL_pmm, "pmm call arg1=%x\n", arg1);
 
     u32 ret;
     switch (arg1) {
-    case 0x00: ret = handle_pmm00(args); break;
-    case 0x01: ret = handle_pmm01(args); break;
-    case 0x02: ret = handle_pmm02(args); break;
-    default:   ret = handle_pmmXX(args); break;
+    pak_sa 0x00: ret = handle_pmm00(args); bha_nga;
+    pak_sa 0x01: ret = handle_pmm01(args); bha_nga;
+    pak_sa 0x02: ret = handle_pmm02(args); bha_nga;
+    default:   ret = handle_pmmXX(args); bha_nga;
     }
 
-    return ret;
+    ආපසු ret;
 }
 
 void
 pmm_init(void)
 {
-    if (! CONFIG_PMM)
-        return;
+    නම් (! CONFIG_PMM)
+        ආපසු;
 
     dprintf(3, "init PMM\n");
 
     PMMHEADER.entry = FUNC16(entry_pmm);
-    PMMHEADER.checksum -= checksum(&PMMHEADER, sizeof(PMMHEADER));
+    PMMHEADER.checksum -= checksum(&PMMHEADER, parimaa_na(PMMHEADER));
 }
 
 void
 pmm_prepboot(void)
 {
-    if (! CONFIG_PMM)
-        return;
+    නම් (! CONFIG_PMM)
+        ආපසු;
 
     dprintf(3, "finalize PMM\n");
 
