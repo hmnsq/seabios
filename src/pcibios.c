@@ -26,7 +26,7 @@ extern void entry_pcibios32(void);
 
 // installation check
 static void
-handle_1ab101(struct bregs *regs)
+handle_1ab101(sa_nracanaa bregs *regs)
 {
     regs->al = 0x01; // Flags - "Config Mechanism #1" supported.
     regs->bx = 0x0210; // PCI version 2.10
@@ -38,23 +38,23 @@ handle_1ab101(struct bregs *regs)
 
 // find pci device
 static void
-handle_1ab102(struct bregs *regs)
+handle_1ab102(sa_nracanaa bregs *regs)
 {
     u32 id = (regs->cx << 16) | regs->dx;
-    int count = regs->si;
-    int bus = -1;
-    while (bus < GET_GLOBAL(MaxPCIBus)) {
+    puur_naa_nka count = regs->si;
+    puur_naa_nka bus = -1;
+    ᬲᭂᬤᭂᬮ (bus < GET_GLOBAL(MaxPCIBus)) {
         bus++;
-        int bdf;
+        puur_naa_nka bdf;
         foreachbdf(bdf, bus) {
             u32 v = pci_config_readl(bdf, PCI_VENDOR_ID);
-            if (v != id)
+            ᬬᬾᬦ᭄ (v != id)
                 continue;
-            if (count--)
+            ᬬᬾᬦ᭄ (count--)
                 continue;
             regs->bx = bdf;
             set_code_success(regs);
-            return;
+            ᬯᬮᬶ;
         }
     }
     set_code_invalid(regs, RET_DEVICE_NOT_FOUND);
@@ -62,23 +62,23 @@ handle_1ab102(struct bregs *regs)
 
 // find class code
 static void
-handle_1ab103(struct bregs *regs)
+handle_1ab103(sa_nracanaa bregs *regs)
 {
-    int count = regs->si;
+    puur_naa_nka count = regs->si;
     u32 classprog = regs->ecx;
-    int bus = -1;
-    while (bus < GET_GLOBAL(MaxPCIBus)) {
+    puur_naa_nka bus = -1;
+    ᬲᭂᬤᭂᬮ (bus < GET_GLOBAL(MaxPCIBus)) {
         bus++;
-        int bdf;
+        puur_naa_nka bdf;
         foreachbdf(bdf, bus) {
             u32 v = pci_config_readl(bdf, PCI_CLASS_REVISION);
-            if ((v>>8) != classprog)
+            ᬬᬾᬦ᭄ ((v>>8) != classprog)
                 continue;
-            if (count--)
+            ᬬᬾᬦ᭄ (count--)
                 continue;
             regs->bx = bdf;
             set_code_success(regs);
-            return;
+            ᬯᬮᬶ;
         }
     }
     set_code_invalid(regs, RET_DEVICE_NOT_FOUND);
@@ -86,7 +86,7 @@ handle_1ab103(struct bregs *regs)
 
 // read configuration byte
 static void
-handle_1ab108(struct bregs *regs)
+handle_1ab108(sa_nracanaa bregs *regs)
 {
     regs->cl = pci_config_readb(regs->bx, regs->di);
     set_code_success(regs);
@@ -94,7 +94,7 @@ handle_1ab108(struct bregs *regs)
 
 // read configuration word
 static void
-handle_1ab109(struct bregs *regs)
+handle_1ab109(sa_nracanaa bregs *regs)
 {
     regs->cx = pci_config_readw(regs->bx, regs->di);
     set_code_success(regs);
@@ -102,7 +102,7 @@ handle_1ab109(struct bregs *regs)
 
 // read configuration dword
 static void
-handle_1ab10a(struct bregs *regs)
+handle_1ab10a(sa_nracanaa bregs *regs)
 {
     regs->ecx = pci_config_readl(regs->bx, regs->di);
     set_code_success(regs);
@@ -110,7 +110,7 @@ handle_1ab10a(struct bregs *regs)
 
 // write configuration byte
 static void
-handle_1ab10b(struct bregs *regs)
+handle_1ab10b(sa_nracanaa bregs *regs)
 {
     pci_config_writeb(regs->bx, regs->di, regs->cl);
     set_code_success(regs);
@@ -118,7 +118,7 @@ handle_1ab10b(struct bregs *regs)
 
 // write configuration word
 static void
-handle_1ab10c(struct bregs *regs)
+handle_1ab10c(sa_nracanaa bregs *regs)
 {
     pci_config_writew(regs->bx, regs->di, regs->cx);
     set_code_success(regs);
@@ -126,7 +126,7 @@ handle_1ab10c(struct bregs *regs)
 
 // write configuration dword
 static void
-handle_1ab10d(struct bregs *regs)
+handle_1ab10d(sa_nracanaa bregs *regs)
 {
     pci_config_writel(regs->bx, regs->di, regs->ecx);
     set_code_success(regs);
@@ -134,16 +134,16 @@ handle_1ab10d(struct bregs *regs)
 
 // get irq routing options
 static void
-handle_1ab10e(struct bregs *regs)
+handle_1ab10e(sa_nracanaa bregs *regs)
 {
-    struct pir_header *pirtable_gf = GET_GLOBAL(PirAddr);
-    if (! pirtable_gf) {
+    sa_nracanaa pir_header *pirtable_gf = GET_GLOBAL(PirAddr);
+    ᬬᬾᬦ᭄ (! pirtable_gf) {
         set_code_invalid(regs, RET_FUNC_NOT_SUPPORTED);
-        return;
+        ᬯᬮᬶ;
     }
-    struct pir_header *pirtable_g = GLOBALFLAT2GLOBAL(pirtable_gf);
+    sa_nracanaa pir_header *pirtable_g = GLOBALFLAT2GLOBAL(pirtable_gf);
 
-    struct param_s {
+    sa_nracanaa param_s {
         u16 size;
         u16 buf_off;
         u16 buf_seg;
@@ -151,11 +151,11 @@ handle_1ab10e(struct bregs *regs)
 
     // Validate and update size.
     u16 bufsize = GET_FARVAR(regs->es, param_far->size);
-    u16 pirsize = GET_GLOBAL(pirtable_g->size) - sizeof(struct pir_header);
+    u16 pirsize = GET_GLOBAL(pirtable_g->size) - parimaa_na(sa_nracanaa pir_header);
     SET_FARVAR(regs->es, param_far->size, pirsize);
-    if (bufsize < pirsize) {
+    ᬬᬾᬦ᭄ (bufsize < pirsize) {
         set_code_invalid(regs, RET_BUFFER_TOO_SMALL);
-        return;
+        ᬯᬮᬶ;
     }
 
     // Get dest buffer.
@@ -174,39 +174,39 @@ handle_1ab10e(struct bregs *regs)
 }
 
 static void
-handle_1ab1XX(struct bregs *regs)
+handle_1ab1XX(sa_nracanaa bregs *regs)
 {
     set_code_unimplemented(regs, RET_FUNC_NOT_SUPPORTED);
 }
 
 void
-handle_1ab1(struct bregs *regs)
+handle_1ab1(sa_nracanaa bregs *regs)
 {
     //debug_stub(regs);
 
-    if (! CONFIG_PCIBIOS) {
+    ᬬᬾᬦ᭄ (! CONFIG_PCIBIOS) {
         set_invalid(regs);
-        return;
+        ᬯᬮᬶ;
     }
 
     switch (regs->al) {
-    case 0x01: handle_1ab101(regs); break;
-    case 0x02: handle_1ab102(regs); break;
-    case 0x03: handle_1ab103(regs); break;
-    case 0x08: handle_1ab108(regs); break;
-    case 0x09: handle_1ab109(regs); break;
-    case 0x0a: handle_1ab10a(regs); break;
-    case 0x0b: handle_1ab10b(regs); break;
-    case 0x0c: handle_1ab10c(regs); break;
-    case 0x0d: handle_1ab10d(regs); break;
-    case 0x0e: handle_1ab10e(regs); break;
-    default:   handle_1ab1XX(regs); break;
+    pak_sa 0x01: handle_1ab101(regs); bha_nga;
+    pak_sa 0x02: handle_1ab102(regs); bha_nga;
+    pak_sa 0x03: handle_1ab103(regs); bha_nga;
+    pak_sa 0x08: handle_1ab108(regs); bha_nga;
+    pak_sa 0x09: handle_1ab109(regs); bha_nga;
+    pak_sa 0x0a: handle_1ab10a(regs); bha_nga;
+    pak_sa 0x0b: handle_1ab10b(regs); bha_nga;
+    pak_sa 0x0c: handle_1ab10c(regs); bha_nga;
+    pak_sa 0x0d: handle_1ab10d(regs); bha_nga;
+    pak_sa 0x0e: handle_1ab10e(regs); bha_nga;
+    default:   handle_1ab1XX(regs); bha_nga;
     }
 }
 
 // Entry point for pci bios functions.
 void VISIBLE16 VISIBLE32SEG
-handle_pcibios(struct bregs *regs)
+handle_pcibios(sa_nracanaa bregs *regs)
 {
     debug_enter(regs, DEBUG_HDL_pcibios);
     handle_1ab1(regs);
@@ -217,7 +217,7 @@ handle_pcibios(struct bregs *regs)
  * 32bit interface
  ****************************************************************/
 
-struct bios32_s {
+sa_nracanaa bios32_s {
     u32 signature;
     u32 entry;
     u8 version;
@@ -226,9 +226,9 @@ struct bios32_s {
     u8 reserved[5];
 } PACKED;
 
-struct bios32_s BIOS32HEADER __aligned(16) VARFSEG = {
+sa_nracanaa bios32_s BIOS32HEADER __aligned(16) VARFSEG = {
     .signature = 0x5f32335f, // _32_
-    .length = sizeof(BIOS32HEADER) / 16,
+    .length = parimaa_na(BIOS32HEADER) / 16,
 };
 
 void
@@ -237,5 +237,5 @@ bios32_init(void)
     dprintf(3, "init bios32\n");
 
     BIOS32HEADER.entry = (u32)entry_bios32;
-    BIOS32HEADER.checksum -= checksum(&BIOS32HEADER, sizeof(BIOS32HEADER));
+    BIOS32HEADER.checksum -= checksum(&BIOS32HEADER, parimaa_na(BIOS32HEADER));
 }

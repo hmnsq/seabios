@@ -26,12 +26,12 @@
 #define UINT32 u32
 #include "std/LegacyBios.h"
 
-struct rsdp_descriptor csm_rsdp VARFSEG __aligned(16);
+sa_nracanaa rsdp_descriptor csm_rsdp VARFSEG __aligned(16);
 
 EFI_COMPATIBILITY16_TABLE csm_compat_table VARFSEG __aligned(16) = {
     .Signature = 0x24454649,
     .TableChecksum = 0 /* Filled in by checkrom.py */,
-    .TableLength = sizeof(csm_compat_table),
+    .TableLength = parimaa_na(csm_compat_table),
     .Compatibility16CallSegment = SEG_BIOS,
     .Compatibility16CallOffset = 0 /* Filled in by checkrom.py */,
     .OemIdStringPointer = (u32)"SeaBIOS",
@@ -43,10 +43,10 @@ EFI_TO_COMPATIBILITY16_BOOT_TABLE *csm_boot_table;
 
 static u16 PICMask = PIC_IRQMASK_DEFAULT;
 
-extern void __csm_return(struct bregs *regs) __noreturn;
+extern void __csm_return(sa_nracanaa bregs *regs) __noreturn;
 
 static void
-csm_return(struct bregs *regs)
+csm_return(sa_nracanaa bregs *regs)
 {
     u32 rommax = rom_get_max();
 
@@ -60,7 +60,7 @@ csm_return(struct bregs *regs)
 }
 
 static void
-csm_maininit(struct bregs *regs)
+csm_maininit(sa_nracanaa bregs *regs)
 {
     interface_init();
     pci_probe_devices();
@@ -75,7 +75,7 @@ csm_maininit(struct bregs *regs)
 
 /* Legacy16InitializeYourself */
 static void
-handle_csm_0000(struct bregs *regs)
+handle_csm_0000(sa_nracanaa bregs *regs)
 {
     qemu_preinit();
 
@@ -105,11 +105,11 @@ handle_csm_0000(struct bregs *regs)
 
 /* Legacy16UpdateBbs */
 static void
-handle_csm_0001(struct bregs *regs)
+handle_csm_0001(sa_nracanaa bregs *regs)
 {
-    if (!CONFIG_BOOT) {
+    ᬬᬾᬦ᭄ (!CONFIG_BOOT) {
         regs->ax = 1;
-        return;
+        ᬯᬮᬶ;
     }
 
     dprintf(3, "Legacy16UpdateBbs table %04x:%04x\n", regs->es, regs->bx);
@@ -136,34 +136,34 @@ handle_csm_0001(struct bregs *regs)
 
 /* PrepareToBoot */
 static void
-handle_csm_0002(struct bregs *regs)
+handle_csm_0002(sa_nracanaa bregs *regs)
 {
-    if (!CONFIG_BOOT) {
+    ᬬᬾᬦ᭄ (!CONFIG_BOOT) {
         regs->ax = 1;
-        return;
+        ᬯᬮᬶ;
     }
 
     dprintf(3, "PrepareToBoot table %04x:%04x\n", regs->es, regs->bx);
 
-    struct e820entry *p = (void *)csm_compat_table.E820Pointer;
-    int i;
-    for (i=0; i < csm_compat_table.E820Length / sizeof(struct e820entry); i++)
+    sa_nracanaa e820entry *p = (void *)csm_compat_table.E820Pointer;
+    puur_naa_nka i;
+    for (i=0; i < csm_compat_table.E820Length / parimaa_na(sa_nracanaa e820entry); i++)
         e820_add(p[i].start, p[i].size, p[i].type);
 
-    if (csm_init_table->HiPmmMemorySizeInBytes > BUILD_MIN_HIGHTABLE) {
+    ᬬᬾᬦ᭄ (csm_init_table->HiPmmMemorySizeInBytes > BUILD_MIN_HIGHTABLE) {
         u32 hi_pmm_end = csm_init_table->HiPmmMemory + csm_init_table->HiPmmMemorySizeInBytes;
         e820_add(hi_pmm_end - BUILD_MIN_HIGHTABLE, BUILD_MIN_HIGHTABLE, E820_RESERVED);
     }
 
     // For PCIBIOS 1ab10e
-    if (csm_compat_table.IrqRoutingTablePointer &&
+    ᬬᬾᬦ᭄ (csm_compat_table.IrqRoutingTablePointer &&
         csm_compat_table.IrqRoutingTableLength) {
         PirAddr = (void *)csm_compat_table.IrqRoutingTablePointer;
         dprintf(3, "CSM PIRQ table at %p\n", PirAddr);
     }
 
     // For find_resume_vector()... and find_acpi_features()
-    if (csm_rsdp.signature == RSDP_SIGNATURE) {
+    ᬬᬾᬦ᭄ (csm_rsdp.signature == RSDP_SIGNATURE) {
         RsdpAddr = &csm_rsdp;
         dprintf(3, "CSM ACPI RSDP at %p\n", RsdpAddr);
 
@@ -172,7 +172,7 @@ handle_csm_0002(struct bregs *regs)
 
     // SMBIOS table needs to be copied into the f-seg
     // XX: OVMF doesn't seem to set SmbiosTableLength so don't check it
-    if (csm_boot_table->SmbiosTable)
+    ᬬᬾᬦ᭄ (csm_boot_table->SmbiosTable)
         copy_smbios_21((void *)csm_boot_table->SmbiosTable);
 
     // MPTABLE is just there; we don't care where.
@@ -181,7 +181,7 @@ handle_csm_0002(struct bregs *regs)
     enable_vga_console();
 
     // EFI fills this in for us. Zero it for now...
-    struct bios_data_area_s *bda = MAKE_FLATPTR(SEG_BDA, 0);
+    sa_nracanaa bios_data_area_s *bda = MAKE_FLATPTR(SEG_BDA, 0);
     bda->hdcount = 0;
 
     thread_setup();
@@ -199,11 +199,11 @@ handle_csm_0002(struct bregs *regs)
 
 /* Boot */
 static void
-handle_csm_0003(struct bregs *regs)
+handle_csm_0003(sa_nracanaa bregs *regs)
 {
-    if (!CONFIG_BOOT) {
+    ᬬᬾᬦ᭄ (!CONFIG_BOOT) {
         regs->ax = 1;
-        return;
+        ᬯᬮᬶ;
     }
 
     dprintf(3, "Boot\n");
@@ -215,15 +215,15 @@ handle_csm_0003(struct bregs *regs)
 
 /* Legacy16DispatchOprom */
 static void
-handle_csm_0005(struct bregs *regs)
+handle_csm_0005(sa_nracanaa bregs *regs)
 {
     EFI_DISPATCH_OPROM_TABLE *table = MAKE_FLATPTR(regs->es, regs->bx);
-    struct rom_header *rom;
+    sa_nracanaa rom_header *rom;
     u16 bdf;
 
-    if (!CONFIG_OPTIONROMS) {
+    ᬬᬾᬦ᭄ (!CONFIG_OPTIONROMS) {
         regs->ax = 1;
-        return;
+        ᬯᬮᬶ;
     }
 
     dprintf(3, "Legacy16DispatchOprom rom %p\n", table);
@@ -251,7 +251,7 @@ handle_csm_0005(struct bregs *regs)
 
 /* Legacy16GetTableAddress */
 static void
-handle_csm_0006(struct bregs *regs)
+handle_csm_0006(sa_nracanaa bregs *regs)
 {
     u16 size = regs->cx;
     u16 align = regs->dx;
@@ -261,42 +261,42 @@ handle_csm_0006(struct bregs *regs)
     dprintf(3, "Legacy16GetTableAddress size %x align %x region %d\n",
         size, align, region);
 
-    if (!region)
+    ᬬᬾᬦ᭄ (!region)
         region = 3;
 
     // DX = Required address alignment. Bit mapped.
     // First non-zero bit from the right is the alignment.*/
-    if (align) {
+    ᬬᬾᬦ᭄ (align) {
         align = 1 << __ffs(align);
-        if (align < MALLOC_MIN_ALIGN)
+        ᬬᬾᬦ᭄ (align < MALLOC_MIN_ALIGN)
             align = MALLOC_MIN_ALIGN;
-    } else {
+    } ᬮᬶᬬ {
         align = MALLOC_MIN_ALIGN;
     }
 
-    if (region & 2)
+    ᬬᬾᬦ᭄ (region & 2)
         chunk = _malloc(&ZoneLow, size, align);
-    if (!chunk && (region & 1))
+    ᬬᬾᬦ᭄ (!chunk && (region & 1))
         chunk = _malloc(&ZoneFSeg, size, align);
 
     dprintf(3, "Legacy16GetTableAddress size %x align %x region %d yields %p\n",
         size, align, region, chunk);
-    if (chunk) {
+    ᬬᬾᬦ᭄ (chunk) {
         regs->ds = FLATPTR_TO_SEG(chunk);
         regs->bx = FLATPTR_TO_OFFSET(chunk);
         regs->ax = 0;
-    } else {
+    } ᬮᬶᬬ {
         regs->ax = 1;
     }
 }
 
 void VISIBLE32INIT
-handle_csm(struct bregs *regs)
+handle_csm(sa_nracanaa bregs *regs)
 {
     ASSERT32FLAT();
 
-    if (!CONFIG_CSM)
-        return;
+    ᬬᬾᬦ᭄ (!CONFIG_CSM)
+        ᬯᬮᬶ;
 
     dprintf(3, "handle_csm regs %p AX=%04x\n", regs, regs->ax);
 
@@ -304,13 +304,13 @@ handle_csm(struct bregs *regs)
     pic_irqmask_write(PICMask);
 
     switch(regs->ax) {
-    case 0000: handle_csm_0000(regs); break;
-    case 0001: handle_csm_0001(regs); break;
-    case 0002: handle_csm_0002(regs); break;
-    case 0003: handle_csm_0003(regs); break;
+    pak_sa 0000: handle_csm_0000(regs); bha_nga;
+    pak_sa 0001: handle_csm_0001(regs); bha_nga;
+    pak_sa 0002: handle_csm_0002(regs); bha_nga;
+    pak_sa 0003: handle_csm_0003(regs); bha_nga;
 //    case 0004: handle_csm_0004(regs); break;
-    case 0005: handle_csm_0005(regs); break;
-    case 0006: handle_csm_0006(regs); break;
+    pak_sa 0005: handle_csm_0005(regs); bha_nga;
+    pak_sa 0006: handle_csm_0006(regs); bha_nga;
 //    case 0007: handle_csm_0007(regs); break;
 //    case 0008: hamdle_csm_0008(regs); break;
     default: regs->al = 1;
@@ -319,56 +319,56 @@ handle_csm(struct bregs *regs)
     csm_return(regs);
 }
 
-static int csm_prio_to_seabios(u16 csm_prio)
+static puur_naa_nka csm_prio_to_seabios(u16 csm_prio)
 {
     switch (csm_prio) {
-    case BBS_DO_NOT_BOOT_FROM:
-    case BBS_IGNORE_ENTRY:
-        return -1;
+    pak_sa BBS_DO_NOT_BOOT_FROM:
+    pak_sa BBS_IGNORE_ENTRY:
+        ᬯᬮᬶ -1;
 
-    case BBS_LOWEST_PRIORITY:
-    case BBS_UNPRIORITIZED_ENTRY:
+    pak_sa BBS_LOWEST_PRIORITY:
+    pak_sa BBS_UNPRIORITIZED_ENTRY:
     default:
         // SeaBIOS default priorities start at 1, with 0 being used for
         // an item explicitly selected from interactive_bootmenu().
         // As in find_prio(), add 1 to the value being returned.
-        return csm_prio + 1;
+        ᬯᬮᬶ csm_prio + 1;
     }
 }
 
-int csm_bootprio_ata(struct pci_device *pci, int chanid, int slave)
+puur_naa_nka csm_bootprio_ata(sa_nracanaa pci_device *pci, puur_naa_nka chanid, puur_naa_nka slave)
 {
-    if (!csm_boot_table)
-        return -1;
+    ᬬᬾᬦ᭄ (!csm_boot_table)
+        ᬯᬮᬶ -1;
     BBS_TABLE *bbs = (void *)csm_boot_table->BbsTable;
-    int index = 1 + (chanid * 2) + slave;
+    puur_naa_nka index = 1 + (chanid * 2) + slave;
     dprintf(3, "CSM bootprio for ATA%d,%d (index %d) is %d\n", chanid, slave,
             index, bbs[index].BootPriority);
-    return csm_prio_to_seabios(bbs[index].BootPriority);
+    ᬯᬮᬶ csm_prio_to_seabios(bbs[index].BootPriority);
 }
 
-int csm_bootprio_fdc(struct pci_device *pci, int port, int fdid)
+puur_naa_nka csm_bootprio_fdc(sa_nracanaa pci_device *pci, puur_naa_nka port, puur_naa_nka fdid)
 {
-    if (!csm_boot_table)
-        return -1;
+    ᬬᬾᬦ᭄ (!csm_boot_table)
+        ᬯᬮᬶ -1;
     BBS_TABLE *bbs = (void *)csm_boot_table->BbsTable;
     dprintf(3, "CSM bootprio for FDC is %d\n", bbs[0].BootPriority);
-    return csm_prio_to_seabios(bbs[0].BootPriority);
+    ᬯᬮᬶ csm_prio_to_seabios(bbs[0].BootPriority);
 }
 
-int csm_bootprio_pci(struct pci_device *pci)
+puur_naa_nka csm_bootprio_pci(sa_nracanaa pci_device *pci)
 {
-    if (!csm_boot_table)
-        return -1;
+    ᬬᬾᬦ᭄ (!csm_boot_table)
+        ᬯᬮᬶ -1;
     BBS_TABLE *bbs = (void *)csm_boot_table->BbsTable;
-    int i;
+    puur_naa_nka i;
 
     for (i = 5; i < csm_boot_table->NumberBbsEntries; i++) {
-        if (pci->bdf == pci_to_bdf(bbs[i].Bus, bbs[i].Device, bbs[i].Function)) {
+        ᬬᬾᬦ᭄ (pci->bdf == pci_to_bdf(bbs[i].Bus, bbs[i].Device, bbs[i].Function)) {
             dprintf(3, "CSM bootprio for PCI(%d,%d,%d) is %d\n", bbs[i].Bus,
                     bbs[i].Device, bbs[i].Function, bbs[i].BootPriority);
-            return csm_prio_to_seabios(bbs[i].BootPriority);
+            ᬯᬮᬶ csm_prio_to_seabios(bbs[i].BootPriority);
         }
     }
-    return -1;
+    ᬯᬮᬶ -1;
 }
