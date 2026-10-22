@@ -1,0 +1,492 @@
+# What is still missing
+
+76 languages. Each line says in how many languages it is missing.
+
+## Files in languages BURP cannot read yet
+
+
+## Keywords with no word in a language's table
+
+- yantra:ORG: 75
+- yantra:ENTRY: 75
+- yantra:CS: 75
+- yantra:IP: 75
+- guru:__FILE__: 75
+- guru:asm: 71
+- guru:offsetof: 71
+- guru:size_t: 71
+- guru:putc: 71
+- guru:time: 71
+- guru:memcmp: 71
+- guru:va_arg: 71
+- guru:strchr: 71
+- guru:memmove: 71
+- guru:va_list: 71
+- guru:va_start: 71
+- guru:va_end: 71
+- guru:remove: 71
+- guru:memset: 70
+- guru:strcmp: 70
+- guru:puts: 70
+- guru:#define: 66
+- guru:#endif: 66
+- guru:#ifndef: 66
+- guru:#ifdef: 66
+- guru:#undef: 66
+- guru:#pragma: 66
+- guru:unsigned: 62
+- guru:memcpy: 62
+- guru:printf: 62
+- guru:long: 62
+- guru:strlen: 62
+- guru:short: 62
+- guru:signed: 62
+- guru:isdigit: 62
+- yantra:global: 45
+- yantra:call: 26
+- guru:void: 25
+- guru:static: 25
+- guru:const: 25
+- guru:NULL: 25
+- guru:goto: 25
+- guru:free: 25
+- guru:switch: 25
+- guru:continue: 25
+- guru:default: 25
+- guru:typedef: 25
+- guru:extern: 25
+- guru:do: 25
+- guru:write: 25
+- guru:read: 25
+- guru:#elif: 25
+- guru:for: 9
+- guru:struct: 9
+- guru:sizeof: 9
+- guru:break: 9
+- guru:case: 9
+- guru:char: 9
+- guru:inline: 9
+- guru:volatile: 9
+- guru:union: 9
+- guru:enum: 9
+- guru:if: 1
+- guru:return: 1
+- guru:int: 1
+- guru:else: 1
+- guru:while: 1
+- guru:#if: 1
+- guru:#else: 1
+
+## Names with no dictionary entry (the most common first)
+
+- `u32`: 76
+- `u8`: 76
+- `regs`: 76
+- `i`: 76
+- `u16`: 76
+- `ret`: 76
+- `dprintf`: 76
+- `pci`: 76
+- `op`: 76
+- `pipe`: 76
+- `drive`: 76
+- `bdf`: 76
+- `u64`: 76
+- `p`: 76
+- `addr`: 76
+- `bregs`: 76
+- `type`: 76
+- `cntl`: 76
+- `vp`: 76
+- `usbdev`: 76
+- `val`: 76
+- `len`: 76
+- `cmd`: 76
+- `xhci`: 76
+- `PACKED`: 76
+- `desc`: 76
+- `drive_fl`: 76
+- `ctrl`: 76
+- `file`: 76
+- `param`: 76
+- `iobase`: 76
+- `name`: 76
+- `hub`: 76
+- `ptr`: 76
+- `s`: 76
+- `pci_device`: 76
+- `jpeg`: 76
+- `command`: 76
+- `br`: 76
+- `dev`: 76
+- `x`: 76
+- `outb`: 76
+- `req`: 76
+- `fail`: 76
+- `hdr`: 76
+- `pos`: 76
+- `lun`: 76
+- `cap`: 76
+- `eax`: 76
+- `var`: 76
+- `drive_s`: 76
+- `flags`: 76
+- `dop`: 76
+- `info`: 76
+- `c`: 76
+- `warn_noalloc`: 76
+- `usb_pipe`: 76
+- `seg`: 76
+- `disk_op_s`: 76
+- `td`: 76
+- `epdesc`: 76
+- `ctx`: 76
+- `rc`: 76
+- `inb`: 76
+- `vdrive`: 76
+- `device`: 76
+- `pnr`: 76
+- `buf`: 76
+- `lba`: 76
+- `GET_GLOBAL`: 76
+- `signature`: 76
+- `rom`: 76
+- `h`: 76
+- `d`: 76
+- `j`: 76
+- `iobase1`: 76
+- `vq`: 76
+- `writel`: 76
+- `t`: 76
+- `readl`: 76
+- `bus`: 76
+- `GET_GLOBALFLAT`: 76
+- `chs`: 76
+- `align`: 76
+- `llun`: 76
+- `v`: 76
+- `func`: 76
+- `chan_gf`: 76
+- `edx`: 76
+- `e`: 76
+- `reg`: 76
+- `common`: 76
+- `ep`: 76
+- `cfile`: 76
+- `tds`: 76
+- `none`: 76
+- `blocksize`: 76
+- `state`: 76
+- `buf_fl`: 76
+- `prio`: 76
+- `n`: 76
+- `usb`: 76
+- `al`: 76
+- `GET_BDA`: 76
+- `max`: 76
+- `b`: 76
+- `ns`: 76
+- `ecx`: 76
+- `usbdevice_s`: 76
+- `yield`: 76
+- `UINT16`: 76
+- `xin`: 76
+- `ASSERT32FLAT`: 76
+- `rsp`: 76
+- `checksum`: 76
+- `MAKE_FLATPTR`: 76
+- `dest`: 76
+- `portsc`: 76
+- `w`: 76
+- `sectors`: 76
+- `DISK_RET_SUCCESS`: 76
+- `fis`: 76
+- `a`: 76
+- `reserved`: 76
+- `f`: 76
+- `UINT32`: 76
+- `smm`: 76
+- `le`: 76
+- `keycode`: 76
+- `ebx`: 76
+- `adrive`: 76
+- `qh`: 76
+- `y`: 76
+- `define`: 76
+- `cylinder`: 76
+- `mmio`: 76
+- `maxpacket`: 76
+- `floppyid`: 76
+- `locty`: 76
+- `action`: 76
+- `ah`: 76
+- `GET_SEG`: 76
+- `romfile_s`: 76
+- `cpu`: 76
+- `link`: 76
+- `timer_check`: 76
+- `fname`: 76
+- `multiboot_uint32_t`: 76
+- `UINT8`: 76
+- `blksize`: 76
+- `iface`: 76
+- `GET_LOWFLAT`: 76
+- `VARFSEG`: 76
+- `heads`: 76
+- `bar`: 76
+- `err`: 76
+- `sq`: 76
+- `vp_write`: 76
+- `sercon_putchar`: 76
+- `sector`: 76
+- `param_far`: 76
+- `SS`: 76
+- `timer_calc`: 76
+- `slave`: 76
+- `seq`: 76
+- `vendor`: 76
+- `uuid`: 76
+- `dst`: 76
+- `cq`: 76
+- `config`: 76
+- `intsrc`: 76
+- `timeouts`: 76
+- `bx`: 76
+- `ax`: 76
+- `segoff_s`: 76
+- `prob`: 76
+- `barrier`: 76
+- `r`: 76
+- `pci_config_writel`: 76
+- `warn_timeout`: 76
+- `ring`: 76
+- `cfg`: 76
+- `rtc_read`: 76
+- `irq`: 76
+- `res`: 76
+- `usb_xhci_s`: 76
+- `MODESEGMENT`: 76
+- `cur`: 76
+- `DEBUG_tcg`: 76
+- `handle`: 76
+- `list`: 76
+- `cqe`: 76
+- `usb_endpoint_descriptor`: 76
+- `slotid`: 76
+- `vp_read`: 76
+- `VISIBLE16`: 76
+- `cylinders`: 76
+- `CDEmu`: 76
+- `disk_ret`: 76
+- `pci_config_readl`: 76
+- `tmp`: 76
+- `pprev`: 76
+- `control`: 76
+- `durations`: 76
+- `vlun`: 76
+- `src`: 76
+- `usbhub_s`: 76
+- `dir`: 76
+- `scancode`: 76
+- `vp_device`: 76
+- `pchs`: 76
+- `iobase2`: 76
+- `old`: 76
+- `sts`: 76
+- `pcpes`: 76
+- `atadrive_s`: 76
+- `adrive_gf`: 76
+- `str`: 76
+- `snprintf`: 76
+- `dl`: 76
+- `qfile`: 76
+- `defpipe`: 76
+- `eptype`: 76
+- `VARLOW`: 76
+- `cdbcmd`: 76
+- `outl`: 76
+- `iswrite`: 76
+- `FUNC16`: 76
+- `ebda_seg`: 76
+- `lineno`: 76
+- `acpi_device`: 76
+- `pkglength`: 76
+- `min`: 76
+- `files`: 76
+- `zone`: 76
+- `sel`: 76
+- `es`: 76
+- `BUILD_BIOS_ADDR`: 76
+- `ptr_fl`: 76
+- `pci_config_writeb`: 76
+- `arg`: 76
+- `ed`: 76
+- `vr`: 76
+- `hashalg_flag`: 76
+- `err_exit`: 76
+- `GET_FARVAR`: 76
+- `lchs`: 76
+- `m`: 76
+- `fmt`: 76
+- `virtio_mmio_cfg`: 76
+- `pcrindex`: 76
+- `pf`: 76
+- `bmp`: 76
+- `pci_config_readb`: 76
+- `id`: 76
+- `pci_bus`: 76
+- `token`: 76
+- `vp_cap`: 76
+- `cx`: 76
+- `cntl_id`: 76
+- `SEG`: 76
+- `foreachpci`: 76
+- `busses`: 76
+- `fl`: 76
+- `IFIX`: 76
+- `PREC`: 76
+- `digest`: 76
+- `romfile_loadint`: 76
+- `CONFIG_TCGBIOS`: 76
+- `links`: 76
+- `DISK_RET_EBADTRACK`: 76
+- `datasize`: 76
+- `virtio_pci_common_cfg`: 76
+- `k`: 76
+- `verbose`: 76
+- `typeof`: 76
+- `ALIGN`: 76
+- `is64`: 76
+- `bitmap`: 76
+- `timeout`: 76
+- `ioaddr`: 76
+- `dword`: 76
+- `vring_virtqueue`: 76
+- `features`: 76
+- `chs_s`: 76
+- `msleep`: 76
+- `ftype`: 76
+- `ui`: 76
+- `CONFIG_QEMU`: 76
+- `drive_gf`: 76
+- `cbh`: 76
+- `error`: 76
+- `caps`: 76
+- `cc`: 76
+- `TPM_DURATION_TYPE_SHORT`: 76
+- `hcca`: 76
+- `hu`: 76
+- `pnp`: 76
+- `dx`: 76
+- `chanid`: 76
+
+## Comments with no translation
+
+- dprintf: 76
+- memset: 76
+- CONFIG_*: 76
+- free: 76
+- struct bregs: 76
+- yield: 76
+- foreachpci: 76
+- DISK_RET_SUCCESS: 76
+- struct drive_s: 76
+- read-write: 76
+- romfile_loadint: 76
+- GET_GLOBAL: 76
+- PCI_VENDOR_ID: 76
+- Authors:: 76
+- memcpy: 76
+- Reserved: 76
+- GET_GLOBALFLAT: 76
+- ***************************************************************
+ * Setup
+ **************************: 76
+- / Input:: 76
+- timer_calc: 76
+- 8 bits: 76
+- struct usb_s: 76
+- checksum: 76
+- e820_add: 76
+- PAGE_SIZE: 76
+- run_thread: 76
+- /   AX = Returned status codes: 76
+- ACPI common table header: 76
+- outb: 76
+- rtc_read: 76
+- ***************************************************************
+ * Helper functions
+ ***************: 76
+- SET_BDA: 76
+- debug_enter: 76
+- cpuid: 76
+- INTA#: 76
+- INTB#: 76
+- INTC#: 76
+- INTD#: 76
+- scsi_drive_setup: 76
+- PCI_BASE_ADDRESS_0: 76
+- / Output:: 76
+- support only pci machine for now: 76
+- call16_int: 76
+- malloc_fseg: 76
+- pci_probe_devices: 76
+- pci_config_readl: 76
+- Success: 76
+- reset: 76
+- readl: 76
+- Reset device on port: 76
+- debug_stub(regs);: 76
+- hlist_node: 76
+- tpm_*: 76
+- ESC: 76
+- Using a debugger, I notice the following masking/setting: 76
+- of bits in Status Register B, by setting Reg B to: 76
+- a few values and getting its value after INT 1A was called.: 76
+- Bit4 in try#1 flipped in hardware (forced low) due to bit7=1: 76
+- DO NOT ADD NEW FEATURES HERE.  (See paravirt.c / biostables.c instead.): 76
+- be32_to_cpu: 76
+- romfile_findprefix: 76
+- PCI_DEVICE_ID: 76
+- PCI_VENDOR_ID_INTEL: 76
+- other: 76
+- inb: 76
+- Enable interrupts: 76
+- Disable interrupts: 76
+- Paolo Bonzini <pbonzini@redhat.com>: 76
+- usleep: 76
+- Send command.: 76
+- 16 bits: 76
+- 32 bits: 76
+- GET_LOWFLAT: 76
+- msleep: 76
+- ***************************************************************
+ * Root hub
+ ***********************: 76
+- Check if device attached to port: 76
+- Disable port: 76
+- Find any devices connected to the root hub.: 76
+- ***************************************************************
+ * End point communication
+ ********: 76
+- flush writes: 76
+- read-only: 76
+- / The use of these fields is IBV dependent. They can be used to flag that an OpROM: 76
+- / has hooked the specified IRQ. The OpROM may be BBS compliant as some SCSI: 76
+- / BBS-compliant OpROMs also hook IRQ vectors in order to run their BIOS Setup: 76
+- struct bios_data_area_s: 76
+- pci_bdf_to_bus: 76
+- struct pci_device: 76
+- pic_eoi1: 76
+- Hard drive: 76
+- struct e820entry: 76
+- struct pir_header: 76
+- struct smbios_21_entry_point: 76
+- FIXME: 76
+- irq: 76
+- unknown: 76
+- RamSize: 76
+- malloc_tmp: 76
+- ACPI tables: 76
+- struct romfile_s: 76
+- 1G hugepage: 76
