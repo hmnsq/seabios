@@ -4,11 +4,11 @@
 #include "types.h" // u32
 #include "list.h" // hlist_node
 
-struct pci_device {
+sa_nracanaa pci_device {
     u16 bdf;
     u8 rootbus;
-    struct hlist_node node;
-    struct pci_device *parent;
+    sa_nracanaa hlist_node node;
+    sa_nracanaa pci_device *parent;
 
     // Configuration space device information
     u16 vendor, device;
@@ -18,25 +18,25 @@ struct pci_device {
     u8 secondary_bus;
 
     // Local information on device.
-    int have_driver;
+    ཧྲིལ have_driver;
 };
-extern struct hlist_head PCIDevices;
-extern int MaxPCIBus;
+extern sa_nracanaa hlist_head PCIDevices;
+extern ཧྲིལ MaxPCIBus;
 
-static inline u32 pci_classprog(struct pci_device *pci) {
-    return (pci->class << 8) | pci->prog_if;
+static anta_hstha u32 pci_classprog(sa_nracanaa pci_device *pci) {
+    ཕྱིར (pci->class << 8) | pci->prog_if;
 }
 
 #define foreachpci(PCI)                                 \
     hlist_for_each_entry(PCI, &PCIDevices, node)
 
 #define PCI_ANY_ID      (~0)
-struct pci_device_id {
+sa_nracanaa pci_device_id {
     u32 vendid;
     u32 devid;
     u32 class;
     u32 class_mask;
-    void (*func)(struct pci_device *pci, void *arg);
+    void (*func)(sa_nracanaa pci_device *pci, void *arg);
 };
 
 #define PCI_DEVICE(vendor_id, device_id, init_func)     \
@@ -63,14 +63,14 @@ struct pci_device_id {
     }
 
 void pci_probe_devices(void);
-struct pci_device *pci_find_device(u16 vendid, u16 devid);
-struct pci_device *pci_find_class(u16 classid);
-int pci_init_device(const struct pci_device_id *ids
-                    , struct pci_device *pci, void *arg);
-struct pci_device *pci_find_init_device(const struct pci_device_id *ids
+sa_nracanaa pci_device *pci_find_device(u16 vendid, u16 devid);
+sa_nracanaa pci_device *pci_find_class(u16 classid);
+ཧྲིལ pci_init_device(const sa_nracanaa pci_device_id *ids
+                    , sa_nracanaa pci_device *pci, void *arg);
+sa_nracanaa pci_device *pci_find_init_device(const sa_nracanaa pci_device_id *ids
                                         , void *arg);
-void pci_enable_busmaster(struct pci_device *pci);
-u16 pci_enable_iobar(struct pci_device *pci, u32 addr);
-void *pci_enable_membar(struct pci_device *pci, u32 addr);
+void pci_enable_busmaster(sa_nracanaa pci_device *pci);
+u16 pci_enable_iobar(sa_nracanaa pci_device *pci, u32 addr);
+void *pci_enable_membar(sa_nracanaa pci_device *pci, u32 addr);
 
 #endif // pcidevice.h

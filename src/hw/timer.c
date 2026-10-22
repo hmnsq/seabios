@@ -75,7 +75,7 @@ tsctimer_setup(void)
     outb(CALIBRATE_COUNT >> 8, PORT_PIT_COUNTER2);
 
     u64 start = rdtscll();
-    while ((inb(PORT_PS2_CTRLB) & PPCB_T2OUT) == 0)
+    སྐབས ((inb(PORT_PS2_CTRLB) & PPCB_T2OUT) == 0)
         ;
     u64 end = rdtscll();
 
@@ -87,7 +87,7 @@ tsctimer_setup(void)
     dprintf(6, "tsc calibrate start=%u end=%u diff=%u\n"
             , (u32)start, (u32)end, (u32)diff);
     u64 t = DIV_ROUND_UP(diff * PMTIMER_HZ, CALIBRATE_COUNT);
-    while (t >= (1<<24)) {
+    སྐབས (t >= (1<<24)) {
         ShiftTSC++;
         t = (t + 1) >> 1;
     }
@@ -101,31 +101,31 @@ tsctimer_setup(void)
 void
 timer_setup(void)
 {
-    if (!CONFIG_TSC_TIMER)
-        return;
-    if (TimerPort != PORT_PIT_COUNTER0)
-        return; // have timer already
+    གལ་ཏེ (!CONFIG_TSC_TIMER)
+        ཕྱིར;
+    གལ་ཏེ (TimerPort != PORT_PIT_COUNTER0)
+        ཕྱིར; // have timer already
 
     // Check if CPU has a timestamp counter
     u32 eax, ebx, ecx, edx, cpuid_features = 0;
     cpuid(0, &eax, &ebx, &ecx, &edx);
-    if (eax > 0)
+    གལ་ཏེ (eax > 0)
         cpuid(1, &eax, &ebx, &ecx, &cpuid_features);
-    if (cpuid_features & CPUID_TSC)
+    གལ་ཏེ (cpuid_features & CPUID_TSC)
         tsctimer_setup();
 }
 
 void
-tsctimer_setfreq(u32 khz, const char *src)
+tsctimer_setfreq(u32 khz, const var_na *src)
 {
-    if (!CONFIG_TSC_TIMER)
-        return;
-    if (TimerPort != PORT_PIT_COUNTER0)
-        return; // have timer already
+    གལ་ཏེ (!CONFIG_TSC_TIMER)
+        ཕྱིར;
+    གལ་ཏེ (TimerPort != PORT_PIT_COUNTER0)
+        ཕྱིར; // have timer already
 
     TimerKHz = khz;
     ShiftTSC = 0;
-    while (TimerKHz >= 6000) {
+    སྐབས (TimerKHz >= 6000) {
         ShiftTSC++;
         TimerKHz = (TimerKHz + 1) >> 1;
     }
@@ -137,10 +137,10 @@ tsctimer_setfreq(u32 khz, const char *src)
 void
 pmtimer_setup(u16 ioport)
 {
-    if (!CONFIG_PMTIMER)
-        return;
-    if (TimerPort != PORT_PIT_COUNTER0)
-        return; // have timer already
+    གལ་ཏེ (!CONFIG_PMTIMER)
+        ཕྱིར;
+    གལ་ཏེ (TimerPort != PORT_PIT_COUNTER0)
+        ཕྱིར; // have timer already
 
     dprintf(1, "Using pmtimer, ioport 0x%x\n", ioport);
     TimerPort = ioport;
@@ -160,10 +160,10 @@ timer_adjust_bits(u32 value, u32 validbits)
 {
     u32 last = GET_LOW(TimerLast);
     value = (last & ~validbits) | (value & validbits);
-    if (value < last)
+    གལ་ཏེ (value < last)
         value += validbits + 1;
     SET_LOW(TimerLast, value);
-    return value;
+    ཕྱིར value;
 }
 
 // Sample the current timer value.
@@ -171,59 +171,59 @@ static u32
 timer_read(void)
 {
     u16 port = GET_GLOBAL(TimerPort);
-    if (CONFIG_TSC_TIMER && !port)
+    གལ་ཏེ (CONFIG_TSC_TIMER && !port)
         // Read from CPU TSC
-        return rdtscll() >> GET_GLOBAL(ShiftTSC);
-    if (CONFIG_PMTIMER && port != PORT_PIT_COUNTER0)
+        ཕྱིར rdtscll() >> GET_GLOBAL(ShiftTSC);
+    གལ་ཏེ (CONFIG_PMTIMER && port != PORT_PIT_COUNTER0)
         // Read from PMTIMER
-        return timer_adjust_bits(inl(port), 0xffffff);
+        ཕྱིར timer_adjust_bits(inl(port), 0xffffff);
     // Read from PIT.
     outb(PM_SEL_READBACK | PM_READ_VALUE | PM_READ_COUNTER0, PORT_PIT_MODE);
     u16 v = inb(PORT_PIT_COUNTER0) | (inb(PORT_PIT_COUNTER0) << 8);
-    return timer_adjust_bits(-v, 0xffff);
+    ཕྱིར timer_adjust_bits(-v, 0xffff);
 }
 
 // Return the TSC value that is 'msecs' time in the future.
 u32
 timer_calc(u32 msecs)
 {
-    return timer_read() + (GET_GLOBAL(TimerKHz) * msecs);
+    ཕྱིར timer_read() + (GET_GLOBAL(TimerKHz) * msecs);
 }
 u32
 timer_calc_usec(u32 usecs)
 {
     u32 cur = timer_read(), khz = GET_GLOBAL(TimerKHz);
-    if (usecs > 500000)
-        return cur + DIV_ROUND_UP(usecs, 1000) * khz;
-    return cur + DIV_ROUND_UP(usecs * khz, 1000);
+    གལ་ཏེ (usecs > 500000)
+        ཕྱིར cur + DIV_ROUND_UP(usecs, 1000) * khz;
+    ཕྱིར cur + DIV_ROUND_UP(usecs * khz, 1000);
 }
 static u32
 timer_calc_nsec(u32 nsecs)
 {
     u32 cur = timer_read(), khz = GET_GLOBAL(TimerKHz);
-    if (nsecs > 500000)
-        return cur + DIV_ROUND_UP(nsecs, 1000000) * khz;
-    return cur + DIV_ROUND_UP(nsecs * khz, 1000000);
+    གལ་ཏེ (nsecs > 500000)
+        ཕྱིར cur + DIV_ROUND_UP(nsecs, 1000000) * khz;
+    ཕྱིར cur + DIV_ROUND_UP(nsecs * khz, 1000000);
 }
 
 // Check if the current time is past a previously calculated end time.
-int
+ཧྲིལ
 timer_check(u32 end)
 {
-    return (s32)(timer_read() - end) > 0;
+    ཕྱིར (s32)(timer_read() - end) > 0;
 }
 
 static void
 timer_delay(u32 end)
 {
-    while (!timer_check(end))
+    སྐབས (!timer_check(end))
         cpu_relax();
 }
 
 static void
 timer_sleep(u32 end)
 {
-    while (!timer_check(end))
+    སྐབས (!timer_check(end))
         yield();
 }
 
@@ -259,7 +259,7 @@ u32
 ticks_to_ms(u32 ticks)
 {
     u32 t = PIT_TICK_INTERVAL * 1000 * PMTIMER_TO_PIT * ticks;
-    return DIV_ROUND_UP(t, PMTIMER_HZ);
+    ཕྱིར DIV_ROUND_UP(t, PMTIMER_HZ);
 }
 
 // Return the number of timer irqs in 'ms' number of milliseconds.
@@ -267,14 +267,14 @@ u32
 ticks_from_ms(u32 ms)
 {
     u32 t = DIV_ROUND_UP((u64)ms * PMTIMER_HZ, PIT_TICK_INTERVAL);
-    return DIV_ROUND_UP(t, 1000 * PMTIMER_TO_PIT);
+    ཕྱིར DIV_ROUND_UP(t, 1000 * PMTIMER_TO_PIT);
 }
 
 void
 pit_setup(void)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return;
+    གལ་ཏེ (!CONFIG_HARDWARE_IRQ)
+        ཕྱིར;
     // timer0: binary count, 16bit count, mode 2
     outb(PM_SEL_TIMER0|PM_ACCESS_WORD|PM_MODE2|PM_CNT_BINARY, PORT_PIT_MODE);
     // maximum count of 0000H = 18.2Hz

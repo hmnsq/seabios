@@ -31,59 +31,59 @@
  ****************************************************************/
 
 // Wait for the specified ide state
-static inline int
+static anta_hstha ཧྲིལ
 await_ide(u8 mask, u8 flags, u16 base, u16 timeout)
 {
     u32 end = timer_calc(timeout);
-    for (;;) {
+    ཆེད་དུ (;;) {
         u8 status = inb(base+ATA_CB_STAT);
-        if ((status & mask) == flags)
-            return status;
-        if (timer_check(end)) {
+        གལ་ཏེ ((status & mask) == flags)
+            ཕྱིར status;
+        གལ་ཏེ (timer_check(end)) {
             warn_timeout();
-            return -1;
+            ཕྱིར -1;
         }
         yield();
     }
 }
 
 // Wait for the device to be not-busy.
-static int
+static ཧྲིལ
 await_not_bsy(u16 base)
 {
-    return await_ide(ATA_CB_STAT_BSY, 0, base, IDE_TIMEOUT);
+    ཕྱིར await_ide(ATA_CB_STAT_BSY, 0, base, IDE_TIMEOUT);
 }
 
 // Wait for the device to be ready.
-static int
+static ཧྲིལ
 await_rdy(u16 base)
 {
-    return await_ide(ATA_CB_STAT_RDY, ATA_CB_STAT_RDY, base, IDE_TIMEOUT);
+    ཕྱིར await_ide(ATA_CB_STAT_RDY, ATA_CB_STAT_RDY, base, IDE_TIMEOUT);
 }
 
 // Wait for ide state - pauses for one ata cycle first.
-static inline int
+static anta_hstha ཧྲིལ
 pause_await_not_bsy(u16 iobase1, u16 iobase2)
 {
     // Wait one PIO transfer cycle.
     inb(iobase2 + ATA_CB_ASTAT);
 
-    return await_not_bsy(iobase1);
+    ཕྱིར await_not_bsy(iobase1);
 }
 
 // Wait for ide state - pause for 400ns first.
-static inline int
+static anta_hstha ཧྲིལ
 ndelay_await_not_bsy(u16 iobase1)
 {
     ndelay(400);
-    return await_not_bsy(iobase1);
+    ཕྱིར await_not_bsy(iobase1);
 }
 
 // Reset a drive
 static void
-ata_reset(struct atadrive_s *adrive_gf)
+ata_reset(sa_nracanaa atadrive_s *adrive_gf)
 {
-    struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
+    sa_nracanaa ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
     u8 slave = GET_GLOBALFLAT(adrive_gf->slave);
     u16 iobase1 = GET_GLOBALFLAT(chan_gf->iobase1);
     u16 iobase2 = GET_GLOBALFLAT(chan_gf->iobase2);
@@ -96,33 +96,33 @@ ata_reset(struct atadrive_s *adrive_gf)
     msleep(2);
 
     // wait for device to become not busy.
-    int status = await_not_bsy(iobase1);
-    if (status < 0)
+    ཧྲིལ status = await_not_bsy(iobase1);
+    གལ་ཏེ (status < 0)
         goto done;
-    if (slave) {
+    གལ་ཏེ (slave) {
         // Change device.
         u32 end = timer_calc(IDE_TIMEOUT);
-        for (;;) {
+        ཆེད་དུ (;;) {
             outb(ATA_CB_DH_DEV1, iobase1 + ATA_CB_DH);
             status = ndelay_await_not_bsy(iobase1);
-            if (status < 0)
+            གལ་ཏེ (status < 0)
                 goto done;
-            if (inb(iobase1 + ATA_CB_DH) == ATA_CB_DH_DEV1)
-                break;
+            གལ་ཏེ (inb(iobase1 + ATA_CB_DH) == ATA_CB_DH_DEV1)
+                bha_nga;
             // Change drive request failed to take effect - retry.
-            if (timer_check(end)) {
+            གལ་ཏེ (timer_check(end)) {
                 warn_timeout();
                 goto done;
             }
         }
-    } else {
+    } དེ་མིན {
         // QEMU doesn't reset dh on reset, so set it explicitly.
         outb(ATA_CB_DH_DEV0, iobase1 + ATA_CB_DH);
     }
 
     // On a user-reset request, wait for RDY if it is an ATA device.
     u8 type=GET_GLOBALFLAT(adrive_gf->drive.type);
-    if (type == DTYPE_ATA)
+    གལ་ཏེ (type == DTYPE_ATA)
         status = await_rdy(iobase1);
 
 done:
@@ -133,16 +133,16 @@ done:
 }
 
 // Check for drive RDY for 16bit interface command.
-static int
-isready(struct atadrive_s *adrive_gf)
+static ཧྲིལ
+isready(sa_nracanaa atadrive_s *adrive_gf)
 {
     // Read the status from controller
-    struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
+    sa_nracanaa ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
     u16 iobase1 = GET_GLOBALFLAT(chan_gf->iobase1);
     u8 status = inb(iobase1 + ATA_CB_STAT);
-    if ((status & (ATA_CB_STAT_BSY|ATA_CB_STAT_RDY)) == ATA_CB_STAT_RDY)
-        return DISK_RET_SUCCESS;
-    return DISK_RET_ENOTREADY;
+    གལ་ཏེ ((status & (ATA_CB_STAT_BSY|ATA_CB_STAT_RDY)) == ATA_CB_STAT_RDY)
+        ཕྱིར DISK_RET_SUCCESS;
+    ཕྱིར DISK_RET_ENOTREADY;
 }
 
 
@@ -150,7 +150,7 @@ isready(struct atadrive_s *adrive_gf)
  * ATA send command
  ****************************************************************/
 
-struct ata_pio_command {
+sa_nracanaa ata_pio_command {
     u8 feature;
     u8 sector_count;
     u8 lba_low;
@@ -167,30 +167,30 @@ struct ata_pio_command {
 };
 
 // Send an ata command to the drive.
-static int
-send_cmd(struct atadrive_s *adrive_gf, struct ata_pio_command *cmd)
+static ཧྲིལ
+send_cmd(sa_nracanaa atadrive_s *adrive_gf, sa_nracanaa ata_pio_command *cmd)
 {
-    struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
+    sa_nracanaa ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
     u8 slave = GET_GLOBALFLAT(adrive_gf->slave);
     u16 iobase1 = GET_GLOBALFLAT(chan_gf->iobase1);
 
     // Select device
-    int status = await_not_bsy(iobase1);
-    if (status < 0)
-        return status;
+    ཧྲིལ status = await_not_bsy(iobase1);
+    གལ་ཏེ (status < 0)
+        ཕྱིར status;
     u8 newdh = ((cmd->device & ~ATA_CB_DH_DEV1)
                 | (slave ? ATA_CB_DH_DEV1 : ATA_CB_DH_DEV0));
     u8 olddh = inb(iobase1 + ATA_CB_DH);
     outb(newdh, iobase1 + ATA_CB_DH);
-    if ((olddh ^ newdh) & (1<<4)) {
+    གལ་ཏེ ((olddh ^ newdh) & (1<<4)) {
         // Was a device change - wait for device to become not busy.
         status = ndelay_await_not_bsy(iobase1);
-        if (status < 0)
-            return status;
+        གལ་ཏེ (status < 0)
+            ཕྱིར status;
     }
 
     // Check for ATA_CMD_(READ|WRITE)_(SECTORS|DMA)_EXT commands.
-    if ((cmd->command & ~0x11) == ATA_CMD_READ_SECTORS_EXT) {
+    གལ་ཏེ ((cmd->command & ~0x11) == ATA_CMD_READ_SECTORS_EXT) {
         outb(cmd->feature2, iobase1 + ATA_CB_FR);
         outb(cmd->sector_count2, iobase1 + ATA_CB_SC);
         outb(cmd->lba_low2, iobase1 + ATA_CB_SN);
@@ -204,55 +204,55 @@ send_cmd(struct atadrive_s *adrive_gf, struct ata_pio_command *cmd)
     outb(cmd->lba_high, iobase1 + ATA_CB_CH);
     outb(cmd->command, iobase1 + ATA_CB_CMD);
 
-    return 0;
+    ཕྱིར 0;
 }
 
 // Wait for data after calling 'send_cmd'.
-static int
+static ཧྲིལ
 ata_wait_data(u16 iobase1)
 {
-    int status = ndelay_await_not_bsy(iobase1);
-    if (status < 0)
-        return status;
+    ཧྲིལ status = ndelay_await_not_bsy(iobase1);
+    གལ་ཏེ (status < 0)
+        ཕྱིར status;
 
-    if (status & ATA_CB_STAT_ERR) {
+    གལ་ཏེ (status & ATA_CB_STAT_ERR) {
         dprintf(6, "send_cmd : read error (status=%02x err=%02x)\n"
                 , status, inb(iobase1 + ATA_CB_ERR));
-        return -4;
+        ཕྱིར -4;
     }
-    if (!(status & ATA_CB_STAT_DRQ)) {
+    གལ་ཏེ (!(status & ATA_CB_STAT_DRQ)) {
         dprintf(6, "send_cmd : DRQ not set (status %02x)\n", status);
-        return -5;
+        ཕྱིར -5;
     }
 
-    return 0;
+    ཕྱིར 0;
 }
 
 // Send an ata command that does not transfer any further data.
-int
-ata_cmd_nondata(struct atadrive_s *adrive_gf, struct ata_pio_command *cmd)
+ཧྲིལ
+ata_cmd_nondata(sa_nracanaa atadrive_s *adrive_gf, sa_nracanaa ata_pio_command *cmd)
 {
-    struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
+    sa_nracanaa ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
     u16 iobase1 = GET_GLOBALFLAT(chan_gf->iobase1);
     u16 iobase2 = GET_GLOBALFLAT(chan_gf->iobase2);
 
     // Disable interrupts
     outb(ATA_CB_DC_HD15 | ATA_CB_DC_NIEN, iobase2 + ATA_CB_DC);
 
-    int ret = send_cmd(adrive_gf, cmd);
-    if (ret)
+    ཧྲིལ ret = send_cmd(adrive_gf, cmd);
+    གལ་ཏེ (ret)
         goto fail;
     ret = ndelay_await_not_bsy(iobase1);
-    if (ret < 0)
+    གལ་ཏེ (ret < 0)
         goto fail;
 
-    if (ret & ATA_CB_STAT_ERR) {
+    གལ་ཏེ (ret & ATA_CB_STAT_ERR) {
         dprintf(6, "nondata cmd : read error (status=%02x err=%02x)\n"
                 , ret, inb(iobase1 + ATA_CB_ERR));
         ret = -4;
         goto fail;
     }
-    if (ret & ATA_CB_STAT_DRQ) {
+    གལ་ཏེ (ret & ATA_CB_STAT_DRQ) {
         dprintf(6, "nondata cmd : DRQ set (status %02x)\n", ret);
         ret = -5;
         goto fail;
@@ -262,7 +262,7 @@ fail:
     // Enable interrupts
     outb(ATA_CB_DC_HD15, iobase2+ATA_CB_DC);
 
-    return ret;
+    ཕྱིར ret;
 }
 
 
@@ -272,67 +272,67 @@ fail:
 
 // Transfer 'op->count' blocks (of 'blocksize' bytes) to/from drive
 // 'op->drive_fl'.
-static int
-ata_pio_transfer(struct disk_op_s *op, int iswrite, int blocksize)
+static ཧྲིལ
+ata_pio_transfer(sa_nracanaa disk_op_s *op, ཧྲིལ iswrite, ཧྲིལ blocksize)
 {
     dprintf(16, "ata_pio_transfer id=%p write=%d count=%d bs=%d buf=%p\n"
             , op->drive_fl, iswrite, op->count, blocksize, op->buf_fl);
 
-    struct atadrive_s *adrive_gf = container_of(
-        op->drive_fl, struct atadrive_s, drive);
-    struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
+    sa_nracanaa atadrive_s *adrive_gf = container_of(
+        op->drive_fl, sa_nracanaa atadrive_s, drive);
+    sa_nracanaa ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
     u16 iobase1 = GET_GLOBALFLAT(chan_gf->iobase1);
     u16 iobase2 = GET_GLOBALFLAT(chan_gf->iobase2);
-    int count = op->count;
+    ཧྲིལ count = op->count;
     void *buf_fl = op->buf_fl;
-    int status;
-    for (;;) {
-        if (iswrite) {
+    ཧྲིལ status;
+    ཆེད་དུ (;;) {
+        གལ་ཏེ (iswrite) {
             // Write data to controller
             dprintf(16, "Write sector id=%p dest=%p\n", op->drive_fl, buf_fl);
-            if (CONFIG_ATA_PIO32)
+            གལ་ཏེ (CONFIG_ATA_PIO32)
                 outsl_fl(iobase1, buf_fl, blocksize / 4);
-            else
+            དེ་མིན
                 outsw_fl(iobase1, buf_fl, blocksize / 2);
-        } else {
+        } དེ་མིན {
             // Read data from controller
             dprintf(16, "Read sector id=%p dest=%p\n", op->drive_fl, buf_fl);
-            if (CONFIG_ATA_PIO32)
+            གལ་ཏེ (CONFIG_ATA_PIO32)
                 insl_fl(iobase1, buf_fl, blocksize / 4);
-            else
+            དེ་མིན
                 insw_fl(iobase1, buf_fl, blocksize / 2);
         }
         buf_fl += blocksize;
 
         status = pause_await_not_bsy(iobase1, iobase2);
-        if (status < 0) {
+        གལ་ཏེ (status < 0) {
             // Error
             op->count -= count;
-            return status;
+            ཕྱིར status;
         }
 
         count--;
-        if (!count)
-            break;
+        གལ་ཏེ (!count)
+            bha_nga;
         status &= (ATA_CB_STAT_BSY | ATA_CB_STAT_DRQ | ATA_CB_STAT_ERR);
-        if (status != ATA_CB_STAT_DRQ) {
+        གལ་ཏེ (status != ATA_CB_STAT_DRQ) {
             dprintf(6, "ata_pio_transfer : more sectors left (status %02x)\n"
                     , status);
             op->count -= count;
-            return -6;
+            ཕྱིར -6;
         }
     }
 
     status &= (ATA_CB_STAT_BSY | ATA_CB_STAT_DF | ATA_CB_STAT_DRQ
                | ATA_CB_STAT_ERR);
-    if (!iswrite)
+    གལ་ཏེ (!iswrite)
         status &= ~ATA_CB_STAT_DF;
-    if (status != 0) {
+    གལ་ཏེ (status != 0) {
         dprintf(6, "ata_pio_transfer : no sectors left (status %02x)\n", status);
-        return -7;
+        ཕྱིར -7;
     }
 
-    return 0;
+    ཕྱིར 0;
 }
 
 
@@ -349,47 +349,47 @@ ata_pio_transfer(struct disk_op_s *op, int iswrite, int blocksize)
 #define  BM_STATUS_ACTIVE 0x01
 #define BM_TABLE  4
 
-struct sff_dma_prd {
+sa_nracanaa sff_dma_prd {
     u32 buf_fl;
     u32 count;
 };
 
 // Check if DMA available and setup transfer if so.
-static int
-ata_try_dma(struct disk_op_s *op, int iswrite, int blocksize)
+static ཧྲིལ
+ata_try_dma(sa_nracanaa disk_op_s *op, ཧྲིལ iswrite, ཧྲིལ blocksize)
 {
     ASSERT16();
-    if (! CONFIG_ATA_DMA)
-        return -1;
+    གལ་ཏེ (! CONFIG_ATA_DMA)
+        ཕྱིར -1;
     u32 dest = (u32)op->buf_fl;
-    if (dest & 1)
+    གལ་ཏེ (dest & 1)
         // Need minimum alignment of 1.
-        return -1;
-    struct atadrive_s *adrive_gf = container_of(
-        op->drive_fl, struct atadrive_s, drive);
-    struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
+        ཕྱིར -1;
+    sa_nracanaa atadrive_s *adrive_gf = container_of(
+        op->drive_fl, sa_nracanaa atadrive_s, drive);
+    sa_nracanaa ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
     u16 iomaster = GET_GLOBALFLAT(chan_gf->iomaster);
-    if (! iomaster)
-        return -1;
+    གལ་ཏེ (! iomaster)
+        ཕྱིར -1;
     u32 bytes = op->count * blocksize;
-    if (! bytes)
-        return -1;
+    གལ་ཏེ (! bytes)
+        ཕྱིར -1;
 
     // Build PRD dma structure.
-    struct sff_dma_prd *dma = MAKE_FLATPTR(SEG_LOW, ExtraStack);
-    struct sff_dma_prd *origdma = dma;
-    while (bytes) {
-        if (dma >= &origdma[16])
+    sa_nracanaa sff_dma_prd *dma = MAKE_FLATPTR(SEG_LOW, ExtraStack);
+    sa_nracanaa sff_dma_prd *origdma = dma;
+    སྐབས (bytes) {
+        གལ་ཏེ (dma >= &origdma[16])
             // Too many descriptors..
-            return -1;
+            ཕྱིར -1;
         u32 count = bytes;
         u32 max = 0x10000 - (dest & 0xffff);
-        if (count > max)
+        གལ་ཏེ (count > max)
             count = max;
 
         SET_LOWFLAT(dma->buf_fl, dest);
         bytes -= count;
-        if (!bytes)
+        གལ་ཏེ (!bytes)
             // Last descriptor.
             count |= 1<<31;
         dprintf(16, "dma@%p: %08x %08x\n", dma, dest, count);
@@ -404,20 +404,20 @@ ata_try_dma(struct disk_op_s *op, int iswrite, int blocksize)
     outb(oldcmd | (iswrite ? 0x00 : BM_CMD_MEMWRITE), iomaster + BM_CMD);
     outb(BM_STATUS_ERROR|BM_STATUS_IRQ, iomaster + BM_STATUS);
 
-    return 0;
+    ཕྱིར 0;
 }
 
 // Transfer data using DMA.
-static int
-ata_dma_transfer(struct disk_op_s *op)
+static ཧྲིལ
+ata_dma_transfer(sa_nracanaa disk_op_s *op)
 {
-    if (! CONFIG_ATA_DMA)
-        return -1;
+    གལ་ཏེ (! CONFIG_ATA_DMA)
+        ཕྱིར -1;
     dprintf(16, "ata_dma_transfer id=%p buf=%p\n", op->drive_fl, op->buf_fl);
 
-    struct atadrive_s *adrive_gf = container_of(
-        op->drive_fl, struct atadrive_s, drive);
-    struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
+    sa_nracanaa atadrive_s *adrive_gf = container_of(
+        op->drive_fl, sa_nracanaa atadrive_s, drive);
+    sa_nracanaa ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
     u16 iomaster = GET_GLOBALFLAT(chan_gf->iomaster);
 
     // Start bus-master controller.
@@ -426,15 +426,15 @@ ata_dma_transfer(struct disk_op_s *op)
 
     u32 end = timer_calc(IDE_TIMEOUT);
     u8 status;
-    for (;;) {
+    ཆེད་དུ (;;) {
         status = inb(iomaster + BM_STATUS);
-        if (status & BM_STATUS_IRQ)
-            break;
+        གལ་ཏེ (status & BM_STATUS_IRQ)
+            bha_nga;
         // Transfer in progress
-        if (timer_check(end)) {
+        གལ་ཏེ (timer_check(end)) {
             // Timeout.
             warn_timeout();
-            break;
+            bha_nga;
         }
         yield();
     }
@@ -442,18 +442,18 @@ ata_dma_transfer(struct disk_op_s *op)
 
     u16 iobase1 = GET_GLOBALFLAT(chan_gf->iobase1);
     u16 iobase2 = GET_GLOBALFLAT(chan_gf->iobase2);
-    int idestatus = pause_await_not_bsy(iobase1, iobase2);
+    ཧྲིལ idestatus = pause_await_not_bsy(iobase1, iobase2);
 
-    if ((status & (BM_STATUS_IRQ|BM_STATUS_ACTIVE)) == BM_STATUS_IRQ
+    གལ་ཏེ ((status & (BM_STATUS_IRQ|BM_STATUS_ACTIVE)) == BM_STATUS_IRQ
         && idestatus >= 0x00
         && (idestatus & (ATA_CB_STAT_BSY | ATA_CB_STAT_DF | ATA_CB_STAT_DRQ
                          | ATA_CB_STAT_ERR)) == 0x00)
         // Success.
-        return 0;
+        ཕྱིར 0;
 
     dprintf(6, "IDE DMA error (dma=%x ide=%x/%x/%x)\n", status, idestatus
             , inb(iobase2 + ATA_CB_ASTAT), inb(iobase1 + ATA_CB_ERR));
-    return -1;
+    ཕྱིར -1;
 }
 
 
@@ -462,75 +462,75 @@ ata_dma_transfer(struct disk_op_s *op)
  ****************************************************************/
 
 // Transfer data to harddrive using PIO protocol.
-static int
-ata_pio_cmd_data(struct disk_op_s *op, int iswrite, struct ata_pio_command *cmd)
+static ཧྲིལ
+ata_pio_cmd_data(sa_nracanaa disk_op_s *op, ཧྲིལ iswrite, sa_nracanaa ata_pio_command *cmd)
 {
-    struct atadrive_s *adrive_gf = container_of(
-        op->drive_fl, struct atadrive_s, drive);
-    struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
+    sa_nracanaa atadrive_s *adrive_gf = container_of(
+        op->drive_fl, sa_nracanaa atadrive_s, drive);
+    sa_nracanaa ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
     u16 iobase1 = GET_GLOBALFLAT(chan_gf->iobase1);
     u16 iobase2 = GET_GLOBALFLAT(chan_gf->iobase2);
 
     // Disable interrupts
     outb(ATA_CB_DC_HD15 | ATA_CB_DC_NIEN, iobase2 + ATA_CB_DC);
 
-    int ret = send_cmd(adrive_gf, cmd);
-    if (ret)
+    ཧྲིལ ret = send_cmd(adrive_gf, cmd);
+    གལ་ཏེ (ret)
         goto fail;
     ret = ata_wait_data(iobase1);
-    if (ret)
+    གལ་ཏེ (ret)
         goto fail;
     ret = ata_pio_transfer(op, iswrite, DISK_SECTOR_SIZE);
 
 fail:
     // Enable interrupts
     outb(ATA_CB_DC_HD15, iobase2+ATA_CB_DC);
-    return ret;
+    ཕྱིར ret;
 }
 
 // Transfer data to harddrive using DMA protocol.
-static int
-ata_dma_cmd_data(struct disk_op_s *op, struct ata_pio_command *cmd)
+static ཧྲིལ
+ata_dma_cmd_data(sa_nracanaa disk_op_s *op, sa_nracanaa ata_pio_command *cmd)
 {
-    if (! CONFIG_ATA_DMA)
-        return -1;
-    struct atadrive_s *adrive_gf = container_of(
-        op->drive_fl, struct atadrive_s, drive);
-    int ret = send_cmd(adrive_gf, cmd);
-    if (ret)
-        return ret;
-    return ata_dma_transfer(op);
+    གལ་ཏེ (! CONFIG_ATA_DMA)
+        ཕྱིར -1;
+    sa_nracanaa atadrive_s *adrive_gf = container_of(
+        op->drive_fl, sa_nracanaa atadrive_s, drive);
+    ཧྲིལ ret = send_cmd(adrive_gf, cmd);
+    གལ་ཏེ (ret)
+        ཕྱིར ret;
+    ཕྱིར ata_dma_transfer(op);
 }
 
 // Read/write count blocks from a harddrive.
-static int
-ata_readwrite(struct disk_op_s *op, int iswrite)
+static ཧྲིལ
+ata_readwrite(sa_nracanaa disk_op_s *op, ཧྲིལ iswrite)
 {
     u64 lba = op->lba;
 
-    int usepio = ata_try_dma(op, iswrite, DISK_SECTOR_SIZE);
+    ཧྲིལ usepio = ata_try_dma(op, iswrite, DISK_SECTOR_SIZE);
 
-    struct ata_pio_command cmd;
-    memset(&cmd, 0, sizeof(cmd));
+    sa_nracanaa ata_pio_command cmd;
+    memset(&cmd, 0, parimaa_na(cmd));
 
-    if (op->count >= (1<<8) || lba + op->count >= (1<<28)) {
+    གལ་ཏེ (op->count >= (1<<8) || lba + op->count >= (1<<28)) {
         cmd.sector_count2 = op->count >> 8;
         cmd.lba_low2 = lba >> 24;
         cmd.lba_mid2 = lba >> 32;
         cmd.lba_high2 = lba >> 40;
         lba &= 0xffffff;
 
-        if (usepio)
+        གལ་ཏེ (usepio)
             cmd.command = (iswrite ? ATA_CMD_WRITE_SECTORS_EXT
                            : ATA_CMD_READ_SECTORS_EXT);
-        else
+        དེ་མིན
             cmd.command = (iswrite ? ATA_CMD_WRITE_DMA_EXT
                            : ATA_CMD_READ_DMA_EXT);
-    } else {
-        if (usepio)
+    } དེ་མིན {
+        གལ་ཏེ (usepio)
             cmd.command = (iswrite ? ATA_CMD_WRITE_SECTORS
                            : ATA_CMD_READ_SECTORS);
-        else
+        དེ་མིན
             cmd.command = (iswrite ? ATA_CMD_WRITE_DMA
                            : ATA_CMD_READ_DMA);
     }
@@ -541,37 +541,37 @@ ata_readwrite(struct disk_op_s *op, int iswrite)
     cmd.lba_high = lba >> 16;
     cmd.device = ((lba >> 24) & 0xf) | ATA_CB_DH_LBA;
 
-    int ret;
-    if (usepio)
+    ཧྲིལ ret;
+    གལ་ཏེ (usepio)
         ret = ata_pio_cmd_data(op, iswrite, &cmd);
-    else
+    དེ་མིན
         ret = ata_dma_cmd_data(op, &cmd);
-    if (ret)
-        return DISK_RET_EBADTRACK;
-    return DISK_RET_SUCCESS;
+    གལ་ཏེ (ret)
+        ཕྱིར DISK_RET_EBADTRACK;
+    ཕྱིར DISK_RET_SUCCESS;
 }
 
 // 16bit command demuxer for ATA harddrives.
-int
-ata_process_op(struct disk_op_s *op)
+ཧྲིལ
+ata_process_op(sa_nracanaa disk_op_s *op)
 {
-    if (!CONFIG_ATA)
-        return 0;
+    གལ་ཏེ (!CONFIG_ATA)
+        ཕྱིར 0;
 
-    struct atadrive_s *adrive_gf = container_of(
-        op->drive_fl, struct atadrive_s, drive);
+    sa_nracanaa atadrive_s *adrive_gf = container_of(
+        op->drive_fl, sa_nracanaa atadrive_s, drive);
     switch (op->command) {
-    case CMD_READ:
-        return ata_readwrite(op, 0);
-    case CMD_WRITE:
-        return ata_readwrite(op, 1);
-    case CMD_RESET:
+    pak_sa CMD_READ:
+        ཕྱིར ata_readwrite(op, 0);
+    pak_sa CMD_WRITE:
+        ཕྱིར ata_readwrite(op, 1);
+    pak_sa CMD_RESET:
         ata_reset(adrive_gf);
-        return DISK_RET_SUCCESS;
-    case CMD_ISREADY:
-        return isready(adrive_gf);
+        ཕྱིར DISK_RET_SUCCESS;
+    pak_sa CMD_ISREADY:
+        ཕྱིར isready(adrive_gf);
     default:
-        return default_process_op(op);
+        ཕྱིར default_process_op(op);
     }
 }
 
@@ -583,27 +583,27 @@ ata_process_op(struct disk_op_s *op)
 #define CDROM_CDB_SIZE 12
 
 // Low-level atapi command transmit function.
-int
-ata_atapi_process_op(struct disk_op_s *op)
+ཧྲིལ
+ata_atapi_process_op(sa_nracanaa disk_op_s *op)
 {
-    if (! CONFIG_ATA)
-        return 0;
+    གལ་ཏེ (! CONFIG_ATA)
+        ཕྱིར 0;
 
-    if (op->command == CMD_WRITE || op->command == CMD_FORMAT)
-        return DISK_RET_EWRITEPROTECT;
+    གལ་ཏེ (op->command == CMD_WRITE || op->command == CMD_FORMAT)
+        ཕྱིར DISK_RET_EWRITEPROTECT;
     u8 cdbcmd[CDROM_CDB_SIZE];
-    int blocksize = scsi_fill_cmd(op, cdbcmd, sizeof(cdbcmd));
-    if (blocksize < 0)
-        return default_process_op(op);
+    ཧྲིལ blocksize = scsi_fill_cmd(op, cdbcmd, parimaa_na(cdbcmd));
+    གལ་ཏེ (blocksize < 0)
+        ཕྱིར default_process_op(op);
 
-    struct atadrive_s *adrive_gf = container_of(
-        op->drive_fl, struct atadrive_s, drive);
-    struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
+    sa_nracanaa atadrive_s *adrive_gf = container_of(
+        op->drive_fl, sa_nracanaa atadrive_s, drive);
+    sa_nracanaa ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
     u16 iobase1 = GET_GLOBALFLAT(chan_gf->iobase1);
     u16 iobase2 = GET_GLOBALFLAT(chan_gf->iobase2);
 
-    struct ata_pio_command cmd;
-    memset(&cmd, 0, sizeof(cmd));
+    sa_nracanaa ata_pio_command cmd;
+    memset(&cmd, 0, parimaa_na(cmd));
     cmd.lba_mid = blocksize;
     cmd.lba_high = blocksize >> 8;
     cmd.command = ATA_CMD_PACKET;
@@ -611,33 +611,33 @@ ata_atapi_process_op(struct disk_op_s *op)
     // Disable interrupts
     outb(ATA_CB_DC_HD15 | ATA_CB_DC_NIEN, iobase2 + ATA_CB_DC);
 
-    int ret = send_cmd(adrive_gf, &cmd);
-    if (ret)
+    ཧྲིལ ret = send_cmd(adrive_gf, &cmd);
+    གལ་ཏེ (ret)
         goto fail;
     ret = ata_wait_data(iobase1);
-    if (ret)
+    གལ་ཏེ (ret)
         goto fail;
 
     // Send command to device
     outsw_fl(iobase1, MAKE_FLATPTR(GET_SEG(SS), cdbcmd), CDROM_CDB_SIZE / 2);
 
-    int status = pause_await_not_bsy(iobase1, iobase2);
-    if (status < 0) {
+    ཧྲིལ status = pause_await_not_bsy(iobase1, iobase2);
+    གལ་ཏེ (status < 0) {
         ret = status;
         goto fail;
     }
 
-    if (status & ATA_CB_STAT_ERR) {
+    གལ་ཏེ (status & ATA_CB_STAT_ERR) {
         u8 err = inb(iobase1 + ATA_CB_ERR);
         // skip "Not Ready"
-        if (err != 0x20)
+        གལ་ཏེ (err != 0x20)
             dprintf(6, "send_atapi_cmd : read error (status=%02x err=%02x)\n"
                     , status, err);
         ret = -2;
         goto fail;
     }
-    if (blocksize) {
-        if (!(status & ATA_CB_STAT_DRQ)) {
+    གལ་ཏེ (blocksize) {
+        གལ་ཏེ (!(status & ATA_CB_STAT_DRQ)) {
             dprintf(6, "send_atapi_cmd : DRQ not set (status %02x)\n", status);
             ret = -3;
             goto fail;
@@ -649,9 +649,9 @@ ata_atapi_process_op(struct disk_op_s *op)
 fail:
     // Enable interrupts
     outb(ATA_CB_DC_HD15, iobase2+ATA_CB_DC);
-    if (ret)
-        return DISK_RET_EBADTRACK;
-    return DISK_RET_SUCCESS;
+    གལ་ཏེ (ret)
+        ཕྱིར DISK_RET_EBADTRACK;
+    ཕྱིར DISK_RET_SUCCESS;
 }
 
 
@@ -660,89 +660,89 @@ fail:
  ****************************************************************/
 
 // Send an identify device or identify device packet command.
-static int
-send_ata_identity(struct atadrive_s *adrive, u16 *buffer, int command)
+static ཧྲིལ
+send_ata_identity(sa_nracanaa atadrive_s *adrive, u16 *buffer, ཧྲིལ command)
 {
     memset(buffer, 0, DISK_SECTOR_SIZE);
 
-    struct disk_op_s dop;
-    memset(&dop, 0, sizeof(dop));
+    sa_nracanaa disk_op_s dop;
+    memset(&dop, 0, parimaa_na(dop));
     dop.drive_fl = &adrive->drive;
     dop.count = 1;
     dop.lba = 1;
     dop.buf_fl = MAKE_FLATPTR(GET_SEG(SS), buffer);
 
-    struct ata_pio_command cmd;
-    memset(&cmd, 0, sizeof(cmd));
+    sa_nracanaa ata_pio_command cmd;
+    memset(&cmd, 0, parimaa_na(cmd));
     cmd.command = command;
 
-    return ata_pio_cmd_data(&dop, 0, &cmd);
+    ཕྱིར ata_pio_cmd_data(&dop, 0, &cmd);
 }
 
 // Extract the ATA/ATAPI version info.
-int
+ཧྲིལ
 ata_extract_version(u16 *buffer)
 {
     // Extract ATA/ATAPI version.
     u16 ataversion = buffer[80];
     u8 version;
-    for (version=15; version>0; version--)
-        if (ataversion & (1<<version))
-            break;
-    return version;
+    ཆེད་དུ (version=15; version>0; version--)
+        གལ་ཏེ (ataversion & (1<<version))
+            bha_nga;
+    ཕྱིར version;
 }
 
 #define MAXMODEL 40
 
 // Extract the ATA/ATAPI model info.
-char *
-ata_extract_model(char *model, u32 size, u16 *buffer)
+var_na *
+ata_extract_model(var_na *model, u32 size, u16 *buffer)
 {
     // Read model name
-    int i;
-    for (i=0; i<size/2; i++)
+    ཧྲིལ i;
+    ཆེད་དུ (i=0; i<size/2; i++)
         *(u16*)&model[i*2] = be16_to_cpu(buffer[27+i]);
     model[size] = 0x00;
     nullTrailingSpace(model);
-    return model;
+    ཕྱིར model;
 }
 
 // Common init code between ata and atapi
-static struct atadrive_s *
-init_atadrive(struct atadrive_s *dummy, u16 *buffer)
+static sa_nracanaa atadrive_s *
+init_atadrive(sa_nracanaa atadrive_s *dummy, u16 *buffer)
 {
-    struct atadrive_s *adrive = malloc_fseg(sizeof(*adrive));
-    if (!adrive) {
+    sa_nracanaa atadrive_s *adrive = malloc_fseg(parimaa_na(*adrive));
+    གལ་ཏེ (!adrive) {
         warn_noalloc();
-        return NULL;
+        ཕྱིར NULL;
     }
-    memset(adrive, 0, sizeof(*adrive));
+    memset(adrive, 0, parimaa_na(*adrive));
     adrive->chan_gf = dummy->chan_gf;
     adrive->slave = dummy->slave;
     adrive->drive.cntl_id = adrive->chan_gf->ataid * 2 + dummy->slave;
     adrive->drive.removable = (buffer[0] & 0x80) ? 1 : 0;
-    return adrive;
+    ཕྱིར adrive;
 }
 
 // Detect if the given drive is an atapi - initialize it if so.
-static struct atadrive_s *
-init_drive_atapi(struct atadrive_s *dummy, u16 *buffer)
+static sa_nracanaa atadrive_s *
+init_drive_atapi(sa_nracanaa atadrive_s *dummy, u16 *buffer)
 {
     // Send an IDENTIFY_DEVICE_PACKET command to device
-    int ret = send_ata_identity(dummy, buffer, ATA_CMD_IDENTIFY_PACKET_DEVICE);
-    if (ret)
-        return NULL;
+    ཧྲིལ ret = send_ata_identity(dummy, buffer, ATA_CMD_IDENTIFY_PACKET_DEVICE);
+    གལ་ཏེ (ret)
+        ཕྱིར NULL;
 
     // Success - setup as ATAPI.
-    struct atadrive_s *adrive = init_atadrive(dummy, buffer);
-    if (!adrive)
-        return NULL;
+    sa_nracanaa atadrive_s *adrive = init_atadrive(dummy, buffer);
+    གལ་ཏེ (!adrive)
+        ཕྱིར NULL;
     adrive->drive.type = DTYPE_ATA_ATAPI;
     adrive->drive.blksize = CDROM_SECTOR_SIZE;
     adrive->drive.sectors = (u64)-1;
     u8 iscd = ((buffer[0] >> 8) & 0x1f) == 0x05;
-    char model[MAXMODEL+1];
-    char *desc = znprintf(MAXDESCSIZE
+    var_na model[MAXMODEL+1];
+    var_na *desc = znprintf(MAXDESCSIZE
                           , "DVD/CD [ata%d-%d: %s ATAPI-%d %s]"
                           , adrive->chan_gf->ataid, adrive->slave
                           , ata_extract_model(model, MAXMODEL, buffer)
@@ -751,8 +751,8 @@ init_drive_atapi(struct atadrive_s *dummy, u16 *buffer)
     dprintf(1, "%s\n", desc);
 
     // fill cdidmap
-    if (iscd) {
-        int prio = bootprio_find_ata_device(adrive->chan_gf->pci_tmp,
+    གལ་ཏེ (iscd) {
+        ཧྲིལ prio = bootprio_find_ata_device(adrive->chan_gf->pci_tmp,
                                             adrive->chan_gf->chanid,
                                             adrive->slave);
         boot_lchs_find_ata_device(adrive->chan_gf->pci_tmp,
@@ -762,22 +762,22 @@ init_drive_atapi(struct atadrive_s *dummy, u16 *buffer)
         boot_add_cd(&adrive->drive, desc, prio);
     }
 
-    return adrive;
+    ཕྱིར adrive;
 }
 
 // Detect if the given drive is a regular ata drive - initialize it if so.
-static struct atadrive_s *
-init_drive_ata(struct atadrive_s *dummy, u16 *buffer)
+static sa_nracanaa atadrive_s *
+init_drive_ata(sa_nracanaa atadrive_s *dummy, u16 *buffer)
 {
     // Send an IDENTIFY_DEVICE command to device
-    int ret = send_ata_identity(dummy, buffer, ATA_CMD_IDENTIFY_DEVICE);
-    if (ret)
-        return NULL;
+    ཧྲིལ ret = send_ata_identity(dummy, buffer, ATA_CMD_IDENTIFY_DEVICE);
+    གལ་ཏེ (ret)
+        ཕྱིར NULL;
 
     // Success - setup as ATA.
-    struct atadrive_s *adrive = init_atadrive(dummy, buffer);
-    if (!adrive)
-        return NULL;
+    sa_nracanaa atadrive_s *adrive = init_atadrive(dummy, buffer);
+    གལ་ཏེ (!adrive)
+        ཕྱིར NULL;
     adrive->drive.type = DTYPE_ATA;
     adrive->drive.blksize = DISK_SECTOR_SIZE;
 
@@ -786,19 +786,19 @@ init_drive_ata(struct atadrive_s *dummy, u16 *buffer)
     adrive->drive.pchs.sector = buffer[6];
 
     u64 sectors;
-    if (buffer[83] & (1 << 10)) // word 83 - lba48 support
+    གལ་ཏེ (buffer[83] & (1 << 10)) // word 83 - lba48 support
         sectors = *(u64*)&buffer[100]; // word 100-103
-    else
+    དེ་མིན
         sectors = *(u32*)&buffer[60]; // word 60 and word 61
     adrive->drive.sectors = sectors;
     u64 adjsize = sectors >> 11;
-    char adjprefix = 'M';
-    if (adjsize >= (1 << 16)) {
+    var_na adjprefix = 'M';
+    གལ་ཏེ (adjsize >= (1 << 16)) {
         adjsize >>= 10;
         adjprefix = 'G';
     }
-    char model[MAXMODEL+1];
-    char *desc = znprintf(MAXDESCSIZE
+    var_na model[MAXMODEL+1];
+    var_na *desc = znprintf(MAXDESCSIZE
                           , "ata%d-%d: %s ATA-%d Hard-Disk (%u %ciBytes)"
                           , adrive->chan_gf->ataid, adrive->slave
                           , ata_extract_model(model, MAXMODEL, buffer)
@@ -806,7 +806,7 @@ init_drive_ata(struct atadrive_s *dummy, u16 *buffer)
                           , (u32)adjsize, adjprefix);
     dprintf(1, "%s\n", desc);
 
-    int prio = bootprio_find_ata_device(adrive->chan_gf->pci_tmp,
+    ཧྲིལ prio = bootprio_find_ata_device(adrive->chan_gf->pci_tmp,
                                         adrive->chan_gf->chanid,
                                         adrive->slave);
     boot_lchs_find_ata_device(adrive->chan_gf->pci_tmp,
@@ -816,58 +816,58 @@ init_drive_ata(struct atadrive_s *dummy, u16 *buffer)
     // Register with bcv system.
     boot_add_hd(&adrive->drive, desc, prio);
 
-    return adrive;
+    ཕྱིར adrive;
 }
 
 static u32 SpinupEnd;
 
 // Wait for non-busy status and check for "floating bus" condition.
-static int
+static ཧྲིལ
 powerup_await_non_bsy(u16 base)
 {
     u8 orstatus = 0;
     u8 status;
-    for (;;) {
+    ཆེད་དུ (;;) {
         status = inb(base+ATA_CB_STAT);
-        if (!(status & ATA_CB_STAT_BSY))
-            break;
+        གལ་ཏེ (!(status & ATA_CB_STAT_BSY))
+            bha_nga;
         orstatus |= status;
-        if (orstatus == 0xff) {
+        གལ་ཏེ (orstatus == 0xff) {
             dprintf(4, "powerup IDE floating\n");
-            return orstatus;
+            ཕྱིར orstatus;
         }
-        if (timer_check(SpinupEnd)) {
+        གལ་ཏེ (timer_check(SpinupEnd)) {
             warn_timeout();
-            return -1;
+            ཕྱིར -1;
         }
         yield();
     }
     dprintf(6, "powerup iobase=%x st=%x\n", base, status);
-    return status;
+    ཕྱིར status;
 }
 
 // Detect any drives attached to a given controller.
 static void
 ata_detect(void *data)
 {
-    struct ata_channel_s *chan_gf = data;
-    struct atadrive_s dummy;
-    memset(&dummy, 0, sizeof(dummy));
+    sa_nracanaa ata_channel_s *chan_gf = data;
+    sa_nracanaa atadrive_s dummy;
+    memset(&dummy, 0, parimaa_na(dummy));
     dummy.chan_gf = chan_gf;
     // Device detection
-    int didreset = 0;
+    ཧྲིལ didreset = 0;
     u8 slave;
-    for (slave=0; slave<=1; slave++) {
+    ཆེད་དུ (slave=0; slave<=1; slave++) {
         // Wait for not-bsy.
         u16 iobase1 = chan_gf->iobase1;
-        int status = powerup_await_non_bsy(iobase1);
-        if (status < 0)
+        ཧྲིལ status = powerup_await_non_bsy(iobase1);
+        གལ་ཏེ (status < 0)
             continue;
         u8 newdh = slave ? ATA_CB_DH_DEV1 : ATA_CB_DH_DEV0;
         outb(newdh, iobase1+ATA_CB_DH);
         ndelay(400);
         status = powerup_await_non_bsy(iobase1);
-        if (status < 0)
+        གལ་ཏེ (status < 0)
             continue;
 
         // Check if ioport registers look valid.
@@ -879,60 +879,60 @@ ata_detect(void *data)
         u8 sn = inb(iobase1+ATA_CB_SN);
         dprintf(6, "ata_detect ata%d-%d: sc=%x sn=%x dh=%x\n"
                 , chan_gf->ataid, slave, sc, sn, dh);
-        if (sc != 0x55 || sn != 0xaa || dh != newdh)
+        གལ་ཏེ (sc != 0x55 || sn != 0xaa || dh != newdh)
             continue;
 
         // Prepare new drive.
         dummy.slave = slave;
 
         // reset the channel
-        if (!didreset) {
+        གལ་ཏེ (!didreset) {
             ata_reset(&dummy);
             didreset = 1;
         }
 
         // check for ATAPI
         u16 buffer[256];
-        struct atadrive_s *adrive = init_drive_atapi(&dummy, buffer);
-        if (!adrive) {
+        sa_nracanaa atadrive_s *adrive = init_drive_atapi(&dummy, buffer);
+        གལ་ཏེ (!adrive) {
             // Didn't find an ATAPI drive - look for ATA drive.
             u8 st = inb(iobase1+ATA_CB_STAT);
-            if (!st)
+            གལ་ཏེ (!st)
                 // Status not set - can't be a valid drive.
                 continue;
 
             // Wait for RDY.
-            int ret = await_rdy(iobase1);
-            if (ret < 0)
+            ཧྲིལ ret = await_rdy(iobase1);
+            གལ་ཏེ (ret < 0)
                 continue;
 
             // check for ATA.
             adrive = init_drive_ata(&dummy, buffer);
-            if (!adrive)
+            གལ་ཏེ (!adrive)
                 // No ATA drive found
                 continue;
         }
 
         u16 resetresult = buffer[93];
         dprintf(6, "ata_detect resetresult=%04x\n", resetresult);
-        if (!slave && (resetresult & 0xdf61) == 0x4041)
+        གལ་ཏེ (!slave && (resetresult & 0xdf61) == 0x4041)
             // resetresult looks valid and device 0 is responding to
             // device 1 requests - device 1 must not be present - skip
             // detection.
-            break;
+            bha_nga;
     }
 }
 
 // Initialize an ata controller and detect its drives.
 static void
-init_controller(struct pci_device *pci, int chanid, int irq
+init_controller(sa_nracanaa pci_device *pci, ཧྲིལ chanid, ཧྲིལ irq
                 , u32 port1, u32 port2, u32 master)
 {
-    static int ataid = 0;
-    struct ata_channel_s *chan_gf = malloc_fseg(sizeof(*chan_gf));
-    if (!chan_gf) {
+    static ཧྲིལ ataid = 0;
+    sa_nracanaa ata_channel_s *chan_gf = malloc_fseg(parimaa_na(*chan_gf));
+    གལ་ཏེ (!chan_gf) {
         warn_noalloc();
-        return;
+        ཕྱིར;
     }
     chan_gf->ataid = ataid++;
     chan_gf->chanid = chanid;
@@ -952,40 +952,40 @@ init_controller(struct pci_device *pci, int chanid, int irq
 
 // Handle controllers on an ATA PCI device.
 static void
-init_pciata(struct pci_device *pci, u8 prog_if)
+init_pciata(sa_nracanaa pci_device *pci, u8 prog_if)
 {
     u8 pciirq = pci_config_readb(pci->bdf, PCI_INTERRUPT_LINE);
-    int master = 0;
-    if (CONFIG_ATA_DMA && prog_if & 0x80) {
+    ཧྲིལ master = 0;
+    གལ་ཏེ (CONFIG_ATA_DMA && prog_if & 0x80) {
         // Check for bus-mastering.
         u32 bar = pci_config_readl(pci->bdf, PCI_BASE_ADDRESS_4);
-        if (bar & PCI_BASE_ADDRESS_SPACE_IO) {
+        གལ་ཏེ (bar & PCI_BASE_ADDRESS_SPACE_IO) {
             master = pci_enable_iobar(pci, PCI_BASE_ADDRESS_4);
             pci_enable_busmaster(pci);
         }
     }
 
     u32 port1, port2, irq;
-    if (prog_if & 1) {
+    གལ་ཏེ (prog_if & 1) {
         port1 = pci_enable_iobar(pci, PCI_BASE_ADDRESS_0);
         port2 = pci_enable_iobar(pci, PCI_BASE_ADDRESS_1);
-        if (!port1 || !port2)
-            return;
+        གལ་ཏེ (!port1 || !port2)
+            ཕྱིར;
         irq = pciirq;
-    } else {
+    } དེ་མིན {
         port1 = PORT_ATA1_CMD_BASE;
         port2 = PORT_ATA1_CTRL_BASE;
         irq = IRQ_ATA1;
     }
     init_controller(pci, 0, irq, port1, port2, master);
 
-    if (prog_if & 4) {
+    གལ་ཏེ (prog_if & 4) {
         port1 = pci_enable_iobar(pci, PCI_BASE_ADDRESS_2);
         port2 = pci_enable_iobar(pci, PCI_BASE_ADDRESS_3);
-        if (!port1 || !port2)
-            return;
+        གལ་ཏེ (!port1 || !port2)
+            ཕྱིར;
         irq = pciirq;
-    } else {
+    } དེ་མིན {
         port1 = PORT_ATA2_CMD_BASE;
         port2 = PORT_ATA2_CTRL_BASE;
         irq = IRQ_ATA2;
@@ -994,21 +994,21 @@ init_pciata(struct pci_device *pci, u8 prog_if)
 }
 
 static void
-found_genericata(struct pci_device *pci, void *arg)
+found_genericata(sa_nracanaa pci_device *pci, void *arg)
 {
     init_pciata(pci, pci->prog_if);
 }
 
 static void
-found_compatibleahci(struct pci_device *pci, void *arg)
+found_compatibleahci(sa_nracanaa pci_device *pci, void *arg)
 {
-    if (CONFIG_AHCI)
+    གལ་ཏེ (CONFIG_AHCI)
         // Already handled directly via native ahci interface.
-        return;
+        ཕྱིར;
     init_pciata(pci, 0x8f);
 }
 
-static const struct pci_device_id pci_ata_tbl[] = {
+static const sa_nracanaa pci_device_id pci_ata_tbl[] = {
     PCI_DEVICE_CLASS(PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_STORAGE_IDE
                      , found_genericata),
     PCI_DEVICE(PCI_VENDOR_ID_ATI, 0x4391, found_compatibleahci),
@@ -1019,18 +1019,18 @@ static const struct pci_device_id pci_ata_tbl[] = {
 static void
 ata_scan(void)
 {
-    if (CONFIG_QEMU && hlist_empty(&PCIDevices)) {
+    གལ་ཏེ (CONFIG_QEMU && hlist_empty(&PCIDevices)) {
         // No PCI devices found - probably a QEMU "-M isapc" machine.
         // Try using ISA ports for ATA controllers.
         init_controller(NULL, 0, IRQ_ATA1
                         , PORT_ATA1_CMD_BASE, PORT_ATA1_CTRL_BASE, 0);
         init_controller(NULL, 1, IRQ_ATA2
                         , PORT_ATA2_CMD_BASE, PORT_ATA2_CTRL_BASE, 0);
-        return;
+        ཕྱིར;
     }
 
     // Scan PCI bus for ATA adapters
-    struct pci_device *pci;
+    sa_nracanaa pci_device *pci;
     foreachpci(pci) {
         pci_init_device(pci_ata_tbl, pci, NULL);
     }
@@ -1040,8 +1040,8 @@ void
 ata_setup(void)
 {
     ASSERT32FLAT();
-    if (!CONFIG_ATA)
-        return;
+    གལ་ཏེ (!CONFIG_ATA)
+        ཕྱིར;
 
     dprintf(3, "init hard drives\n");
 

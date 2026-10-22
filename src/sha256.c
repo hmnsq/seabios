@@ -20,38 +20,38 @@
 #include "string.h"
 #include "x86.h"
 
-typedef struct _sha256_ctx {
+typedef sa_nracanaa _sha256_ctx {
     u32 h[8];
 } sha256_ctx;
 
-static inline u32 Ch(u32 x, u32 y, u32 z)
+static anta_hstha u32 Ch(u32 x, u32 y, u32 z)
 {
-    return (x & y) | ((x ^ 0xffffffff) & z);
+    ཕྱིར (x & y) | ((x ^ 0xffffffff) & z);
 }
 
-static inline u32 Maj(u32 x, u32 y, u32 z)
+static anta_hstha u32 Maj(u32 x, u32 y, u32 z)
 {
-    return (x & y) | (x & z) | (y & z);
+    ཕྱིར (x & y) | (x & z) | (y & z);
 }
 
-static inline u32 sum0(u32 x)
+static anta_hstha u32 sum0(u32 x)
 {
-    return ror(x, 2) ^ ror(x, 13) ^ ror(x, 22);
+    ཕྱིར ror(x, 2) ^ ror(x, 13) ^ ror(x, 22);
 }
 
-static inline u32 sum1(u32 x)
+static anta_hstha u32 sum1(u32 x)
 {
-    return ror(x, 6) ^ ror(x, 11) ^ ror(x, 25);
+    ཕྱིར ror(x, 6) ^ ror(x, 11) ^ ror(x, 25);
 }
 
-static inline u32 sigma0(u32 x)
+static anta_hstha u32 sigma0(u32 x)
 {
-    return ror(x, 7) ^ ror(x, 18) ^ (x >> 3);
+    ཕྱིར ror(x, 7) ^ ror(x, 18) ^ (x >> 3);
 }
 
-static inline u32 sigma1(u32 x)
+static anta_hstha u32 sigma1(u32 x)
 {
-    return ror(x, 17) ^ ror(x, 19) ^ (x >> 10);
+    ཕྱིར ror(x, 17) ^ ror(x, 19) ^ (x >> 10);
 }
 
 static void sha256_block(u32 *w, sha256_ctx *ctx)
@@ -92,10 +92,10 @@ static void sha256_block(u32 *w, sha256_ctx *ctx)
      */
 
     /* w(0)..w(15) are in big endian format */
-    for (t = 0; t <= 15; t++)
+    ཆེད་དུ (t = 0; t <= 15; t++)
         w[t] = be32_to_cpu(w[t]);
 
-    for (t = 16; t <= 63; t++)
+    ཆེད་དུ (t = 16; t <= 63; t++)
         w[t] = sigma1(w[t-2]) + w[t-7] + sigma0(w[t-15]) + w[t-16];
 
     /*
@@ -116,7 +116,7 @@ static void sha256_block(u32 *w, sha256_ctx *ctx)
      *    T2 = sum0(a) + Maj(a,b,c)
      *    h = g; g = f; f = e; e = d + T1; d = c; c = b; b = a; a + T1 + T2
      */
-    for (t = 0; t <= 63; t++) {
+    ཆེད་དུ (t = 0; t <= 63; t++) {
         T1 = h + sum1(e) + Ch(e, f, g) + sha_ko[t] + w[t];
         T2 = sum0(a) + Maj(a, b, c);
         h = g;
@@ -152,7 +152,7 @@ static void sha256_do(sha256_ctx *ctx, const u8 *data32, u32 length)
     u64 tmp;
 
     /* treat data in 64-byte chunks */
-    for (offset = 0; length - offset >= 64; offset += 64) {
+    ཆེད་དུ (offset = 0; length - offset >= 64; offset += 64) {
         memcpy(w, data32 + offset, 64);
         sha256_block((u32 *)w, ctx);
         bits += (64 * 8);
@@ -167,10 +167,10 @@ static void sha256_do(sha256_ctx *ctx, const u8 *data32, u32 length)
      * FIPS 180-4 5.1: Padding the Message
      */
     ((u8 *)w)[num] = 0x80;
-    if (64 - (num + 1) > 0)
+    གལ་ཏེ (64 - (num + 1) > 0)
         memset( &((u8 *)w)[num + 1], 0, 64 - (num + 1));
 
-    if (num >= 56) {
+    གལ་ཏེ (num >= 56) {
         /* cannot append number of bits here */
         sha256_block((u32 *)w, ctx);
         memset(w, 0, 60);
@@ -183,7 +183,7 @@ static void sha256_do(sha256_ctx *ctx, const u8 *data32, u32 length)
     sha256_block(w, ctx);
 
     /* need to switch result's endianness */
-    for (num = 0; num < 8; num++)
+    ཆེད་དུ (num = 0; num < 8; num++)
         ctx->h[num] = cpu_to_be32(ctx->h[num]);
 }
 
@@ -207,5 +207,5 @@ void sha256(const u8 *data, u32 length, u8 *hash)
     };
 
     sha256_do(&ctx, data, length);
-    memcpy(hash, ctx.h, sizeof(ctx.h));
+    memcpy(hash, ctx.h, parimaa_na(ctx.h));
 }
