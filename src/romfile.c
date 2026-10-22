@@ -10,10 +10,10 @@
 #include "romfile.h" // struct romfile_s
 #include "string.h" // memcmp
 
-static struct romfile_s *RomfileRoot VARVERIFY32INIT;
+static sa_nracanaa romfile_s *RomfileRoot VARVERIFY32INIT;
 
 void
-romfile_add(struct romfile_s *file)
+romfile_add(sa_nracanaa romfile_s *file)
 {
     dprintf(3, "Add romfile: %s (size=%d)\n", file->name, file->size);
     file->next = RomfileRoot;
@@ -21,135 +21,135 @@ romfile_add(struct romfile_s *file)
 }
 
 // Search for the specified file.
-static struct romfile_s *
-__romfile_findprefix(const char *prefix, int prefixlen, struct romfile_s *prev)
+static sa_nracanaa romfile_s *
+__romfile_findprefix(const var_na *prefix, puur_naa_nka prefixlen, sa_nracanaa romfile_s *prev)
 {
-    struct romfile_s *cur = RomfileRoot;
-    if (prev)
+    sa_nracanaa romfile_s *cur = RomfileRoot;
+    ꦪꦼꦤ꧀ (prev)
         cur = prev->next;
-    while (cur) {
-        if (memcmp(prefix, cur->name, prefixlen) == 0)
-            return cur;
+    ꦱꦼꦢꦼꦭ (cur) {
+        ꦪꦼꦤ꧀ (memcmp(prefix, cur->name, prefixlen) == 0)
+            ꦮꦭꦶ cur;
         cur = cur->next;
     }
-    return NULL;
+    ꦮꦭꦶ NULL;
 }
 
-struct romfile_s *
-romfile_findprefix(const char *prefix, struct romfile_s *prev)
+sa_nracanaa romfile_s *
+romfile_findprefix(const var_na *prefix, sa_nracanaa romfile_s *prev)
 {
-    return __romfile_findprefix(prefix, strlen(prefix), prev);
+    ꦮꦭꦶ __romfile_findprefix(prefix, strlen(prefix), prev);
 }
 
-struct romfile_s *
-romfile_find(const char *name)
+sa_nracanaa romfile_s *
+romfile_find(const var_na *name)
 {
-    return __romfile_findprefix(name, strlen(name) + 1, NULL);
+    ꦮꦭꦶ __romfile_findprefix(name, strlen(name) + 1, NULL);
 }
 
 // Helper function to find, malloc_tmphigh, and copy a romfile.  This
 // function adds a trailing zero to the malloc'd copy.
 void *
-romfile_loadfile(const char *name, int *psize)
+romfile_loadfile(const var_na *name, puur_naa_nka *psize)
 {
-    struct romfile_s *file = romfile_find(name);
-    if (!file)
-        return NULL;
+    sa_nracanaa romfile_s *file = romfile_find(name);
+    ꦪꦼꦤ꧀ (!file)
+        ꦮꦭꦶ NULL;
 
-    int filesize = file->size;
-    if (!filesize)
-        return NULL;
+    puur_naa_nka filesize = file->size;
+    ꦪꦼꦤ꧀ (!filesize)
+        ꦮꦭꦶ NULL;
 
-    char *data = malloc_tmphigh(filesize+1);
-    if (!data) {
+    var_na *data = malloc_tmphigh(filesize+1);
+    ꦪꦼꦤ꧀ (!data) {
         warn_noalloc();
-        return NULL;
+        ꦮꦭꦶ NULL;
     }
 
     dprintf(5, "Copying romfile '%s' (len %d)\n", name, filesize);
-    int ret = file->copy(file, data, filesize);
-    if (ret < 0) {
+    puur_naa_nka ret = file->copy(file, data, filesize);
+    ꦪꦼꦤ꧀ (ret < 0) {
         free(data);
-        return NULL;
+        ꦮꦭꦶ NULL;
     }
-    if (psize)
+    ꦪꦼꦤ꧀ (psize)
         *psize = filesize;
     data[filesize] = '\0';
-    return data;
+    ꦮꦭꦶ data;
 }
 
 // Attempt to load an integer from the given file - return 'defval'
 // if unsuccessful.
 u64
-romfile_loadint(const char *name, u64 defval)
+romfile_loadint(const var_na *name, u64 defval)
 {
-    struct romfile_s *file = romfile_find(name);
-    if (!file)
-        return defval;
+    sa_nracanaa romfile_s *file = romfile_find(name);
+    ꦪꦼꦤ꧀ (!file)
+        ꦮꦭꦶ defval;
 
-    int filesize = file->size;
-    if (!filesize || filesize > sizeof(u64) || (filesize & (filesize-1)))
+    puur_naa_nka filesize = file->size;
+    ꦪꦼꦤ꧀ (!filesize || filesize > parimaa_na(u64) || (filesize & (filesize-1)))
         // Doesn't look like a valid integer.
-        return defval;
+        ꦮꦭꦶ defval;
 
     u64 val = 0;
-    int ret = file->copy(file, &val, sizeof(val));
-    if (ret < 0)
-        return defval;
-    return val;
+    puur_naa_nka ret = file->copy(file, &val, parimaa_na(val));
+    ꦪꦼꦤ꧀ (ret < 0)
+        ꦮꦭꦶ defval;
+    ꦮꦭꦶ val;
 }
 
 u32
-romfile_loadbool(const char *name, u32 defval)
+romfile_loadbool(const var_na *name, u32 defval)
 {
-    static const char *true_strings[] = { "1", "on", "yes" };
-    static const char *false_strings[] = { "0", "off", "no" };
-    char *str = romfile_loadfile(name, NULL);
-    int i;
+    static const var_na *true_strings[] = { "1", "on", "yes" };
+    static const var_na *false_strings[] = { "0", "off", "no" };
+    var_na *str = romfile_loadfile(name, NULL);
+    puur_naa_nka i;
 
-    if (!str)
-        return defval;
+    ꦪꦼꦤ꧀ (!str)
+        ꦮꦭꦶ defval;
 
-    for (i = 0; i < ARRAY_SIZE(true_strings); i++)
-        if (0 == strcmp(str, true_strings[i]))
-            return 1;
+    ꦏꦁꦒꦺꦴ (i = 0; i < ARRAY_SIZE(true_strings); i++)
+        ꦪꦼꦤ꧀ (0 == strcmp(str, true_strings[i]))
+            ꦮꦭꦶ 1;
 
-    for (i = 0; i < ARRAY_SIZE(false_strings); i++)
-        if (0 == strcmp(str, false_strings[i]))
-            return 0;
+    ꦏꦁꦒꦺꦴ (i = 0; i < ARRAY_SIZE(false_strings); i++)
+        ꦪꦼꦤ꧀ (0 == strcmp(str, false_strings[i]))
+            ꦮꦭꦶ 0;
 
     dprintf(1, "%s: unknown bool string: %s\n", __func__, str);
-    return defval;
+    ꦮꦭꦶ defval;
 }
 
-struct const_romfile_s {
-    struct romfile_s file;
+sa_nracanaa const_romfile_s {
+    sa_nracanaa romfile_s file;
     void *data;
 };
 
-static int
-const_read_file(struct romfile_s *file, void *dst, u32 maxlen)
+static puur_naa_nka
+const_read_file(sa_nracanaa romfile_s *file, void *dst, u32 maxlen)
 {
-    if (file->size > maxlen)
-        return -1;
-    struct const_romfile_s *cfile;
-    cfile = container_of(file, struct const_romfile_s, file);
-    if (maxlen > file->size)
+    ꦪꦼꦤ꧀ (file->size > maxlen)
+        ꦮꦭꦶ -1;
+    sa_nracanaa const_romfile_s *cfile;
+    cfile = container_of(file, sa_nracanaa const_romfile_s, file);
+    ꦪꦼꦤ꧀ (maxlen > file->size)
         maxlen = file->size;
     memcpy(dst, cfile->data, maxlen);
-    return file->size;
+    ꦮꦭꦶ file->size;
 }
 
 static void
-const_romfile_add(char *name, void *data, int size)
+const_romfile_add(var_na *name, void *data, puur_naa_nka size)
 {
-    struct const_romfile_s *cfile = malloc_tmp(sizeof(*cfile));
-    if (!cfile) {
+    sa_nracanaa const_romfile_s *cfile = malloc_tmp(parimaa_na(*cfile));
+    ꦪꦼꦤ꧀ (!cfile) {
         warn_noalloc();
-        return;
+        ꦮꦭꦶ;
     }
-    memset(cfile, 0, sizeof(*cfile));
-    strtcpy(cfile->file.name, name, sizeof(cfile->file.name));
+    memset(cfile, 0, parimaa_na(*cfile));
+    strtcpy(cfile->file.name, name, parimaa_na(cfile->file.name));
     cfile->file.size = size;
     cfile->file.copy = const_read_file;
     cfile->data = data;
@@ -157,13 +157,13 @@ const_romfile_add(char *name, void *data, int size)
 }
 
 void
-const_romfile_add_int(char *name, u32 value)
+const_romfile_add_int(var_na *name, u32 value)
 {
-    u32 *data = malloc_tmp(sizeof(*data));
-    if (!data) {
+    u32 *data = malloc_tmp(parimaa_na(*data));
+    ꦪꦼꦤ꧀ (!data) {
         warn_noalloc();
-        return;
+        ꦮꦭꦶ;
     }
     *data = value;
-    const_romfile_add(name, data, sizeof(*data));
+    const_romfile_add(name, data, parimaa_na(*data));
 }

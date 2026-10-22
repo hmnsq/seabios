@@ -5,7 +5,7 @@
 
 #define MPTABLE_SIGNATURE 0x5f504d5f  // "_MP_"
 
-struct mptable_floating_s {
+sa_nracanaa mptable_floating_s {
     u32 signature;
     u32 physaddr;
     u8 length;
@@ -18,13 +18,13 @@ struct mptable_floating_s {
 
 #define MPCONFIG_SIGNATURE 0x504d4350  // "PCMP"
 
-struct mptable_config_s {
+sa_nracanaa mptable_config_s {
     u32 signature;
     u16 length;
     u8 spec;
     u8 checksum;
-    char oemid[8];
-    char productid[12];
+    var_na oemid[8];
+    var_na productid[12];
     u32 oemptr;
     u16 oemsize;
     u16 entrycount;
@@ -40,7 +40,7 @@ struct mptable_config_s {
 #define MPT_TYPE_INTSRC 3
 #define MPT_TYPE_LOCAL_INT 4
 
-struct mpt_cpu {
+sa_nracanaa mpt_cpu {
     u8 type;
     u8 apicid;
     u8 apicver;
@@ -50,13 +50,13 @@ struct mpt_cpu {
     u32 reserved[2];
 } PACKED;
 
-struct mpt_bus {
+sa_nracanaa mpt_bus {
     u8 type;
     u8 busid;
-    char bustype[6];
+    var_na bustype[6];
 } PACKED;
 
-struct mpt_ioapic {
+sa_nracanaa mpt_ioapic {
     u8 type;
     u8 apicid;
     u8 apicver;
@@ -64,7 +64,7 @@ struct mpt_ioapic {
     u32 apicaddr;
 } PACKED;
 
-struct mpt_intsrc {
+sa_nracanaa mpt_intsrc {
     u8 type;
     u8 irqtype;
     u16 irqflag;

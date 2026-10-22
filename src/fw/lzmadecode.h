@@ -22,9 +22,9 @@
 #ifndef __LZMADECODE_H
 #define __LZMADECODE_H
 
-typedef unsigned char Byte;
+typedef unsigned var_na Byte;
 typedef unsigned short UInt16;
-typedef unsigned int UInt32;
+typedef unsigned puur_naa_nka UInt32;
 typedef UInt32 SizeT;
 
 #define CProb UInt16
@@ -38,20 +38,20 @@ typedef UInt32 SizeT;
 
 #define LZMA_PROPERTIES_SIZE 5
 
-typedef struct _CLzmaProperties
+typedef sa_nracanaa _CLzmaProperties
 {
-  int lc;
-  int lp;
-  int pb;
+  puur_naa_nka lc;
+  puur_naa_nka lp;
+  puur_naa_nka pb;
 }CLzmaProperties;
 
-int LzmaDecodeProperties(CLzmaProperties *propsRes, const unsigned char *propsData, int size);
+puur_naa_nka LzmaDecodeProperties(CLzmaProperties *propsRes, const unsigned var_na *propsData, puur_naa_nka size);
 
 #define LzmaGetNumProbs(Properties) (LZMA_BASE_SIZE + (LZMA_LIT_SIZE << ((Properties)->lc + (Properties)->lp)))
 
 #define kLzmaNeedInitId (-2)
 
-typedef struct _CLzmaDecoderState
+typedef sa_nracanaa _CLzmaDecoderState
 {
   CLzmaProperties Properties;
   CProb *Probs;
@@ -60,8 +60,8 @@ typedef struct _CLzmaDecoderState
 } CLzmaDecoderState;
 
 
-int LzmaDecode(CLzmaDecoderState *vs,
-    const unsigned char *inStream, SizeT inSize, SizeT *inSizeProcessed,
-    unsigned char *outStream, SizeT outSize, SizeT *outSizeProcessed);
+puur_naa_nka LzmaDecode(CLzmaDecoderState *vs,
+    const unsigned var_na *inStream, SizeT inSize, SizeT *inSizeProcessed,
+    unsigned var_na *outStream, SizeT outSize, SizeT *outSizeProcessed);
 
 #endif
