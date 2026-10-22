@@ -22,46 +22,46 @@
 
 #include "types.h" // u32
 
-static inline void irq_disable(void)
+static anta_hstha void irq_disable(void)
 {
-    asm volatile("cli": : :"memory");
+    asm ca_ncala("cli": : :"memory");
 }
 
-static inline void irq_enable(void)
+static anta_hstha void irq_enable(void)
 {
-    asm volatile("sti": : :"memory");
+    asm ca_ncala("sti": : :"memory");
 }
 
-static inline u32 save_flags(void)
+static anta_hstha u32 save_flags(void)
 {
     u32 flags;
-    asm volatile("pushfl ; popl %0" : "=rm" (flags));
-    return flags;
+    asm ca_ncala("pushfl ; popl %0" : "=rm" (flags));
+    ສົ່ງຄືນ flags;
 }
 
-static inline void restore_flags(u32 flags)
+static anta_hstha void restore_flags(u32 flags)
 {
-    asm volatile("pushl %0 ; popfl" : : "g" (flags) : "memory", "cc");
+    asm ca_ncala("pushl %0 ; popfl" : : "g" (flags) : "memory", "cc");
 }
 
-static inline void cpu_relax(void)
+static anta_hstha void cpu_relax(void)
 {
-    asm volatile("rep ; nop": : :"memory");
+    asm ca_ncala("rep ; nop": : :"memory");
 }
 
-static inline void nop(void)
+static anta_hstha void nop(void)
 {
-    asm volatile("nop");
+    asm ca_ncala("nop");
 }
 
-static inline void hlt(void)
+static anta_hstha void hlt(void)
 {
-    asm volatile("hlt": : :"memory");
+    asm ca_ncala("hlt": : :"memory");
 }
 
-static inline void wbinvd(void)
+static anta_hstha void wbinvd(void)
 {
-    asm volatile("wbinvd": : :"memory");
+    asm ca_ncala("wbinvd": : :"memory");
 }
 
 #define CPUID_TSC (1 << 4)
@@ -69,174 +69,174 @@ static inline void wbinvd(void)
 #define CPUID_APIC (1 << 9)
 #define CPUID_MTRR (1 << 12)
 #define CPUID_X2APIC (1 << 21)
-static inline void __cpuid(u32 index, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx)
+static anta_hstha void __cpuid(u32 index, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx)
 {
     asm("cpuid"
         : "=a" (*eax), "=b" (*ebx), "=c" (*ecx), "=d" (*edx)
         : "0" (index));
 }
 
-static inline u32 cr0_read(void) {
+static anta_hstha u32 cr0_read(void) {
     u32 cr0;
     asm("movl %%cr0, %0" : "=r"(cr0));
-    return cr0;
+    ສົ່ງຄືນ cr0;
 }
-static inline void cr0_write(u32 cr0) {
+static anta_hstha void cr0_write(u32 cr0) {
     asm("movl %0, %%cr0" : : "r"(cr0));
 }
-static inline void cr0_mask(u32 off, u32 on) {
+static anta_hstha void cr0_mask(u32 off, u32 on) {
     cr0_write((cr0_read() & ~off) | on);
 }
-static inline u16 cr0_vm86_read(void) {
+static anta_hstha u16 cr0_vm86_read(void) {
     u16 cr0;
     asm("smsww %0" : "=r"(cr0));
-    return cr0;
+    ສົ່ງຄືນ cr0;
 }
 
-static inline u64 rdmsr(u32 index)
+static anta_hstha u64 rdmsr(u32 index)
 {
     u64 ret;
     asm ("rdmsr" : "=A"(ret) : "c"(index));
-    return ret;
+    ສົ່ງຄືນ ret;
 }
 
-static inline void wrmsr(u32 index, u64 val)
+static anta_hstha void wrmsr(u32 index, u64 val)
 {
-    asm volatile ("wrmsr" : : "c"(index), "A"(val));
+    asm ca_ncala ("wrmsr" : : "c"(index), "A"(val));
 }
 
-static inline u64 rdtscll(void)
+static anta_hstha u64 rdtscll(void)
 {
     u64 val;
-    asm volatile("rdtsc" : "=A" (val));
-    return val;
+    asm ca_ncala("rdtsc" : "=A" (val));
+    ສົ່ງຄືນ val;
 }
 
-static inline u32 __ffs(u32 word)
+static anta_hstha u32 __ffs(u32 word)
 {
     asm("bsf %1,%0"
         : "=r" (word)
         : "rm" (word));
-    return word;
+    ສົ່ງຄືນ word;
 }
-static inline u32 __fls(u32 word)
+static anta_hstha u32 __fls(u32 word)
 {
     asm("bsr %1,%0"
         : "=r" (word)
         : "rm" (word));
-    return word;
+    ສົ່ງຄືນ word;
 }
 
-static inline u32 getesp(void) {
+static anta_hstha u32 getesp(void) {
     u32 esp;
     asm("movl %%esp, %0" : "=rm"(esp));
-    return esp;
+    ສົ່ງຄືນ esp;
 }
 
-static inline u32 rol(u32 val, u16 rol) {
+static anta_hstha u32 rol(u32 val, u16 rol) {
     u32 res;
-    asm volatile("roll %%cl, %%eax"
+    asm ca_ncala("roll %%cl, %%eax"
                  : "=a" (res) : "a" (val), "c" (rol));
-    return res;
+    ສົ່ງຄືນ res;
 }
 
-static inline u32 ror(u32 val, u16 ror) {
+static anta_hstha u32 ror(u32 val, u16 ror) {
     u32 res;
-    asm volatile("rorl %%cl, %%eax"
+    asm ca_ncala("rorl %%cl, %%eax"
                  : "=a" (res) : "a" (val), "c" (ror));
-    return res;
+    ສົ່ງຄືນ res;
 }
 
-static inline void outb(u8 value, u16 port) {
+static anta_hstha void outb(u8 value, u16 port) {
     __asm__ __volatile__("outb %b0, %w1" : : "a"(value), "Nd"(port));
 }
-static inline void outw(u16 value, u16 port) {
+static anta_hstha void outw(u16 value, u16 port) {
     __asm__ __volatile__("outw %w0, %w1" : : "a"(value), "Nd"(port));
 }
-static inline void outl(u32 value, u16 port) {
+static anta_hstha void outl(u32 value, u16 port) {
     __asm__ __volatile__("outl %0, %w1" : : "a"(value), "Nd"(port));
 }
-static inline u8 inb(u16 port) {
+static anta_hstha u8 inb(u16 port) {
     u8 value;
     __asm__ __volatile__("inb %w1, %b0" : "=a"(value) : "Nd"(port));
-    return value;
+    ສົ່ງຄືນ value;
 }
-static inline u16 inw(u16 port) {
+static anta_hstha u16 inw(u16 port) {
     u16 value;
     __asm__ __volatile__("inw %w1, %w0" : "=a"(value) : "Nd"(port));
-    return value;
+    ສົ່ງຄືນ value;
 }
-static inline u32 inl(u16 port) {
+static anta_hstha u32 inl(u16 port) {
     u32 value;
     __asm__ __volatile__("inl %w1, %0" : "=a"(value) : "Nd"(port));
-    return value;
+    ສົ່ງຄືນ value;
 }
 
-static inline void insb(u16 port, u8 *data, u32 count) {
-    asm volatile("rep insb (%%dx), %%es:(%%edi)"
+static anta_hstha void insb(u16 port, u8 *data, u32 count) {
+    asm ca_ncala("rep insb (%%dx), %%es:(%%edi)"
                  : "+c"(count), "+D"(data) : "d"(port) : "memory");
 }
-static inline void insw(u16 port, u16 *data, u32 count) {
-    asm volatile("rep insw (%%dx), %%es:(%%edi)"
+static anta_hstha void insw(u16 port, u16 *data, u32 count) {
+    asm ca_ncala("rep insw (%%dx), %%es:(%%edi)"
                  : "+c"(count), "+D"(data) : "d"(port) : "memory");
 }
-static inline void insl(u16 port, u32 *data, u32 count) {
-    asm volatile("rep insl (%%dx), %%es:(%%edi)"
+static anta_hstha void insl(u16 port, u32 *data, u32 count) {
+    asm ca_ncala("rep insl (%%dx), %%es:(%%edi)"
                  : "+c"(count), "+D"(data) : "d"(port) : "memory");
 }
 // XXX - outs not limited to es segment
-static inline void outsb(u16 port, u8 *data, u32 count) {
-    asm volatile("rep outsb %%es:(%%esi), (%%dx)"
+static anta_hstha void outsb(u16 port, u8 *data, u32 count) {
+    asm ca_ncala("rep outsb %%es:(%%esi), (%%dx)"
                  : "+c"(count), "+S"(data) : "d"(port) : "memory");
 }
-static inline void outsw(u16 port, u16 *data, u32 count) {
-    asm volatile("rep outsw %%es:(%%esi), (%%dx)"
+static anta_hstha void outsw(u16 port, u16 *data, u32 count) {
+    asm ca_ncala("rep outsw %%es:(%%esi), (%%dx)"
                  : "+c"(count), "+S"(data) : "d"(port) : "memory");
 }
-static inline void outsl(u16 port, u32 *data, u32 count) {
-    asm volatile("rep outsl %%es:(%%esi), (%%dx)"
+static anta_hstha void outsl(u16 port, u32 *data, u32 count) {
+    asm ca_ncala("rep outsl %%es:(%%esi), (%%dx)"
                  : "+c"(count), "+S"(data) : "d"(port) : "memory");
 }
 
 /* Compiler barrier is enough as an x86 CPU does not reorder reads or writes */
-static inline void smp_rmb(void) {
+static anta_hstha void smp_rmb(void) {
     barrier();
 }
-static inline void smp_wmb(void) {
+static anta_hstha void smp_wmb(void) {
     barrier();
 }
 
-static inline void writel(void *addr, u32 val) {
+static anta_hstha void writel(void *addr, u32 val) {
     barrier();
-    *(volatile u32 *)addr = val;
+    *(ca_ncala u32 *)addr = val;
 }
-static inline void writew(void *addr, u16 val) {
+static anta_hstha void writew(void *addr, u16 val) {
     barrier();
-    *(volatile u16 *)addr = val;
+    *(ca_ncala u16 *)addr = val;
 }
-static inline void writeb(void *addr, u8 val) {
+static anta_hstha void writeb(void *addr, u8 val) {
     barrier();
-    *(volatile u8 *)addr = val;
+    *(ca_ncala u8 *)addr = val;
 }
-static inline u64 readq(const void *addr) {
-    u64 val = *(volatile const u64 *)addr;
+static anta_hstha u64 readq(const void *addr) {
+    u64 val = *(ca_ncala const u64 *)addr;
     barrier();
-    return val;
+    ສົ່ງຄືນ val;
 }
-static inline u32 readl(const void *addr) {
-    u32 val = *(volatile const u32 *)addr;
+static anta_hstha u32 readl(const void *addr) {
+    u32 val = *(ca_ncala const u32 *)addr;
     barrier();
-    return val;
+    ສົ່ງຄືນ val;
 }
-static inline u16 readw(const void *addr) {
-    u16 val = *(volatile const u16 *)addr;
+static anta_hstha u16 readw(const void *addr) {
+    u16 val = *(ca_ncala const u16 *)addr;
     barrier();
-    return val;
+    ສົ່ງຄືນ val;
 }
-static inline u8 readb(const void *addr) {
-    u8 val = *(volatile const u8 *)addr;
+static anta_hstha u8 readb(const void *addr) {
+    u8 val = *(ca_ncala const u8 *)addr;
     barrier();
-    return val;
+    ສົ່ງຄືນ val;
 }
 
 // GDT bits
@@ -253,27 +253,27 @@ static inline u8 readb(const void *addr) {
 // GDT bits for segment limit (0-4Gig in 4K chunks)
 #define GDT_GRANLIMIT(v) (GDT_G | GDT_LIMIT((v) >> 12))
 
-struct descloc_s {
+sa_nracanaa descloc_s {
     u16 length;
     u32 addr;
 } PACKED;
 
-static inline void sgdt(struct descloc_s *desc) {
+static anta_hstha void sgdt(sa_nracanaa descloc_s *desc) {
     asm("sgdtl %0" : "=m"(*desc));
 }
-static inline void lgdt(struct descloc_s *desc) {
+static anta_hstha void lgdt(sa_nracanaa descloc_s *desc) {
     asm("lgdtl %0" : : "m"(*desc) : "memory");
 }
 
-static inline u8 get_a20(void) {
-    return (inb(PORT_A20) & A20_ENABLE_BIT) != 0;
+static anta_hstha u8 get_a20(void) {
+    ສົ່ງຄືນ (inb(PORT_A20) & A20_ENABLE_BIT) != 0;
 }
 
-static inline u8 set_a20(u8 cond) {
+static anta_hstha u8 set_a20(u8 cond) {
     u8 val = inb(PORT_A20), a20_enabled = (val & A20_ENABLE_BIT) != 0;
-    if (a20_enabled != !!cond)
+    ຖ້າ (a20_enabled != !!cond)
         outb(val ^ A20_ENABLE_BIT, PORT_A20);
-    return a20_enabled;
+    ສົ່ງຄືນ a20_enabled;
 }
 
 // x86.c

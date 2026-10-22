@@ -20,47 +20,47 @@
 void
 ramdisk_setup(void)
 {
-    if (!CONFIG_FLASH_FLOPPY)
-        return;
+    ຖ້າ (!CONFIG_FLASH_FLOPPY)
+        ສົ່ງຄືນ;
 
     // Find image.
-    struct romfile_s *file = romfile_findprefix("floppyimg/", NULL);
-    if (!file)
-        return;
-    const char *filename = file->name;
+    sa_nracanaa romfile_s *file = romfile_findprefix("floppyimg/", NULL);
+    ຖ້າ (!file)
+        ສົ່ງຄືນ;
+    const var_na *filename = file->name;
     u32 size = file->size;
     dprintf(3, "Found floppy file %s of size %d\n", filename, size);
-    int ftype = find_floppy_type(size);
-    if (ftype < 0) {
+    ຈຳນວນເຕັມ ftype = find_floppy_type(size);
+    ຖ້າ (ftype < 0) {
         dprintf(3, "No floppy type found for ramdisk size\n");
-        return;
+        ສົ່ງຄືນ;
     }
 
     // Allocate ram for image.
     void *pos = memalign_tmphigh(PAGE_SIZE, size);
-    if (!pos) {
+    ຖ້າ (!pos) {
         warn_noalloc();
-        return;
+        ສົ່ງຄືນ;
     }
     e820_add((u32)pos, size, E820_RESERVED);
 
     // Copy image into ram.
-    int ret = file->copy(file, pos, size);
-    if (ret < 0)
-        return;
+    ຈຳນວນເຕັມ ret = file->copy(file, pos, size);
+    ຖ້າ (ret < 0)
+        ສົ່ງຄືນ;
 
     // Setup driver.
-    struct drive_s *drive = init_floppy((u32)pos, ftype);
-    if (!drive)
-        return;
+    sa_nracanaa drive_s *drive = init_floppy((u32)pos, ftype);
+    ຖ້າ (!drive)
+        ສົ່ງຄືນ;
     drive->type = DTYPE_RAMDISK;
     dprintf(1, "Mapping floppy %s to addr %p\n", filename, pos);
-    char *desc = znprintf(MAXDESCSIZE, "Ramdisk [%s]", &filename[10]);
+    var_na *desc = znprintf(MAXDESCSIZE, "Ramdisk [%s]", &filename[10]);
     boot_add_floppy(drive, desc, bootprio_find_named_rom(filename, 0));
 }
 
-static int
-ramdisk_copy(struct disk_op_s *op, int iswrite)
+static ຈຳນວນເຕັມ
+ramdisk_copy(sa_nracanaa disk_op_s *op, ຈຳນວນເຕັມ iswrite)
 {
     u32 offset = GET_GLOBALFLAT(op->drive_fl->cntl_id);
     offset += (u32)op->lba * DISK_SECTOR_SIZE;
@@ -68,17 +68,17 @@ ramdisk_copy(struct disk_op_s *op, int iswrite)
     u64 ramd = GDT_DATA | GDT_LIMIT(0xfffff) | GDT_BASE(offset);
 
     u64 gdt[6];
-    if (iswrite) {
+    ຖ້າ (iswrite) {
         gdt[2] = opd;
         gdt[3] = ramd;
-    } else {
+    } ບໍ່ດັ່ງນັ້ນ {
         gdt[2] = ramd;
         gdt[3] = opd;
     }
 
     // Call int 1587 to copy data.
-    struct bregs br;
-    memset(&br, 0, sizeof(br));
+    sa_nracanaa bregs br;
+    memset(&br, 0, parimaa_na(br));
     br.flags = F_CF|F_IF;
     br.ah = 0x87;
     br.es = GET_SEG(SS);
@@ -86,23 +86,23 @@ ramdisk_copy(struct disk_op_s *op, int iswrite)
     br.cx = op->count * DISK_SECTOR_SIZE / 2;
     call16_int(0x15, &br);
 
-    if (br.flags & F_CF)
-        return DISK_RET_EBADTRACK;
-    return DISK_RET_SUCCESS;
+    ຖ້າ (br.flags & F_CF)
+        ສົ່ງຄືນ DISK_RET_EBADTRACK;
+    ສົ່ງຄືນ DISK_RET_SUCCESS;
 }
 
-int
-ramdisk_process_op(struct disk_op_s *op)
+ຈຳນວນເຕັມ
+ramdisk_process_op(sa_nracanaa disk_op_s *op)
 {
-    if (!CONFIG_FLASH_FLOPPY)
-        return 0;
+    ຖ້າ (!CONFIG_FLASH_FLOPPY)
+        ສົ່ງຄືນ 0;
 
     switch (op->command) {
-    case CMD_READ:
-        return ramdisk_copy(op, 0);
-    case CMD_WRITE:
-        return ramdisk_copy(op, 1);
+    pak_sa CMD_READ:
+        ສົ່ງຄືນ ramdisk_copy(op, 0);
+    pak_sa CMD_WRITE:
+        ສົ່ງຄືນ ramdisk_copy(op, 1);
     default:
-        return default_process_op(op);
+        ສົ່ງຄືນ default_process_op(op);
     }
 }

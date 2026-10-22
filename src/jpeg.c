@@ -45,7 +45,7 @@
 #include "util.h"
 #define ISHIFT 11
 
-#define IFIX(a) ((int)((a) * (1 << ISHIFT) + .5))
+#define IFIX(a) ((ຈຳນວນເຕັມ)((a) * (1 << ISHIFT) + .5))
 #define IMULT(a, b) (((a) * (b)) >> ISHIFT)
 #define ITOINT(a) ((a) >> ISHIFT)
 
@@ -57,69 +57,69 @@
 #define M_BADHUFF        -1
 #define M_EOF                0x80
 
-struct in {
-    unsigned char *p;
-    unsigned int bits;
-    int left;
-    int marker;
+sa_nracanaa in {
+    unsigned var_na *p;
+    unsigned ຈຳນວນເຕັມ bits;
+    ຈຳນວນເຕັມ left;
+    ຈຳນວນເຕັມ marker;
 
-    int (*func) __P((void *));
+    ຈຳນວນເຕັມ (*func) __P((void *));
     void *data;
 };
 
 /*********************************/
-struct dec_hufftbl;
-struct enc_hufftbl;
+sa_nracanaa dec_hufftbl;
+sa_nracanaa enc_hufftbl;
 
-union hufftblp {
-    struct dec_hufftbl *dhuff;
-    struct enc_hufftbl *ehuff;
+sa_ngha hufftblp {
+    sa_nracanaa dec_hufftbl *dhuff;
+    sa_nracanaa enc_hufftbl *ehuff;
 };
 
-struct scan {
-    int dc;               /* old dc value */
+sa_nracanaa scan {
+    ຈຳນວນເຕັມ dc;               /* old dc value */
 
-    union hufftblp hudc;
-    union hufftblp huac;
-    int next;             /* when to switch to next scan */
+    sa_ngha hufftblp hudc;
+    sa_ngha hufftblp huac;
+    ຈຳນວນເຕັມ next;             /* when to switch to next scan */
 
-    int cid;              /* component id */
-    int hv;               /* horiz/vert, copied from comp */
-    int tq;               /* quant tbl, copied from comp */
+    ຈຳນວນເຕັມ cid;              /* component id */
+    ຈຳນວນເຕັມ hv;               /* horiz/vert, copied from comp */
+    ຈຳນວນເຕັມ tq;               /* quant tbl, copied from comp */
 };
 
 /*********************************/
 
 #define DECBITS 10        /* seems to be the optimum */
 
-struct dec_hufftbl {
-    int maxcode[17];
-    int valptr[16];
-    unsigned char vals[256];
-    unsigned int llvals[1 << DECBITS];
+sa_nracanaa dec_hufftbl {
+    ຈຳນວນເຕັມ maxcode[17];
+    ຈຳນວນເຕັມ valptr[16];
+    unsigned var_na vals[256];
+    unsigned ຈຳນວນເຕັມ llvals[1 << DECBITS];
 };
 
-static void decode_mcus __P((struct in *, int *, int, struct scan *, int *));
-static int dec_readmarker __P((struct in *));
-static void dec_makehuff __P((struct dec_hufftbl *, int *, unsigned char *));
+static void decode_mcus __P((sa_nracanaa in *, ຈຳນວນເຕັມ *, ຈຳນວນເຕັມ, sa_nracanaa scan *, ຈຳນວນເຕັມ *));
+static ຈຳນວນເຕັມ dec_readmarker __P((sa_nracanaa in *));
+static void dec_makehuff __P((sa_nracanaa dec_hufftbl *, ຈຳນວນເຕັມ *, unsigned var_na *));
 
-static void setinput __P((struct in *, unsigned char *));
+static void setinput __P((sa_nracanaa in *, unsigned var_na *));
 /*********************************/
 
 #undef PREC
-#define PREC int
+#define PREC ຈຳນວນເຕັມ
 
-static void idctqtab __P((unsigned char *, PREC *));
-static void idct __P((int *, int *, PREC *, PREC, int));
+static void idctqtab __P((unsigned var_na *, PREC *));
+static void idct __P((ຈຳນວນເຕັມ *, ຈຳນວນເຕັມ *, PREC *, PREC, ຈຳນວນເຕັມ));
 static void scaleidctqtab __P((PREC *, PREC));
 
 /*********************************/
 
 static void initcol __P((PREC[][64]));
 
-static void col221111 __P((int *, unsigned char *, int));
-static void col221111_16 __P((int *, unsigned char *, int));
-static void col221111_32 __P((int *, unsigned char *, int));
+static void col221111 __P((ຈຳນວນເຕັມ *, unsigned var_na *, ຈຳນວນເຕັມ));
+static void col221111_16 __P((ຈຳນວນເຕັມ *, unsigned var_na *, ຈຳນວນເຕັມ));
+static void col221111_32 __P((ຈຳນວນເຕັມ *, unsigned var_na *, ຈຳນວນເຕັມ));
 
 /*********************************/
 
@@ -152,204 +152,204 @@ static void col221111_32 __P((int *, unsigned char *, int));
 #define M_EOI   0xd9
 #define M_COM   0xfe
 
-struct comp {
-    int cid;
-    int hv;
-    int tq;
+sa_nracanaa comp {
+    ຈຳນວນເຕັມ cid;
+    ຈຳນວນເຕັມ hv;
+    ຈຳນວນເຕັມ tq;
 };
 
 #define MAXCOMP 4
-struct jpginfo {
-    int nc;   /* number of components */
-    int ns;   /* number of scans */
-    int dri;  /* restart interval */
-    int nm;   /* mcus til next marker */
-    int rm;   /* next restart marker */
+sa_nracanaa jpginfo {
+    ຈຳນວນເຕັມ nc;   /* number of components */
+    ຈຳນວນເຕັມ ns;   /* number of scans */
+    ຈຳນວນເຕັມ dri;  /* restart interval */
+    ຈຳນວນເຕັມ nm;   /* mcus til next marker */
+    ຈຳນວນເຕັມ rm;   /* next restart marker */
 };
 
-struct jpeg_decdata {
-    int dcts[6 * 64 + 16];
-    int out[64 * 6];
-    int dquant[3][64];
+sa_nracanaa jpeg_decdata {
+    ຈຳນວນເຕັມ dcts[6 * 64 + 16];
+    ຈຳນວນເຕັມ out[64 * 6];
+    ຈຳນວນເຕັມ dquant[3][64];
 
-    unsigned char *datap;
-    struct jpginfo info;
-    struct comp comps[MAXCOMP];
-    struct scan dscans[MAXCOMP];
-    unsigned char quant[4][64];
-    struct dec_hufftbl dhuff[4];
-    struct in in;
+    unsigned var_na *datap;
+    sa_nracanaa jpginfo info;
+    sa_nracanaa comp comps[MAXCOMP];
+    sa_nracanaa scan dscans[MAXCOMP];
+    unsigned var_na quant[4][64];
+    sa_nracanaa dec_hufftbl dhuff[4];
+    sa_nracanaa in in;
 
-    int height, width;
+    ຈຳນວນເຕັມ height, width;
 };
 
-static int getbyte(struct jpeg_decdata *jpeg)
+static ຈຳນວນເຕັມ getbyte(sa_nracanaa jpeg_decdata *jpeg)
 {
-    return *jpeg->datap++;
+    ສົ່ງຄືນ *jpeg->datap++;
 }
 
-static int getword(struct jpeg_decdata *jpeg)
+static ຈຳນວນເຕັມ getword(sa_nracanaa jpeg_decdata *jpeg)
 {
-    int c1, c2;
+    ຈຳນວນເຕັມ c1, c2;
     c1 = *jpeg->datap++;
     c2 = *jpeg->datap++;
-    return c1 << 8 | c2;
+    ສົ່ງຄືນ c1 << 8 | c2;
 }
 
-static int readtables(struct jpeg_decdata *jpeg, int till)
+static ຈຳນວນເຕັມ readtables(sa_nracanaa jpeg_decdata *jpeg, ຈຳນວນເຕັມ till)
 {
-    int m, l, i, j, lq, pq, tq;
-    int tc, th, tt;
+    ຈຳນວນເຕັມ m, l, i, j, lq, pq, tq;
+    ຈຳນວນເຕັມ tc, th, tt;
 
-    for (;;) {
-        if (getbyte(jpeg) != 0xff)
-            return -1;
-        if ((m = getbyte(jpeg)) == till)
-            break;
+    ສຳລັບ (;;) {
+        ຖ້າ (getbyte(jpeg) != 0xff)
+            ສົ່ງຄືນ -1;
+        ຖ້າ ((m = getbyte(jpeg)) == till)
+            bha_nga;
 
         switch (m) {
-        case 0xc2:
-            return 0;
+        pak_sa 0xc2:
+            ສົ່ງຄືນ 0;
 
-        case M_DQT:
+        pak_sa M_DQT:
             lq = getword(jpeg);
-            while (lq > 2) {
+            ໃນຂະນະທີ່ (lq > 2) {
                 pq = getbyte(jpeg);
                 tq = pq & 15;
-                if (tq > 3)
-                    return -1;
+                ຖ້າ (tq > 3)
+                    ສົ່ງຄືນ -1;
                 pq >>= 4;
-                if (pq != 0)
-                    return -1;
-                for (i = 0; i < 64; i++)
+                ຖ້າ (pq != 0)
+                    ສົ່ງຄືນ -1;
+                ສຳລັບ (i = 0; i < 64; i++)
                     jpeg->quant[tq][i] = getbyte(jpeg);
                 lq -= 64 + 1;
             }
-            break;
+            bha_nga;
 
-        case M_DHT:
+        pak_sa M_DHT:
             l = getword(jpeg);
-            while (l > 2) {
-                int hufflen[16], k;
-                unsigned char huffvals[256];
+            ໃນຂະນະທີ່ (l > 2) {
+                ຈຳນວນເຕັມ hufflen[16], k;
+                unsigned var_na huffvals[256];
 
                 tc = getbyte(jpeg);
                 th = tc & 15;
                 tc >>= 4;
                 tt = tc * 2 + th;
-                if (tc > 1 || th > 1)
-                    return -1;
-                for (i = 0; i < 16; i++)
+                ຖ້າ (tc > 1 || th > 1)
+                    ສົ່ງຄືນ -1;
+                ສຳລັບ (i = 0; i < 16; i++)
                     hufflen[i] = getbyte(jpeg);
                 l -= 1 + 16;
                 k = 0;
-                for (i = 0; i < 16; i++) {
-                    for (j = 0; j < hufflen[i]; j++)
+                ສຳລັບ (i = 0; i < 16; i++) {
+                    ສຳລັບ (j = 0; j < hufflen[i]; j++)
                         huffvals[k++] = getbyte(jpeg);
                     l -= hufflen[i];
                 }
                 dec_makehuff(jpeg->dhuff + tt, hufflen, huffvals);
             }
-            break;
+            bha_nga;
 
-        case M_DRI:
+        pak_sa M_DRI:
             l = getword(jpeg);
             jpeg->info.dri = getword(jpeg);
-            break;
+            bha_nga;
 
         default:
             l = getword(jpeg);
-            while (l-- > 2)
+            ໃນຂະນະທີ່ (l-- > 2)
                 getbyte(jpeg);
-            break;
+            bha_nga;
         }
     }
-    return 0;
+    ສົ່ງຄືນ 0;
 }
 
-static void dec_initscans(struct jpeg_decdata *jpeg)
+static void dec_initscans(sa_nracanaa jpeg_decdata *jpeg)
 {
-    int i;
+    ຈຳນວນເຕັມ i;
 
     jpeg->info.nm = jpeg->info.dri + 1;
     jpeg->info.rm = M_RST0;
-    for (i = 0; i < jpeg->info.ns; i++)
+    ສຳລັບ (i = 0; i < jpeg->info.ns; i++)
         jpeg->dscans[i].dc = 0;
 }
 
-static int dec_checkmarker(struct jpeg_decdata *jpeg)
+static ຈຳນວນເຕັມ dec_checkmarker(sa_nracanaa jpeg_decdata *jpeg)
 {
-    int i;
+    ຈຳນວນເຕັມ i;
 
-    if (dec_readmarker(&jpeg->in) != jpeg->info.rm)
-        return -1;
+    ຖ້າ (dec_readmarker(&jpeg->in) != jpeg->info.rm)
+        ສົ່ງຄືນ -1;
     jpeg->info.nm = jpeg->info.dri;
     jpeg->info.rm = (jpeg->info.rm + 1) & ~0x08;
-    for (i = 0; i < jpeg->info.ns; i++)
+    ສຳລັບ (i = 0; i < jpeg->info.ns; i++)
         jpeg->dscans[i].dc = 0;
-    return 0;
+    ສົ່ງຄືນ 0;
 }
 
-struct jpeg_decdata *jpeg_alloc(void)
+sa_nracanaa jpeg_decdata *jpeg_alloc(void)
 {
-    struct jpeg_decdata *jpeg = malloc_tmphigh(sizeof(*jpeg));
-    return jpeg;
+    sa_nracanaa jpeg_decdata *jpeg = malloc_tmphigh(parimaa_na(*jpeg));
+    ສົ່ງຄືນ jpeg;
 }
 
-int jpeg_decode(struct jpeg_decdata *jpeg, unsigned char *buf)
+ຈຳນວນເຕັມ jpeg_decode(sa_nracanaa jpeg_decdata *jpeg, unsigned var_na *buf)
 {
-    int i, j, m, tac, tdc;
+    ຈຳນວນເຕັມ i, j, m, tac, tdc;
 
-    if (!jpeg || !buf)
-        return -1;
+    ຖ້າ (!jpeg || !buf)
+        ສົ່ງຄືນ -1;
     jpeg->datap = buf;
-    if (getbyte(jpeg) != 0xff)
-        return ERR_NO_SOI;
-    if (getbyte(jpeg) != M_SOI)
-        return ERR_NO_SOI;
-    if (readtables(jpeg, M_SOF0))
-        return ERR_BAD_TABLES;
+    ຖ້າ (getbyte(jpeg) != 0xff)
+        ສົ່ງຄືນ ERR_NO_SOI;
+    ຖ້າ (getbyte(jpeg) != M_SOI)
+        ສົ່ງຄືນ ERR_NO_SOI;
+    ຖ້າ (readtables(jpeg, M_SOF0))
+        ສົ່ງຄືນ ERR_BAD_TABLES;
     getword(jpeg);
     i = getbyte(jpeg);
-    if (i != 8)
-        return ERR_NOT_8BIT;
+    ຖ້າ (i != 8)
+        ສົ່ງຄືນ ERR_NOT_8BIT;
     jpeg->height = getword(jpeg);
     jpeg->width = getword(jpeg);
-    if ((jpeg->height & 15) || (jpeg->width & 15))
-        return ERR_BAD_WIDTH_OR_HEIGHT;
+    ຖ້າ ((jpeg->height & 15) || (jpeg->width & 15))
+        ສົ່ງຄືນ ERR_BAD_WIDTH_OR_HEIGHT;
     jpeg->info.nc = getbyte(jpeg);
-    if (jpeg->info.nc > MAXCOMP)
-        return ERR_TOO_MANY_COMPPS;
-    for (i = 0; i < jpeg->info.nc; i++) {
-        int h, v;
+    ຖ້າ (jpeg->info.nc > MAXCOMP)
+        ສົ່ງຄືນ ERR_TOO_MANY_COMPPS;
+    ສຳລັບ (i = 0; i < jpeg->info.nc; i++) {
+        ຈຳນວນເຕັມ h, v;
         jpeg->comps[i].cid = getbyte(jpeg);
         jpeg->comps[i].hv = getbyte(jpeg);
         v = jpeg->comps[i].hv & 15;
         h = jpeg->comps[i].hv >> 4;
         jpeg->comps[i].tq = getbyte(jpeg);
-        if (h > 3 || v > 3)
-            return ERR_ILLEGAL_HV;
-        if (jpeg->comps[i].tq > 3)
-            return ERR_QUANT_TABLE_SELECTOR;
+        ຖ້າ (h > 3 || v > 3)
+            ສົ່ງຄືນ ERR_ILLEGAL_HV;
+        ຖ້າ (jpeg->comps[i].tq > 3)
+            ສົ່ງຄືນ ERR_QUANT_TABLE_SELECTOR;
     }
-    if (readtables(jpeg, M_SOS))
-        return ERR_BAD_TABLES;
+    ຖ້າ (readtables(jpeg, M_SOS))
+        ສົ່ງຄືນ ERR_BAD_TABLES;
     getword(jpeg);
     jpeg->info.ns = getbyte(jpeg);
-    if (jpeg->info.ns != 3)
-        return ERR_NOT_YCBCR_221111;
-    for (i = 0; i < 3; i++) {
+    ຖ້າ (jpeg->info.ns != 3)
+        ສົ່ງຄືນ ERR_NOT_YCBCR_221111;
+    ສຳລັບ (i = 0; i < 3; i++) {
         jpeg->dscans[i].cid = getbyte(jpeg);
         tdc = getbyte(jpeg);
         tac = tdc & 15;
         tdc >>= 4;
-        if (tdc > 1 || tac > 1)
-            return ERR_QUANT_TABLE_SELECTOR;
-        for (j = 0; j < jpeg->info.nc; j++)
-            if (jpeg->comps[j].cid == jpeg->dscans[i].cid)
-                break;
-        if (j == jpeg->info.nc)
-            return ERR_UNKNOWN_CID_IN_SCAN;
+        ຖ້າ (tdc > 1 || tac > 1)
+            ສົ່ງຄືນ ERR_QUANT_TABLE_SELECTOR;
+        ສຳລັບ (j = 0; j < jpeg->info.nc; j++)
+            ຖ້າ (jpeg->comps[j].cid == jpeg->dscans[i].cid)
+                bha_nga;
+        ຖ້າ (j == jpeg->info.nc)
+            ສົ່ງຄືນ ERR_UNKNOWN_CID_IN_SCAN;
         jpeg->dscans[i].hv = jpeg->comps[j].hv;
         jpeg->dscans[i].tq = jpeg->comps[j].tq;
         jpeg->dscans[i].hudc.dhuff = &jpeg->dhuff[tdc];
@@ -360,16 +360,16 @@ int jpeg_decode(struct jpeg_decdata *jpeg, unsigned char *buf)
     j = getbyte(jpeg);
     m = getbyte(jpeg);
 
-    if (i != 0 || j != 63 || m != 0)
-        return ERR_NOT_SEQUENTIAL_DCT;
+    ຖ້າ (i != 0 || j != 63 || m != 0)
+        ສົ່ງຄືນ ERR_NOT_SEQUENTIAL_DCT;
 
-    if (jpeg->dscans[0].cid != 1 || jpeg->dscans[1].cid != 2
+    ຖ້າ (jpeg->dscans[0].cid != 1 || jpeg->dscans[1].cid != 2
         || jpeg->dscans[2].cid != 3)
-        return ERR_NOT_YCBCR_221111;
+        ສົ່ງຄືນ ERR_NOT_YCBCR_221111;
 
-    if (jpeg->dscans[0].hv != 0x22 || jpeg->dscans[1].hv != 0x11
+    ຖ້າ (jpeg->dscans[0].hv != 0x22 || jpeg->dscans[1].hv != 0x11
         || jpeg->dscans[2].hv != 0x11)
-        return ERR_NOT_YCBCR_221111;
+        ສົ່ງຄືນ ERR_NOT_YCBCR_221111;
 
     idctqtab(jpeg->quant[jpeg->dscans[0].tq], jpeg->dquant[0]);
     idctqtab(jpeg->quant[jpeg->dscans[1].tq], jpeg->dquant[1]);
@@ -377,7 +377,7 @@ int jpeg_decode(struct jpeg_decdata *jpeg, unsigned char *buf)
     initcol(jpeg->dquant);
     setinput(&jpeg->in, jpeg->datap);
 
-#if 0
+#ຖ້າ 0
     /* landing zone */
     img[len] = 0;
     img[len + 1] = 0xff;
@@ -386,25 +386,25 @@ int jpeg_decode(struct jpeg_decdata *jpeg, unsigned char *buf)
 
     dec_initscans(jpeg);
 
-    return 0;
+    ສົ່ງຄືນ 0;
 }
 
-void jpeg_get_size(struct jpeg_decdata *jpeg, int *width, int *height)
+void jpeg_get_size(sa_nracanaa jpeg_decdata *jpeg, ຈຳນວນເຕັມ *width, ຈຳນວນເຕັມ *height)
 {
     *width = jpeg->width;
     *height = jpeg->height;
 }
 
-int jpeg_show(struct jpeg_decdata *jpeg, unsigned char *pic, int width
-              , int height, int depth, int bytes_per_line_dest)
+ຈຳນວນເຕັມ jpeg_show(sa_nracanaa jpeg_decdata *jpeg, unsigned var_na *pic, ຈຳນວນເຕັມ width
+              , ຈຳນວນເຕັມ height, ຈຳນວນເຕັມ depth, ຈຳນວນເຕັມ bytes_per_line_dest)
 {
-    int m, mcusx, mcusy, mx, my, mloffset, jpgbpl;
-    int max[6];
+    ຈຳນວນເຕັມ m, mcusx, mcusy, mx, my, mloffset, jpgbpl;
+    ຈຳນວນເຕັມ max[6];
 
-    if (jpeg->height != height)
-        return ERR_HEIGHT_MISMATCH;
-    if (jpeg->width != width)
-        return ERR_WIDTH_MISMATCH;
+    ຖ້າ (jpeg->height != height)
+        ສົ່ງຄືນ ERR_HEIGHT_MISMATCH;
+    ຖ້າ (jpeg->width != width)
+        ສົ່ງຄືນ ERR_WIDTH_MISMATCH;
 
     jpgbpl = width * depth / 8;
     mloffset = bytes_per_line_dest > jpgbpl ? bytes_per_line_dest : jpgbpl;
@@ -415,11 +415,11 @@ int jpeg_show(struct jpeg_decdata *jpeg, unsigned char *pic, int width
     jpeg->dscans[0].next = 6 - 4;
     jpeg->dscans[1].next = 6 - 4 - 1;
     jpeg->dscans[2].next = 6 - 4 - 1 - 1;        /* 411 encoding */
-    for (my = 0; my < mcusy; my++) {
-        for (mx = 0; mx < mcusx; mx++) {
-            if (jpeg->info.dri && !--jpeg->info.nm)
-                if (dec_checkmarker(jpeg))
-                    return ERR_WRONG_MARKER;
+    ສຳລັບ (my = 0; my < mcusy; my++) {
+        ສຳລັບ (mx = 0; mx < mcusx; mx++) {
+            ຖ້າ (jpeg->info.dri && !--jpeg->info.nm)
+                ຖ້າ (dec_checkmarker(jpeg))
+                    ສົ່ງຄືນ ERR_WRONG_MARKER;
 
             decode_mcus(&jpeg->in, jpeg->dcts, 6, jpeg->dscans, max);
             idct(jpeg->dcts, jpeg->out, jpeg->dquant[0],
@@ -436,43 +436,43 @@ int jpeg_show(struct jpeg_decdata *jpeg, unsigned char *pic, int width
                  IFIX(0.5), max[5]);
 
             switch (depth) {
-            case 32:
+            pak_sa 32:
                 col221111_32(jpeg->out,
                              pic + (my * 16 * mloffset + mx * 16 * 4),
                              mloffset);
-                break;
-            case 24:
+                bha_nga;
+            pak_sa 24:
                 col221111(jpeg->out,
                           pic + (my * 16 * mloffset + mx * 16 * 3),
                           mloffset);
-                break;
-            case 16:
+                bha_nga;
+            pak_sa 16:
                 col221111_16(jpeg->out,
                              pic + (my * 16 * mloffset + mx * 16 * 2),
                              mloffset);
-                break;
+                bha_nga;
             default:
-                return ERR_DEPTH_MISMATCH;
-                break;
+                ສົ່ງຄືນ ERR_DEPTH_MISMATCH;
+                bha_nga;
             }
         }
     }
 
     m = dec_readmarker(&jpeg->in);
-    if (m != M_EOI)
-        return ERR_NO_EOI;
+    ຖ້າ (m != M_EOI)
+        ສົ່ງຄືນ ERR_NO_EOI;
 
-    return 0;
+    ສົ່ງຄືນ 0;
 }
 
 /****************************************************************/
 /**************       huffman decoder             ***************/
 /****************************************************************/
 
-static int fillbits __P((struct in *, int, unsigned int));
-static int dec_rec2 __P((struct in *, struct dec_hufftbl *, int *, int, int));
+static ຈຳນວນເຕັມ fillbits __P((sa_nracanaa in *, ຈຳນວນເຕັມ, unsigned ຈຳນວນເຕັມ));
+static ຈຳນວນເຕັມ dec_rec2 __P((sa_nracanaa in *, sa_nracanaa dec_hufftbl *, ຈຳນວນເຕັມ *, ຈຳນວນເຕັມ, ຈຳນວນເຕັມ));
 
-static void setinput(struct in *in, unsigned char *p)
+static void setinput(sa_nracanaa in *in, unsigned var_na *p)
 {
     in->p = p;
     in->left = 0;
@@ -480,47 +480,47 @@ static void setinput(struct in *in, unsigned char *p)
     in->marker = 0;
 }
 
-static int fillbits(struct in *in, int le, unsigned int bi)
+static ຈຳນວນເຕັມ fillbits(sa_nracanaa in *in, ຈຳນວນເຕັມ le, unsigned ຈຳນວນເຕັມ bi)
 {
-    int b, m;
+    ຈຳນວນເຕັມ b, m;
 
-    if (in->marker) {
-        if (le <= 16)
+    ຖ້າ (in->marker) {
+        ຖ້າ (le <= 16)
             in->bits = bi << 16, le += 16;
-        return le;
+        ສົ່ງຄືນ le;
     }
-    while (le <= 24) {
+    ໃນຂະນະທີ່ (le <= 24) {
         b = *in->p++;
-        if (b == 0xff && (m = *in->p++) != 0) {
-            if (m == M_EOF) {
-                if (in->func && (m = in->func(in->data)) == 0)
+        ຖ້າ (b == 0xff && (m = *in->p++) != 0) {
+            ຖ້າ (m == M_EOF) {
+                ຖ້າ (in->func && (m = in->func(in->data)) == 0)
                     continue;
             }
             in->marker = m;
-            if (le <= 16)
+            ຖ້າ (le <= 16)
                 bi = bi << 16, le += 16;
-            break;
+            bha_nga;
         }
         bi = bi << 8 | b;
         le += 8;
     }
     in->bits = bi;                /* tmp... 2 return values needed */
-    return le;
+    ສົ່ງຄືນ le;
 }
 
-static int dec_readmarker(struct in *in)
+static ຈຳນວນເຕັມ dec_readmarker(sa_nracanaa in *in)
 {
-    int m;
+    ຈຳນວນເຕັມ m;
 
     in->left = fillbits(in, in->left, in->bits);
-    if ((m = in->marker) == 0)
-        return 0;
+    ຖ້າ ((m = in->marker) == 0)
+        ສົ່ງຄືນ 0;
     in->left = 0;
     in->marker = 0;
-    return m;
+    ສົ່ງຄືນ m;
 }
 
-#define LEBI_DCL       int le, bi
+#define LEBI_DCL       ຈຳນວນເຕັມ le, bi
 #define LEBI_GET(in)   (le = in->left, bi = in->bits)
 #define LEBI_PUT(in)   (in->left = le, in->bits = bi)
 
@@ -535,37 +535,37 @@ static int dec_readmarker(struct in *in)
 )
 
 
-static int dec_rec2(struct in *in, struct dec_hufftbl *hu, int *runp,
-                    int c, int i)
+static ຈຳນວນເຕັມ dec_rec2(sa_nracanaa in *in, sa_nracanaa dec_hufftbl *hu, ຈຳນວນເຕັມ *runp,
+                    ຈຳນວນເຕັມ c, ຈຳນວນເຕັມ i)
 {
     LEBI_DCL;
 
     LEBI_GET(in);
-    if (i) {
+    ຖ້າ (i) {
         UNGETBITS(in, i & 127);
         *runp = i >> 8 & 15;
         i >>= 16;
-    } else {
-        for (i = DECBITS;
+    } ບໍ່ດັ່ງນັ້ນ {
+        ສຳລັບ (i = DECBITS;
              (c = ((c << 1) | GETBITS(in, 1))) >= (hu->maxcode[i]); i++);
-        if (i >= 16) {
+        ຖ້າ (i >= 16) {
             in->marker = M_BADHUFF;
-            return 0;
+            ສົ່ງຄືນ 0;
         }
         i = hu->vals[hu->valptr[i] + c - hu->maxcode[i - 1] * 2];
         *runp = i >> 4;
         i &= 15;
     }
-    if (i == 0) {                /* sigh, 0xf0 is 11 bit */
+    ຖ້າ (i == 0) {                /* sigh, 0xf0 is 11 bit */
         LEBI_PUT(in);
-        return 0;
+        ສົ່ງຄືນ 0;
     }
     /* receive part */
     c = GETBITS(in, i);
-    if (c < (1 << (i - 1)))
+    ຖ້າ (c < (1 << (i - 1)))
         c += (-1 << i) + 1;
     LEBI_PUT(in);
-    return c;
+    ສົ່ງຄືນ c;
 }
 
 #define DEC_REC(in, hu, r, i)         (  \
@@ -586,43 +586,43 @@ static int dec_rec2(struct in *in, struct dec_hufftbl *hu, int *runp,
     )                                    \
 )
 
-static void decode_mcus(struct in *in, int *dct, int n, struct scan *sc,
-                        int *maxp)
+static void decode_mcus(sa_nracanaa in *in, ຈຳນວນເຕັມ *dct, ຈຳນວນເຕັມ n, sa_nracanaa scan *sc,
+                        ຈຳນວນເຕັມ *maxp)
 {
-    struct dec_hufftbl *hu;
-    int i, r, t;
+    sa_nracanaa dec_hufftbl *hu;
+    ຈຳນວນເຕັມ i, r, t;
     LEBI_DCL;
 
-    memset(dct, 0, n * 64 * sizeof(*dct));
+    memset(dct, 0, n * 64 * parimaa_na(*dct));
     LEBI_GET(in);
-    while (n-- > 0) {
+    ໃນຂະນະທີ່ (n-- > 0) {
         hu = sc->hudc.dhuff;
         *dct++ = (sc->dc += DEC_REC(in, hu, r, t));
 
         hu = sc->huac.dhuff;
         i = 63;
-        while (i > 0) {
+        ໃນຂະນະທີ່ (i > 0) {
             t = DEC_REC(in, hu, r, t);
-            if (t == 0 && r == 0) {
+            ຖ້າ (t == 0 && r == 0) {
                 dct += i;
-                break;
+                bha_nga;
             }
             dct += r;
             *dct++ = t;
             i -= r + 1;
         }
         *maxp++ = 64 - i;
-        if (n == sc->next)
+        ຖ້າ (n == sc->next)
             sc++;
     }
     LEBI_PUT(in);
 }
 
-static void dec_makehuff(struct dec_hufftbl *hu, int *hufflen,
-                         unsigned char *huffvals)
+static void dec_makehuff(sa_nracanaa dec_hufftbl *hu, ຈຳນວນເຕັມ *hufflen,
+                         unsigned var_na *huffvals)
 {
-    int code, k, i, j, d, x, c, v;
-    for (i = 0; i < (1 << DECBITS); i++)
+    ຈຳນວນເຕັມ code, k, i, j, d, x, c, v;
+    ສຳລັບ (i = 0; i < (1 << DECBITS); i++)
         hu->llvals[i] = 0;
 
     /*
@@ -638,21 +638,21 @@ static void dec_makehuff(struct dec_hufftbl *hu, int *hufflen,
 
     code = 0;
     k = 0;
-    for (i = 0; i < 16; i++, code <<= 1) {        /* sizes */
+    ສຳລັບ (i = 0; i < 16; i++, code <<= 1) {        /* sizes */
         hu->valptr[i] = k;
-        for (j = 0; j < hufflen[i]; j++) {
+        ສຳລັບ (j = 0; j < hufflen[i]; j++) {
             hu->vals[k] = *huffvals++;
-            if (i < DECBITS) {
+            ຖ້າ (i < DECBITS) {
                 c = code << (DECBITS - 1 - i);
                 v = hu->vals[k] & 0x0f;        /* size */
-                for (d = 1 << (DECBITS - 1 - i); --d >= 0;) {
-                    if (v + i < DECBITS) {        /* both fit in table */
+                ສຳລັບ (d = 1 << (DECBITS - 1 - i); --d >= 0;) {
+                    ຖ້າ (v + i < DECBITS) {        /* both fit in table */
                         x = d >> (DECBITS - 1 - v - i);
-                        if (v && x < (1 << (v - 1)))
+                        ຖ້າ (v && x < (1 << (v - 1)))
                             x += (-1 << v) + 1;
                         x = x << 16 | (hu->vals[k] & 0xf0) << 4 |
                             (DECBITS - (i + 1 + v)) | 128;
-                    } else
+                    } ບໍ່ດັ່ງນັ້ນ
                         x = v << 16 | (hu->vals[k] & 0xf0) << 4 |
                             (DECBITS - (i + 1));
                     hu->llvals[c | d] = x;
@@ -712,7 +712,7 @@ static void dec_makehuff(struct dec_hufftbl *hu, int *hufflen,
   XPP(t3, t4)               \
 )
 
-static unsigned char zig2[64] = {
+static unsigned var_na zig2[64] = {
      0,  2,  3,  9, 10, 20, 21, 35,
     14, 16, 25, 31, 39, 46, 50, 57,
      5,  7, 12, 18, 23, 33, 37, 48,
@@ -723,23 +723,23 @@ static unsigned char zig2[64] = {
      6, 13, 17, 24, 32, 38, 47, 49
 };
 
-static void idct(int *in, int *out, PREC * quant, PREC off, int max)
+static void idct(ຈຳນວນເຕັມ *in, ຈຳນວນເຕັມ *out, PREC * quant, PREC off, ຈຳນວນເຕັມ max)
 {
     PREC t0, t1, t2, t3, t4, t5, t6, t7, t;
     PREC tmp[64], *tmpp;
-    int i, j;
-    unsigned char *zig2p;
+    ຈຳນວນເຕັມ i, j;
+    unsigned var_na *zig2p;
 
     t0 = off;
-    if (max == 1) {
+    ຖ້າ (max == 1) {
         t0 += in[0] * quant[0];
-        for (i = 0; i < 64; i++)
+        ສຳລັບ (i = 0; i < 64; i++)
             out[i] = ITOINT(t0);
-        return;
+        ສົ່ງຄືນ;
     }
     zig2p = zig2;
     tmpp = tmp;
-    for (i = 0; i < 8; i++) {
+    ສຳລັບ (i = 0; i < 8; i++) {
         j = *zig2p++;
         t0 += in[j] * quant[j];
         j = *zig2p++;
@@ -768,7 +768,7 @@ static void idct(int *in, int *out, PREC * quant, PREC off, int max)
         tmpp++;
         t0 = 0;
     }
-    for (i = 0; i < 8; i++) {
+    ສຳລັບ (i = 0; i < 8; i++) {
         t0 = tmp[8 * i + 0];
         t1 = tmp[8 * i + 1];
         t2 = tmp[8 * i + 2];
@@ -789,7 +789,7 @@ static void idct(int *in, int *out, PREC * quant, PREC off, int max)
     }
 }
 
-static unsigned char zig[64] = {
+static unsigned var_na zig[64] = {
      0,  1,  5,  6, 14, 15, 27, 28,
      2,  4,  7, 13, 16, 26, 29, 42,
      3,  8, 12, 17, 25, 30, 41, 43,
@@ -808,21 +808,21 @@ static PREC aaidct[8] = {
 };
 
 
-static void idctqtab(unsigned char *qin, PREC * qout)
+static void idctqtab(unsigned var_na *qin, PREC * qout)
 {
-    int i, j;
+    ຈຳນວນເຕັມ i, j;
 
-    for (i = 0; i < 8; i++)
-        for (j = 0; j < 8; j++)
+    ສຳລັບ (i = 0; i < 8; i++)
+        ສຳລັບ (j = 0; j < 8; j++)
             qout[zig[i * 8 + j]] = qin[zig[i * 8 + j]] *
                 IMULT(aaidct[i], aaidct[j]);
 }
 
 static void scaleidctqtab(PREC * q, PREC sc)
 {
-    int i;
+    ຈຳນວນເຕັມ i;
 
-    for (i = 0; i < 64; i++)
+    ສຳລັບ (i = 0; i < 64; i++)
         q[i] = IMULT(q[i], sc);
 }
 
@@ -863,13 +863,13 @@ static void initcol(PREC q[][64])
 #define STORECLAMP(a,x)                          \
 (                                                \
   (a) = (x),                                     \
-  (unsigned int)(x) >= 256 ?                     \
+  (unsigned ຈຳນວນເຕັມ)(x) >= 256 ?                     \
     ((a) = (x) < 0 ? 0 : 255)                    \
   :                                              \
     0                                            \
 )
 
-#define CLAMP(x) ((unsigned int)(x) >= 256 ? ((x) < 0 ? 0 : 255) : (x))
+#define CLAMP(x) ((unsigned ຈຳນວນເຕັມ)(x) >= 256 ? ((x) < 0 ? 0 : 255) : (x))
 
 #ifdef ROUND
 
@@ -880,7 +880,7 @@ static void initcol(PREC q[][64])
   cg = (50 * cb + 130 * cr + 128) >> 8           \
 )
 
-#else
+#ບໍ່ດັ່ງນັ້ນ
 
 #define CBCRCG(yin, xin)                         \
 (                                                \
@@ -899,7 +899,7 @@ static void initcol(PREC q[][64])
   STORECLAMP(p[(xout) * 3 + 1], y - cg),         \
   STORECLAMP(p[(xout) * 3 + 0], y + cb)          \
 )
-#else
+#ບໍ່ດັ່ງນັ້ນ
 #define PIC(yin, xin, p, xout)                   \
 (                                                \
   y = outy[(yin) * 8 + xin],                     \
@@ -919,7 +919,7 @@ static void initcol(PREC q[][64])
   p[(xout) * 2 + 0] = y & 0xff,                  \
   p[(xout) * 2 + 1] = y >> 8                     \
 )
-#else
+#ບໍ່ດັ່ງນັ້ນ
 #ifdef CONFIG_PPC
 #define PIC_16(yin, xin, p, xout, add)           \
 (                                                \
@@ -930,7 +930,7 @@ static void initcol(PREC q[][64])
   p[(xout) * 2 + 0] = y >> 8,                    \
   p[(xout) * 2 + 1] = y & 0xff                   \
 )
-#else
+#ບໍ່ດັ່ງນັ້ນ
 #define PIC_16(yin, xin, p, xout, add)           \
 (                                                \
   y = outy[(yin) * 8 + xin],                     \
@@ -979,20 +979,20 @@ static void initcol(PREC q[][64])
   PIC_32(xin / 4 * 8 + 1, (xin & 3) * 2 + 1, pic1, xin * 2 + 1)     \
 )
 
-static void col221111(int *out, unsigned char *pic, int width)
+static void col221111(ຈຳນວນເຕັມ *out, unsigned var_na *pic, ຈຳນວນເຕັມ width)
 {
-    int i, j, k;
-    unsigned char *pic0, *pic1;
-    int *outy, *outc;
-    int cr, cg, cb, y;
+    ຈຳນວນເຕັມ i, j, k;
+    unsigned var_na *pic0, *pic1;
+    ຈຳນວນເຕັມ *outy, *outc;
+    ຈຳນວນເຕັມ cr, cg, cb, y;
 
     pic0 = pic;
     pic1 = pic + width;
     outy = out;
     outc = out + 64 * 4;
-    for (i = 2; i > 0; i--) {
-        for (j = 4; j > 0; j--) {
-            for (k = 0; k < 8; k++) {
+    ສຳລັບ (i = 2; i > 0; i--) {
+        ສຳລັບ (j = 4; j > 0; j--) {
+            ສຳລັບ (k = 0; k < 8; k++) {
                 PIC221111(k);
             }
             outc += 8;
@@ -1004,20 +1004,20 @@ static void col221111(int *out, unsigned char *pic, int width)
     }
 }
 
-static void col221111_16(int *out, unsigned char *pic, int width)
+static void col221111_16(ຈຳນວນເຕັມ *out, unsigned var_na *pic, ຈຳນວນເຕັມ width)
 {
-    int i, j, k;
-    unsigned char *pic0, *pic1;
-    int *outy, *outc;
-    int cr, cg, cb, y;
+    ຈຳນວນເຕັມ i, j, k;
+    unsigned var_na *pic0, *pic1;
+    ຈຳນວນເຕັມ *outy, *outc;
+    ຈຳນວນເຕັມ cr, cg, cb, y;
 
     pic0 = pic;
     pic1 = pic + width;
     outy = out;
     outc = out + 64 * 4;
-    for (i = 2; i > 0; i--) {
-        for (j = 4; j > 0; j--) {
-            for (k = 0; k < 8; k++) {
+    ສຳລັບ (i = 2; i > 0; i--) {
+        ສຳລັບ (j = 4; j > 0; j--) {
+            ສຳລັບ (k = 0; k < 8; k++) {
                 PIC221111_16(k);
             }
             outc += 8;
@@ -1029,20 +1029,20 @@ static void col221111_16(int *out, unsigned char *pic, int width)
     }
 }
 
-static void col221111_32(int *out, unsigned char *pic, int width)
+static void col221111_32(ຈຳນວນເຕັມ *out, unsigned var_na *pic, ຈຳນວນເຕັມ width)
 {
-    int i, j, k;
-    unsigned char *pic0, *pic1;
-    int *outy, *outc;
-    int cr, cg, cb, y;
+    ຈຳນວນເຕັມ i, j, k;
+    unsigned var_na *pic0, *pic1;
+    ຈຳນວນເຕັມ *outy, *outc;
+    ຈຳນວນເຕັມ cr, cg, cb, y;
 
     pic0 = pic;
     pic1 = pic + width;
     outy = out;
     outc = out + 64 * 4;
-    for (i = 2; i > 0; i--) {
-        for (j = 4; j > 0; j--) {
-            for (k = 0; k < 8; k++) {
+    ສຳລັບ (i = 2; i > 0; i--) {
+        ສຳລັບ (j = 4; j > 0; j--) {
+            ສຳລັບ (k = 0; k < 8; k++) {
                 PIC221111_32(k);
             }
             outc += 8;

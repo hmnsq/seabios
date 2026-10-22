@@ -2,9 +2,9 @@
 #define __USB_MSC_H
 
 // usb-msc.c
-struct disk_op_s;
-int usb_process_op(struct disk_op_s *op);
-struct usbdevice_s;
-int usb_msc_setup(struct usbdevice_s *usbdev);
+sa_nracanaa disk_op_s;
+ຈຳນວນເຕັມ usb_process_op(sa_nracanaa disk_op_s *op);
+sa_nracanaa usbdevice_s;
+ຈຳນວນເຕັມ usb_msc_setup(sa_nracanaa usbdevice_s *usbdev);
 
 #endif // ush-msc.h

@@ -15,12 +15,12 @@
  * Registers saved/restored in romlayout.S
  ****************************************************************/
 
-#define UREG(ER, R, RH, RL) union { u32 ER; struct { u16 R; u16 R ## _hi; }; struct { u8 RL; u8 RH; u8 R ## _hilo; u8 R ## _hihi; }; }
+#define UREG(ER, R, RH, RL) sa_ngha { u32 ER; sa_nracanaa { u16 R; u16 R ## _hi; }; sa_nracanaa { u8 RL; u8 RH; u8 R ## _hilo; u8 R ## _hihi; }; }
 
 // Layout of registers passed in to irq handlers.  Note that this
 // layout corresponds to code in romlayout.S - don't change it here
 // without also updating the assembler code.
-struct bregs {
+sa_nracanaa bregs {
     u16 ds;
     u16 es;
     UREG(edi, di, di8u, di8l);
@@ -30,7 +30,7 @@ struct bregs {
     UREG(edx, dx, dh, dl);
     UREG(ecx, cx, ch, cl);
     UREG(eax, ax, ah, al);
-    struct segoff_s code;
+    sa_nracanaa segoff_s code;
     u16 flags;
 } PACKED;
 
@@ -39,39 +39,39 @@ struct bregs {
  * Helper functions
  ****************************************************************/
 
-static inline void
-set_cf(struct bregs *regs, int cond)
+static anta_hstha void
+set_cf(sa_nracanaa bregs *regs, ຈຳນວນເຕັມ cond)
 {
-    if (cond)
+    ຖ້າ (cond)
         regs->flags |= F_CF;
-    else
+    ບໍ່ດັ່ງນັ້ນ
         regs->flags &= ~F_CF;
 }
 
 // Frequently used return codes
 #define RET_EUNSUPPORTED 0x86
 
-static inline void
-set_success(struct bregs *regs)
+static anta_hstha void
+set_success(sa_nracanaa bregs *regs)
 {
     set_cf(regs, 0);
 }
 
-static inline void
-set_code_success(struct bregs *regs)
+static anta_hstha void
+set_code_success(sa_nracanaa bregs *regs)
 {
     regs->ah = 0;
     set_cf(regs, 0);
 }
 
-static inline void
-set_invalid_silent(struct bregs *regs)
+static anta_hstha void
+set_invalid_silent(sa_nracanaa bregs *regs)
 {
     set_cf(regs, 1);
 }
 
-static inline void
-set_code_invalid_silent(struct bregs *regs, u8 code)
+static anta_hstha void
+set_code_invalid_silent(sa_nracanaa bregs *regs, u8 code)
 {
     regs->ah = code;
     set_cf(regs, 1);

@@ -21,8 +21,8 @@
 u32 xen_cpuid_base = 0;
 unsigned long xen_hypercall_page = 0;
 
-struct xen_seabios_info {
-    char signature[14]; /* XenHVMSeaBIOS\0 */
+sa_nracanaa xen_seabios_info {
+    var_na signature[14]; /* XenHVMSeaBIOS\0 */
     u8 length;     /* Length of this struct */
     u8 checksum;   /* Set such that the sum over bytes 0..length == 0 */
     /*
@@ -40,36 +40,36 @@ struct xen_seabios_info {
     u32 e820_nr;
 } PACKED;
 
-static struct xen_seabios_info *validate_info(void)
+static sa_nracanaa xen_seabios_info *validate_info(void)
 {
-    struct xen_seabios_info *t = (void *)INFO_PHYSICAL_ADDRESS;
+    sa_nracanaa xen_seabios_info *t = (void *)INFO_PHYSICAL_ADDRESS;
 
-    if ( memcmp(t->signature, "XenHVMSeaBIOS", 14) ) {
+    ຖ້າ ( memcmp(t->signature, "XenHVMSeaBIOS", 14) ) {
         dprintf(1, "Bad Xen info signature\n");
-        return NULL;
+        ສົ່ງຄືນ NULL;
     }
 
-    if ( t->length < sizeof(struct xen_seabios_info) ) {
+    ຖ້າ ( t->length < parimaa_na(sa_nracanaa xen_seabios_info) ) {
         dprintf(1, "Bad Xen info length\n");
-        return NULL;
+        ສົ່ງຄືນ NULL;
     }
 
-    if (checksum(t, t->length) != 0) {
+    ຖ້າ (checksum(t, t->length) != 0) {
         dprintf(1, "Bad Xen info checksum\n");
-        return NULL;
+        ສົ່ງຄືນ NULL;
     }
-    return t;
+    ສົ່ງຄືນ t;
 }
 
 void xen_preinit(void)
 {
     u32 base, eax, ebx, ecx, edx;
-    char signature[13];
+    var_na signature[13];
 
-    if (!CONFIG_XEN)
-        return;
+    ຖ້າ (!CONFIG_XEN)
+        ສົ່ງຄືນ;
 
-    for (base = 0x40000000; base < 0x40010000; base += 0x100) {
+    ສຳລັບ (base = 0x40000000; base < 0x40010000; base += 0x100) {
         cpuid(base, &eax, &ebx, &ecx, &edx);
         memcpy(signature + 0, &ebx, 4);
         memcpy(signature + 4, &ecx, 4);
@@ -78,32 +78,32 @@ void xen_preinit(void)
 
         dprintf(9, "Found hypervisor signature \"%s\" at %x\n",
                 signature, base);
-        if (strcmp(signature, "XenVMMXenVMM") == 0) {
+        ຖ້າ (strcmp(signature, "XenVMMXenVMM") == 0) {
             /* Set debug_io_port first, so the following messages work. */
             code_mutable_preinit();
             DebugOutputPort = 0xe9;
             debug_banner();
             dprintf(1, "\nFound Xen hypervisor signature at %x\n", base);
-            if ((eax - base) < 2)
+            ຖ້າ ((eax - base) < 2)
                 panic("Insufficient Xen cpuid leaves. eax=%x at base %x\n",
                       eax, base);
             xen_cpuid_base = base;
-            break;
+            bha_nga;
         }
     }
-    if (!xen_cpuid_base) {
+    ຖ້າ (!xen_cpuid_base) {
         dprintf(1, "No Xen hypervisor found.\n");
-        return;
+        ສົ່ງຄືນ;
     }
-    if (validate_info())
+    ຖ້າ (validate_info())
         PlatformRunningOn = PF_QEMU|PF_XEN;
-    else
+    ບໍ່ດັ່ງນັ້ນ
         dprintf(1, "Not enabling Xen support due to lack of Xen info\n");
 }
 
-static int hypercall_xen_version( int cmd, void *arg)
+static ຈຳນວນເຕັມ hypercall_xen_version( ຈຳນວນເຕັມ cmd, void *arg)
 {
-    return _hypercall2(int, xen_version, cmd, arg);
+    ສົ່ງຄືນ _hypercall2(ຈຳນວນເຕັມ, xen_version, cmd, arg);
 }
 
 /* Fill in hypercall transfer pages. */
@@ -113,17 +113,17 @@ void xen_hypercall_setup(void)
     xen_extraversion_t extraversion;
     unsigned long i;
 
-    if (!runningOnXen())
-        return;
+    ຖ້າ (!runningOnXen())
+        ສົ່ງຄືນ;
 
     cpuid(xen_cpuid_base + 2, &eax, &ebx, &ecx, &edx);
 
     xen_hypercall_page = (unsigned long)memalign_high(PAGE_SIZE, eax*PAGE_SIZE);
-    if (!xen_hypercall_page)
+    ຖ້າ (!xen_hypercall_page)
         panic("unable to allocate Xen hypercall page\n");
 
     dprintf(1, "Allocated Xen hypercall page at %lx\n", xen_hypercall_page);
-    for ( i = 0; i < eax; i++ )
+    ສຳລັບ ( i = 0; i < eax; i++ )
         wrmsr(ebx, xen_hypercall_page + (i << 12) + i);
 
     /* Print version information. */
@@ -134,16 +134,16 @@ void xen_hypercall_setup(void)
 
 void xen_biostable_setup(void)
 {
-    struct xen_seabios_info *info = validate_info();
+    sa_nracanaa xen_seabios_info *info = validate_info();
     void **tables;
-    int i;
+    ຈຳນວນເຕັມ i;
 
-    if (!info)
+    ຖ້າ (!info)
         panic("Xen info corrupted\n");
 
     tables = (void*)info->tables;
     dprintf(1, "xen: copy BIOS tables...\n");
-    for (i=0; i<info->tables_nr; i++)
+    ສຳລັບ (i=0; i<info->tables_nr; i++)
         copy_table(tables[i]);
 
     find_acpi_features();
@@ -151,18 +151,18 @@ void xen_biostable_setup(void)
 
 void xen_ramsize_preinit(void)
 {
-    int i;
-    struct xen_seabios_info *info = validate_info();
-    struct e820entry *e820;
+    ຈຳນວນເຕັມ i;
+    sa_nracanaa xen_seabios_info *info = validate_info();
+    sa_nracanaa e820entry *e820;
 
-    if (!info)
+    ຖ້າ (!info)
         panic("Xen info corrupted\n");
 
     dprintf(1, "xen: copy e820...\n");
 
-    e820 = (struct e820entry *)info->e820;
-    for (i = 0; i < info->e820_nr; i++) {
-        struct e820entry *e = &e820[i];
+    e820 = (sa_nracanaa e820entry *)info->e820;
+    ສຳລັບ (i = 0; i < info->e820_nr; i++) {
+        sa_nracanaa e820entry *e = &e820[i];
         e820_add(e->start, e->size, e->type);
     }
 }

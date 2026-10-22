@@ -1,26 +1,26 @@
 #ifndef __USB_XHCI_H
 #define __USB_XHCI_H
 
-struct usbdevice_s;
-struct usb_endpoint_descriptor;
-struct usb_pipe;
+sa_nracanaa usbdevice_s;
+sa_nracanaa usb_endpoint_descriptor;
+sa_nracanaa usb_pipe;
 
 // --------------------------------------------------------------
 
 // usb-xhci.c
 void xhci_setup(void);
-struct usb_pipe *xhci_realloc_pipe(struct usbdevice_s *usbdev
-                                   , struct usb_pipe *upipe
-                                   , struct usb_endpoint_descriptor *epdesc);
-int xhci_send_pipe(struct usb_pipe *p, int dir, const void *cmd
-                   , void *data, int datasize);
-int xhci_poll_intr(struct usb_pipe *p, void *data);
+sa_nracanaa usb_pipe *xhci_realloc_pipe(sa_nracanaa usbdevice_s *usbdev
+                                   , sa_nracanaa usb_pipe *upipe
+                                   , sa_nracanaa usb_endpoint_descriptor *epdesc);
+ຈຳນວນເຕັມ xhci_send_pipe(sa_nracanaa usb_pipe *p, ຈຳນວນເຕັມ dir, const void *cmd
+                   , void *data, ຈຳນວນເຕັມ datasize);
+ຈຳນວນເຕັມ xhci_poll_intr(sa_nracanaa usb_pipe *p, void *data);
 
 // --------------------------------------------------------------
 // register interface
 
 // capabilities
-struct xhci_caps {
+sa_nracanaa xhci_caps {
     u8  caplength;
     u8  reserved_01;
     u16 hciversion;
@@ -33,13 +33,13 @@ struct xhci_caps {
 } PACKED;
 
 // extended capabilities
-struct xhci_xcap {
+sa_nracanaa xhci_xcap {
     u32 cap;
     u32 data[];
 } PACKED;
 
 // operational registers
-struct xhci_op {
+sa_nracanaa xhci_op {
     u32 usbcmd;
     u32 usbsts;
     u32 pagesize;
@@ -54,7 +54,7 @@ struct xhci_op {
 } PACKED;
 
 // port registers
-struct xhci_pr {
+sa_nracanaa xhci_pr {
     u32 portsc;
     u32 portpmsc;
     u32 portli;
@@ -62,17 +62,17 @@ struct xhci_pr {
 } PACKED;
 
 // doorbell registers
-struct xhci_db {
+sa_nracanaa xhci_db {
     u32 doorbell;
 } PACKED;
 
 // runtime registers
-struct xhci_rts {
+sa_nracanaa xhci_rts {
     u32 mfindex;
 } PACKED;
 
 // interrupter registers
-struct xhci_ir {
+sa_nracanaa xhci_ir {
     u32 iman;
     u32 imod;
     u32 erstsz;
@@ -87,13 +87,13 @@ struct xhci_ir {
 // memory data structs
 
 // slot context
-struct xhci_slotctx {
+sa_nracanaa xhci_slotctx {
     u32 ctx[4];
     u32 reserved_01[4];
 } PACKED;
 
 // endpoint context
-struct xhci_epctx {
+sa_nracanaa xhci_epctx {
     u32 ctx[2];
     u32 deq_low;
     u32 deq_high;
@@ -102,20 +102,20 @@ struct xhci_epctx {
 } PACKED;
 
 // device context array element
-struct xhci_devlist {
+sa_nracanaa xhci_devlist {
     u32 ptr_low;
     u32 ptr_high;
 } PACKED;
 
 // input context
-struct xhci_inctx {
+sa_nracanaa xhci_inctx {
     u32 del;
     u32 add;
     u32 reserved_01[6];
 } PACKED;
 
 // transfer block (ring element)
-struct xhci_trb {
+sa_nracanaa xhci_trb {
     u32 ptr_low;
     u32 ptr_high;
     u32 status;
@@ -123,7 +123,7 @@ struct xhci_trb {
 } PACKED;
 
 // event ring segment
-struct xhci_er_seg {
+sa_nracanaa xhci_er_seg {
     u32 ptr_low;
     u32 ptr_high;
     u32 size;
