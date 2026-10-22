@@ -4,674 +4,674 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_*
-#include "list.h"   // hlist_*
-#include "malloc.h" // malloc_*
-#include "output.h" // dprintf
-#include "string.h" // memcpy
-#include "util.h"
-#include "std/acpi.h" // struct rsdp_descriptor
+#অন্তর্ভাব "config.h" // CONFIG_*
+#অন্তর্ভাব "list.h"   // hlist_*
+#অন্তর্ভাব "malloc.h" // malloc_*
+#অন্তর্ভাব "output.h" // dprintf
+#অন্তর্ভাব "string.h" // memcpy
+#অন্তর্ভাব "util.h"
+#অন্তর্ভাব "std/acpi.h" // struct rsdp_descriptor
 
 /****************************************************************
  * DSDT parser
  ****************************************************************/
 
-struct acpi_device {
-    struct hlist_node node;
-    char name[16];
+সংরচনা acpi_device {
+    সংরচনা hlist_গ্রন্থি গ্রন্থি;
+    বর্ণ name[16];
     u8 *hid_aml;
     u8 *sta_aml;
     u8 *crs_data;
-    int crs_size;
+    পূর্ণাঙ্ক crs_size;
 };
-static struct hlist_head acpi_devices VARVERIFY32INIT;
-static const int parse_dumpdevs = 0;
+স্থির সংরচনা hlist_head acpi_devices VARVERIFY32INIT;
+স্থির ধ্রুব পূর্ণাঙ্ক parse_dumpdevs = 0;
 
-struct parse_state {
-    char name[32];
-    struct acpi_device *dev;
-    int error;
-    int depth;
+সংরচনা parse_state {
+    বর্ণ name[32];
+    সংরচনা acpi_device *dev;
+    পূর্ণাঙ্ক error;
+    পূর্ণাঙ্ক depth;
 };
 
-static void parse_termlist(struct parse_state *s,
-                           u8 *ptr, int offset, int pkglength);
+স্থির শূন্য parse_termlist(সংরচনা parse_state *s,
+                           u8 *ptr, পূর্ণাঙ্ক offset, পূর্ণাঙ্ক pkglength);
 
-static void hex(const u8 *ptr, int count, int lvl, const char *item)
+স্থির শূন্য hex(ধ্রুব u8 *ptr, পূর্ণাঙ্ক গুনতি, পূর্ণাঙ্ক lvl, ধ্রুব বর্ণ *item)
 {
-    int l = 0, i;
+    পূর্ণাঙ্ক l = 0, i;
 
-    do {
+    কুরু {
         dprintf(lvl, "%s: %04x:  ", item, l);
-        for (i = l; i < l+16; i += 4)
+        প্রতি (i = l; i < l+16; i += 4)
             dprintf(lvl, "%02x %02x %02x %02x  ",
                     ptr[i+0], ptr[i+1], ptr[i+2], ptr[i+3]);
-        for (i = l; i < l+16; i++)
+        প্রতি (i = l; i < l+16; i++)
             dprintf(lvl, "%c", (ptr[i] > 0x20 && ptr[i] < 0x80)
                     ? ptr[i] : '.');
         dprintf(lvl, "\n");
         l += 16;
-    } while (l < count);
+    } যাবত্ (l < গুনতি);
 }
 
-static u64 parse_resource_int(u8 *ptr, int count)
+স্থির u64 parse_resource_int(u8 *ptr, পূর্ণাঙ্ক গুনতি)
 {
-    u64 value = 0;
-    int index = 0;
+    u64 মান = 0;
+    পূর্ণাঙ্ক index = 0;
 
-    for (index = 0; index < count; index++)
-        value |= (u64)ptr[index] << (index * 8);
-    return value;
+    প্রতি (index = 0; index < গুনতি; index++)
+        মান |= (u64)ptr[index] << (index * 8);
+    প্রত্যাগম মান;
 }
 
-static int parse_resource_bit(u8 *ptr, int count)
+স্থির পূর্ণাঙ্ক parse_resource_bit(u8 *ptr, পূর্ণাঙ্ক গুনতি)
 {
-    int bit;
+    পূর্ণাঙ্ক bit;
 
-    for (bit = 0; bit < count*8; bit++)
-        if (ptr[bit/8] & (1 << (bit%8)))
-            return bit;
-    return 0;
+    প্রতি (bit = 0; bit < গুনতি*8; bit++)
+        যদি (ptr[bit/8] & (1 << (bit%8)))
+            প্রত্যাগম bit;
+    প্রত্যাগম 0;
 }
 
-static int parse_resource(u8 *ptr, int length, int *type, u64 *min, u64 *max)
+স্থির পূর্ণাঙ্ক parse_resource(u8 *ptr, পূর্ণাঙ্ক length, পূর্ণাঙ্ক *type, u64 *min, u64 *max)
 {
-    int rname, rsize;
+    পূর্ণাঙ্ক rname, rsize;
     u64 len;
 
     *type = -1;
     *min = 0;
     *max = 0;
     len = 0;
-    if (!(ptr[0] & 0x80)) {
+    যদি (!(ptr[0] & 0x80)) {
         /* small resource */
         rname = (ptr[0] >> 3) & 0x0f;
         rsize = ptr[0] & 0x07;
         rsize++;
-        switch (rname) {
-        case 0x04: /* irq */
+        বিকল্প (rname) {
+        পক্ষ 0x04: /* irq */
             *min = parse_resource_bit(ptr + 1, rsize);
             *max = *min;
             *type = 3;
-            break;
-        case 0x0f: /* end marker */
-            return 0;
-        case 0x08: /* io */
+            ভঙ্গ;
+        পক্ষ 0x0f: /* end marker */
+            প্রত্যাগম 0;
+        পক্ষ 0x08: /* io */
             *min = parse_resource_int(ptr + 2, 2);
             *max = parse_resource_int(ptr + 4, 2);
-            if (*min == *max) {
+            যদি (*min == *max) {
                 *max = *min + ptr[7] - 1;
                 *type = 1;
             }
-            break;
-        case 0x09: /* fixed io */
+            ভঙ্গ;
+        পক্ষ 0x09: /* fixed io */
             *min = parse_resource_int(ptr + 2, 2);
             *max = *min + ptr[4] - 1;
             *type = 1;
-            break;
-        default:
+            ভঙ্গ;
+        স্বভাব:
             dprintf(3, "%s: small: 0x%x (len %d)\n",
                     __func__, rname, rsize);
-            break;
+            ভঙ্গ;
         }
-    } else {
+    } অন্যথা {
         /* large resource */
         rname = ptr[0] & 0x7f;
         rsize = ptr[2] << 8 | ptr[1];
         rsize += 3;
-        switch (rname) {
-        case 0x06: /* 32-bit Fixed Location Memory Range Descriptor */
+        বিকল্প (rname) {
+        পক্ষ 0x06: /* 32-bit Fixed Location Memory Range Descriptor */
             *min = parse_resource_int(ptr + 4, 4);
             len = parse_resource_int(ptr + 8, 4);
             *max = *min + len - 1;
             *type = 0;
-            break;
-        case 0x07: /* DWORD Address Space Descriptor */
+            ভঙ্গ;
+        পক্ষ 0x07: /* DWORD Address Space Descriptor */
             *min = parse_resource_int(ptr + 10, 4);
             *max = parse_resource_int(ptr + 14, 4);
             *type = ptr[3];
-            break;
-        case 0x08: /* WORD Address Space Descriptor */
+            ভঙ্গ;
+        পক্ষ 0x08: /* WORD Address Space Descriptor */
             *min = parse_resource_int(ptr +  8, 2);
             *max = parse_resource_int(ptr + 10, 2);
             *type = ptr[3];
-            break;
-        case 0x09: /* irq */
+            ভঙ্গ;
+        পক্ষ 0x09: /* irq */
             *min = parse_resource_int(ptr +  5, 4);
             *max = *min;
             *type = 3;
-            break;
-        case 0x0a: /* QWORD Address Space Descriptor */
+            ভঙ্গ;
+        পক্ষ 0x0a: /* QWORD Address Space Descriptor */
             *min = parse_resource_int(ptr + 14, 8);
             *max = parse_resource_int(ptr + 22, 8);
             *type = ptr[3];
-            break;
-        default:
+            ভঙ্গ;
+        স্বভাব:
             dprintf(3, "%s: large: 0x%x (len %d)\n", __func__, rname, rsize);
-            break;
+            ভঙ্গ;
         }
     }
-    return rsize;
+    প্রত্যাগম rsize;
 }
 
-static int find_resource(u8 *ptr, int len, int kind, u64 *min, u64 *max)
+স্থির পূর্ণাঙ্ক find_resource(u8 *ptr, পূর্ণাঙ্ক len, পূর্ণাঙ্ক kind, u64 *min, u64 *max)
 {
-    int type, size, offset = 0;
+    পূর্ণাঙ্ক type, size, offset = 0;
 
-    do {
+    কুরু {
         size = parse_resource(ptr + offset, len - offset,
                               &type, min, max);
-        if (kind == type)
-            return 0;
+        যদি (kind == type)
+            প্রত্যাগম 0;
         offset += size;
-    } while (size > 0 && offset < len);
-    return -1;
+    } যাবত্ (size > 0 && offset < len);
+    প্রত্যাগম -1;
 }
 
-static int print_resources(const char *prefix, u8 *ptr, int len)
+স্থির পূর্ণাঙ্ক print_resources(ধ্রুব বর্ণ *prefix, u8 *ptr, পূর্ণাঙ্ক len)
 {
-    static const char *typename[] = { "mem", "i/o", "bus" };
-    int type, size, offset = 0;
+    স্থির ধ্রুব বর্ণ *typename[] = { "mem", "i/o", "bus" };
+    পূর্ণাঙ্ক type, size, offset = 0;
     u64 min, max;
 
-    do {
+    কুরু {
         size = parse_resource(ptr + offset, len - offset,
                               &type, &min, &max);
-        switch (type) {
-        case 0:
-        case 1:
-        case 2:
+        বিকল্প (type) {
+        পক্ষ 0:
+        পক্ষ 1:
+        পক্ষ 2:
             dprintf(1, "%s%s 0x%llx -> 0x%llx\n",
                     prefix, typename[type], min, max);
-            break;
-        case 3:
+            ভঙ্গ;
+        পক্ষ 3:
             dprintf(1, "%sirq %lld\n", prefix, min);
-            break;
+            ভঙ্গ;
         }
         offset += size;
-    } while (size > 0 && offset < len);
-    return -1;
+    } যাবত্ (size > 0 && offset < len);
+    প্রত্যাগম -1;
 }
 
-static int parse_nameseg(u8 *ptr, char **dst)
+স্থির পূর্ণাঙ্ক parse_nameseg(u8 *ptr, বর্ণ **dst)
 {
-    if (dst && *dst) {
+    যদি (dst && *dst) {
         *(dst[0]++) = ptr[0];
-        if (ptr[1] != '_')
+        যদি (ptr[1] != '_')
             *(dst[0]++) = ptr[1];
-        if (ptr[2] != '_')
+        যদি (ptr[2] != '_')
             *(dst[0]++) = ptr[2];
-        if (ptr[3] != '_')
+        যদি (ptr[3] != '_')
             *(dst[0]++) = ptr[3];
         *(dst[0]) = 0;
     }
-    return 4;
+    প্রত্যাগম 4;
 }
 
-static int parse_namestring(struct parse_state *s,
-                            u8 *ptr, const char *item)
+স্থির পূর্ণাঙ্ক parse_namestring(সংরচনা parse_state *s,
+                            u8 *ptr, ধ্রুব বর্ণ *item)
 {
-    char *dst = s->name;
-    int offset = 0;
-    int i, count;
+    বর্ণ *dst = s->name;
+    পূর্ণাঙ্ক offset = 0;
+    পূর্ণাঙ্ক i, গুনতি;
 
-    for (;;) {
-        switch (ptr[offset]) {
-        case 0: /* null name */
+    প্রতি (;;) {
+        বিকল্প (ptr[offset]) {
+        পক্ষ 0: /* null name */
             offset++;
             *(dst++) = 0;
-            break;
-        case 0x2e:
+            ভঙ্গ;
+        পক্ষ 0x2e:
             offset++;
             offset += parse_nameseg(ptr + offset, &dst);
             *(dst++) = '.';
             offset += parse_nameseg(ptr + offset, &dst);
-            break;
-        case 0x2f:
+            ভঙ্গ;
+        পক্ষ 0x2f:
             offset++;
-            count = ptr[offset];
+            গুনতি = ptr[offset];
             offset++;
-            for (i = 0; i < count; i++) {
-                if (i)
+            প্রতি (i = 0; i < গুনতি; i++) {
+                যদি (i)
                     *(dst++) = '.';
                 offset += parse_nameseg(ptr + offset, &dst);
             }
-            break;
-        case '\\':
+            ভঙ্গ;
+        পক্ষ '\\':
             *(dst++) = '\\';
             offset++;
-            continue;
-        case '^':
+            অনুবর্ত;
+        পক্ষ '^':
             *(dst++) = '^';
             offset++;
-            continue;
-        case 'A' ... 'Z':
-        case '_':
+            অনুবর্ত;
+        পক্ষ 'A' ... 'Z':
+        পক্ষ '_':
             offset += parse_nameseg(ptr, &dst);
-            break;
-        default:
+            ভঙ্গ;
+        স্বভাব:
             hex(ptr, 16, 3, __func__);
             s->error = 1;
-            break;
+            ভঙ্গ;
         }
-        break;
+        ভঙ্গ;
     }
     dprintf(5, "%s: %d %s '%s'\n", __func__, s->depth,
             item, s->name);
-    return offset;
+    প্রত্যাগম offset;
 }
 
-static int parse_termarg_int(u8 *ptr, int *error, u64 *dst)
+স্থির পূর্ণাঙ্ক parse_termarg_int(u8 *ptr, পূর্ণাঙ্ক *error, u64 *dst)
 {
-    u64 value;
-    int offset = 1;
+    u64 মান;
+    পূর্ণাঙ্ক offset = 1;
 
-    switch (ptr[0]) {
-    case 0x00: /* zero */
-        value = 0;
-        break;
-    case 0x01: /* one */
-        value = 1;
-        break;
-    case 0x0a: /* byte prefix */
-        value = ptr[1];
+    বিকল্প (ptr[0]) {
+    পক্ষ 0x00: /* zero */
+        মান = 0;
+        ভঙ্গ;
+    পক্ষ 0x01: /* one */
+        মান = 1;
+        ভঙ্গ;
+    পক্ষ 0x0a: /* byte prefix */
+        মান = ptr[1];
         offset++;
-        break;
-    case 0x0b: /* word prefix */
-        value = ptr[1] |
+        ভঙ্গ;
+    পক্ষ 0x0b: /* word prefix */
+        মান = ptr[1] |
             ((unsigned long)ptr[2] << 8);
         offset += 2;
-        break;
-    case 0x0c: /* dword prefix */
-        value = ptr[1] |
+        ভঙ্গ;
+    পক্ষ 0x0c: /* dword prefix */
+        মান = ptr[1] |
             ((unsigned long)ptr[2] << 8) |
             ((unsigned long)ptr[3] << 16) |
             ((unsigned long)ptr[4] << 24);
         offset += 4;
-        break;
-    default:
-        value = 0;
+        ভঙ্গ;
+    স্বভাব:
+        মান = 0;
         hex(ptr, 16, 3, __func__);
-        if (error)
+        যদি (error)
             *error = 1;
-        break;
+        ভঙ্গ;
     }
 
-    if (dst)
-        *dst = value;
-    dprintf(5, "%s: 0x%llx\n", __func__, value);
-    return offset;
+    যদি (dst)
+        *dst = মান;
+    dprintf(5, "%s: 0x%llx\n", __func__, মান);
+    প্রত্যাগম offset;
 }
 
-static int parse_pkglength(u8 *ptr, int *pkglength)
+স্থির পূর্ণাঙ্ক parse_pkglength(u8 *ptr, পূর্ণাঙ্ক *pkglength)
 {
-    int offset = 2;
+    পূর্ণাঙ্ক offset = 2;
 
     *pkglength = 0;
-    switch (ptr[0] >> 6) {
-    case 3:
+    বিকল্প (ptr[0] >> 6) {
+    পক্ষ 3:
         *pkglength |= ptr[3] << 20;
         offset++;
-    case 2:
+    পক্ষ 2:
         *pkglength |= ptr[2] << 12;
         offset++;
-    case 1:
+    পক্ষ 1:
         *pkglength |= ptr[1] << 4;
         *pkglength |= ptr[0] & 0x0f;
-        return offset;
-    case 0:
-    default:
+        প্রত্যাগম offset;
+    পক্ষ 0:
+    স্বভাব:
         *pkglength |= ptr[0] & 0x3f;
-        return 1;
+        প্রত্যাগম 1;
     }
 }
 
-static int parse_pkg_common(struct parse_state *s,
-                            u8 *ptr, const char *item, int *pkglength)
+স্থির পূর্ণাঙ্ক parse_pkg_common(সংরচনা parse_state *s,
+                            u8 *ptr, ধ্রুব বর্ণ *item, পূর্ণাঙ্ক *pkglength)
 {
-    int offset;
+    পূর্ণাঙ্ক offset;
 
     offset = parse_pkglength(ptr, pkglength);
     offset += parse_namestring(s, ptr + offset, item);
-    return offset;
+    প্রত্যাগম offset;
 }
 
-static int parse_pkg_scope(struct parse_state *s,
+স্থির পূর্ণাঙ্ক parse_pkg_scope(সংরচনা parse_state *s,
                            u8 *ptr)
 {
-    int offset, pkglength;
+    পূর্ণাঙ্ক offset, pkglength;
 
     offset = parse_pkg_common(s, ptr, "scope", &pkglength);
     parse_termlist(s, ptr, offset, pkglength);
-    return pkglength;
+    প্রত্যাগম pkglength;
 }
 
-static int parse_pkg_device(struct parse_state *s,
+স্থির পূর্ণাঙ্ক parse_pkg_device(সংরচনা parse_state *s,
                             u8 *ptr)
 {
-    int offset, pkglength;
+    পূর্ণাঙ্ক offset, pkglength;
 
     offset = parse_pkg_common(s, ptr, "device", &pkglength);
 
-    s->dev = malloc_tmp(sizeof(struct acpi_device));
-    if (!s->dev) {
+    s->dev = malloc_tmp(পরিমাণ(সংরচনা acpi_device));
+    যদি (!s->dev) {
         warn_noalloc();
         s->error = 1;
-        return pkglength;
+        প্রত্যাগম pkglength;
     }
 
-    memset(s->dev, 0, sizeof(struct acpi_device));
-    hlist_add_head(&s->dev->node, &acpi_devices);
-    strtcpy(s->dev->name, s->name, sizeof(s->name));
+    memset(s->dev, 0, পরিমাণ(সংরচনা acpi_device));
+    hlist_add_head(&s->dev->গ্রন্থি, &acpi_devices);
+    strtcpy(s->dev->name, s->name, পরিমাণ(s->name));
     parse_termlist(s, ptr, offset, pkglength);
-    s->dev = NULL;
+    s->dev = রিক্ত;
 
-    return pkglength;
+    প্রত্যাগম pkglength;
 }
 
-static int parse_pkg_buffer(struct parse_state *s,
+স্থির পূর্ণাঙ্ক parse_pkg_buffer(সংরচনা parse_state *s,
                             u8 *ptr)
 {
     u64 blen;
-    int pkglength, offset;
+    পূর্ণাঙ্ক pkglength, offset;
 
     offset = parse_pkglength(ptr, &pkglength);
     offset += parse_termarg_int(ptr + offset, &s->error, &blen);
-    if (s->dev && strcmp(s->name, "_CRS") == 0) {
+    যদি (s->dev && strcmp(s->name, "_CRS") == 0) {
         s->dev->crs_data = ptr + offset;
         s->dev->crs_size = blen;
     }
-    return pkglength;
+    প্রত্যাগম pkglength;
 }
 
-static int parse_pkg_skip(struct parse_state *s,
-                          u8 *ptr, int op, int name)
+স্থির পূর্ণাঙ্ক parse_pkg_skip(সংরচনা parse_state *s,
+                          u8 *ptr, পূর্ণাঙ্ক op, পূর্ণাঙ্ক name)
 {
-    int pkglength, offset;
-    char item[8];
+    পূর্ণাঙ্ক pkglength, offset;
+    বর্ণ item[8];
 
-    snprintf(item, sizeof(item), "op %x", op);
+    snprintf(item, পরিমাণ(item), "op %x", op);
     offset = parse_pkglength(ptr, &pkglength);
-    if (name) {
+    যদি (name) {
         parse_namestring(s, ptr + offset, item);
-    } else {
+    } অন্যথা {
         dprintf(5, "%s: %s (%d)\n", __func__, item, pkglength);
     }
-    return pkglength;
+    প্রত্যাগম pkglength;
 }
 
-static int parse_termobj(struct parse_state *s,
+স্থির পূর্ণাঙ্ক parse_termobj(সংরচনা parse_state *s,
                          u8 *ptr)
 {
-    int offset = 1;
+    পূর্ণাঙ্ক offset = 1;
 
-    if (s->depth == 16) {
+    যদি (s->depth == 16) {
         dprintf(1, "%s: deep recursion\n", __func__);
         s->error = 1;
-        return offset;
+        প্রত্যাগম offset;
     }
 
     s->depth++;
-    switch (ptr[0]) {
-    case 0x00: /* zero */
-        break;
-    case 0x01: /* one */
-        break;
-    case 0x06: /* AliasOp */
+    বিকল্প (ptr[0]) {
+    পক্ষ 0x00: /* zero */
+        ভঙ্গ;
+    পক্ষ 0x01: /* one */
+        ভঙ্গ;
+    পক্ষ 0x06: /* AliasOp */
         offset += parse_namestring(s, ptr + offset, "SourceObject");
         offset += parse_namestring(s, ptr + offset, "AliasObject");
-        break;
-    case 0x08: /* name op */
+        ভঙ্গ;
+    পক্ষ 0x08: /* name op */
         offset += parse_namestring(s, ptr + offset, "name");
         offset += parse_termobj(s, ptr + offset);
-        if (s->dev && strcmp(s->name, "_HID") == 0)
+        যদি (s->dev && strcmp(s->name, "_HID") == 0)
             s->dev->hid_aml = ptr;
-        if (s->dev && strcmp(s->name, "_STA") == 0)
+        যদি (s->dev && strcmp(s->name, "_STA") == 0)
             s->dev->sta_aml = ptr;
-        break;
-    case 0x0a: /* byte prefix */
+        ভঙ্গ;
+    পক্ষ 0x0a: /* byte prefix */
         offset++;
-        break;
-    case 0x0b: /* word prefix */
+        ভঙ্গ;
+    পক্ষ 0x0b: /* word prefix */
         offset += 2;
-        break;
-    case 0x0c: /* dword prefix */
+        ভঙ্গ;
+    পক্ষ 0x0c: /* dword prefix */
         offset += 4;
-        break;
-    case 0x0d: /* string prefix */
-        while (ptr[offset])
+        ভঙ্গ;
+    পক্ষ 0x0d: /* string prefix */
+        যাবত্ (ptr[offset])
             offset++;
         offset++;
-        break;
-    case 0x10: /* scope op */
+        ভঙ্গ;
+    পক্ষ 0x10: /* scope op */
         offset += parse_pkg_scope(s, ptr + offset);
-        break;
-    case 0x11: /* buffer op */
+        ভঙ্গ;
+    পক্ষ 0x11: /* buffer op */
         offset += parse_pkg_buffer(s, ptr + offset);
-        break;
-    case 0x12: /* package op */
-    case 0x13: /* var package op */
+        ভঙ্গ;
+    পক্ষ 0x12: /* package op */
+    পক্ষ 0x13: /* var package op */
         offset += parse_pkg_skip(s, ptr + offset, ptr[0], 0);
-        break;
-    case 0x14: /* method op */
+        ভঙ্গ;
+    পক্ষ 0x14: /* method op */
         offset += parse_pkg_skip(s, ptr + offset, ptr[0], 1);
-        if (s->dev && strcmp(s->name, "_STA") == 0)
+        যদি (s->dev && strcmp(s->name, "_STA") == 0)
             s->dev->sta_aml = ptr;
-        break;
-    case 0x5b: /* ext op prefix */
+        ভঙ্গ;
+    পক্ষ 0x5b: /* ext op prefix */
         offset++;
-        switch (ptr[1]) {
-        case 0x01: /* mutex op */
+        বিকল্প (ptr[1]) {
+        পক্ষ 0x01: /* mutex op */
             offset += parse_namestring(s, ptr + offset, "mutex");
             offset++; /* sync flags */
-            break;
-        case 0x80: /* op region op */
+            ভঙ্গ;
+        পক্ষ 0x80: /* op region op */
             offset += parse_namestring(s, ptr + offset, "op region");
             offset++; /* region space */
-            offset += parse_termarg_int(ptr + offset, &s->error, NULL);
-            offset += parse_termarg_int(ptr + offset, &s->error, NULL);
-            break;
-        case 0x81: /* field op */
-        case 0x83: /* processor op */
-        case 0x84: /* power resource op */
-        case 0x85: /* thermal zone op */
+            offset += parse_termarg_int(ptr + offset, &s->error, রিক্ত);
+            offset += parse_termarg_int(ptr + offset, &s->error, রিক্ত);
+            ভঙ্গ;
+        পক্ষ 0x81: /* field op */
+        পক্ষ 0x83: /* processor op */
+        পক্ষ 0x84: /* power resource op */
+        পক্ষ 0x85: /* thermal zone op */
             offset += parse_pkg_skip(s, ptr + offset, 0x5b00 | ptr[1], 1);
-            break;
-        case 0x82: /* device op */
+            ভঙ্গ;
+        পক্ষ 0x82: /* device op */
             offset += parse_pkg_device(s, ptr + offset);
-            break;
-        default:
+            ভঙ্গ;
+        স্বভাব:
             hex(ptr, 16, 3, __func__);
             s->error = 1;
-            break;
+            ভঙ্গ;
         }
-        break;
-    default:
+        ভঙ্গ;
+    স্বভাব:
         hex(ptr, 16, 3, __func__);
         s->error = 1;
-        break;
+        ভঙ্গ;
     }
     s->depth--;
 
-    return offset;
+    প্রত্যাগম offset;
 }
 
-static void parse_termlist(struct parse_state *s,
-                           u8 *ptr, int offset, int pkglength)
+স্থির শূন্য parse_termlist(সংরচনা parse_state *s,
+                           u8 *ptr, পূর্ণাঙ্ক offset, পূর্ণাঙ্ক pkglength)
 {
-    for (;;) {
+    প্রতি (;;) {
         offset += parse_termobj(s, ptr + offset);
-        if (offset == pkglength)
-            return;
-        if (offset > pkglength) {
+        যদি (offset == pkglength)
+            প্রত্যাগম;
+        যদি (offset > pkglength) {
             dprintf(1, "%s: overrun: %d/%d\n", __func__,
                     offset, pkglength);
             s->error = 1;
-            return;
+            প্রত্যাগম;
         }
-        if (s->error) {
+        যদি (s->error) {
             dprintf(1, "%s: parse error, skip from %d/%d\n", __func__,
                     offset, pkglength);
             s->error = 0;
-            return;
+            প্রত্যাগম;
         }
     }
 }
 
-static struct acpi_device *acpi_dsdt_find(struct acpi_device *prev,
-                                          const u8 *aml1, int size1,
-                                          const u8 *aml2, int size2)
+স্থির সংরচনা acpi_device *acpi_dsdt_find(সংরচনা acpi_device *prev,
+                                          ধ্রুব u8 *aml1, পূর্ণাঙ্ক size1,
+                                          ধ্রুব u8 *aml2, পূর্ণাঙ্ক size2)
 {
-    struct acpi_device *dev;
-    struct hlist_node *node;
+    সংরচনা acpi_device *dev;
+    সংরচনা hlist_গ্রন্থি *গ্রন্থি;
 
-    if (!prev)
-        node = acpi_devices.first;
-    else
-        node = prev->node.next;
+    যদি (!prev)
+        গ্রন্থি = acpi_devices.first;
+    অন্যথা
+        গ্রন্থি = prev->গ্রন্থি.next;
 
-    for (; node != NULL; node = dev->node.next) {
-        dev = container_of(node, struct acpi_device, node);
-        if (!aml1 && !aml2)
-            return dev;
-        if (!dev->hid_aml)
-            continue;
-        if (aml1 && memcmp(dev->hid_aml + 5, aml1, size1) == 0)
-            return dev;
-        if (aml2 && memcmp(dev->hid_aml + 5, aml2, size2) == 0)
-            return dev;
+    প্রতি (; গ্রন্থি != রিক্ত; গ্রন্থি = dev->গ্রন্থি.next) {
+        dev = container_of(গ্রন্থি, সংরচনা acpi_device, গ্রন্থি);
+        যদি (!aml1 && !aml2)
+            প্রত্যাগম dev;
+        যদি (!dev->hid_aml)
+            অনুবর্ত;
+        যদি (aml1 && memcmp(dev->hid_aml + 5, aml1, size1) == 0)
+            প্রত্যাগম dev;
+        যদি (aml2 && memcmp(dev->hid_aml + 5, aml2, size2) == 0)
+            প্রত্যাগম dev;
     }
-    return NULL;
+    প্রত্যাগম রিক্ত;
 }
 
-static int acpi_dsdt_present(struct acpi_device *dev)
+স্থির পূর্ণাঙ্ক acpi_dsdt_present(সংরচনা acpi_device *dev)
 {
-    if (!dev)
-        return 0; /* no */
-    if (!dev->sta_aml)
-        return 1; /* yes */
-    if (dev->sta_aml[0] == 0x14)
-        return -1; /* unknown (can't evaluate method) */
-    if (dev->sta_aml[0] == 0x08) {
-        u64 value = 0;
-        parse_termarg_int(dev->sta_aml + 5, NULL, &value);
-        if (value == 0)
-            return 0; /* no */
-        else
-            return 1; /* yes */
+    যদি (!dev)
+        প্রত্যাগম 0; /* no */
+    যদি (!dev->sta_aml)
+        প্রত্যাগম 1; /* yes */
+    যদি (dev->sta_aml[0] == 0x14)
+        প্রত্যাগম -1; /* unknown (can't evaluate method) */
+    যদি (dev->sta_aml[0] == 0x08) {
+        u64 মান = 0;
+        parse_termarg_int(dev->sta_aml + 5, রিক্ত, &মান);
+        যদি (মান == 0)
+            প্রত্যাগম 0; /* no */
+        অন্যথা
+            প্রত্যাগম 1; /* yes */
     }
-    return -1; /* unknown (should not happen) */
+    প্রত্যাগম -1; /* unknown (should not happen) */
 }
 
 /****************************************************************
  * DSDT parser, public interface
  ****************************************************************/
 
-struct acpi_device *acpi_dsdt_find_string(struct acpi_device *prev,
-                                          const char *hid)
+সংরচনা acpi_device *acpi_dsdt_find_string(সংরচনা acpi_device *prev,
+                                          ধ্রুব বর্ণ *hid)
 {
-    if (!CONFIG_ACPI_PARSE)
-        return NULL;
+    যদি (!CONFIG_ACPI_PARSE)
+        প্রত্যাগম রিক্ত;
 
     u8 aml[10];
-    int len = snprintf((char*)aml, sizeof(aml), "\x0d%s", hid);
-    return acpi_dsdt_find(prev, aml, len, NULL, 0);
+    পূর্ণাঙ্ক len = snprintf((বর্ণ*)aml, পরিমাণ(aml), "\x0d%s", hid);
+    প্রত্যাগম acpi_dsdt_find(prev, aml, len, রিক্ত, 0);
 }
 
-struct acpi_device *acpi_dsdt_find_eisaid(struct acpi_device *prev, u16 eisaid)
+সংরচনা acpi_device *acpi_dsdt_find_eisaid(সংরচনা acpi_device *prev, u16 eisaid)
 {
-    if (!CONFIG_ACPI_PARSE)
-        return NULL;
+    যদি (!CONFIG_ACPI_PARSE)
+        প্রত্যাগম রিক্ত;
     u8 aml1[] = {
         0x0c, 0x41, 0xd0,
         eisaid >> 8,
         eisaid & 0xff
     };
     u8 aml2[10];
-    int len2 = snprintf((char*)aml2, sizeof(aml2), "\x0dPNP%04X", eisaid);
-    return acpi_dsdt_find(prev, aml1, 5, aml2, len2);
+    পূর্ণাঙ্ক len2 = snprintf((বর্ণ*)aml2, পরিমাণ(aml2), "\x0dPNP%04X", eisaid);
+    প্রত্যাগম acpi_dsdt_find(prev, aml1, 5, aml2, len2);
 }
 
-char *acpi_dsdt_name(struct acpi_device *dev)
+বর্ণ *acpi_dsdt_name(সংরচনা acpi_device *dev)
 {
-    if (!CONFIG_ACPI_PARSE || !dev)
-        return NULL;
-    return dev->name;
+    যদি (!CONFIG_ACPI_PARSE || !dev)
+        প্রত্যাগম রিক্ত;
+    প্রত্যাগম dev->name;
 }
 
-int acpi_dsdt_find_io(struct acpi_device *dev, u64 *min, u64 *max)
+পূর্ণাঙ্ক acpi_dsdt_find_io(সংরচনা acpi_device *dev, u64 *min, u64 *max)
 {
-    if (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
-        return -1;
-    return find_resource(dev->crs_data, dev->crs_size,
+    যদি (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
+        প্রত্যাগম -1;
+    প্রত্যাগম find_resource(dev->crs_data, dev->crs_size,
                          1 /* I/O */, min, max);
 }
 
-int acpi_dsdt_find_mem(struct acpi_device *dev, u64 *min, u64 *max)
+পূর্ণাঙ্ক acpi_dsdt_find_mem(সংরচনা acpi_device *dev, u64 *min, u64 *max)
 {
-    if (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
-        return -1;
-    return find_resource(dev->crs_data, dev->crs_size,
+    যদি (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
+        প্রত্যাগম -1;
+    প্রত্যাগম find_resource(dev->crs_data, dev->crs_size,
                          0 /* mem */, min, max);
 }
 
-int acpi_dsdt_find_irq(struct acpi_device *dev, u64 *irq)
+পূর্ণাঙ্ক acpi_dsdt_find_irq(সংরচনা acpi_device *dev, u64 *irq)
 {
     u64 max;
-    if (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
-        return -1;
-    return find_resource(dev->crs_data, dev->crs_size,
+    যদি (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
+        প্রত্যাগম -1;
+    প্রত্যাগম find_resource(dev->crs_data, dev->crs_size,
                          3 /* irq */, irq, &max);
 }
 
-int acpi_dsdt_present_eisaid(u16 eisaid)
+পূর্ণাঙ্ক acpi_dsdt_present_eisaid(u16 eisaid)
 {
-    if (!CONFIG_ACPI_PARSE)
-        return -1; /* unknown */
-    if (hlist_empty(&acpi_devices))
-        return -1; /* unknown (no dsdt table) */
+    যদি (!CONFIG_ACPI_PARSE)
+        প্রত্যাগম -1; /* unknown */
+    যদি (hlist_empty(&acpi_devices))
+        প্রত্যাগম -1; /* unknown (no dsdt table) */
 
-    struct acpi_device *dev = acpi_dsdt_find_eisaid(NULL, eisaid);
-    return acpi_dsdt_present(dev);
+    সংরচনা acpi_device *dev = acpi_dsdt_find_eisaid(রিক্ত, eisaid);
+    প্রত্যাগম acpi_dsdt_present(dev);
 }
 
-void acpi_dsdt_parse(void)
+শূন্য acpi_dsdt_parse(শূন্য)
 {
-    if (!CONFIG_ACPI_PARSE)
-        return;
+    যদি (!CONFIG_ACPI_PARSE)
+        প্রত্যাগম;
 
-    struct fadt_descriptor_rev1 *fadt = find_acpi_table(FACP_SIGNATURE);
-    if (!fadt)
-        return;
-    u8 *dsdt = (void*)(fadt->dsdt);
-    if (!dsdt)
-        return;
+    সংরচনা fadt_descriptor_rev1 *fadt = find_acpi_table(FACP_SIGNATURE);
+    যদি (!fadt)
+        প্রত্যাগম;
+    u8 *dsdt = (শূন্য*)(fadt->dsdt);
+    যদি (!dsdt)
+        প্রত্যাগম;
 
     u32 length = *(u32*)(dsdt + 4);
     u32 offset = 0x24;
     dprintf(1, "ACPI: parse DSDT at %p (len %d)\n", dsdt, length);
 
-    struct parse_state s;
-    memset(&s, 0, sizeof(s));
+    সংরচনা parse_state s;
+    memset(&s, 0, পরিমাণ(s));
     parse_termlist(&s, dsdt, offset, length);
 
-    if (!parse_dumpdevs)
-        return;
+    যদি (!parse_dumpdevs)
+        প্রত্যাগম;
 
-    struct acpi_device *dev;
+    সংরচনা acpi_device *dev;
     dprintf(1, "ACPI: dumping dsdt devices\n");
-    for (dev = acpi_dsdt_find(NULL, NULL, 0, NULL, 0);
-         dev != NULL;
-         dev = acpi_dsdt_find(dev, NULL, 0, NULL, 0)) {
+    প্রতি (dev = acpi_dsdt_find(রিক্ত, রিক্ত, 0, রিক্ত, 0);
+         dev != রিক্ত;
+         dev = acpi_dsdt_find(dev, রিক্ত, 0, রিক্ত, 0)) {
         dprintf(1, "    %s", acpi_dsdt_name(dev));
-        if (dev->hid_aml)
+        যদি (dev->hid_aml)
             dprintf(1, ", hid");
-        if (dev->sta_aml)
+        যদি (dev->sta_aml)
             dprintf(1, ", sta (0x%x)", dev->sta_aml[0]);
-        if (dev->crs_data)
+        যদি (dev->crs_data)
             dprintf(1, ", crs");
         dprintf(1, "\n");
-        if (dev->crs_data)
+        যদি (dev->crs_data)
             print_resources("        ", dev->crs_data, dev->crs_size);
     }
 }

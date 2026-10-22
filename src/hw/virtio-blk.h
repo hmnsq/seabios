@@ -1,7 +1,7 @@
 #ifndef _VIRTIO_BLK_H
 #define _VIRTIO_BLK_H
 
-struct virtio_blk_config
+সংরচনা virtio_blk_config
 {
     u64 capacity;
     u32 size_max;
@@ -26,7 +26,7 @@ struct virtio_blk_config
 #define VIRTIO_BLK_T_OUT        1
 
 /* This is the first element of the read scatter-gather list. */
-struct virtio_blk_outhdr {
+সংরচনা virtio_blk_outhdr {
     /* VIRTIO_BLK_T* */
     u32 type;
     /* io priority. */
@@ -39,9 +39,9 @@ struct virtio_blk_outhdr {
 #define VIRTIO_BLK_S_IOERR      1
 #define VIRTIO_BLK_S_UNSUPP     2
 
-struct disk_op_s;
-int virtio_blk_process_op(struct disk_op_s *op);
-void virtio_blk_setup(void);
-void init_virtio_blk_mmio(void *mmio);
+সংরচনা disk_op_s;
+পূর্ণাঙ্ক virtio_blk_process_op(সংরচনা disk_op_s *op);
+শূন্য virtio_blk_setup(শূন্য);
+শূন্য init_virtio_blk_mmio(শূন্য *mmio);
 
 #endif /* _VIRTIO_BLK_H */

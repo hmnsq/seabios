@@ -1,18 +1,18 @@
 #ifndef __XEN_H
 #define __XEN_H
 
-void xen_preinit(void);
-void xen_ramsize_preinit(void);
-void xen_hypercall_setup(void);
-void xen_biostable_setup(void);
+শূন্য xen_preinit(শূন্য);
+শূন্য xen_ramsize_preinit(শূন্য);
+শূন্য xen_hypercall_setup(শূন্য);
+শূন্য xen_biostable_setup(শূন্য);
 
-extern unsigned long xen_hypercall_page;
+বাহ্য unsigned long xen_hypercall_page;
 
 #define _hypercall0(type, name)                                         \
 ({                                                                      \
     unsigned long __hentry = xen_hypercall_page+__HYPERVISOR_##name*32; \
     long __res;                                                         \
-    asm volatile (                                                      \
+    asm চঞ্চল (                                                      \
         "call *%%eax"                                                   \
         : "=a" (__res)                                                  \
         : "0" (__hentry)                                                \
@@ -24,7 +24,7 @@ extern unsigned long xen_hypercall_page;
 ({                                                                      \
     unsigned long __hentry = xen_hypercall_page+__HYPERVISOR_##name*32; \
     long __res, __ign1;                                                 \
-    asm volatile (                                                      \
+    asm চঞ্চল (                                                      \
         "call *%%eax"                                                   \
         : "=a" (__res), "=b" (__ign1)                                   \
         : "0" (__hentry), "1" ((long)(a1))                              \
@@ -36,7 +36,7 @@ extern unsigned long xen_hypercall_page;
 ({                                                                      \
     unsigned long __hentry = xen_hypercall_page+__HYPERVISOR_##name*32; \
     long __res, __ign1, __ign2;                                         \
-    asm volatile (                                                      \
+    asm চঞ্চল (                                                      \
         "call *%%eax"                                                   \
         : "=a" (__res), "=b" (__ign1), "=c" (__ign2)                    \
         : "0" (__hentry), "1" ((long)(a1)), "2" ((long)(a2))            \
@@ -48,7 +48,7 @@ extern unsigned long xen_hypercall_page;
 ({                                                                      \
     unsigned long __hentry = xen_hypercall_page+__HYPERVISOR_##name*32; \
     long __res, __ign1, __ign2, __ign3;                                 \
-    asm volatile (                                                      \
+    asm চঞ্চল (                                                      \
         "call *%%eax"                                                   \
         : "=a" (__res), "=b" (__ign1), "=c" (__ign2),                   \
           "=d" (__ign3)                                                 \
@@ -62,7 +62,7 @@ extern unsigned long xen_hypercall_page;
 ({                                                                      \
     unsigned long __hentry = xen_hypercall_page+__HYPERVISOR_##name*32; \
     long __res, __ign1, __ign2, __ign3, __ign4;                         \
-    asm volatile (                                                      \
+    asm চঞ্চল (                                                      \
         "call *%%eax"                                                   \
         : "=a" (__res), "=b" (__ign1), "=c" (__ign2),                   \
           "=d" (__ign3), "=S" (__ign4)                                  \
@@ -76,7 +76,7 @@ extern unsigned long xen_hypercall_page;
 ({                                                                      \
     unsigned long __hentry = xen_hypercall_page+__HYPERVISOR_##name*32; \
     long __res, __ign1, __ign2, __ign3, __ign4, __ign5;                 \
-    asm volatile (                                                      \
+    asm চঞ্চল (                                                      \
         "call *%%eax"                                                   \
         : "=a" (__res), "=b" (__ign1), "=c" (__ign2),                   \
           "=d" (__ign3), "=S" (__ign4), "=D" (__ign5)                   \
@@ -119,7 +119,7 @@ extern unsigned long xen_hypercall_page;
 
 /* arg == xen_extraversion_t. */
 #define XENVER_extraversion 1
-typedef char xen_extraversion_t[16];
-#define XEN_EXTRAVERSION_LEN (sizeof(xen_extraversion_t))
+প্রকারনির্দেশ বর্ণ xen_extraversion_t[16];
+#define XEN_EXTRAVERSION_LEN (পরিমাণ(xen_extraversion_t))
 
 #endif

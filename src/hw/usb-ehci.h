@@ -2,24 +2,24 @@
 #define __USB_EHCI_H
 
 // usb-ehci.c
-void ehci_setup(void);
-void ehci_wait_controllers(void);
-struct usbdevice_s;
-struct usb_endpoint_descriptor;
-struct usb_pipe;
-struct usb_pipe *ehci_realloc_pipe(struct usbdevice_s *usbdev
-                                   , struct usb_pipe *upipe
-                                   , struct usb_endpoint_descriptor *epdesc);
-int ehci_send_pipe(struct usb_pipe *p, int dir, const void *cmd
-                   , void *data, int datasize);
-int ehci_poll_intr(struct usb_pipe *p, void *data);
+শূন্য ehci_setup(শূন্য);
+শূন্য ehci_wait_controllers(শূন্য);
+সংরচনা usbdevice_s;
+সংরচনা usb_endpoint_descriptor;
+সংরচনা usb_pipe;
+সংরচনা usb_pipe *ehci_realloc_pipe(সংরচনা usbdevice_s *usbdev
+                                   , সংরচনা usb_pipe *upipe
+                                   , সংরচনা usb_endpoint_descriptor *epdesc);
+পূর্ণাঙ্ক ehci_send_pipe(সংরচনা usb_pipe *p, পূর্ণাঙ্ক dir, ধ্রুব শূন্য *cmd
+                   , শূন্য *data, পূর্ণাঙ্ক datasize);
+পূর্ণাঙ্ক ehci_poll_intr(সংরচনা usb_pipe *p, শূন্য *data);
 
 
 /****************************************************************
  * ehci structs and flags
  ****************************************************************/
 
-struct ehci_caps {
+সংরচনা ehci_caps {
     u8 caplength;
     u8 reserved_01;
     u16 hciversion;
@@ -32,7 +32,7 @@ struct ehci_caps {
 
 #define HCS_N_PORTS_MASK 0xf
 
-struct ehci_regs {
+সংরচনা ehci_regs {
     u32 usbcmd;
     u32 usbsts;
     u32 usbintr;
@@ -93,7 +93,7 @@ struct ehci_regs {
 
 #define EHCI_QH_ALIGN 128 // Can't span a 4K boundary, so increase from 32
 
-struct ehci_qh {
+সংরচনা ehci_qh {
     u32 next;
     u32 info1;
     u32 info2;
@@ -136,7 +136,7 @@ struct ehci_qh {
 
 #define EHCI_QTD_ALIGN 64 // Can't span a 4K boundary, so increase from 32
 
-struct ehci_qtd {
+সংরচনা ehci_qtd {
     u32 qtd_next;
     u32 alt_next;
     u32 token;
@@ -170,7 +170,7 @@ struct ehci_qtd {
 #define ehci_maxerr(err) (((err) << QTD_CERR_SHIFT) & QTD_CERR_MASK)
 
 
-struct ehci_framelist {
+সংরচনা ehci_framelist {
     u32 links[1024];
 } PACKED;
 

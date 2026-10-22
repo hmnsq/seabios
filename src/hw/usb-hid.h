@@ -2,13 +2,13 @@
 #define __USB_HID_H
 
 // usb-hid.c
-struct usbdevice_s;
-int usb_hid_setup(struct usbdevice_s *usbdev);
-int usb_kbd_active(void);
-int usb_kbd_command(int command, u8 *param);
-int usb_mouse_active(void);
-int usb_mouse_command(int command, u8 *param);
-void usb_check_event(void);
+সংরচনা usbdevice_s;
+পূর্ণাঙ্ক usb_hid_setup(সংরচনা usbdevice_s *usbdev);
+পূর্ণাঙ্ক usb_kbd_active(শূন্য);
+পূর্ণাঙ্ক usb_kbd_command(পূর্ণাঙ্ক command, u8 *param);
+পূর্ণাঙ্ক usb_mouse_active(শূন্য);
+পূর্ণাঙ্ক usb_mouse_command(পূর্ণাঙ্ক command, u8 *param);
+শূন্য usb_check_event(শূন্য);
 
 
 /****************************************************************

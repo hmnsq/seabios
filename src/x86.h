@@ -20,48 +20,48 @@
 
 #ifndef __ASSEMBLY__
 
-#include "types.h" // u32
+#অন্তর্ভাব "types.h" // u32
 
-static inline void irq_disable(void)
+স্থির অন্তঃস্থ শূন্য irq_disable(শূন্য)
 {
-    asm volatile("cli": : :"memory");
+    asm চঞ্চল("cli": : :"memory");
 }
 
-static inline void irq_enable(void)
+স্থির অন্তঃস্থ শূন্য irq_enable(শূন্য)
 {
-    asm volatile("sti": : :"memory");
+    asm চঞ্চল("sti": : :"memory");
 }
 
-static inline u32 save_flags(void)
+স্থির অন্তঃস্থ u32 save_flags(শূন্য)
 {
     u32 flags;
-    asm volatile("pushfl ; popl %0" : "=rm" (flags));
-    return flags;
+    asm চঞ্চল("pushfl ; popl %0" : "=rm" (flags));
+    প্রত্যাগম flags;
 }
 
-static inline void restore_flags(u32 flags)
+স্থির অন্তঃস্থ শূন্য restore_flags(u32 flags)
 {
-    asm volatile("pushl %0 ; popfl" : : "g" (flags) : "memory", "cc");
+    asm চঞ্চল("pushl %0 ; popfl" : : "g" (flags) : "memory", "cc");
 }
 
-static inline void cpu_relax(void)
+স্থির অন্তঃস্থ শূন্য cpu_relax(শূন্য)
 {
-    asm volatile("rep ; nop": : :"memory");
+    asm চঞ্চল("rep ; nop": : :"memory");
 }
 
-static inline void nop(void)
+স্থির অন্তঃস্থ শূন্য nop(শূন্য)
 {
-    asm volatile("nop");
+    asm চঞ্চল("nop");
 }
 
-static inline void hlt(void)
+স্থির অন্তঃস্থ শূন্য hlt(শূন্য)
 {
-    asm volatile("hlt": : :"memory");
+    asm চঞ্চল("hlt": : :"memory");
 }
 
-static inline void wbinvd(void)
+স্থির অন্তঃস্থ শূন্য wbinvd(শূন্য)
 {
-    asm volatile("wbinvd": : :"memory");
+    asm চঞ্চল("wbinvd": : :"memory");
 }
 
 #define CPUID_TSC (1 << 4)
@@ -69,174 +69,174 @@ static inline void wbinvd(void)
 #define CPUID_APIC (1 << 9)
 #define CPUID_MTRR (1 << 12)
 #define CPUID_X2APIC (1 << 21)
-static inline void __cpuid(u32 index, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx)
+স্থির অন্তঃস্থ শূন্য __cpuid(u32 index, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx)
 {
     asm("cpuid"
         : "=a" (*eax), "=b" (*ebx), "=c" (*ecx), "=d" (*edx)
         : "0" (index));
 }
 
-static inline u32 cr0_read(void) {
+স্থির অন্তঃস্থ u32 cr0_read(শূন্য) {
     u32 cr0;
     asm("movl %%cr0, %0" : "=r"(cr0));
-    return cr0;
+    প্রত্যাগম cr0;
 }
-static inline void cr0_write(u32 cr0) {
+স্থির অন্তঃস্থ শূন্য cr0_write(u32 cr0) {
     asm("movl %0, %%cr0" : : "r"(cr0));
 }
-static inline void cr0_mask(u32 off, u32 on) {
+স্থির অন্তঃস্থ শূন্য cr0_mask(u32 off, u32 on) {
     cr0_write((cr0_read() & ~off) | on);
 }
-static inline u16 cr0_vm86_read(void) {
+স্থির অন্তঃস্থ u16 cr0_vm86_read(শূন্য) {
     u16 cr0;
     asm("smsww %0" : "=r"(cr0));
-    return cr0;
+    প্রত্যাগম cr0;
 }
 
-static inline u64 rdmsr(u32 index)
+স্থির অন্তঃস্থ u64 rdmsr(u32 index)
 {
     u64 ret;
     asm ("rdmsr" : "=A"(ret) : "c"(index));
-    return ret;
+    প্রত্যাগম ret;
 }
 
-static inline void wrmsr(u32 index, u64 val)
+স্থির অন্তঃস্থ শূন্য wrmsr(u32 index, u64 val)
 {
-    asm volatile ("wrmsr" : : "c"(index), "A"(val));
+    asm চঞ্চল ("wrmsr" : : "c"(index), "A"(val));
 }
 
-static inline u64 rdtscll(void)
+স্থির অন্তঃস্থ u64 rdtscll(শূন্য)
 {
     u64 val;
-    asm volatile("rdtsc" : "=A" (val));
-    return val;
+    asm চঞ্চল("rdtsc" : "=A" (val));
+    প্রত্যাগম val;
 }
 
-static inline u32 __ffs(u32 word)
+স্থির অন্তঃস্থ u32 __ffs(u32 word)
 {
     asm("bsf %1,%0"
         : "=r" (word)
         : "rm" (word));
-    return word;
+    প্রত্যাগম word;
 }
-static inline u32 __fls(u32 word)
+স্থির অন্তঃস্থ u32 __fls(u32 word)
 {
     asm("bsr %1,%0"
         : "=r" (word)
         : "rm" (word));
-    return word;
+    প্রত্যাগম word;
 }
 
-static inline u32 getesp(void) {
+স্থির অন্তঃস্থ u32 getesp(শূন্য) {
     u32 esp;
     asm("movl %%esp, %0" : "=rm"(esp));
-    return esp;
+    প্রত্যাগম esp;
 }
 
-static inline u32 rol(u32 val, u16 rol) {
+স্থির অন্তঃস্থ u32 rol(u32 val, u16 rol) {
     u32 res;
-    asm volatile("roll %%cl, %%eax"
+    asm চঞ্চল("roll %%cl, %%eax"
                  : "=a" (res) : "a" (val), "c" (rol));
-    return res;
+    প্রত্যাগম res;
 }
 
-static inline u32 ror(u32 val, u16 ror) {
+স্থির অন্তঃস্থ u32 ror(u32 val, u16 ror) {
     u32 res;
-    asm volatile("rorl %%cl, %%eax"
+    asm চঞ্চল("rorl %%cl, %%eax"
                  : "=a" (res) : "a" (val), "c" (ror));
-    return res;
+    প্রত্যাগম res;
 }
 
-static inline void outb(u8 value, u16 port) {
-    __asm__ __volatile__("outb %b0, %w1" : : "a"(value), "Nd"(port));
+স্থির অন্তঃস্থ শূন্য outb(u8 মান, u16 port) {
+    __asm__ __volatile__("outb %b0, %w1" : : "a"(মান), "Nd"(port));
 }
-static inline void outw(u16 value, u16 port) {
-    __asm__ __volatile__("outw %w0, %w1" : : "a"(value), "Nd"(port));
+স্থির অন্তঃস্থ শূন্য outw(u16 মান, u16 port) {
+    __asm__ __volatile__("outw %w0, %w1" : : "a"(মান), "Nd"(port));
 }
-static inline void outl(u32 value, u16 port) {
-    __asm__ __volatile__("outl %0, %w1" : : "a"(value), "Nd"(port));
+স্থির অন্তঃস্থ শূন্য outl(u32 মান, u16 port) {
+    __asm__ __volatile__("outl %0, %w1" : : "a"(মান), "Nd"(port));
 }
-static inline u8 inb(u16 port) {
-    u8 value;
-    __asm__ __volatile__("inb %w1, %b0" : "=a"(value) : "Nd"(port));
-    return value;
+স্থির অন্তঃস্থ u8 inb(u16 port) {
+    u8 মান;
+    __asm__ __volatile__("inb %w1, %b0" : "=a"(মান) : "Nd"(port));
+    প্রত্যাগম মান;
 }
-static inline u16 inw(u16 port) {
-    u16 value;
-    __asm__ __volatile__("inw %w1, %w0" : "=a"(value) : "Nd"(port));
-    return value;
+স্থির অন্তঃস্থ u16 inw(u16 port) {
+    u16 মান;
+    __asm__ __volatile__("inw %w1, %w0" : "=a"(মান) : "Nd"(port));
+    প্রত্যাগম মান;
 }
-static inline u32 inl(u16 port) {
-    u32 value;
-    __asm__ __volatile__("inl %w1, %0" : "=a"(value) : "Nd"(port));
-    return value;
+স্থির অন্তঃস্থ u32 inl(u16 port) {
+    u32 মান;
+    __asm__ __volatile__("inl %w1, %0" : "=a"(মান) : "Nd"(port));
+    প্রত্যাগম মান;
 }
 
-static inline void insb(u16 port, u8 *data, u32 count) {
-    asm volatile("rep insb (%%dx), %%es:(%%edi)"
-                 : "+c"(count), "+D"(data) : "d"(port) : "memory");
+স্থির অন্তঃস্থ শূন্য insb(u16 port, u8 *data, u32 গুনতি) {
+    asm চঞ্চল("rep insb (%%dx), %%es:(%%edi)"
+                 : "+c"(গুনতি), "+D"(data) : "d"(port) : "memory");
 }
-static inline void insw(u16 port, u16 *data, u32 count) {
-    asm volatile("rep insw (%%dx), %%es:(%%edi)"
-                 : "+c"(count), "+D"(data) : "d"(port) : "memory");
+স্থির অন্তঃস্থ শূন্য insw(u16 port, u16 *data, u32 গুনতি) {
+    asm চঞ্চল("rep insw (%%dx), %%es:(%%edi)"
+                 : "+c"(গুনতি), "+D"(data) : "d"(port) : "memory");
 }
-static inline void insl(u16 port, u32 *data, u32 count) {
-    asm volatile("rep insl (%%dx), %%es:(%%edi)"
-                 : "+c"(count), "+D"(data) : "d"(port) : "memory");
+স্থির অন্তঃস্থ শূন্য insl(u16 port, u32 *data, u32 গুনতি) {
+    asm চঞ্চল("rep insl (%%dx), %%es:(%%edi)"
+                 : "+c"(গুনতি), "+D"(data) : "d"(port) : "memory");
 }
 // XXX - outs not limited to es segment
-static inline void outsb(u16 port, u8 *data, u32 count) {
-    asm volatile("rep outsb %%es:(%%esi), (%%dx)"
-                 : "+c"(count), "+S"(data) : "d"(port) : "memory");
+স্থির অন্তঃস্থ শূন্য outsb(u16 port, u8 *data, u32 গুনতি) {
+    asm চঞ্চল("rep outsb %%es:(%%esi), (%%dx)"
+                 : "+c"(গুনতি), "+S"(data) : "d"(port) : "memory");
 }
-static inline void outsw(u16 port, u16 *data, u32 count) {
-    asm volatile("rep outsw %%es:(%%esi), (%%dx)"
-                 : "+c"(count), "+S"(data) : "d"(port) : "memory");
+স্থির অন্তঃস্থ শূন্য outsw(u16 port, u16 *data, u32 গুনতি) {
+    asm চঞ্চল("rep outsw %%es:(%%esi), (%%dx)"
+                 : "+c"(গুনতি), "+S"(data) : "d"(port) : "memory");
 }
-static inline void outsl(u16 port, u32 *data, u32 count) {
-    asm volatile("rep outsl %%es:(%%esi), (%%dx)"
-                 : "+c"(count), "+S"(data) : "d"(port) : "memory");
+স্থির অন্তঃস্থ শূন্য outsl(u16 port, u32 *data, u32 গুনতি) {
+    asm চঞ্চল("rep outsl %%es:(%%esi), (%%dx)"
+                 : "+c"(গুনতি), "+S"(data) : "d"(port) : "memory");
 }
 
 /* Compiler barrier is enough as an x86 CPU does not reorder reads or writes */
-static inline void smp_rmb(void) {
+স্থির অন্তঃস্থ শূন্য smp_rmb(শূন্য) {
     barrier();
 }
-static inline void smp_wmb(void) {
+স্থির অন্তঃস্থ শূন্য smp_wmb(শূন্য) {
     barrier();
 }
 
-static inline void writel(void *addr, u32 val) {
+স্থির অন্তঃস্থ শূন্য writel(শূন্য *addr, u32 val) {
     barrier();
-    *(volatile u32 *)addr = val;
+    *(চঞ্চল u32 *)addr = val;
 }
-static inline void writew(void *addr, u16 val) {
+স্থির অন্তঃস্থ শূন্য writew(শূন্য *addr, u16 val) {
     barrier();
-    *(volatile u16 *)addr = val;
+    *(চঞ্চল u16 *)addr = val;
 }
-static inline void writeb(void *addr, u8 val) {
+স্থির অন্তঃস্থ শূন্য writeb(শূন্য *addr, u8 val) {
     barrier();
-    *(volatile u8 *)addr = val;
+    *(চঞ্চল u8 *)addr = val;
 }
-static inline u64 readq(const void *addr) {
-    u64 val = *(volatile const u64 *)addr;
+স্থির অন্তঃস্থ u64 readq(ধ্রুব শূন্য *addr) {
+    u64 val = *(চঞ্চল ধ্রুব u64 *)addr;
     barrier();
-    return val;
+    প্রত্যাগম val;
 }
-static inline u32 readl(const void *addr) {
-    u32 val = *(volatile const u32 *)addr;
+স্থির অন্তঃস্থ u32 readl(ধ্রুব শূন্য *addr) {
+    u32 val = *(চঞ্চল ধ্রুব u32 *)addr;
     barrier();
-    return val;
+    প্রত্যাগম val;
 }
-static inline u16 readw(const void *addr) {
-    u16 val = *(volatile const u16 *)addr;
+স্থির অন্তঃস্থ u16 readw(ধ্রুব শূন্য *addr) {
+    u16 val = *(চঞ্চল ধ্রুব u16 *)addr;
     barrier();
-    return val;
+    প্রত্যাগম val;
 }
-static inline u8 readb(const void *addr) {
-    u8 val = *(volatile const u8 *)addr;
+স্থির অন্তঃস্থ u8 readb(ধ্রুব শূন্য *addr) {
+    u8 val = *(চঞ্চল ধ্রুব u8 *)addr;
     barrier();
-    return val;
+    প্রত্যাগম val;
 }
 
 // GDT bits
@@ -253,31 +253,31 @@ static inline u8 readb(const void *addr) {
 // GDT bits for segment limit (0-4Gig in 4K chunks)
 #define GDT_GRANLIMIT(v) (GDT_G | GDT_LIMIT((v) >> 12))
 
-struct descloc_s {
+সংরচনা descloc_s {
     u16 length;
     u32 addr;
 } PACKED;
 
-static inline void sgdt(struct descloc_s *desc) {
+স্থির অন্তঃস্থ শূন্য sgdt(সংরচনা descloc_s *desc) {
     asm("sgdtl %0" : "=m"(*desc));
 }
-static inline void lgdt(struct descloc_s *desc) {
+স্থির অন্তঃস্থ শূন্য lgdt(সংরচনা descloc_s *desc) {
     asm("lgdtl %0" : : "m"(*desc) : "memory");
 }
 
-static inline u8 get_a20(void) {
-    return (inb(PORT_A20) & A20_ENABLE_BIT) != 0;
+স্থির অন্তঃস্থ u8 get_a20(শূন্য) {
+    প্রত্যাগম (inb(PORT_A20) & A20_ENABLE_BIT) != 0;
 }
 
-static inline u8 set_a20(u8 cond) {
+স্থির অন্তঃস্থ u8 set_a20(u8 cond) {
     u8 val = inb(PORT_A20), a20_enabled = (val & A20_ENABLE_BIT) != 0;
-    if (a20_enabled != !!cond)
+    যদি (a20_enabled != !!cond)
         outb(val ^ A20_ENABLE_BIT, PORT_A20);
-    return a20_enabled;
+    প্রত্যাগম a20_enabled;
 }
 
 // x86.c
-void cpuid(u32 index, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx);
+শূন্য cpuid(u32 index, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx);
 
 #endif // !__ASSEMBLY__
 

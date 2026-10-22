@@ -6,49 +6,49 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_*
-#include "hw/pci.h" // pci_bdf_to_bus
-#include "hw/pcidevice.h" // foreachpci
-#include "hw/pci_regs.h" // PCI_INTERRUPT_PIN
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "romfile.h" // romfile_loadint
-#include "std/mptable.h" // MPTABLE_SIGNATURE
-#include "string.h" // memset
-#include "util.h" // MaxCountCPUs
-#include "x86.h" // cpuid
+#অন্তর্ভাব "config.h" // CONFIG_*
+#অন্তর্ভাব "hw/pci.h" // pci_bdf_to_bus
+#অন্তর্ভাব "hw/pcidevice.h" // foreachpci
+#অন্তর্ভাব "hw/pci_regs.h" // PCI_INTERRUPT_PIN
+#অন্তর্ভাব "malloc.h" // free
+#অন্তর্ভাব "output.h" // dprintf
+#অন্তর্ভাব "romfile.h" // romfile_loadint
+#অন্তর্ভাব "std/mptable.h" // MPTABLE_SIGNATURE
+#অন্তর্ভাব "string.h" // memset
+#অন্তর্ভাব "util.h" // MaxCountCPUs
+#অন্তর্ভাব "x86.h" // cpuid
 
-void
-mptable_setup(void)
+শূন্য
+mptable_setup(শূন্য)
 {
-    if (! CONFIG_MPTABLE)
-        return;
+    যদি (! CONFIG_MPTABLE)
+        প্রত্যাগম;
 
     dprintf(3, "init MPTable\n");
 
     // Config structure in temp area.
-    struct mptable_config_s *config = malloc_tmp(32*1024);
-    if (!config) {
+    সংরচনা mptable_config_s *config = malloc_tmp(32*1024);
+    যদি (!config) {
         warn_noalloc();
-        return;
+        প্রত্যাগম;
     }
-    memset(config, 0, sizeof(*config));
+    memset(config, 0, পরিমাণ(*config));
     config->signature = MPCONFIG_SIGNATURE;
     config->spec = 4;
-    memcpy(config->oemid, BUILD_CPUNAME8, sizeof(config->oemid));
-    memcpy(config->productid, "0.1         ", sizeof(config->productid));
+    memcpy(config->oemid, BUILD_CPUNAME8, পরিমাণ(config->oemid));
+    memcpy(config->productid, "0.1         ", পরিমাণ(config->productid));
     config->lapic = BUILD_APIC_ADDR;
 
     // Detect cpu info
     u32 cpuid_signature, ebx, ecx, cpuid_features;
     cpuid(1, &cpuid_signature, &ebx, &ecx, &cpuid_features);
-    if (! cpuid_signature) {
+    যদি (! cpuid_signature) {
         // Use default values.
         cpuid_signature = 0x600;
         cpuid_features = 0x201;
     }
-    int pkgcpus = 1;
-    if (cpuid_features & (1 << 28)) {
+    পূর্ণাঙ্ক pkgcpus = 1;
+    যদি (cpuid_features & (1 << 28)) {
         /* Only populate the MPS tables with the first logical CPU in
            each package */
         pkgcpus = (ebx >> 16) & 0xff;
@@ -57,10 +57,10 @@ mptable_setup(void)
     u8 apic_version = readl((u8*)BUILD_APIC_ADDR + 0x30) & 0xff;
 
     // CPU definitions.
-    struct mpt_cpu *cpus = (void*)&config[1], *cpu = cpus;
-    int i;
-    for (i = 0; i < MaxCountCPUs; i+=pkgcpus) {
-        memset(cpu, 0, sizeof(*cpu));
+    সংরচনা mpt_cpu *cpus = (শূন্য*)&config[1], *cpu = cpus;
+    পূর্ণাঙ্ক i;
+    প্রতি (i = 0; i < Max_গুনতি_CPUs; i+=pkgcpus) {
+        memset(cpu, 0, পরিমাণ(*cpu));
         cpu->type = MPT_TYPE_CPU;
         cpu->apicid = i;
         cpu->apicver = apic_version;
@@ -70,32 +70,32 @@ mptable_setup(void)
         cpu->featureflag = cpuid_features;
         cpu++;
     }
-    int entrycount = cpu - cpus;
+    পূর্ণাঙ্ক entrycount = cpu - cpus;
 
     // PCI bus
-    struct mpt_bus *buses = (void*)cpu, *bus = buses;
-    if (!hlist_empty(&PCIDevices)) {
-        memset(bus, 0, sizeof(*bus));
+    সংরচনা mpt_bus *buses = (শূন্য*)cpu, *bus = buses;
+    যদি (!hlist_empty(&PCIDevices)) {
+        memset(bus, 0, পরিমাণ(*bus));
         bus->type = MPT_TYPE_BUS;
         bus->busid = 0;
-        memcpy(bus->bustype, "PCI   ", sizeof(bus->bustype));
+        memcpy(bus->bustype, "PCI   ", পরিমাণ(bus->bustype));
         bus++;
         entrycount++;
     }
 
     /* isa bus */
-    int isabusid = bus - buses;
-    memset(bus, 0, sizeof(*bus));
+    পূর্ণাঙ্ক isabusid = bus - buses;
+    memset(bus, 0, পরিমাণ(*bus));
     bus->type = MPT_TYPE_BUS;
     bus->busid = isabusid;
-    memcpy(bus->bustype, "ISA   ", sizeof(bus->bustype));
+    memcpy(bus->bustype, "ISA   ", পরিমাণ(bus->bustype));
     bus++;
     entrycount++;
 
     /* ioapic */
     u8 ioapic_id = BUILD_IOAPIC_ID;
-    struct mpt_ioapic *ioapic = (void*)bus;
-    memset(ioapic, 0, sizeof(*ioapic));
+    সংরচনা mpt_ioapic *ioapic = (শূন্য*)bus;
+    memset(ioapic, 0, পরিমাণ(*ioapic));
     ioapic->type = MPT_TYPE_IOAPIC;
     ioapic->apicid = ioapic_id;
     ioapic->apicver = 0x11;
@@ -104,27 +104,27 @@ mptable_setup(void)
     entrycount++;
 
     /* irqs */
-    struct mpt_intsrc *intsrcs = (void*)&ioapic[1], *intsrc = intsrcs;
-    int dev = -1;
+    সংরচনা mpt_intsrc *intsrcs = (শূন্য*)&ioapic[1], *intsrc = intsrcs;
+    পূর্ণাঙ্ক dev = -1;
     unsigned short pinmask = 0;
 
-    struct pci_device *pci;
+    সংরচনা pci_device *pci;
     foreachpci(pci) {
         u16 bdf = pci->bdf;
-        if (pci_bdf_to_bus(bdf) != 0)
-            break;
-        int pin = pci_config_readb(bdf, PCI_INTERRUPT_PIN);
-        int irq = pci_config_readb(bdf, PCI_INTERRUPT_LINE);
-        if (pin == 0)
-            continue;
-        if (dev != pci_bdf_to_busdev(bdf)) {
+        যদি (pci_bdf_to_bus(bdf) != 0)
+            ভঙ্গ;
+        পূর্ণাঙ্ক pin = pci_config_readb(bdf, PCI_INTERRUPT_PIN);
+        পূর্ণাঙ্ক irq = pci_config_readb(bdf, PCI_INTERRUPT_সারি);
+        যদি (pin == 0)
+            অনুবর্ত;
+        যদি (dev != pci_bdf_to_busdev(bdf)) {
             dev = pci_bdf_to_busdev(bdf);
             pinmask = 0;
         }
-        if (pinmask & (1 << pin)) /* pin was seen already */
-            continue;
+        যদি (pinmask & (1 << pin)) /* pin was seen already */
+            অনুবর্ত;
         pinmask |= (1 << pin);
-        memset(intsrc, 0, sizeof(*intsrc));
+        memset(intsrc, 0, পরিমাণ(*intsrc));
         intsrc->type = MPT_TYPE_INTSRC;
         intsrc->irqtype = 0; /* INT */
         intsrc->irqflag = 1; /* active high */
@@ -135,11 +135,11 @@ mptable_setup(void)
         intsrc++;
     }
 
-    int irq0_override = romfile_loadint("etc/irq0-override", 0);
-    for (i = 0; i < 16; i++) {
-        memset(intsrc, 0, sizeof(*intsrc));
-        if (BUILD_PCI_IRQS & (1 << i))
-            continue;
+    পূর্ণাঙ্ক irq0_override = romfile_loadint("etc/irq0-override", 0);
+    প্রতি (i = 0; i < 16; i++) {
+        memset(intsrc, 0, পরিমাণ(*intsrc));
+        যদি (BUILD_PCI_IRQS & (1 << i))
+            অনুবর্ত;
         intsrc->type = MPT_TYPE_INTSRC;
         intsrc->irqtype = 0; /* INT */
         intsrc->irqflag = 0; /* conform to bus spec */
@@ -147,12 +147,12 @@ mptable_setup(void)
         intsrc->srcbusirq = i;
         intsrc->dstapic = ioapic_id;
         intsrc->dstirq = i;
-        if (irq0_override) {
+        যদি (irq0_override) {
             /* Destination 2 is covered by irq0->inti2 override (i ==
                0). Source IRQ 2 is unused */
-            if (i == 0)
+            যদি (i == 0)
                 intsrc->dstirq = 2;
-            else if (i == 2)
+            অন্যথা যদি (i == 2)
                 intsrc--;
         }
         intsrc++;
@@ -179,19 +179,19 @@ mptable_setup(void)
     entrycount += intsrc - intsrcs;
 
     // Finalize config structure.
-    int length = (void*)intsrc - (void*)config;
+    পূর্ণাঙ্ক length = (শূন্য*)intsrc - (শূন্য*)config;
     config->entrycount = entrycount;
     config->length = length;
     config->checksum -= checksum(config, length);
 
     // floating pointer structure
-    struct mptable_floating_s floating;
-    memset(&floating, 0, sizeof(floating));
+    সংরচনা mptable_floating_s floating;
+    memset(&floating, 0, পরিমাণ(floating));
     floating.signature = MPTABLE_SIGNATURE;
     floating.physaddr = (u32)config;
     floating.length = 1;
     floating.spec_rev = 4;
-    floating.checksum -= checksum(&floating, sizeof(floating));
+    floating.checksum -= checksum(&floating, পরিমাণ(floating));
     copy_mptable(&floating);
-    free(config);
+    মুক্ত(config);
 }

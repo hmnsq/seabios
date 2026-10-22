@@ -2,9 +2,9 @@
 #define __USB_MSC_H
 
 // usb-msc.c
-struct disk_op_s;
-int usb_process_op(struct disk_op_s *op);
-struct usbdevice_s;
-int usb_msc_setup(struct usbdevice_s *usbdev);
+সংরচনা disk_op_s;
+পূর্ণাঙ্ক usb_process_op(সংরচনা disk_op_s *op);
+সংরচনা usbdevice_s;
+পূর্ণাঙ্ক usb_msc_setup(সংরচনা usbdevice_s *usbdev);
 
 #endif // ush-msc.h

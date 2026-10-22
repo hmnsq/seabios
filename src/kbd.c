@@ -5,32 +5,32 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_BDA
-#include "bregs.h" // struct bregs
-#include "config.h" // CONFIG_*
-#include "hw/ps2port.h" // ps2_kbd_command
-#include "hw/usb-hid.h" // usb_kbd_command
-#include "output.h" // debug_enter
-#include "stacks.h" // yield
-#include "string.h" // memset
-#include "util.h" // kbd_init
+#অন্তর্ভাব "biosvar.h" // GET_BDA
+#অন্তর্ভাব "bregs.h" // struct bregs
+#অন্তর্ভাব "config.h" // CONFIG_*
+#অন্তর্ভাব "hw/ps2port.h" // ps2_kbd_command
+#অন্তর্ভাব "hw/usb-hid.h" // usb_kbd_command
+#অন্তর্ভাব "output.h" // debug_enter
+#অন্তর্ভাব "stacks.h" // yield
+#অন্তর্ভাব "string.h" // memset
+#অন্তর্ভাব "util.h" // kbd_init
 
-void
-kbd_init(void)
+শূন্য
+kbd_init(শূন্য)
 {
     dprintf(3, "init keyboard\n");
-    u16 x = offsetof(struct bios_data_area_s, kbd_buf);
+    u16 x = offsetof(সংরচনা bios_data_area_s, kbd_buf);
     SET_BDA(kbd_flag1, KF1_101KBD);
     SET_BDA(kbd_buf_head, x);
     SET_BDA(kbd_buf_tail, x);
     SET_BDA(kbd_buf_start_offset, x);
 
     SET_BDA(kbd_buf_end_offset
-            , x + FIELD_SIZEOF(struct bios_data_area_s, kbd_buf));
+            , x + FIELD_SIZEOF(সংরচনা bios_data_area_s, kbd_buf));
 }
 
 u8
-enqueue_key(u16 keycode)
+enqueue_চাবি(u16 keycode)
 {
     u16 buffer_start = GET_BDA(kbd_buf_start_offset);
     u16 buffer_end   = GET_BDA(kbd_buf_end_offset);
@@ -40,46 +40,46 @@ enqueue_key(u16 keycode)
 
     u16 temp_tail = buffer_tail;
     buffer_tail += 2;
-    if (buffer_tail >= buffer_end)
+    যদি (buffer_tail >= buffer_end)
         buffer_tail = buffer_start;
 
-    if (buffer_tail == buffer_head)
-        return 0;
+    যদি (buffer_tail == buffer_head)
+        প্রত্যাগম 0;
 
     SET_FARVAR(SEG_BDA, *(u16*)(temp_tail+0), keycode);
     SET_BDA(kbd_buf_tail, buffer_tail);
-    return 1;
+    প্রত্যাগম 1;
 }
 
-static void
-dequeue_key(struct bregs *regs, int incr, int extended)
+স্থির শূন্য
+dequeue_চাবি(সংরচনা bregs *regs, পূর্ণাঙ্ক incr, পূর্ণাঙ্ক extended)
 {
     yield();
     u16 buffer_head;
     u16 buffer_tail;
-    for (;;) {
+    প্রতি (;;) {
         buffer_head = GET_BDA(kbd_buf_head);
         buffer_tail = GET_BDA(kbd_buf_tail);
 
-        if (buffer_head != buffer_tail)
-            break;
-        if (!incr) {
+        যদি (buffer_head != buffer_tail)
+            ভঙ্গ;
+        যদি (!incr) {
             regs->flags |= F_ZF;
-            return;
+            প্রত্যাগম;
         }
         yield_toirq();
     }
 
     u16 keycode = GET_FARVAR(SEG_BDA, *(u16*)(buffer_head+0));
     u8 ascii = keycode & 0xff;
-    if (!extended) {
+    যদি (!extended) {
         // Translate extended keys
-        if (ascii == 0xe0 && keycode & 0xff00)
+        যদি (ascii == 0xe0 && keycode & 0xff00)
             keycode &= 0xff00;
-        else if (keycode == 0xe00d || keycode == 0xe00a)
+        অন্যথা যদি (keycode == 0xe00d || keycode == 0xe00a)
             // Extended enter key
             keycode = 0x1c00 | ascii;
-        else if (keycode == 0xe02f)
+        অন্যথা যদি (keycode == 0xe02f)
             // Extended '/' key
             keycode = 0x352f;
         // Technically, if the ascii value is 0xf0 or if the
@@ -87,63 +87,63 @@ dequeue_key(struct bregs *regs, int incr, int extended)
         // discarded.  However, there seems no harm in passing on the
         // extended values in these cases.
     }
-    if (ascii == 0xf0 && keycode & 0xff00)
+    যদি (ascii == 0xf0 && keycode & 0xff00)
         keycode &= 0xff00;
     regs->ax = keycode;
 
-    if (!incr) {
+    যদি (!incr) {
         regs->flags &= ~F_ZF;
-        return;
+        প্রত্যাগম;
     }
     u16 buffer_start = GET_BDA(kbd_buf_start_offset);
     u16 buffer_end   = GET_BDA(kbd_buf_end_offset);
 
     buffer_head += 2;
-    if (buffer_head >= buffer_end)
+    যদি (buffer_head >= buffer_end)
         buffer_head = buffer_start;
     SET_BDA(kbd_buf_head, buffer_head);
 }
 
-static int
-kbd_command(int command, u8 *param)
+স্থির পূর্ণাঙ্ক
+kbd_command(পূর্ণাঙ্ক command, u8 *param)
 {
-    if (usb_kbd_active())
-        return usb_kbd_command(command, param);
-    return ps2_kbd_command(command, param);
+    যদি (usb_kbd_active())
+        প্রত্যাগম usb_kbd_command(command, param);
+    প্রত্যাগম ps2_kbd_command(command, param);
 }
 
 // read keyboard input
-static void
-handle_1600(struct bregs *regs)
+স্থির শূন্য
+handle_1600(সংরচনা bregs *regs)
 {
-    dequeue_key(regs, 1, 0);
+    dequeue_চাবি(regs, 1, 0);
 }
 
 // check keyboard status
-static void
-handle_1601(struct bregs *regs)
+স্থির শূন্য
+handle_1601(সংরচনা bregs *regs)
 {
-    dequeue_key(regs, 0, 0);
+    dequeue_চাবি(regs, 0, 0);
 }
 
 // get shift flag status
-static void
-handle_1602(struct bregs *regs)
+স্থির শূন্য
+handle_1602(সংরচনা bregs *regs)
 {
     yield();
     regs->al = GET_BDA(kbd_flag0);
 }
 
 // store key-stroke into buffer
-static void
-handle_1605(struct bregs *regs)
+স্থির শূন্য
+handle_1605(সংরচনা bregs *regs)
 {
-    regs->al = !enqueue_key(regs->cx);
+    regs->al = !enqueue_চাবি(regs->cx);
 }
 
 // GET KEYBOARD FUNCTIONALITY
-static void
-handle_1609(struct bregs *regs)
+স্থির শূন্য
+handle_1609(সংরচনা bregs *regs)
 {
     // bit Bochs Description
     //  7    0   reserved
@@ -159,35 +159,35 @@ handle_1609(struct bregs *regs)
 }
 
 // GET KEYBOARD ID
-static void noinline
-handle_160a(struct bregs *regs)
+স্থির শূন্য noinline
+handle_160a(সংরচনা bregs *regs)
 {
     u8 param[2];
-    int ret = kbd_command(ATKBD_CMD_GETID, param);
-    if (ret) {
+    পূর্ণাঙ্ক ret = kbd_command(ATKBD_CMD_GETID, param);
+    যদি (ret) {
         regs->bx = 0;
-        return;
+        প্রত্যাগম;
     }
     regs->bx = (param[1] << 8) | param[0];
 }
 
 // read MF-II keyboard input
-static void
-handle_1610(struct bregs *regs)
+স্থির শূন্য
+handle_1610(সংরচনা bregs *regs)
 {
-    dequeue_key(regs, 1, 1);
+    dequeue_চাবি(regs, 1, 1);
 }
 
 // check MF-II keyboard status
-static void
-handle_1611(struct bregs *regs)
+স্থির শূন্য
+handle_1611(সংরচনা bregs *regs)
 {
-    dequeue_key(regs, 0, 1);
+    dequeue_চাবি(regs, 0, 1);
 }
 
 // get extended keyboard status
-static void
-handle_1612(struct bregs *regs)
+স্থির শূন্য
+handle_1612(সংরচনা bregs *regs)
 {
     yield();
     regs->ax = ((GET_BDA(kbd_flag0) & ~((KF1_RCTRL|KF1_RALT) << 8))
@@ -195,83 +195,83 @@ handle_1612(struct bregs *regs)
     //BX_DEBUG_INT16("int16: func 12 sending %04x\n",AX);
 }
 
-static void
-handle_166f(struct bregs *regs)
+স্থির শূন্য
+handle_166f(সংরচনা bregs *regs)
 {
-    if (regs->al == 0x08)
+    যদি (regs->al == 0x08)
         // unsupported, aka normal keyboard
         regs->ah = 2;
 }
 
 // keyboard capability check called by DOS 5.0+ keyb
-static void
-handle_1692(struct bregs *regs)
+স্থির শূন্য
+handle_1692(সংরচনা bregs *regs)
 {
     // function int16 ah=0x10-0x12 supported
     regs->ah = 0x80;
 }
 
 // 122 keys capability check called by DOS 5.0+ keyb
-static void
-handle_16a2(struct bregs *regs)
+স্থির শূন্য
+handle_16a2(সংরচনা bregs *regs)
 {
     // don't change AH : function int16 ah=0x20-0x22 NOT supported
 }
 
-static void
-handle_16XX(struct bregs *regs)
+স্থির শূন্য
+handle_16XX(সংরচনা bregs *regs)
 {
     warn_unimplemented(regs);
 }
 
-static void noinline
-set_leds(void)
+স্থির শূন্য noinline
+set_leds(শূন্য)
 {
     u8 shift_flags = (GET_BDA(kbd_flag0) >> 4) & 0x07;
     u8 kbd_led = GET_BDA(kbd_led);
     u8 led_flags = kbd_led & 0x07;
-    if (shift_flags == led_flags)
-        return;
+    যদি (shift_flags == led_flags)
+        প্রত্যাগম;
 
-    int ret = kbd_command(ATKBD_CMD_SETLEDS, &shift_flags);
-    if (ret)
+    পূর্ণাঙ্ক ret = kbd_command(ATKBD_CMD_SETLEDS, &shift_flags);
+    যদি (ret)
         // Error
-        return;
+        প্রত্যাগম;
     kbd_led = (kbd_led & ~0x07) | shift_flags;
     SET_BDA(kbd_led, kbd_led);
 }
 
 // INT 16h Keyboard Service Entry Point
-void VISIBLE16
-handle_16(struct bregs *regs)
+শূন্য VISIBLE16
+handle_16(সংরচনা bregs *regs)
 {
     debug_enter(regs, DEBUG_HDL_16);
-    if (! CONFIG_KEYBOARD)
-        return;
+    যদি (! CONFIG_KEYBOARD)
+        প্রত্যাগম;
 
     // XXX - set_leds should be called from irq handler
     set_leds();
 
-    switch (regs->ah) {
-    case 0x00: handle_1600(regs); break;
-    case 0x01: handle_1601(regs); break;
-    case 0x02: handle_1602(regs); break;
-    case 0x05: handle_1605(regs); break;
-    case 0x09: handle_1609(regs); break;
-    case 0x0a: handle_160a(regs); break;
-    case 0x10: handle_1610(regs); break;
-    case 0x11: handle_1611(regs); break;
-    case 0x12: handle_1612(regs); break;
-    case 0x92: handle_1692(regs); break;
-    case 0xa2: handle_16a2(regs); break;
-    case 0x6f: handle_166f(regs); break;
-    default:   handle_16XX(regs); break;
+    বিকল্প (regs->ah) {
+    পক্ষ 0x00: handle_1600(regs); ভঙ্গ;
+    পক্ষ 0x01: handle_1601(regs); ভঙ্গ;
+    পক্ষ 0x02: handle_1602(regs); ভঙ্গ;
+    পক্ষ 0x05: handle_1605(regs); ভঙ্গ;
+    পক্ষ 0x09: handle_1609(regs); ভঙ্গ;
+    পক্ষ 0x0a: handle_160a(regs); ভঙ্গ;
+    পক্ষ 0x10: handle_1610(regs); ভঙ্গ;
+    পক্ষ 0x11: handle_1611(regs); ভঙ্গ;
+    পক্ষ 0x12: handle_1612(regs); ভঙ্গ;
+    পক্ষ 0x92: handle_1692(regs); ভঙ্গ;
+    পক্ষ 0xa2: handle_16a2(regs); ভঙ্গ;
+    পক্ষ 0x6f: handle_166f(regs); ভঙ্গ;
+    স্বভাব:   handle_16XX(regs); ভঙ্গ;
     }
 }
 
 #define none 0
 
-static struct scaninfo {
+স্থির সংরচনা scaninfo {
     u16 normal;
     u16 shift;
     u16 control;
@@ -368,38 +368,38 @@ static struct scaninfo {
     { 0x8600, 0x8800, 0x8a00, 0x8c00 }, /* F12 */
 };
 
-struct scaninfo key_ext_enter VAR16 = {
+সংরচনা scaninfo চাবি_ext_enter VAR16 = {
     0xe00d, 0xe00d, 0xe00a, 0xa600
 };
-struct scaninfo key_ext_slash VAR16 = {
+সংরচনা scaninfo চাবি_ext_slash VAR16 = {
     0xe02f, 0xe02f, 0x9500, 0xa400
 };
 
 u16 ascii_to_keycode(u8 ascii)
 {
-    int i;
+    পূর্ণাঙ্ক i;
 
-    for (i = 0; i < ARRAY_SIZE(scan_to_keycode); i++) {
-        if ((GET_GLOBAL(scan_to_keycode[i].normal) & 0xff) == ascii)
-            return GET_GLOBAL(scan_to_keycode[i].normal);
-        if ((GET_GLOBAL(scan_to_keycode[i].shift) & 0xff) == ascii)
-            return GET_GLOBAL(scan_to_keycode[i].shift);
-        if ((GET_GLOBAL(scan_to_keycode[i].control) & 0xff) == ascii)
-            return GET_GLOBAL(scan_to_keycode[i].control);
+    প্রতি (i = 0; i < ARRAY_SIZE(scan_to_keycode); i++) {
+        যদি ((GET_GLOBAL(scan_to_keycode[i].normal) & 0xff) == ascii)
+            প্রত্যাগম GET_GLOBAL(scan_to_keycode[i].normal);
+        যদি ((GET_GLOBAL(scan_to_keycode[i].shift) & 0xff) == ascii)
+            প্রত্যাগম GET_GLOBAL(scan_to_keycode[i].shift);
+        যদি ((GET_GLOBAL(scan_to_keycode[i].control) & 0xff) == ascii)
+            প্রত্যাগম GET_GLOBAL(scan_to_keycode[i].control);
     }
-    return 0;
+    প্রত্যাগম 0;
 }
 
 // Handle a ps2 style scancode read from the keyboard.
-static void
-kbd_set_flag(int key_release, u16 set_bit0, u8 set_bit1, u16 toggle_bit)
+স্থির শূন্য
+kbd_set_flag(পূর্ণাঙ্ক চাবি_release, u16 set_bit0, u8 set_bit1, u16 toggle_bit)
 {
     u16 flags0 = GET_BDA(kbd_flag0);
     u8 flags1 = GET_BDA(kbd_flag1);
-    if (key_release) {
+    যদি (চাবি_release) {
         flags0 &= ~set_bit0;
         flags1 &= ~set_bit1;
-    } else {
+    } অন্যথা {
         flags0 ^= toggle_bit;
         flags0 |= set_bit0;
         flags1 |= set_bit1;
@@ -408,11 +408,11 @@ kbd_set_flag(int key_release, u16 set_bit0, u8 set_bit1, u16 toggle_bit)
     SET_BDA(kbd_flag1, flags1);
 }
 
-static void
-kbd_ctrl_break(int key_release)
+স্থির শূন্য
+kbd_ctrl_break(পূর্ণাঙ্ক চাবি_release)
 {
-    if (!key_release)
-        return;
+    যদি (!চাবি_release)
+        প্রত্যাগম;
     // Clear keyboard buffer and place 0x0000 in buffer
     u16 buffer_start = GET_BDA(kbd_buf_start_offset);
     SET_BDA(kbd_buf_head, buffer_start);
@@ -421,179 +421,179 @@ kbd_ctrl_break(int key_release)
     // Set break flag
     SET_BDA(break_flag, 0x80);
     // Generate int 0x1b
-    struct bregs br;
-    memset(&br, 0, sizeof(br));
+    সংরচনা bregs br;
+    memset(&br, 0, পরিমাণ(br));
     br.flags = F_IF;
     call16_int(0x1b, &br);
 }
 
-static void
-kbd_sysreq(int key_release)
+স্থির শূন্য
+kbd_sysreq(পূর্ণাঙ্ক চাবি_release)
 {
     // SysReq generates int 0x15/0x85
-    struct bregs br;
-    memset(&br, 0, sizeof(br));
+    সংরচনা bregs br;
+    memset(&br, 0, পরিমাণ(br));
     br.ah = 0x85;
-    br.al = key_release ? 0x01 : 0x00;
+    br.al = চাবি_release ? 0x01 : 0x00;
     br.flags = F_IF;
     call16_int(0x15, &br);
 }
 
-static void
-kbd_prtscr(int key_release)
+স্থির শূন্য
+kbd_prtscr(পূর্ণাঙ্ক চাবি_release)
 {
-    if (key_release)
-        return;
+    যদি (চাবি_release)
+        প্রত্যাগম;
     // PrtScr generates int 0x05 (ctrl-prtscr has keycode 0x7200?)
-    struct bregs br;
-    memset(&br, 0, sizeof(br));
+    সংরচনা bregs br;
+    memset(&br, 0, পরিমাণ(br));
     br.flags = F_IF;
     call16_int(0x05, &br);
 }
 
 // Handle a ps2 style scancode read from the keyboard.
-static void
+স্থির শূন্য
 __process_key(u8 scancode)
 {
     // Check for multi-scancode key sequences
     u8 flags1 = GET_BDA(kbd_flag1);
-    if (scancode == 0xe0 || scancode == 0xe1) {
+    যদি (scancode == 0xe0 || scancode == 0xe1) {
         // Start of two byte extended (e0) or three byte pause key (e1) sequence
         u8 eflag = scancode == 0xe0 ? KF1_LAST_E0 : KF1_LAST_E1;
         SET_BDA(kbd_flag1, flags1 | eflag);
-        return;
+        প্রত্যাগম;
     }
-    int key_release = scancode & 0x80;
+    পূর্ণাঙ্ক চাবি_release = scancode & 0x80;
     scancode &= ~0x80;
-    if (flags1 & (KF1_LAST_E0|KF1_LAST_E1)) {
-        if (flags1 & KF1_LAST_E1 && scancode == 0x1d)
+    যদি (flags1 & (KF1_LAST_E0|KF1_LAST_E1)) {
+        যদি (flags1 & KF1_LAST_E1 && scancode == 0x1d)
             // Ignore second byte of pause key (e1 1d 45 / e1 9d c5)
-            return;
+            প্রত্যাগম;
         // Clear E0/E1 flag in memory for next key event
         SET_BDA(kbd_flag1, flags1 & ~(KF1_LAST_E0|KF1_LAST_E1));
     }
 
     // Check for special keys
-    switch (scancode) {
-    case 0x3a: /* Caps Lock */
-        kbd_set_flag(key_release, KF0_CAPS, 0, KF0_CAPSACTIVE);
-        return;
-    case 0x2a: /* L Shift */
-        if (flags1 & KF1_LAST_E0)
+    বিকল্প (scancode) {
+    পক্ষ 0x3a: /* Caps Lock */
+        kbd_set_flag(চাবি_release, KF0_CAPS, 0, KF0_CAPSACTIVE);
+        প্রত্যাগম;
+    পক্ষ 0x2a: /* L Shift */
+        যদি (flags1 & KF1_LAST_E0)
             // Ignore fake shifts
-            return;
-        kbd_set_flag(key_release, KF0_LSHIFT, 0, 0);
-        return;
-    case 0x36: /* R Shift */
-        if (flags1 & KF1_LAST_E0)
+            প্রত্যাগম;
+        kbd_set_flag(চাবি_release, KF0_LSHIFT, 0, 0);
+        প্রত্যাগম;
+    পক্ষ 0x36: /* R Shift */
+        যদি (flags1 & KF1_LAST_E0)
             // Ignore fake shifts
-            return;
-        kbd_set_flag(key_release, KF0_RSHIFT, 0, 0);
-        return;
-    case 0x1d: /* Ctrl */
-        if (flags1 & KF1_LAST_E0)
-            kbd_set_flag(key_release, KF0_CTRLACTIVE, KF1_RCTRL, 0);
-        else
-            kbd_set_flag(key_release, KF0_CTRLACTIVE | KF0_LCTRL, 0, 0);
-        return;
-    case 0x38: /* Alt */
-        if (flags1 & KF1_LAST_E0)
-            kbd_set_flag(key_release, KF0_ALTACTIVE, KF1_RALT, 0);
-        else
-            kbd_set_flag(key_release, KF0_ALTACTIVE | KF0_LALT, 0, 0);
-        return;
-    case 0x45: /* Num Lock */
-        if (flags1 & KF1_LAST_E1)
+            প্রত্যাগম;
+        kbd_set_flag(চাবি_release, KF0_RSHIFT, 0, 0);
+        প্রত্যাগম;
+    পক্ষ 0x1d: /* Ctrl */
+        যদি (flags1 & KF1_LAST_E0)
+            kbd_set_flag(চাবি_release, KF0_CTRLACTIVE, KF1_RCTRL, 0);
+        অন্যথা
+            kbd_set_flag(চাবি_release, KF0_CTRLACTIVE | KF0_LCTRL, 0, 0);
+        প্রত্যাগম;
+    পক্ষ 0x38: /* Alt */
+        যদি (flags1 & KF1_LAST_E0)
+            kbd_set_flag(চাবি_release, KF0_ALTACTIVE, KF1_RALT, 0);
+        অন্যথা
+            kbd_set_flag(চাবি_release, KF0_ALTACTIVE | KF0_LALT, 0, 0);
+        প্রত্যাগম;
+    পক্ষ 0x45: /* Num Lock */
+        যদি (flags1 & KF1_LAST_E1)
             // XXX - pause key.
-            return;
-        kbd_set_flag(key_release, KF0_NUM, 0, KF0_NUMACTIVE);
-        return;
-    case 0x46: /* Scroll Lock */
-        if (flags1 & KF1_LAST_E0) {
-            kbd_ctrl_break(key_release);
-            return;
+            প্রত্যাগম;
+        kbd_set_flag(চাবি_release, KF0_অঙ্ক, 0, KF0_NUMACTIVE);
+        প্রত্যাগম;
+    পক্ষ 0x46: /* Scroll Lock */
+        যদি (flags1 & KF1_LAST_E0) {
+            kbd_ctrl_break(চাবি_release);
+            প্রত্যাগম;
         }
-        kbd_set_flag(key_release, KF0_SCROLL, 0, KF0_SCROLLACTIVE);
-        return;
+        kbd_set_flag(চাবি_release, KF0_SCROLL, 0, KF0_SCROLLACTIVE);
+        প্রত্যাগম;
 
-    case 0x37: /* * */
-        if (flags1 & KF1_LAST_E0) {
-            kbd_prtscr(key_release);
-            return;
+    পক্ষ 0x37: /* * */
+        যদি (flags1 & KF1_LAST_E0) {
+            kbd_prtscr(চাবি_release);
+            প্রত্যাগম;
         }
-        break;
-    case 0x54: /* SysReq */
-        kbd_sysreq(key_release);
-        return;
-    case 0x53: /* Del */
-        if ((GET_BDA(kbd_flag0) & (KF0_CTRLACTIVE|KF0_ALTACTIVE))
-            == (KF0_CTRLACTIVE|KF0_ALTACTIVE) && !key_release) {
+        ভঙ্গ;
+    পক্ষ 0x54: /* SysReq */
+        kbd_sysreq(চাবি_release);
+        প্রত্যাগম;
+    পক্ষ 0x53: /* Del */
+        যদি ((GET_BDA(kbd_flag0) & (KF0_CTRLACTIVE|KF0_ALTACTIVE))
+            == (KF0_CTRLACTIVE|KF0_ALTACTIVE) && !চাবি_release) {
             // Ctrl+alt+del - reset machine.
             SET_BDA(soft_reset_flag, 0x1234);
             reset();
         }
-        break;
+        ভঙ্গ;
 
-    default:
-        break;
+    স্বভাব:
+        ভঙ্গ;
     }
 
     // Handle generic keys
-    if (key_release)
+    যদি (চাবি_release)
         // ignore key releases
-        return;
-    if (!scancode || scancode >= ARRAY_SIZE(scan_to_keycode)) {
+        প্রত্যাগম;
+    যদি (!scancode || scancode >= ARRAY_SIZE(scan_to_keycode)) {
         dprintf(1, "__process_key unknown scancode read: 0x%02x!\n", scancode);
-        return;
+        প্রত্যাগম;
     }
-    struct scaninfo *info = &scan_to_keycode[scancode];
-    if (flags1 & KF1_LAST_E0 && (scancode == 0x1c || scancode == 0x35))
-        info = (scancode == 0x1c ? &key_ext_enter : &key_ext_slash);
+    সংরচনা scaninfo *info = &scan_to_keycode[scancode];
+    যদি (flags1 & KF1_LAST_E0 && (scancode == 0x1c || scancode == 0x35))
+        info = (scancode == 0x1c ? &চাবি_ext_enter : &চাবি_ext_slash);
     u16 flags0 = GET_BDA(kbd_flag0);
     u16 keycode;
-    if (flags0 & KF0_ALTACTIVE) {
+    যদি (flags0 & KF0_ALTACTIVE) {
         keycode = GET_GLOBAL(info->alt);
-    } else if (flags0 & KF0_CTRLACTIVE) {
+    } অন্যথা যদি (flags0 & KF0_CTRLACTIVE) {
         keycode = GET_GLOBAL(info->control);
-    } else {
+    } অন্যথা {
         u8 useshift = flags0 & (KF0_RSHIFT|KF0_LSHIFT) ? 1 : 0;
         u8 ascii = GET_GLOBAL(info->normal) & 0xff;
-        if ((flags0 & KF0_NUMACTIVE && scancode >= 0x47 && scancode <= 0x53)
+        যদি ((flags0 & KF0_NUMACTIVE && scancode >= 0x47 && scancode <= 0x53)
             || (flags0 & KF0_CAPSACTIVE && ascii >= 'a' && ascii <= 'z'))
             // Numlock/capslock toggles shift on certain keys
             useshift ^= 1;
-        if (useshift)
+        যদি (useshift)
             keycode = GET_GLOBAL(info->shift);
-        else
+        অন্যথা
             keycode = GET_GLOBAL(info->normal);
     }
-    if (flags1 & KF1_LAST_E0 && scancode >= 0x47 && scancode <= 0x53) {
+    যদি (flags1 & KF1_LAST_E0 && scancode >= 0x47 && scancode <= 0x53) {
         /* extended keys handling */
-        if (flags0 & KF0_ALTACTIVE)
+        যদি (flags0 & KF0_ALTACTIVE)
             keycode = (scancode + 0x50) << 8;
-        else
+        অন্যথা
             keycode = (keycode & 0xff00) | 0xe0;
     }
-    if (keycode)
-        enqueue_key(keycode);
+    যদি (keycode)
+        enqueue_চাবি(keycode);
 }
 
-void
-process_key(u8 key)
+শূন্য
+process_চাবি(u8 চাবি)
 {
-    if (!CONFIG_KEYBOARD)
-        return;
+    যদি (!CONFIG_KEYBOARD)
+        প্রত্যাগম;
 
-    if (CONFIG_KBD_CALL_INT15_4F) {
+    যদি (CONFIG_KBD_CALL_INT15_4F) {
         // allow for keyboard intercept
-        struct bregs br;
-        memset(&br, 0, sizeof(br));
-        br.eax = (0x4f << 8) | key;
+        সংরচনা bregs br;
+        memset(&br, 0, পরিমাণ(br));
+        br.eax = (0x4f << 8) | চাবি;
         br.flags = F_IF|F_CF;
         call16_int(0x15, &br);
-        if (!(br.flags & F_CF))
-            return;
-        key = br.eax;
+        যদি (!(br.flags & F_CF))
+            প্রত্যাগম;
+        চাবি = br.eax;
     }
-    __process_key(key);
+    __process_key(চাবি);
 }

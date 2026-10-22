@@ -5,32 +5,32 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // SET_BDA
-#include "bregs.h" // struct bregs
-#include "hw/pic.h" // pic_eoi1
-#include "hw/ps2port.h" // ps2_check_event
-#include "hw/rtc.h" // rtc_read
-#include "hw/usb-hid.h" // usb_check_event
-#include "output.h" // debug_enter
-#include "stacks.h" // yield
-#include "string.h" // memset
-#include "util.h" // clock_setup
+#অন্তর্ভাব "biosvar.h" // SET_BDA
+#অন্তর্ভাব "bregs.h" // struct bregs
+#অন্তর্ভাব "hw/pic.h" // pic_eoi1
+#অন্তর্ভাব "hw/ps2port.h" // ps2_check_event
+#অন্তর্ভাব "hw/rtc.h" // rtc_read
+#অন্তর্ভাব "hw/usb-hid.h" // usb_check_event
+#অন্তর্ভাব "output.h" // debug_enter
+#অন্তর্ভাব "stacks.h" // yield
+#অন্তর্ভাব "string.h" // memset
+#অন্তর্ভাব "util.h" // clock_setup
 
 
 /****************************************************************
  * Init
  ****************************************************************/
 
-static u32
+স্থির u32
 bcd2bin(u8 val)
 {
-    return (val & 0xf) + ((val >> 4) * 10);
+    প্রত্যাগম (val & 0xf) + ((val >> 4) * 10);
 }
 
 u8 Century VARLOW;
 
-void
-clock_setup(void)
+শূন্য
+clock_setup(শূন্য)
 {
     dprintf(3, "init timer\n");
     pit_setup();
@@ -44,19 +44,19 @@ clock_setup(void)
     SET_BDA(timer_counter, ticks % TICKS_PER_DAY);
 
     // Setup Century storage
-    if (CONFIG_QEMU) {
+    যদি (CONFIG_QEMU) {
         Century = rtc_read(CMOS_CENTURY);
-    } else {
+    } অন্যথা {
         // Infer current century from the year.
         u8 year = rtc_read(CMOS_RTC_YEAR);
-        if (year > 0x80)
+        যদি (year > 0x80)
             Century = 0x19;
-        else
+        অন্যথা
             Century = 0x20;
     }
 
     enable_hwirq(0, FUNC16(entry_08));
-    if (CONFIG_RTC_TIMER)
+    যদি (CONFIG_RTC_TIMER)
         enable_hwirq(8, FUNC16(entry_70));
 }
 
@@ -66,8 +66,8 @@ clock_setup(void)
  ****************************************************************/
 
 // get current clock count
-static void
-handle_1a00(struct bregs *regs)
+স্থির শূন্য
+handle_1a00(সংরচনা bregs *regs)
 {
     yield();
     u32 ticks = GET_BDA(timer_counter);
@@ -79,8 +79,8 @@ handle_1a00(struct bregs *regs)
 }
 
 // Set Current Clock Count
-static void
-handle_1a01(struct bregs *regs)
+স্থির শূন্য
+handle_1a01(সংরচনা bregs *regs)
 {
     u32 ticks = (regs->cx << 16) | regs->dx;
     SET_BDA(timer_counter, ticks);
@@ -91,12 +91,12 @@ handle_1a01(struct bregs *regs)
 }
 
 // Read CMOS Time
-static void
-handle_1a02(struct bregs *regs)
+স্থির শূন্য
+handle_1a02(সংরচনা bregs *regs)
 {
-    if (rtc_updating()) {
+    যদি (rtc_updating()) {
         set_invalid(regs);
-        return;
+        প্রত্যাগম;
     }
 
     regs->dh = rtc_read(CMOS_RTC_SECONDS);
@@ -109,8 +109,8 @@ handle_1a02(struct bregs *regs)
 }
 
 // Set CMOS Time
-static void
-handle_1a03(struct bregs *regs)
+স্থির শূন্য
+handle_1a03(সংরচনা bregs *regs)
 {
     // Using a debugger, I notice the following masking/setting
     // of bits in Status Register B, by setting Reg B to
@@ -122,7 +122,7 @@ handle_1a03(struct bregs *regs)
     //
     // Bit4 in try#1 flipped in hardware (forced low) due to bit7=1
     // My assumption: RegB = ((RegB & 01100000b) | 00000010b)
-    if (rtc_updating()) {
+    যদি (rtc_updating()) {
         rtc_setup();
         // fall through as if an update were not in progress
     }
@@ -139,25 +139,25 @@ handle_1a03(struct bregs *regs)
 }
 
 // Read CMOS Date
-static void
-handle_1a04(struct bregs *regs)
+স্থির শূন্য
+handle_1a04(সংরচনা bregs *regs)
 {
     regs->ah = 0;
-    if (rtc_updating()) {
+    যদি (rtc_updating()) {
         set_invalid(regs);
-        return;
+        প্রত্যাগম;
     }
     regs->cl = rtc_read(CMOS_RTC_YEAR);
     regs->dh = rtc_read(CMOS_RTC_MONTH);
     regs->dl = rtc_read(CMOS_RTC_DAY_MONTH);
-    regs->ch = GET_LOW(Century);
+    regs->ch = GET_নিচের(Century);
     regs->al = regs->ch;
     set_success(regs);
 }
 
 // Set CMOS Date
-static void
-handle_1a05(struct bregs *regs)
+স্থির শূন্য
+handle_1a05(সংরচনা bregs *regs)
 {
     // Using a debugger, I notice the following masking/setting
     // of bits in Status Register B, by setting Reg B to
@@ -169,15 +169,15 @@ handle_1a05(struct bregs *regs)
     //
     // Bit4 in try#1 flipped in hardware (forced low) due to bit7=1
     // My assumption: RegB = (RegB & 01111111b)
-    if (rtc_updating()) {
+    যদি (rtc_updating()) {
         rtc_setup();
         set_invalid(regs);
-        return;
+        প্রত্যাগম;
     }
     rtc_write(CMOS_RTC_YEAR, regs->cl);
     rtc_write(CMOS_RTC_MONTH, regs->dh);
     rtc_write(CMOS_RTC_DAY_MONTH, regs->dl);
-    SET_LOW(Century, regs->ch);
+    SET_নিচের(Century, regs->ch);
     // clear halt-clock bit
     u8 val8 = rtc_read(CMOS_STATUS_B) & ~RTC_B_SET;
     rtc_write(CMOS_STATUS_B, val8);
@@ -187,8 +187,8 @@ handle_1a05(struct bregs *regs)
 }
 
 // Set Alarm Time in CMOS
-static void
-handle_1a06(struct bregs *regs)
+স্থির শূন্য
+handle_1a06(সংরচনা bregs *regs)
 {
     // Using a debugger, I notice the following masking/setting
     // of bits in Status Register B, by setting Reg B to
@@ -202,12 +202,12 @@ handle_1a06(struct bregs *regs)
     // My assumption: RegB = ((RegB & 01111111b) | 00100000b)
     u8 val8 = rtc_read(CMOS_STATUS_B); // Get Status Reg B
     regs->ax = 0;
-    if (val8 & RTC_B_AIE) {
+    যদি (val8 & RTC_B_AIE) {
         // Alarm interrupt enabled already
         set_invalid(regs);
-        return;
+        প্রত্যাগম;
     }
-    if (rtc_updating()) {
+    যদি (rtc_updating()) {
         rtc_setup();
         // fall through as if an update were not in progress
     }
@@ -220,8 +220,8 @@ handle_1a06(struct bregs *regs)
 }
 
 // Turn off Alarm
-static void
-handle_1a07(struct bregs *regs)
+স্থির শূন্য
+handle_1a07(সংরচনা bregs *regs)
 {
     // Using a debugger, I notice the following masking/setting
     // of bits in Status Register B, by setting Reg B to
@@ -241,50 +241,50 @@ handle_1a07(struct bregs *regs)
     set_success(regs);
 }
 
-static void
-handle_1abb(struct bregs *regs)
+স্থির শূন্য
+handle_1abb(সংরচনা bregs *regs)
 {
-    if (!CONFIG_TCGBIOS)
-        return;
+    যদি (!CONFIG_TCGBIOS)
+        প্রত্যাগম;
 
     dprintf(DEBUG_tcg, "16: Calling tpm_interrupt_handler\n");
     call32(tpm_interrupt_handler32, MAKE_FLATPTR(GET_SEG(SS), regs), 0);
 }
 
 // Unsupported
-static void
-handle_1aXX(struct bregs *regs)
+স্থির শূন্য
+handle_1aXX(সংরচনা bregs *regs)
 {
     set_unimplemented(regs);
 }
 
 // INT 1Ah Time-of-day Service Entry Point
-void VISIBLE16
-handle_1a(struct bregs *regs)
+শূন্য VISIBLE16
+handle_1a(সংরচনা bregs *regs)
 {
     debug_enter(regs, DEBUG_HDL_1a);
-    switch (regs->ah) {
-    case 0x00: handle_1a00(regs); break;
-    case 0x01: handle_1a01(regs); break;
-    case 0x02: handle_1a02(regs); break;
-    case 0x03: handle_1a03(regs); break;
-    case 0x04: handle_1a04(regs); break;
-    case 0x05: handle_1a05(regs); break;
-    case 0x06: handle_1a06(regs); break;
-    case 0x07: handle_1a07(regs); break;
-    case 0xbb: handle_1abb(regs); break;
-    default:   handle_1aXX(regs); break;
+    বিকল্প (regs->ah) {
+    পক্ষ 0x00: handle_1a00(regs); ভঙ্গ;
+    পক্ষ 0x01: handle_1a01(regs); ভঙ্গ;
+    পক্ষ 0x02: handle_1a02(regs); ভঙ্গ;
+    পক্ষ 0x03: handle_1a03(regs); ভঙ্গ;
+    পক্ষ 0x04: handle_1a04(regs); ভঙ্গ;
+    পক্ষ 0x05: handle_1a05(regs); ভঙ্গ;
+    পক্ষ 0x06: handle_1a06(regs); ভঙ্গ;
+    পক্ষ 0x07: handle_1a07(regs); ভঙ্গ;
+    পক্ষ 0xbb: handle_1abb(regs); ভঙ্গ;
+    স্বভাব:   handle_1aXX(regs); ভঙ্গ;
     }
 }
 
 // Update main tick counter
-static void
-clock_update(void)
+স্থির শূন্য
+clock_update(শূন্য)
 {
     u32 counter = GET_BDA(timer_counter);
     counter++;
     // compare to one days worth of timer ticks at 18.2 hz
-    if (counter >= TICKS_PER_DAY) {
+    যদি (counter >= TICKS_PER_DAY) {
         // there has been a midnight rollover at this point
         counter = 0;
         SET_BDA(timer_rollover, GET_BDA(timer_rollover) + 1);
@@ -299,15 +299,15 @@ clock_update(void)
 }
 
 // INT 08h System Timer ISR Entry Point
-void VISIBLE16
-handle_08(void)
+শূন্য VISIBLE16
+handle_08(শূন্য)
 {
     debug_isr(DEBUG_ISR_08);
     clock_update();
 
     // chain to user timer tick INT #0x1c
-    struct bregs br;
-    memset(&br, 0, sizeof(br));
+    সংরচনা bregs br;
+    memset(&br, 0, পরিমাণ(br));
     br.flags = F_IF;
     call16_int(0x1c, &br);
 
@@ -317,14 +317,14 @@ handle_08(void)
 u32 last_timer_check VARLOW;
 
 // Simulate timer irq on machines without hardware irqs
-void
-clock_poll_irq(void)
+শূন্য
+clock_poll_irq(শূন্য)
 {
-    if (CONFIG_HARDWARE_IRQ)
-        return;
-    if (!timer_check(GET_LOW(last_timer_check)))
-        return;
-    SET_LOW(last_timer_check, timer_calc(ticks_to_ms(1)));
+    যদি (CONFIG_HARDWARE_IRQ)
+        প্রত্যাগম;
+    যদি (!timer_check(GET_নিচের(last_timer_check)))
+        প্রত্যাগম;
+    SET_নিচের(last_timer_check, timer_calc(ticks_to_ms(1)));
     clock_update();
 }
 
@@ -336,25 +336,25 @@ clock_poll_irq(void)
 // Calculate the timer value at 'count' number of full timer ticks in
 // the future.
 u32
-irqtimer_calc_ticks(u32 count)
+irqtimer_calc_ticks(u32 গুনতি)
 {
-    return (GET_BDA(timer_counter) + count + 1) % TICKS_PER_DAY;
+    প্রত্যাগম (GET_BDA(timer_counter) + গুনতি + 1) % TICKS_PER_DAY;
 }
 
 // Return the timer value that is 'msecs' time in the future.
 u32
 irqtimer_calc(u32 msecs)
 {
-    if (!msecs)
-        return GET_BDA(timer_counter);
-    return irqtimer_calc_ticks(ticks_from_ms(msecs));
+    যদি (!msecs)
+        প্রত্যাগম GET_BDA(timer_counter);
+    প্রত্যাগম irqtimer_calc_ticks(ticks_from_ms(msecs));
 }
 
 // Check if the given timer value has passed.
-int
+পূর্ণাঙ্ক
 irqtimer_check(u32 end)
 {
-    return (((GET_BDA(timer_counter) + TICKS_PER_DAY - end) % TICKS_PER_DAY)
+    প্রত্যাগম (((GET_BDA(timer_counter) + TICKS_PER_DAY - end) % TICKS_PER_DAY)
             < (TICKS_PER_DAY/2));
 }
 
@@ -363,25 +363,25 @@ irqtimer_check(u32 end)
  * Periodic timer
  ****************************************************************/
 
-static int
+স্থির পূর্ণাঙ্ক
 set_usertimer(u32 usecs, u16 seg, u16 offset)
 {
-    if (GET_BDA(rtc_wait_flag) & RWS_WAIT_PENDING)
-        return -1;
+    যদি (GET_BDA(rtc_wait_flag) & RWS_WAIT_PENDING)
+        প্রত্যাগম -1;
 
     // Interval not already set.
     SET_BDA(rtc_wait_flag, RWS_WAIT_PENDING);  // Set status byte.
     SET_BDA(user_wait_complete_flag, SEGOFF(seg, offset));
     SET_BDA(user_wait_timeout, usecs);
     rtc_use();
-    return 0;
+    প্রত্যাগম 0;
 }
 
-static void
-clear_usertimer(void)
+স্থির শূন্য
+clear_usertimer(শূন্য)
 {
-    if (!(GET_BDA(rtc_wait_flag) & RWS_WAIT_PENDING))
-        return;
+    যদি (!(GET_BDA(rtc_wait_flag) & RWS_WAIT_PENDING))
+        প্রত্যাগম;
     // Turn off status byte.
     SET_BDA(rtc_wait_flag, 0);
     rtc_release();
@@ -390,112 +390,112 @@ clear_usertimer(void)
 #define RET_ECLOCKINUSE  0x83
 
 // Wait for CX:DX microseconds
-void
-handle_1586(struct bregs *regs)
+শূন্য
+handle_1586(সংরচনা bregs *regs)
 {
-    if (!CONFIG_RTC_TIMER) {
+    যদি (!CONFIG_RTC_TIMER) {
         set_code_unimplemented(regs, RET_EUNSUPPORTED);
-        return;
+        প্রত্যাগম;
     }
     // Use the rtc to wait for the specified time.
     u8 statusflag = 0;
-    u32 count = (regs->cx << 16) | regs->dx;
-    int ret = set_usertimer(count, GET_SEG(SS), (u32)&statusflag);
-    if (ret) {
+    u32 গুনতি = (regs->cx << 16) | regs->dx;
+    পূর্ণাঙ্ক ret = set_usertimer(গুনতি, GET_SEG(SS), (u32)&statusflag);
+    যদি (ret) {
         set_code_invalid(regs, RET_ECLOCKINUSE);
-        return;
+        প্রত্যাগম;
     }
-    while (!statusflag)
+    যাবত্ (!statusflag)
         yield_toirq();
     set_success(regs);
 }
 
 // Set Interval requested.
-static void
-handle_158300(struct bregs *regs)
+স্থির শূন্য
+handle_158300(সংরচনা bregs *regs)
 {
-    int ret = set_usertimer((regs->cx << 16) | regs->dx, regs->es, regs->bx);
-    if (ret)
+    পূর্ণাঙ্ক ret = set_usertimer((regs->cx << 16) | regs->dx, regs->es, regs->bx);
+    যদি (ret)
         // Interval already set.
         set_code_invalid(regs, RET_EUNSUPPORTED);
-    else
+    অন্যথা
         set_success(regs);
 }
 
 // Clear interval requested
-static void
-handle_158301(struct bregs *regs)
+স্থির শূন্য
+handle_158301(সংরচনা bregs *regs)
 {
     clear_usertimer();
     set_success(regs);
 }
 
-static void
-handle_1583XX(struct bregs *regs)
+স্থির শূন্য
+handle_1583XX(সংরচনা bregs *regs)
 {
     set_code_unimplemented(regs, RET_EUNSUPPORTED);
     regs->al--;
 }
 
-void
-handle_1583(struct bregs *regs)
+শূন্য
+handle_1583(সংরচনা bregs *regs)
 {
-    if (!CONFIG_RTC_TIMER) {
+    যদি (!CONFIG_RTC_TIMER) {
         handle_1583XX(regs);
-        return;
+        প্রত্যাগম;
     }
-    switch (regs->al) {
-    case 0x00: handle_158300(regs); break;
-    case 0x01: handle_158301(regs); break;
-    default:   handle_1583XX(regs); break;
+    বিকল্প (regs->al) {
+    পক্ষ 0x00: handle_158300(regs); ভঙ্গ;
+    পক্ষ 0x01: handle_158301(regs); ভঙ্গ;
+    স্বভাব:   handle_1583XX(regs); ভঙ্গ;
     }
 }
 
 #define USEC_PER_RTC DIV_ROUND_CLOSEST(1000000, 1024)
 
 // int70h: IRQ8 - CMOS RTC
-void VISIBLE16
-handle_70(void)
+শূন্য VISIBLE16
+handle_70(শূন্য)
 {
-    if (!CONFIG_RTC_TIMER)
-        return;
+    যদি (!CONFIG_RTC_TIMER)
+        প্রত্যাগম;
     debug_isr(DEBUG_ISR_70);
 
     // Check which modes are enabled and have occurred.
     u8 registerB = rtc_read(CMOS_STATUS_B);
     u8 registerC = rtc_read(CMOS_STATUS_C);
 
-    if (!(registerB & (RTC_B_PIE|RTC_B_AIE)))
-        goto done;
-    if (registerC & RTC_B_AIE) {
+    যদি (!(registerB & (RTC_B_PIE|RTC_B_AIE)))
+        গচ্ছ done;
+    যদি (registerC & RTC_B_AIE) {
         // Handle Alarm Interrupt.
-        struct bregs br;
-        memset(&br, 0, sizeof(br));
+        সংরচনা bregs br;
+        memset(&br, 0, পরিমাণ(br));
         br.flags = F_IF;
         call16_int(0x4a, &br);
     }
-    if (!(registerC & RTC_B_PIE))
-        goto done;
+    যদি (!(registerC & RTC_B_PIE))
+        গচ্ছ done;
 
     // Handle Periodic Interrupt.
 
     check_preempt();
 
-    if (!GET_BDA(rtc_wait_flag))
-        goto done;
+    যদি (!GET_BDA(rtc_wait_flag))
+        গচ্ছ done;
 
     // Wait Interval (Int 15, AH=83) active.
     u32 time = GET_BDA(user_wait_timeout);  // Time left in microseconds.
-    if (time < USEC_PER_RTC) {
+    যদি (time < USEC_PER_RTC) {
         // Done waiting - write to specified flag byte.
-        struct segoff_s segoff = GET_BDA(user_wait_complete_flag);
+        সংরচনা segoff_s segoff = GET_BDA(user_wait_complete_flag);
         u16 ptr_seg = segoff.seg;
         u8 *ptr_far = (u8*)(segoff.offset+0);
         u8 oldval = GET_FARVAR(ptr_seg, *ptr_far);
         SET_FARVAR(ptr_seg, *ptr_far, oldval | 0x80);
 
         clear_usertimer();
-    } else {
+    } অন্যথা {
         // Continue waiting.
         time -= USEC_PER_RTC;
         SET_BDA(user_wait_timeout, time);
