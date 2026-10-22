@@ -16,14 +16,14 @@
  *
  */
 
-#include "output.h" // panic
-#include "virtio-ring.h"
-#include "virtio-pci.h"
+#شامل "output.h" // panic
+#شامل "virtio-ring.h"
+#شامل "virtio-pci.h"
 
-#define BUG() do {                                                      \
+#define BUG() انجامبده {                                                      \
             panic("BUG: failure at %d/%s()!\n", __LINE__, __func__);    \
-        } while (0)
-#define BUG_ON(condition) do { if (condition) BUG(); } while (0)
+        } وقتی (0)
+#define BUG_ON(condition) انجامبده { اگر (condition) BUG(); } وقتی (0)
 
 /*
  * vring_more_used
@@ -32,13 +32,13 @@
  *
  */
 
-int vring_more_used(struct vring_virtqueue *vq)
+صحیح vring_more_used(ساختار vring_virtqueue *vq)
 {
-    struct vring_used *used = vq->vring.used;
-    int more = vq->last_used_idx != used->idx;
+    ساختار vring_used *used = vq->vring.used;
+    صحیح more = vq->last_used_idx != used->idx;
     /* Make sure ring reads are done after idx read above. */
     smp_rmb();
-    return more;
+    بازگشت more;
 }
 
 /*
@@ -47,16 +47,16 @@ int vring_more_used(struct vring_virtqueue *vq)
  * put at the begin of the free list the current desc[head]
  */
 
-void vring_detach(struct vring_virtqueue *vq, unsigned int head)
+تهی vring_detach(ساختار vring_virtqueue *vq, unsigned صحیح head)
 {
-    struct vring *vr = &vq->vring;
-    struct vring_desc *desc = GET_LOWFLAT(vr->desc);
-    unsigned int i;
+    ساختار vring *vr = &vq->vring;
+    ساختار vring_desc *desc = GET_LOWFLAT(vr->desc);
+    unsigned صحیح i;
 
     /* find end of given descriptor */
 
     i = head;
-    while (desc[i].flags & VRING_DESC_F_NEXT)
+    وقتی (desc[i].flags & VRING_DESC_F_NEXT)
         i = desc[i].next;
 
     /* link it with free list and point to it */
@@ -72,19 +72,19 @@ void vring_detach(struct vring_virtqueue *vq, unsigned int head)
  *
  */
 
-int vring_get_buf(struct vring_virtqueue *vq, unsigned int *len)
+صحیح vring_get_buf(ساختار vring_virtqueue *vq, unsigned صحیح *len)
 {
-    struct vring *vr = &vq->vring;
-    struct vring_used_elem *elem;
-    struct vring_used *used = vq->vring.used;
+    ساختار vring *vr = &vq->vring;
+    ساختار vring_used_elem *elem;
+    ساختار vring_used *used = vq->vring.used;
     u32 id;
-    int ret;
+    صحیح ret;
 
 //    BUG_ON(!vring_more_used(vq));
 
-    elem = &used->ring[vq->last_used_idx % vr->num];
+    elem = &used->ring[vq->last_used_idx % vr->رقم];
     id = elem->id;
-    if (len != NULL)
+    اگر (len != پوچ)
         *len = elem->len;
 
     ret = vq->vdata[id];
@@ -93,31 +93,31 @@ int vring_get_buf(struct vring_virtqueue *vq, unsigned int *len)
 
     vq->last_used_idx = vq->last_used_idx + 1;
 
-    return ret;
+    بازگشت ret;
 }
 
-void vring_add_buf(struct vring_virtqueue *vq,
-                   struct vring_list list[],
-                   unsigned int out, unsigned int in,
-                   int index, int num_added)
+تهی vring_add_buf(ساختار vring_virtqueue *vq,
+                   ساختار vring_list list[],
+                   unsigned صحیح out, unsigned صحیح in,
+                   صحیح index, صحیح رقم_added)
 {
-    struct vring *vr = &vq->vring;
-    int i, av, head, prev;
-    struct vring_desc *desc = vr->desc;
-    struct vring_avail *avail = vr->avail;
+    ساختار vring *vr = &vq->vring;
+    صحیح i, av, head, prev;
+    ساختار vring_desc *desc = vr->desc;
+    ساختار vring_avail *avail = vr->avail;
 
     BUG_ON(out + in == 0);
 
     prev = 0;
     head = vq->free_head;
-    for (i = head; out; i = desc[i].next, out--) {
+    برای (i = head; out; i = desc[i].next, out--) {
         desc[i].flags = VRING_DESC_F_NEXT;
         desc[i].addr = (u64)virt_to_phys(list->addr);
         desc[i].len = list->length;
         prev = i;
         list++;
     }
-    for ( ; in; i = desc[i].next, in--) {
+    برای ( ; in; i = desc[i].next, in--) {
         desc[i].flags = VRING_DESC_F_NEXT|VRING_DESC_F_WRITE;
         desc[i].addr = (u64)virt_to_phys(list->addr);
         desc[i].len = list->length;
@@ -130,18 +130,18 @@ void vring_add_buf(struct vring_virtqueue *vq,
 
     vq->vdata[head] = index;
 
-    av = (avail->idx + num_added) % vr->num;
+    av = (avail->idx + رقم_added) % vr->رقم;
     avail->ring[av] = head;
 }
 
-void vring_kick(struct vp_device *vp, struct vring_virtqueue *vq, int num_added)
+تهی vring_kick(ساختار vp_device *vp, ساختار vring_virtqueue *vq, صحیح رقم_added)
 {
-    struct vring *vr = &vq->vring;
-    struct vring_avail *avail = vr->avail;
+    ساختار vring *vr = &vq->vring;
+    ساختار vring_avail *avail = vr->avail;
 
     /* Make sure idx update is done after ring write. */
     smp_wmb();
-    avail->idx = avail->idx + num_added;
+    avail->idx = avail->idx + رقم_added;
 
     vp_notify(vp, vq);
 }

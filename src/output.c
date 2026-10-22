@@ -4,23 +4,23 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include <stdarg.h> // va_list
+#شامل <stdarg.h> // va_list
 
-#include "farptr.h" // GET_VAR
-#include "bregs.h" // struct bregs
-#include "config.h" // CONFIG_*
-#include "biosvar.h" // GET_GLOBAL
-#include "hw/pci.h" // pci_bdf_to_bus
-#include "hw/pcidevice.h" // pci_device
-#include "hw/serialio.h" // serial_debug_putc
-#include "malloc.h" // malloc_tmp
-#include "output.h" // dprintf
-#include "stacks.h" // call16_int
-#include "string.h" // memset
-#include "util.h" // ScreenAndDebug
+#شامل "farptr.h" // GET_VAR
+#شامل "bregs.h" // struct bregs
+#شامل "config.h" // CONFIG_*
+#شامل "biosvar.h" // GET_GLOBAL
+#شامل "hw/pci.h" // pci_bdf_to_bus
+#شامل "hw/pcidevice.h" // pci_device
+#شامل "hw/serialio.h" // serial_debug_putc
+#شامل "malloc.h" // malloc_tmp
+#شامل "output.h" // dprintf
+#شامل "stacks.h" // call16_int
+#شامل "string.h" // memset
+#شامل "util.h" // ScreenAndDebug
 
-struct putcinfo {
-    void (*func)(struct putcinfo *info, char c);
+ساختار putcinfo {
+    تهی (*func)(ساختار putcinfo *info, نویسه c);
 };
 
 
@@ -28,28 +28,28 @@ struct putcinfo {
  * Debug output
  ****************************************************************/
 
-void
-debug_banner(void)
+تهی
+debug_banner(تهی)
 {
     dprintf(1, "SeaBIOS (version %s)\n", VERSION);
     dprintf(1, "BUILD: %s\n", BUILDINFO);
 }
 
 // Write a character to debug port(s).
-static void
-debug_putc(struct putcinfo *action, char c)
+ایستا تهی
+debug_putc(ساختار putcinfo *action, نویسه c)
 {
-    if (! CONFIG_DEBUG_LEVEL)
-        return;
+    اگر (! CONFIG_DEBUG_LEVEL)
+        بازگشت;
     qemu_debug_putc(c);
-    if (!MODESEGMENT)
+    اگر (!MODESEGMENT)
         coreboot_debug_putc(c);
     serial_debug_putc(c);
 }
 
 // Flush any pending output to debug port(s).
-static void
-debug_flush(void)
+ایستا تهی
+debug_flush(تهی)
 {
     serial_debug_flush();
 }
@@ -57,12 +57,12 @@ debug_flush(void)
 // In segmented mode just need a dummy variable (debug_putc is always
 // used anyway), and in 32bit flat mode need a pointer to the 32bit
 // instance of debug_putc().
-#if MODE16
-static struct putcinfo debuginfo VAR16;
-#elif MODESEGMENT
-static struct putcinfo debuginfo VAR32SEG;
-#else
-static struct putcinfo debuginfo = { debug_putc };
+#اگر MODE16
+ایستا ساختار putcinfo debuginfo VAR16;
+#وگرنهاگر MODESEGMENT
+ایستا ساختار putcinfo debuginfo VAR32SEG;
+#وگرنه
+ایستا ساختار putcinfo debuginfo = { debug_putc };
 #endif
 
 
@@ -71,14 +71,14 @@ static struct putcinfo debuginfo = { debug_putc };
  ****************************************************************/
 
 // Show a character on the screen.
-static void
-screenc(char c)
+ایستا تهی
+screenc(نویسه c)
 {
-    if (!MODESEGMENT && GET_IVT(0x10).segoff == FUNC16(entry_10).segoff)
+    اگر (!MODESEGMENT && GET_IVT(0x10).segoff == FUNC16(entry_10).segoff)
         // No need to thunk to 16bit mode if vgabios is not present
-        return;
-    struct bregs br;
-    memset(&br, 0, sizeof(br));
+        بازگشت;
+    ساختار bregs br;
+    memset(&br, 0, اندازه(br));
     br.flags = F_IF;
     br.ah = 0x0e;
     br.al = c;
@@ -87,17 +87,17 @@ screenc(char c)
 }
 
 // Handle a character from a printf request.
-static void
-screen_putc(struct putcinfo *action, char c)
+ایستا تهی
+screen_putc(ساختار putcinfo *action, نویسه c)
 {
-    if (ScreenAndDebug)
+    اگر (ScreenAndDebug)
         debug_putc(&debuginfo, c);
-    if (c == '\n')
+    اگر (c == '\n')
         screenc('\r');
     screenc(c);
 }
 
-static struct putcinfo screeninfo = { screen_putc };
+ایستا ساختار putcinfo screeninfo = { screen_putc };
 
 
 /****************************************************************
@@ -105,105 +105,105 @@ static struct putcinfo screeninfo = { screen_putc };
  ****************************************************************/
 
 // Output a character.
-static void
-putc(struct putcinfo *action, char c)
+ایستا تهی
+putc(ساختار putcinfo *action, نویسه c)
 {
-    if (MODESEGMENT) {
+    اگر (MODESEGMENT) {
         // Only debugging output supported in segmented mode.
         debug_putc(action, c);
-        return;
+        بازگشت;
     }
 
-    void (*func)(struct putcinfo *info, char c) = GET_GLOBAL(action->func);
+    تهی (*func)(ساختار putcinfo *info, نویسه c) = GET_GLOBAL(action->func);
     func(action, c);
 }
 
 // Ouptut a string.
-static void
-puts(struct putcinfo *action, const char *s)
+ایستا تهی
+puts(ساختار putcinfo *action, ثابت نویسه *s)
 {
-    if (!MODESEGMENT && !s)
+    اگر (!MODESEGMENT && !s)
         s = "(NULL)";
-    for (; *s; s++)
+    برای (; *s; s++)
         putc(action, *s);
 }
 
 // Output a string that is in the CS segment.
-static void
-puts_cs(struct putcinfo *action, const char *s)
+ایستا تهی
+puts_cs(ساختار putcinfo *action, ثابت نویسه *s)
 {
-    char *vs = (char*)s;
-    for (;; vs++) {
-        char c = GET_GLOBAL(*vs);
-        if (!c)
-            break;
+    نویسه *vs = (نویسه*)s;
+    برای (;; vs++) {
+        نویسه c = GET_GLOBAL(*vs);
+        اگر (!c)
+            بشکن;
         putc(action, c);
     }
 }
 
 // Output an unsigned integer.
-static void
-putuint(struct putcinfo *action, u32 val)
+ایستا تهی
+putuint(ساختار putcinfo *action, u32 val)
 {
-    char buf[12];
-    char *d = &buf[sizeof(buf) - 1];
+    نویسه buf[12];
+    نویسه *d = &buf[اندازه(buf) - 1];
     *d-- = '\0';
-    for (;;) {
+    برای (;;) {
         *d = (val % 10) + '0';
         val /= 10;
-        if (!val)
-            break;
+        اگر (!val)
+            بشکن;
         d--;
     }
     puts(action, d);
 }
 
 // Output a single digit hex character.
-static inline void
-putsinglehex(struct putcinfo *action, u32 val, int uc)
+ایستا درونخطی تهی
+putsinglehex(ساختار putcinfo *action, u32 val, صحیح uc)
 {
-    if (val <= 9)
+    اگر (val <= 9)
         val = '0' + val;
-    else if (uc)
+    وگرنه اگر (uc)
         val = 'A' + val - 10;
-    else
+    وگرنه
         val = 'a' + val - 10;
     putc(action, val);
 }
 
 // Output an integer in hexadecimal with a specified width.
-static void
-puthex(struct putcinfo *action, u32 val, int width, int uc)
+ایستا تهی
+puthex(ساختار putcinfo *action, u32 val, صحیح width, صحیح uc)
 {
-    switch (width) {
-    default: putsinglehex(action, (val >> 28) & 0xf, uc);
-    case 7:  putsinglehex(action, (val >> 24) & 0xf, uc);
-    case 6:  putsinglehex(action, (val >> 20) & 0xf, uc);
-    case 5:  putsinglehex(action, (val >> 16) & 0xf, uc);
-    case 4:  putsinglehex(action, (val >> 12) & 0xf, uc);
-    case 3:  putsinglehex(action, (val >> 8) & 0xf, uc);
-    case 2:  putsinglehex(action, (val >> 4) & 0xf, uc);
-    case 1:  putsinglehex(action, (val >> 0) & 0xf, uc);
+    انتخاب (width) {
+    پیشفرض: putsinglehex(action, (val >> 28) & 0xf, uc);
+    حالت 7:  putsinglehex(action, (val >> 24) & 0xf, uc);
+    حالت 6:  putsinglehex(action, (val >> 20) & 0xf, uc);
+    حالت 5:  putsinglehex(action, (val >> 16) & 0xf, uc);
+    حالت 4:  putsinglehex(action, (val >> 12) & 0xf, uc);
+    حالت 3:  putsinglehex(action, (val >> 8) & 0xf, uc);
+    حالت 2:  putsinglehex(action, (val >> 4) & 0xf, uc);
+    حالت 1:  putsinglehex(action, (val >> 0) & 0xf, uc);
     }
 }
 
 // Output an integer in hexadecimal with a minimum width.
-static void
-putprettyhex(struct putcinfo *action, u32 val, int width, char padchar, int uc)
+ایستا تهی
+putprettyhex(ساختار putcinfo *action, u32 val, صحیح width, نویسه padchar, صحیح uc)
 {
     u32 tmp = val;
-    int count = 1;
-    while (tmp >>= 4)
-        count++;
-    width -= count;
-    while (width-- > 0)
+    صحیح شمار = 1;
+    وقتی (tmp >>= 4)
+        شمار++;
+    width -= شمار;
+    وقتی (width-- > 0)
         putc(action, padchar);
-    puthex(action, val, count, uc);
+    puthex(action, val, شمار, uc);
 }
 
 // Output 'struct pci_device' BDF as %02x:%02x.%x
-static void
-put_pci_device(struct putcinfo *action, struct pci_device *pci)
+ایستا تهی
+put_pci_device(ساختار putcinfo *action, ساختار pci_device *pci)
 {
     puthex(action, pci_bdf_to_bus(pci->bdf), 2, 0);
     putc(action, ':');
@@ -212,114 +212,114 @@ put_pci_device(struct putcinfo *action, struct pci_device *pci)
     puthex(action, pci_bdf_to_fn(pci->bdf), 1, 0);
 }
 
-static inline int
+ایستا درونخطی صحیح
 isdigit(u8 c)
 {
-    return ((u8)(c - '0')) < 10;
+    بازگشت ((u8)(c - '0')) < 10;
 }
 
-static void
-bvprintf(struct putcinfo *action, const char *fmt, va_list args)
+ایستا تهی
+bvprintf(ساختار putcinfo *action, ثابت نویسه *fmt, va_list args)
 {
-    const char *s = fmt;
-    int uc;
-    for (;; s++) {
-        char c = GET_GLOBAL(*(u8*)s);
-        if (!c)
-            break;
-        if (c != '%') {
+    ثابت نویسه *s = fmt;
+    صحیح uc;
+    برای (;; s++) {
+        نویسه c = GET_GLOBAL(*(u8*)s);
+        اگر (!c)
+            بشکن;
+        اگر (c != '%') {
             putc(action, c);
-            continue;
+            ادامه;
         }
-        const char *n = s+1;
-        int field_width = 0;
-        char padchar = ' ';
+        ثابت نویسه *n = s+1;
+        صحیح field_width = 0;
+        نویسه padchar = ' ';
         u8 is64 = 0;
-        for (;;) {
+        برای (;;) {
             c = GET_GLOBAL(*(u8*)n);
-            if (!isdigit(c))
-                break;
-            if (!field_width && (c == '0'))
+            اگر (!isdigit(c))
+                بشکن;
+            اگر (!field_width && (c == '0'))
                 padchar = '0';
-            else
+            وگرنه
                 field_width = field_width * 10 + c - '0';
             n++;
         }
-        if (c == 'l') {
+        اگر (c == 'l') {
             // Ignore long format indicator
             n++;
             c = GET_GLOBAL(*(u8*)n);
         }
-        if (c == 'l') {
+        اگر (c == 'l') {
             is64 = 1;
             n++;
             c = GET_GLOBAL(*(u8*)n);
         }
         s32 val;
-        const char *sarg;
-        switch (c) {
-        case '%':
+        ثابت نویسه *sarg;
+        انتخاب (c) {
+        حالت '%':
             putc(action, '%');
-            break;
-        case 'd':
+            بشکن;
+        حالت 'd':
             val = va_arg(args, s32);
-            if (is64)
+            اگر (is64)
                 va_arg(args, s32);
-            if (val < 0) {
+            اگر (val < 0) {
                 putc(action, '-');
                 val = -val;
             }
             putuint(action, val);
-            break;
-        case 'u':
+            بشکن;
+        حالت 'u':
             val = va_arg(args, s32);
-            if (is64)
+            اگر (is64)
                 va_arg(args, s32);
             putuint(action, val);
-            break;
-        case 'p':
+            بشکن;
+        حالت 'p':
             val = va_arg(args, s32);
-            if (!MODESEGMENT && GET_GLOBAL(*(u8*)(n+1)) == 'P') {
+            اگر (!MODESEGMENT && GET_GLOBAL(*(u8*)(n+1)) == 'P') {
                 // %pP is 'struct pci_device' printer
-                put_pci_device(action, (void*)val);
+                put_pci_device(action, (تهی*)val);
                 n++;
-                break;
+                بشکن;
             }
             putc(action, '0');
             putc(action, 'x');
             puthex(action, val, 8, 0);
-            break;
-        case 'X':
-        case 'x':
+            بشکن;
+        حالت 'X':
+        حالت 'x':
             uc = (c == 'X');
             val = va_arg(args, s32);
-            if (is64) {
+            اگر (is64) {
                 u32 upper = va_arg(args, s32);
-                if (upper) {
+                اگر (upper) {
                     putprettyhex(action, upper, field_width - 8, padchar, uc);
                     puthex(action, val, 8, uc);
-                    break;
+                    بشکن;
                 }
             }
             putprettyhex(action, val, field_width, padchar, uc);
-            break;
-        case 'c':
-            val = va_arg(args, int);
+            بشکن;
+        حالت 'c':
+            val = va_arg(args, صحیح);
             putc(action, val);
-            break;
-        case '.':
+            بشکن;
+        حالت '.':
             // Hack to support "%.s" - meaning string on stack.
-            if (GET_GLOBAL(*(u8*)(n+1)) != 's')
-                break;
+            اگر (GET_GLOBAL(*(u8*)(n+1)) != 's')
+                بشکن;
             n++;
-            sarg = va_arg(args, const char *);
+            sarg = va_arg(args, ثابت نویسه *);
             puts(action, sarg);
-            break;
-        case 's':
-            sarg = va_arg(args, const char *);
+            بشکن;
+        حالت 's':
+            sarg = va_arg(args, ثابت نویسه *);
             puts_cs(action, sarg);
-            break;
-        default:
+            بشکن;
+        پیشفرض:
             putc(action, '%');
             n = s;
         }
@@ -327,10 +327,10 @@ bvprintf(struct putcinfo *action, const char *fmt, va_list args)
     }
 }
 
-void
-panic(const char *fmt, ...)
+تهی
+panic(ثابت نویسه *fmt, ...)
 {
-    if (CONFIG_DEBUG_LEVEL) {
+    اگر (CONFIG_DEBUG_LEVEL) {
         va_list args;
         va_start(args, fmt);
         bvprintf(&debuginfo, fmt, args);
@@ -340,17 +340,17 @@ panic(const char *fmt, ...)
 
     // XXX - use PANIC PORT.
     irq_disable();
-    for (;;)
+    برای (;;)
         hlt();
 }
 
-void
-__dprintf(const char *fmt, ...)
+تهی
+__dprintf(ثابت نویسه *fmt, ...)
 {
-    if (!MODESEGMENT && CONFIG_THREADS && CONFIG_DEBUG_LEVEL >= DEBUG_thread
+    اگر (!MODESEGMENT && CONFIG_THREADS && CONFIG_DEBUG_LEVEL >= DEBUG_thread
         && *fmt != '\\' && *fmt != '/') {
-        struct thread_info *cur = getCurThread();
-        if (cur != &MainThread) {
+        ساختار thread_info *cur = getCurThread();
+        اگر (cur != &MainThread) {
             // Show "thread id" for this debug message.
             debug_putc(&debuginfo, '|');
             puthex(&debuginfo, (u32)cur, 8, 0);
@@ -366,15 +366,15 @@ __dprintf(const char *fmt, ...)
     debug_flush();
 }
 
-void
-printf(const char *fmt, ...)
+تهی
+printf(ثابت نویسه *fmt, ...)
 {
     ASSERT32FLAT();
     va_list args;
     va_start(args, fmt);
     bvprintf(&screeninfo, fmt, args);
     va_end(args);
-    if (ScreenAndDebug)
+    اگر (ScreenAndDebug)
         debug_flush();
 }
 
@@ -383,17 +383,17 @@ printf(const char *fmt, ...)
  * snprintf
  ****************************************************************/
 
-struct snprintfinfo {
-    struct putcinfo info;
-    char *str, *end;
+ساختار snprintfinfo {
+    ساختار putcinfo info;
+    نویسه *str, *end;
 };
 
-static void
-putc_str(struct putcinfo *info, char c)
+ایستا تهی
+putc_str(ساختار putcinfo *info, نویسه c)
 {
-    struct snprintfinfo *sinfo = container_of(info, struct snprintfinfo, info);
-    if (sinfo->str >= sinfo->end)
-        return;
+    ساختار snprintfinfo *sinfo = container_of(info, ساختار snprintfinfo, info);
+    اگر (sinfo->str >= sinfo->end)
+        بازگشت;
     *sinfo->str = c;
     sinfo->str++;
 }
@@ -401,46 +401,46 @@ putc_str(struct putcinfo *info, char c)
 // Build a formatted string.  Note, this function returns the actual
 // number of bytes used (not including null) even in the overflow
 // case.
-int
-snprintf(char *str, size_t size, const char *fmt, ...)
+صحیح
+snprintf(نویسه *str, size_t size, ثابت نویسه *fmt, ...)
 {
     ASSERT32FLAT();
-    if (!size)
-        return 0;
-    struct snprintfinfo sinfo = { { putc_str }, str, str + size };
+    اگر (!size)
+        بازگشت 0;
+    ساختار snprintfinfo sinfo = { { putc_str }, str, str + size };
     va_list args;
     va_start(args, fmt);
     bvprintf(&sinfo.info, fmt, args);
     va_end(args);
-    char *end = sinfo.str;
-    if (end >= sinfo.end)
+    نویسه *end = sinfo.str;
+    اگر (end >= sinfo.end)
         end = sinfo.end - 1;
     *end = '\0';
-    return end - str;
+    بازگشت end - str;
 }
 
 // Build a formatted string - malloc'ing the memory.
-char *
-znprintf(size_t size, const char *fmt, ...)
+نویسه *
+znprintf(size_t size, ثابت نویسه *fmt, ...)
 {
     ASSERT32FLAT();
-    if (!size)
-        return NULL;
-    char *str = malloc_tmp(size);
-    if (!str) {
+    اگر (!size)
+        بازگشت پوچ;
+    نویسه *str = malloc_tmp(size);
+    اگر (!str) {
         warn_noalloc();
-        return NULL;
+        بازگشت پوچ;
     }
-    struct snprintfinfo sinfo = { { putc_str }, str, str + size };
+    ساختار snprintfinfo sinfo = { { putc_str }, str, str + size };
     va_list args;
     va_start(args, fmt);
     bvprintf(&sinfo.info, fmt, args);
     va_end(args);
-    char *end = sinfo.str;
-    if (end >= sinfo.end)
+    نویسه *end = sinfo.str;
+    اگر (end >= sinfo.end)
         end = sinfo.end - 1;
     *end = '\0';
-    return str;
+    بازگشت str;
 }
 
 
@@ -448,20 +448,20 @@ znprintf(size_t size, const char *fmt, ...)
  * Misc helpers
  ****************************************************************/
 
-void
-hexdump(const void *d, int len)
+تهی
+hexdump(ثابت تهی *d, صحیح len)
 {
-    int count=0;
-    while (len > 0) {
-        if (count % 8 == 0) {
+    صحیح شمار=0;
+    وقتی (len > 0) {
+        اگر (شمار % 8 == 0) {
             putc(&debuginfo, '\n');
-            puthex(&debuginfo, count*4, 8, 0);
+            puthex(&debuginfo, شمار*4, 8, 0);
             putc(&debuginfo, ':');
-        } else {
+        } وگرنه {
             putc(&debuginfo, ' ');
         }
         puthex(&debuginfo, *(u32*)d, 8, 0);
-        count++;
+        شمار++;
         len-=4;
         d+=4;
     }
@@ -469,12 +469,12 @@ hexdump(const void *d, int len)
     debug_flush();
 }
 
-static void
-dump_regs(struct bregs *regs)
+ایستا تهی
+dump_regs(ساختار bregs *regs)
 {
-    if (!regs) {
+    اگر (!regs) {
         dprintf(1, "  NULL\n");
-        return;
+        بازگشت;
     }
     dprintf(1, "   a=%08x  b=%08x  c=%08x  d=%08x ds=%04x es=%04x ss=%04x\n"
             , regs->eax, regs->ebx, regs->ecx, regs->edx
@@ -485,8 +485,8 @@ dump_regs(struct bregs *regs)
 }
 
 // Report entry to an Interrupt Service Routine (ISR).
-void
-__debug_isr(const char *fname)
+تهی
+__debug_isr(ثابت نویسه *fname)
 {
     puts_cs(&debuginfo, fname);
     putc(&debuginfo, '\n');
@@ -494,75 +494,75 @@ __debug_isr(const char *fname)
 }
 
 // Function called on handler startup.
-void
-__debug_enter(struct bregs *regs, const char *fname)
+تهی
+__debug_enter(ساختار bregs *regs, ثابت نویسه *fname)
 {
     dprintf(1, "enter %s:\n", fname);
     dump_regs(regs);
 }
 
 // Send debugging output info.
-void
-__debug_stub(struct bregs *regs, int lineno, const char *fname)
+تهی
+__debug_stub(ساختار bregs *regs, صحیح lineno, ثابت نویسه *fname)
 {
     dprintf(1, "stub %s:%d:\n", fname, lineno);
     dump_regs(regs);
 }
 
 // Report on an invalid parameter.
-void
-__warn_invalid(struct bregs *regs, int lineno, const char *fname)
+تهی
+__warn_invalid(ساختار bregs *regs, صحیح lineno, ثابت نویسه *fname)
 {
-    if (CONFIG_DEBUG_LEVEL >= DEBUG_invalid) {
+    اگر (CONFIG_DEBUG_LEVEL >= DEBUG_invalid) {
         dprintf(1, "invalid %s:%d:\n", fname, lineno);
         dump_regs(regs);
     }
 }
 
 // Report on an unimplemented feature.
-void
-__warn_unimplemented(struct bregs *regs, int lineno, const char *fname)
+تهی
+__warn_unimplemented(ساختار bregs *regs, صحیح lineno, ثابت نویسه *fname)
 {
-    if (CONFIG_DEBUG_LEVEL >= DEBUG_unimplemented) {
+    اگر (CONFIG_DEBUG_LEVEL >= DEBUG_unimplemented) {
         dprintf(1, "unimplemented %s:%d:\n", fname, lineno);
         dump_regs(regs);
     }
 }
 
 // Report a detected internal inconsistency.
-void
-__warn_internalerror(int lineno, const char *fname)
+تهی
+__warn_internalerror(صحیح lineno, ثابت نویسه *fname)
 {
     dprintf(1, "WARNING - internal error detected at %s:%d!\n"
             , fname, lineno);
 }
 
 // Report on an allocation failure.
-void
-__warn_noalloc(int lineno, const char *fname)
+تهی
+__warn_noalloc(صحیح lineno, ثابت نویسه *fname)
 {
     dprintf(1, "WARNING - Unable to allocate resource at %s:%d!\n"
             , fname, lineno);
 }
 
 // Report on a timeout exceeded.
-void
-__warn_timeout(int lineno, const char *fname)
+تهی
+__warn_timeout(صحیح lineno, ثابت نویسه *fname)
 {
     dprintf(1, "WARNING - Timeout at %s:%d!\n", fname, lineno);
 }
 
 // Report a handler reporting an invalid parameter to the caller.
-void
-__set_invalid(struct bregs *regs, int lineno, const char *fname)
+تهی
+__set_invalid(ساختار bregs *regs, صحیح lineno, ثابت نویسه *fname)
 {
     __warn_invalid(regs, lineno, fname);
     set_invalid_silent(regs);
 }
 
 // Report a call of an unimplemented function.
-void
-__set_unimplemented(struct bregs *regs, int lineno, const char *fname)
+تهی
+__set_unimplemented(ساختار bregs *regs, صحیح lineno, ثابت نویسه *fname)
 {
     __warn_unimplemented(regs, lineno, fname);
     set_invalid_silent(regs);
@@ -572,8 +572,8 @@ __set_unimplemented(struct bregs *regs, int lineno, const char *fname)
 // caller.  Note, the lineno and return code are encoded in the same
 // parameter as gcc does a better job of scheduling function calls
 // when there are 3 or less parameters.
-void
-__set_code_invalid(struct bregs *regs, u32 linecode, const char *fname)
+تهی
+__set_code_invalid(ساختار bregs *regs, u32 linecode, ثابت نویسه *fname)
 {
     u8 code = linecode;
     u32 lineno = linecode >> 8;
@@ -582,8 +582,8 @@ __set_code_invalid(struct bregs *regs, u32 linecode, const char *fname)
 }
 
 // Report a call of an unimplemented function.
-void
-__set_code_unimplemented(struct bregs *regs, u32 linecode, const char *fname)
+تهی
+__set_code_unimplemented(ساختار bregs *regs, u32 linecode, ثابت نویسه *fname)
 {
     u8 code = linecode;
     u32 lineno = linecode >> 8;

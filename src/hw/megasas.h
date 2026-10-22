@@ -1,8 +1,8 @@
 #ifndef __MEGASAS_H
 #define __MEGASAS_H
 
-struct disk_op_s;
-int megasas_process_op(struct disk_op_s *op);
-void megasas_setup(void);
+ساختار disk_op_s;
+صحیح megasas_process_op(ساختار disk_op_s *op);
+تهی megasas_setup(تهی);
 
 #endif /* __MEGASAS_H */

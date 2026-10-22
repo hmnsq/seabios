@@ -1,8 +1,8 @@
 #ifndef _VIRTIO_RING_H
 #define _VIRTIO_RING_H
 
-#include "types.h" // u64
-#include "memmap.h" // PAGE_SIZE
+#شامل "types.h" // u64
+#شامل "memmap.h" // PAGE_SIZE
 
 /* Status byte for guest to report progress, and synchronize features. */
 /* We have seen device and processed generic fields (VIRTIO_CONFIG_F_VIRTIO) */
@@ -20,7 +20,7 @@
 #define VIRTIO_F_VERSION_1              32
 #define VIRTIO_F_IOMMU_PLATFORM         33
 
-#define MAX_QUEUE_NUM      (256)
+#define MAX_QUEUE_رقم      (256)
 
 #define VRING_DESC_F_NEXT  1
 #define VRING_DESC_F_WRITE 2
@@ -29,7 +29,7 @@
 
 #define VRING_USED_F_NO_NOTIFY     1
 
-struct vring_desc
+ساختار vring_desc
 {
    u64 addr;
    u32 len;
@@ -37,85 +37,85 @@ struct vring_desc
    u16 next;
 };
 
-struct vring_avail
+ساختار vring_avail
 {
    u16 flags;
    u16 idx;
    u16 ring[0];
 };
 
-struct vring_used_elem
+ساختار vring_used_elem
 {
    u32 id;
    u32 len;
 };
 
-struct vring_used
+ساختار vring_used
 {
    u16 flags;
    u16 idx;
-   struct vring_used_elem ring[];
+   ساختار vring_used_elem ring[];
 };
 
-struct vring {
-   unsigned int num;
-   struct vring_desc *desc;
-   struct vring_avail *avail;
-   struct vring_used *used;
+ساختار vring {
+   unsigned صحیح رقم;
+   ساختار vring_desc *desc;
+   ساختار vring_avail *avail;
+   ساختار vring_used *used;
 };
 
-#define vring_size(num) \
-    (ALIGN(sizeof(struct vring_desc) * num + sizeof(struct vring_avail) \
-           + sizeof(u16) * num, PAGE_SIZE)                              \
-     + sizeof(struct vring_used) + sizeof(struct vring_used_elem) * num)
+#define vring_size(رقم) \
+    (ALIGN(اندازه(ساختار vring_desc) * رقم + اندازه(ساختار vring_avail) \
+           + اندازه(u16) * رقم, PAGE_SIZE)                              \
+     + اندازه(ساختار vring_used) + اندازه(ساختار vring_used_elem) * رقم)
 
-typedef unsigned char virtio_queue_t[vring_size(MAX_QUEUE_NUM)];
+تعریفنوع unsigned نویسه virtio_queue_t[vring_size(MAX_QUEUE_رقم)];
 
-struct vring_virtqueue {
+ساختار vring_virtqueue {
    virtio_queue_t queue;
-   struct vring vring;
+   ساختار vring vring;
    u16 free_head;
    u16 last_used_idx;
-   u16 vdata[MAX_QUEUE_NUM];
+   u16 vdata[MAX_QUEUE_رقم];
    /* PCI */
-   int queue_index;
-   int queue_notify_off;
+   صحیح queue_index;
+   صحیح queue_notify_off;
 };
 
-struct vring_list {
-  char *addr;
-  unsigned int length;
+ساختار vring_list {
+  نویسه *addr;
+  unsigned صحیح length;
 };
 
-static inline void
-vring_init(struct vring *vr, unsigned int num, unsigned char *queue)
+ایستا درونخطی تهی
+vring_init(ساختار vring *vr, unsigned صحیح رقم, unsigned نویسه *queue)
 {
    ASSERT32FLAT();
-   vr->num = num;
+   vr->رقم = رقم;
 
    /* physical address of desc must be page aligned */
-   vr->desc = (void*)ALIGN((u32)queue, PAGE_SIZE);
+   vr->desc = (تهی*)ALIGN((u32)queue, PAGE_SIZE);
 
-   vr->avail = (struct vring_avail *)&vr->desc[num];
+   vr->avail = (ساختار vring_avail *)&vr->desc[رقم];
    /* disable interrupts */
    vr->avail->flags |= VRING_AVAIL_F_NO_INTERRUPT;
 
    /* physical address of used must be page aligned */
-   vr->used = (void*)ALIGN((u32)&vr->avail->ring[num], PAGE_SIZE);
+   vr->used = (تهی*)ALIGN((u32)&vr->avail->ring[رقم], PAGE_SIZE);
 
-   int i;
-   for (i = 0; i < num - 1; i++)
+   صحیح i;
+   برای (i = 0; i < رقم - 1; i++)
        vr->desc[i].next = i + 1;
    vr->desc[i].next = 0;
 }
 
-struct vp_device;
-int vring_more_used(struct vring_virtqueue *vq);
-void vring_detach(struct vring_virtqueue *vq, unsigned int head);
-int vring_get_buf(struct vring_virtqueue *vq, unsigned int *len);
-void vring_add_buf(struct vring_virtqueue *vq, struct vring_list list[],
-                   unsigned int out, unsigned int in,
-                   int index, int num_added);
-void vring_kick(struct vp_device *vp, struct vring_virtqueue *vq, int num_added);
+ساختار vp_device;
+صحیح vring_more_used(ساختار vring_virtqueue *vq);
+تهی vring_detach(ساختار vring_virtqueue *vq, unsigned صحیح head);
+صحیح vring_get_buf(ساختار vring_virtqueue *vq, unsigned صحیح *len);
+تهی vring_add_buf(ساختار vring_virtqueue *vq, ساختار vring_list list[],
+                   unsigned صحیح out, unsigned صحیح in,
+                   صحیح index, صحیح رقم_added);
+تهی vring_kick(ساختار vp_device *vp, ساختار vring_virtqueue *vq, صحیح رقم_added);
 
 #endif /* _VIRTIO_RING_H_ */

@@ -2,16 +2,16 @@
 #define __USB_UHCI_H
 
 // usb-uhci.c
-void uhci_setup(void);
-struct usbdevice_s;
-struct usb_endpoint_descriptor;
-struct usb_pipe;
-struct usb_pipe *uhci_realloc_pipe(struct usbdevice_s *usbdev
-                                   , struct usb_pipe *upipe
-                                   , struct usb_endpoint_descriptor *epdesc);
-int uhci_send_pipe(struct usb_pipe *p, int dir, const void *cmd
-                   , void *data, int datasize);
-int uhci_poll_intr(struct usb_pipe *p, void *data);
+تهی uhci_setup(تهی);
+ساختار usbdevice_s;
+ساختار usb_endpoint_descriptor;
+ساختار usb_pipe;
+ساختار usb_pipe *uhci_realloc_pipe(ساختار usbdevice_s *usbdev
+                                   , ساختار usb_pipe *upipe
+                                   , ساختار usb_endpoint_descriptor *epdesc);
+صحیح uhci_send_pipe(ساختار usb_pipe *p, صحیح dir, ثابت تهی *cmd
+                   , تهی *data, صحیح datasize);
+صحیح uhci_poll_intr(ساختار usb_pipe *p, تهی *data);
 
 
 /****************************************************************
@@ -70,7 +70,7 @@ int uhci_poll_intr(struct usb_pipe *p, void *data);
 #define USBSOF          12
 #define   USBSOF_DEFAULT        64      /* Frame length is exactly 1 ms */
 
-struct uhci_framelist {
+ساختار uhci_framelist {
     u32 links[1024];
 } PACKED;
 
@@ -107,14 +107,14 @@ struct uhci_framelist {
 #define uhci_expected_length(token) ((((token) >> TD_TOKEN_EXPLEN_SHIFT) + \
                                         1) & TD_TOKEN_EXPLEN_MASK)
 
-struct uhci_td {
+ساختار uhci_td {
     u32 link;
     u32 status;
     u32 token;
-    void *buffer;
+    تهی *buffer;
 } PACKED;
 
-struct uhci_qh {
+ساختار uhci_qh {
     u32 link;
     u32 element;
 } PACKED;

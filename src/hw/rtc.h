@@ -33,18 +33,18 @@
 #define CMOS_DISK_DRIVE2_TYPE    0x1a
 #define CMOS_DISK_DRIVE1_CYL     0x1b
 #define CMOS_DISK_DRIVE2_CYL     0x24
-#define CMOS_MEM_EXTMEM_LOW      0x30
-#define CMOS_MEM_EXTMEM_HIGH     0x31
+#define CMOS_MEM_EXTMEM_کم      0x30
+#define CMOS_MEM_EXTMEM_بالا     0x31
 #define CMOS_CENTURY             0x32
-#define CMOS_MEM_EXTMEM2_LOW     0x34
-#define CMOS_MEM_EXTMEM2_HIGH    0x35
+#define CMOS_MEM_EXTMEM2_کم     0x34
+#define CMOS_MEM_EXTMEM2_بالا    0x35
 #define CMOS_BIOS_BOOTFLAG1      0x38
 #define CMOS_BIOS_DISKTRANSFLAG  0x39
 #define CMOS_BIOS_BOOTFLAG2      0x3d
-#define CMOS_MEM_HIGHMEM_LOW     0x5b
+#define CMOS_MEM_HIGHMEM_کم     0x5b
 #define CMOS_MEM_HIGHMEM_MID     0x5c
-#define CMOS_MEM_HIGHMEM_HIGH    0x5d
-#define CMOS_BIOS_SMP_COUNT      0x5f
+#define CMOS_MEM_HIGHMEM_بالا    0x5d
+#define CMOS_BIOS_SMP_شمار      0x5f
 
 // RTC register flags
 #define RTC_A_UIP 0x80
@@ -59,16 +59,16 @@
 
 #ifndef __ASSEMBLY__
 
-#include "types.h" // u8
+#شامل "types.h" // u8
 
 // rtc.c
 u8 rtc_read(u8 index);
-void rtc_write(u8 index, u8 val);
-void rtc_mask(u8 index, u8 off, u8 on);
-int rtc_updating(void);
-void rtc_setup(void);
-void rtc_use(void);
-void rtc_release(void);
+تهی rtc_write(u8 index, u8 val);
+تهی rtc_mask(u8 index, u8 off, u8 on);
+صحیح rtc_updating(تهی);
+تهی rtc_setup(تهی);
+تهی rtc_use(تهی);
+تهی rtc_release(تهی);
 
 #endif // !__ASSEMBLY__
 

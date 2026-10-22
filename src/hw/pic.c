@@ -5,43 +5,43 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // SET_IVT
-#include "config.h" // CONFIG_*
-#include "output.h" // dprintf
-#include "pic.h" // pic_*
+#شامل "biosvar.h" // SET_IVT
+#شامل "config.h" // CONFIG_*
+#شامل "output.h" // dprintf
+#شامل "pic.h" // pic_*
 
 u16
-pic_irqmask_read(void)
+pic_irqmask_read(تهی)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return 0;
-    return inb(PORT_PIC1_DATA) | (inb(PORT_PIC2_DATA) << 8);
+    اگر (!CONFIG_HARDWARE_IRQ)
+        بازگشت 0;
+    بازگشت inb(PORT_PIC1_DATA) | (inb(PORT_PIC2_DATA) << 8);
 }
 
-void
+تهی
 pic_irqmask_write(u16 mask)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return;
+    اگر (!CONFIG_HARDWARE_IRQ)
+        بازگشت;
     outb(mask, PORT_PIC1_DATA);
     outb(mask >> 8, PORT_PIC2_DATA);
 }
 
-void
+تهی
 pic_irqmask_mask(u16 off, u16 on)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return;
+    اگر (!CONFIG_HARDWARE_IRQ)
+        بازگشت;
     u8 pic1off = off, pic1on = on, pic2off = off>>8, pic2on = on>>8;
     outb((inb(PORT_PIC1_DATA) & ~pic1off) | pic1on, PORT_PIC1_DATA);
     outb((inb(PORT_PIC2_DATA) & ~pic2off) | pic2on, PORT_PIC2_DATA);
 }
 
-void
+تهی
 pic_reset(u8 irq0, u8 irq8)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return;
+    اگر (!CONFIG_HARDWARE_IRQ)
+        بازگشت;
     // Send ICW1 (select OCW1 + will send ICW4)
     outb(0x11, PORT_PIC1_CMD);
     outb(0x11, PORT_PIC2_CMD);
@@ -58,57 +58,57 @@ pic_reset(u8 irq0, u8 irq8)
     pic_irqmask_write(PIC_IRQMASK_DEFAULT);
 }
 
-void
-pic_setup(void)
+تهی
+pic_setup(تهی)
 {
     dprintf(3, "init pic\n");
     pic_reset(BIOS_HWIRQ0_VECTOR, BIOS_HWIRQ8_VECTOR);
 }
 
-void
-enable_hwirq(int hwirq, struct segoff_s func)
+تهی
+enable_hwirq(صحیح hwirq, ساختار segoff_s func)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return;
+    اگر (!CONFIG_HARDWARE_IRQ)
+        بازگشت;
     pic_irqmask_mask(1 << hwirq, 0);
-    int vector;
-    if (hwirq < 8)
+    صحیح vector;
+    اگر (hwirq < 8)
         vector = BIOS_HWIRQ0_VECTOR + hwirq;
-    else
+    وگرنه
         vector = BIOS_HWIRQ8_VECTOR + hwirq - 8;
     SET_IVT(vector, func);
 }
 
-static u8
-pic_isr1_read(void)
+ایستا u8
+pic_isr1_read(تهی)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return 0;
+    اگر (!CONFIG_HARDWARE_IRQ)
+        بازگشت 0;
     // 0x0b == select OCW1 + read ISR
     outb(0x0b, PORT_PIC1_CMD);
-    return inb(PORT_PIC1_CMD);
+    بازگشت inb(PORT_PIC1_CMD);
 }
 
-static u8
-pic_isr2_read(void)
+ایستا u8
+pic_isr2_read(تهی)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return 0;
+    اگر (!CONFIG_HARDWARE_IRQ)
+        بازگشت 0;
     // 0x0b == select OCW1 + read ISR
     outb(0x0b, PORT_PIC2_CMD);
-    return inb(PORT_PIC2_CMD);
+    بازگشت inb(PORT_PIC2_CMD);
 }
 
 // Handler for otherwise unused hardware irqs.
-void VISIBLE16
-handle_hwpic1(void)
+تهی VISIBLE16
+handle_hwpic1(تهی)
 {
     dprintf(DEBUG_ISR_hwpic1, "handle_hwpic1 irq=%x\n", pic_isr1_read());
     pic_eoi1();
 }
 
-void VISIBLE16
-handle_hwpic2(void)
+تهی VISIBLE16
+handle_hwpic2(تهی)
 {
     dprintf(DEBUG_ISR_hwpic2, "handle_hwpic2 irq=%x\n", pic_isr2_read());
     pic_eoi2();

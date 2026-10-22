@@ -4,81 +4,81 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "byteorder.h" // le32_to_cpu
-#include "config.h" // CONFIG_*
-#include "hw/pci.h" // pci_config_writeb
-#include "malloc.h" // malloc_fseg
-#include "memmap.h" // SYMBOL
-#include "output.h" // dprintf
-#include "romfile.h" // romfile_find
-#include "std/acpi.h" // struct rsdp_descriptor
-#include "std/mptable.h" // MPTABLE_SIGNATURE
-#include "std/pirtable.h" // struct pir_header
-#include "std/smbios.h" // struct smbios_21_entry_point
-#include "string.h" // memcpy
-#include "util.h" // copy_table
-#include "x86.h" // outb
+#شامل "byteorder.h" // le32_to_cpu
+#شامل "config.h" // CONFIG_*
+#شامل "hw/pci.h" // pci_config_writeb
+#شامل "malloc.h" // malloc_fseg
+#شامل "memmap.h" //نماد
+#شامل "output.h" // dprintf
+#شامل "romfile.h" // romfile_find
+#شامل "std/acpi.h" // struct rsdp_descriptor
+#شامل "std/mptable.h" // MPTABLE_SIGNATURE
+#شامل "std/pirtable.h" // struct pir_header
+#شامل "std/smbios.h" // struct smbios_21_entry_point
+#شامل "string.h" // memcpy
+#شامل "util.h" // copy_table
+#شامل "x86.h" // outb
 
-struct pir_header *PirAddr VARFSEG;
+ساختار pir_header *PirAddr VARFSEG;
 
-static void *
-copy_fseg_table(const char *name, void *pos, u32 size)
+ایستا تهی *
+copy_fseg_table(ثابت نویسه *name, تهی *pos, u32 size)
 {
-    void *newpos = malloc_fseg(size);
-    if (!newpos) {
+    تهی *newpos = malloc_fseg(size);
+    اگر (!newpos) {
         warn_noalloc();
-        return NULL;
+        بازگشت پوچ;
     }
     dprintf(1, "Copying %s from %p to %p\n", name, pos, newpos);
     memcpy(newpos, pos, size);
-    return newpos;
+    بازگشت newpos;
 }
 
-void
-copy_pir(void *pos)
+تهی
+copy_pir(تهی *pos)
 {
-    struct pir_header *p = pos;
-    if (p->signature != PIR_SIGNATURE)
-        return;
-    if (PirAddr)
-        return;
-    if (p->size < sizeof(*p))
-        return;
-    if (checksum(pos, p->size) != 0)
-        return;
+    ساختار pir_header *p = pos;
+    اگر (p->signature != PIR_SIGNATURE)
+        بازگشت;
+    اگر (PirAddr)
+        بازگشت;
+    اگر (p->size < اندازه(*p))
+        بازگشت;
+    اگر (checksum(pos, p->size) != 0)
+        بازگشت;
     PirAddr = copy_fseg_table("PIR", pos, p->size);
 }
 
-void
-copy_mptable(void *pos)
+تهی
+copy_mptable(تهی *pos)
 {
-    struct mptable_floating_s *p = pos;
-    if (p->signature != MPTABLE_SIGNATURE)
-        return;
-    if (!p->physaddr)
-        return;
-    if (checksum(pos, sizeof(*p)) != 0)
-        return;
+    ساختار mptable_floating_s *p = pos;
+    اگر (p->signature != MPTABLE_SIGNATURE)
+        بازگشت;
+    اگر (!p->physaddr)
+        بازگشت;
+    اگر (checksum(pos, اندازه(*p)) != 0)
+        بازگشت;
     u32 length = p->length * 16;
-    u16 mpclength = ((struct mptable_config_s *)p->physaddr)->length;
-    if (length + mpclength > BUILD_MAX_MPTABLE_FSEG) {
+    u16 mpclength = ((ساختار mptable_config_s *)p->physaddr)->length;
+    اگر (length + mpclength > BUILD_MAX_MPTABLE_FSEG) {
         dprintf(1, "Skipping MPTABLE copy due to large size (%d bytes)\n"
                 , length + mpclength);
-        return;
+        بازگشت;
     }
     // Allocate final memory location.  (In theory the config
     // structure can go in high memory, but Linux kernels before
     // v2.6.30 crash with that.)
-    struct mptable_floating_s *newpos = malloc_fseg(length + mpclength);
-    if (!newpos) {
+    ساختار mptable_floating_s *newpos = malloc_fseg(length + mpclength);
+    اگر (!newpos) {
         warn_noalloc();
-        return;
+        بازگشت;
     }
     dprintf(1, "Copying MPTABLE from %p/%x to %p\n", pos, p->physaddr, newpos);
     memcpy(newpos, pos, length);
     newpos->physaddr = (u32)newpos + length;
-    newpos->checksum -= checksum(newpos, sizeof(*newpos));
-    memcpy((void*)newpos + length, (void*)p->physaddr, mpclength);
+    newpos->checksum -= checksum(newpos, اندازه(*newpos));
+    memcpy((تهی*)newpos + length, (تهی*)p->physaddr, mpclength);
 }
 
 
@@ -86,173 +86,173 @@ copy_mptable(void *pos)
  * ACPI
  ****************************************************************/
 
-static int
-get_acpi_rsdp_length(void *pos, unsigned size)
+ایستا صحیح
+get_acpi_rsdp_length(تهی *pos, unsigned size)
 {
-    struct rsdp_descriptor *p = pos;
-    if (p->signature != RSDP_SIGNATURE)
-        return -1;
+    ساختار rsdp_descriptor *p = pos;
+    اگر (p->signature != RSDP_SIGNATURE)
+        بازگشت -1;
     u32 length = 20;
-    if (length > size)
-        return -1;
-    if (checksum(pos, length) != 0)
-        return -1;
-    if (p->revision > 1) {
+    اگر (length > size)
+        بازگشت -1;
+    اگر (checksum(pos, length) != 0)
+        بازگشت -1;
+    اگر (p->revision > 1) {
         length = p->length;
-        if (length > size)
-            return -1;
-        if (checksum(pos, length) != 0)
-            return -1;
+        اگر (length > size)
+            بازگشت -1;
+        اگر (checksum(pos, length) != 0)
+            بازگشت -1;
     }
-    return length;
+    بازگشت length;
 }
 
-struct rsdp_descriptor *RsdpAddr;
+ساختار rsdp_descriptor *RsdpAddr;
 
-void
-copy_acpi_rsdp(void *pos)
+تهی
+copy_acpi_rsdp(تهی *pos)
 {
-    if (RsdpAddr)
-        return;
-    int length = get_acpi_rsdp_length(pos, -1);
-    if (length < 0)
-        return;
+    اگر (RsdpAddr)
+        بازگشت;
+    صحیح length = get_acpi_rsdp_length(pos, -1);
+    اگر (length < 0)
+        بازگشت;
     RsdpAddr = copy_fseg_table("ACPI RSDP", pos, length);
 }
 
-void *find_acpi_rsdp(void)
+تهی *find_acpi_rsdp(تهی)
 {
-    unsigned long start = SYMBOL(zonefseg_start);
-    unsigned long end = SYMBOL(zonefseg_end);
+    unsigned long start = نماد(zonefseg_start);
+    unsigned long end = نماد(zonefseg_end);
     unsigned long pos;
 
-    for (pos = ALIGN(start, 0x10); pos <= ALIGN_DOWN(end, 0x10); pos += 0x10)
-        if (get_acpi_rsdp_length((void *)pos, end - pos) >= 0)
-            return (void *)pos;
+    برای (pos = ALIGN(start, 0x10); pos <= ALIGN_DOWN(end, 0x10); pos += 0x10)
+        اگر (get_acpi_rsdp_length((تهی *)pos, end - pos) >= 0)
+            بازگشت (تهی *)pos;
 
-    return NULL;
+    بازگشت پوچ;
 }
 
-void *
+تهی *
 find_acpi_table(u32 signature)
 {
     dprintf(4, "rsdp=%p\n", RsdpAddr);
-    if (!RsdpAddr || RsdpAddr->signature != RSDP_SIGNATURE)
-        return NULL;
-    struct rsdt_descriptor_rev1 *rsdt = (void*)RsdpAddr->rsdt_physical_address;
-    struct xsdt_descriptor_rev2 *xsdt =
+    اگر (!RsdpAddr || RsdpAddr->signature != RSDP_SIGNATURE)
+        بازگشت پوچ;
+    ساختار rsdt_descriptor_rev1 *rsdt = (تهی*)RsdpAddr->rsdt_physical_address;
+    ساختار xsdt_descriptor_rev2 *xsdt =
         RsdpAddr->xsdt_physical_address >= 0x100000000
-        ? NULL : (void*)(u32)(RsdpAddr->xsdt_physical_address);
+        ? پوچ : (تهی*)(u32)(RsdpAddr->xsdt_physical_address);
     dprintf(4, "rsdt=%p\n", rsdt);
     dprintf(4, "xsdt=%p\n", xsdt);
 
-    if (xsdt && xsdt->signature == XSDT_SIGNATURE) {
-        void *end = (void*)xsdt + xsdt->length;
-        int i;
-        for (i=0; (void*)&xsdt->table_offset_entry[i] < end; i++) {
-            if (xsdt->table_offset_entry[i] >= 0x100000000)
-                continue; /* above 4G */
-            struct acpi_table_header *tbl = (void*)(u32)xsdt->table_offset_entry[i];
-            if (!tbl || tbl->signature != signature)
-                continue;
+    اگر (xsdt && xsdt->signature == XSDT_SIGNATURE) {
+        تهی *end = (تهی*)xsdt + xsdt->length;
+        صحیح i;
+        برای (i=0; (تهی*)&xsdt->table_offset_entry[i] < end; i++) {
+            اگر (xsdt->table_offset_entry[i] >= 0x100000000)
+                ادامه; /* above 4G */
+            ساختار acpi_table_header *tbl = (تهی*)(u32)xsdt->table_offset_entry[i];
+            اگر (!tbl || tbl->signature != signature)
+                ادامه;
             dprintf(1, "table(%x)=%p (via xsdt)\n", signature, tbl);
-            return tbl;
+            بازگشت tbl;
         }
     }
 
-    if (rsdt && rsdt->signature == RSDT_SIGNATURE) {
-        void *end = (void*)rsdt + rsdt->length;
-        int i;
-        for (i=0; (void*)&rsdt->table_offset_entry[i] < end; i++) {
-            struct acpi_table_header *tbl = (void*)rsdt->table_offset_entry[i];
-            if (!tbl || tbl->signature != signature)
-                continue;
+    اگر (rsdt && rsdt->signature == RSDT_SIGNATURE) {
+        تهی *end = (تهی*)rsdt + rsdt->length;
+        صحیح i;
+        برای (i=0; (تهی*)&rsdt->table_offset_entry[i] < end; i++) {
+            ساختار acpi_table_header *tbl = (تهی*)rsdt->table_offset_entry[i];
+            اگر (!tbl || tbl->signature != signature)
+                ادامه;
             dprintf(1, "table(%x)=%p (via rsdt)\n", signature, tbl);
-            return tbl;
+            بازگشت tbl;
         }
     }
 
     dprintf(4, "no table %x found\n", signature);
-    return NULL;
+    بازگشت پوچ;
 }
 
 u32
-find_resume_vector(void)
+find_resume_vector(تهی)
 {
-    struct fadt_descriptor_rev1 *fadt = find_acpi_table(FACP_SIGNATURE);
-    if (!fadt)
-        return 0;
-    struct facs_descriptor_rev1 *facs = (void*)fadt->firmware_ctrl;
+    ساختار fadt_descriptor_rev1 *fadt = find_acpi_table(FACP_SIGNATURE);
+    اگر (!fadt)
+        بازگشت 0;
+    ساختار facs_descriptor_rev1 *facs = (تهی*)fadt->firmware_ctrl;
     dprintf(4, "facs=%p\n", facs);
-    if (! facs || facs->signature != FACS_SIGNATURE)
-        return 0;
+    اگر (! facs || facs->signature != FACS_SIGNATURE)
+        بازگشت 0;
     // Found it.
     dprintf(4, "resume addr=%d\n", facs->firmware_waking_vector);
-    return facs->firmware_waking_vector;
+    بازگشت facs->firmware_waking_vector;
 }
 
-static struct acpi_20_generic_address acpi_reset_reg;
-static u8 acpi_reset_val;
+ایستا ساختار acpi_20_generic_address acpi_reset_reg;
+ایستا u8 acpi_reset_val;
 u32 acpi_pm1a_cnt VARFSEG;
 u16 acpi_pm_base = 0xb000;
 
 #define acpi_ga_to_bdf(addr) pci_to_bdf(0, (addr >> 32) & 0xffff, (addr >> 16) & 0xffff)
 
-void
-acpi_reboot(void)
+تهی
+acpi_reboot(تهی)
 {
     // Check it passed the sanity checks in acpi_set_reset_reg() and was set
-    if (acpi_reset_reg.register_bit_width != 8)
-        return;
+    اگر (acpi_reset_reg.register_bit_width != 8)
+        بازگشت;
 
     u64 addr = le64_to_cpu(acpi_reset_reg.address);
 
     dprintf(1, "ACPI hard reset %d:%llx (%x)\n",
             acpi_reset_reg.address_space_id, addr, acpi_reset_val);
 
-    switch (acpi_reset_reg.address_space_id) {
-    case 0: // System Memory
-        writeb((void *)(u32)addr, acpi_reset_val);
-        break;
-    case 1: // System I/O
+    انتخاب (acpi_reset_reg.address_space_id) {
+    حالت 0: // System Memory
+        writeb((تهی *)(u32)addr, acpi_reset_val);
+        بشکن;
+    حالت 1: // System I/O
         outb(acpi_reset_val, addr);
-        break;
-    case 2: // PCI config space
+        بشکن;
+    حالت 2: // PCI config space
         pci_config_writeb(acpi_ga_to_bdf(addr), addr & 0xffff, acpi_reset_val);
-        break;
+        بشکن;
     }
 }
 
-static void
-acpi_set_reset_reg(struct acpi_20_generic_address *reg, u8 val)
+ایستا تهی
+acpi_set_reset_reg(ساختار acpi_20_generic_address *reg, u8 val)
 {
-    if (!reg || reg->address_space_id > 2 ||
+    اگر (!reg || reg->address_space_id > 2 ||
         reg->register_bit_width != 8 || reg->register_bit_offset)
-        return;
+        بازگشت;
 
     acpi_reset_reg = *reg;
     acpi_reset_val = val;
 }
 
-void
-find_acpi_features(void)
+تهی
+find_acpi_features(تهی)
 {
-    struct fadt_descriptor_rev1 *fadt = find_acpi_table(FACP_SIGNATURE);
-    if (!fadt)
-        return;
+    ساختار fadt_descriptor_rev1 *fadt = find_acpi_table(FACP_SIGNATURE);
+    اگر (!fadt)
+        بازگشت;
     u32 pm_tmr = le32_to_cpu(fadt->pm_tmr_blk);
     u32 pm1a_cnt = le32_to_cpu(fadt->pm1a_cnt_blk);
     dprintf(4, "pm_tmr_blk=%x\n", pm_tmr);
-    if (pm_tmr)
+    اگر (pm_tmr)
         pmtimer_setup(pm_tmr);
-    if (pm1a_cnt)
+    اگر (pm1a_cnt)
         acpi_pm1a_cnt = pm1a_cnt;
 
     // Theoretically we should check the 'reset_reg_sup' flag, but Windows
     // doesn't and thus nobody seems to *set* it. If the table is large enough
     // to include it, let the sanity checks in acpi_set_reset_reg() suffice.
-    if (fadt->length >= 129) {
-        void *p = fadt;
+    اگر (fadt->length >= 129) {
+        تهی *p = fadt;
         acpi_set_reset_reg(p + 116, *(u8 *)(p + 128));
     }
     acpi_dsdt_parse();
@@ -264,129 +264,129 @@ find_acpi_features(void)
  ****************************************************************/
 
 // Iterator for each sub-table in the smbios blob.
-void *
-smbios_next(void *start, u32 length, void *prev)
+تهی *
+smbios_next(تهی *start, u32 length, تهی *prev)
 {
-    if (!start)
-        return NULL;
-    void *end = start + length;
+    اگر (!start)
+        بازگشت پوچ;
+    تهی *end = start + length;
 
-    if (!prev) {
+    اگر (!prev) {
         prev = start;
-    } else {
-        struct smbios_structure_header *hdr = prev;
-        if (prev + sizeof(*hdr) > end)
-            return NULL;
+    } وگرنه {
+        ساختار smbios_structure_header *hdr = prev;
+        اگر (prev + اندازه(*hdr) > end)
+            بازگشت پوچ;
         prev += hdr->length + 2;
-        while (prev < end && (*(u8*)(prev-1) != '\0' || *(u8*)(prev-2) != '\0'))
+        وقتی (prev < end && (*(u8*)(prev-1) != '\0' || *(u8*)(prev-2) != '\0'))
             prev++;
     }
-    struct smbios_structure_header *hdr = prev;
-    if (prev >= end || prev + sizeof(*hdr) >= end || prev + hdr->length >= end)
-        return NULL;
-    return prev;
+    ساختار smbios_structure_header *hdr = prev;
+    اگر (prev >= end || prev + اندازه(*hdr) >= end || prev + hdr->length >= end)
+        بازگشت پوچ;
+    بازگشت prev;
 }
 
-void *
-smbios_21_next(struct smbios_21_entry_point *smbios, void *prev)
+تهی *
+smbios_21_next(ساختار smbios_21_entry_point *smbios, تهی *prev)
 {
-    if (!smbios)
-        return NULL;
-    return smbios_next((void*)smbios->structure_table_address,
+    اگر (!smbios)
+        بازگشت پوچ;
+    بازگشت smbios_next((تهی*)smbios->structure_table_address,
                        smbios->structure_table_length, prev);
 }
 
-static struct smbios_21_entry_point *SMBios21Addr;
+ایستا ساختار smbios_21_entry_point *SMBios21Addr;
 
-void
-copy_smbios_21(void *pos)
+تهی
+copy_smbios_21(تهی *pos)
 {
-    if (SMBios21Addr)
-        return;
-    struct smbios_21_entry_point *p = pos;
-    if (p->signature != SMBIOS_21_SIGNATURE)
-        return;
-    if (checksum(pos, 0x10) != 0)
-        return;
-    if (memcmp(p->intermediate_anchor_string, "_DMI_", 5))
-        return;
-    if (checksum(pos+0x10, p->length-0x10) != 0)
-        return;
+    اگر (SMBios21Addr)
+        بازگشت;
+    ساختار smbios_21_entry_point *p = pos;
+    اگر (p->signature != SMBIOS_21_SIGNATURE)
+        بازگشت;
+    اگر (checksum(pos, 0x10) != 0)
+        بازگشت;
+    اگر (memcmp(p->intermediate_anchor_string, "_DMI_", 5))
+        بازگشت;
+    اگر (checksum(pos+0x10, p->length-0x10) != 0)
+        بازگشت;
     SMBios21Addr = copy_fseg_table("SMBIOS", pos, p->length);
 }
 
-static struct smbios_30_entry_point *SMBios30Addr;
+ایستا ساختار smbios_30_entry_point *SMBios30Addr;
 
-static int
-valid_smbios_30_signature(struct smbios_30_entry_point *p)
+ایستا صحیح
+valid_smbios_30_signature(ساختار smbios_30_entry_point *p)
 {
-    return !memcmp(p->signature, "_SM3_", 5);
+    بازگشت !memcmp(p->signature, "_SM3_", 5);
 }
 
-void
-copy_smbios_30(void *pos)
+تهی
+copy_smbios_30(تهی *pos)
 {
-    if (SMBios30Addr)
-        return;
-    struct smbios_30_entry_point *p = pos;
-    if (!valid_smbios_30_signature(p))
-        return;
-    if (checksum(pos, p->length) != 0)
-        return;
+    اگر (SMBios30Addr)
+        بازگشت;
+    ساختار smbios_30_entry_point *p = pos;
+    اگر (!valid_smbios_30_signature(p))
+        بازگشت;
+    اگر (checksum(pos, p->length) != 0)
+        بازگشت;
     SMBios30Addr = copy_fseg_table("SMBIOS 3.0", pos, p->length);
 }
 
-void *smbios_get_tables(u32 *length)
+تهی *smbios_get_tables(u32 *length)
 {
-    if (SMBios30Addr) {
+    اگر (SMBios30Addr) {
         u32 addr32 = SMBios30Addr->structure_table_address;
-        if (addr32 == SMBios30Addr->structure_table_address) {
+        اگر (addr32 == SMBios30Addr->structure_table_address) {
             *length = SMBios30Addr->structure_table_max_size;
-            return (void *)addr32;
+            بازگشت (تهی *)addr32;
         }
     }
-    if (SMBios21Addr) {
+    اگر (SMBios21Addr) {
         *length = SMBios21Addr->structure_table_length;
-        return (void *)SMBios21Addr->structure_table_address;
+        بازگشت (تهی *)SMBios21Addr->structure_table_address;
     }
-    return NULL;
+    بازگشت پوچ;
 }
 
-static int
-smbios_major_version(void)
+ایستا صحیح
+smbios_major_version(تهی)
 {
-    if (SMBios30Addr)
-        return SMBios30Addr->smbios_major_version;
-    else if (SMBios21Addr)
-        return SMBios21Addr->smbios_major_version;
-    else
-        return 0;
+    اگر (SMBios30Addr)
+        بازگشت SMBios30Addr->smbios_major_version;
+    وگرنه اگر (SMBios21Addr)
+        بازگشت SMBios21Addr->smbios_major_version;
+    وگرنه
+        بازگشت 0;
 }
 
-static int
-smbios_minor_version(void)
+ایستا صحیح
+smbios_minor_version(تهی)
 {
-    if (SMBios30Addr)
-        return SMBios30Addr->smbios_minor_version;
-    else if (SMBios21Addr)
-        return SMBios21Addr->smbios_minor_version;
-    else
-        return 0;
+    اگر (SMBios30Addr)
+        بازگشت SMBios30Addr->smbios_minor_version;
+    وگرنه اگر (SMBios21Addr)
+        بازگشت SMBios21Addr->smbios_minor_version;
+    وگرنه
+        بازگشت 0;
 }
 
-void
-display_uuid(void)
+تهی
+display_uuid(تهی)
 {
     u32 smbios_len = 0;
-    void *smbios_tables = smbios_get_tables(&smbios_len);
-    struct smbios_type_1 *tbl = smbios_next(smbios_tables, smbios_len, NULL);
-    int minlen = offsetof(struct smbios_type_1, uuid) + sizeof(tbl->uuid);
-    for (; tbl; tbl = smbios_next(smbios_tables, smbios_len, tbl))
-        if (tbl->header.type == 1 && tbl->header.length >= minlen) {
+    تهی *smbios_tables = smbios_get_tables(&smbios_len);
+    ساختار smbios_type_1 *tbl = smbios_next(smbios_tables, smbios_len, پوچ);
+    صحیح minlen = offsetof(ساختار smbios_type_1, uuid) + اندازه(tbl->uuid);
+    برای (; tbl; tbl = smbios_next(smbios_tables, smbios_len, tbl))
+        اگر (tbl->header.type == 1 && tbl->header.length >= minlen) {
             u8 *uuid = tbl->uuid;
-            u8 empty_uuid[sizeof(tbl->uuid)] = { 0 };
-            if (memcmp(uuid, empty_uuid, sizeof(empty_uuid)) == 0)
-                return;
+            u8 empty_uuid[اندازه(tbl->uuid)] = { 0 };
+            اگر (memcmp(uuid, empty_uuid, اندازه(empty_uuid)) == 0)
+                بازگشت;
 
             /*
              * According to SMBIOS v2.6 the first three fields are encoded in
@@ -394,7 +394,7 @@ display_uuid(void)
              * the encoding, but we follow dmidecode and assume big-endian
              * encoding.
              */
-            if (smbios_major_version() > 2 ||
+            اگر (smbios_major_version() > 2 ||
                 (smbios_major_version() == 2 &&
                  smbios_minor_version() >= 6)) {
                 printf("Machine UUID"
@@ -409,7 +409,7 @@ display_uuid(void)
                        , uuid[ 8], uuid[ 9]
                        , uuid[10], uuid[11], uuid[12]
                        , uuid[13], uuid[14], uuid[15]);
-            } else {
+            } وگرنه {
                 printf("Machine UUID"
                        " %02x%02x%02x%02x"
                        "-%02x%02x"
@@ -424,32 +424,32 @@ display_uuid(void)
                        , uuid[13], uuid[14], uuid[15]);
             }
 
-            return;
+            بازگشت;
         }
 }
 
-#define set_str_field_or_skip(type, field, value)                       \
-    do {                                                                \
-        int size = (value != NULL) ? strlen(value) + 1 : 0;             \
-        if (size > 1) {                                                 \
-            memcpy(end, value, size);                                   \
+#define set_str_field_or_skip(type, field, مقدار)                       \
+    انجامبده {                                                                \
+        صحیح size = (مقدار != پوچ) ? strlen(مقدار) + 1 : 0;             \
+        اگر (size > 1) {                                                 \
+            memcpy(end, مقدار, size);                                   \
             end += size;                                                \
             p->field = ++str_index;                                     \
-        } else {                                                        \
+        } وگرنه {                                                        \
             p->field = 0;                                               \
         }                                                               \
-    } while (0)
+    } وقتی (0)
 
-static void *
-smbios_new_type_0(void *start,
-                  const char *vendor, const char *version, const char *date)
+ایستا تهی *
+smbios_new_type_0(تهی *start,
+                  ثابت نویسه *vendor, ثابت نویسه *version, ثابت نویسه *date)
 {
-    struct smbios_type_0 *p = (struct smbios_type_0 *)start;
-    char *end = (char *)start + sizeof(struct smbios_type_0);
-    int str_index = 0;
+    ساختار smbios_type_0 *p = (ساختار smbios_type_0 *)start;
+    نویسه *end = (نویسه *)start + اندازه(ساختار smbios_type_0);
+    صحیح str_index = 0;
 
     p->header.type = 0;
-    p->header.length = sizeof(struct smbios_type_0);
+    p->header.length = اندازه(ساختار smbios_type_0);
     p->header.handle = 0;
 
     set_str_field_or_skip(0, vendor_str, vendor);
@@ -474,12 +474,12 @@ smbios_new_type_0(void *start,
 
     *end = 0;
     end++;
-    if (!str_index) {
+    اگر (!str_index) {
         *end = 0;
         end++;
     }
 
-    return end;
+    بازگشت end;
 }
 
 #define BIOS_NAME "SeaBIOS"
@@ -492,154 +492,154 @@ smbios_new_type_0(void *start,
  * @address and @length can't be NULL.  @max_structure_size and
  * @number_of_structures are optional and can be NULL.
  */
-static int
-smbios_build_tables(struct romfile_s *f_tables,
+ایستا صحیح
+smbios_build_tables(ساختار romfile_s *f_tables,
                     u64 *address, u32 *length,
                     u16 *max_structure_size,
-                    u16 *number_of_structures)
+                    u16 *عدد_of_structures)
 {
-    struct smbios_type_0 *t0;
+    ساختار smbios_type_0 *t0;
     u32 qtables_len, need_t0 = 1;
     u8 *qtables, *tables;
 
-    if (f_tables->size != *length)
-        return 0;
+    اگر (f_tables->size != *length)
+        بازگشت 0;
 
     qtables = malloc_tmphigh(f_tables->size);
-    if (!qtables) {
+    اگر (!qtables) {
         warn_noalloc();
-        return 0;
+        بازگشت 0;
     }
     f_tables->copy(f_tables, qtables, f_tables->size);
     qtables_len = f_tables->size;
 
     /* did we get a type 0 structure ? */
-    for (t0 = smbios_next(qtables, qtables_len, NULL); t0;
+    برای (t0 = smbios_next(qtables, qtables_len, پوچ); t0;
          t0 = smbios_next(qtables, qtables_len, t0)) {
-        if (t0->header.type == 0) {
+        اگر (t0->header.type == 0) {
             need_t0 = 0;
-            break;
+            بشکن;
         }
     }
 
-    if (need_t0) {
+    اگر (need_t0) {
         /* common case: add our own type 0, with 3 strings and 4 '\0's */
-        u16 t0_len = sizeof(struct smbios_type_0) + strlen(BIOS_NAME) +
+        u16 t0_len = اندازه(ساختار smbios_type_0) + strlen(BIOS_NAME) +
                      strlen(VERSION) + strlen(BIOS_DATE) + 4;
-        if (t0_len > (0xffff - *length)) {
+        اگر (t0_len > (0xffff - *length)) {
             dprintf(1, "Insufficient space (%d bytes) to add SMBIOS type 0 table (%d bytes)\n",
                     0xffff - *length, t0_len);
             need_t0 = 0;
-        } else {
+        } وگرنه {
             *length += t0_len;
-            if (max_structure_size && t0_len > *max_structure_size)
+            اگر (max_structure_size && t0_len > *max_structure_size)
                 *max_structure_size = t0_len;
-            if (number_of_structures)
-                (*number_of_structures)++;
+            اگر (عدد_of_structures)
+                (*عدد_of_structures)++;
         }
     }
 
     /* allocate final blob and record its address in the entry point */
-    if (*length > BUILD_MAX_SMBIOS_FSEG)
-        tables = malloc_high(*length);
-    else
+    اگر (*length > BUILD_MAX_SMBIOS_FSEG)
+        tables = malloc_بالا(*length);
+    وگرنه
         tables = malloc_fseg(*length);
-    if (!tables) {
+    اگر (!tables) {
         warn_noalloc();
-        free(qtables);
-        return 0;
+        آزاد(qtables);
+        بازگشت 0;
     }
     *address = (u32)tables;
 
     /* populate final blob */
-    if (need_t0)
+    اگر (need_t0)
         tables = smbios_new_type_0(tables, BIOS_NAME, VERSION, BIOS_DATE);
     memcpy(tables, qtables, qtables_len);
-    free(qtables);
-    return 1;
+    آزاد(qtables);
+    بازگشت 1;
 }
 
-static int
-smbios_21_setup_entry_point(struct romfile_s *f_tables,
-                            struct smbios_21_entry_point *ep)
+ایستا صحیح
+smbios_21_setup_entry_point(ساختار romfile_s *f_tables,
+                            ساختار smbios_21_entry_point *ep)
 {
     u64 address = ep->structure_table_address;
     u32 length = ep->structure_table_length;
 
-    if (!smbios_build_tables(f_tables,
+    اگر (!smbios_build_tables(f_tables,
                              &address,
                              &length,
                              &ep->max_structure_size,
-                             &ep->number_of_structures))
-        return 0;
+                             &ep->عدد_of_structures))
+        بازگشت 0;
 
-    if ((u32)address != address || (u16)length != length) {
+    اگر ((u32)address != address || (u16)length != length) {
         warn_internalerror();
-        return 0;
+        بازگشت 0;
     }
 
     /* finalize entry point */
     ep->structure_table_address = address;
     ep->structure_table_length = length;
     ep->checksum -= checksum(ep, 0x10);
-    ep->intermediate_checksum -= checksum((void *)ep + 0x10, ep->length - 0x10);
+    ep->intermediate_checksum -= checksum((تهی *)ep + 0x10, ep->length - 0x10);
 
     copy_smbios_21(ep);
-    return 1;
+    بازگشت 1;
 }
 
-static int
-smbios_30_setup_entry_point(struct romfile_s *f_tables,
-                            struct smbios_30_entry_point *ep)
+ایستا صحیح
+smbios_30_setup_entry_point(ساختار romfile_s *f_tables,
+                            ساختار smbios_30_entry_point *ep)
 {
-    if (!smbios_build_tables(f_tables,
+    اگر (!smbios_build_tables(f_tables,
                              &ep->structure_table_address,
                              &ep->structure_table_max_size,
-                             NULL, NULL))
-        return 0;
+                             پوچ, پوچ))
+        بازگشت 0;
 
-    ep->checksum -= checksum(ep, sizeof(*ep));
+    ep->checksum -= checksum(ep, اندازه(*ep));
     copy_smbios_30(ep);
-    return 1;
+    بازگشت 1;
 }
 
-static int
-smbios_romfile_setup(void)
+ایستا صحیح
+smbios_romfile_setup(تهی)
 {
-    struct romfile_s *f_anchor = romfile_find("etc/smbios/smbios-anchor");
-    struct romfile_s *f_tables = romfile_find("etc/smbios/smbios-tables");
-    union {
-        struct smbios_21_entry_point ep21;
-        struct smbios_30_entry_point ep30;
+    ساختار romfile_s *f_anchor = romfile_find("etc/smbios/smbios-anchor");
+    ساختار romfile_s *f_tables = romfile_find("etc/smbios/smbios-tables");
+    اجتماع {
+        ساختار smbios_21_entry_point ep21;
+        ساختار smbios_30_entry_point ep30;
     } ep;
 
-    if (!f_anchor || !f_tables || f_anchor->size > sizeof(ep))
-        return 0;
+    اگر (!f_anchor || !f_tables || f_anchor->size > اندازه(ep))
+        بازگشت 0;
 
     f_anchor->copy(f_anchor, &ep, f_anchor->size);
 
-    if (f_anchor->size == sizeof(ep.ep21) &&
+    اگر (f_anchor->size == اندازه(ep.ep21) &&
         ep.ep21.signature == SMBIOS_21_SIGNATURE) {
-        return smbios_21_setup_entry_point(f_tables, &ep.ep21);
-    } else if (f_anchor->size == sizeof(ep.ep30) &&
+        بازگشت smbios_21_setup_entry_point(f_tables, &ep.ep21);
+    } وگرنه اگر (f_anchor->size == اندازه(ep.ep30) &&
                valid_smbios_30_signature(&ep.ep30)) {
-        return smbios_30_setup_entry_point(f_tables, &ep.ep30);
-    } else {
+        بازگشت smbios_30_setup_entry_point(f_tables, &ep.ep30);
+    } وگرنه {
         dprintf(1, "Invalid SMBIOS signature at etc/smbios/smbios-anchor\n");
-        return 0;
+        بازگشت 0;
     }
 }
 
-void
-smbios_setup(void)
+تهی
+smbios_setup(تهی)
 {
-    if (smbios_romfile_setup())
-        return;
+    اگر (smbios_romfile_setup())
+        بازگشت;
     smbios_legacy_setup();
 }
 
-void
-copy_table(void *pos)
+تهی
+copy_table(تهی *pos)
 {
     copy_pir(pos);
     copy_mptable(pos);

@@ -1,14 +1,14 @@
 #ifndef __PCIDEVICE_H
 #define __PCIDEVICE_H
 
-#include "types.h" // u32
-#include "list.h" // hlist_node
+#شامل "types.h" // u32
+#شامل "list.h" // hlist_node
 
-struct pci_device {
+ساختار pci_device {
     u16 bdf;
     u8 rootbus;
-    struct hlist_node node;
-    struct pci_device *parent;
+    ساختار hlist_گره گره;
+    ساختار pci_device *parent;
 
     // Configuration space device information
     u16 vendor, device;
@@ -18,25 +18,25 @@ struct pci_device {
     u8 secondary_bus;
 
     // Local information on device.
-    int have_driver;
+    صحیح have_driver;
 };
-extern struct hlist_head PCIDevices;
-extern int MaxPCIBus;
+بیرونی ساختار hlist_head PCIDevices;
+بیرونی صحیح MaxPCIBus;
 
-static inline u32 pci_classprog(struct pci_device *pci) {
-    return (pci->class << 8) | pci->prog_if;
+ایستا درونخطی u32 pci_classprog(ساختار pci_device *pci) {
+    بازگشت (pci->class << 8) | pci->prog_if;
 }
 
 #define foreachpci(PCI)                                 \
-    hlist_for_each_entry(PCI, &PCIDevices, node)
+    hlist_for_each_entry(PCI, &PCIDevices, گره)
 
 #define PCI_ANY_ID      (~0)
-struct pci_device_id {
+ساختار pci_device_id {
     u32 vendid;
     u32 devid;
     u32 class;
     u32 class_mask;
-    void (*func)(struct pci_device *pci, void *arg);
+    تهی (*func)(ساختار pci_device *pci, تهی *arg);
 };
 
 #define PCI_DEVICE(vendor_id, device_id, init_func)     \
@@ -62,15 +62,15 @@ struct pci_device_id {
         .vendid = 0,                            \
     }
 
-void pci_probe_devices(void);
-struct pci_device *pci_find_device(u16 vendid, u16 devid);
-struct pci_device *pci_find_class(u16 classid);
-int pci_init_device(const struct pci_device_id *ids
-                    , struct pci_device *pci, void *arg);
-struct pci_device *pci_find_init_device(const struct pci_device_id *ids
-                                        , void *arg);
-void pci_enable_busmaster(struct pci_device *pci);
-u16 pci_enable_iobar(struct pci_device *pci, u32 addr);
-void *pci_enable_membar(struct pci_device *pci, u32 addr);
+تهی pci_probe_devices(تهی);
+ساختار pci_device *pci_find_device(u16 vendid, u16 devid);
+ساختار pci_device *pci_find_class(u16 classid);
+صحیح pci_init_device(ثابت ساختار pci_device_id *ids
+                    , ساختار pci_device *pci, تهی *arg);
+ساختار pci_device *pci_find_init_device(ثابت ساختار pci_device_id *ids
+                                        , تهی *arg);
+تهی pci_enable_busmaster(ساختار pci_device *pci);
+u16 pci_enable_iobar(ساختار pci_device *pci, u32 addr);
+تهی *pci_enable_membar(ساختار pci_device *pci, u32 addr);
 
 #endif // pcidevice.h

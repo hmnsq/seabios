@@ -1,37 +1,37 @@
-#include "config.h" // CONFIG_DEBUG_LEVEL
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "stacks.h" // run_thread
-#include "string.h" // memset
-#include "util.h" // acpi_dsdt_*
-#include "virtio-pci.h"
-#include "virtio-blk.h"
-#include "virtio-scsi.h"
-#include "virtio-ring.h"
-#include "virtio-mmio.h"
+#شامل "config.h" // CONFIG_DEBUG_LEVEL
+#شامل "malloc.h" // free
+#شامل "output.h" // dprintf
+#شامل "stacks.h" // run_thread
+#شامل "string.h" // memset
+#شامل "util.h" // acpi_dsdt_*
+#شامل "virtio-pci.h"
+#شامل "virtio-blk.h"
+#شامل "virtio-scsi.h"
+#شامل "virtio-ring.h"
+#شامل "virtio-mmio.h"
 
-void virtio_mmio_setup_acpi(void)
+تهی virtio_mmio_setup_acpi(تهی)
 {
-    static const char *virtio_hid = "LNRO0005";
-    struct acpi_device *dev;
+    ایستا ثابت نویسه *virtio_hid = "LNRO0005";
+    ساختار acpi_device *dev;
     u64 mem, irq, unused;
 
-    for (dev = acpi_dsdt_find_string(NULL, virtio_hid);
-         dev != NULL;
+    برای (dev = acpi_dsdt_find_string(پوچ, virtio_hid);
+         dev != پوچ;
          dev = acpi_dsdt_find_string(dev, virtio_hid)) {
-        if (acpi_dsdt_find_mem(dev, &mem, &unused) < 0)
-            continue;
-        if (acpi_dsdt_find_irq(dev, &irq) < 0)
-            continue;
+        اگر (acpi_dsdt_find_mem(dev, &mem, &unused) < 0)
+            ادامه;
+        اگر (acpi_dsdt_find_irq(dev, &irq) < 0)
+            ادامه;
         dprintf(1, "ACPI: virtio-mmio device %s at 0x%llx, irq %lld\n",
                 acpi_dsdt_name(dev), mem, irq);
         virtio_mmio_setup_one(mem);
     }
 }
 
-void virtio_mmio_setup_one(u64 addr)
+تهی virtio_mmio_setup_one(u64 addr)
 {
-    static const char *names[] = {
+    ایستا ثابت نویسه *names[] = {
         [  1 ] = "net",
         [  2 ] = "blk",
         [  3 ] = "console",
@@ -43,49 +43,49 @@ void virtio_mmio_setup_one(u64 addr)
         [ 18 ] = "input",
         [ 26 ] = "fs",
     };
-    const char *name;
+    ثابت نویسه *name;
     u32 magic, version, devid;
-    void *mmio;
+    تهی *mmio;
 
-    if (addr >= 0x100000000) {
+    اگر (addr >= 0x100000000) {
         dprintf(1, "virtio-mmio: %llx: above 4G\n", addr);
-        return;
+        بازگشت;
     }
 
-    mmio = (void*)(u32)(addr);
+    mmio = (تهی*)(u32)(addr);
     magic = readl(mmio);
-    if (magic != 0x74726976) {
+    اگر (magic != 0x74726976) {
         dprintf(1, "virtio-mmio: %llx: magic mismatch\n", addr);
-        return;
+        بازگشت;
     }
     version = readl(mmio+4);
-    if (version != 1 /* legacy */ &&
+    اگر (version != 1 /* legacy */ &&
         version != 2 /* 1.0 */) {
         dprintf(1, "virtio-mmio: %llx: unknown version %d\n", addr, version);
-        return;
+        بازگشت;
     }
     devid = readl(mmio+8);
 
-    name = (devid < ARRAY_SIZE(names) && names[devid] != NULL)
+    name = (devid < ARRAY_SIZE(names) && names[devid] != پوچ)
         ? names[devid] : "unknown";
     dprintf(1, "virtio-mmio: %llx: device id %x (%s%s)\n",
             addr, devid, name, version == 1 ? ", legacy" : "");
 
-    switch (devid) {
-    case 2: /* blk */
+    انتخاب (devid) {
+    حالت 2: /* blk */
         run_thread(init_virtio_blk_mmio, mmio);
-        break;
-    case 8: /* scsi */
+        بشکن;
+    حالت 8: /* scsi */
         run_thread(init_virtio_scsi_mmio, mmio);
-        break;
-    default:
-        break;
+        بشکن;
+    پیشفرض:
+        بشکن;
     }
 }
 
-void vp_init_mmio(struct vp_device *vp, void *mmio)
+تهی vp_init_mmio(ساختار vp_device *vp, تهی *mmio)
 {
-    memset(vp, 0, sizeof(*vp));
+    memset(vp, 0, اندازه(*vp));
     vp->use_mmio = 1;
     vp->common.mode = VP_ACCESS_MMIO;
     vp->common.memaddr = mmio;

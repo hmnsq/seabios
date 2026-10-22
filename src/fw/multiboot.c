@@ -4,106 +4,106 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_*
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "romfile.h" // romfile_add
-#include "std/multiboot.h" // MULTIBOOT_*
-#include "string.h" // memset
-#include "util.h" // multiboot_init
+#شامل "config.h" // CONFIG_*
+#شامل "malloc.h" // free
+#شامل "output.h" // dprintf
+#شامل "romfile.h" // romfile_add
+#شامل "std/multiboot.h" // MULTIBOOT_*
+#شامل "string.h" // memset
+#شامل "util.h" // multiboot_init
 
-struct mbfs_romfile_s {
-    struct romfile_s file;
-    void *data;
+ساختار mbfs_romfile_s {
+    ساختار romfile_s file;
+    تهی *data;
 };
 
-static int
-extract_filename(char *dest, char *src, size_t lim)
+ایستا صحیح
+extract_filename(نویسه *dest, نویسه *src, size_t lim)
 {
-    char *ptr;
-    for (ptr = src; *ptr; ptr++) {
-        if (!(ptr == src || ptr[-1] == ' ' || ptr[-1] == '\t'))
-            continue;
+    نویسه *ptr;
+    برای (ptr = src; *ptr; ptr++) {
+        اگر (!(ptr == src || ptr[-1] == ' ' || ptr[-1] == '\t'))
+            ادامه;
         /* memcmp stops early if it encounters \0 as it doesn't match name=.  */
-        if (memcmp(ptr, "name=", 5) == 0) {
-            int i;
-            char *optr = dest;
-            for (i = 0, ptr += 5; *ptr && *ptr != ' ' && i < lim; i++) {
+        اگر (memcmp(ptr, "name=", 5) == 0) {
+            صحیح i;
+            نویسه *optr = dest;
+            برای (i = 0, ptr += 5; *ptr && *ptr != ' ' && i < lim; i++) {
                 *optr++ = *ptr++;
             }
             *optr++ = '\0';
-            return 1;
+            بازگشت 1;
         }
     }
-    return 0;
+    بازگشت 0;
 }
 
 // Copy a file to memory
-static int
-mbfs_copyfile(struct romfile_s *file, void *dst, u32 maxlen)
+ایستا صحیح
+mbfs_copyfile(ساختار romfile_s *file, تهی *dst, u32 maxlen)
 {
-    struct mbfs_romfile_s *cfile;
-    cfile = container_of(file, struct mbfs_romfile_s, file);
+    ساختار mbfs_romfile_s *cfile;
+    cfile = container_of(file, ساختار mbfs_romfile_s, file);
     u32 size = cfile->file.size;
-    void *src = cfile->data;
+    تهی *src = cfile->data;
 
     // Not compressed.
     dprintf(3, "Copying data %d@%p to %d@%p\n", size, src, maxlen, dst);
-    if (size > maxlen) {
+    اگر (size > maxlen) {
         warn_noalloc();
-        return -1;
+        بازگشت -1;
     }
     iomemcpy(dst, src, size);
-    return size;
+    بازگشت size;
 }
 
 u32 __VISIBLE entry_elf_eax, entry_elf_ebx;
 
-void
-multiboot_init(void)
+تهی
+multiboot_init(تهی)
 {
-    struct multiboot_info *mbi;
-    if (!CONFIG_MULTIBOOT)
-        return;
+    ساختار multiboot_info *mbi;
+    اگر (!CONFIG_MULTIBOOT)
+        بازگشت;
     dprintf(1, "multiboot: eax=%x, ebx=%x\n", entry_elf_eax, entry_elf_ebx);
-    if (entry_elf_eax != MULTIBOOT_BOOTLOADER_MAGIC)
-        return;
-    mbi = (void *)entry_elf_ebx;
+    اگر (entry_elf_eax != MULTIBOOT_BOOTLOADER_MAGIC)
+        بازگشت;
+    mbi = (تهی *)entry_elf_ebx;
     dprintf(1, "mbptr=%p\n", mbi);
     dprintf(1, "flags=0x%x, mods=0x%x, mods_c=%d\n", mbi->flags, mbi->mods_addr,
-            mbi->mods_count);
-    if (!(mbi->flags & MULTIBOOT_INFO_MODS))
-        return;
-    int i;
-    struct multiboot_mod_list *mod = (void *)mbi->mods_addr;
-    for (i = 0; i < mbi->mods_count; i++) {
-        struct mbfs_romfile_s *cfile;
+            mbi->mods_شمار);
+    اگر (!(mbi->flags & MULTIBOOT_INFO_MODS))
+        بازگشت;
+    صحیح i;
+    ساختار multiboot_mod_list *mod = (تهی *)mbi->mods_addr;
+    برای (i = 0; i < mbi->mods_شمار; i++) {
+        ساختار mbfs_romfile_s *cfile;
         u8 *copy;
         u32 len;
-        if (!mod[i].cmdline)
-            continue;
+        اگر (!mod[i].cmdline)
+            ادامه;
         len = mod[i].mod_end - mod[i].mod_start;
-        cfile = malloc_tmp(sizeof(*cfile));
-        if (!cfile) {
+        cfile = malloc_tmp(اندازه(*cfile));
+        اگر (!cfile) {
             warn_noalloc();
-            return;
+            بازگشت;
         }
-        memset(cfile, 0, sizeof(*cfile));
-        dprintf(1, "module %s, size 0x%x\n", (char *)mod[i].cmdline, len);
-        if (!extract_filename(cfile->file.name, (char *)mod[i].cmdline,
-                              sizeof(cfile->file.name))) {
-            free(cfile);
-            continue;
+        memset(cfile, 0, اندازه(*cfile));
+        dprintf(1, "module %s, size 0x%x\n", (نویسه *)mod[i].cmdline, len);
+        اگر (!extract_filename(cfile->file.name, (نویسه *)mod[i].cmdline,
+                              اندازه(cfile->file.name))) {
+            آزاد(cfile);
+            ادامه;
         }
         dprintf(1, "assigned file name <%s>\n", cfile->file.name);
         cfile->file.size = len;
         copy = malloc_tmp(len);
-        if (!copy) {
+        اگر (!copy) {
             warn_noalloc();
-            free(cfile);
-            return;
+            آزاد(cfile);
+            بازگشت;
         }
-        memcpy(copy, (void *)mod[i].mod_start, len);
+        memcpy(copy, (تهی *)mod[i].mod_start, len);
         cfile->file.copy = mbfs_copyfile;
         cfile->data = copy;
         romfile_add(&cfile->file);

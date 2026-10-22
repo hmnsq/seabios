@@ -10,20 +10,20 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_GLOBALFLAT
-#include "block.h" // struct drive_s
-#include "blockcmd.h" // scsi_drive_setup
-#include "config.h" // CONFIG_*
-#include "fw/paravirt.h" // runningOnQEMU
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "pcidevice.h" // foreachpci
-#include "pci_ids.h" // PCI_DEVICE_ID_VIRTIO_BLK
-#include "pci_regs.h" // PCI_VENDOR_ID
-#include "stacks.h" // run_thread
-#include "std/disk.h" // DISK_RET_SUCCESS
-#include "string.h" // memset
-#include "util.h" // usleep
+#شامل "biosvar.h" // GET_GLOBALFLAT
+#شامل "block.h" // struct drive_s
+#شامل "blockcmd.h" // scsi_drive_setup
+#شامل "config.h" // CONFIG_*
+#شامل "fw/paravirt.h" // runningOnQEMU
+#شامل "malloc.h" // free
+#شامل "output.h" // dprintf
+#شامل "pcidevice.h" // foreachpci
+#شامل "pci_ids.h" // PCI_DEVICE_ID_VIRTIO_BLK
+#شامل "pci_regs.h" // PCI_VENDOR_ID
+#شامل "stacks.h" // run_thread
+#شامل "std/disk.h" // DISK_RET_SUCCESS
+#شامل "string.h" // memset
+#شامل "util.h" // usleep
 
 #define LSI_REG_DSTAT     0x0c
 #define LSI_REG_ISTAT0    0x14
@@ -43,30 +43,30 @@
 #define LSI_ISTAT0_SRST   0x40
 #define LSI_ISTAT0_ABRT   0x80
 
-struct lsi_lun_s {
-    struct drive_s drive;
-    struct pci_device *pci;
+ساختار lsi_lun_s {
+    ساختار drive_s drive;
+    ساختار pci_device *pci;
     u32 iobase;
     u8 target;
     u8 lun;
 };
 
-int
-lsi_scsi_process_op(struct disk_op_s *op)
+صحیح
+lsi_scsi_process_op(ساختار disk_op_s *op)
 {
-    if (!CONFIG_LSI_SCSI)
-        return DISK_RET_EBADTRACK;
-    struct lsi_lun_s *llun_gf =
-        container_of(op->drive_fl, struct lsi_lun_s, drive);
+    اگر (!CONFIG_LSI_SCSI)
+        بازگشت DISK_RET_EBADTRACK;
+    ساختار lsi_lun_s *llun_gf =
+        container_of(op->drive_fl, ساختار lsi_lun_s, drive);
     u16 target = GET_GLOBALFLAT(llun_gf->target);
     u16 lun = GET_GLOBALFLAT(llun_gf->lun);
     u8 cdbcmd[16];
-    int blocksize = scsi_fill_cmd(op, cdbcmd, sizeof(cdbcmd));
-    if (blocksize < 0)
-        return default_process_op(op);
+    صحیح blocksize = scsi_fill_cmd(op, cdbcmd, اندازه(cdbcmd));
+    اگر (blocksize < 0)
+        بازگشت default_process_op(op);
     u32 iobase = GET_GLOBALFLAT(llun_gf->iobase);
     u32 dma = ((scsi_is_read(op) ? 0x01000000 : 0x00000000) |
-               (op->count * blocksize));
+               (op->شمار * blocksize));
     u8 msgout[] = {
         0x80 | lun,                 // select lun
         0x08,
@@ -111,32 +111,32 @@ lsi_scsi_process_op(struct disk_op_s *op)
     outb((dsp >> 16) & 0xff, iobase + LSI_REG_DSP2);
     outb((dsp >> 24) & 0xff, iobase + LSI_REG_DSP3);
 
-    for (;;) {
+    برای (;;) {
         u8 dstat = inb(iobase + LSI_REG_DSTAT);
         u8 sist0 = inb(iobase + LSI_REG_SIST0);
         u8 sist1 = inb(iobase + LSI_REG_SIST1);
-        if (sist0 || sist1) {
-            goto fail;
+        اگر (sist0 || sist1) {
+            برو fail;
         }
-        if (dstat & 0x04) {
-            break;
+        اگر (dstat & 0x04) {
+            بشکن;
         }
         usleep(5);
     }
 
-    if (msgin == 0 && status == 0) {
-        return DISK_RET_SUCCESS;
+    اگر (msgin == 0 && status == 0) {
+        بازگشت DISK_RET_SUCCESS;
     }
 
 fail:
-    return DISK_RET_EBADTRACK;
+    بازگشت DISK_RET_EBADTRACK;
 }
 
-static void
-lsi_scsi_init_lun(struct lsi_lun_s *llun, struct pci_device *pci, u32 iobase,
+ایستا تهی
+lsi_scsi_init_lun(ساختار lsi_lun_s *llun, ساختار pci_device *pci, u32 iobase,
                   u8 target, u8 lun)
 {
-    memset(llun, 0, sizeof(*llun));
+    memset(llun, 0, اندازه(*llun));
     llun->drive.type = DTYPE_LSI_SCSI;
     llun->drive.cntl_id = pci->bdf;
     llun->pci = pci;
@@ -145,53 +145,53 @@ lsi_scsi_init_lun(struct lsi_lun_s *llun, struct pci_device *pci, u32 iobase,
     llun->iobase = iobase;
 }
 
-static int
-lsi_scsi_add_lun(u32 lun, struct drive_s *tmpl_drv)
+ایستا صحیح
+lsi_scsi_add_lun(u32 lun, ساختار drive_s *tmpl_drv)
 {
-    struct lsi_lun_s *tmpl_llun =
-        container_of(tmpl_drv, struct lsi_lun_s, drive);
-    struct lsi_lun_s *llun = malloc_fseg(sizeof(*llun));
-    if (!llun) {
+    ساختار lsi_lun_s *tmpl_llun =
+        container_of(tmpl_drv, ساختار lsi_lun_s, drive);
+    ساختار lsi_lun_s *llun = malloc_fseg(اندازه(*llun));
+    اگر (!llun) {
         warn_noalloc();
-        return -1;
+        بازگشت -1;
     }
     lsi_scsi_init_lun(llun, tmpl_llun->pci, tmpl_llun->iobase,
                       tmpl_llun->target, lun);
 
     boot_lchs_find_scsi_device(llun->pci, llun->target, llun->lun,
                                &(llun->drive.lchs));
-    char *name = znprintf(MAXDESCSIZE, "lsi %pP %d:%d",
+    نویسه *name = znprintf(MAXDESCSIZE, "lsi %pP %d:%d",
                           llun->pci, llun->target, llun->lun);
-    int prio = bootprio_find_scsi_device(llun->pci, llun->target, llun->lun);
-    int ret = scsi_drive_setup(&llun->drive, name, prio);
-    free(name);
-    if (ret)
-        goto fail;
-    return 0;
+    صحیح prio = bootprio_find_scsi_device(llun->pci, llun->target, llun->lun);
+    صحیح ret = scsi_drive_setup(&llun->drive, name, prio);
+    آزاد(name);
+    اگر (ret)
+        برو fail;
+    بازگشت 0;
 
 fail:
-    free(llun);
-    return -1;
+    آزاد(llun);
+    بازگشت -1;
 }
 
-static void
-lsi_scsi_scan_target(struct pci_device *pci, u32 iobase, u8 target)
+ایستا تهی
+lsi_scsi_scan_target(ساختار pci_device *pci, u32 iobase, u8 target)
 {
-    struct lsi_lun_s llun0;
+    ساختار lsi_lun_s llun0;
 
     lsi_scsi_init_lun(&llun0, pci, iobase, target, 0);
 
-    if (scsi_rep_luns_scan(&llun0.drive, lsi_scsi_add_lun) < 0)
+    اگر (scsi_rep_luns_scan(&llun0.drive, lsi_scsi_add_lun) < 0)
         scsi_sequential_scan(&llun0.drive, 8, lsi_scsi_add_lun);
 }
 
-static void
-init_lsi_scsi(void *data)
+ایستا تهی
+init_lsi_scsi(تهی *data)
 {
-    struct pci_device *pci = data;
+    ساختار pci_device *pci = data;
     u32 iobase = pci_enable_iobar(pci, PCI_BASE_ADDRESS_0);
-    if (!iobase)
-        return;
+    اگر (!iobase)
+        بازگشت;
     pci_enable_busmaster(pci);
 
     dprintf(1, "found lsi53c895a at %pP, io @ %x\n", pci, iobase);
@@ -199,25 +199,25 @@ init_lsi_scsi(void *data)
     // reset
     outb(LSI_ISTAT0_SRST, iobase + LSI_REG_ISTAT0);
 
-    int i;
-    for (i = 0; i < 7; i++)
+    صحیح i;
+    برای (i = 0; i < 7; i++)
         lsi_scsi_scan_target(pci, iobase, i);
 }
 
-void
-lsi_scsi_setup(void)
+تهی
+lsi_scsi_setup(تهی)
 {
     ASSERT32FLAT();
-    if (!CONFIG_LSI_SCSI || !runningOnQEMU())
-        return;
+    اگر (!CONFIG_LSI_SCSI || !runningOnQEMU())
+        بازگشت;
 
     dprintf(3, "init lsi53c895a\n");
 
-    struct pci_device *pci;
+    ساختار pci_device *pci;
     foreachpci(pci) {
-        if (pci->vendor != PCI_VENDOR_ID_LSI_LOGIC
+        اگر (pci->vendor != PCI_VENDOR_ID_LSI_LOGIC
             || pci->device != PCI_DEVICE_ID_LSI_53C895A)
-            continue;
+            ادامه;
         run_thread(init_lsi_scsi, pci);
     }
 }

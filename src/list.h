@@ -1,89 +1,89 @@
 #ifndef __LIST_H
 #define __LIST_H
 
-#include "types.h" // container_of
+#شامل "types.h" // container_of
 
 
 /****************************************************************
  * hlist - Double linked lists with a single pointer list head
  ****************************************************************/
 
-struct hlist_node {
-    struct hlist_node *next, **pprev;
+ساختار hlist_گره {
+    ساختار hlist_گره *next, **pprev;
 };
 
-struct hlist_head {
-    struct hlist_node *first;
+ساختار hlist_head {
+    ساختار hlist_گره *first;
 };
 
-static inline int
-hlist_empty(const struct hlist_head *h)
+ایستا درونخطی صحیح
+hlist_empty(ثابت ساختار hlist_head *h)
 {
-    return !h->first;
+    بازگشت !h->first;
 }
 
-static inline void
-hlist_del(struct hlist_node *n)
+ایستا درونخطی تهی
+hlist_del(ساختار hlist_گره *n)
 {
-    struct hlist_node *next = n->next;
-    struct hlist_node **pprev = n->pprev;
+    ساختار hlist_گره *next = n->next;
+    ساختار hlist_گره **pprev = n->pprev;
     *pprev = next;
-    if (next)
+    اگر (next)
         next->pprev = pprev;
 }
 
-static inline void
-hlist_add(struct hlist_node *n, struct hlist_node **pprev)
+ایستا درونخطی تهی
+hlist_add(ساختار hlist_گره *n, ساختار hlist_گره **pprev)
 {
-    struct hlist_node *next = *pprev;
+    ساختار hlist_گره *next = *pprev;
     n->pprev = pprev;
     n->next = next;
-    if (next)
+    اگر (next)
         next->pprev = &n->next;
     *pprev = n;
 }
 
-static inline void
-hlist_add_head(struct hlist_node *n, struct hlist_head *h)
+ایستا درونخطی تهی
+hlist_add_head(ساختار hlist_گره *n, ساختار hlist_head *h)
 {
     hlist_add(n, &h->first);
 }
 
-static inline void
-hlist_add_before(struct hlist_node *n, struct hlist_node *next)
+ایستا درونخطی تهی
+hlist_add_before(ساختار hlist_گره *n, ساختار hlist_گره *next)
 {
     hlist_add(n, next->pprev);
 }
 
-static inline void
-hlist_add_after(struct hlist_node *n, struct hlist_node *prev)
+ایستا درونخطی تهی
+hlist_add_after(ساختار hlist_گره *n, ساختار hlist_گره *prev)
 {
     hlist_add(n, &prev->next);
 }
 
-static inline void
-hlist_replace(struct hlist_node *old, struct hlist_node *new)
+ایستا درونخطی تهی
+hlist_replace(ساختار hlist_گره *old, ساختار hlist_گره *new)
 {
     new->next = old->next;
-    if (new->next)
+    اگر (new->next)
         new->next->pprev = &new->next;
     new->pprev = old->pprev;
     *new->pprev = new;
 }
 
 #define hlist_for_each_entry(pos, head, member)                         \
-    for (pos = container_of((head)->first, typeof(*pos), member)        \
-         ; pos != container_of(NULL, typeof(*pos), member)              \
+    برای (pos = container_of((head)->first, typeof(*pos), member)        \
+         ; pos != container_of(پوچ, typeof(*pos), member)              \
          ; pos = container_of(pos->member.next, typeof(*pos), member))
 
 #define hlist_for_each_entry_safe(pos, n, head, member)                 \
-    for (pos = container_of((head)->first, typeof(*pos), member)        \
-         ; pos != container_of(NULL, typeof(*pos), member)              \
+    برای (pos = container_of((head)->first, typeof(*pos), member)        \
+         ; pos != container_of(پوچ, typeof(*pos), member)              \
              && ({ n = pos->member.next; 1; })                          \
          ; pos = container_of(n, typeof(*pos), member))
 
 #define hlist_for_each_entry_pprev(pos, pprev, head, member)            \
-    for (pprev = &(head)->first                                         \
+    برای (pprev = &(head)->first                                         \
          ; *pprev && ({ pos=container_of(*pprev, typeof(*pos), member); 1; }) \
          ; pprev = &(*pprev)->next)
 
