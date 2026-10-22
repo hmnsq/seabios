@@ -10,8 +10,8 @@
  * Interrupt vector table
  ****************************************************************/
 
-struct rmode_IVT {
-    struct segoff_s ivec[256];
+sa_nracanaa rmode_IVT {
+    sa_nracanaa segoff_s ivec[256];
 };
 
 
@@ -19,7 +19,7 @@ struct rmode_IVT {
  * Bios Data Area (BDA)
  ****************************************************************/
 
-struct bios_data_area_s {
+sa_nracanaa bios_data_area_s {
     // 40:00
     u16 port_com[4];
     u16 port_lpt[3];
@@ -54,7 +54,7 @@ struct bios_data_area_s {
     u16 crtc_address;
     u8 video_msr;
     u8 video_pal;
-    struct segoff_s jump;
+    sa_nracanaa segoff_s jump;
     u8 other_6b;
     u32 timer_counter;
     // 40:70
@@ -86,12 +86,12 @@ struct bios_data_area_s {
     u8 floppy_track[2];
     u8 kbd_flag1;
     u8 kbd_led;
-    struct segoff_s user_wait_complete_flag;
+    sa_nracanaa segoff_s user_wait_complete_flag;
     u32 user_wait_timeout;
     // 40:A0
     u8 rtc_wait_flag;
     u8 other_a1[7];
-    struct segoff_s video_savetable;
+    sa_nracanaa segoff_s video_savetable;
     u8 other_ac[4];
     // 40:B0
     u8 other_b0[5*16];
@@ -139,10 +139,10 @@ struct bios_data_area_s {
  * Extended Bios Data Area (EBDA)
  ****************************************************************/
 
-struct extended_bios_data_area_s {
+sa_nracanaa extended_bios_data_area_s {
     u8 size;
     u8 reserved1[0x21];
-    struct segoff_s far_call_pointer;
+    sa_nracanaa segoff_s far_call_pointer;
     u8 mouse_flag1;
     u8 mouse_flag2;
     u8 mouse_data[0x08];
@@ -150,7 +150,7 @@ struct extended_bios_data_area_s {
     u8 other1[0x0d];
 
     // 0x3d
-    struct fdpt_s fdpt[2];
+    sa_nracanaa fdpt_s fdpt[2];
 
     // 0x5d
     u8 other2[0xC4];
@@ -163,7 +163,7 @@ struct extended_bios_data_area_s {
  * Bios Config Table
  ****************************************************************/
 
-struct bios_config_table_s {
+sa_nracanaa bios_config_table_s {
     u16 size;
     u8 model;
     u8 submodel;

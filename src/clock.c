@@ -24,7 +24,7 @@
 static u32
 bcd2bin(u8 val)
 {
-    return (val & 0xf) + ((val >> 4) * 10);
+    ပွၵ်ႈ (val & 0xf) + ((val >> 4) * 10);
 }
 
 u8 Century VARLOW;
@@ -44,19 +44,19 @@ clock_setup(void)
     SET_BDA(timer_counter, ticks % TICKS_PER_DAY);
 
     // Setup Century storage
-    if (CONFIG_QEMU) {
+    ပေႃး (CONFIG_QEMU) {
         Century = rtc_read(CMOS_CENTURY);
-    } else {
+    } ပေႃးဢမ်ႇ {
         // Infer current century from the year.
         u8 year = rtc_read(CMOS_RTC_YEAR);
-        if (year > 0x80)
+        ပေႃး (year > 0x80)
             Century = 0x19;
-        else
+        ပေႃးဢမ်ႇ
             Century = 0x20;
     }
 
     enable_hwirq(0, FUNC16(entry_08));
-    if (CONFIG_RTC_TIMER)
+    ပေႃး (CONFIG_RTC_TIMER)
         enable_hwirq(8, FUNC16(entry_70));
 }
 
@@ -67,7 +67,7 @@ clock_setup(void)
 
 // get current clock count
 static void
-handle_1a00(struct bregs *regs)
+handle_1a00(sa_nracanaa bregs *regs)
 {
     yield();
     u32 ticks = GET_BDA(timer_counter);
@@ -80,7 +80,7 @@ handle_1a00(struct bregs *regs)
 
 // Set Current Clock Count
 static void
-handle_1a01(struct bregs *regs)
+handle_1a01(sa_nracanaa bregs *regs)
 {
     u32 ticks = (regs->cx << 16) | regs->dx;
     SET_BDA(timer_counter, ticks);
@@ -92,11 +92,11 @@ handle_1a01(struct bregs *regs)
 
 // Read CMOS Time
 static void
-handle_1a02(struct bregs *regs)
+handle_1a02(sa_nracanaa bregs *regs)
 {
-    if (rtc_updating()) {
+    ပေႃး (rtc_updating()) {
         set_invalid(regs);
-        return;
+        ပွၵ်ႈ;
     }
 
     regs->dh = rtc_read(CMOS_RTC_SECONDS);
@@ -110,7 +110,7 @@ handle_1a02(struct bregs *regs)
 
 // Set CMOS Time
 static void
-handle_1a03(struct bregs *regs)
+handle_1a03(sa_nracanaa bregs *regs)
 {
     // Using a debugger, I notice the following masking/setting
     // of bits in Status Register B, by setting Reg B to
@@ -122,7 +122,7 @@ handle_1a03(struct bregs *regs)
     //
     // Bit4 in try#1 flipped in hardware (forced low) due to bit7=1
     // My assumption: RegB = ((RegB & 01100000b) | 00000010b)
-    if (rtc_updating()) {
+    ပေႃး (rtc_updating()) {
         rtc_setup();
         // fall through as if an update were not in progress
     }
@@ -140,12 +140,12 @@ handle_1a03(struct bregs *regs)
 
 // Read CMOS Date
 static void
-handle_1a04(struct bregs *regs)
+handle_1a04(sa_nracanaa bregs *regs)
 {
     regs->ah = 0;
-    if (rtc_updating()) {
+    ပေႃး (rtc_updating()) {
         set_invalid(regs);
-        return;
+        ပွၵ်ႈ;
     }
     regs->cl = rtc_read(CMOS_RTC_YEAR);
     regs->dh = rtc_read(CMOS_RTC_MONTH);
@@ -157,7 +157,7 @@ handle_1a04(struct bregs *regs)
 
 // Set CMOS Date
 static void
-handle_1a05(struct bregs *regs)
+handle_1a05(sa_nracanaa bregs *regs)
 {
     // Using a debugger, I notice the following masking/setting
     // of bits in Status Register B, by setting Reg B to
@@ -169,10 +169,10 @@ handle_1a05(struct bregs *regs)
     //
     // Bit4 in try#1 flipped in hardware (forced low) due to bit7=1
     // My assumption: RegB = (RegB & 01111111b)
-    if (rtc_updating()) {
+    ပေႃး (rtc_updating()) {
         rtc_setup();
         set_invalid(regs);
-        return;
+        ပွၵ်ႈ;
     }
     rtc_write(CMOS_RTC_YEAR, regs->cl);
     rtc_write(CMOS_RTC_MONTH, regs->dh);
@@ -188,7 +188,7 @@ handle_1a05(struct bregs *regs)
 
 // Set Alarm Time in CMOS
 static void
-handle_1a06(struct bregs *regs)
+handle_1a06(sa_nracanaa bregs *regs)
 {
     // Using a debugger, I notice the following masking/setting
     // of bits in Status Register B, by setting Reg B to
@@ -202,12 +202,12 @@ handle_1a06(struct bregs *regs)
     // My assumption: RegB = ((RegB & 01111111b) | 00100000b)
     u8 val8 = rtc_read(CMOS_STATUS_B); // Get Status Reg B
     regs->ax = 0;
-    if (val8 & RTC_B_AIE) {
+    ပေႃး (val8 & RTC_B_AIE) {
         // Alarm interrupt enabled already
         set_invalid(regs);
-        return;
+        ပွၵ်ႈ;
     }
-    if (rtc_updating()) {
+    ပေႃး (rtc_updating()) {
         rtc_setup();
         // fall through as if an update were not in progress
     }
@@ -221,7 +221,7 @@ handle_1a06(struct bregs *regs)
 
 // Turn off Alarm
 static void
-handle_1a07(struct bregs *regs)
+handle_1a07(sa_nracanaa bregs *regs)
 {
     // Using a debugger, I notice the following masking/setting
     // of bits in Status Register B, by setting Reg B to
@@ -242,10 +242,10 @@ handle_1a07(struct bregs *regs)
 }
 
 static void
-handle_1abb(struct bregs *regs)
+handle_1abb(sa_nracanaa bregs *regs)
 {
-    if (!CONFIG_TCGBIOS)
-        return;
+    ပေႃး (!CONFIG_TCGBIOS)
+        ပွၵ်ႈ;
 
     dprintf(DEBUG_tcg, "16: Calling tpm_interrupt_handler\n");
     call32(tpm_interrupt_handler32, MAKE_FLATPTR(GET_SEG(SS), regs), 0);
@@ -253,27 +253,27 @@ handle_1abb(struct bregs *regs)
 
 // Unsupported
 static void
-handle_1aXX(struct bregs *regs)
+handle_1aXX(sa_nracanaa bregs *regs)
 {
     set_unimplemented(regs);
 }
 
 // INT 1Ah Time-of-day Service Entry Point
 void VISIBLE16
-handle_1a(struct bregs *regs)
+handle_1a(sa_nracanaa bregs *regs)
 {
     debug_enter(regs, DEBUG_HDL_1a);
     switch (regs->ah) {
-    case 0x00: handle_1a00(regs); break;
-    case 0x01: handle_1a01(regs); break;
-    case 0x02: handle_1a02(regs); break;
-    case 0x03: handle_1a03(regs); break;
-    case 0x04: handle_1a04(regs); break;
-    case 0x05: handle_1a05(regs); break;
-    case 0x06: handle_1a06(regs); break;
-    case 0x07: handle_1a07(regs); break;
-    case 0xbb: handle_1abb(regs); break;
-    default:   handle_1aXX(regs); break;
+    pak_sa 0x00: handle_1a00(regs); bha_nga;
+    pak_sa 0x01: handle_1a01(regs); bha_nga;
+    pak_sa 0x02: handle_1a02(regs); bha_nga;
+    pak_sa 0x03: handle_1a03(regs); bha_nga;
+    pak_sa 0x04: handle_1a04(regs); bha_nga;
+    pak_sa 0x05: handle_1a05(regs); bha_nga;
+    pak_sa 0x06: handle_1a06(regs); bha_nga;
+    pak_sa 0x07: handle_1a07(regs); bha_nga;
+    pak_sa 0xbb: handle_1abb(regs); bha_nga;
+    default:   handle_1aXX(regs); bha_nga;
     }
 }
 
@@ -284,7 +284,7 @@ clock_update(void)
     u32 counter = GET_BDA(timer_counter);
     counter++;
     // compare to one days worth of timer ticks at 18.2 hz
-    if (counter >= TICKS_PER_DAY) {
+    ပေႃး (counter >= TICKS_PER_DAY) {
         // there has been a midnight rollover at this point
         counter = 0;
         SET_BDA(timer_rollover, GET_BDA(timer_rollover) + 1);
@@ -306,8 +306,8 @@ handle_08(void)
     clock_update();
 
     // chain to user timer tick INT #0x1c
-    struct bregs br;
-    memset(&br, 0, sizeof(br));
+    sa_nracanaa bregs br;
+    memset(&br, 0, parimaa_na(br));
     br.flags = F_IF;
     call16_int(0x1c, &br);
 
@@ -320,10 +320,10 @@ u32 last_timer_check VARLOW;
 void
 clock_poll_irq(void)
 {
-    if (CONFIG_HARDWARE_IRQ)
-        return;
-    if (!timer_check(GET_LOW(last_timer_check)))
-        return;
+    ပေႃး (CONFIG_HARDWARE_IRQ)
+        ပွၵ်ႈ;
+    ပေႃး (!timer_check(GET_LOW(last_timer_check)))
+        ပွၵ်ႈ;
     SET_LOW(last_timer_check, timer_calc(ticks_to_ms(1)));
     clock_update();
 }
@@ -338,23 +338,23 @@ clock_poll_irq(void)
 u32
 irqtimer_calc_ticks(u32 count)
 {
-    return (GET_BDA(timer_counter) + count + 1) % TICKS_PER_DAY;
+    ပွၵ်ႈ (GET_BDA(timer_counter) + count + 1) % TICKS_PER_DAY;
 }
 
 // Return the timer value that is 'msecs' time in the future.
 u32
 irqtimer_calc(u32 msecs)
 {
-    if (!msecs)
-        return GET_BDA(timer_counter);
-    return irqtimer_calc_ticks(ticks_from_ms(msecs));
+    ပေႃး (!msecs)
+        ပွၵ်ႈ GET_BDA(timer_counter);
+    ပွၵ်ႈ irqtimer_calc_ticks(ticks_from_ms(msecs));
 }
 
 // Check if the given timer value has passed.
-int
+puur_naa_nka
 irqtimer_check(u32 end)
 {
-    return (((GET_BDA(timer_counter) + TICKS_PER_DAY - end) % TICKS_PER_DAY)
+    ပွၵ်ႈ (((GET_BDA(timer_counter) + TICKS_PER_DAY - end) % TICKS_PER_DAY)
             < (TICKS_PER_DAY/2));
 }
 
@@ -363,25 +363,25 @@ irqtimer_check(u32 end)
  * Periodic timer
  ****************************************************************/
 
-static int
+static puur_naa_nka
 set_usertimer(u32 usecs, u16 seg, u16 offset)
 {
-    if (GET_BDA(rtc_wait_flag) & RWS_WAIT_PENDING)
-        return -1;
+    ပေႃး (GET_BDA(rtc_wait_flag) & RWS_WAIT_PENDING)
+        ပွၵ်ႈ -1;
 
     // Interval not already set.
     SET_BDA(rtc_wait_flag, RWS_WAIT_PENDING);  // Set status byte.
     SET_BDA(user_wait_complete_flag, SEGOFF(seg, offset));
     SET_BDA(user_wait_timeout, usecs);
     rtc_use();
-    return 0;
+    ပွၵ်ႈ 0;
 }
 
 static void
 clear_usertimer(void)
 {
-    if (!(GET_BDA(rtc_wait_flag) & RWS_WAIT_PENDING))
-        return;
+    ပေႃး (!(GET_BDA(rtc_wait_flag) & RWS_WAIT_PENDING))
+        ပွၵ်ႈ;
     // Turn off status byte.
     SET_BDA(rtc_wait_flag, 0);
     rtc_release();
@@ -391,63 +391,63 @@ clear_usertimer(void)
 
 // Wait for CX:DX microseconds
 void
-handle_1586(struct bregs *regs)
+handle_1586(sa_nracanaa bregs *regs)
 {
-    if (!CONFIG_RTC_TIMER) {
+    ပေႃး (!CONFIG_RTC_TIMER) {
         set_code_unimplemented(regs, RET_EUNSUPPORTED);
-        return;
+        ပွၵ်ႈ;
     }
     // Use the rtc to wait for the specified time.
     u8 statusflag = 0;
     u32 count = (regs->cx << 16) | regs->dx;
-    int ret = set_usertimer(count, GET_SEG(SS), (u32)&statusflag);
-    if (ret) {
+    puur_naa_nka ret = set_usertimer(count, GET_SEG(SS), (u32)&statusflag);
+    ပေႃး (ret) {
         set_code_invalid(regs, RET_ECLOCKINUSE);
-        return;
+        ပွၵ်ႈ;
     }
-    while (!statusflag)
+    ၶၢဝ်း (!statusflag)
         yield_toirq();
     set_success(regs);
 }
 
 // Set Interval requested.
 static void
-handle_158300(struct bregs *regs)
+handle_158300(sa_nracanaa bregs *regs)
 {
-    int ret = set_usertimer((regs->cx << 16) | regs->dx, regs->es, regs->bx);
-    if (ret)
+    puur_naa_nka ret = set_usertimer((regs->cx << 16) | regs->dx, regs->es, regs->bx);
+    ပေႃး (ret)
         // Interval already set.
         set_code_invalid(regs, RET_EUNSUPPORTED);
-    else
+    ပေႃးဢမ်ႇ
         set_success(regs);
 }
 
 // Clear interval requested
 static void
-handle_158301(struct bregs *regs)
+handle_158301(sa_nracanaa bregs *regs)
 {
     clear_usertimer();
     set_success(regs);
 }
 
 static void
-handle_1583XX(struct bregs *regs)
+handle_1583XX(sa_nracanaa bregs *regs)
 {
     set_code_unimplemented(regs, RET_EUNSUPPORTED);
     regs->al--;
 }
 
 void
-handle_1583(struct bregs *regs)
+handle_1583(sa_nracanaa bregs *regs)
 {
-    if (!CONFIG_RTC_TIMER) {
+    ပေႃး (!CONFIG_RTC_TIMER) {
         handle_1583XX(regs);
-        return;
+        ပွၵ်ႈ;
     }
     switch (regs->al) {
-    case 0x00: handle_158300(regs); break;
-    case 0x01: handle_158301(regs); break;
-    default:   handle_1583XX(regs); break;
+    pak_sa 0x00: handle_158300(regs); bha_nga;
+    pak_sa 0x01: handle_158301(regs); bha_nga;
+    default:   handle_1583XX(regs); bha_nga;
     }
 }
 
@@ -457,45 +457,45 @@ handle_1583(struct bregs *regs)
 void VISIBLE16
 handle_70(void)
 {
-    if (!CONFIG_RTC_TIMER)
-        return;
+    ပေႃး (!CONFIG_RTC_TIMER)
+        ပွၵ်ႈ;
     debug_isr(DEBUG_ISR_70);
 
     // Check which modes are enabled and have occurred.
     u8 registerB = rtc_read(CMOS_STATUS_B);
     u8 registerC = rtc_read(CMOS_STATUS_C);
 
-    if (!(registerB & (RTC_B_PIE|RTC_B_AIE)))
+    ပေႃး (!(registerB & (RTC_B_PIE|RTC_B_AIE)))
         goto done;
-    if (registerC & RTC_B_AIE) {
+    ပေႃး (registerC & RTC_B_AIE) {
         // Handle Alarm Interrupt.
-        struct bregs br;
-        memset(&br, 0, sizeof(br));
+        sa_nracanaa bregs br;
+        memset(&br, 0, parimaa_na(br));
         br.flags = F_IF;
         call16_int(0x4a, &br);
     }
-    if (!(registerC & RTC_B_PIE))
+    ပေႃး (!(registerC & RTC_B_PIE))
         goto done;
 
     // Handle Periodic Interrupt.
 
     check_preempt();
 
-    if (!GET_BDA(rtc_wait_flag))
+    ပေႃး (!GET_BDA(rtc_wait_flag))
         goto done;
 
     // Wait Interval (Int 15, AH=83) active.
     u32 time = GET_BDA(user_wait_timeout);  // Time left in microseconds.
-    if (time < USEC_PER_RTC) {
+    ပေႃး (time < USEC_PER_RTC) {
         // Done waiting - write to specified flag byte.
-        struct segoff_s segoff = GET_BDA(user_wait_complete_flag);
+        sa_nracanaa segoff_s segoff = GET_BDA(user_wait_complete_flag);
         u16 ptr_seg = segoff.seg;
         u8 *ptr_far = (u8*)(segoff.offset+0);
         u8 oldval = GET_FARVAR(ptr_seg, *ptr_far);
         SET_FARVAR(ptr_seg, *ptr_far, oldval | 0x80);
 
         clear_usertimer();
-    } else {
+    } ပေႃးဢမ်ႇ {
         // Continue waiting.
         time -= USEC_PER_RTC;
         SET_BDA(user_wait_timeout, time);

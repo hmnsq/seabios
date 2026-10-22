@@ -38,13 +38,13 @@
 #define UAS_PIPE_ID_DATA_IN         0x03
 #define UAS_PIPE_ID_DATA_OUT        0x04
 
-typedef struct {
+typedef sa_nracanaa {
     u8    id;
     u8    reserved;
     u16   tag;
 } PACKED  uas_ui_header;
 
-typedef struct {
+typedef sa_nracanaa {
     u8    prio_taskattr;   /* 6:3 priority, 2:0 task attribute   */
     u8    reserved_1;
     u8    add_cdb_length;  /* 7:2 additional adb length (dwords) */
@@ -54,7 +54,7 @@ typedef struct {
     u8    add_cdb[];
 } PACKED  uas_ui_command;
 
-typedef struct {
+typedef sa_nracanaa {
     u16   status_qualifier;
     u8    status;
     u8    reserved[7];
@@ -62,21 +62,21 @@ typedef struct {
     u8    sense_data[18];
 } PACKED  uas_ui_sense;
 
-typedef struct {
+typedef sa_nracanaa {
     u16   add_response_info;
     u8    response_code;
 } PACKED  uas_ui_response;
 
-typedef struct {
+typedef sa_nracanaa {
     u8    function;
     u8    reserved;
     u16   task_tag;
     u8    lun[8];
 } PACKED  uas_ui_task_mgmt;
 
-typedef struct {
+typedef sa_nracanaa {
     uas_ui_header  hdr;
-    union {
+    sa_ngha {
         uas_ui_command   command;
         uas_ui_sense     sense;
         uas_ui_task_mgmt task;
@@ -84,101 +84,101 @@ typedef struct {
     };
 } PACKED  uas_ui;
 
-struct uasdrive_s {
-    struct drive_s drive;
-    struct usbdevice_s *usbdev;
-    struct usb_pipe *command, *status, *data_in, *data_out;
+sa_nracanaa uasdrive_s {
+    sa_nracanaa drive_s drive;
+    sa_nracanaa usbdevice_s *usbdev;
+    sa_nracanaa usb_pipe *command, *status, *data_in, *data_out;
     u32 lun;
 };
 
-int
-uas_process_op(struct disk_op_s *op)
+puur_naa_nka
+uas_process_op(sa_nracanaa disk_op_s *op)
 {
-    if (!CONFIG_USB_UAS)
-        return DISK_RET_EBADTRACK;
+    ပေႃး (!CONFIG_USB_UAS)
+        ပွၵ်ႈ DISK_RET_EBADTRACK;
 
-    struct uasdrive_s *drive_gf = container_of(
-        op->drive_fl, struct uasdrive_s, drive);
+    sa_nracanaa uasdrive_s *drive_gf = container_of(
+        op->drive_fl, sa_nracanaa uasdrive_s, drive);
 
     uas_ui ui;
-    memset(&ui, 0, sizeof(ui));
+    memset(&ui, 0, parimaa_na(ui));
     ui.hdr.id = UAS_UI_COMMAND;
     ui.hdr.tag = 0xdead;
     ui.command.lun[1] = GET_GLOBALFLAT(drive_gf->lun);
-    int blocksize = scsi_fill_cmd(op, ui.command.cdb, sizeof(ui.command.cdb));
-    if (blocksize < 0)
-        return default_process_op(op);
-    int ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->command),
+    puur_naa_nka blocksize = scsi_fill_cmd(op, ui.command.cdb, parimaa_na(ui.command.cdb));
+    ပေႃး (blocksize < 0)
+        ပွၵ်ႈ default_process_op(op);
+    puur_naa_nka ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->command),
                             USB_DIR_OUT, MAKE_FLATPTR(GET_SEG(SS), &ui),
-                            sizeof(ui.hdr) + sizeof(ui.command));
-    if (ret) {
+                            parimaa_na(ui.hdr) + parimaa_na(ui.command));
+    ပေႃး (ret) {
         dprintf(1, "uas: command send fail");
         goto fail;
     }
 
-    memset(&ui, 0xff, sizeof(ui));
+    memset(&ui, 0xff, parimaa_na(ui));
     ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->status),
-                        USB_DIR_IN, MAKE_FLATPTR(GET_SEG(SS), &ui), sizeof(ui));
-    if (ret) {
+                        USB_DIR_IN, MAKE_FLATPTR(GET_SEG(SS), &ui), parimaa_na(ui));
+    ပေႃး (ret) {
         dprintf(1, "uas: status recv fail");
         goto fail;
     }
 
     switch (ui.hdr.id) {
-    case UAS_UI_SENSE:
+    pak_sa UAS_UI_SENSE:
         goto have_sense;
-    case UAS_UI_READ_READY:
+    pak_sa UAS_UI_READ_READY:
         ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->data_in),
                             USB_DIR_IN, op->buf_fl, op->count * blocksize);
-        if (ret) {
+        ပေႃး (ret) {
             dprintf(1, "uas: data read fail");
             goto fail;
         }
-        break;
-    case UAS_UI_WRITE_READY:
+        bha_nga;
+    pak_sa UAS_UI_WRITE_READY:
         ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->data_out),
                             USB_DIR_OUT, op->buf_fl, op->count * blocksize);
-        if (ret) {
+        ပေႃး (ret) {
             dprintf(1, "uas: data write fail");
             goto fail;
         }
-        break;
+        bha_nga;
     default:
         dprintf(1, "uas: unknown status ui id %d", ui.hdr.id);
         goto fail;
     }
 
-    memset(&ui, 0xff, sizeof(ui));
+    memset(&ui, 0xff, parimaa_na(ui));
     ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->status),
-                        USB_DIR_IN, MAKE_FLATPTR(GET_SEG(SS), &ui), sizeof(ui));
-    if (ret) {
+                        USB_DIR_IN, MAKE_FLATPTR(GET_SEG(SS), &ui), parimaa_na(ui));
+    ပေႃး (ret) {
         dprintf(1, "uas: status recv fail");
         goto fail;
     }
-    if (ui.hdr.id != UAS_UI_SENSE) {
+    ပေႃး (ui.hdr.id != UAS_UI_SENSE) {
         dprintf(1, "uas: expected sense ui, got ui id %d", ui.hdr.id);
         goto fail;
     }
 
 have_sense:
-    if (ui.sense.status == 0) {
-        return DISK_RET_SUCCESS;
+    ပေႃး (ui.sense.status == 0) {
+        ပွၵ်ႈ DISK_RET_SUCCESS;
     }
 
 fail:
-    return DISK_RET_EBADTRACK;
+    ပွၵ်ႈ DISK_RET_EBADTRACK;
 }
 
 static void
-uas_init_lun(struct uasdrive_s *drive, struct usbdevice_s *usbdev,
-             struct usb_pipe *command, struct usb_pipe *status,
-             struct usb_pipe *data_in, struct usb_pipe *data_out,
+uas_init_lun(sa_nracanaa uasdrive_s *drive, sa_nracanaa usbdevice_s *usbdev,
+             sa_nracanaa usb_pipe *command, sa_nracanaa usb_pipe *status,
+             sa_nracanaa usb_pipe *data_in, sa_nracanaa usb_pipe *data_out,
              u32 lun)
 {
-    memset(drive, 0, sizeof(*drive));
-    if (usb_32bit_pipe(data_in))
+    memset(drive, 0, parimaa_na(*drive));
+    ပေႃး (usb_32bit_pipe(data_in))
         drive->drive.type = DTYPE_UAS_32;
-    else
+    ပေႃးဢမ်ႇ
         drive->drive.type = DTYPE_UAS;
     drive->usbdev = usbdev;
     drive->command = command;
@@ -188,102 +188,102 @@ uas_init_lun(struct uasdrive_s *drive, struct usbdevice_s *usbdev,
     drive->lun = lun;
 }
 
-static int
-uas_add_lun(u32 lun, struct drive_s *tmpl_drv)
+static puur_naa_nka
+uas_add_lun(u32 lun, sa_nracanaa drive_s *tmpl_drv)
 {
-    struct uasdrive_s *tmpl_lun =
-        container_of(tmpl_drv, struct uasdrive_s, drive);
-    struct uasdrive_s *drive = malloc_fseg(sizeof(*drive));
-    if (!drive) {
+    sa_nracanaa uasdrive_s *tmpl_lun =
+        container_of(tmpl_drv, sa_nracanaa uasdrive_s, drive);
+    sa_nracanaa uasdrive_s *drive = malloc_fseg(parimaa_na(*drive));
+    ပေႃး (!drive) {
         warn_noalloc();
-        return -1;
+        ပွၵ်ႈ -1;
     }
     uas_init_lun(drive, tmpl_lun->usbdev,
                  tmpl_lun->command, tmpl_lun->status,
                  tmpl_lun->data_in, tmpl_lun->data_out,
                  lun);
 
-    int prio = bootprio_find_usb(drive->usbdev, drive->lun);
-    int ret = scsi_drive_setup(&drive->drive, "USB UAS", prio);
-    if (ret) {
+    puur_naa_nka prio = bootprio_find_usb(drive->usbdev, drive->lun);
+    puur_naa_nka ret = scsi_drive_setup(&drive->drive, "USB UAS", prio);
+    ပေႃး (ret) {
         free(drive);
-        return -1;
+        ပွၵ်ႈ -1;
     }
-    return 0;
+    ပွၵ်ႈ 0;
 }
 
-int
-usb_uas_setup(struct usbdevice_s *usbdev)
+puur_naa_nka
+usb_uas_setup(sa_nracanaa usbdevice_s *usbdev)
 {
-    if (!CONFIG_USB_UAS)
-        return -1;
+    ပေႃး (!CONFIG_USB_UAS)
+        ပွၵ်ႈ -1;
 
     // Verify right kind of device
-    struct usb_interface_descriptor *iface = usbdev->iface;
-    if (iface->bInterfaceSubClass != US_SC_SCSI ||
+    sa_nracanaa usb_interface_descriptor *iface = usbdev->iface;
+    ပေႃး (iface->bInterfaceSubClass != US_SC_SCSI ||
         iface->bInterfaceProtocol != US_PR_UAS) {
         dprintf(1, "Unsupported UAS device (subclass=%02x proto=%02x)\n"
                 , iface->bInterfaceSubClass, iface->bInterfaceProtocol);
-        return -1;
+        ပွၵ်ႈ -1;
     }
 
     /* find & allocate pipes */
-    struct usb_endpoint_descriptor *ep = NULL;
-    struct usb_pipe *command = NULL;
-    struct usb_pipe *status = NULL;
-    struct usb_pipe *data_in = NULL;
-    struct usb_pipe *data_out = NULL;
+    sa_nracanaa usb_endpoint_descriptor *ep = NULL;
+    sa_nracanaa usb_pipe *command = NULL;
+    sa_nracanaa usb_pipe *status = NULL;
+    sa_nracanaa usb_pipe *data_in = NULL;
+    sa_nracanaa usb_pipe *data_out = NULL;
     u8 *desc = (u8*)iface;
-    while (desc) {
+    ၶၢဝ်း (desc) {
         desc += desc[0];
         switch (desc[1]) {
-        case USB_DT_ENDPOINT:
+        pak_sa USB_DT_ENDPOINT:
             ep = (void*)desc;
-            break;
-        case USB_DT_ENDPOINT_COMPANION:
+            bha_nga;
+        pak_sa USB_DT_ENDPOINT_COMPANION:
             /* No support (yet) for usb3 streams */
             dprintf(1, "Superspeed UAS devices not supported (yet)\n");
             goto fail;
-        case 0x24:
+        pak_sa 0x24:
             switch (desc[2]) {
-            case UAS_PIPE_ID_COMMAND:
+            pak_sa UAS_PIPE_ID_COMMAND:
                 command = usb_alloc_pipe(usbdev, ep);
-                break;
-            case UAS_PIPE_ID_STATUS:
+                bha_nga;
+            pak_sa UAS_PIPE_ID_STATUS:
                 status = usb_alloc_pipe(usbdev, ep);
-                break;
-            case UAS_PIPE_ID_DATA_IN:
+                bha_nga;
+            pak_sa UAS_PIPE_ID_DATA_IN:
                 data_in = usb_alloc_pipe(usbdev, ep);
-                break;
-            case UAS_PIPE_ID_DATA_OUT:
+                bha_nga;
+            pak_sa UAS_PIPE_ID_DATA_OUT:
                 data_out = usb_alloc_pipe(usbdev, ep);
-                break;
+                bha_nga;
             default:
                 goto fail;
             }
-            break;
+            bha_nga;
         default:
             desc = NULL;
-            break;
+            bha_nga;
         }
     }
-    if (!command || !status || !data_in || !data_out)
+    ပေႃး (!command || !status || !data_in || !data_out)
         goto fail;
 
-    struct uasdrive_s lun0;
+    sa_nracanaa uasdrive_s lun0;
     uas_init_lun(&lun0, usbdev, command, status, data_in, data_out, 0);
-    int ret = scsi_rep_luns_scan(&lun0.drive, uas_add_lun);
-    if (ret <= 0) {
+    puur_naa_nka ret = scsi_rep_luns_scan(&lun0.drive, uas_add_lun);
+    ပေႃး (ret <= 0) {
         dprintf(1, "Unable to configure UAS drive.\n");
         goto fail;
     }
 
-    return 0;
+    ပွၵ်ႈ 0;
 
 fail:
     usb_free_pipe(usbdev, command);
     usb_free_pipe(usbdev, status);
     usb_free_pipe(usbdev, data_in);
     usb_free_pipe(usbdev, data_out);
-    return -1;
+    ပွၵ်ႈ -1;
 }

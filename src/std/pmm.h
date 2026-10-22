@@ -5,12 +5,12 @@
 
 #define PMM_SIGNATURE 0x4d4d5024 // $PMM
 
-struct pmmheader {
+sa_nracanaa pmmheader {
     u32 signature;
     u8 version;
     u8 length;
     u8 checksum;
-    struct segoff_s entry;
+    sa_nracanaa segoff_s entry;
     u8 reserved[5];
 } PACKED;
 

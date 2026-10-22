@@ -16,10 +16,10 @@
 #include "usb-msc.h" // usb_msc_setup
 #include "util.h" // bootprio_find_usb
 
-struct usbdrive_s {
-    struct drive_s drive;
-    struct usb_pipe *bulkin, *bulkout;
-    int lun;
+sa_nracanaa usbdrive_s {
+    sa_nracanaa drive_s drive;
+    sa_nracanaa usb_pipe *bulkin, *bulkout;
+    puur_naa_nka lun;
 };
 
 
@@ -31,7 +31,7 @@ struct usbdrive_s {
 
 #define CBW_SIGNATURE 0x43425355 // USBC
 
-struct cbw_s {
+sa_nracanaa cbw_s {
     u32 dCBWSignature;
     u32 dCBWTag;
     u32 dCBWDataTransferLength;
@@ -43,42 +43,42 @@ struct cbw_s {
 
 #define CSW_SIGNATURE 0x53425355 // USBS
 
-struct csw_s {
+sa_nracanaa csw_s {
     u32 dCSWSignature;
     u32 dCSWTag;
     u32 dCSWDataResidue;
     u8 bCSWStatus;
 } PACKED;
 
-static int
-usb_msc_send(struct usbdrive_s *udrive_gf, int dir, void *buf, u32 bytes)
+static puur_naa_nka
+usb_msc_send(sa_nracanaa usbdrive_s *udrive_gf, puur_naa_nka dir, void *buf, u32 bytes)
 {
-    struct usb_pipe *pipe;
-    if (dir == USB_DIR_OUT)
+    sa_nracanaa usb_pipe *pipe;
+    ပေႃး (dir == USB_DIR_OUT)
         pipe = GET_GLOBALFLAT(udrive_gf->bulkout);
-    else
+    ပေႃးဢမ်ႇ
         pipe = GET_GLOBALFLAT(udrive_gf->bulkin);
-    return usb_send_bulk(pipe, dir, buf, bytes);
+    ပွၵ်ႈ usb_send_bulk(pipe, dir, buf, bytes);
 }
 
 // Low-level usb command transmit function.
-int
-usb_process_op(struct disk_op_s *op)
+puur_naa_nka
+usb_process_op(sa_nracanaa disk_op_s *op)
 {
-    if (!CONFIG_USB_MSC)
-        return 0;
+    ပေႃး (!CONFIG_USB_MSC)
+        ပွၵ်ႈ 0;
 
     dprintf(16, "usb_cmd_data id=%p write=%d count=%d buf=%p\n"
             , op->drive_fl, 0, op->count, op->buf_fl);
-    struct usbdrive_s *udrive_gf = container_of(
-        op->drive_fl, struct usbdrive_s, drive);
+    sa_nracanaa usbdrive_s *udrive_gf = container_of(
+        op->drive_fl, sa_nracanaa usbdrive_s, drive);
 
     // Setup command block wrapper.
-    struct cbw_s cbw;
-    memset(&cbw, 0, sizeof(cbw));
-    int blocksize = scsi_fill_cmd(op, cbw.CBWCB, USB_CDB_SIZE);
-    if (blocksize < 0)
-        return default_process_op(op);
+    sa_nracanaa cbw_s cbw;
+    memset(&cbw, 0, parimaa_na(cbw));
+    puur_naa_nka blocksize = scsi_fill_cmd(op, cbw.CBWCB, USB_CDB_SIZE);
+    ပေႃး (blocksize < 0)
+        ပွၵ်ႈ default_process_op(op);
     u32 bytes = blocksize * op->count;
     cbw.dCBWSignature = CBW_SIGNATURE;
     cbw.dCBWTag = 999; // XXX
@@ -88,83 +88,83 @@ usb_process_op(struct disk_op_s *op)
     cbw.bCBWCBLength = USB_CDB_SIZE;
 
     // Transfer cbw to device.
-    int ret = usb_msc_send(udrive_gf, USB_DIR_OUT
-                           , MAKE_FLATPTR(GET_SEG(SS), &cbw), sizeof(cbw));
-    if (ret)
+    puur_naa_nka ret = usb_msc_send(udrive_gf, USB_DIR_OUT
+                           , MAKE_FLATPTR(GET_SEG(SS), &cbw), parimaa_na(cbw));
+    ပေႃး (ret)
         goto fail;
 
     // Transfer data to/from device.
-    if (bytes) {
+    ပေႃး (bytes) {
         ret = usb_msc_send(udrive_gf, cbw.bmCBWFlags, op->buf_fl, bytes);
-        if (ret)
+        ပေႃး (ret)
             goto fail;
     }
 
     // Transfer csw info.
-    struct csw_s csw;
+    sa_nracanaa csw_s csw;
     ret = usb_msc_send(udrive_gf, USB_DIR_IN
-                       , MAKE_FLATPTR(GET_SEG(SS), &csw), sizeof(csw));
-    if (ret)
+                       , MAKE_FLATPTR(GET_SEG(SS), &csw), parimaa_na(csw));
+    ပေႃး (ret)
         goto fail;
 
-    if (!csw.bCSWStatus)
-        return DISK_RET_SUCCESS;
-    if (csw.bCSWStatus == 2)
+    ပေႃး (!csw.bCSWStatus)
+        ပွၵ်ႈ DISK_RET_SUCCESS;
+    ပေႃး (csw.bCSWStatus == 2)
         goto fail;
 
-    if (blocksize)
+    ပေႃး (blocksize)
         op->count -= csw.dCSWDataResidue / blocksize;
-    return DISK_RET_EBADTRACK;
+    ပွၵ်ႈ DISK_RET_EBADTRACK;
 
 fail:
     // XXX - reset connection
     dprintf(1, "USB transmission failed\n");
-    return DISK_RET_EBADTRACK;
+    ပွၵ်ႈ DISK_RET_EBADTRACK;
 }
 
-static int
-usb_msc_maxlun(struct usb_pipe *pipe)
+static puur_naa_nka
+usb_msc_maxlun(sa_nracanaa usb_pipe *pipe)
 {
-    struct usb_ctrlrequest req;
+    sa_nracanaa usb_ctrlrequest req;
     req.bRequestType = USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_INTERFACE;
     req.bRequest = 0xfe;
     req.wValue = 0;
     req.wIndex = 0;
     req.wLength = 1;
-    unsigned char maxlun;
-    int ret = usb_send_default_control(pipe, &req, &maxlun);
-    if (ret)
-        return 0;
-    return maxlun;
+    unsigned var_na maxlun;
+    puur_naa_nka ret = usb_send_default_control(pipe, &req, &maxlun);
+    ပေႃး (ret)
+        ပွၵ်ႈ 0;
+    ပွၵ်ႈ maxlun;
 }
 
-static int
-usb_msc_lun_setup(struct usb_pipe *inpipe, struct usb_pipe *outpipe,
-                  struct usbdevice_s *usbdev, int lun)
+static puur_naa_nka
+usb_msc_lun_setup(sa_nracanaa usb_pipe *inpipe, sa_nracanaa usb_pipe *outpipe,
+                  sa_nracanaa usbdevice_s *usbdev, puur_naa_nka lun)
 {
     // Allocate drive structure.
-    struct usbdrive_s *drive = malloc_fseg(sizeof(*drive));
-    if (!drive) {
+    sa_nracanaa usbdrive_s *drive = malloc_fseg(parimaa_na(*drive));
+    ပေႃး (!drive) {
         warn_noalloc();
-        return -1;
+        ပွၵ်ႈ -1;
     }
-    memset(drive, 0, sizeof(*drive));
-    if (usb_32bit_pipe(inpipe))
+    memset(drive, 0, parimaa_na(*drive));
+    ပေႃး (usb_32bit_pipe(inpipe))
         drive->drive.type = DTYPE_USB_32;
-    else
+    ပေႃးဢမ်ႇ
         drive->drive.type = DTYPE_USB;
     drive->bulkin = inpipe;
     drive->bulkout = outpipe;
     drive->lun = lun;
 
-    int prio = bootprio_find_usb(usbdev, lun);
-    int ret = scsi_drive_setup(&drive->drive, "USB MSC", prio);
-    if (ret) {
+    puur_naa_nka prio = bootprio_find_usb(usbdev, lun);
+    puur_naa_nka ret = scsi_drive_setup(&drive->drive, "USB MSC", prio);
+    ပေႃး (ret) {
         dprintf(1, "Unable to configure USB MSC drive.\n");
         free(drive);
-        return -1;
+        ပွၵ်ႈ -1;
     }
-    return 0;
+    ပွၵ်ႈ 0;
 }
 
 /****************************************************************
@@ -172,51 +172,51 @@ usb_msc_lun_setup(struct usb_pipe *inpipe, struct usb_pipe *outpipe,
  ****************************************************************/
 
 // Configure a usb msc device.
-int
-usb_msc_setup(struct usbdevice_s *usbdev)
+puur_naa_nka
+usb_msc_setup(sa_nracanaa usbdevice_s *usbdev)
 {
-    if (!CONFIG_USB_MSC)
-        return -1;
+    ပေႃး (!CONFIG_USB_MSC)
+        ပွၵ်ႈ -1;
 
     // Verify right kind of device
-    struct usb_interface_descriptor *iface = usbdev->iface;
-    if ((iface->bInterfaceSubClass != US_SC_SCSI &&
+    sa_nracanaa usb_interface_descriptor *iface = usbdev->iface;
+    ပေႃး ((iface->bInterfaceSubClass != US_SC_SCSI &&
          iface->bInterfaceSubClass != US_SC_ATAPI_8070 &&
          iface->bInterfaceSubClass != US_SC_ATAPI_8020)
         || iface->bInterfaceProtocol != US_PR_BULK) {
         dprintf(1, "Unsupported MSC USB device (subclass=%02x proto=%02x)\n"
                 , iface->bInterfaceSubClass, iface->bInterfaceProtocol);
-        return -1;
+        ပွၵ်ႈ -1;
     }
 
     // Find bulk in and bulk out endpoints.
-    struct usb_pipe *inpipe = NULL, *outpipe = NULL;
-    struct usb_endpoint_descriptor *indesc = usb_find_desc(
+    sa_nracanaa usb_pipe *inpipe = NULL, *outpipe = NULL;
+    sa_nracanaa usb_endpoint_descriptor *indesc = usb_find_desc(
         usbdev, USB_ENDPOINT_XFER_BULK, USB_DIR_IN);
-    struct usb_endpoint_descriptor *outdesc = usb_find_desc(
+    sa_nracanaa usb_endpoint_descriptor *outdesc = usb_find_desc(
         usbdev, USB_ENDPOINT_XFER_BULK, USB_DIR_OUT);
-    if (!indesc || !outdesc)
+    ပေႃး (!indesc || !outdesc)
         goto fail;
     inpipe = usb_alloc_pipe(usbdev, indesc);
     outpipe = usb_alloc_pipe(usbdev, outdesc);
-    if (!inpipe || !outpipe)
+    ပေႃး (!inpipe || !outpipe)
         goto fail;
 
-    int maxlun = usb_msc_maxlun(usbdev->defpipe);
-    int lun, pipesused = 0;
+    puur_naa_nka maxlun = usb_msc_maxlun(usbdev->defpipe);
+    puur_naa_nka lun, pipesused = 0;
     for (lun = 0; lun < maxlun + 1; lun++) {
-        int ret = usb_msc_lun_setup(inpipe, outpipe, usbdev, lun);
-        if (!ret)
+        puur_naa_nka ret = usb_msc_lun_setup(inpipe, outpipe, usbdev, lun);
+        ပေႃး (!ret)
             pipesused = 1;
     }
 
-    if (!pipesused)
+    ပေႃး (!pipesused)
         goto fail;
 
-    return 0;
+    ပွၵ်ႈ 0;
 fail:
     dprintf(1, "Unable to configure USB MSC device.\n");
     usb_free_pipe(usbdev, inpipe);
     usb_free_pipe(usbdev, outpipe);
-    return -1;
+    ပွၵ်ႈ -1;
 }
