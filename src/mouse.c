@@ -16,19 +16,19 @@
 void
 mouse_init(void)
 {
-    if (! CONFIG_MOUSE)
-        return;
+    если (! CONFIG_MOUSE)
+        вернуть;
     dprintf(3, "init mouse\n");
     // pointing device installed
     set_equipment_flags(0x04, 0x04);
 }
 
-static int
-mouse_command(int command, u8 *param)
+static целое
+mouse_command(целое command, u8 *param)
 {
-    if (usb_mouse_active())
-        return usb_mouse_command(command, param);
-    return ps2_mouse_command(command, param);
+    если (usb_mouse_active())
+        вернуть usb_mouse_command(command, param);
+    вернуть ps2_mouse_command(command, param);
 }
 
 #define RET_SUCCESS      0x00
@@ -42,10 +42,10 @@ mouse_command(int command, u8 *param)
 static void
 mouse_15c20000(struct bregs *regs)
 {
-    int ret = mouse_command(PSMOUSE_CMD_DISABLE, NULL);
-    if (ret)
+    целое ret = mouse_command(PSMOUSE_CMD_DISABLE, NULL);
+    если (ret)
         set_code_invalid(regs, RET_ENEEDRESEND);
-    else
+    иначе
         set_code_success(regs);
 }
 
@@ -55,15 +55,15 @@ mouse_15c20001(struct bregs *regs)
 {
     u16 ebda_seg = get_ebda_seg();
     u8 mouse_flags_2 = GET_EBDA(ebda_seg, mouse_flag2);
-    if ((mouse_flags_2 & 0x80) == 0) {
+    если ((mouse_flags_2 & 0x80) == 0) {
         set_code_invalid(regs, RET_ENOHANDLER);
-        return;
+        вернуть;
     }
 
-    int ret = mouse_command(PSMOUSE_CMD_ENABLE, NULL);
-    if (ret)
+    целое ret = mouse_command(PSMOUSE_CMD_ENABLE, NULL);
+    если (ret)
         set_code_invalid(regs, RET_ENEEDRESEND);
-    else
+    иначе
         set_code_success(regs);
 }
 
@@ -89,10 +89,10 @@ static void
 mouse_15c201(struct bregs *regs)
 {
     u8 param[2];
-    int ret = mouse_command(PSMOUSE_CMD_RESET_BAT, param);
-    if (ret) {
+    целое ret = mouse_command(PSMOUSE_CMD_RESET_BAT, param);
+    если (ret) {
         set_code_invalid(regs, RET_ENEEDRESEND);
-        return;
+        вернуть;
     }
     regs->bl = param[0];
     regs->bh = param[1];
@@ -104,15 +104,15 @@ static void
 mouse_15c202(struct bregs *regs)
 {
     static u8 VAR16 sample_rates[7] = {10, 20, 40, 60, 80, 100, 200};
-    if (regs->bh >= ARRAY_SIZE(sample_rates)) {
+    если (regs->bh >= ARRAY_SIZE(sample_rates)) {
         set_code_invalid(regs, RET_EINVINPUT);
-        return;
+        вернуть;
     }
     u8 mouse_data1 = GET_GLOBAL(sample_rates[regs->bh]);
-    int ret = mouse_command(PSMOUSE_CMD_SETRATE, &mouse_data1);
-    if (ret)
+    целое ret = mouse_command(PSMOUSE_CMD_SETRATE, &mouse_data1);
+    если (ret)
         set_code_invalid(regs, RET_ENEEDRESEND);
-    else
+    иначе
         set_code_success(regs);
 }
 
@@ -125,15 +125,15 @@ mouse_15c203(struct bregs *regs)
     //      1 =  50 dpi, 2 counts per millimeter
     //      2 = 100 dpi, 4 counts per millimeter
     //      3 = 200 dpi, 8 counts per millimeter
-    if (regs->bh >= 4) {
+    если (regs->bh >= 4) {
         set_code_invalid(regs, RET_EINVINPUT);
-        return;
+        вернуть;
     }
     u8 param = regs->bh;
-    int ret = mouse_command(PSMOUSE_CMD_SETRES, &param);
-    if (ret)
+    целое ret = mouse_command(PSMOUSE_CMD_SETRES, &param);
+    если (ret)
         set_code_invalid(regs, RET_ENEEDRESEND);
-    else
+    иначе
         set_code_success(regs);
 }
 
@@ -142,10 +142,10 @@ static void
 mouse_15c204(struct bregs *regs)
 {
     u8 param[2];
-    int ret = mouse_command(PSMOUSE_CMD_GETID, param);
-    if (ret) {
+    целое ret = mouse_command(PSMOUSE_CMD_GETID, param);
+    если (ret) {
         set_code_invalid(regs, RET_ENEEDRESEND);
-        return;
+        вернуть;
     }
     regs->bh = param[0];
     set_code_success(regs);
@@ -155,9 +155,9 @@ mouse_15c204(struct bregs *regs)
 static void
 mouse_15c205(struct bregs *regs)
 {
-    if (regs->bh != 3) {
+    если (regs->bh != 3) {
         set_code_invalid(regs, RET_EINTERFACE);
-        return;
+        вернуть;
     }
     u16 ebda_seg = get_ebda_seg();
     SET_EBDA(ebda_seg, mouse_flag1, 0x00);
@@ -172,10 +172,10 @@ static void
 mouse_15c20600(struct bregs *regs)
 {
     u8 param[3];
-    int ret = mouse_command(PSMOUSE_CMD_GETINFO, param);
-    if (ret) {
+    целое ret = mouse_command(PSMOUSE_CMD_GETINFO, param);
+    если (ret) {
         set_code_invalid(regs, RET_ENEEDRESEND);
-        return;
+        вернуть;
     }
     regs->bl = param[0];
     regs->cl = param[1];
@@ -187,10 +187,10 @@ mouse_15c20600(struct bregs *regs)
 static void
 mouse_15c20601(struct bregs *regs)
 {
-    int ret = mouse_command(PSMOUSE_CMD_SETSCALE11, NULL);
-    if (ret)
+    целое ret = mouse_command(PSMOUSE_CMD_SETSCALE11, NULL);
+    если (ret)
         set_code_invalid(regs, RET_ENEEDRESEND);
-    else
+    иначе
         set_code_success(regs);
 }
 
@@ -198,10 +198,10 @@ mouse_15c20601(struct bregs *regs)
 static void
 mouse_15c20602(struct bregs *regs)
 {
-    int ret = mouse_command(PSMOUSE_CMD_SETSCALE21, NULL);
-    if (ret)
+    целое ret = mouse_command(PSMOUSE_CMD_SETSCALE21, NULL);
+    если (ret)
         set_code_invalid(regs, RET_ENEEDRESEND);
-    else
+    иначе
         set_code_success(regs);
 }
 
@@ -230,13 +230,13 @@ mouse_15c207(struct bregs *regs)
     struct segoff_s farptr = SEGOFF(regs->es, regs->bx);
     u16 ebda_seg = get_ebda_seg();
     u8 mouse_flags_2 = GET_EBDA(ebda_seg, mouse_flag2);
-    if (! farptr.segoff) {
+    если (! farptr.segoff) {
         /* remove handler */
-        if ((mouse_flags_2 & 0x80) != 0) {
+        если ((mouse_flags_2 & 0x80) != 0) {
             mouse_flags_2 &= ~0x80;
             mouse_command(PSMOUSE_CMD_DISABLE, NULL);
         }
-    } else {
+    } иначе {
         /* install handler */
         mouse_flags_2 |= 0x80;
     }
@@ -256,9 +256,9 @@ handle_15c2(struct bregs *regs)
 {
     //debug_stub(regs);
 
-    if (! CONFIG_MOUSE) {
+    если (! CONFIG_MOUSE) {
         set_code_invalid(regs, RET_EUNSUPPORTED);
-        return;
+        вернуть;
     }
 
     switch (regs->al) {
@@ -277,11 +277,11 @@ handle_15c2(struct bregs *regs)
 void VISIBLE16
 invoke_mouse_handler(void)
 {
-    if (!CONFIG_MOUSE)
-        return;
-    if (need_hop_back()) {
+    если (!CONFIG_MOUSE)
+        вернуть;
+    если (need_hop_back()) {
         stack_hop_back(invoke_mouse_handler, 0, 0);
-        return;
+        вернуть;
     }
     ASSERT16();
     u16 ebda_seg = get_ebda_seg();
@@ -316,25 +316,25 @@ invoke_mouse_handler(void)
 void
 process_mouse(u8 data)
 {
-    if (!CONFIG_MOUSE)
-        return;
+    если (!CONFIG_MOUSE)
+        вернуть;
 
     u16 ebda_seg = get_ebda_seg();
     u8 mouse_flags_1 = GET_EBDA(ebda_seg, mouse_flag1);
     u8 mouse_flags_2 = GET_EBDA(ebda_seg, mouse_flag2);
 
-    if (! (mouse_flags_2 & 0x80))
+    если (! (mouse_flags_2 & 0x80))
         // far call handler not installed
-        return;
+        вернуть;
 
     u8 package_count = mouse_flags_2 & 0x07;
     u8 index = mouse_flags_1 & 0x07;
     SET_EBDA(ebda_seg, mouse_data[index], data);
 
-    if ((index+1) < package_count) {
+    если ((index+1) < package_count) {
         mouse_flags_1++;
         SET_EBDA(ebda_seg, mouse_flag1, mouse_flags_1);
-        return;
+        вернуть;
     }
 
     SET_EBDA(ebda_seg, mouse_flag1, 0);

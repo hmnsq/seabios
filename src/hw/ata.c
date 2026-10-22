@@ -31,52 +31,52 @@
  ****************************************************************/
 
 // Wait for the specified ide state
-static inline int
+static inline целое
 await_ide(u8 mask, u8 flags, u16 base, u16 timeout)
 {
     u32 end = timer_calc(timeout);
-    for (;;) {
+    для (;;) {
         u8 status = inb(base+ATA_CB_STAT);
-        if ((status & mask) == flags)
-            return status;
-        if (timer_check(end)) {
+        если ((status & mask) == flags)
+            вернуть status;
+        если (timer_check(end)) {
             warn_timeout();
-            return -1;
+            вернуть -1;
         }
         yield();
     }
 }
 
 // Wait for the device to be not-busy.
-static int
+static целое
 await_not_bsy(u16 base)
 {
-    return await_ide(ATA_CB_STAT_BSY, 0, base, IDE_TIMEOUT);
+    вернуть await_ide(ATA_CB_STAT_BSY, 0, base, IDE_TIMEOUT);
 }
 
 // Wait for the device to be ready.
-static int
+static целое
 await_rdy(u16 base)
 {
-    return await_ide(ATA_CB_STAT_RDY, ATA_CB_STAT_RDY, base, IDE_TIMEOUT);
+    вернуть await_ide(ATA_CB_STAT_RDY, ATA_CB_STAT_RDY, base, IDE_TIMEOUT);
 }
 
 // Wait for ide state - pauses for one ata cycle first.
-static inline int
+static inline целое
 pause_await_not_bsy(u16 iobase1, u16 iobase2)
 {
     // Wait one PIO transfer cycle.
     inb(iobase2 + ATA_CB_ASTAT);
 
-    return await_not_bsy(iobase1);
+    вернуть await_not_bsy(iobase1);
 }
 
 // Wait for ide state - pause for 400ns first.
-static inline int
+static inline целое
 ndelay_await_not_bsy(u16 iobase1)
 {
     ndelay(400);
-    return await_not_bsy(iobase1);
+    вернуть await_not_bsy(iobase1);
 }
 
 // Reset a drive
@@ -96,33 +96,33 @@ ata_reset(struct atadrive_s *adrive_gf)
     msleep(2);
 
     // wait for device to become not busy.
-    int status = await_not_bsy(iobase1);
-    if (status < 0)
+    целое status = await_not_bsy(iobase1);
+    если (status < 0)
         goto done;
-    if (slave) {
+    если (slave) {
         // Change device.
         u32 end = timer_calc(IDE_TIMEOUT);
-        for (;;) {
+        для (;;) {
             outb(ATA_CB_DH_DEV1, iobase1 + ATA_CB_DH);
             status = ndelay_await_not_bsy(iobase1);
-            if (status < 0)
+            если (status < 0)
                 goto done;
-            if (inb(iobase1 + ATA_CB_DH) == ATA_CB_DH_DEV1)
+            если (inb(iobase1 + ATA_CB_DH) == ATA_CB_DH_DEV1)
                 break;
             // Change drive request failed to take effect - retry.
-            if (timer_check(end)) {
+            если (timer_check(end)) {
                 warn_timeout();
                 goto done;
             }
         }
-    } else {
+    } иначе {
         // QEMU doesn't reset dh on reset, so set it explicitly.
         outb(ATA_CB_DH_DEV0, iobase1 + ATA_CB_DH);
     }
 
     // On a user-reset request, wait for RDY if it is an ATA device.
     u8 type=GET_GLOBALFLAT(adrive_gf->drive.type);
-    if (type == DTYPE_ATA)
+    если (type == DTYPE_ATA)
         status = await_rdy(iobase1);
 
 done:
@@ -133,16 +133,16 @@ done:
 }
 
 // Check for drive RDY for 16bit interface command.
-static int
+static целое
 isready(struct atadrive_s *adrive_gf)
 {
     // Read the status from controller
     struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
     u16 iobase1 = GET_GLOBALFLAT(chan_gf->iobase1);
     u8 status = inb(iobase1 + ATA_CB_STAT);
-    if ((status & (ATA_CB_STAT_BSY|ATA_CB_STAT_RDY)) == ATA_CB_STAT_RDY)
-        return DISK_RET_SUCCESS;
-    return DISK_RET_ENOTREADY;
+    если ((status & (ATA_CB_STAT_BSY|ATA_CB_STAT_RDY)) == ATA_CB_STAT_RDY)
+        вернуть DISK_RET_SUCCESS;
+    вернуть DISK_RET_ENOTREADY;
 }
 
 
@@ -167,7 +167,7 @@ struct ata_pio_command {
 };
 
 // Send an ata command to the drive.
-static int
+static целое
 send_cmd(struct atadrive_s *adrive_gf, struct ata_pio_command *cmd)
 {
     struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
@@ -175,22 +175,22 @@ send_cmd(struct atadrive_s *adrive_gf, struct ata_pio_command *cmd)
     u16 iobase1 = GET_GLOBALFLAT(chan_gf->iobase1);
 
     // Select device
-    int status = await_not_bsy(iobase1);
-    if (status < 0)
-        return status;
+    целое status = await_not_bsy(iobase1);
+    если (status < 0)
+        вернуть status;
     u8 newdh = ((cmd->device & ~ATA_CB_DH_DEV1)
                 | (slave ? ATA_CB_DH_DEV1 : ATA_CB_DH_DEV0));
     u8 olddh = inb(iobase1 + ATA_CB_DH);
     outb(newdh, iobase1 + ATA_CB_DH);
-    if ((olddh ^ newdh) & (1<<4)) {
+    если ((olddh ^ newdh) & (1<<4)) {
         // Was a device change - wait for device to become not busy.
         status = ndelay_await_not_bsy(iobase1);
-        if (status < 0)
-            return status;
+        если (status < 0)
+            вернуть status;
     }
 
     // Check for ATA_CMD_(READ|WRITE)_(SECTORS|DMA)_EXT commands.
-    if ((cmd->command & ~0x11) == ATA_CMD_READ_SECTORS_EXT) {
+    если ((cmd->command & ~0x11) == ATA_CMD_READ_SECTORS_EXT) {
         outb(cmd->feature2, iobase1 + ATA_CB_FR);
         outb(cmd->sector_count2, iobase1 + ATA_CB_SC);
         outb(cmd->lba_low2, iobase1 + ATA_CB_SN);
@@ -204,32 +204,32 @@ send_cmd(struct atadrive_s *adrive_gf, struct ata_pio_command *cmd)
     outb(cmd->lba_high, iobase1 + ATA_CB_CH);
     outb(cmd->command, iobase1 + ATA_CB_CMD);
 
-    return 0;
+    вернуть 0;
 }
 
 // Wait for data after calling 'send_cmd'.
-static int
+static целое
 ata_wait_data(u16 iobase1)
 {
-    int status = ndelay_await_not_bsy(iobase1);
-    if (status < 0)
-        return status;
+    целое status = ndelay_await_not_bsy(iobase1);
+    если (status < 0)
+        вернуть status;
 
-    if (status & ATA_CB_STAT_ERR) {
+    если (status & ATA_CB_STAT_ERR) {
         dprintf(6, "send_cmd : read error (status=%02x err=%02x)\n"
                 , status, inb(iobase1 + ATA_CB_ERR));
-        return -4;
+        вернуть -4;
     }
-    if (!(status & ATA_CB_STAT_DRQ)) {
+    если (!(status & ATA_CB_STAT_DRQ)) {
         dprintf(6, "send_cmd : DRQ not set (status %02x)\n", status);
-        return -5;
+        вернуть -5;
     }
 
-    return 0;
+    вернуть 0;
 }
 
 // Send an ata command that does not transfer any further data.
-int
+целое
 ata_cmd_nondata(struct atadrive_s *adrive_gf, struct ata_pio_command *cmd)
 {
     struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
@@ -239,20 +239,20 @@ ata_cmd_nondata(struct atadrive_s *adrive_gf, struct ata_pio_command *cmd)
     // Disable interrupts
     outb(ATA_CB_DC_HD15 | ATA_CB_DC_NIEN, iobase2 + ATA_CB_DC);
 
-    int ret = send_cmd(adrive_gf, cmd);
-    if (ret)
+    целое ret = send_cmd(adrive_gf, cmd);
+    если (ret)
         goto fail;
     ret = ndelay_await_not_bsy(iobase1);
-    if (ret < 0)
+    если (ret < 0)
         goto fail;
 
-    if (ret & ATA_CB_STAT_ERR) {
+    если (ret & ATA_CB_STAT_ERR) {
         dprintf(6, "nondata cmd : read error (status=%02x err=%02x)\n"
                 , ret, inb(iobase1 + ATA_CB_ERR));
         ret = -4;
         goto fail;
     }
-    if (ret & ATA_CB_STAT_DRQ) {
+    если (ret & ATA_CB_STAT_DRQ) {
         dprintf(6, "nondata cmd : DRQ set (status %02x)\n", ret);
         ret = -5;
         goto fail;
@@ -262,7 +262,7 @@ fail:
     // Enable interrupts
     outb(ATA_CB_DC_HD15, iobase2+ATA_CB_DC);
 
-    return ret;
+    вернуть ret;
 }
 
 
@@ -272,8 +272,8 @@ fail:
 
 // Transfer 'op->count' blocks (of 'blocksize' bytes) to/from drive
 // 'op->drive_fl'.
-static int
-ata_pio_transfer(struct disk_op_s *op, int iswrite, int blocksize)
+static целое
+ata_pio_transfer(struct disk_op_s *op, целое iswrite, целое blocksize)
 {
     dprintf(16, "ata_pio_transfer id=%p write=%d count=%d bs=%d buf=%p\n"
             , op->drive_fl, iswrite, op->count, blocksize, op->buf_fl);
@@ -283,56 +283,56 @@ ata_pio_transfer(struct disk_op_s *op, int iswrite, int blocksize)
     struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
     u16 iobase1 = GET_GLOBALFLAT(chan_gf->iobase1);
     u16 iobase2 = GET_GLOBALFLAT(chan_gf->iobase2);
-    int count = op->count;
+    целое count = op->count;
     void *buf_fl = op->buf_fl;
-    int status;
-    for (;;) {
-        if (iswrite) {
+    целое status;
+    для (;;) {
+        если (iswrite) {
             // Write data to controller
             dprintf(16, "Write sector id=%p dest=%p\n", op->drive_fl, buf_fl);
-            if (CONFIG_ATA_PIO32)
+            если (CONFIG_ATA_PIO32)
                 outsl_fl(iobase1, buf_fl, blocksize / 4);
-            else
+            иначе
                 outsw_fl(iobase1, buf_fl, blocksize / 2);
-        } else {
+        } иначе {
             // Read data from controller
             dprintf(16, "Read sector id=%p dest=%p\n", op->drive_fl, buf_fl);
-            if (CONFIG_ATA_PIO32)
+            если (CONFIG_ATA_PIO32)
                 insl_fl(iobase1, buf_fl, blocksize / 4);
-            else
+            иначе
                 insw_fl(iobase1, buf_fl, blocksize / 2);
         }
         buf_fl += blocksize;
 
         status = pause_await_not_bsy(iobase1, iobase2);
-        if (status < 0) {
+        если (status < 0) {
             // Error
             op->count -= count;
-            return status;
+            вернуть status;
         }
 
         count--;
-        if (!count)
+        если (!count)
             break;
         status &= (ATA_CB_STAT_BSY | ATA_CB_STAT_DRQ | ATA_CB_STAT_ERR);
-        if (status != ATA_CB_STAT_DRQ) {
+        если (status != ATA_CB_STAT_DRQ) {
             dprintf(6, "ata_pio_transfer : more sectors left (status %02x)\n"
                     , status);
             op->count -= count;
-            return -6;
+            вернуть -6;
         }
     }
 
     status &= (ATA_CB_STAT_BSY | ATA_CB_STAT_DF | ATA_CB_STAT_DRQ
                | ATA_CB_STAT_ERR);
-    if (!iswrite)
+    если (!iswrite)
         status &= ~ATA_CB_STAT_DF;
-    if (status != 0) {
+    если (status != 0) {
         dprintf(6, "ata_pio_transfer : no sectors left (status %02x)\n", status);
-        return -7;
+        вернуть -7;
     }
 
-    return 0;
+    вернуть 0;
 }
 
 
@@ -355,41 +355,41 @@ struct sff_dma_prd {
 };
 
 // Check if DMA available and setup transfer if so.
-static int
-ata_try_dma(struct disk_op_s *op, int iswrite, int blocksize)
+static целое
+ata_try_dma(struct disk_op_s *op, целое iswrite, целое blocksize)
 {
     ASSERT16();
-    if (! CONFIG_ATA_DMA)
-        return -1;
+    если (! CONFIG_ATA_DMA)
+        вернуть -1;
     u32 dest = (u32)op->buf_fl;
-    if (dest & 1)
+    если (dest & 1)
         // Need minimum alignment of 1.
-        return -1;
+        вернуть -1;
     struct atadrive_s *adrive_gf = container_of(
         op->drive_fl, struct atadrive_s, drive);
     struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
     u16 iomaster = GET_GLOBALFLAT(chan_gf->iomaster);
-    if (! iomaster)
-        return -1;
+    если (! iomaster)
+        вернуть -1;
     u32 bytes = op->count * blocksize;
-    if (! bytes)
-        return -1;
+    если (! bytes)
+        вернуть -1;
 
     // Build PRD dma structure.
     struct sff_dma_prd *dma = MAKE_FLATPTR(SEG_LOW, ExtraStack);
     struct sff_dma_prd *origdma = dma;
-    while (bytes) {
-        if (dma >= &origdma[16])
+    пока (bytes) {
+        если (dma >= &origdma[16])
             // Too many descriptors..
-            return -1;
+            вернуть -1;
         u32 count = bytes;
         u32 max = 0x10000 - (dest & 0xffff);
-        if (count > max)
+        если (count > max)
             count = max;
 
         SET_LOWFLAT(dma->buf_fl, dest);
         bytes -= count;
-        if (!bytes)
+        если (!bytes)
             // Last descriptor.
             count |= 1<<31;
         dprintf(16, "dma@%p: %08x %08x\n", dma, dest, count);
@@ -404,15 +404,15 @@ ata_try_dma(struct disk_op_s *op, int iswrite, int blocksize)
     outb(oldcmd | (iswrite ? 0x00 : BM_CMD_MEMWRITE), iomaster + BM_CMD);
     outb(BM_STATUS_ERROR|BM_STATUS_IRQ, iomaster + BM_STATUS);
 
-    return 0;
+    вернуть 0;
 }
 
 // Transfer data using DMA.
-static int
+static целое
 ata_dma_transfer(struct disk_op_s *op)
 {
-    if (! CONFIG_ATA_DMA)
-        return -1;
+    если (! CONFIG_ATA_DMA)
+        вернуть -1;
     dprintf(16, "ata_dma_transfer id=%p buf=%p\n", op->drive_fl, op->buf_fl);
 
     struct atadrive_s *adrive_gf = container_of(
@@ -426,12 +426,12 @@ ata_dma_transfer(struct disk_op_s *op)
 
     u32 end = timer_calc(IDE_TIMEOUT);
     u8 status;
-    for (;;) {
+    для (;;) {
         status = inb(iomaster + BM_STATUS);
-        if (status & BM_STATUS_IRQ)
+        если (status & BM_STATUS_IRQ)
             break;
         // Transfer in progress
-        if (timer_check(end)) {
+        если (timer_check(end)) {
             // Timeout.
             warn_timeout();
             break;
@@ -442,18 +442,18 @@ ata_dma_transfer(struct disk_op_s *op)
 
     u16 iobase1 = GET_GLOBALFLAT(chan_gf->iobase1);
     u16 iobase2 = GET_GLOBALFLAT(chan_gf->iobase2);
-    int idestatus = pause_await_not_bsy(iobase1, iobase2);
+    целое idestatus = pause_await_not_bsy(iobase1, iobase2);
 
-    if ((status & (BM_STATUS_IRQ|BM_STATUS_ACTIVE)) == BM_STATUS_IRQ
+    если ((status & (BM_STATUS_IRQ|BM_STATUS_ACTIVE)) == BM_STATUS_IRQ
         && idestatus >= 0x00
         && (idestatus & (ATA_CB_STAT_BSY | ATA_CB_STAT_DF | ATA_CB_STAT_DRQ
                          | ATA_CB_STAT_ERR)) == 0x00)
         // Success.
-        return 0;
+        вернуть 0;
 
     dprintf(6, "IDE DMA error (dma=%x ide=%x/%x/%x)\n", status, idestatus
             , inb(iobase2 + ATA_CB_ASTAT), inb(iobase1 + ATA_CB_ERR));
-    return -1;
+    вернуть -1;
 }
 
 
@@ -462,8 +462,8 @@ ata_dma_transfer(struct disk_op_s *op)
  ****************************************************************/
 
 // Transfer data to harddrive using PIO protocol.
-static int
-ata_pio_cmd_data(struct disk_op_s *op, int iswrite, struct ata_pio_command *cmd)
+static целое
+ata_pio_cmd_data(struct disk_op_s *op, целое iswrite, struct ata_pio_command *cmd)
 {
     struct atadrive_s *adrive_gf = container_of(
         op->drive_fl, struct atadrive_s, drive);
@@ -474,63 +474,63 @@ ata_pio_cmd_data(struct disk_op_s *op, int iswrite, struct ata_pio_command *cmd)
     // Disable interrupts
     outb(ATA_CB_DC_HD15 | ATA_CB_DC_NIEN, iobase2 + ATA_CB_DC);
 
-    int ret = send_cmd(adrive_gf, cmd);
-    if (ret)
+    целое ret = send_cmd(adrive_gf, cmd);
+    если (ret)
         goto fail;
     ret = ata_wait_data(iobase1);
-    if (ret)
+    если (ret)
         goto fail;
     ret = ata_pio_transfer(op, iswrite, DISK_SECTOR_SIZE);
 
 fail:
     // Enable interrupts
     outb(ATA_CB_DC_HD15, iobase2+ATA_CB_DC);
-    return ret;
+    вернуть ret;
 }
 
 // Transfer data to harddrive using DMA protocol.
-static int
+static целое
 ata_dma_cmd_data(struct disk_op_s *op, struct ata_pio_command *cmd)
 {
-    if (! CONFIG_ATA_DMA)
-        return -1;
+    если (! CONFIG_ATA_DMA)
+        вернуть -1;
     struct atadrive_s *adrive_gf = container_of(
         op->drive_fl, struct atadrive_s, drive);
-    int ret = send_cmd(adrive_gf, cmd);
-    if (ret)
-        return ret;
-    return ata_dma_transfer(op);
+    целое ret = send_cmd(adrive_gf, cmd);
+    если (ret)
+        вернуть ret;
+    вернуть ata_dma_transfer(op);
 }
 
 // Read/write count blocks from a harddrive.
-static int
-ata_readwrite(struct disk_op_s *op, int iswrite)
+static целое
+ata_readwrite(struct disk_op_s *op, целое iswrite)
 {
     u64 lba = op->lba;
 
-    int usepio = ata_try_dma(op, iswrite, DISK_SECTOR_SIZE);
+    целое usepio = ata_try_dma(op, iswrite, DISK_SECTOR_SIZE);
 
     struct ata_pio_command cmd;
     memset(&cmd, 0, sizeof(cmd));
 
-    if (op->count >= (1<<8) || lba + op->count >= (1<<28)) {
+    если (op->count >= (1<<8) || lba + op->count >= (1<<28)) {
         cmd.sector_count2 = op->count >> 8;
         cmd.lba_low2 = lba >> 24;
         cmd.lba_mid2 = lba >> 32;
         cmd.lba_high2 = lba >> 40;
         lba &= 0xffffff;
 
-        if (usepio)
+        если (usepio)
             cmd.command = (iswrite ? ATA_CMD_WRITE_SECTORS_EXT
                            : ATA_CMD_READ_SECTORS_EXT);
-        else
+        иначе
             cmd.command = (iswrite ? ATA_CMD_WRITE_DMA_EXT
                            : ATA_CMD_READ_DMA_EXT);
-    } else {
-        if (usepio)
+    } иначе {
+        если (usepio)
             cmd.command = (iswrite ? ATA_CMD_WRITE_SECTORS
                            : ATA_CMD_READ_SECTORS);
-        else
+        иначе
             cmd.command = (iswrite ? ATA_CMD_WRITE_DMA
                            : ATA_CMD_READ_DMA);
     }
@@ -541,37 +541,37 @@ ata_readwrite(struct disk_op_s *op, int iswrite)
     cmd.lba_high = lba >> 16;
     cmd.device = ((lba >> 24) & 0xf) | ATA_CB_DH_LBA;
 
-    int ret;
-    if (usepio)
+    целое ret;
+    если (usepio)
         ret = ata_pio_cmd_data(op, iswrite, &cmd);
-    else
+    иначе
         ret = ata_dma_cmd_data(op, &cmd);
-    if (ret)
-        return DISK_RET_EBADTRACK;
-    return DISK_RET_SUCCESS;
+    если (ret)
+        вернуть DISK_RET_EBADTRACK;
+    вернуть DISK_RET_SUCCESS;
 }
 
 // 16bit command demuxer for ATA harddrives.
-int
+целое
 ata_process_op(struct disk_op_s *op)
 {
-    if (!CONFIG_ATA)
-        return 0;
+    если (!CONFIG_ATA)
+        вернуть 0;
 
     struct atadrive_s *adrive_gf = container_of(
         op->drive_fl, struct atadrive_s, drive);
     switch (op->command) {
     case CMD_READ:
-        return ata_readwrite(op, 0);
+        вернуть ata_readwrite(op, 0);
     case CMD_WRITE:
-        return ata_readwrite(op, 1);
+        вернуть ata_readwrite(op, 1);
     case CMD_RESET:
         ata_reset(adrive_gf);
-        return DISK_RET_SUCCESS;
+        вернуть DISK_RET_SUCCESS;
     case CMD_ISREADY:
-        return isready(adrive_gf);
+        вернуть isready(adrive_gf);
     default:
-        return default_process_op(op);
+        вернуть default_process_op(op);
     }
 }
 
@@ -583,18 +583,18 @@ ata_process_op(struct disk_op_s *op)
 #define CDROM_CDB_SIZE 12
 
 // Low-level atapi command transmit function.
-int
+целое
 ata_atapi_process_op(struct disk_op_s *op)
 {
-    if (! CONFIG_ATA)
-        return 0;
+    если (! CONFIG_ATA)
+        вернуть 0;
 
-    if (op->command == CMD_WRITE || op->command == CMD_FORMAT)
-        return DISK_RET_EWRITEPROTECT;
+    если (op->command == CMD_WRITE || op->command == CMD_FORMAT)
+        вернуть DISK_RET_EWRITEPROTECT;
     u8 cdbcmd[CDROM_CDB_SIZE];
-    int blocksize = scsi_fill_cmd(op, cdbcmd, sizeof(cdbcmd));
-    if (blocksize < 0)
-        return default_process_op(op);
+    целое blocksize = scsi_fill_cmd(op, cdbcmd, sizeof(cdbcmd));
+    если (blocksize < 0)
+        вернуть default_process_op(op);
 
     struct atadrive_s *adrive_gf = container_of(
         op->drive_fl, struct atadrive_s, drive);
@@ -611,33 +611,33 @@ ata_atapi_process_op(struct disk_op_s *op)
     // Disable interrupts
     outb(ATA_CB_DC_HD15 | ATA_CB_DC_NIEN, iobase2 + ATA_CB_DC);
 
-    int ret = send_cmd(adrive_gf, &cmd);
-    if (ret)
+    целое ret = send_cmd(adrive_gf, &cmd);
+    если (ret)
         goto fail;
     ret = ata_wait_data(iobase1);
-    if (ret)
+    если (ret)
         goto fail;
 
     // Send command to device
     outsw_fl(iobase1, MAKE_FLATPTR(GET_SEG(SS), cdbcmd), CDROM_CDB_SIZE / 2);
 
-    int status = pause_await_not_bsy(iobase1, iobase2);
-    if (status < 0) {
+    целое status = pause_await_not_bsy(iobase1, iobase2);
+    если (status < 0) {
         ret = status;
         goto fail;
     }
 
-    if (status & ATA_CB_STAT_ERR) {
+    если (status & ATA_CB_STAT_ERR) {
         u8 err = inb(iobase1 + ATA_CB_ERR);
         // skip "Not Ready"
-        if (err != 0x20)
+        если (err != 0x20)
             dprintf(6, "send_atapi_cmd : read error (status=%02x err=%02x)\n"
                     , status, err);
         ret = -2;
         goto fail;
     }
-    if (blocksize) {
-        if (!(status & ATA_CB_STAT_DRQ)) {
+    если (blocksize) {
+        если (!(status & ATA_CB_STAT_DRQ)) {
             dprintf(6, "send_atapi_cmd : DRQ not set (status %02x)\n", status);
             ret = -3;
             goto fail;
@@ -649,9 +649,9 @@ ata_atapi_process_op(struct disk_op_s *op)
 fail:
     // Enable interrupts
     outb(ATA_CB_DC_HD15, iobase2+ATA_CB_DC);
-    if (ret)
-        return DISK_RET_EBADTRACK;
-    return DISK_RET_SUCCESS;
+    если (ret)
+        вернуть DISK_RET_EBADTRACK;
+    вернуть DISK_RET_SUCCESS;
 }
 
 
@@ -660,8 +660,8 @@ fail:
  ****************************************************************/
 
 // Send an identify device or identify device packet command.
-static int
-send_ata_identity(struct atadrive_s *adrive, u16 *buffer, int command)
+static целое
+send_ata_identity(struct atadrive_s *adrive, u16 *buffer, целое command)
 {
     memset(buffer, 0, DISK_SECTOR_SIZE);
 
@@ -676,20 +676,20 @@ send_ata_identity(struct atadrive_s *adrive, u16 *buffer, int command)
     memset(&cmd, 0, sizeof(cmd));
     cmd.command = command;
 
-    return ata_pio_cmd_data(&dop, 0, &cmd);
+    вернуть ata_pio_cmd_data(&dop, 0, &cmd);
 }
 
 // Extract the ATA/ATAPI version info.
-int
+целое
 ata_extract_version(u16 *buffer)
 {
     // Extract ATA/ATAPI version.
     u16 ataversion = buffer[80];
     u8 version;
-    for (version=15; version>0; version--)
-        if (ataversion & (1<<version))
+    для (version=15; version>0; version--)
+        если (ataversion & (1<<version))
             break;
-    return version;
+    вернуть version;
 }
 
 #define MAXMODEL 40
@@ -699,12 +699,12 @@ char *
 ata_extract_model(char *model, u32 size, u16 *buffer)
 {
     // Read model name
-    int i;
-    for (i=0; i<size/2; i++)
+    целое i;
+    для (i=0; i<size/2; i++)
         *(u16*)&model[i*2] = be16_to_cpu(buffer[27+i]);
     model[size] = 0x00;
     nullTrailingSpace(model);
-    return model;
+    вернуть model;
 }
 
 // Common init code between ata and atapi
@@ -712,16 +712,16 @@ static struct atadrive_s *
 init_atadrive(struct atadrive_s *dummy, u16 *buffer)
 {
     struct atadrive_s *adrive = malloc_fseg(sizeof(*adrive));
-    if (!adrive) {
+    если (!adrive) {
         warn_noalloc();
-        return NULL;
+        вернуть NULL;
     }
     memset(adrive, 0, sizeof(*adrive));
     adrive->chan_gf = dummy->chan_gf;
     adrive->slave = dummy->slave;
     adrive->drive.cntl_id = adrive->chan_gf->ataid * 2 + dummy->slave;
     adrive->drive.removable = (buffer[0] & 0x80) ? 1 : 0;
-    return adrive;
+    вернуть adrive;
 }
 
 // Detect if the given drive is an atapi - initialize it if so.
@@ -729,14 +729,14 @@ static struct atadrive_s *
 init_drive_atapi(struct atadrive_s *dummy, u16 *buffer)
 {
     // Send an IDENTIFY_DEVICE_PACKET command to device
-    int ret = send_ata_identity(dummy, buffer, ATA_CMD_IDENTIFY_PACKET_DEVICE);
-    if (ret)
-        return NULL;
+    целое ret = send_ata_identity(dummy, buffer, ATA_CMD_IDENTIFY_PACKET_DEVICE);
+    если (ret)
+        вернуть NULL;
 
     // Success - setup as ATAPI.
     struct atadrive_s *adrive = init_atadrive(dummy, buffer);
-    if (!adrive)
-        return NULL;
+    если (!adrive)
+        вернуть NULL;
     adrive->drive.type = DTYPE_ATA_ATAPI;
     adrive->drive.blksize = CDROM_SECTOR_SIZE;
     adrive->drive.sectors = (u64)-1;
@@ -751,8 +751,8 @@ init_drive_atapi(struct atadrive_s *dummy, u16 *buffer)
     dprintf(1, "%s\n", desc);
 
     // fill cdidmap
-    if (iscd) {
-        int prio = bootprio_find_ata_device(adrive->chan_gf->pci_tmp,
+    если (iscd) {
+        целое prio = bootprio_find_ata_device(adrive->chan_gf->pci_tmp,
                                             adrive->chan_gf->chanid,
                                             adrive->slave);
         boot_lchs_find_ata_device(adrive->chan_gf->pci_tmp,
@@ -762,7 +762,7 @@ init_drive_atapi(struct atadrive_s *dummy, u16 *buffer)
         boot_add_cd(&adrive->drive, desc, prio);
     }
 
-    return adrive;
+    вернуть adrive;
 }
 
 // Detect if the given drive is a regular ata drive - initialize it if so.
@@ -770,14 +770,14 @@ static struct atadrive_s *
 init_drive_ata(struct atadrive_s *dummy, u16 *buffer)
 {
     // Send an IDENTIFY_DEVICE command to device
-    int ret = send_ata_identity(dummy, buffer, ATA_CMD_IDENTIFY_DEVICE);
-    if (ret)
-        return NULL;
+    целое ret = send_ata_identity(dummy, buffer, ATA_CMD_IDENTIFY_DEVICE);
+    если (ret)
+        вернуть NULL;
 
     // Success - setup as ATA.
     struct atadrive_s *adrive = init_atadrive(dummy, buffer);
-    if (!adrive)
-        return NULL;
+    если (!adrive)
+        вернуть NULL;
     adrive->drive.type = DTYPE_ATA;
     adrive->drive.blksize = DISK_SECTOR_SIZE;
 
@@ -786,14 +786,14 @@ init_drive_ata(struct atadrive_s *dummy, u16 *buffer)
     adrive->drive.pchs.sector = buffer[6];
 
     u64 sectors;
-    if (buffer[83] & (1 << 10)) // word 83 - lba48 support
+    если (buffer[83] & (1 << 10)) // word 83 - lba48 support
         sectors = *(u64*)&buffer[100]; // word 100-103
-    else
+    иначе
         sectors = *(u32*)&buffer[60]; // word 60 and word 61
     adrive->drive.sectors = sectors;
     u64 adjsize = sectors >> 11;
     char adjprefix = 'M';
-    if (adjsize >= (1 << 16)) {
+    если (adjsize >= (1 << 16)) {
         adjsize >>= 10;
         adjprefix = 'G';
     }
@@ -806,7 +806,7 @@ init_drive_ata(struct atadrive_s *dummy, u16 *buffer)
                           , (u32)adjsize, adjprefix);
     dprintf(1, "%s\n", desc);
 
-    int prio = bootprio_find_ata_device(adrive->chan_gf->pci_tmp,
+    целое prio = bootprio_find_ata_device(adrive->chan_gf->pci_tmp,
                                         adrive->chan_gf->chanid,
                                         adrive->slave);
     boot_lchs_find_ata_device(adrive->chan_gf->pci_tmp,
@@ -816,34 +816,34 @@ init_drive_ata(struct atadrive_s *dummy, u16 *buffer)
     // Register with bcv system.
     boot_add_hd(&adrive->drive, desc, prio);
 
-    return adrive;
+    вернуть adrive;
 }
 
 static u32 SpinupEnd;
 
 // Wait for non-busy status and check for "floating bus" condition.
-static int
+static целое
 powerup_await_non_bsy(u16 base)
 {
     u8 orstatus = 0;
     u8 status;
-    for (;;) {
+    для (;;) {
         status = inb(base+ATA_CB_STAT);
-        if (!(status & ATA_CB_STAT_BSY))
+        если (!(status & ATA_CB_STAT_BSY))
             break;
         orstatus |= status;
-        if (orstatus == 0xff) {
+        если (orstatus == 0xff) {
             dprintf(4, "powerup IDE floating\n");
-            return orstatus;
+            вернуть orstatus;
         }
-        if (timer_check(SpinupEnd)) {
+        если (timer_check(SpinupEnd)) {
             warn_timeout();
-            return -1;
+            вернуть -1;
         }
         yield();
     }
     dprintf(6, "powerup iobase=%x st=%x\n", base, status);
-    return status;
+    вернуть status;
 }
 
 // Detect any drives attached to a given controller.
@@ -855,19 +855,19 @@ ata_detect(void *data)
     memset(&dummy, 0, sizeof(dummy));
     dummy.chan_gf = chan_gf;
     // Device detection
-    int didreset = 0;
+    целое didreset = 0;
     u8 slave;
-    for (slave=0; slave<=1; slave++) {
+    для (slave=0; slave<=1; slave++) {
         // Wait for not-bsy.
         u16 iobase1 = chan_gf->iobase1;
-        int status = powerup_await_non_bsy(iobase1);
-        if (status < 0)
+        целое status = powerup_await_non_bsy(iobase1);
+        если (status < 0)
             continue;
         u8 newdh = slave ? ATA_CB_DH_DEV1 : ATA_CB_DH_DEV0;
         outb(newdh, iobase1+ATA_CB_DH);
         ndelay(400);
         status = powerup_await_non_bsy(iobase1);
-        if (status < 0)
+        если (status < 0)
             continue;
 
         // Check if ioport registers look valid.
@@ -879,14 +879,14 @@ ata_detect(void *data)
         u8 sn = inb(iobase1+ATA_CB_SN);
         dprintf(6, "ata_detect ata%d-%d: sc=%x sn=%x dh=%x\n"
                 , chan_gf->ataid, slave, sc, sn, dh);
-        if (sc != 0x55 || sn != 0xaa || dh != newdh)
+        если (sc != 0x55 || sn != 0xaa || dh != newdh)
             continue;
 
         // Prepare new drive.
         dummy.slave = slave;
 
         // reset the channel
-        if (!didreset) {
+        если (!didreset) {
             ata_reset(&dummy);
             didreset = 1;
         }
@@ -894,28 +894,28 @@ ata_detect(void *data)
         // check for ATAPI
         u16 buffer[256];
         struct atadrive_s *adrive = init_drive_atapi(&dummy, buffer);
-        if (!adrive) {
+        если (!adrive) {
             // Didn't find an ATAPI drive - look for ATA drive.
             u8 st = inb(iobase1+ATA_CB_STAT);
-            if (!st)
+            если (!st)
                 // Status not set - can't be a valid drive.
                 continue;
 
             // Wait for RDY.
-            int ret = await_rdy(iobase1);
-            if (ret < 0)
+            целое ret = await_rdy(iobase1);
+            если (ret < 0)
                 continue;
 
             // check for ATA.
             adrive = init_drive_ata(&dummy, buffer);
-            if (!adrive)
+            если (!adrive)
                 // No ATA drive found
                 continue;
         }
 
         u16 resetresult = buffer[93];
         dprintf(6, "ata_detect resetresult=%04x\n", resetresult);
-        if (!slave && (resetresult & 0xdf61) == 0x4041)
+        если (!slave && (resetresult & 0xdf61) == 0x4041)
             // resetresult looks valid and device 0 is responding to
             // device 1 requests - device 1 must not be present - skip
             // detection.
@@ -925,14 +925,14 @@ ata_detect(void *data)
 
 // Initialize an ata controller and detect its drives.
 static void
-init_controller(struct pci_device *pci, int chanid, int irq
+init_controller(struct pci_device *pci, целое chanid, целое irq
                 , u32 port1, u32 port2, u32 master)
 {
-    static int ataid = 0;
+    static целое ataid = 0;
     struct ata_channel_s *chan_gf = malloc_fseg(sizeof(*chan_gf));
-    if (!chan_gf) {
+    если (!chan_gf) {
         warn_noalloc();
-        return;
+        вернуть;
     }
     chan_gf->ataid = ataid++;
     chan_gf->chanid = chanid;
@@ -955,37 +955,37 @@ static void
 init_pciata(struct pci_device *pci, u8 prog_if)
 {
     u8 pciirq = pci_config_readb(pci->bdf, PCI_INTERRUPT_LINE);
-    int master = 0;
-    if (CONFIG_ATA_DMA && prog_if & 0x80) {
+    целое master = 0;
+    если (CONFIG_ATA_DMA && prog_if & 0x80) {
         // Check for bus-mastering.
         u32 bar = pci_config_readl(pci->bdf, PCI_BASE_ADDRESS_4);
-        if (bar & PCI_BASE_ADDRESS_SPACE_IO) {
+        если (bar & PCI_BASE_ADDRESS_SPACE_IO) {
             master = pci_enable_iobar(pci, PCI_BASE_ADDRESS_4);
             pci_enable_busmaster(pci);
         }
     }
 
     u32 port1, port2, irq;
-    if (prog_if & 1) {
+    если (prog_if & 1) {
         port1 = pci_enable_iobar(pci, PCI_BASE_ADDRESS_0);
         port2 = pci_enable_iobar(pci, PCI_BASE_ADDRESS_1);
-        if (!port1 || !port2)
-            return;
+        если (!port1 || !port2)
+            вернуть;
         irq = pciirq;
-    } else {
+    } иначе {
         port1 = PORT_ATA1_CMD_BASE;
         port2 = PORT_ATA1_CTRL_BASE;
         irq = IRQ_ATA1;
     }
     init_controller(pci, 0, irq, port1, port2, master);
 
-    if (prog_if & 4) {
+    если (prog_if & 4) {
         port1 = pci_enable_iobar(pci, PCI_BASE_ADDRESS_2);
         port2 = pci_enable_iobar(pci, PCI_BASE_ADDRESS_3);
-        if (!port1 || !port2)
-            return;
+        если (!port1 || !port2)
+            вернуть;
         irq = pciirq;
-    } else {
+    } иначе {
         port1 = PORT_ATA2_CMD_BASE;
         port2 = PORT_ATA2_CTRL_BASE;
         irq = IRQ_ATA2;
@@ -1002,9 +1002,9 @@ found_genericata(struct pci_device *pci, void *arg)
 static void
 found_compatibleahci(struct pci_device *pci, void *arg)
 {
-    if (CONFIG_AHCI)
+    если (CONFIG_AHCI)
         // Already handled directly via native ahci interface.
-        return;
+        вернуть;
     init_pciata(pci, 0x8f);
 }
 
@@ -1019,14 +1019,14 @@ static const struct pci_device_id pci_ata_tbl[] = {
 static void
 ata_scan(void)
 {
-    if (CONFIG_QEMU && hlist_empty(&PCIDevices)) {
+    если (CONFIG_QEMU && hlist_empty(&PCIDevices)) {
         // No PCI devices found - probably a QEMU "-M isapc" machine.
         // Try using ISA ports for ATA controllers.
         init_controller(NULL, 0, IRQ_ATA1
                         , PORT_ATA1_CMD_BASE, PORT_ATA1_CTRL_BASE, 0);
         init_controller(NULL, 1, IRQ_ATA2
                         , PORT_ATA2_CMD_BASE, PORT_ATA2_CTRL_BASE, 0);
-        return;
+        вернуть;
     }
 
     // Scan PCI bus for ATA adapters
@@ -1040,8 +1040,8 @@ void
 ata_setup(void)
 {
     ASSERT32FLAT();
-    if (!CONFIG_ATA)
-        return;
+    если (!CONFIG_ATA)
+        вернуть;
 
     dprintf(3, "init hard drives\n");
 

@@ -39,10 +39,10 @@ debug_banner(void)
 static void
 debug_putc(struct putcinfo *action, char c)
 {
-    if (! CONFIG_DEBUG_LEVEL)
-        return;
+    если (! CONFIG_DEBUG_LEVEL)
+        вернуть;
     qemu_debug_putc(c);
-    if (!MODESEGMENT)
+    если (!MODESEGMENT)
         coreboot_debug_putc(c);
     serial_debug_putc(c);
 }
@@ -57,11 +57,11 @@ debug_flush(void)
 // In segmented mode just need a dummy variable (debug_putc is always
 // used anyway), and in 32bit flat mode need a pointer to the 32bit
 // instance of debug_putc().
-#if MODE16
+#если MODE16
 static struct putcinfo debuginfo VAR16;
 #elif MODESEGMENT
 static struct putcinfo debuginfo VAR32SEG;
-#else
+#иначе
 static struct putcinfo debuginfo = { debug_putc };
 #endif
 
@@ -74,9 +74,9 @@ static struct putcinfo debuginfo = { debug_putc };
 static void
 screenc(char c)
 {
-    if (!MODESEGMENT && GET_IVT(0x10).segoff == FUNC16(entry_10).segoff)
+    если (!MODESEGMENT && GET_IVT(0x10).segoff == FUNC16(entry_10).segoff)
         // No need to thunk to 16bit mode if vgabios is not present
-        return;
+        вернуть;
     struct bregs br;
     memset(&br, 0, sizeof(br));
     br.flags = F_IF;
@@ -90,9 +90,9 @@ screenc(char c)
 static void
 screen_putc(struct putcinfo *action, char c)
 {
-    if (ScreenAndDebug)
+    если (ScreenAndDebug)
         debug_putc(&debuginfo, c);
-    if (c == '\n')
+    если (c == '\n')
         screenc('\r');
     screenc(c);
 }
@@ -108,10 +108,10 @@ static struct putcinfo screeninfo = { screen_putc };
 static void
 putc(struct putcinfo *action, char c)
 {
-    if (MODESEGMENT) {
+    если (MODESEGMENT) {
         // Only debugging output supported in segmented mode.
         debug_putc(action, c);
-        return;
+        вернуть;
     }
 
     void (*func)(struct putcinfo *info, char c) = GET_GLOBAL(action->func);
@@ -122,9 +122,9 @@ putc(struct putcinfo *action, char c)
 static void
 puts(struct putcinfo *action, const char *s)
 {
-    if (!MODESEGMENT && !s)
+    если (!MODESEGMENT && !s)
         s = "(NULL)";
-    for (; *s; s++)
+    для (; *s; s++)
         putc(action, *s);
 }
 
@@ -133,9 +133,9 @@ static void
 puts_cs(struct putcinfo *action, const char *s)
 {
     char *vs = (char*)s;
-    for (;; vs++) {
+    для (;; vs++) {
         char c = GET_GLOBAL(*vs);
-        if (!c)
+        если (!c)
             break;
         putc(action, c);
     }
@@ -148,10 +148,10 @@ putuint(struct putcinfo *action, u32 val)
     char buf[12];
     char *d = &buf[sizeof(buf) - 1];
     *d-- = '\0';
-    for (;;) {
+    для (;;) {
         *d = (val % 10) + '0';
         val /= 10;
-        if (!val)
+        если (!val)
             break;
         d--;
     }
@@ -160,20 +160,20 @@ putuint(struct putcinfo *action, u32 val)
 
 // Output a single digit hex character.
 static inline void
-putsinglehex(struct putcinfo *action, u32 val, int uc)
+putsinglehex(struct putcinfo *action, u32 val, целое uc)
 {
-    if (val <= 9)
+    если (val <= 9)
         val = '0' + val;
-    else if (uc)
+    иначе если (uc)
         val = 'A' + val - 10;
-    else
+    иначе
         val = 'a' + val - 10;
     putc(action, val);
 }
 
 // Output an integer in hexadecimal with a specified width.
 static void
-puthex(struct putcinfo *action, u32 val, int width, int uc)
+puthex(struct putcinfo *action, u32 val, целое width, целое uc)
 {
     switch (width) {
     default: putsinglehex(action, (val >> 28) & 0xf, uc);
@@ -189,14 +189,14 @@ puthex(struct putcinfo *action, u32 val, int width, int uc)
 
 // Output an integer in hexadecimal with a minimum width.
 static void
-putprettyhex(struct putcinfo *action, u32 val, int width, char padchar, int uc)
+putprettyhex(struct putcinfo *action, u32 val, целое width, char padchar, целое uc)
 {
     u32 tmp = val;
-    int count = 1;
-    while (tmp >>= 4)
+    целое count = 1;
+    пока (tmp >>= 4)
         count++;
     width -= count;
-    while (width-- > 0)
+    пока (width-- > 0)
         putc(action, padchar);
     puthex(action, val, count, uc);
 }
@@ -212,45 +212,45 @@ put_pci_device(struct putcinfo *action, struct pci_device *pci)
     puthex(action, pci_bdf_to_fn(pci->bdf), 1, 0);
 }
 
-static inline int
+static inline целое
 isdigit(u8 c)
 {
-    return ((u8)(c - '0')) < 10;
+    вернуть ((u8)(c - '0')) < 10;
 }
 
 static void
 bvprintf(struct putcinfo *action, const char *fmt, va_list args)
 {
     const char *s = fmt;
-    int uc;
-    for (;; s++) {
+    целое uc;
+    для (;; s++) {
         char c = GET_GLOBAL(*(u8*)s);
-        if (!c)
+        если (!c)
             break;
-        if (c != '%') {
+        если (c != '%') {
             putc(action, c);
             continue;
         }
         const char *n = s+1;
-        int field_width = 0;
+        целое field_width = 0;
         char padchar = ' ';
         u8 is64 = 0;
-        for (;;) {
+        для (;;) {
             c = GET_GLOBAL(*(u8*)n);
-            if (!isdigit(c))
+            если (!isdigit(c))
                 break;
-            if (!field_width && (c == '0'))
+            если (!field_width && (c == '0'))
                 padchar = '0';
-            else
+            иначе
                 field_width = field_width * 10 + c - '0';
             n++;
         }
-        if (c == 'l') {
+        если (c == 'l') {
             // Ignore long format indicator
             n++;
             c = GET_GLOBAL(*(u8*)n);
         }
-        if (c == 'l') {
+        если (c == 'l') {
             is64 = 1;
             n++;
             c = GET_GLOBAL(*(u8*)n);
@@ -263,9 +263,9 @@ bvprintf(struct putcinfo *action, const char *fmt, va_list args)
             break;
         case 'd':
             val = va_arg(args, s32);
-            if (is64)
+            если (is64)
                 va_arg(args, s32);
-            if (val < 0) {
+            если (val < 0) {
                 putc(action, '-');
                 val = -val;
             }
@@ -273,13 +273,13 @@ bvprintf(struct putcinfo *action, const char *fmt, va_list args)
             break;
         case 'u':
             val = va_arg(args, s32);
-            if (is64)
+            если (is64)
                 va_arg(args, s32);
             putuint(action, val);
             break;
         case 'p':
             val = va_arg(args, s32);
-            if (!MODESEGMENT && GET_GLOBAL(*(u8*)(n+1)) == 'P') {
+            если (!MODESEGMENT && GET_GLOBAL(*(u8*)(n+1)) == 'P') {
                 // %pP is 'struct pci_device' printer
                 put_pci_device(action, (void*)val);
                 n++;
@@ -293,9 +293,9 @@ bvprintf(struct putcinfo *action, const char *fmt, va_list args)
         case 'x':
             uc = (c == 'X');
             val = va_arg(args, s32);
-            if (is64) {
+            если (is64) {
                 u32 upper = va_arg(args, s32);
-                if (upper) {
+                если (upper) {
                     putprettyhex(action, upper, field_width - 8, padchar, uc);
                     puthex(action, val, 8, uc);
                     break;
@@ -304,12 +304,12 @@ bvprintf(struct putcinfo *action, const char *fmt, va_list args)
             putprettyhex(action, val, field_width, padchar, uc);
             break;
         case 'c':
-            val = va_arg(args, int);
+            val = va_arg(args, целое);
             putc(action, val);
             break;
         case '.':
             // Hack to support "%.s" - meaning string on stack.
-            if (GET_GLOBAL(*(u8*)(n+1)) != 's')
+            если (GET_GLOBAL(*(u8*)(n+1)) != 's')
                 break;
             n++;
             sarg = va_arg(args, const char *);
@@ -330,7 +330,7 @@ bvprintf(struct putcinfo *action, const char *fmt, va_list args)
 void
 panic(const char *fmt, ...)
 {
-    if (CONFIG_DEBUG_LEVEL) {
+    если (CONFIG_DEBUG_LEVEL) {
         va_list args;
         va_start(args, fmt);
         bvprintf(&debuginfo, fmt, args);
@@ -340,17 +340,17 @@ panic(const char *fmt, ...)
 
     // XXX - use PANIC PORT.
     irq_disable();
-    for (;;)
+    для (;;)
         hlt();
 }
 
 void
 __dprintf(const char *fmt, ...)
 {
-    if (!MODESEGMENT && CONFIG_THREADS && CONFIG_DEBUG_LEVEL >= DEBUG_thread
+    если (!MODESEGMENT && CONFIG_THREADS && CONFIG_DEBUG_LEVEL >= DEBUG_thread
         && *fmt != '\\' && *fmt != '/') {
         struct thread_info *cur = getCurThread();
-        if (cur != &MainThread) {
+        если (cur != &MainThread) {
             // Show "thread id" for this debug message.
             debug_putc(&debuginfo, '|');
             puthex(&debuginfo, (u32)cur, 8, 0);
@@ -374,7 +374,7 @@ printf(const char *fmt, ...)
     va_start(args, fmt);
     bvprintf(&screeninfo, fmt, args);
     va_end(args);
-    if (ScreenAndDebug)
+    если (ScreenAndDebug)
         debug_flush();
 }
 
@@ -392,8 +392,8 @@ static void
 putc_str(struct putcinfo *info, char c)
 {
     struct snprintfinfo *sinfo = container_of(info, struct snprintfinfo, info);
-    if (sinfo->str >= sinfo->end)
-        return;
+    если (sinfo->str >= sinfo->end)
+        вернуть;
     *sinfo->str = c;
     sinfo->str++;
 }
@@ -401,22 +401,22 @@ putc_str(struct putcinfo *info, char c)
 // Build a formatted string.  Note, this function returns the actual
 // number of bytes used (not including null) even in the overflow
 // case.
-int
+целое
 snprintf(char *str, size_t size, const char *fmt, ...)
 {
     ASSERT32FLAT();
-    if (!size)
-        return 0;
+    если (!size)
+        вернуть 0;
     struct snprintfinfo sinfo = { { putc_str }, str, str + size };
     va_list args;
     va_start(args, fmt);
     bvprintf(&sinfo.info, fmt, args);
     va_end(args);
     char *end = sinfo.str;
-    if (end >= sinfo.end)
+    если (end >= sinfo.end)
         end = sinfo.end - 1;
     *end = '\0';
-    return end - str;
+    вернуть end - str;
 }
 
 // Build a formatted string - malloc'ing the memory.
@@ -424,12 +424,12 @@ char *
 znprintf(size_t size, const char *fmt, ...)
 {
     ASSERT32FLAT();
-    if (!size)
-        return NULL;
+    если (!size)
+        вернуть NULL;
     char *str = malloc_tmp(size);
-    if (!str) {
+    если (!str) {
         warn_noalloc();
-        return NULL;
+        вернуть NULL;
     }
     struct snprintfinfo sinfo = { { putc_str }, str, str + size };
     va_list args;
@@ -437,10 +437,10 @@ znprintf(size_t size, const char *fmt, ...)
     bvprintf(&sinfo.info, fmt, args);
     va_end(args);
     char *end = sinfo.str;
-    if (end >= sinfo.end)
+    если (end >= sinfo.end)
         end = sinfo.end - 1;
     *end = '\0';
-    return str;
+    вернуть str;
 }
 
 
@@ -449,15 +449,15 @@ znprintf(size_t size, const char *fmt, ...)
  ****************************************************************/
 
 void
-hexdump(const void *d, int len)
+hexdump(const void *d, целое len)
 {
-    int count=0;
-    while (len > 0) {
-        if (count % 8 == 0) {
+    целое count=0;
+    пока (len > 0) {
+        если (count % 8 == 0) {
             putc(&debuginfo, '\n');
             puthex(&debuginfo, count*4, 8, 0);
             putc(&debuginfo, ':');
-        } else {
+        } иначе {
             putc(&debuginfo, ' ');
         }
         puthex(&debuginfo, *(u32*)d, 8, 0);
@@ -472,9 +472,9 @@ hexdump(const void *d, int len)
 static void
 dump_regs(struct bregs *regs)
 {
-    if (!regs) {
+    если (!regs) {
         dprintf(1, "  NULL\n");
-        return;
+        вернуть;
     }
     dprintf(1, "   a=%08x  b=%08x  c=%08x  d=%08x ds=%04x es=%04x ss=%04x\n"
             , regs->eax, regs->ebx, regs->ecx, regs->edx
@@ -503,7 +503,7 @@ __debug_enter(struct bregs *regs, const char *fname)
 
 // Send debugging output info.
 void
-__debug_stub(struct bregs *regs, int lineno, const char *fname)
+__debug_stub(struct bregs *regs, целое lineno, const char *fname)
 {
     dprintf(1, "stub %s:%d:\n", fname, lineno);
     dump_regs(regs);
@@ -511,9 +511,9 @@ __debug_stub(struct bregs *regs, int lineno, const char *fname)
 
 // Report on an invalid parameter.
 void
-__warn_invalid(struct bregs *regs, int lineno, const char *fname)
+__warn_invalid(struct bregs *regs, целое lineno, const char *fname)
 {
-    if (CONFIG_DEBUG_LEVEL >= DEBUG_invalid) {
+    если (CONFIG_DEBUG_LEVEL >= DEBUG_invalid) {
         dprintf(1, "invalid %s:%d:\n", fname, lineno);
         dump_regs(regs);
     }
@@ -521,9 +521,9 @@ __warn_invalid(struct bregs *regs, int lineno, const char *fname)
 
 // Report on an unimplemented feature.
 void
-__warn_unimplemented(struct bregs *regs, int lineno, const char *fname)
+__warn_unimplemented(struct bregs *regs, целое lineno, const char *fname)
 {
-    if (CONFIG_DEBUG_LEVEL >= DEBUG_unimplemented) {
+    если (CONFIG_DEBUG_LEVEL >= DEBUG_unimplemented) {
         dprintf(1, "unimplemented %s:%d:\n", fname, lineno);
         dump_regs(regs);
     }
@@ -531,7 +531,7 @@ __warn_unimplemented(struct bregs *regs, int lineno, const char *fname)
 
 // Report a detected internal inconsistency.
 void
-__warn_internalerror(int lineno, const char *fname)
+__warn_internalerror(целое lineno, const char *fname)
 {
     dprintf(1, "WARNING - internal error detected at %s:%d!\n"
             , fname, lineno);
@@ -539,7 +539,7 @@ __warn_internalerror(int lineno, const char *fname)
 
 // Report on an allocation failure.
 void
-__warn_noalloc(int lineno, const char *fname)
+__warn_noalloc(целое lineno, const char *fname)
 {
     dprintf(1, "WARNING - Unable to allocate resource at %s:%d!\n"
             , fname, lineno);
@@ -547,14 +547,14 @@ __warn_noalloc(int lineno, const char *fname)
 
 // Report on a timeout exceeded.
 void
-__warn_timeout(int lineno, const char *fname)
+__warn_timeout(целое lineno, const char *fname)
 {
     dprintf(1, "WARNING - Timeout at %s:%d!\n", fname, lineno);
 }
 
 // Report a handler reporting an invalid parameter to the caller.
 void
-__set_invalid(struct bregs *regs, int lineno, const char *fname)
+__set_invalid(struct bregs *regs, целое lineno, const char *fname)
 {
     __warn_invalid(regs, lineno, fname);
     set_invalid_silent(regs);
@@ -562,7 +562,7 @@ __set_invalid(struct bregs *regs, int lineno, const char *fname)
 
 // Report a call of an unimplemented function.
 void
-__set_unimplemented(struct bregs *regs, int lineno, const char *fname)
+__set_unimplemented(struct bregs *regs, целое lineno, const char *fname)
 {
     __warn_unimplemented(regs, lineno, fname);
     set_invalid_silent(regs);

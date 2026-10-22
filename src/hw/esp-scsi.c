@@ -71,7 +71,7 @@ struct esp_lun_s {
 };
 
 static void
-esp_scsi_dma(u32 iobase, u32 buf, u32 len, int read)
+esp_scsi_dma(u32 iobase, u32 buf, u32 len, целое read)
 {
     outb(len         & 0xff, iobase + ESP_TCLO);
     outb((len >> 8)  & 0xff, iobase + ESP_TCMID);
@@ -81,21 +81,21 @@ esp_scsi_dma(u32 iobase, u32 buf, u32 len, int read)
     outb(read ? 0x83 : 0x03, iobase + ESP_DMA_CMD);
 }
 
-int
+целое
 esp_scsi_process_op(struct disk_op_s *op)
 {
-    if (!CONFIG_ESP_SCSI)
-        return DISK_RET_EBADTRACK;
+    если (!CONFIG_ESP_SCSI)
+        вернуть DISK_RET_EBADTRACK;
     struct esp_lun_s *llun_gf =
         container_of(op->drive_fl, struct esp_lun_s, drive);
     u16 target = GET_GLOBALFLAT(llun_gf->target);
     u16 lun = GET_GLOBALFLAT(llun_gf->lun);
     u8 cdbcmd[16];
-    int blocksize = scsi_fill_cmd(op, cdbcmd, sizeof(cdbcmd));
-    if (blocksize < 0)
-        return default_process_op(op);
+    целое blocksize = scsi_fill_cmd(op, cdbcmd, sizeof(cdbcmd));
+    если (blocksize < 0)
+        вернуть default_process_op(op);
     u32 iobase = GET_GLOBALFLAT(llun_gf->iobase);
-    int i, state;
+    целое i, state;
     u8 status;
 
     outb(target, iobase + ESP_WBUSID);
@@ -113,32 +113,32 @@ esp_scsi_process_op(struct disk_op_s *op)
     outb(lun, iobase + ESP_FIFO);
     cdbcmd[1] &= 0x1f;
     cdbcmd[1] |= lun << 5;
-    for (i = 0; i < 12; i++)
+    для (i = 0; i < 12; i++)
         outb(cdbcmd[i], iobase + ESP_FIFO);
     outb(ESP_CMD_SELATN, iobase + ESP_CMD);
 
-    for (state = 0;;) {
+    для (state = 0;;) {
         u8 stat = inb(iobase + ESP_RSTAT);
         u8 intr;
 
-        if (state == 0) {
+        если (state == 0) {
             intr = inb(iobase + ESP_RINTR);
 
             /* Detect disconnected device.  */
-            if (intr & ESP_INTR_DC) {
-                return DISK_RET_ENOTREADY;
+            если (intr & ESP_INTR_DC) {
+                вернуть DISK_RET_ENOTREADY;
             }
 
             /* HBA reads command, executes it, sets BS/FC -> do DMA if needed.  */
-            if (intr & (ESP_INTR_BS | ESP_INTR_FC)) {
+            если (intr & (ESP_INTR_BS | ESP_INTR_FC)) {
                 state++;
-                if (op->count && blocksize) {
+                если (op->count && blocksize) {
                     /* Data phase.  */
                     u32 count = (u32)op->count * blocksize;
                     esp_scsi_dma(iobase, (u32)op->buf_fl, count, scsi_is_read(op));
                     outb(ESP_CMD_TI | ESP_CMD_DMA, iobase + ESP_CMD);
                     continue;
-                } else {
+                } иначе {
                     /* No data phase.  */
                     state++;
                 }
@@ -146,7 +146,7 @@ esp_scsi_process_op(struct disk_op_s *op)
         }
 
         /* At end of DMA TC is set again -> complete command.  */
-        if (state == 1 && (stat & ESP_STAT_TC)) {
+        если (state == 1 && (stat & ESP_STAT_TC)) {
             state++;
             /* Terminate esp_scsi_dma() command */
             outb(0, iobase + ESP_DMA_CMD);
@@ -154,14 +154,14 @@ esp_scsi_process_op(struct disk_op_s *op)
         }
 
         /* Request message in data.  */
-        if (state == 2) {
+        если (state == 2) {
             state++;
             outb(ESP_CMD_ICCS, iobase + ESP_CMD);
             continue;
         }
 
         /* Finally read data from the message in phase and accept.  */
-        if (state == 3 && (stat & ESP_STAT_MSG)) {
+        если (state == 3 && (stat & ESP_STAT_MSG)) {
             state++;
             status = inb(iobase + ESP_FIFO);
             inb(iobase + ESP_FIFO);
@@ -171,11 +171,11 @@ esp_scsi_process_op(struct disk_op_s *op)
         usleep(5);
     }
 
-    if (status == 0) {
-        return DISK_RET_SUCCESS;
+    если (status == 0) {
+        вернуть DISK_RET_SUCCESS;
     }
 
-    return DISK_RET_EBADTRACK;
+    вернуть DISK_RET_EBADTRACK;
 }
 
 static void
@@ -191,15 +191,15 @@ esp_scsi_init_lun(struct esp_lun_s *llun, struct pci_device *pci, u32 iobase,
     llun->iobase = iobase;
 }
 
-static int
+static целое
 esp_scsi_add_lun(u32 lun, struct drive_s *tmpl_drv)
 {
     struct esp_lun_s *tmpl_llun =
         container_of(tmpl_drv, struct esp_lun_s, drive);
     struct esp_lun_s *llun = malloc_fseg(sizeof(*llun));
-    if (!llun) {
+    если (!llun) {
         warn_noalloc();
-        return -1;
+        вернуть -1;
     }
     esp_scsi_init_lun(llun, tmpl_llun->pci, tmpl_llun->iobase,
                       tmpl_llun->target, lun);
@@ -208,16 +208,16 @@ esp_scsi_add_lun(u32 lun, struct drive_s *tmpl_drv)
                           llun->pci, llun->target, llun->lun);
     boot_lchs_find_scsi_device(llun->pci, llun->target, llun->lun,
                                &(llun->drive.lchs));
-    int prio = bootprio_find_scsi_device(llun->pci, llun->target, llun->lun);
-    int ret = scsi_drive_setup(&llun->drive, name, prio);
+    целое prio = bootprio_find_scsi_device(llun->pci, llun->target, llun->lun);
+    целое ret = scsi_drive_setup(&llun->drive, name, prio);
     free(name);
-    if (ret)
+    если (ret)
         goto fail;
-    return 0;
+    вернуть 0;
 
 fail:
     free(llun);
-    return -1;
+    вернуть -1;
 }
 
 static void
@@ -235,8 +235,8 @@ init_esp_scsi(void *data)
 {
     struct pci_device *pci = data;
     u32 iobase = pci_enable_iobar(pci, PCI_BASE_ADDRESS_0);
-    if (!iobase)
-        return;
+    если (!iobase)
+        вернуть;
     pci_enable_busmaster(pci);
 
     dprintf(1, "found esp at %pP, io @ %x\n", pci, iobase);
@@ -244,8 +244,8 @@ init_esp_scsi(void *data)
     // reset
     outb(ESP_CMD_RESET, iobase + ESP_CMD);
 
-    int i;
-    for (i = 0; i <= 7; i++)
+    целое i;
+    для (i = 0; i <= 7; i++)
         esp_scsi_scan_target(pci, iobase, i);
 }
 
@@ -253,14 +253,14 @@ void
 esp_scsi_setup(void)
 {
     ASSERT32FLAT();
-    if (!CONFIG_ESP_SCSI || !runningOnQEMU())
-        return;
+    если (!CONFIG_ESP_SCSI || !runningOnQEMU())
+        вернуть;
 
     dprintf(3, "init esp\n");
 
     struct pci_device *pci;
     foreachpci(pci) {
-        if (pci->vendor != PCI_VENDOR_ID_AMD
+        если (pci->vendor != PCI_VENDOR_ID_AMD
             || pci->device != PCI_DEVICE_ID_AMD_SCSI)
             continue;
         run_thread(init_esp_scsi, pci);

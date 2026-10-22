@@ -19,7 +19,7 @@
 struct usbdrive_s {
     struct drive_s drive;
     struct usb_pipe *bulkin, *bulkout;
-    int lun;
+    целое lun;
 };
 
 
@@ -50,23 +50,23 @@ struct csw_s {
     u8 bCSWStatus;
 } PACKED;
 
-static int
-usb_msc_send(struct usbdrive_s *udrive_gf, int dir, void *buf, u32 bytes)
+static целое
+usb_msc_send(struct usbdrive_s *udrive_gf, целое dir, void *buf, u32 bytes)
 {
     struct usb_pipe *pipe;
-    if (dir == USB_DIR_OUT)
+    если (dir == USB_DIR_OUT)
         pipe = GET_GLOBALFLAT(udrive_gf->bulkout);
-    else
+    иначе
         pipe = GET_GLOBALFLAT(udrive_gf->bulkin);
-    return usb_send_bulk(pipe, dir, buf, bytes);
+    вернуть usb_send_bulk(pipe, dir, buf, bytes);
 }
 
 // Low-level usb command transmit function.
-int
+целое
 usb_process_op(struct disk_op_s *op)
 {
-    if (!CONFIG_USB_MSC)
-        return 0;
+    если (!CONFIG_USB_MSC)
+        вернуть 0;
 
     dprintf(16, "usb_cmd_data id=%p write=%d count=%d buf=%p\n"
             , op->drive_fl, 0, op->count, op->buf_fl);
@@ -76,9 +76,9 @@ usb_process_op(struct disk_op_s *op)
     // Setup command block wrapper.
     struct cbw_s cbw;
     memset(&cbw, 0, sizeof(cbw));
-    int blocksize = scsi_fill_cmd(op, cbw.CBWCB, USB_CDB_SIZE);
-    if (blocksize < 0)
-        return default_process_op(op);
+    целое blocksize = scsi_fill_cmd(op, cbw.CBWCB, USB_CDB_SIZE);
+    если (blocksize < 0)
+        вернуть default_process_op(op);
     u32 bytes = blocksize * op->count;
     cbw.dCBWSignature = CBW_SIGNATURE;
     cbw.dCBWTag = 999; // XXX
@@ -88,15 +88,15 @@ usb_process_op(struct disk_op_s *op)
     cbw.bCBWCBLength = USB_CDB_SIZE;
 
     // Transfer cbw to device.
-    int ret = usb_msc_send(udrive_gf, USB_DIR_OUT
+    целое ret = usb_msc_send(udrive_gf, USB_DIR_OUT
                            , MAKE_FLATPTR(GET_SEG(SS), &cbw), sizeof(cbw));
-    if (ret)
+    если (ret)
         goto fail;
 
     // Transfer data to/from device.
-    if (bytes) {
+    если (bytes) {
         ret = usb_msc_send(udrive_gf, cbw.bmCBWFlags, op->buf_fl, bytes);
-        if (ret)
+        если (ret)
             goto fail;
     }
 
@@ -104,25 +104,25 @@ usb_process_op(struct disk_op_s *op)
     struct csw_s csw;
     ret = usb_msc_send(udrive_gf, USB_DIR_IN
                        , MAKE_FLATPTR(GET_SEG(SS), &csw), sizeof(csw));
-    if (ret)
+    если (ret)
         goto fail;
 
-    if (!csw.bCSWStatus)
-        return DISK_RET_SUCCESS;
-    if (csw.bCSWStatus == 2)
+    если (!csw.bCSWStatus)
+        вернуть DISK_RET_SUCCESS;
+    если (csw.bCSWStatus == 2)
         goto fail;
 
-    if (blocksize)
+    если (blocksize)
         op->count -= csw.dCSWDataResidue / blocksize;
-    return DISK_RET_EBADTRACK;
+    вернуть DISK_RET_EBADTRACK;
 
 fail:
     // XXX - reset connection
     dprintf(1, "USB transmission failed\n");
-    return DISK_RET_EBADTRACK;
+    вернуть DISK_RET_EBADTRACK;
 }
 
-static int
+static целое
 usb_msc_maxlun(struct usb_pipe *pipe)
 {
     struct usb_ctrlrequest req;
@@ -132,39 +132,39 @@ usb_msc_maxlun(struct usb_pipe *pipe)
     req.wIndex = 0;
     req.wLength = 1;
     unsigned char maxlun;
-    int ret = usb_send_default_control(pipe, &req, &maxlun);
-    if (ret)
-        return 0;
-    return maxlun;
+    целое ret = usb_send_default_control(pipe, &req, &maxlun);
+    если (ret)
+        вернуть 0;
+    вернуть maxlun;
 }
 
-static int
+static целое
 usb_msc_lun_setup(struct usb_pipe *inpipe, struct usb_pipe *outpipe,
-                  struct usbdevice_s *usbdev, int lun)
+                  struct usbdevice_s *usbdev, целое lun)
 {
     // Allocate drive structure.
     struct usbdrive_s *drive = malloc_fseg(sizeof(*drive));
-    if (!drive) {
+    если (!drive) {
         warn_noalloc();
-        return -1;
+        вернуть -1;
     }
     memset(drive, 0, sizeof(*drive));
-    if (usb_32bit_pipe(inpipe))
+    если (usb_32bit_pipe(inpipe))
         drive->drive.type = DTYPE_USB_32;
-    else
+    иначе
         drive->drive.type = DTYPE_USB;
     drive->bulkin = inpipe;
     drive->bulkout = outpipe;
     drive->lun = lun;
 
-    int prio = bootprio_find_usb(usbdev, lun);
-    int ret = scsi_drive_setup(&drive->drive, "USB MSC", prio);
-    if (ret) {
+    целое prio = bootprio_find_usb(usbdev, lun);
+    целое ret = scsi_drive_setup(&drive->drive, "USB MSC", prio);
+    если (ret) {
         dprintf(1, "Unable to configure USB MSC drive.\n");
         free(drive);
-        return -1;
+        вернуть -1;
     }
-    return 0;
+    вернуть 0;
 }
 
 /****************************************************************
@@ -172,21 +172,21 @@ usb_msc_lun_setup(struct usb_pipe *inpipe, struct usb_pipe *outpipe,
  ****************************************************************/
 
 // Configure a usb msc device.
-int
+целое
 usb_msc_setup(struct usbdevice_s *usbdev)
 {
-    if (!CONFIG_USB_MSC)
-        return -1;
+    если (!CONFIG_USB_MSC)
+        вернуть -1;
 
     // Verify right kind of device
     struct usb_interface_descriptor *iface = usbdev->iface;
-    if ((iface->bInterfaceSubClass != US_SC_SCSI &&
+    если ((iface->bInterfaceSubClass != US_SC_SCSI &&
          iface->bInterfaceSubClass != US_SC_ATAPI_8070 &&
          iface->bInterfaceSubClass != US_SC_ATAPI_8020)
         || iface->bInterfaceProtocol != US_PR_BULK) {
         dprintf(1, "Unsupported MSC USB device (subclass=%02x proto=%02x)\n"
                 , iface->bInterfaceSubClass, iface->bInterfaceProtocol);
-        return -1;
+        вернуть -1;
     }
 
     // Find bulk in and bulk out endpoints.
@@ -195,28 +195,28 @@ usb_msc_setup(struct usbdevice_s *usbdev)
         usbdev, USB_ENDPOINT_XFER_BULK, USB_DIR_IN);
     struct usb_endpoint_descriptor *outdesc = usb_find_desc(
         usbdev, USB_ENDPOINT_XFER_BULK, USB_DIR_OUT);
-    if (!indesc || !outdesc)
+    если (!indesc || !outdesc)
         goto fail;
     inpipe = usb_alloc_pipe(usbdev, indesc);
     outpipe = usb_alloc_pipe(usbdev, outdesc);
-    if (!inpipe || !outpipe)
+    если (!inpipe || !outpipe)
         goto fail;
 
-    int maxlun = usb_msc_maxlun(usbdev->defpipe);
-    int lun, pipesused = 0;
-    for (lun = 0; lun < maxlun + 1; lun++) {
-        int ret = usb_msc_lun_setup(inpipe, outpipe, usbdev, lun);
-        if (!ret)
+    целое maxlun = usb_msc_maxlun(usbdev->defpipe);
+    целое lun, pipesused = 0;
+    для (lun = 0; lun < maxlun + 1; lun++) {
+        целое ret = usb_msc_lun_setup(inpipe, outpipe, usbdev, lun);
+        если (!ret)
             pipesused = 1;
     }
 
-    if (!pipesused)
+    если (!pipesused)
         goto fail;
 
-    return 0;
+    вернуть 0;
 fail:
     dprintf(1, "Unable to configure USB MSC device.\n");
     usb_free_pipe(usbdev, inpipe);
     usb_free_pipe(usbdev, outpipe);
-    return -1;
+    вернуть -1;
 }

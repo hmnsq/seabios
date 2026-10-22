@@ -13,9 +13,9 @@
 struct bmp_decdata {
     struct tagRGBQUAD *quadp;
     unsigned char *datap;
-    int width;
-    int height;
-    int bpp;
+    целое width;
+    целое height;
+    целое bpp;
 };
 
 #define bmp_load4byte(addr) (*(u32 *)(addr))
@@ -56,11 +56,11 @@ typedef struct tagRGBQUAD {
 *   arrange horizontal pixel data, add extra space in the dest buffer
 *       for every line
 */
-static void raw_data_format_adjust(u8 *src, u8 *dest, int width,
-		int height, int bytes_per_line_src, int bytes_per_line_dest)
+static void raw_data_format_adjust(u8 *src, u8 *dest, целое width,
+		целое height, целое bytes_per_line_src, целое bytes_per_line_dest)
 {
-    int i;
-    for (i = 0 ; i < height ; i++) {
+    целое i;
+    для (i = 0 ; i < height ; i++) {
         memcpy(dest + i * bytes_per_line_dest,
            src + (height - 1 - i) * bytes_per_line_src, bytes_per_line_src);
     }
@@ -70,31 +70,31 @@ static void raw_data_format_adjust(u8 *src, u8 *dest, int width,
 struct bmp_decdata *bmp_alloc(void)
 {
     struct bmp_decdata *bmp = malloc_tmphigh(sizeof(*bmp));
-    return bmp;
+    вернуть bmp;
 }
 
 /* extract information from bmp file data */
-int bmp_decode(struct bmp_decdata *bmp, unsigned char *data, int data_size)
+целое bmp_decode(struct bmp_decdata *bmp, unsigned char *data, целое data_size)
 {
-    if (data_size < 54)
-        return 1;
+    если (data_size < 54)
+        вернуть 1;
 
     u16 bmp_filehead = bmp_load2byte(data + 0);
-    if (bmp_filehead != 0x4d42)
-        return 2;
+    если (bmp_filehead != 0x4d42)
+        вернуть 2;
     u32 bmp_recordsize = bmp_load4byte(data + 2);
-    if (bmp_recordsize != data_size)
-        return 3;
+    если (bmp_recordsize != data_size)
+        вернуть 3;
     u32 bmp_dataoffset = bmp_load4byte(data + 10);
     bmp->datap = (unsigned char *)data + bmp_dataoffset;
     bmp->width = bmp_load4byte(data + 18);
     bmp->height = bmp_load4byte(data + 22);
     bmp->bpp = bmp_load2byte(data + 28);
-    return 0;
+    вернуть 0;
 }
 
 /* get bmp properties */
-void bmp_get_info(struct bmp_decdata *bmp, int *width, int *height, int *bpp)
+void bmp_get_info(struct bmp_decdata *bmp, целое *width, целое *height, целое *bpp)
 {
     *width = bmp->width;
     *height = bmp->height;
@@ -102,15 +102,15 @@ void bmp_get_info(struct bmp_decdata *bmp, int *width, int *height, int *bpp)
 }
 
 /* flush flat picture data to *pc */
-int bmp_show(struct bmp_decdata *bmp, unsigned char *pic, int width,
-             int height, int depth, int bytes_per_line_dest)
+целое bmp_show(struct bmp_decdata *bmp, unsigned char *pic, целое width,
+             целое height, целое depth, целое bytes_per_line_dest)
 {
-    if (bmp->datap == pic)
-        return 0;
-    if ((depth == bmp->bpp) && (bmp->bpp%8 == 0)) {
+    если (bmp->datap == pic)
+        вернуть 0;
+    если ((depth == bmp->bpp) && (bmp->bpp%8 == 0)) {
         raw_data_format_adjust(bmp->datap, pic, width, height,
 			(bmp->bpp/8)*width, bytes_per_line_dest);
-        return 0;
+        вернуть 0;
     }
-    return 1;
+    вернуть 1;
 }

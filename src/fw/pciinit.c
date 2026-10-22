@@ -59,10 +59,10 @@ static u32 pci_pad_mem64  = -1;
 
 struct pci_region_entry {
     struct pci_device *dev;
-    int bar;
+    целое bar;
     u64 size;
     u64 align;
-    int is64;
+    целое is64;
     enum pci_region_type type;
     struct hlist_node node;
 };
@@ -78,23 +78,23 @@ struct pci_bus {
     struct pci_device *bus_dev;
 };
 
-static u32 pci_bar(struct pci_device *pci, int region_num)
+static u32 pci_bar(struct pci_device *pci, целое region_num)
 {
-    if (region_num != PCI_ROM_SLOT) {
-        return PCI_BASE_ADDRESS_0 + region_num * 4;
+    если (region_num != PCI_ROM_SLOT) {
+        вернуть PCI_BASE_ADDRESS_0 + region_num * 4;
     }
 
 #define PCI_HEADER_TYPE_MULTI_FUNCTION 0x80
     u8 type = pci->header_type & ~PCI_HEADER_TYPE_MULTI_FUNCTION;
-    return type == PCI_HEADER_TYPE_BRIDGE ? PCI_ROM_ADDRESS1 : PCI_ROM_ADDRESS;
+    вернуть type == PCI_HEADER_TYPE_BRIDGE ? PCI_ROM_ADDRESS1 : PCI_ROM_ADDRESS;
 }
 
 static void
-pci_set_io_region_addr(struct pci_device *pci, int bar, u64 addr, int is64)
+pci_set_io_region_addr(struct pci_device *pci, целое bar, u64 addr, целое is64)
 {
     u32 ofs = pci_bar(pci, bar);
     pci_config_writel(pci->bdf, ofs, addr);
-    if (is64)
+    если (is64)
         pci_config_writel(pci->bdf, ofs + 4, addr >> 32);
 }
 
@@ -108,54 +108,54 @@ const u8 pci_irqs[4] = {
     10, 10, 11, 11
 };
 
-static int dummy_pci_slot_get_irq(struct pci_device *pci, int pin)
+static целое dummy_pci_slot_get_irq(struct pci_device *pci, целое pin)
 {
     dprintf(1, "pci_slot_get_irq called with unknown routing\n");
 
-    return 0xff; /* PCI defined "unknown" or "no connection" for x86 */
+    вернуть 0xff; /* PCI defined "unknown" or "no connection" for x86 */
 }
 
-static int (*pci_slot_get_irq)(struct pci_device *pci, int pin) =
+static целое (*pci_slot_get_irq)(struct pci_device *pci, целое pin) =
     dummy_pci_slot_get_irq;
 
 // Return the global irq number corresponding to a host bus device irq pin.
-static int piix_pci_slot_get_irq(struct pci_device *pci, int pin)
+static целое piix_pci_slot_get_irq(struct pci_device *pci, целое pin)
 {
-    int slot_addend = 0;
+    целое slot_addend = 0;
 
-    while (pci->parent != NULL) {
+    пока (pci->parent != NULL) {
         slot_addend += pci_bdf_to_dev(pci->bdf);
         pci = pci->parent;
     }
     slot_addend += pci_bdf_to_dev(pci->bdf) - 1;
-    return pci_irqs[(pin - 1 + slot_addend) & 3];
+    вернуть pci_irqs[(pin - 1 + slot_addend) & 3];
 }
 
-static int mch_pci_slot_get_irq(struct pci_device *pci, int pin)
+static целое mch_pci_slot_get_irq(struct pci_device *pci, целое pin)
 {
-    int pin_addend = 0;
-    while (pci->parent != NULL) {
+    целое pin_addend = 0;
+    пока (pci->parent != NULL) {
         pin_addend += pci_bdf_to_dev(pci->bdf);
         pci = pci->parent;
     }
     u8 slot = pci_bdf_to_dev(pci->bdf);
-    if (slot <= 24)
+    если (slot <= 24)
         /* Slots 0-24 rotate slot:pin mapping similar to piix above, but
            with a different starting index - see q35-acpi-dsdt.dsl */
-        return pci_irqs[(pin - 1 + pin_addend + slot) & 3];
+        вернуть pci_irqs[(pin - 1 + pin_addend + slot) & 3];
     /* Slots 25-31 all use LNKA mapping (or LNKE, but A:D = E:H) */
-    return pci_irqs[(pin - 1 + pin_addend) & 3];
+    вернуть pci_irqs[(pin - 1 + pin_addend) & 3];
 }
 
 /* PIIX3/PIIX4 PCI to ISA bridge */
 static void piix_isa_bridge_setup(struct pci_device *pci, void *arg)
 {
-    int i, irq;
+    целое i, irq;
     u8 elcr[2];
 
     elcr[0] = 0x00;
     elcr[1] = 0x00;
-    for (i = 0; i < 4; i++) {
+    для (i = 0; i < 4; i++) {
         irq = pci_irqs[i];
         /* set to trigger level */
         elcr[irq >> 3] |= (1 << (irq & 7));
@@ -181,20 +181,20 @@ static void mch_isa_lpc_setup(u16 bdf)
                       ICH9_LPC_RCBA_ADDR | ICH9_LPC_RCBA_EN);
 }
 
-static int ICH9LpcBDF = -1;
+static целое ICH9LpcBDF = -1;
 
 /* ICH9 LPC PCI to ISA bridge */
 /* PCI_VENDOR_ID_INTEL && PCI_DEVICE_ID_INTEL_ICH9_LPC */
 static void mch_isa_bridge_setup(struct pci_device *dev, void *arg)
 {
     u16 bdf = dev->bdf;
-    int i, irq;
+    целое i, irq;
     u8 elcr[2];
 
     elcr[0] = 0x00;
     elcr[1] = 0x00;
 
-    for (i = 0; i < 4; i++) {
+    для (i = 0; i < 4; i++) {
         irq = pci_irqs[i];
         /* set to trigger level */
         elcr[irq >> 3] |= (1 << (irq & 7));
@@ -260,7 +260,7 @@ static void piix4_pm_config_setup(u16 bdf)
     pci_config_writeb(bdf, PIIX_SMBHSTCFG, 0x09); /* enable SMBus io space */
 }
 
-static int PiixPmBDF = -1;
+static целое PiixPmBDF = -1;
 
 /* PIIX4 Power Management device (for ACPI) */
 static void piix4_pm_setup(struct pci_device *pci, void *arg)
@@ -282,7 +282,7 @@ static void ich9_smbus_enable(u16 bdf)
     pci_config_writeb(bdf, ICH9_SMB_HOSTC, ICH9_SMB_HOSTC_HST_EN);
 }
 
-static int ICH9SmbusBDF = -1;
+static целое ICH9SmbusBDF = -1;
 
 /* ICH9 SMBUS */
 /* PCI_VENDOR_ID_INTEL && PCI_DEVICE_ID_INTEL_ICH9_SMBUS */
@@ -299,16 +299,16 @@ static void intel_igd_setup(struct pci_device *dev, void *arg)
     u64 bdsm_size = le64_to_cpu(romfile_loadint("etc/igd-bdsm-size", 0));
 
     /* Apply OpRegion to any Intel VGA device, more than one is undefined */
-    if (opregion && opregion->size) {
+    если (opregion && opregion->size) {
         void *addr = memalign_high(PAGE_SIZE, opregion->size);
-        if (!addr) {
+        если (!addr) {
             warn_noalloc();
-            return;
+            вернуть;
         }
 
-        if (opregion->copy(opregion, addr, opregion->size) < 0) {
+        если (opregion->copy(opregion, addr, opregion->size) < 0) {
             free(addr);
-            return;
+            вернуть;
         }
 
         pci_config_writel(dev->bdf, 0xFC, cpu_to_le32((u32)addr));
@@ -318,11 +318,11 @@ static void intel_igd_setup(struct pci_device *dev, void *arg)
     }
 
     /* Apply BDSM only to Intel VGA at 00:02.0 */
-    if (bdsm_size && (dev->bdf == pci_to_bdf(0, 2, 0))) {
+    если (bdsm_size && (dev->bdf == pci_to_bdf(0, 2, 0))) {
         void *addr = memalign_tmphigh(1024 * 1024, bdsm_size);
-        if (!addr) {
+        если (!addr) {
             warn_noalloc();
-            return;
+            вернуть;
         }
 
         e820_add((u32)addr, bdsm_size, E820_RESERVED);
@@ -374,28 +374,28 @@ static const struct pci_device_id pci_device_tbl[] = {
     PCI_DEVICE_END,
 };
 
-static int MCHMmcfgBDF = -1;
+static целое MCHMmcfgBDF = -1;
 static void mch_mmconfig_setup(u16 bdf);
 
 void pci_resume(void)
 {
-    if (!CONFIG_QEMU) {
-        return;
+    если (!CONFIG_QEMU) {
+        вернуть;
     }
 
-    if (PiixPmBDF >= 0) {
+    если (PiixPmBDF >= 0) {
         piix4_pm_config_setup(PiixPmBDF);
     }
 
-    if (ICH9LpcBDF >= 0) {
+    если (ICH9LpcBDF >= 0) {
         mch_isa_lpc_setup(ICH9LpcBDF);
     }
 
-    if (ICH9SmbusBDF >= 0) {
+    если (ICH9SmbusBDF >= 0) {
         ich9_smbus_enable(ICH9SmbusBDF);
     }
 
-    if(MCHMmcfgBDF >= 0) {
+    если(MCHMmcfgBDF >= 0) {
         mch_mmconfig_setup(MCHMmcfgBDF);
     }
 }
@@ -407,8 +407,8 @@ static void pci_bios_init_device(struct pci_device *pci)
 
     /* map the interrupt */
     u16 bdf = pci->bdf;
-    int pin = pci_config_readb(bdf, PCI_INTERRUPT_PIN);
-    if (pin != 0)
+    целое pin = pci_config_readb(bdf, PCI_INTERRUPT_PIN);
+    если (pin != 0)
         pci_config_writeb(bdf, PCI_INTERRUPT_LINE, pci_slot_get_irq(pci, pin));
 
     pci_init_device(pci_device_tbl, pci, NULL);
@@ -417,7 +417,7 @@ static void pci_bios_init_device(struct pci_device *pci)
     pci_config_maskw(bdf, PCI_COMMAND, 0,
                      PCI_COMMAND_IO | PCI_COMMAND_MEMORY | PCI_COMMAND_SERR);
     /* enable SERR# for forwarding */
-    if (pci->header_type & PCI_HEADER_TYPE_BRIDGE)
+    если (pci->header_type & PCI_HEADER_TYPE_BRIDGE)
         pci_config_maskw(bdf, PCI_BRIDGE_CONTROL, 0,
                          PCI_BRIDGE_CTL_SERR);
 }
@@ -435,16 +435,16 @@ static void pci_enable_default_vga(void)
     struct pci_device *pci;
 
     foreachpci(pci) {
-        if (is_pci_vga(pci)) {
+        если (is_pci_vga(pci)) {
             dprintf(1, "PCI: Using %pP for primary VGA\n", pci);
-            return;
+            вернуть;
         }
     }
 
     pci = pci_find_class(PCI_CLASS_DISPLAY_VGA);
-    if (!pci) {
+    если (!pci) {
         dprintf(1, "PCI: No VGA devices found\n");
-        return;
+        вернуть;
     }
 
     dprintf(1, "PCI: Enabling %pP for primary VGA\n", pci);
@@ -452,7 +452,7 @@ static void pci_enable_default_vga(void)
     pci_config_maskw(pci->bdf, PCI_COMMAND, 0,
                      PCI_COMMAND_IO | PCI_COMMAND_MEMORY);
 
-    while (pci->parent) {
+    пока (pci->parent) {
         pci = pci->parent;
 
         dprintf(1, "PCI: Setting VGA enable on bridge %pP\n", pci);
@@ -469,9 +469,9 @@ static void pci_enable_default_vga(void)
 
 static void i440fx_mem_addr_setup(struct pci_device *dev, void *arg)
 {
-    if (RamSize <= 0x80000000)
+    если (RamSize <= 0x80000000)
         pcimem_start = 0x80000000;
-    else if (RamSize <= 0xc0000000)
+    иначе если (RamSize <= 0xc0000000)
         pcimem_start = 0xc0000000;
 
     pci_slot_get_irq = piix_pci_slot_get_irq;
@@ -504,9 +504,9 @@ static void mch_mem_addr_setup(struct pci_device *dev, void *arg)
     pci_slot_get_irq = mch_pci_slot_get_irq;
 
     /* setup io address space */
-    if (acpi_pm_base < 0x1000)
+    если (acpi_pm_base < 0x1000)
         pci_io_low_end = 0x10000;
-    else
+    иначе
         pci_io_low_end = acpi_pm_base;
 }
 
@@ -530,36 +530,36 @@ static u8 pci_find_resource_reserve_capability(u16 bdf)
 {
     u16 device_id;
 
-    if (pci_config_readw(bdf, PCI_VENDOR_ID) != PCI_VENDOR_ID_REDHAT) {
+    если (pci_config_readw(bdf, PCI_VENDOR_ID) != PCI_VENDOR_ID_REDHAT) {
         dprintf(3, "PCI: This is non-QEMU bridge.\n");
-        return 0;
+        вернуть 0;
     }
 
     device_id = pci_config_readw(bdf, PCI_DEVICE_ID);
 
-    if (device_id != PCI_DEVICE_ID_REDHAT_ROOT_PORT &&
+    если (device_id != PCI_DEVICE_ID_REDHAT_ROOT_PORT &&
         device_id != PCI_DEVICE_ID_REDHAT_BRIDGE) {
         dprintf(1, "PCI: QEMU resource reserve cap device ID doesn't match.\n");
-        return 0;
+        вернуть 0;
     }
     u8 cap = 0;
 
     do {
         cap = pci_find_capability(bdf, PCI_CAP_ID_VNDR, cap);
-    } while (cap &&
+    } пока (cap &&
              pci_config_readb(bdf, cap + PCI_CAP_REDHAT_TYPE_OFFSET) !=
                               REDHAT_CAP_RESOURCE_RESERVE);
-    if (cap) {
+    если (cap) {
         u8 cap_len = pci_config_readb(bdf, cap + PCI_CAP_FLAGS);
-        if (cap_len < RES_RESERVE_CAP_SIZE) {
+        если (cap_len < RES_RESERVE_CAP_SIZE) {
             dprintf(1, "PCI: QEMU resource reserve cap length %d is invalid\n",
                     cap_len);
-            return 0;
+            вернуть 0;
         }
-    } else {
+    } иначе {
         dprintf(1, "PCI: QEMU resource reserve cap not found\n");
     }
-    return cap;
+    вернуть cap;
 }
 
 /****************************************************************
@@ -567,9 +567,9 @@ static u8 pci_find_resource_reserve_capability(u16 bdf)
  ****************************************************************/
 
 static void
-pci_bios_init_bus_rec(int bus, u8 *pci_bus)
+pci_bios_init_bus_rec(целое bus, u8 *pci_bus)
 {
-    int bdf;
+    целое bdf;
     u16 class;
 
     dprintf(1, "PCI: %s bus = 0x%x\n", __func__, bus);
@@ -577,7 +577,7 @@ pci_bios_init_bus_rec(int bus, u8 *pci_bus)
     /* prevent accidental access to unintended devices */
     foreachbdf(bdf, bus) {
         class = pci_config_readw(bdf, PCI_CLASS_DEVICE);
-        if (class == PCI_CLASS_BRIDGE_PCI) {
+        если (class == PCI_CLASS_BRIDGE_PCI) {
             pci_config_writeb(bdf, PCI_SECONDARY_BUS, 255);
             pci_config_writeb(bdf, PCI_SUBORDINATE_BUS, 0);
         }
@@ -585,27 +585,27 @@ pci_bios_init_bus_rec(int bus, u8 *pci_bus)
 
     foreachbdf(bdf, bus) {
         class = pci_config_readw(bdf, PCI_CLASS_DEVICE);
-        if (class != PCI_CLASS_BRIDGE_PCI) {
+        если (class != PCI_CLASS_BRIDGE_PCI) {
             continue;
         }
         dprintf(1, "PCI: %s bdf = 0x%x\n", __func__, bdf);
 
         u8 pribus = pci_config_readb(bdf, PCI_PRIMARY_BUS);
-        if (pribus != bus) {
+        если (pribus != bus) {
             dprintf(1, "PCI: primary bus = 0x%x -> 0x%x\n", pribus, bus);
             pci_config_writeb(bdf, PCI_PRIMARY_BUS, bus);
-        } else {
+        } иначе {
             dprintf(1, "PCI: primary bus = 0x%x\n", pribus);
         }
 
         u8 secbus = pci_config_readb(bdf, PCI_SECONDARY_BUS);
         (*pci_bus)++;
-        if (*pci_bus != secbus) {
+        если (*pci_bus != secbus) {
             dprintf(1, "PCI: secondary bus = 0x%x -> 0x%x\n",
                     secbus, *pci_bus);
             secbus = *pci_bus;
             pci_config_writeb(bdf, PCI_SECONDARY_BUS, secbus);
-        } else {
+        } иначе {
             dprintf(1, "PCI: secondary bus = 0x%x\n", secbus);
         }
 
@@ -616,22 +616,22 @@ pci_bios_init_bus_rec(int bus, u8 *pci_bus)
 
         pci_bios_init_bus_rec(secbus, pci_bus);
 
-        if (subbus != *pci_bus) {
+        если (subbus != *pci_bus) {
             u8 res_bus = *pci_bus;
             u8 cap = pci_find_resource_reserve_capability(bdf);
 
-            if (cap) {
+            если (cap) {
                 u32 tmp_res_bus = pci_config_readl(bdf,
                         cap + RES_RESERVE_BUS_RES);
-                if (tmp_res_bus != (u32)-1) {
+                если (tmp_res_bus != (u32)-1) {
                     res_bus = tmp_res_bus & 0xFF;
-                    if ((u8)(res_bus + secbus) < secbus ||
+                    если ((u8)(res_bus + secbus) < secbus ||
                             (u8)(res_bus + secbus) < res_bus) {
                         dprintf(1, "PCI: bus_reserve value %d is invalid\n",
                                 res_bus);
                         res_bus = 0;
                     }
-                    if (secbus + res_bus > *pci_bus) {
+                    если (secbus + res_bus > *pci_bus) {
                         dprintf(1, "PCI: QEMU resource reserve cap: bus = %u\n",
                                 res_bus);
                         res_bus = secbus + res_bus;
@@ -642,7 +642,7 @@ pci_bios_init_bus_rec(int bus, u8 *pci_bus)
                     subbus, res_bus);
             subbus = res_bus;
             *pci_bus = res_bus;
-        } else {
+        } иначе {
             dprintf(1, "PCI: subordinate bus = 0x%x\n", subbus);
         }
         pci_config_writeb(bdf, PCI_SUBORDINATE_BUS, subbus);
@@ -657,8 +657,8 @@ pci_bios_init_bus(void)
 
     pci_bios_init_bus_rec(0 /* host bus */, &pci_bus);
 
-    if (extraroots) {
-        while (pci_bus < 0xff) {
+    если (extraroots) {
+        пока (pci_bus < 0xff) {
             pci_bus++;
             pci_bios_init_bus_rec(pci_bus, &pci_bus);
         }
@@ -671,25 +671,25 @@ pci_bios_init_bus(void)
  ****************************************************************/
 
 static void
-pci_bios_get_bar(struct pci_device *pci, int bar,
-                 int *ptype, u64 *psize, int *pis64)
+pci_bios_get_bar(struct pci_device *pci, целое bar,
+                 целое *ptype, u64 *psize, целое *pis64)
 {
     u32 ofs = pci_bar(pci, bar);
     u16 bdf = pci->bdf;
     u32 old = pci_config_readl(bdf, ofs);
-    int is64 = 0, type = PCI_REGION_TYPE_MEM;
+    целое is64 = 0, type = PCI_REGION_TYPE_MEM;
     u64 mask;
 
-    if (bar == PCI_ROM_SLOT) {
+    если (bar == PCI_ROM_SLOT) {
         mask = PCI_ROM_ADDRESS_MASK;
         pci_config_writel(bdf, ofs, mask);
-    } else {
-        if (old & PCI_BASE_ADDRESS_SPACE_IO) {
+    } иначе {
+        если (old & PCI_BASE_ADDRESS_SPACE_IO) {
             mask = PCI_BASE_ADDRESS_IO_MASK;
             type = PCI_REGION_TYPE_IO;
-        } else {
+        } иначе {
             mask = PCI_BASE_ADDRESS_MEM_MASK;
-            if (old & PCI_BASE_ADDRESS_MEM_PREFETCH)
+            если (old & PCI_BASE_ADDRESS_MEM_PREFETCH)
                 type = PCI_REGION_TYPE_PREFMEM;
             is64 = ((old & PCI_BASE_ADDRESS_MEM_TYPE_MASK)
                     == PCI_BASE_ADDRESS_MEM_TYPE_64);
@@ -698,7 +698,7 @@ pci_bios_get_bar(struct pci_device *pci, int bar,
     }
     u64 val = pci_config_readl(bdf, ofs);
     pci_config_writel(bdf, ofs, old);
-    if (is64) {
+    если (is64) {
         u32 hold = pci_config_readl(bdf, ofs + 4);
         pci_config_writel(bdf, ofs + 4, ~0);
         u32 high = pci_config_readl(bdf, ofs + 4);
@@ -706,32 +706,32 @@ pci_bios_get_bar(struct pci_device *pci, int bar,
         val |= ((u64)high << 32);
         mask |= ((u64)0xffffffff << 32);
         *psize = (~(val & mask)) + 1;
-    } else {
+    } иначе {
         *psize = ((~(val & mask)) + 1) & 0xffffffff;
     }
     *ptype = type;
     *pis64 = is64;
 }
 
-static int pci_bios_bridge_region_is64(struct pci_region *r,
-                                 struct pci_device *pci, int type)
+static целое pci_bios_bridge_region_is64(struct pci_region *r,
+                                 struct pci_device *pci, целое type)
 {
-    if (type != PCI_REGION_TYPE_PREFMEM)
-        return 0;
+    если (type != PCI_REGION_TYPE_PREFMEM)
+        вернуть 0;
     u32 pmem = pci_config_readl(pci->bdf, PCI_PREF_MEMORY_BASE);
-    if (!pmem) {
+    если (!pmem) {
         pci_config_writel(pci->bdf, PCI_PREF_MEMORY_BASE, 0xfff0fff0);
         pmem = pci_config_readl(pci->bdf, PCI_PREF_MEMORY_BASE);
         pci_config_writel(pci->bdf, PCI_PREF_MEMORY_BASE, 0x0);
     }
-    if ((pmem & PCI_PREF_RANGE_TYPE_MASK) != PCI_PREF_RANGE_TYPE_64)
-       return 0;
+    если ((pmem & PCI_PREF_RANGE_TYPE_MASK) != PCI_PREF_RANGE_TYPE_64)
+       вернуть 0;
     struct pci_region_entry *entry;
     hlist_for_each_entry(entry, &r->list, node) {
-        if (!entry->is64)
-            return 0;
+        если (!entry->is64)
+            вернуть 0;
     }
-    return 1;
+    вернуть 1;
 }
 
 static u64 pci_region_align(struct pci_region *r)
@@ -739,9 +739,9 @@ static u64 pci_region_align(struct pci_region *r)
     struct pci_region_entry *entry;
     hlist_for_each_entry(entry, &r->list, node) {
         // The first entry in the sorted list has the largest alignment
-        return entry->align;
+        вернуть entry->align;
     }
-    return 1;
+    вернуть 1;
 }
 
 static u64 pci_region_sum(struct pci_region *r)
@@ -751,7 +751,7 @@ static u64 pci_region_sum(struct pci_region *r)
     hlist_for_each_entry(entry, &r->list, node) {
         sum += entry->size;
     }
-    return sum;
+    вернуть sum;
 }
 
 static void pci_region_migrate_64bit_entries(struct pci_region *from,
@@ -760,11 +760,11 @@ static void pci_region_migrate_64bit_entries(struct pci_region *from,
     struct hlist_node *n, **last = &to->list.first;
     struct pci_region_entry *entry;
     hlist_for_each_entry_safe(entry, n, &from->list, node) {
-        if (!entry->is64)
+        если (!entry->is64)
             continue;
-        if (entry->dev->class == PCI_CLASS_SERIAL_USB)
+        если (entry->dev->class == PCI_CLASS_SERIAL_USB)
             continue;
-        if (entry->dev->class == PCI_CLASS_STORAGE_NVME)
+        если (entry->dev->class == PCI_CLASS_STORAGE_NVME)
             continue;
         // Move from source list to destination list.
         hlist_del(&entry->node);
@@ -775,12 +775,12 @@ static void pci_region_migrate_64bit_entries(struct pci_region *from,
 
 static struct pci_region_entry *
 pci_region_create_entry(struct pci_bus *bus, struct pci_device *dev,
-                        int bar, u64 size, u64 align, int type, int is64)
+                        целое bar, u64 size, u64 align, целое type, целое is64)
 {
     struct pci_region_entry *entry = malloc_tmp(sizeof(*entry));
-    if (!entry) {
+    если (!entry) {
         warn_noalloc();
-        return NULL;
+        вернуть NULL;
     }
     memset(entry, 0, sizeof(*entry));
     entry->dev = dev;
@@ -793,11 +793,11 @@ pci_region_create_entry(struct pci_bus *bus, struct pci_device *dev,
     struct hlist_node **pprev;
     struct pci_region_entry *pos;
     hlist_for_each_entry_pprev(pos, pprev, &bus->r[type].list, node) {
-        if (pos->align < align || (pos->align == align && pos->size < size))
+        если (pos->align < align || (pos->align == align && pos->size < size))
             break;
     }
     hlist_add(&entry->node, pprev);
-    return entry;
+    вернуть entry;
 }
 
 typedef enum hotplug_type_t {
@@ -810,13 +810,13 @@ static hotplug_type_t pci_bus_hotplug_support(struct pci_bus *bus, u8 pcie_cap)
 {
     u8 shpc_cap;
 
-    if (pcie_cap) {
+    если (pcie_cap) {
         u16 pcie_flags = pci_config_readw(bus->bus_dev->bdf,
                                           pcie_cap + PCI_EXP_FLAGS);
         u8 port_type = ((pcie_flags & PCI_EXP_FLAGS_TYPE) >>
                        (__builtin_ffs(PCI_EXP_FLAGS_TYPE) - 1));
 
-        if (port_type == PCI_EXP_TYPE_PCI_BRIDGE)
+        если (port_type == PCI_EXP_TYPE_PCI_BRIDGE)
             goto check_shpc;
 
         u8 downstream_port = (port_type == PCI_EXP_TYPE_DOWNSTREAM) ||
@@ -832,20 +832,20 @@ static hotplug_type_t pci_bus_hotplug_support(struct pci_bus *bus, u8 pcie_cap)
          */
         u16 slot_implemented = pcie_flags & PCI_EXP_FLAGS_SLOT;
 
-        return downstream_port && slot_implemented ?
+        вернуть downstream_port && slot_implemented ?
             HOTPLUG_PCIE : HOTPLUG_NO_SUPPORTED;
     }
 
 check_shpc:
     shpc_cap = pci_find_capability(bus->bus_dev->bdf, PCI_CAP_ID_SHPC, 0);
-    return !!shpc_cap ? HOTPLUG_SHPC : HOTPLUG_NO_SUPPORTED;
+    вернуть !!shpc_cap ? HOTPLUG_SHPC : HOTPLUG_NO_SUPPORTED;
 }
 
 /* Test whether bridge support forwarding of transactions
  * of a specific type.
  * Note: disables bridge's window registers as a side effect.
  */
-static int pci_bridge_has_region(struct pci_device *pci,
+static целое pci_bridge_has_region(struct pci_device *pci,
                                  enum pci_region_type region_type)
 {
     u8 base;
@@ -859,91 +859,91 @@ static int pci_bridge_has_region(struct pci_device *pci,
             break;
         default:
             /* Regular memory support is mandatory */
-            return 1;
+            вернуть 1;
     }
 
     pci_config_writeb(pci->bdf, base, 0xFF);
 
-    return pci_config_readb(pci->bdf, base) != 0;
+    вернуть pci_config_readb(pci->bdf, base) != 0;
 }
 
-static int pci_bios_check_devices(struct pci_bus *busses)
+static целое pci_bios_check_devices(struct pci_bus *busses)
 {
     dprintf(1, "PCI: check devices\n");
 
     // Calculate resources needed for regular (non-bus) devices.
     struct pci_device *pci;
     foreachpci(pci) {
-        if (pci->class == PCI_CLASS_BRIDGE_PCI)
+        если (pci->class == PCI_CLASS_BRIDGE_PCI)
             busses[pci->secondary_bus].bus_dev = pci;
 
         struct pci_bus *bus = &busses[pci_bdf_to_bus(pci->bdf)];
-        if (!bus->bus_dev)
+        если (!bus->bus_dev)
             /*
              * Resources for all root busses go in busses[0]
              */
             bus = &busses[0];
-        int i;
-        for (i = 0; i < PCI_NUM_REGIONS; i++) {
-            if ((pci->class == PCI_CLASS_BRIDGE_PCI) &&
+        целое i;
+        для (i = 0; i < PCI_NUM_REGIONS; i++) {
+            если ((pci->class == PCI_CLASS_BRIDGE_PCI) &&
                 (i >= PCI_BRIDGE_NUM_REGIONS && i < PCI_ROM_SLOT))
                 continue;
-            int type, is64;
+            целое type, is64;
             u64 size;
             pci_bios_get_bar(pci, i, &type, &size, &is64);
-            if (size == 0)
+            если (size == 0)
                 continue;
 
-            if (type != PCI_REGION_TYPE_IO && size < PCI_DEVICE_MEM_MIN)
+            если (type != PCI_REGION_TYPE_IO && size < PCI_DEVICE_MEM_MIN)
                 size = PCI_DEVICE_MEM_MIN;
             struct pci_region_entry *entry = pci_region_create_entry(
                 bus, pci, i, size, size, type, is64);
-            if (!entry)
-                return -1;
+            если (!entry)
+                вернуть -1;
 
-            if (is64)
+            если (is64)
                 i++;
         }
     }
 
     // Propagate required bus resources to parent busses.
-    int secondary_bus;
-    for (secondary_bus=MaxPCIBus; secondary_bus>0; secondary_bus--) {
+    целое secondary_bus;
+    для (secondary_bus=MaxPCIBus; secondary_bus>0; secondary_bus--) {
         struct pci_bus *s = &busses[secondary_bus];
-        if (!s->bus_dev)
+        если (!s->bus_dev)
             continue;
         struct pci_bus *parent = &busses[pci_bdf_to_bus(s->bus_dev->bdf)];
-        if (!parent->bus_dev)
+        если (!parent->bus_dev)
             /*
              * Resources for all root busses go in busses[0]
              */
             parent = &busses[0];
-        int type;
+        целое type;
         u16 bdf = s->bus_dev->bdf;
         u8 pcie_cap = pci_find_capability(bdf, PCI_CAP_ID_EXP, 0);
         u8 qemu_cap = pci_find_resource_reserve_capability(bdf);
 
         hotplug_type_t hotplug_support = pci_bus_hotplug_support(s, pcie_cap);
-        for (type = 0; type < PCI_REGION_TYPE_COUNT; type++) {
+        для (type = 0; type < PCI_REGION_TYPE_COUNT; type++) {
             u64 align = (type == PCI_REGION_TYPE_IO) ?
                 PCI_BRIDGE_IO_MIN : PCI_BRIDGE_MEM_MIN;
-            if (!pci_bridge_has_region(s->bus_dev, type))
+            если (!pci_bridge_has_region(s->bus_dev, type))
                 continue;
             u64 size = 0;
-            if (qemu_cap) {
+            если (qemu_cap) {
                 u32 tmp_size;
                 u64 tmp_size_64;
                 switch(type) {
                 case PCI_REGION_TYPE_IO:
                     tmp_size_64 = (pci_config_readl(bdf, qemu_cap + RES_RESERVE_IO) |
                             (u64)pci_config_readl(bdf, qemu_cap + RES_RESERVE_IO + 4) << 32);
-                    if (tmp_size_64 != (u64)-1) {
+                    если (tmp_size_64 != (u64)-1) {
                         size = tmp_size_64;
                     }
                     break;
                 case PCI_REGION_TYPE_MEM:
                     tmp_size = pci_config_readl(bdf, qemu_cap + RES_RESERVE_MEM);
-                    if (tmp_size != (u32)-1) {
+                    если (tmp_size != (u32)-1) {
                         size = tmp_size;
                     }
                     break;
@@ -951,11 +951,11 @@ static int pci_bios_check_devices(struct pci_bus *busses)
                     tmp_size = pci_config_readl(bdf, qemu_cap + RES_RESERVE_PREF_MEM_32);
                     tmp_size_64 = (pci_config_readl(bdf, qemu_cap + RES_RESERVE_PREF_MEM_64) |
                             (u64)pci_config_readl(bdf, qemu_cap + RES_RESERVE_PREF_MEM_64 + 4) << 32);
-                    if (tmp_size != (u32)-1 && tmp_size_64 == (u64)-1) {
+                    если (tmp_size != (u32)-1 && tmp_size_64 == (u64)-1) {
                         size = tmp_size;
-                    } else if (tmp_size == (u32)-1 && tmp_size_64 != (u64)-1) {
+                    } иначе если (tmp_size == (u32)-1 && tmp_size_64 != (u64)-1) {
                         size = tmp_size_64;
-                    } else if (tmp_size != (u32)-1 && tmp_size_64 != (u64)-1) {
+                    } иначе если (tmp_size != (u32)-1 && tmp_size_64 != (u64)-1) {
                         dprintf(1, "PCI: resource reserve cap PREF32 and PREF64"
                                 " conflict\n");
                     }
@@ -964,42 +964,42 @@ static int pci_bios_check_devices(struct pci_bus *busses)
                     break;
                 }
             }
-            if (pci_region_align(&s->r[type]) > align)
+            если (pci_region_align(&s->r[type]) > align)
                  align = pci_region_align(&s->r[type]);
             u64 sum = pci_region_sum(&s->r[type]);
-            int is64 = pci_bios_bridge_region_is64(&s->r[type],
+            целое is64 = pci_bios_bridge_region_is64(&s->r[type],
                                                    s->bus_dev, type);
-            int resource_optional = 0;
-            if (hotplug_support == HOTPLUG_PCIE)
+            целое resource_optional = 0;
+            если (hotplug_support == HOTPLUG_PCIE)
                 resource_optional = pcie_cap && (type == PCI_REGION_TYPE_IO);
 
             u64 top_align = pci_mem64_top >> 11;
-            if (hotplug_support && pci_pad_mem64 && is64
+            если (hotplug_support && pci_pad_mem64 && is64
                 && (type == PCI_REGION_TYPE_PREFMEM) && (top_align > align))
                 align = top_align;
-            if (align > sum && hotplug_support && !resource_optional)
+            если (align > sum && hotplug_support && !resource_optional)
                 sum = align; /* reserve min size for hot-plug */
-            if (size > sum) {
+            если (size > sum) {
                 dprintf(1, "PCI: QEMU resource reserve cap: "
                         "size %08llx type %s\n",
                         size, region_type_name[type]);
-                if (type != PCI_REGION_TYPE_IO) {
+                если (type != PCI_REGION_TYPE_IO) {
                     size = ALIGN(size, align);
                 }
-            } else {
+            } иначе {
                 size = ALIGN(sum, align);
             }
             // entry->bar is -1 if the entry represents a bridge region
             struct pci_region_entry *entry = pci_region_create_entry(
                 parent, s->bus_dev, -1, size, align, type, is64);
-            if (!entry)
-                return -1;
+            если (!entry)
+                вернуть -1;
             dprintf(1, "PCI: secondary bus %d size %08llx type %s\n",
                       entry->dev->secondary_bus, size,
                       region_type_name[entry->type]);
         }
     }
-    return 0;
+    вернуть 0;
 }
 
 
@@ -1008,7 +1008,7 @@ static int pci_bios_check_devices(struct pci_bus *busses)
  ****************************************************************/
 
 // Setup region bases (given the regions' size and alignment)
-static int pci_bios_init_root_regions_io(struct pci_bus *bus)
+static целое pci_bios_init_root_regions_io(struct pci_bus *bus)
 {
     /*
      * QEMU I/O address space usage:
@@ -1023,26 +1023,26 @@ static int pci_bios_init_root_regions_io(struct pci_bus *bus)
      */
     struct pci_region *r_io = &bus->r[PCI_REGION_TYPE_IO];
     u64 sum = pci_region_sum(r_io);
-    if (sum < 0x4000) {
+    если (sum < 0x4000) {
         /* traditional region is big enougth, use it */
         r_io->base = 0xc000;
-    } else if (sum < pci_io_low_end - 0x1000) {
+    } иначе если (sum < pci_io_low_end - 0x1000) {
         /* use the larger region at 0x1000 */
         r_io->base = 0x1000;
-    } else {
+    } иначе {
         /* not enouth io address space -> error out */
-        return -1;
+        вернуть -1;
     }
     dprintf(1, "PCI: IO: %4llx - %4llx\n", r_io->base, r_io->base + sum - 1);
-    return 0;
+    вернуть 0;
 }
 
-static int pci_bios_init_root_regions_mem(struct pci_bus *bus)
+static целое pci_bios_init_root_regions_mem(struct pci_bus *bus)
 {
     struct pci_region *r_end = &bus->r[PCI_REGION_TYPE_PREFMEM];
     struct pci_region *r_start = &bus->r[PCI_REGION_TYPE_MEM];
 
-    if (pci_region_align(r_start) < pci_region_align(r_end)) {
+    если (pci_region_align(r_start) < pci_region_align(r_end)) {
         // Swap regions to improve alignment.
         r_end = r_start;
         r_start = &bus->r[PCI_REGION_TYPE_PREFMEM];
@@ -1054,11 +1054,11 @@ static int pci_bios_init_root_regions_mem(struct pci_bus *bus)
     align = pci_region_align(r_start);
     r_start->base = ALIGN_DOWN((r_end->base - sum), align);
 
-    if ((r_start->base < pcimem_start) ||
+    если ((r_start->base < pcimem_start) ||
          (r_start->base > pcimem_end))
         // Memory range requested is larger than available.
-        return -1;
-    return 0;
+        вернуть -1;
+    вернуть 0;
 }
 
 #define PCI_IO_SHIFT            8
@@ -1068,29 +1068,29 @@ static int pci_bios_init_root_regions_mem(struct pci_bus *bus)
 static void
 pci_region_map_one_entry(struct pci_region_entry *entry, u64 addr)
 {
-    if (entry->bar >= 0) {
+    если (entry->bar >= 0) {
         dprintf(1, "PCI: map device bdf=%pP"
                 "  bar %d, addr %08llx, size %08llx [%s]\n",
                 entry->dev,
                 entry->bar, addr, entry->size, region_type_name[entry->type]);
 
         pci_set_io_region_addr(entry->dev, entry->bar, addr, entry->is64);
-        return;
+        вернуть;
     }
 
     u16 bdf = entry->dev->bdf;
     u64 limit = addr + entry->size - 1;
-    if (entry->type == PCI_REGION_TYPE_IO) {
+    если (entry->type == PCI_REGION_TYPE_IO) {
         pci_config_writeb(bdf, PCI_IO_BASE, addr >> PCI_IO_SHIFT);
         pci_config_writew(bdf, PCI_IO_BASE_UPPER16, 0);
         pci_config_writeb(bdf, PCI_IO_LIMIT, limit >> PCI_IO_SHIFT);
         pci_config_writew(bdf, PCI_IO_LIMIT_UPPER16, 0);
     }
-    if (entry->type == PCI_REGION_TYPE_MEM) {
+    если (entry->type == PCI_REGION_TYPE_MEM) {
         pci_config_writew(bdf, PCI_MEMORY_BASE, addr >> PCI_MEMORY_SHIFT);
         pci_config_writew(bdf, PCI_MEMORY_LIMIT, limit >> PCI_MEMORY_SHIFT);
     }
-    if (entry->type == PCI_REGION_TYPE_PREFMEM) {
+    если (entry->type == PCI_REGION_TYPE_PREFMEM) {
         pci_config_writew(bdf, PCI_PREF_MEMORY_BASE, addr >> PCI_PREF_MEMORY_SHIFT);
         pci_config_writew(bdf, PCI_PREF_MEMORY_LIMIT, limit >> PCI_PREF_MEMORY_SHIFT);
         pci_config_writel(bdf, PCI_PREF_BASE_UPPER32, addr >> 32);
@@ -1105,7 +1105,7 @@ static void pci_region_map_entries(struct pci_bus *busses, struct pci_region *r)
     hlist_for_each_entry_safe(entry, n, &r->list, node) {
         u64 addr = r->base;
         r->base += entry->size;
-        if (entry->bar == -1)
+        если (entry->bar == -1)
             // Update bus base address if entry is a bridge region
             busses[entry->dev->secondary_bus].r[entry->type].base = addr;
         pci_region_map_one_entry(entry, addr);
@@ -1116,11 +1116,11 @@ static void pci_region_map_entries(struct pci_bus *busses, struct pci_region *r)
 
 static void pci_bios_map_devices(struct pci_bus *busses)
 {
-    if (pci_bios_init_root_regions_io(busses))
+    если (pci_bios_init_root_regions_io(busses))
         panic("PCI: out of I/O address space\n");
 
     dprintf(1, "PCI: 32: %016llx - %016llx\n", pcimem_start, pcimem_end);
-    if (pci_pad_mem64 || pci_bios_init_root_regions_mem(busses)) {
+    если (pci_pad_mem64 || pci_bios_init_root_regions_mem(busses)) {
         struct pci_region r64_mem, r64_pref;
         r64_mem.list.first = NULL;
         r64_pref.list.first = NULL;
@@ -1129,7 +1129,7 @@ static void pci_bios_map_devices(struct pci_bus *busses)
         pci_region_migrate_64bit_entries(&busses[0].r[PCI_REGION_TYPE_PREFMEM],
                                          &r64_pref);
 
-        if (pci_bios_init_root_regions_mem(busses))
+        если (pci_bios_init_root_regions_mem(busses))
             panic("PCI: out of 32bit address space\n");
 
         u64 sum_mem = pci_region_sum(&r64_mem);
@@ -1138,17 +1138,17 @@ static void pci_bios_map_devices(struct pci_bus *busses)
         u64 align_pref = pci_region_align(&r64_pref);
 
         r64_mem.base = le64_to_cpu(romfile_loadint("etc/reserved-memory-end", 0));
-        if (r64_mem.base < 0x100000000LL + RamSizeOver4G)
+        если (r64_mem.base < 0x100000000LL + RamSizeOver4G)
             r64_mem.base = 0x100000000LL + RamSizeOver4G;
-        if (pci_mem64_top) {
+        если (pci_mem64_top) {
             u64 size = (ALIGN(sum_mem, (1LL<<30)) +
                         ALIGN(sum_pref, (1LL<<30)));
-            if (pci_pad_mem64)
+            если (pci_pad_mem64)
                 size = ALIGN(size, pci_mem64_top >> 3);
-            if (r64_mem.base < pci_mem64_top - size) {
+            если (r64_mem.base < pci_mem64_top - size) {
                 r64_mem.base = pci_mem64_top - size;
             }
-            if (e820_is_used(r64_mem.base, size))
+            если (e820_is_used(r64_mem.base, size))
                 r64_mem.base -= size;
         }
         r64_mem.base = ALIGN(r64_mem.base, align_mem);
@@ -1163,15 +1163,15 @@ static void pci_bios_map_devices(struct pci_bus *busses)
 
         pci_region_map_entries(busses, &r64_mem);
         pci_region_map_entries(busses, &r64_pref);
-    } else {
+    } иначе {
         // no bars mapped high -> drop 64bit window (see dsdt)
         pcimem64_start = 0;
     }
     // Map regions on each device.
-    int bus;
-    for (bus = 0; bus<=MaxPCIBus; bus++) {
-        int type;
-        for (type = 0; type < PCI_REGION_TYPE_COUNT; type++)
+    целое bus;
+    для (bus = 0; bus<=MaxPCIBus; bus++) {
+        целое type;
+        для (type = 0; type < PCI_REGION_TYPE_COUNT; type++)
             pci_region_map_entries(busses, &busses[bus].r[type]);
     }
 }
@@ -1184,21 +1184,21 @@ static void pci_bios_map_devices(struct pci_bus *busses)
 void
 pci_setup(void)
 {
-    if (!CONFIG_QEMU)
-        return;
+    если (!CONFIG_QEMU)
+        вернуть;
 
     dprintf(3, "pci setup\n");
 
-    if (CPUPhysBits) {
+    если (CPUPhysBits) {
         pci_mem64_top = 1LL << CPUPhysBits;
-        if (CPUPhysBits > 44) {
+        если (CPUPhysBits > 44) {
             // Old linux kernels have trouble dealing with more than 44 (i386
             // kernels) or 46 (x86_64 kernels) phys-bits. Seems to be a bug in
             // the virtio-pci driver.
             // Reported: centos-7, ubuntu-18.04
             // Limit the used address space to mitigate the bug, except we are
             // running in a huge guest with more than 1TB of memory installed.
-            if (RamSizeOver4G < (1LL << 40)) {
+            если (RamSizeOver4G < (1LL << 40)) {
                 pci_mem64_top = 1LL << 44;
             }
         }
@@ -1206,17 +1206,17 @@ pci_setup(void)
 
     pci_pad_mem64 = romfile_loadbool("opt/org.seabios/pci64", -1);
 
-    if (pci_pad_mem64 == -1)
+    если (pci_pad_mem64 == -1)
         // when not set enable in case memory over 4G is present
         pci_pad_mem64 = RamSizeOver4G ? 1 : 0;
 
-    if (!CPULongMode)
+    если (!CPULongMode)
         // force off for 32-bit CPUs
         pci_pad_mem64 = 0;
 
     dprintf(1, "=== PCI bus & bridge init ===\n");
-    if (pci_probe_host() != 0) {
-        return;
+    если (pci_probe_host() != 0) {
+        вернуть;
     }
     pci_bios_init_bus();
 
@@ -1228,13 +1228,13 @@ pci_setup(void)
 
     dprintf(1, "=== PCI new allocation pass #1 ===\n");
     struct pci_bus *busses = malloc_tmp(sizeof(*busses) * (MaxPCIBus + 1));
-    if (!busses) {
+    если (!busses) {
         warn_noalloc();
-        return;
+        вернуть;
     }
     memset(busses, 0, sizeof(*busses) * (MaxPCIBus + 1));
-    if (pci_bios_check_devices(busses))
-        return;
+    если (pci_bios_check_devices(busses))
+        вернуть;
 
     dprintf(1, "=== PCI new allocation pass #2 ===\n");
     pci_bios_map_devices(busses);

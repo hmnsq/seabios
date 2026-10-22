@@ -70,27 +70,27 @@ memcpy_nowarn(void *d, const void *s, size_t len)
 void VISIBLE32FLAT
 handle_smi(u16 cs)
 {
-    if (!CONFIG_USE_SMM)
-        return;
+    если (!CONFIG_USE_SMM)
+        вернуть;
     u8 cmd = inb(PORT_SMI_CMD);
     struct smm_layout *smm = MAKE_FLATPTR(cs, 0);
     u32 rev = smm->cpu.i32.smm_rev & SMM_REV_MASK;
     dprintf(DEBUG_HDL_smi, "handle_smi cmd=%x smbase=%p\n", cmd, smm);
 
-    if (smm == (void*)BUILD_SMM_INIT_ADDR) {
+    если (smm == (void*)BUILD_SMM_INIT_ADDR) {
         // relocate SMBASE to 0xa0000
-        if (rev == SMM_REV_I32) {
+        если (rev == SMM_REV_I32) {
             smm->cpu.i32.smm_base = BUILD_SMM_ADDR;
-        } else if (rev == SMM_REV_I64) {
+        } иначе если (rev == SMM_REV_I64) {
             smm->cpu.i64.smm_base = BUILD_SMM_ADDR;
-        } else {
+        } иначе {
             warn_internalerror();
-            return;
+            вернуть;
         }
         // indicate to smm_relocate_and_restore() that the SMM code was executed
         outb(0x00, PORT_SMI_STATUS);
 
-        if (CONFIG_CALL32_SMM) {
+        если (CONFIG_CALL32_SMM) {
             // Backup current cpu state for SMM trampolining
             struct smm_layout *newsmm = (void*)BUILD_SMM_ADDR;
             memcpy_nowarn(&newsmm->backup1, &smm->cpu, sizeof(newsmm->backup1));
@@ -98,14 +98,14 @@ handle_smi(u16 cs)
             HaveSmmCall32 = 1;
         }
 
-        return;
+        вернуть;
     }
 
-    if (CONFIG_CALL32_SMM && cmd == CALL32SMM_CMDID) {
-        if (rev == SMM_REV_I32) {
+    если (CONFIG_CALL32_SMM && cmd == CALL32SMM_CMDID) {
+        если (rev == SMM_REV_I32) {
             u32 regs[8];
             memcpy(regs, &smm->cpu.i32.eax, sizeof(regs));
-            if (smm->cpu.i32.ecx == CALL32SMM_ENTERID) {
+            если (smm->cpu.i32.ecx == CALL32SMM_ENTERID) {
                 dprintf(9, "smm cpu call pc=%x esp=%x\n", regs[3], regs[4]);
                 memcpy(&smm->backup2, &smm->cpu, sizeof(smm->backup2));
                 memcpy(&smm->cpu, &smm->backup1, sizeof(smm->cpu));
@@ -113,28 +113,28 @@ handle_smi(u16 cs)
                 smm->cpu.i32.eip = regs[3];
                 // Enable a20 and backup its previous state
                 smm->backup_a20 = set_a20(1);
-            } else if (smm->cpu.i32.ecx == CALL32SMM_RETURNID) {
+            } иначе если (smm->cpu.i32.ecx == CALL32SMM_RETURNID) {
                 dprintf(9, "smm cpu ret %x esp=%x\n", regs[3], regs[4]);
                 memcpy(&smm->cpu, &smm->backup2, sizeof(smm->cpu));
                 memcpy(&smm->cpu.i32.eax, regs, sizeof(regs));
-                if (!smm->backup_a20)
+                если (!smm->backup_a20)
                     set_a20(0);
                 smm->cpu.i32.eip = regs[3];
             }
-        } else if (rev == SMM_REV_I64) {
+        } иначе если (rev == SMM_REV_I64) {
             u64 regs[8];
             memcpy(regs, &smm->cpu.i64.rdi, sizeof(regs));
-            if ((u32)smm->cpu.i64.rcx == CALL32SMM_ENTERID) {
+            если ((u32)smm->cpu.i64.rcx == CALL32SMM_ENTERID) {
                 memcpy(&smm->backup2, &smm->cpu, sizeof(smm->backup2));
                 memcpy(&smm->cpu, &smm->backup1, sizeof(smm->cpu));
                 memcpy(&smm->cpu.i64.rdi, regs, sizeof(regs));
                 smm->cpu.i64.rip = (u32)regs[4];
                 // Enable a20 and backup its previous state
                 smm->backup_a20 = set_a20(1);
-            } else if ((u32)smm->cpu.i64.rcx == CALL32SMM_RETURNID) {
+            } иначе если ((u32)smm->cpu.i64.rcx == CALL32SMM_RETURNID) {
                 memcpy(&smm->cpu, &smm->backup2, sizeof(smm->cpu));
                 memcpy(&smm->cpu.i64.rdi, regs, sizeof(regs));
-                if (!smm->backup_a20)
+                если (!smm->backup_a20)
                     set_a20(0);
                 smm->cpu.i64.rip = (u32)regs[4];
             }
@@ -170,7 +170,7 @@ smm_relocate_and_restore(void)
     outb(0x00, PORT_SMI_CMD);
 
     /* wait until SMM code executed */
-    while (inb(PORT_SMI_STATUS) != 0x00)
+    пока (inb(PORT_SMI_STATUS) != 0x00)
         ;
 
     /* restore original memory content */
@@ -186,12 +186,12 @@ smm_relocate_and_restore(void)
 }
 
 // This code is hardcoded for PIIX4 Power Management device.
-static void piix4_apmc_smm_setup(int isabdf, int i440_bdf)
+static void piix4_apmc_smm_setup(целое isabdf, целое i440_bdf)
 {
     /* check if SMM init is already done */
     u32 value = pci_config_readl(isabdf, PIIX_DEVACTB);
-    if (value & PIIX_DEVACTB_APMC_EN)
-        return;
+    если (value & PIIX_DEVACTB_APMC_EN)
+        вернуть;
 
     /* enable the SMM memory window */
     pci_config_writeb(i440_bdf, I440FX_SMRAM, 0x02 | 0x48);
@@ -212,12 +212,12 @@ static void piix4_apmc_smm_setup(int isabdf, int i440_bdf)
 }
 
 /* PCI_VENDOR_ID_INTEL && PCI_DEVICE_ID_INTEL_ICH9_LPC */
-void ich9_lpc_apmc_smm_setup(int isabdf, int mch_bdf)
+void ich9_lpc_apmc_smm_setup(целое isabdf, целое mch_bdf)
 {
     /* check if SMM init is already done */
     u32 value = inl(acpi_pm_base + ICH9_PMIO_SMI_EN);
-    if (value & ICH9_PMIO_SMI_EN_APMC_EN)
-        return;
+    если (value & ICH9_PMIO_SMI_EN_APMC_EN)
+        вернуть;
 
     /* enable the SMM memory window */
     pci_config_writeb(mch_bdf, Q35_HOST_BRIDGE_SMRAM, 0x02 | 0x48);
@@ -239,25 +239,25 @@ void ich9_lpc_apmc_smm_setup(int isabdf, int mch_bdf)
     pci_config_writeb(mch_bdf, Q35_HOST_BRIDGE_SMRAM, 0x02 | 0x08);
 }
 
-static int SMMISADeviceBDF = -1, SMMPMDeviceBDF = -1;
+static целое SMMISADeviceBDF = -1, SMMPMDeviceBDF = -1;
 
 void
 smm_device_setup(void)
 {
-    if (!CONFIG_USE_SMM)
-        return;
+    если (!CONFIG_USE_SMM)
+        вернуть;
 
     struct pci_device *isapci, *pmpci;
     isapci = pci_find_device(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82371AB_3);
     pmpci = pci_find_device(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82441);
-    if (isapci && pmpci) {
+    если (isapci && pmpci) {
         SMMISADeviceBDF = isapci->bdf;
         SMMPMDeviceBDF = pmpci->bdf;
-        return;
+        вернуть;
     }
     isapci = pci_find_device(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH9_LPC);
     pmpci = pci_find_device(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_Q35_MCH);
-    if (isapci && pmpci) {
+    если (isapci && pmpci) {
         SMMISADeviceBDF = isapci->bdf;
         SMMPMDeviceBDF = pmpci->bdf;
     }
@@ -266,13 +266,13 @@ smm_device_setup(void)
 void
 smm_setup(void)
 {
-    if (!CONFIG_USE_SMM || SMMISADeviceBDF < 0)
-        return;
+    если (!CONFIG_USE_SMM || SMMISADeviceBDF < 0)
+        вернуть;
 
     dprintf(3, "init smm\n");
     u16 device = pci_config_readw(SMMISADeviceBDF, PCI_DEVICE_ID);
-    if (device == PCI_DEVICE_ID_INTEL_82371AB_3)
+    если (device == PCI_DEVICE_ID_INTEL_82371AB_3)
         piix4_apmc_smm_setup(SMMISADeviceBDF, SMMPMDeviceBDF);
-    else
+    иначе
         ich9_lpc_apmc_smm_setup(SMMISADeviceBDF, SMMPMDeviceBDF);
 }

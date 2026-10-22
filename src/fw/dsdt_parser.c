@@ -22,68 +22,68 @@ struct acpi_device {
     u8 *hid_aml;
     u8 *sta_aml;
     u8 *crs_data;
-    int crs_size;
+    целое crs_size;
 };
 static struct hlist_head acpi_devices VARVERIFY32INIT;
-static const int parse_dumpdevs = 0;
+static const целое parse_dumpdevs = 0;
 
 struct parse_state {
     char name[32];
     struct acpi_device *dev;
-    int error;
-    int depth;
+    целое error;
+    целое depth;
 };
 
 static void parse_termlist(struct parse_state *s,
-                           u8 *ptr, int offset, int pkglength);
+                           u8 *ptr, целое offset, целое pkglength);
 
-static void hex(const u8 *ptr, int count, int lvl, const char *item)
+static void hex(const u8 *ptr, целое count, целое lvl, const char *item)
 {
-    int l = 0, i;
+    целое l = 0, i;
 
     do {
         dprintf(lvl, "%s: %04x:  ", item, l);
-        for (i = l; i < l+16; i += 4)
+        для (i = l; i < l+16; i += 4)
             dprintf(lvl, "%02x %02x %02x %02x  ",
                     ptr[i+0], ptr[i+1], ptr[i+2], ptr[i+3]);
-        for (i = l; i < l+16; i++)
+        для (i = l; i < l+16; i++)
             dprintf(lvl, "%c", (ptr[i] > 0x20 && ptr[i] < 0x80)
                     ? ptr[i] : '.');
         dprintf(lvl, "\n");
         l += 16;
-    } while (l < count);
+    } пока (l < count);
 }
 
-static u64 parse_resource_int(u8 *ptr, int count)
+static u64 parse_resource_int(u8 *ptr, целое count)
 {
     u64 value = 0;
-    int index = 0;
+    целое index = 0;
 
-    for (index = 0; index < count; index++)
+    для (index = 0; index < count; index++)
         value |= (u64)ptr[index] << (index * 8);
-    return value;
+    вернуть value;
 }
 
-static int parse_resource_bit(u8 *ptr, int count)
+static целое parse_resource_bit(u8 *ptr, целое count)
 {
-    int bit;
+    целое bit;
 
-    for (bit = 0; bit < count*8; bit++)
-        if (ptr[bit/8] & (1 << (bit%8)))
-            return bit;
-    return 0;
+    для (bit = 0; bit < count*8; bit++)
+        если (ptr[bit/8] & (1 << (bit%8)))
+            вернуть bit;
+    вернуть 0;
 }
 
-static int parse_resource(u8 *ptr, int length, int *type, u64 *min, u64 *max)
+static целое parse_resource(u8 *ptr, целое length, целое *type, u64 *min, u64 *max)
 {
-    int rname, rsize;
+    целое rname, rsize;
     u64 len;
 
     *type = -1;
     *min = 0;
     *max = 0;
     len = 0;
-    if (!(ptr[0] & 0x80)) {
+    если (!(ptr[0] & 0x80)) {
         /* small resource */
         rname = (ptr[0] >> 3) & 0x0f;
         rsize = ptr[0] & 0x07;
@@ -95,11 +95,11 @@ static int parse_resource(u8 *ptr, int length, int *type, u64 *min, u64 *max)
             *type = 3;
             break;
         case 0x0f: /* end marker */
-            return 0;
+            вернуть 0;
         case 0x08: /* io */
             *min = parse_resource_int(ptr + 2, 2);
             *max = parse_resource_int(ptr + 4, 2);
-            if (*min == *max) {
+            если (*min == *max) {
                 *max = *min + ptr[7] - 1;
                 *type = 1;
             }
@@ -114,7 +114,7 @@ static int parse_resource(u8 *ptr, int length, int *type, u64 *min, u64 *max)
                     __func__, rname, rsize);
             break;
         }
-    } else {
+    } иначе {
         /* large resource */
         rname = ptr[0] & 0x7f;
         rsize = ptr[2] << 8 | ptr[1];
@@ -151,27 +151,27 @@ static int parse_resource(u8 *ptr, int length, int *type, u64 *min, u64 *max)
             break;
         }
     }
-    return rsize;
+    вернуть rsize;
 }
 
-static int find_resource(u8 *ptr, int len, int kind, u64 *min, u64 *max)
+static целое find_resource(u8 *ptr, целое len, целое kind, u64 *min, u64 *max)
 {
-    int type, size, offset = 0;
+    целое type, size, offset = 0;
 
     do {
         size = parse_resource(ptr + offset, len - offset,
                               &type, min, max);
-        if (kind == type)
-            return 0;
+        если (kind == type)
+            вернуть 0;
         offset += size;
-    } while (size > 0 && offset < len);
-    return -1;
+    } пока (size > 0 && offset < len);
+    вернуть -1;
 }
 
-static int print_resources(const char *prefix, u8 *ptr, int len)
+static целое print_resources(const char *prefix, u8 *ptr, целое len)
 {
     static const char *typename[] = { "mem", "i/o", "bus" };
-    int type, size, offset = 0;
+    целое type, size, offset = 0;
     u64 min, max;
 
     do {
@@ -189,33 +189,33 @@ static int print_resources(const char *prefix, u8 *ptr, int len)
             break;
         }
         offset += size;
-    } while (size > 0 && offset < len);
-    return -1;
+    } пока (size > 0 && offset < len);
+    вернуть -1;
 }
 
-static int parse_nameseg(u8 *ptr, char **dst)
+static целое parse_nameseg(u8 *ptr, char **dst)
 {
-    if (dst && *dst) {
+    если (dst && *dst) {
         *(dst[0]++) = ptr[0];
-        if (ptr[1] != '_')
+        если (ptr[1] != '_')
             *(dst[0]++) = ptr[1];
-        if (ptr[2] != '_')
+        если (ptr[2] != '_')
             *(dst[0]++) = ptr[2];
-        if (ptr[3] != '_')
+        если (ptr[3] != '_')
             *(dst[0]++) = ptr[3];
         *(dst[0]) = 0;
     }
-    return 4;
+    вернуть 4;
 }
 
-static int parse_namestring(struct parse_state *s,
+static целое parse_namestring(struct parse_state *s,
                             u8 *ptr, const char *item)
 {
     char *dst = s->name;
-    int offset = 0;
-    int i, count;
+    целое offset = 0;
+    целое i, count;
 
-    for (;;) {
+    для (;;) {
         switch (ptr[offset]) {
         case 0: /* null name */
             offset++;
@@ -231,8 +231,8 @@ static int parse_namestring(struct parse_state *s,
             offset++;
             count = ptr[offset];
             offset++;
-            for (i = 0; i < count; i++) {
-                if (i)
+            для (i = 0; i < count; i++) {
+                если (i)
                     *(dst++) = '.';
                 offset += parse_nameseg(ptr + offset, &dst);
             }
@@ -258,13 +258,13 @@ static int parse_namestring(struct parse_state *s,
     }
     dprintf(5, "%s: %d %s '%s'\n", __func__, s->depth,
             item, s->name);
-    return offset;
+    вернуть offset;
 }
 
-static int parse_termarg_int(u8 *ptr, int *error, u64 *dst)
+static целое parse_termarg_int(u8 *ptr, целое *error, u64 *dst)
 {
     u64 value;
-    int offset = 1;
+    целое offset = 1;
 
     switch (ptr[0]) {
     case 0x00: /* zero */
@@ -292,20 +292,20 @@ static int parse_termarg_int(u8 *ptr, int *error, u64 *dst)
     default:
         value = 0;
         hex(ptr, 16, 3, __func__);
-        if (error)
+        если (error)
             *error = 1;
         break;
     }
 
-    if (dst)
+    если (dst)
         *dst = value;
     dprintf(5, "%s: 0x%llx\n", __func__, value);
-    return offset;
+    вернуть offset;
 }
 
-static int parse_pkglength(u8 *ptr, int *pkglength)
+static целое parse_pkglength(u8 *ptr, целое *pkglength)
 {
-    int offset = 2;
+    целое offset = 2;
 
     *pkglength = 0;
     switch (ptr[0] >> 6) {
@@ -318,46 +318,46 @@ static int parse_pkglength(u8 *ptr, int *pkglength)
     case 1:
         *pkglength |= ptr[1] << 4;
         *pkglength |= ptr[0] & 0x0f;
-        return offset;
+        вернуть offset;
     case 0:
     default:
         *pkglength |= ptr[0] & 0x3f;
-        return 1;
+        вернуть 1;
     }
 }
 
-static int parse_pkg_common(struct parse_state *s,
-                            u8 *ptr, const char *item, int *pkglength)
+static целое parse_pkg_common(struct parse_state *s,
+                            u8 *ptr, const char *item, целое *pkglength)
 {
-    int offset;
+    целое offset;
 
     offset = parse_pkglength(ptr, pkglength);
     offset += parse_namestring(s, ptr + offset, item);
-    return offset;
+    вернуть offset;
 }
 
-static int parse_pkg_scope(struct parse_state *s,
+static целое parse_pkg_scope(struct parse_state *s,
                            u8 *ptr)
 {
-    int offset, pkglength;
+    целое offset, pkglength;
 
     offset = parse_pkg_common(s, ptr, "scope", &pkglength);
     parse_termlist(s, ptr, offset, pkglength);
-    return pkglength;
+    вернуть pkglength;
 }
 
-static int parse_pkg_device(struct parse_state *s,
+static целое parse_pkg_device(struct parse_state *s,
                             u8 *ptr)
 {
-    int offset, pkglength;
+    целое offset, pkglength;
 
     offset = parse_pkg_common(s, ptr, "device", &pkglength);
 
     s->dev = malloc_tmp(sizeof(struct acpi_device));
-    if (!s->dev) {
+    если (!s->dev) {
         warn_noalloc();
         s->error = 1;
-        return pkglength;
+        вернуть pkglength;
     }
 
     memset(s->dev, 0, sizeof(struct acpi_device));
@@ -366,49 +366,49 @@ static int parse_pkg_device(struct parse_state *s,
     parse_termlist(s, ptr, offset, pkglength);
     s->dev = NULL;
 
-    return pkglength;
+    вернуть pkglength;
 }
 
-static int parse_pkg_buffer(struct parse_state *s,
+static целое parse_pkg_buffer(struct parse_state *s,
                             u8 *ptr)
 {
     u64 blen;
-    int pkglength, offset;
+    целое pkglength, offset;
 
     offset = parse_pkglength(ptr, &pkglength);
     offset += parse_termarg_int(ptr + offset, &s->error, &blen);
-    if (s->dev && strcmp(s->name, "_CRS") == 0) {
+    если (s->dev && strcmp(s->name, "_CRS") == 0) {
         s->dev->crs_data = ptr + offset;
         s->dev->crs_size = blen;
     }
-    return pkglength;
+    вернуть pkglength;
 }
 
-static int parse_pkg_skip(struct parse_state *s,
-                          u8 *ptr, int op, int name)
+static целое parse_pkg_skip(struct parse_state *s,
+                          u8 *ptr, целое op, целое name)
 {
-    int pkglength, offset;
+    целое pkglength, offset;
     char item[8];
 
     snprintf(item, sizeof(item), "op %x", op);
     offset = parse_pkglength(ptr, &pkglength);
-    if (name) {
+    если (name) {
         parse_namestring(s, ptr + offset, item);
-    } else {
+    } иначе {
         dprintf(5, "%s: %s (%d)\n", __func__, item, pkglength);
     }
-    return pkglength;
+    вернуть pkglength;
 }
 
-static int parse_termobj(struct parse_state *s,
+static целое parse_termobj(struct parse_state *s,
                          u8 *ptr)
 {
-    int offset = 1;
+    целое offset = 1;
 
-    if (s->depth == 16) {
+    если (s->depth == 16) {
         dprintf(1, "%s: deep recursion\n", __func__);
         s->error = 1;
-        return offset;
+        вернуть offset;
     }
 
     s->depth++;
@@ -424,9 +424,9 @@ static int parse_termobj(struct parse_state *s,
     case 0x08: /* name op */
         offset += parse_namestring(s, ptr + offset, "name");
         offset += parse_termobj(s, ptr + offset);
-        if (s->dev && strcmp(s->name, "_HID") == 0)
+        если (s->dev && strcmp(s->name, "_HID") == 0)
             s->dev->hid_aml = ptr;
-        if (s->dev && strcmp(s->name, "_STA") == 0)
+        если (s->dev && strcmp(s->name, "_STA") == 0)
             s->dev->sta_aml = ptr;
         break;
     case 0x0a: /* byte prefix */
@@ -439,7 +439,7 @@ static int parse_termobj(struct parse_state *s,
         offset += 4;
         break;
     case 0x0d: /* string prefix */
-        while (ptr[offset])
+        пока (ptr[offset])
             offset++;
         offset++;
         break;
@@ -455,7 +455,7 @@ static int parse_termobj(struct parse_state *s,
         break;
     case 0x14: /* method op */
         offset += parse_pkg_skip(s, ptr + offset, ptr[0], 1);
-        if (s->dev && strcmp(s->name, "_STA") == 0)
+        если (s->dev && strcmp(s->name, "_STA") == 0)
             s->dev->sta_aml = ptr;
         break;
     case 0x5b: /* ext op prefix */
@@ -493,74 +493,74 @@ static int parse_termobj(struct parse_state *s,
     }
     s->depth--;
 
-    return offset;
+    вернуть offset;
 }
 
 static void parse_termlist(struct parse_state *s,
-                           u8 *ptr, int offset, int pkglength)
+                           u8 *ptr, целое offset, целое pkglength)
 {
-    for (;;) {
+    для (;;) {
         offset += parse_termobj(s, ptr + offset);
-        if (offset == pkglength)
-            return;
-        if (offset > pkglength) {
+        если (offset == pkglength)
+            вернуть;
+        если (offset > pkglength) {
             dprintf(1, "%s: overrun: %d/%d\n", __func__,
                     offset, pkglength);
             s->error = 1;
-            return;
+            вернуть;
         }
-        if (s->error) {
+        если (s->error) {
             dprintf(1, "%s: parse error, skip from %d/%d\n", __func__,
                     offset, pkglength);
             s->error = 0;
-            return;
+            вернуть;
         }
     }
 }
 
 static struct acpi_device *acpi_dsdt_find(struct acpi_device *prev,
-                                          const u8 *aml1, int size1,
-                                          const u8 *aml2, int size2)
+                                          const u8 *aml1, целое size1,
+                                          const u8 *aml2, целое size2)
 {
     struct acpi_device *dev;
     struct hlist_node *node;
 
-    if (!prev)
+    если (!prev)
         node = acpi_devices.first;
-    else
+    иначе
         node = prev->node.next;
 
-    for (; node != NULL; node = dev->node.next) {
+    для (; node != NULL; node = dev->node.next) {
         dev = container_of(node, struct acpi_device, node);
-        if (!aml1 && !aml2)
-            return dev;
-        if (!dev->hid_aml)
+        если (!aml1 && !aml2)
+            вернуть dev;
+        если (!dev->hid_aml)
             continue;
-        if (aml1 && memcmp(dev->hid_aml + 5, aml1, size1) == 0)
-            return dev;
-        if (aml2 && memcmp(dev->hid_aml + 5, aml2, size2) == 0)
-            return dev;
+        если (aml1 && memcmp(dev->hid_aml + 5, aml1, size1) == 0)
+            вернуть dev;
+        если (aml2 && memcmp(dev->hid_aml + 5, aml2, size2) == 0)
+            вернуть dev;
     }
-    return NULL;
+    вернуть NULL;
 }
 
-static int acpi_dsdt_present(struct acpi_device *dev)
+static целое acpi_dsdt_present(struct acpi_device *dev)
 {
-    if (!dev)
-        return 0; /* no */
-    if (!dev->sta_aml)
-        return 1; /* yes */
-    if (dev->sta_aml[0] == 0x14)
-        return -1; /* unknown (can't evaluate method) */
-    if (dev->sta_aml[0] == 0x08) {
+    если (!dev)
+        вернуть 0; /* no */
+    если (!dev->sta_aml)
+        вернуть 1; /* yes */
+    если (dev->sta_aml[0] == 0x14)
+        вернуть -1; /* unknown (can't evaluate method) */
+    если (dev->sta_aml[0] == 0x08) {
         u64 value = 0;
         parse_termarg_int(dev->sta_aml + 5, NULL, &value);
-        if (value == 0)
-            return 0; /* no */
-        else
-            return 1; /* yes */
+        если (value == 0)
+            вернуть 0; /* no */
+        иначе
+            вернуть 1; /* yes */
     }
-    return -1; /* unknown (should not happen) */
+    вернуть -1; /* unknown (should not happen) */
 }
 
 /****************************************************************
@@ -570,82 +570,82 @@ static int acpi_dsdt_present(struct acpi_device *dev)
 struct acpi_device *acpi_dsdt_find_string(struct acpi_device *prev,
                                           const char *hid)
 {
-    if (!CONFIG_ACPI_PARSE)
-        return NULL;
+    если (!CONFIG_ACPI_PARSE)
+        вернуть NULL;
 
     u8 aml[10];
-    int len = snprintf((char*)aml, sizeof(aml), "\x0d%s", hid);
-    return acpi_dsdt_find(prev, aml, len, NULL, 0);
+    целое len = snprintf((char*)aml, sizeof(aml), "\x0d%s", hid);
+    вернуть acpi_dsdt_find(prev, aml, len, NULL, 0);
 }
 
 struct acpi_device *acpi_dsdt_find_eisaid(struct acpi_device *prev, u16 eisaid)
 {
-    if (!CONFIG_ACPI_PARSE)
-        return NULL;
+    если (!CONFIG_ACPI_PARSE)
+        вернуть NULL;
     u8 aml1[] = {
         0x0c, 0x41, 0xd0,
         eisaid >> 8,
         eisaid & 0xff
     };
     u8 aml2[10];
-    int len2 = snprintf((char*)aml2, sizeof(aml2), "\x0dPNP%04X", eisaid);
-    return acpi_dsdt_find(prev, aml1, 5, aml2, len2);
+    целое len2 = snprintf((char*)aml2, sizeof(aml2), "\x0dPNP%04X", eisaid);
+    вернуть acpi_dsdt_find(prev, aml1, 5, aml2, len2);
 }
 
 char *acpi_dsdt_name(struct acpi_device *dev)
 {
-    if (!CONFIG_ACPI_PARSE || !dev)
-        return NULL;
-    return dev->name;
+    если (!CONFIG_ACPI_PARSE || !dev)
+        вернуть NULL;
+    вернуть dev->name;
 }
 
-int acpi_dsdt_find_io(struct acpi_device *dev, u64 *min, u64 *max)
+целое acpi_dsdt_find_io(struct acpi_device *dev, u64 *min, u64 *max)
 {
-    if (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
-        return -1;
-    return find_resource(dev->crs_data, dev->crs_size,
+    если (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
+        вернуть -1;
+    вернуть find_resource(dev->crs_data, dev->crs_size,
                          1 /* I/O */, min, max);
 }
 
-int acpi_dsdt_find_mem(struct acpi_device *dev, u64 *min, u64 *max)
+целое acpi_dsdt_find_mem(struct acpi_device *dev, u64 *min, u64 *max)
 {
-    if (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
-        return -1;
-    return find_resource(dev->crs_data, dev->crs_size,
+    если (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
+        вернуть -1;
+    вернуть find_resource(dev->crs_data, dev->crs_size,
                          0 /* mem */, min, max);
 }
 
-int acpi_dsdt_find_irq(struct acpi_device *dev, u64 *irq)
+целое acpi_dsdt_find_irq(struct acpi_device *dev, u64 *irq)
 {
     u64 max;
-    if (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
-        return -1;
-    return find_resource(dev->crs_data, dev->crs_size,
+    если (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
+        вернуть -1;
+    вернуть find_resource(dev->crs_data, dev->crs_size,
                          3 /* irq */, irq, &max);
 }
 
-int acpi_dsdt_present_eisaid(u16 eisaid)
+целое acpi_dsdt_present_eisaid(u16 eisaid)
 {
-    if (!CONFIG_ACPI_PARSE)
-        return -1; /* unknown */
-    if (hlist_empty(&acpi_devices))
-        return -1; /* unknown (no dsdt table) */
+    если (!CONFIG_ACPI_PARSE)
+        вернуть -1; /* unknown */
+    если (hlist_empty(&acpi_devices))
+        вернуть -1; /* unknown (no dsdt table) */
 
     struct acpi_device *dev = acpi_dsdt_find_eisaid(NULL, eisaid);
-    return acpi_dsdt_present(dev);
+    вернуть acpi_dsdt_present(dev);
 }
 
 void acpi_dsdt_parse(void)
 {
-    if (!CONFIG_ACPI_PARSE)
-        return;
+    если (!CONFIG_ACPI_PARSE)
+        вернуть;
 
     struct fadt_descriptor_rev1 *fadt = find_acpi_table(FACP_SIGNATURE);
-    if (!fadt)
-        return;
+    если (!fadt)
+        вернуть;
     u8 *dsdt = (void*)(fadt->dsdt);
-    if (!dsdt)
-        return;
+    если (!dsdt)
+        вернуть;
 
     u32 length = *(u32*)(dsdt + 4);
     u32 offset = 0x24;
@@ -655,23 +655,23 @@ void acpi_dsdt_parse(void)
     memset(&s, 0, sizeof(s));
     parse_termlist(&s, dsdt, offset, length);
 
-    if (!parse_dumpdevs)
-        return;
+    если (!parse_dumpdevs)
+        вернуть;
 
     struct acpi_device *dev;
     dprintf(1, "ACPI: dumping dsdt devices\n");
-    for (dev = acpi_dsdt_find(NULL, NULL, 0, NULL, 0);
+    для (dev = acpi_dsdt_find(NULL, NULL, 0, NULL, 0);
          dev != NULL;
          dev = acpi_dsdt_find(dev, NULL, 0, NULL, 0)) {
         dprintf(1, "    %s", acpi_dsdt_name(dev));
-        if (dev->hid_aml)
+        если (dev->hid_aml)
             dprintf(1, ", hid");
-        if (dev->sta_aml)
+        если (dev->sta_aml)
             dprintf(1, ", sta (0x%x)", dev->sta_aml[0]);
-        if (dev->crs_data)
+        если (dev->crs_data)
             dprintf(1, ", crs");
         dprintf(1, "\n");
-        if (dev->crs_data)
+        если (dev->crs_data)
             print_resources("        ", dev->crs_data, dev->crs_size);
     }
 }

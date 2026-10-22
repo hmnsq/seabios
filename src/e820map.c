@@ -16,11 +16,11 @@
 
 // Info on e820 map location and size.
 struct e820entry e820_list[BUILD_MAX_E820] VARFSEG;
-int e820_count VARFSEG;
+целое e820_count VARFSEG;
 
 // Remove an entry from the e820_list.
 static void
-remove_e820(int i)
+remove_e820(целое i)
 {
     e820_count--;
     memmove(&e820_list[i], &e820_list[i+1]
@@ -29,11 +29,11 @@ remove_e820(int i)
 
 // Insert an entry in the e820_list at the given position.
 static void
-insert_e820(int i, u64 start, u64 size, u32 type)
+insert_e820(целое i, u64 start, u64 size, u32 type)
 {
-    if (e820_count >= BUILD_MAX_E820) {
+    если (e820_count >= BUILD_MAX_E820) {
         warn_noalloc();
-        return;
+        вернуть;
     }
 
     memmove(&e820_list[i+1], &e820_list[i]
@@ -49,12 +49,12 @@ static const char *
 e820_type_name(u32 type)
 {
     switch (type) {
-    case E820_RAM:      return "RAM";
-    case E820_RESERVED: return "RESERVED";
-    case E820_ACPI:     return "ACPI";
-    case E820_NVS:      return "NVS";
-    case E820_UNUSABLE: return "UNUSABLE";
-    default:            return "UNKNOWN";
+    case E820_RAM:      вернуть "RAM";
+    case E820_RESERVED: вернуть "RESERVED";
+    case E820_ACPI:     вернуть "ACPI";
+    case E820_NVS:      вернуть "NVS";
+    case E820_UNUSABLE: вернуть "UNUSABLE";
+    default:            вернуть "UNKNOWN";
     }
 }
 
@@ -63,8 +63,8 @@ static void
 dump_map(void)
 {
     dprintf(1, "e820 map has %d items:\n", e820_count);
-    int i;
-    for (i=0; i<e820_count; i++) {
+    целое i;
+    для (i=0; i<e820_count; i++) {
         struct e820entry *e = &e820_list[i];
         u64 e_end = e->start + e->size;
         dprintf(1, "  %d: %016llx - %016llx = %d %s\n", i
@@ -81,42 +81,42 @@ e820_add(u64 start, u64 size, u32 type)
 {
     dprintf(8, "Add to e820 map: %08llx %08llx %d\n", start, size, type);
 
-    if (! size)
+    если (! size)
         // Huh?  Nothing to do.
-        return;
+        вернуть;
 
     // Find position of new item (splitting existing item if needed).
     u64 end = start + size;
-    int i;
-    for (i=0; i<e820_count; i++) {
+    целое i;
+    для (i=0; i<e820_count; i++) {
         struct e820entry *e = &e820_list[i];
         u64 e_end = e->start + e->size;
-        if (start > e_end)
+        если (start > e_end)
             continue;
         // Found position - check if an existing item needs to be split.
-        if (start > e->start) {
-            if (type == e->type) {
+        если (start > e->start) {
+            если (type == e->type) {
                 // Same type - merge them.
                 size += start - e->start;
                 start = e->start;
-            } else {
+            } иначе {
                 // Split existing item.
                 e->size = start - e->start;
                 i++;
-                if (e_end > end)
+                если (e_end > end)
                     insert_e820(i, end, e_end - end, e->type);
             }
         }
         break;
     }
     // Remove/adjust existing items that are overlapping.
-    while (i<e820_count) {
+    пока (i<e820_count) {
         struct e820entry *e = &e820_list[i];
-        if (end < e->start)
+        если (end < e->start)
             // No overlap - done.
             break;
         u64 e_end = e->start + e->size;
-        if (end >= e_end) {
+        если (end >= e_end) {
             // Existing item completely overlapped - remove it.
             remove_e820(i);
             continue;
@@ -124,7 +124,7 @@ e820_add(u64 start, u64 size, u32 type)
         // Not completely overlapped - adjust its start.
         e->start = end;
         e->size = e_end - end;
-        if (type == e->type) {
+        если (type == e->type) {
             // Same type - merge them.
             size += e->size;
             remove_e820(i);
@@ -132,7 +132,7 @@ e820_add(u64 start, u64 size, u32 type)
         break;
     }
     // Insert new item.
-    if (type != E820_HOLE)
+    если (type != E820_HOLE)
         insert_e820(i, start, size, type);
     //dump_map();
 }
@@ -151,17 +151,17 @@ e820_prepboot(void)
     dump_map();
 }
 
-int
+целое
 e820_is_used(u64 start, u64 size)
 {
-    int i;
-    for (i=0; i<e820_count; i++) {
+    целое i;
+    для (i=0; i<e820_count; i++) {
         struct e820entry *e = &e820_list[i];
-        if (start + size <= e->start)
+        если (start + size <= e->start)
             continue;
-        if (start >= e->start + e->size)
+        если (start >= e->start + e->size)
             continue;
-        return 1;
+        вернуть 1;
     }
-    return 0;
+    вернуть 0;
 }

@@ -12,7 +12,7 @@ struct ata_channel_s {
     u8  irq;
     u8  chanid;
     u8  ataid;
-    int pci_bdf;
+    целое pci_bdf;
     struct pci_device *pci_tmp;
 };
 
@@ -24,9 +24,9 @@ struct atadrive_s {
 
 // ata.c
 char *ata_extract_model(char *model, u32 size, u16 *buffer);
-int ata_extract_version(u16 *buffer);
-int ata_process_op(struct disk_op_s *op);
-int ata_atapi_process_op(struct disk_op_s *op);
+целое ata_extract_version(u16 *buffer);
+целое ata_process_op(struct disk_op_s *op);
+целое ata_atapi_process_op(struct disk_op_s *op);
 void ata_setup(void);
 
 #define PORT_ATA2_CMD_BASE     0x0170
