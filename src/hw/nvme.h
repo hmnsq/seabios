@@ -4,14 +4,14 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#ifndef __NVME_H
-#define __NVME_H
+#که_نه_تعریف_شوی __NVME_H
+#تعریف_کړه __NVME_H
 
-#include "block.h" // struct disk_op_s
+#ضمن "block.h" // struct disk_op_s
 
-void nvme_setup(void);
-int nvme_process_op(struct disk_op_s *op);
+فراغ nvme_تیاری(فراغ);
+صحيح nvme_process_op(بنية disk_op_s *op);
 
-#endif
+#د_که_پای
 
 /* EOF */

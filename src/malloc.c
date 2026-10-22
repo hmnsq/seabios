@@ -4,41 +4,41 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_BDA
-#include "config.h" // BUILD_BIOS_ADDR
-#include "e820map.h" // struct e820entry
-#include "list.h" // hlist_node
-#include "malloc.h" // _malloc
-#include "memmap.h" // PAGE_SIZE
-#include "output.h" // dprintf
-#include "stacks.h" // wait_preempt
-#include "std/optionrom.h" // OPTION_ROM_ALIGN
-#include "string.h" // memset
+#ضمن "biosvar.h" // GET_BDA
+#ضمن "config.h" // BUILD_BIOS_ADDR
+#ضمن "e820map.h" // struct e820entry
+#ضمن "list.h" // hlist_node
+#ضمن "malloc.h" // _malloc
+#ضمن "memmap.h" // PAGE_SIZE
+#ضمن "output.h" // dprintf
+#ضمن "stacks.h" // wait_preempt
+#ضمن "std/optionrom.h" // OPTION_ROM_ALIGN
+#ضمن "string.h" // memset
 
 // Information on a reserved area.
-struct allocinfo_s {
-    struct hlist_node node;
-    u32 range_start, range_end, alloc_size;
+بنية allocinfo_s {
+    بنية hlist_غوټه غوټه;
+    u32 range_پیل, range_پای_ټکی, alloc_اندازه;
 };
 
 // Information on a tracked memory allocation.
-struct allocdetail_s {
-    struct allocinfo_s detailinfo;
-    struct allocinfo_s datainfo;
+بنية allocdetail_s {
+    بنية allocinfo_s detailinfo;
+    بنية allocinfo_s datainfo;
     u32 handle;
 };
 
 // The various memory zones.
-struct zone_s {
-    struct hlist_head head;
+بنية zone_s {
+    بنية hlist_سر سر;
 };
 
-struct zone_s ZoneLow VARVERIFY32INIT, ZoneHigh VARVERIFY32INIT;
-struct zone_s ZoneFSeg VARVERIFY32INIT;
-struct zone_s ZoneTmpLow VARVERIFY32INIT, ZoneTmpHigh VARVERIFY32INIT;
+بنية zone_s Zone_ټیټ VARVERIFY32INIT, Zone_لوړ VARVERIFY32INIT;
+بنية zone_s ZoneFSeg VARVERIFY32INIT;
+بنية zone_s Zone_Tmp_ټیټ VARVERIFY32INIT, Zone_Tmp_لوړ VARVERIFY32INIT;
 
-static struct zone_s *Zones[] VARVERIFY32INIT = {
-    &ZoneTmpLow, &ZoneLow, &ZoneFSeg, &ZoneTmpHigh, &ZoneHigh
+ساكن بنية zone_s *Zones[] VARVERIFY32INIT = {
+    &Zone_Tmp_ټیټ, &Zone_ټیټ, &ZoneFSeg, &Zone_Tmp_لوړ, &Zone_لوړ
 };
 
 
@@ -47,112 +47,112 @@ static struct zone_s *Zones[] VARVERIFY32INIT = {
  ****************************************************************/
 
 // Find and reserve space from a given zone
-static u32
-alloc_new(struct zone_s *zone, u32 size, u32 align, struct allocinfo_s *fill)
+ساكن u32
+alloc_new(بنية zone_s *zone, u32 اندازه, u32 align, بنية allocinfo_s *fill)
 {
-    struct allocinfo_s *info;
-    hlist_for_each_entry(info, &zone->head, node) {
-        u32 alloc_end = info->range_start + info->alloc_size;
-        u32 range_end = info->range_end;
-        u32 new_range_end = ALIGN_DOWN(range_end - size, align);
-        if (new_range_end >= alloc_end && new_range_end <= range_end) {
+    بنية allocinfo_s *info;
+    hlist_for_each_ثبت(info, &zone->سر, غوټه) {
+        u32 alloc_پای_ټکی = info->range_پیل + info->alloc_اندازه;
+        u32 range_پای_ټکی = info->range_پای_ټکی;
+        u32 new_range_پای_ټکی = ALIGN_ښکته(range_پای_ټکی - اندازه, align);
+        إذا (new_range_پای_ټکی >= alloc_پای_ټکی && new_range_پای_ټکی <= range_پای_ټکی) {
             // Found space - now reserve it.
-            fill->range_start = new_range_end;
-            fill->range_end = range_end;
-            fill->alloc_size = size;
+            fill->range_پیل = new_range_پای_ټکی;
+            fill->range_پای_ټکی = range_پای_ټکی;
+            fill->alloc_اندازه = اندازه;
 
-            info->range_end = new_range_end;
-            hlist_add_before(&fill->node, &info->node);
-            return new_range_end;
+            info->range_پای_ټکی = new_range_پای_ټکی;
+            hlist_جمع_کړه_before(&fill->غوټه, &info->غوټه);
+            أرجع new_range_پای_ټکی;
         }
     }
-    return 0;
+    أرجع 0;
 }
 
 // Reserve space for a 'struct allocdetail_s' and fill
-static struct allocdetail_s *
-alloc_new_detail(struct allocdetail_s *temp)
+ساكن بنية allocdetail_s *
+alloc_new_detail(بنية allocdetail_s *لنډمهاله)
 {
-    u32 detail_addr = alloc_new(&ZoneTmpHigh, sizeof(struct allocdetail_s)
-                                , MALLOC_MIN_ALIGN, &temp->detailinfo);
-    if (!detail_addr) {
-        detail_addr = alloc_new(&ZoneTmpLow, sizeof(struct allocdetail_s)
-                                , MALLOC_MIN_ALIGN, &temp->detailinfo);
-        if (!detail_addr) {
+    u32 detail_addr = alloc_new(&Zone_Tmp_لوړ, حجم(بنية allocdetail_s)
+                                , MALLOC_MIN_ALIGN, &لنډمهاله->detailinfo);
+    إذا (!detail_addr) {
+        detail_addr = alloc_new(&Zone_Tmp_ټیټ, حجم(بنية allocdetail_s)
+                                , MALLOC_MIN_ALIGN, &لنډمهاله->detailinfo);
+        إذا (!detail_addr) {
             warn_noalloc();
-            return NULL;
+            أرجع عدم;
         }
     }
-    struct allocdetail_s *detail = memremap(detail_addr, sizeof(*detail));
+    بنية allocdetail_s *detail = memremap(detail_addr, حجم(*detail));
 
     // Fill final 'detail' allocation from data in 'temp'
-    memcpy(detail, temp, sizeof(*detail));
-    hlist_replace(&temp->detailinfo.node, &detail->detailinfo.node);
-    hlist_replace(&temp->datainfo.node, &detail->datainfo.node);
-    return detail;
+    حافظه_نقل(detail, لنډمهاله, حجم(*detail));
+    hlist_replace(&لنډمهاله->detailinfo.غوټه, &detail->detailinfo.غوټه);
+    hlist_replace(&لنډمهاله->datainfo.غوټه, &detail->datainfo.غوټه);
+    أرجع detail;
 }
 
 // Add new memory to a zone
-static void
-alloc_add(struct zone_s *zone, u32 start, u32 end)
+ساكن فراغ
+alloc_جمع_کړه(بنية zone_s *zone, u32 پیل, u32 پای_ټکی)
 {
     // Find position to add space
-    struct allocinfo_s *info;
-    struct hlist_node **pprev;
-    hlist_for_each_entry_pprev(info, pprev, &zone->head, node) {
-        if (info->range_start < start)
-            break;
+    بنية allocinfo_s *info;
+    بنية hlist_غوټه **pprev;
+    hlist_for_each_ثبت_pprev(info, pprev, &zone->سر, غوټه) {
+        إذا (info->range_پیل < پیل)
+            اكسر;
     }
 
     // Add space using temporary allocation info.
-    struct allocdetail_s tempdetail;
+    بنية allocdetail_s tempdetail;
     tempdetail.handle = MALLOC_DEFAULT_HANDLE;
-    tempdetail.datainfo.range_start = start;
-    tempdetail.datainfo.range_end = end;
-    tempdetail.datainfo.alloc_size = 0;
-    hlist_add(&tempdetail.datainfo.node, pprev);
+    tempdetail.datainfo.range_پیل = پیل;
+    tempdetail.datainfo.range_پای_ټکی = پای_ټکی;
+    tempdetail.datainfo.alloc_اندازه = 0;
+    hlist_جمع_کړه(&tempdetail.datainfo.غوټه, pprev);
 
     // Allocate final allocation info.
-    struct allocdetail_s *detail = alloc_new_detail(&tempdetail);
-    if (!detail)
-        hlist_del(&tempdetail.datainfo.node);
+    بنية allocdetail_s *detail = alloc_new_detail(&tempdetail);
+    إذا (!detail)
+        hlist_del(&tempdetail.datainfo.غوټه);
 }
 
 // Release space allocated with alloc_new()
-static void
-alloc_free(struct allocinfo_s *info)
+ساكن فراغ
+alloc_free(بنية allocinfo_s *info)
 {
-    struct allocinfo_s *next = container_of_or_null(
-        info->node.next, struct allocinfo_s, node);
-    if (next && next->range_end == info->range_start)
-        next->range_end = info->range_end;
-    hlist_del(&info->node);
+    بنية allocinfo_s *بل = container_د_or_null(
+        info->غوټه.بل, بنية allocinfo_s, غوټه);
+    إذا (بل && بل->range_پای_ټکی == info->range_پیل)
+        بل->range_پای_ټکی = info->range_پای_ټکی;
+    hlist_del(&info->غوټه);
 }
 
 // Search all zones for an allocation obtained from alloc_new()
-static struct allocinfo_s *
-alloc_find(u32 data)
+ساكن بنية allocinfo_s *
+alloc_پیدا_کړه(u32 معلومات)
 {
-    int i;
-    for (i=0; i<ARRAY_SIZE(Zones); i++) {
-        struct allocinfo_s *info;
-        hlist_for_each_entry(info, &Zones[i]->head, node) {
-            if (info->range_start == data)
-                return info;
+    صحيح i;
+    لكل (i=0; i<ARRAY_اندازه(Zones); i++) {
+        بنية allocinfo_s *info;
+        hlist_for_each_ثبت(info, &Zones[i]->سر, غوټه) {
+            إذا (info->range_پیل == معلومات)
+                أرجع info;
         }
     }
-    return NULL;
+    أرجع عدم;
 }
 
 // Find the lowest memory range added by alloc_add()
-static struct allocinfo_s *
-alloc_find_lowest(struct zone_s *zone)
+ساكن بنية allocinfo_s *
+alloc_پیدا_کړه_ټیټ_ترین(بنية zone_s *zone)
 {
-    struct allocinfo_s *info, *last = NULL;
-    hlist_for_each_entry(info, &zone->head, node) {
-        last = info;
+    بنية allocinfo_s *info, *وروستی = عدم;
+    hlist_for_each_ثبت(info, &zone->سر, غوټه) {
+        وروستی = info;
     }
-    return last;
+    أرجع وروستی;
 }
 
 
@@ -161,69 +161,69 @@ alloc_find_lowest(struct zone_s *zone)
  ****************************************************************/
 
 // Move ebda
-static int
-relocate_ebda(u32 newebda, u32 oldebda, u8 ebda_size)
+ساكن صحيح
+relocate_ebda(u32 newebda, u32 oldebda, u8 ebda_اندازه)
 {
-    u32 lowram = GET_BDA(mem_size_kb) * 1024;
-    if (oldebda != lowram)
+    u32 lowram = GET_BDA(mem_اندازه_kb) * 1024;
+    إذا (oldebda != lowram)
         // EBDA isn't at end of ram - give up.
-        return -1;
+        أرجع -1;
 
     // Do copy
-    memmove((void*)newebda, (void*)oldebda, ebda_size * 1024);
+    memmove((فراغ*)newebda, (فراغ*)oldebda, ebda_اندازه * 1024);
 
     // Update indexes
     dprintf(1, "ebda moved from %x to %x\n", oldebda, newebda);
-    SET_BDA(mem_size_kb, newebda / 1024);
-    SET_BDA(ebda_seg, FLATPTR_TO_SEG(newebda));
-    return 0;
+    سېټ_BDA(mem_اندازه_kb, newebda / 1024);
+    سېټ_BDA(ebda_seg, FLATPTR_منزل_SEG(newebda));
+    أرجع 0;
 }
 
 // Support expanding the ZoneLow dynamically.
-static u32
-zonelow_expand(u32 size, u32 align, struct allocinfo_s *fill)
+ساكن u32
+zonelow_expand(u32 اندازه, u32 align, بنية allocinfo_s *fill)
 {
     // Make sure to not move ebda while an optionrom is running.
-    if (unlikely(wait_preempt())) {
-        u32 data = alloc_new(&ZoneLow, size, align, fill);
-        if (data)
-            return data;
+    إذا (unlikely(wait_preempt())) {
+        u32 معلومات = alloc_new(&Zone_ټیټ, اندازه, align, fill);
+        إذا (معلومات)
+            أرجع معلومات;
     }
 
-    struct allocinfo_s *info = alloc_find_lowest(&ZoneLow);
-    if (!info)
-        return 0;
-    u32 oldpos = info->range_end;
-    u32 newpos = ALIGN_DOWN(oldpos - size, align);
-    u32 bottom = info->range_start + info->alloc_size;
-    if (newpos >= bottom && newpos <= oldpos)
+    بنية allocinfo_s *info = alloc_پیدا_کړه_ټیټ_ترین(&Zone_ټیټ);
+    إذا (!info)
+        أرجع 0;
+    u32 oldpos = info->range_پای_ټکی;
+    u32 newpos = ALIGN_ښکته(oldpos - اندازه, align);
+    u32 bottom = info->range_پیل + info->alloc_اندازه;
+    إذا (newpos >= bottom && newpos <= oldpos)
         // Space already present.
-        return alloc_new(&ZoneLow, size, align, fill);
+        أرجع alloc_new(&Zone_ټیټ, اندازه, align, fill);
     u16 ebda_seg = get_ebda_seg();
     u32 ebda_pos = (u32)MAKE_FLATPTR(ebda_seg, 0);
-    u8 ebda_size = GET_EBDA(ebda_seg, size);
-    u32 ebda_end = ebda_pos + ebda_size * 1024;
-    if (ebda_end != bottom)
+    u8 ebda_اندازه = GET_EBDA(ebda_seg, اندازه);
+    u32 ebda_پای_ټکی = ebda_pos + ebda_اندازه * 1024;
+    إذا (ebda_پای_ټکی != bottom)
         // Something else is after ebda - can't use any existing space.
-        newpos = ALIGN_DOWN(ebda_end - size, align);
-    u32 newbottom = ALIGN_DOWN(newpos, 1024);
-    u32 newebda = ALIGN_DOWN(newbottom - ebda_size * 1024, 1024);
-    if (newebda < BUILD_EBDA_MINIMUM)
+        newpos = ALIGN_ښکته(ebda_پای_ټکی - اندازه, align);
+    u32 newbottom = ALIGN_ښکته(newpos, 1024);
+    u32 newebda = ALIGN_ښکته(newbottom - ebda_اندازه * 1024, 1024);
+    إذا (newebda < BUILD_EBDA_MINIMUM)
         // Not enough space.
-        return 0;
+        أرجع 0;
 
     // Move ebda
-    int ret = relocate_ebda(newebda, ebda_pos, ebda_size);
-    if (ret)
-        return 0;
+    صحيح ret = relocate_ebda(newebda, ebda_pos, ebda_اندازه);
+    إذا (ret)
+        أرجع 0;
 
     // Update zone
-    if (ebda_end == bottom)
-        info->range_start = newbottom;
-    else
-        alloc_add(&ZoneLow, newbottom, ebda_end);
+    إذا (ebda_پای_ټکی == bottom)
+        info->range_پیل = newbottom;
+    وإلا
+        alloc_جمع_کړه(&Zone_ټیټ, newbottom, ebda_پای_ټکی);
 
-    return alloc_new(&ZoneLow, size, align, fill);
+    أرجع alloc_new(&Zone_ټیټ, اندازه, align, fill);
 }
 
 
@@ -233,100 +233,100 @@ zonelow_expand(u32 size, u32 align, struct allocinfo_s *fill)
 
 // Allocate physical memory from the given zone and track it as a PMM allocation
 u32
-malloc_palloc(struct zone_s *zone, u32 size, u32 align)
+malloc_palloc(بنية zone_s *zone, u32 اندازه, u32 align)
 {
     ASSERT32FLAT();
-    if (!size)
-        return 0;
+    إذا (!اندازه)
+        أرجع 0;
 
     // Find and reserve space for main allocation
-    struct allocdetail_s tempdetail;
+    بنية allocdetail_s tempdetail;
     tempdetail.handle = MALLOC_DEFAULT_HANDLE;
-    u32 data = alloc_new(zone, size, align, &tempdetail.datainfo);
-    if (!CONFIG_MALLOC_UPPERMEMORY && !data && zone == &ZoneLow)
-        data = zonelow_expand(size, align, &tempdetail.datainfo);
-    if (!data)
-        return 0;
+    u32 معلومات = alloc_new(zone, اندازه, align, &tempdetail.datainfo);
+    إذا (!CONFIG_MALLOC_UPPERMEMORY && !معلومات && zone == &Zone_ټیټ)
+        معلومات = zonelow_expand(اندازه, align, &tempdetail.datainfo);
+    إذا (!معلومات)
+        أرجع 0;
 
     // Find and reserve space for bookkeeping.
-    struct allocdetail_s *detail = alloc_new_detail(&tempdetail);
-    if (!detail) {
+    بنية allocdetail_s *detail = alloc_new_detail(&tempdetail);
+    إذا (!detail) {
         alloc_free(&tempdetail.datainfo);
-        return 0;
+        أرجع 0;
     }
 
     dprintf(8, "phys_alloc zone=%p size=%d align=%x ret=%x (detail=%p)\n"
-            , zone, size, align, data, detail);
+            , zone, اندازه, align, معلومات, detail);
 
-    return data;
+    أرجع معلومات;
 }
 
 // Allocate virtual memory from the given zone
-void * __malloc
-_malloc(struct zone_s *zone, u32 size, u32 align)
+فراغ * __malloc
+_malloc(بنية zone_s *zone, u32 اندازه, u32 align)
 {
-    return memremap(malloc_palloc(zone, size, align), size);
+    أرجع memremap(malloc_palloc(zone, اندازه, align), اندازه);
 }
 
 // Free a data block allocated with phys_alloc
-int
-malloc_pfree(u32 data)
+صحيح
+malloc_pfree(u32 معلومات)
 {
     ASSERT32FLAT();
-    struct allocinfo_s *info = alloc_find(data);
-    if (!info || data == virt_to_phys(info) || !info->alloc_size)
-        return -1;
-    struct allocdetail_s *detail = container_of(
-        info, struct allocdetail_s, datainfo);
-    dprintf(8, "phys_free %x (detail=%p)\n", data, detail);
+    بنية allocinfo_s *info = alloc_پیدا_کړه(معلومات);
+    إذا (!info || معلومات == virt_منزل_phys(info) || !info->alloc_اندازه)
+        أرجع -1;
+    بنية allocdetail_s *detail = container_د(
+        info, بنية allocdetail_s, datainfo);
+    dprintf(8, "phys_free %x (detail=%p)\n", معلومات, detail);
     alloc_free(info);
     alloc_free(&detail->detailinfo);
-    return 0;
+    أرجع 0;
 }
 
-void
-free(void *data)
+فراغ
+حرر(فراغ *معلومات)
 {
-    if (!data)
-        return;
-    int ret = malloc_pfree(virt_to_phys(data));
-    if (ret)
+    إذا (!معلومات)
+        أرجع;
+    صحيح ret = malloc_pfree(virt_منزل_phys(معلومات));
+    إذا (ret)
         warn_internalerror();
 }
 
 // Find the amount of free space in a given zone.
 u32
-malloc_getspace(struct zone_s *zone)
+malloc_getspace(بنية zone_s *zone)
 {
     // XXX - doesn't account for ZoneLow being able to grow.
     // XXX - results not reliable when CONFIG_THREAD_OPTIONROMS
     u32 maxspace = 0;
-    struct allocinfo_s *info;
-    hlist_for_each_entry(info, &zone->head, node) {
-        u32 space = info->range_end - info->range_start - info->alloc_size;
-        if (space > maxspace)
+    بنية allocinfo_s *info;
+    hlist_for_each_ثبت(info, &zone->سر, غوټه) {
+        u32 space = info->range_پای_ټکی - info->range_پیل - info->alloc_اندازه;
+        إذا (space > maxspace)
             maxspace = space;
     }
 
-    if (zone != &ZoneTmpHigh && zone != &ZoneTmpLow)
-        return maxspace;
+    إذا (zone != &Zone_Tmp_لوړ && zone != &Zone_Tmp_ټیټ)
+        أرجع maxspace;
     // Account for space needed for PMM tracking.
-    u32 reserve = ALIGN(sizeof(struct allocdetail_s), MALLOC_MIN_ALIGN);
-    if (maxspace <= reserve)
-        return 0;
-    return maxspace - reserve;
+    u32 reserve = ALIGN(حجم(بنية allocdetail_s), MALLOC_MIN_ALIGN);
+    إذا (maxspace <= reserve)
+        أرجع 0;
+    أرجع maxspace - reserve;
 }
 
 // Set a handle associated with an allocation.
-void
-malloc_sethandle(u32 data, u32 handle)
+فراغ
+malloc_sethandle(u32 معلومات, u32 handle)
 {
     ASSERT32FLAT();
-    struct allocinfo_s *info = alloc_find(data);
-    if (!info || data == virt_to_phys(info) || !info->alloc_size)
-        return;
-    struct allocdetail_s *detail = container_of(
-        info, struct allocdetail_s, datainfo);
+    بنية allocinfo_s *info = alloc_پیدا_کړه(معلومات);
+    إذا (!info || معلومات == virt_منزل_phys(info) || !info->alloc_اندازه)
+        أرجع;
+    بنية allocdetail_s *detail = container_د(
+        info, بنية allocdetail_s, datainfo);
     detail->handle = handle;
 }
 
@@ -334,19 +334,19 @@ malloc_sethandle(u32 data, u32 handle)
 u32
 malloc_findhandle(u32 handle)
 {
-    int i;
-    for (i=0; i<ARRAY_SIZE(Zones); i++) {
-        struct allocinfo_s *info;
-        hlist_for_each_entry(info, &Zones[i]->head, node) {
-            if (info->range_start != virt_to_phys(info))
-                continue;
-            struct allocdetail_s *detail = container_of(
-                info, struct allocdetail_s, detailinfo);
-            if (detail->handle == handle)
-                return detail->datainfo.range_start;
+    صحيح i;
+    لكل (i=0; i<ARRAY_اندازه(Zones); i++) {
+        بنية allocinfo_s *info;
+        hlist_for_each_ثبت(info, &Zones[i]->سر, غوټه) {
+            إذا (info->range_پیل != virt_منزل_phys(info))
+                استمر;
+            بنية allocdetail_s *detail = container_د(
+                info, بنية allocdetail_s, detailinfo);
+            إذا (detail->handle == handle)
+                أرجع detail->datainfo.range_پیل;
         }
     }
-    return 0;
+    أرجع 0;
 }
 
 
@@ -354,54 +354,54 @@ malloc_findhandle(u32 handle)
  * 0xc0000-0xf0000 management
  ****************************************************************/
 
-static u32 RomEnd = BUILD_ROM_START;
-static struct allocinfo_s *RomBase;
+ساكن u32 Rom_پای_ټکی = BUILD_ROM_پیل;
+ساكن بنية allocinfo_s *Rom_بنسټ;
 
-#define OPROM_HEADER_RESERVE 16
+#تعریف_کړه OPROM_سرلیک_RESERVE 16
 
 // Return the maximum memory position option roms may use.
 u32
-rom_get_max(void)
+rom_get_max(فراغ)
 {
-    if (CONFIG_MALLOC_UPPERMEMORY)
-        return ALIGN_DOWN(RomBase->range_end - OPROM_HEADER_RESERVE
+    إذا (CONFIG_MALLOC_UPPERMEMORY)
+        أرجع ALIGN_ښکته(Rom_بنسټ->range_پای_ټکی - OPROM_سرلیک_RESERVE
                           , OPTION_ROM_ALIGN);
-    return SYMBOL(final_readonly_start);
+    أرجع نښه(final_readonly_پیل);
 }
 
 // Return the end of the last deployed option rom.
 u32
-rom_get_last(void)
+rom_get_وروستی(فراغ)
 {
-    return RomEnd;
+    أرجع Rom_پای_ټکی;
 }
 
 // Request space for an optionrom in 0xc0000-0xf0000 area.
-struct rom_header *
-rom_reserve(u32 size)
+بنية rom_سرلیک *
+rom_reserve(u32 اندازه)
 {
-    u32 newend = ALIGN(RomEnd + size, OPTION_ROM_ALIGN);
-    if (newend > rom_get_max())
-        return NULL;
-    if (CONFIG_MALLOC_UPPERMEMORY) {
-        if (newend < SYMBOL(zonelow_base))
-            newend = SYMBOL(zonelow_base);
-        RomBase->range_start = newend + OPROM_HEADER_RESERVE;
+    u32 newend = ALIGN(Rom_پای_ټکی + اندازه, OPTION_ROM_ALIGN);
+    إذا (newend > rom_get_max())
+        أرجع عدم;
+    إذا (CONFIG_MALLOC_UPPERMEMORY) {
+        إذا (newend < نښه(zonelow_بنسټ))
+            newend = نښه(zonelow_بنسټ);
+        Rom_بنسټ->range_پیل = newend + OPROM_سرلیک_RESERVE;
     }
-    return (void*)RomEnd;
+    أرجع (فراغ*)Rom_پای_ټکی;
 }
 
 // Confirm space as in use by an optionrom.
-int
-rom_confirm(u32 size)
+صحيح
+rom_confirm(u32 اندازه)
 {
-    void *new = rom_reserve(size);
-    if (!new) {
+    فراغ *new = rom_reserve(اندازه);
+    إذا (!new) {
         warn_noalloc();
-        return -1;
+        أرجع -1;
     }
-    RomEnd = ALIGN(RomEnd + size, OPTION_ROM_ALIGN);
-    return 0;
+    Rom_پای_ټکی = ALIGN(Rom_پای_ټکی + اندازه, OPTION_ROM_ALIGN);
+    أرجع 0;
 }
 
 
@@ -409,158 +409,158 @@ rom_confirm(u32 size)
  * Setup
  ****************************************************************/
 
-void
-malloc_preinit(void)
+فراغ
+malloc_preinit(فراغ)
 {
     ASSERT32FLAT();
     dprintf(3, "malloc preinit\n");
 
     // Don't declare any memory between 0xa0000 and 0x100000
-    e820_remove(BUILD_LOWRAM_END, BUILD_BIOS_ADDR-BUILD_LOWRAM_END);
+    e820_remove(BUILD_LOWRAM_پای_ټکی, BUILD_BIOS_ADDR-BUILD_LOWRAM_پای_ټکی);
 
     // Mark known areas as reserved.
-    e820_add(BUILD_BIOS_ADDR, BUILD_BIOS_SIZE, E820_RESERVED);
+    e820_جمع_کړه(BUILD_BIOS_ADDR, BUILD_BIOS_اندازه, E820_RESERVED);
 
     // Populate temp high ram
-    u32 highram_start = 0;
-    u32 highram_size = 0;
-    int i;
-    for (i=e820_count-1; i>=0; i--) {
-        struct e820entry *en = &e820_list[i];
-        u64 end = en->start + en->size;
-        if (end < 1024*1024)
-            break;
-        if (en->type != E820_RAM || end > 0xffffffff)
-            continue;
-        u32 s = en->start, e = end;
-        if (!highram_start) {
-            u32 new_max = ALIGN_DOWN(e - BUILD_MAX_HIGHTABLE, MALLOC_MIN_ALIGN);
-            u32 new_min = ALIGN_DOWN(e - BUILD_MIN_HIGHTABLE, MALLOC_MIN_ALIGN);
-            if (new_max <= e && new_max >= s + BUILD_MAX_HIGHTABLE) {
-                highram_start = e = new_max;
-                highram_size = BUILD_MAX_HIGHTABLE;
-            } else if (new_min <= e && new_min >= s) {
-                highram_start = e = new_min;
-                highram_size = BUILD_MIN_HIGHTABLE;
+    u32 highram_پیل = 0;
+    u32 highram_اندازه = 0;
+    صحيح i;
+    لكل (i=e820_شمېر-1; i>=0; i--) {
+        بنية e820entry *en = &e820_list[i];
+        u64 پای_ټکی = en->پیل + en->اندازه;
+        إذا (پای_ټکی < 1024*1024)
+            اكسر;
+        إذا (en->type != E820_RAM || پای_ټکی > 0xffffffff)
+            استمر;
+        u32 s = en->پیل, e = پای_ټکی;
+        إذا (!highram_پیل) {
+            u32 new_max = ALIGN_ښکته(e - BUILD_MAX_HIGHTABLE, MALLOC_MIN_ALIGN);
+            u32 new_min = ALIGN_ښکته(e - BUILD_MIN_HIGHTABLE, MALLOC_MIN_ALIGN);
+            إذا (new_max <= e && new_max >= s + BUILD_MAX_HIGHTABLE) {
+                highram_پیل = e = new_max;
+                highram_اندازه = BUILD_MAX_HIGHTABLE;
+            } وإلا إذا (new_min <= e && new_min >= s) {
+                highram_پیل = e = new_min;
+                highram_اندازه = BUILD_MIN_HIGHTABLE;
             }
         }
-        alloc_add(&ZoneTmpHigh, s, e);
+        alloc_جمع_کړه(&Zone_Tmp_لوړ, s, e);
     }
 
     // Populate regions
-    alloc_add(&ZoneTmpLow, BUILD_STACK_ADDR, BUILD_EBDA_MINIMUM);
-    if (highram_start) {
-        alloc_add(&ZoneHigh, highram_start, highram_start + highram_size);
-        e820_add(highram_start, highram_size, E820_RESERVED);
+    alloc_جمع_کړه(&Zone_Tmp_ټیټ, BUILD_ډېری_ADDR, BUILD_EBDA_MINIMUM);
+    إذا (highram_پیل) {
+        alloc_جمع_کړه(&Zone_لوړ, highram_پیل, highram_پیل + highram_اندازه);
+        e820_جمع_کړه(highram_پیل, highram_اندازه, E820_RESERVED);
     }
 }
 
-void
-malloc_csm_preinit(u32 low_pmm, u32 low_pmm_size, u32 hi_pmm, u32 hi_pmm_size)
+فراغ
+malloc_csm_preinit(u32 ټیټ_pmm, u32 ټیټ_pmm_اندازه, u32 hi_pmm, u32 hi_pmm_اندازه)
 {
     ASSERT32FLAT();
 
-    if (hi_pmm_size > BUILD_MIN_HIGHTABLE) {
-        u32 hi_pmm_end = hi_pmm + hi_pmm_size;
-        alloc_add(&ZoneTmpHigh, hi_pmm, hi_pmm_end - BUILD_MIN_HIGHTABLE);
-        alloc_add(&ZoneHigh, hi_pmm_end - BUILD_MIN_HIGHTABLE, hi_pmm_end);
-    } else {
-        alloc_add(&ZoneTmpHigh, hi_pmm, hi_pmm + hi_pmm_size);
+    إذا (hi_pmm_اندازه > BUILD_MIN_HIGHTABLE) {
+        u32 hi_pmm_پای_ټکی = hi_pmm + hi_pmm_اندازه;
+        alloc_جمع_کړه(&Zone_Tmp_لوړ, hi_pmm, hi_pmm_پای_ټکی - BUILD_MIN_HIGHTABLE);
+        alloc_جمع_کړه(&Zone_لوړ, hi_pmm_پای_ټکی - BUILD_MIN_HIGHTABLE, hi_pmm_پای_ټکی);
+    } وإلا {
+        alloc_جمع_کړه(&Zone_Tmp_لوړ, hi_pmm, hi_pmm + hi_pmm_اندازه);
     }
-    alloc_add(&ZoneTmpLow, low_pmm, low_pmm + low_pmm_size);
+    alloc_جمع_کړه(&Zone_Tmp_ټیټ, ټیټ_pmm, ټیټ_pmm + ټیټ_pmm_اندازه);
 }
 
-u32 LegacyRamSize VARFSEG;
+u32 Legacy_Ram_اندازه VARFSEG;
 
 // Calculate the maximum ramsize (less than 4gig) from e820 map.
-static void
-calcRamSize(void)
+ساكن فراغ
+calc_Ram_اندازه(فراغ)
 {
     u32 rs = 0;
-    int i;
-    for (i=e820_count-1; i>=0; i--) {
-        struct e820entry *en = &e820_list[i];
-        u64 end = en->start + en->size;
+    صحيح i;
+    لكل (i=e820_شمېر-1; i>=0; i--) {
+        بنية e820entry *en = &e820_list[i];
+        u64 پای_ټکی = en->پیل + en->اندازه;
         u32 type = en->type;
-        if (end <= 0xffffffff && (type == E820_ACPI || type == E820_RAM)) {
-            rs = end;
-            break;
+        إذا (پای_ټکی <= 0xffffffff && (type == E820_ACPI || type == E820_RAM)) {
+            rs = پای_ټکی;
+            اكسر;
         }
     }
-    LegacyRamSize = rs >= 1024*1024 ? rs : 1024*1024;
+    Legacy_Ram_اندازه = rs >= 1024*1024 ? rs : 1024*1024;
 }
 
 // Update pointers after code relocation.
-void
-malloc_init(void)
+فراغ
+malloc_init(فراغ)
 {
     ASSERT32FLAT();
     dprintf(3, "malloc init\n");
 
-    if (CONFIG_RELOCATE_INIT) {
+    إذا (CONFIG_RELOCATE_INIT) {
         // Fixup malloc pointers after relocation
-        int i;
-        for (i=0; i<ARRAY_SIZE(Zones); i++) {
-            struct zone_s *zone = Zones[i];
-            if (zone->head.first)
-                zone->head.first->pprev = &zone->head.first;
+        صحيح i;
+        لكل (i=0; i<ARRAY_اندازه(Zones); i++) {
+            بنية zone_s *zone = Zones[i];
+            إذا (zone->سر.لومړی)
+                zone->سر.لومړی->pprev = &zone->سر.لومړی;
         }
     }
 
     // Initialize low-memory region
-    memmove(VSYMBOL(final_varlow_start), VSYMBOL(varlow_start)
-            , SYMBOL(varlow_end) - SYMBOL(varlow_start));
-    if (CONFIG_MALLOC_UPPERMEMORY) {
-        alloc_add(&ZoneLow, SYMBOL(zonelow_base) + OPROM_HEADER_RESERVE
-                  , SYMBOL(final_varlow_start));
-        RomBase = alloc_find_lowest(&ZoneLow);
-    } else {
-        alloc_add(&ZoneLow, ALIGN_DOWN(SYMBOL(final_varlow_start), 1024)
-                  , SYMBOL(final_varlow_start));
+    memmove(VSYMBOL(final_varlow_پیل), VSYMBOL(varlow_پیل)
+            , نښه(varlow_پای_ټکی) - نښه(varlow_پیل));
+    إذا (CONFIG_MALLOC_UPPERMEMORY) {
+        alloc_جمع_کړه(&Zone_ټیټ, نښه(zonelow_بنسټ) + OPROM_سرلیک_RESERVE
+                  , نښه(final_varlow_پیل));
+        Rom_بنسټ = alloc_پیدا_کړه_ټیټ_ترین(&Zone_ټیټ);
+    } وإلا {
+        alloc_جمع_کړه(&Zone_ټیټ, ALIGN_ښکته(نښه(final_varlow_پیل), 1024)
+                  , نښه(final_varlow_پیل));
     }
 
     // Add space available in f-segment to ZoneFSeg
-    memset(VSYMBOL(zonefseg_start), 0
-           , SYMBOL(zonefseg_end) - SYMBOL(zonefseg_start));
-    alloc_add(&ZoneFSeg, SYMBOL(zonefseg_start), SYMBOL(zonefseg_end));
+    memset(VSYMBOL(zonefseg_پیل), 0
+           , نښه(zonefseg_پای_ټکی) - نښه(zonefseg_پیل));
+    alloc_جمع_کړه(&ZoneFSeg, نښه(zonefseg_پیل), نښه(zonefseg_پای_ټکی));
 
-    calcRamSize();
+    calc_Ram_اندازه();
 }
 
-void
-malloc_prepboot(void)
+فراغ
+malloc_prepboot(فراغ)
 {
     ASSERT32FLAT();
     dprintf(3, "malloc finalize\n");
 
-    u32 base = rom_get_max();
-    memset((void*)RomEnd, 0, base-RomEnd);
-    if (CONFIG_MALLOC_UPPERMEMORY) {
+    u32 بنسټ = rom_get_max();
+    memset((فراغ*)Rom_پای_ټکی, 0, بنسټ-Rom_پای_ټکی);
+    إذا (CONFIG_MALLOC_UPPERMEMORY) {
         // Place an optionrom signature around used low mem area.
-        struct rom_header *dummyrom = (void*)base;
+        بنية rom_سرلیک *dummyrom = (فراغ*)بنسټ;
         dummyrom->signature = OPTION_ROM_SIGNATURE;
-        int size = (BUILD_BIOS_ADDR - base) / 512;
-        dummyrom->size = (size > 255) ? 255 : size;
+        صحيح اندازه = (BUILD_BIOS_ADDR - بنسټ) / 512;
+        dummyrom->اندازه = (اندازه > 255) ? 255 : اندازه;
     }
 
     // Reserve more low-mem if needed.
-    u32 endlow = GET_BDA(mem_size_kb)*1024;
-    e820_add(endlow, BUILD_LOWRAM_END-endlow, E820_RESERVED);
+    u32 endlow = GET_BDA(mem_اندازه_kb)*1024;
+    e820_جمع_کړه(endlow, BUILD_LOWRAM_پای_ټکی-endlow, E820_RESERVED);
 
     // Clear unused f-seg ram.
-    struct allocinfo_s *info = alloc_find_lowest(&ZoneFSeg);
-    u32 size = info->range_end - info->range_start;
-    memset(memremap(info->range_start, size), 0, size);
+    بنية allocinfo_s *info = alloc_پیدا_کړه_ټیټ_ترین(&ZoneFSeg);
+    u32 اندازه = info->range_پای_ټکی - info->range_پیل;
+    memset(memremap(info->range_پیل, اندازه), 0, اندازه);
     dprintf(1, "Space available for UMB: %x-%x, %x-%x\n"
-            , RomEnd, base, info->range_start, info->range_end);
+            , Rom_پای_ټکی, بنسټ, info->range_پیل, info->range_پای_ټکی);
 
     // Give back unused high ram.
-    info = alloc_find_lowest(&ZoneHigh);
-    if (info) {
-        u32 giveback = ALIGN_DOWN(info->range_end-info->range_start, PAGE_SIZE);
-        e820_add(info->range_start, giveback, E820_RAM);
+    info = alloc_پیدا_کړه_ټیټ_ترین(&Zone_لوړ);
+    إذا (info) {
+        u32 giveback = ALIGN_ښکته(info->range_پای_ټکی-info->range_پیل, پاڼه_اندازه);
+        e820_جمع_کړه(info->range_پیل, giveback, E820_RAM);
         dprintf(1, "Returned %d bytes of ZoneHigh\n", giveback);
     }
 
-    calcRamSize();
+    calc_Ram_اندازه();
 }

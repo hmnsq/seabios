@@ -6,96 +6,96 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_*
-#include "hw/pci.h" // pci_bdf_to_bus
-#include "hw/pcidevice.h" // foreachpci
-#include "hw/pci_regs.h" // PCI_INTERRUPT_PIN
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "romfile.h" // romfile_loadint
-#include "std/mptable.h" // MPTABLE_SIGNATURE
-#include "string.h" // memset
-#include "util.h" // MaxCountCPUs
-#include "x86.h" // cpuid
+#ضمن "config.h" // CONFIG_*
+#ضمن "hw/pci.h" // pci_bdf_to_bus
+#ضمن "hw/pcidevice.h" // foreachpci
+#ضمن "hw/pci_regs.h" // PCI_INTERRUPT_PIN
+#ضمن "malloc.h" // free
+#ضمن "output.h" // dprintf
+#ضمن "romfile.h" // romfile_loadint
+#ضمن "std/mptable.h" // MPTABLE_SIGNATURE
+#ضمن "string.h" // memset
+#ضمن "util.h" // MaxCountCPUs
+#ضمن "x86.h" // cpuid
 
-void
-mptable_setup(void)
+فراغ
+mptable_تیاری(فراغ)
 {
-    if (! CONFIG_MPTABLE)
-        return;
+    إذا (! CONFIG_MPTABLE)
+        أرجع;
 
     dprintf(3, "init MPTable\n");
 
     // Config structure in temp area.
-    struct mptable_config_s *config = malloc_tmp(32*1024);
-    if (!config) {
+    بنية mptable_config_s *config = malloc_tmp(32*1024);
+    إذا (!config) {
         warn_noalloc();
-        return;
+        أرجع;
     }
-    memset(config, 0, sizeof(*config));
+    memset(config, 0, حجم(*config));
     config->signature = MPCONFIG_SIGNATURE;
     config->spec = 4;
-    memcpy(config->oemid, BUILD_CPUNAME8, sizeof(config->oemid));
-    memcpy(config->productid, "0.1         ", sizeof(config->productid));
+    حافظه_نقل(config->oemid, BUILD_CPUNAME8, حجم(config->oemid));
+    حافظه_نقل(config->productid, "0.1         ", حجم(config->productid));
     config->lapic = BUILD_APIC_ADDR;
 
     // Detect cpu info
     u32 cpuid_signature, ebx, ecx, cpuid_features;
     cpuid(1, &cpuid_signature, &ebx, &ecx, &cpuid_features);
-    if (! cpuid_signature) {
+    إذا (! cpuid_signature) {
         // Use default values.
         cpuid_signature = 0x600;
         cpuid_features = 0x201;
     }
-    int pkgcpus = 1;
-    if (cpuid_features & (1 << 28)) {
+    صحيح pkgcpus = 1;
+    إذا (cpuid_features & (1 << 28)) {
         /* Only populate the MPS tables with the first logical CPU in
            each package */
         pkgcpus = (ebx >> 16) & 0xff;
         pkgcpus = 1 << (__fls(pkgcpus - 1) + 1); /* round up to power of 2 */
     }
-    u8 apic_version = readl((u8*)BUILD_APIC_ADDR + 0x30) & 0xff;
+    u8 apic_نسخه = readl((u8*)BUILD_APIC_ADDR + 0x30) & 0xff;
 
     // CPU definitions.
-    struct mpt_cpu *cpus = (void*)&config[1], *cpu = cpus;
-    int i;
-    for (i = 0; i < MaxCountCPUs; i+=pkgcpus) {
-        memset(cpu, 0, sizeof(*cpu));
+    بنية mpt_cpu *cpus = (فراغ*)&config[1], *cpu = cpus;
+    صحيح i;
+    لكل (i = 0; i < Max_شمېر_CPUs; i+=pkgcpus) {
+        memset(cpu, 0, حجم(*cpu));
         cpu->type = MPT_TYPE_CPU;
         cpu->apicid = i;
-        cpu->apicver = apic_version;
+        cpu->apicver = apic_نسخه;
         /* cpu flags: enabled, bootstrap cpu */
         cpu->cpuflag = (apic_id_is_present(i) ? 0x01 : 0x00) | ((i==0) ? 0x02 : 0x00);
         cpu->cpusignature = cpuid_signature;
         cpu->featureflag = cpuid_features;
         cpu++;
     }
-    int entrycount = cpu - cpus;
+    صحيح entrycount = cpu - cpus;
 
     // PCI bus
-    struct mpt_bus *buses = (void*)cpu, *bus = buses;
-    if (!hlist_empty(&PCIDevices)) {
-        memset(bus, 0, sizeof(*bus));
+    بنية mpt_bus *buses = (فراغ*)cpu, *bus = buses;
+    إذا (!hlist_تشه(&PCIDevices)) {
+        memset(bus, 0, حجم(*bus));
         bus->type = MPT_TYPE_BUS;
         bus->busid = 0;
-        memcpy(bus->bustype, "PCI   ", sizeof(bus->bustype));
+        حافظه_نقل(bus->bustype, "PCI   ", حجم(bus->bustype));
         bus++;
         entrycount++;
     }
 
     /* isa bus */
-    int isabusid = bus - buses;
-    memset(bus, 0, sizeof(*bus));
+    صحيح isabusid = bus - buses;
+    memset(bus, 0, حجم(*bus));
     bus->type = MPT_TYPE_BUS;
     bus->busid = isabusid;
-    memcpy(bus->bustype, "ISA   ", sizeof(bus->bustype));
+    حافظه_نقل(bus->bustype, "ISA   ", حجم(bus->bustype));
     bus++;
     entrycount++;
 
     /* ioapic */
     u8 ioapic_id = BUILD_IOAPIC_ID;
-    struct mpt_ioapic *ioapic = (void*)bus;
-    memset(ioapic, 0, sizeof(*ioapic));
+    بنية mpt_ioapic *ioapic = (فراغ*)bus;
+    memset(ioapic, 0, حجم(*ioapic));
     ioapic->type = MPT_TYPE_IOAPIC;
     ioapic->apicid = ioapic_id;
     ioapic->apicver = 0x11;
@@ -104,42 +104,42 @@ mptable_setup(void)
     entrycount++;
 
     /* irqs */
-    struct mpt_intsrc *intsrcs = (void*)&ioapic[1], *intsrc = intsrcs;
-    int dev = -1;
-    unsigned short pinmask = 0;
+    بنية mpt_intsrc *intsrcs = (فراغ*)&ioapic[1], *intsrc = intsrcs;
+    صحيح dev = -1;
+    بینښه لنډ pinmask = 0;
 
-    struct pci_device *pci;
+    بنية pci_device *pci;
     foreachpci(pci) {
         u16 bdf = pci->bdf;
-        if (pci_bdf_to_bus(bdf) != 0)
-            break;
-        int pin = pci_config_readb(bdf, PCI_INTERRUPT_PIN);
-        int irq = pci_config_readb(bdf, PCI_INTERRUPT_LINE);
-        if (pin == 0)
-            continue;
-        if (dev != pci_bdf_to_busdev(bdf)) {
-            dev = pci_bdf_to_busdev(bdf);
+        إذا (pci_bdf_منزل_bus(bdf) != 0)
+            اكسر;
+        صحيح pin = pci_config_readb(bdf, PCI_مداخله_PIN);
+        صحيح irq = pci_config_readb(bdf, PCI_مداخله_کرښه);
+        إذا (pin == 0)
+            استمر;
+        إذا (dev != pci_bdf_منزل_busdev(bdf)) {
+            dev = pci_bdf_منزل_busdev(bdf);
             pinmask = 0;
         }
-        if (pinmask & (1 << pin)) /* pin was seen already */
-            continue;
+        إذا (pinmask & (1 << pin)) /* pin was seen already */
+            استمر;
         pinmask |= (1 << pin);
-        memset(intsrc, 0, sizeof(*intsrc));
+        memset(intsrc, 0, حجم(*intsrc));
         intsrc->type = MPT_TYPE_INTSRC;
         intsrc->irqtype = 0; /* INT */
         intsrc->irqflag = 1; /* active high */
-        intsrc->srcbus = pci_bdf_to_bus(bdf); /* PCI bus */
-        intsrc->srcbusirq = (pci_bdf_to_dev(bdf) << 2) | (pin - 1);
+        intsrc->srcbus = pci_bdf_منزل_bus(bdf); /* PCI bus */
+        intsrc->srcbusirq = (pci_bdf_منزل_dev(bdf) << 2) | (pin - 1);
         intsrc->dstapic = ioapic_id;
         intsrc->dstirq = irq;
         intsrc++;
     }
 
-    int irq0_override = romfile_loadint("etc/irq0-override", 0);
-    for (i = 0; i < 16; i++) {
-        memset(intsrc, 0, sizeof(*intsrc));
-        if (BUILD_PCI_IRQS & (1 << i))
-            continue;
+    صحيح irq0_override = romfile_loadint("etc/irq0-override", 0);
+    لكل (i = 0; i < 16; i++) {
+        memset(intsrc, 0, حجم(*intsrc));
+        إذا (BUILD_PCI_IRQS & (1 << i))
+            استمر;
         intsrc->type = MPT_TYPE_INTSRC;
         intsrc->irqtype = 0; /* INT */
         intsrc->irqflag = 0; /* conform to bus spec */
@@ -147,12 +147,12 @@ mptable_setup(void)
         intsrc->srcbusirq = i;
         intsrc->dstapic = ioapic_id;
         intsrc->dstirq = i;
-        if (irq0_override) {
+        إذا (irq0_override) {
             /* Destination 2 is covered by irq0->inti2 override (i ==
                0). Source IRQ 2 is unused */
-            if (i == 0)
+            إذا (i == 0)
                 intsrc->dstirq = 2;
-            else if (i == 2)
+            وإلا إذا (i == 2)
                 intsrc--;
         }
         intsrc++;
@@ -179,19 +179,19 @@ mptable_setup(void)
     entrycount += intsrc - intsrcs;
 
     // Finalize config structure.
-    int length = (void*)intsrc - (void*)config;
+    صحيح اوږدتیا = (فراغ*)intsrc - (فراغ*)config;
     config->entrycount = entrycount;
-    config->length = length;
-    config->checksum -= checksum(config, length);
+    config->اوږدتیا = اوږدتیا;
+    config->checksum -= checksum(config, اوږدتیا);
 
     // floating pointer structure
-    struct mptable_floating_s floating;
-    memset(&floating, 0, sizeof(floating));
+    بنية mptable_floating_s floating;
+    memset(&floating, 0, حجم(floating));
     floating.signature = MPTABLE_SIGNATURE;
     floating.physaddr = (u32)config;
-    floating.length = 1;
+    floating.اوږدتیا = 1;
     floating.spec_rev = 4;
-    floating.checksum -= checksum(&floating, sizeof(floating));
+    floating.checksum -= checksum(&floating, حجم(floating));
     copy_mptable(&floating);
-    free(config);
+    حرر(config);
 }

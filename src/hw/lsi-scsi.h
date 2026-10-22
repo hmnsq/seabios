@@ -1,8 +1,8 @@
-#ifndef __LSI_SCSI_H
-#define __LSI_SCSI_H
+#که_نه_تعریف_شوی __LSI_SCSI_H
+#تعریف_کړه __LSI_SCSI_H
 
-struct disk_op_s;
-int lsi_scsi_process_op(struct disk_op_s *op);
-void lsi_scsi_setup(void);
+بنية disk_op_s;
+صحيح lsi_scsi_process_op(بنية disk_op_s *op);
+فراغ lsi_scsi_تیاری(فراغ);
 
-#endif /* __LSI_SCSI_H */
+#د_که_پای /* __LSI_SCSI_H */

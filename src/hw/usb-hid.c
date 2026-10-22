@@ -5,44 +5,44 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_GLOBAL
-#include "config.h" // CONFIG_*
-#include "output.h" // dprintf, warn_noalloc
-#include "malloc.h" // malloc_fseg
-#include "ps2port.h" // ATKBD_CMD_GETID
-#include "usb.h" // usb_ctrlrequest
-#include "usb-hid.h" // usb_keyboard_setup
-#include "util.h" // process_key
+#ضمن "biosvar.h" // GET_GLOBAL
+#ضمن "config.h" // CONFIG_*
+#ضمن "output.h" // dprintf, warn_noalloc
+#ضمن "malloc.h" // malloc_fseg
+#ضمن "ps2port.h" // ATKBD_CMD_GETID
+#ضمن "usb.h" // usb_ctrlrequest
+#ضمن "usb-hid.h" // usb_keyboard_setup
+#ضمن "util.h" // process_key
 
-struct pipe_node {
-    struct usb_pipe *pipe;
-    struct pipe_node *next;
+بنية pipe_غوټه {
+    بنية usb_pipe *pipe;
+    بنية pipe_غوټه *بل;
 };
 
-struct pipe_node *keyboards VARFSEG = NULL;
-struct pipe_node *mice VARFSEG = NULL;
+بنية pipe_غوټه *keyboards VARFSEG = عدم;
+بنية pipe_غوټه *mice VARFSEG = عدم;
 
-static int
-add_pipe_node(struct pipe_node **list
-              , struct usbdevice_s *usbdev
-              , struct usb_endpoint_descriptor *epdesc)
+ساكن صحيح
+جمع_کړه_pipe_غوټه(بنية pipe_غوټه **list
+              , بنية usbdevice_s *usbdev
+              , بنية usb_endpoint_descriptor *epdesc)
 {
-    struct usb_pipe *pipe = usb_alloc_pipe(usbdev, epdesc);
-    if (!pipe)
-        return -1;
+    بنية usb_pipe *pipe = usb_alloc_pipe(usbdev, epdesc);
+    إذا (!pipe)
+        أرجع -1;
 
-    struct pipe_node *new_node = malloc_fseg(sizeof(struct pipe_node));
-    if (!new_node) {
+    بنية pipe_غوټه *new_غوټه = malloc_fseg(حجم(بنية pipe_غوټه));
+    إذا (!new_غوټه) {
         warn_noalloc();
-        return -1;
+        أرجع -1;
     }
 
-    new_node->pipe = pipe;
+    new_غوټه->pipe = pipe;
 
-    new_node->next = *list;
-    *list = new_node;
+    new_غوټه->بل = *list;
+    *list = new_غوټه;
 
-    return 0;
+    أرجع 0;
 }
 
 /****************************************************************
@@ -50,133 +50,133 @@ add_pipe_node(struct pipe_node **list
  ****************************************************************/
 
 // Send USB HID protocol message.
-static int
-set_protocol(struct usb_pipe *pipe, u16 val, u16 inferface)
+ساكن صحيح
+سېټ_protocol(بنية usb_pipe *pipe, u16 val, u16 inferface)
 {
-    struct usb_ctrlrequest req;
-    req.bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE;
-    req.bRequest = HID_REQ_SET_PROTOCOL;
-    req.wValue = val;
-    req.wIndex = inferface;
-    req.wLength = 0;
-    return usb_send_default_control(pipe, &req, NULL);
+    بنية usb_ctrlrequest req;
+    req.bRequestType = USB_DIR_بهر | USB_TYPE_CLASS | USB_RECIP_INTERFACE;
+    req.bRequest = HID_REQ_سېټ_PROTOCOL;
+    req.w_ارزښت = val;
+    req.w_شاخص = inferface;
+    req.w_اوږدتیا = 0;
+    أرجع usb_send_default_control(pipe, &req, عدم);
 }
 
 // Send USB HID SetIdle request.
-static int
-set_idle(struct usb_pipe *pipe, int ms)
+ساكن صحيح
+سېټ_idle(بنية usb_pipe *pipe, صحيح ms)
 {
-    struct usb_ctrlrequest req;
-    req.bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE;
-    req.bRequest = HID_REQ_SET_IDLE;
-    req.wValue = (ms/4)<<8;
-    req.wIndex = 0;
-    req.wLength = 0;
-    return usb_send_default_control(pipe, &req, NULL);
+    بنية usb_ctrlrequest req;
+    req.bRequestType = USB_DIR_بهر | USB_TYPE_CLASS | USB_RECIP_INTERFACE;
+    req.bRequest = HID_REQ_سېټ_IDLE;
+    req.w_ارزښت = (ms/4)<<8;
+    req.w_شاخص = 0;
+    req.w_اوږدتیا = 0;
+    أرجع usb_send_default_control(pipe, &req, عدم);
 }
 
-#define KEYREPEATWAITMS 500
-#define KEYREPEATMS 33
+#تعریف_کړه KEYREPEATWAITMS 500
+#تعریف_کړه KEYREPEATMS 33
 
 // Format of USB keyboard event data
-struct keyevent {
+بنية keyevent {
     u8 modifiers;
     u8 reserved;
-    u8 keys[6];
+    u8 کلیګانې[6];
 };
 
-#define MAX_KBD_EVENT 16
+#تعریف_کړه MAX_KBD_EVENT 16
 
-static int
-usb_kbd_setup(struct usbdevice_s *usbdev
-              , struct usb_endpoint_descriptor *epdesc)
+ساكن صحيح
+usb_kbd_تیاری(بنية usbdevice_s *usbdev
+              , بنية usb_endpoint_descriptor *epdesc)
 {
-    if (! CONFIG_USB_KEYBOARD)
-        return -1;
+    إذا (! CONFIG_USB_KEYBOARD)
+        أرجع -1;
 
-    if (epdesc->wMaxPacketSize < sizeof(struct keyevent)
-        || epdesc->wMaxPacketSize > MAX_KBD_EVENT) {
+    إذا (epdesc->w_Max_Packet_اندازه < حجم(بنية keyevent)
+        || epdesc->w_Max_Packet_اندازه > MAX_KBD_EVENT) {
         dprintf(1, "USB keyboard wMaxPacketSize=%d; aborting\n"
-                , epdesc->wMaxPacketSize);
-        return -1;
+                , epdesc->w_Max_Packet_اندازه);
+        أرجع -1;
     }
 
     // Enable "boot" protocol.
-    if (set_protocol(usbdev->defpipe, 0, usbdev->iface->bInterfaceNumber)) {
+    إذا (سېټ_protocol(usbdev->defpipe, 0, usbdev->iface->b_Interface_شمېره)) {
         dprintf(3, "Failed to set boot protocol\n");
-        return -1;
+        أرجع -1;
     }
 
     // Periodically send reports to enable key repeat.
-    if (set_idle(usbdev->defpipe, KEYREPEATMS))
+    إذا (سېټ_idle(usbdev->defpipe, KEYREPEATMS))
         dprintf(3, "Warning: Failed to set key repeat rate\n");
 
-    if (add_pipe_node(&keyboards, usbdev, epdesc))
-        return -1;
+    إذا (جمع_کړه_pipe_غوټه(&keyboards, usbdev, epdesc))
+        أرجع -1;
 
     dprintf(1, "USB keyboard initialized\n");
-    return 0;
+    أرجع 0;
 }
 
 // Format of USB mouse event data
-struct mouseevent {
+بنية mouseevent {
     u8 buttons;
     u8 x, y;
 };
 
-#define MAX_MOUSE_EVENT 8
+#تعریف_کړه MAX_MOUSE_EVENT 8
 
-static int
-usb_mouse_setup(struct usbdevice_s *usbdev
-                , struct usb_endpoint_descriptor *epdesc)
+ساكن صحيح
+usb_mouse_تیاری(بنية usbdevice_s *usbdev
+                , بنية usb_endpoint_descriptor *epdesc)
 {
-    if (! CONFIG_USB_MOUSE)
-        return -1;
+    إذا (! CONFIG_USB_MOUSE)
+        أرجع -1;
 
-    if (epdesc->wMaxPacketSize < sizeof(struct mouseevent)
-        || epdesc->wMaxPacketSize > MAX_MOUSE_EVENT) {
+    إذا (epdesc->w_Max_Packet_اندازه < حجم(بنية mouseevent)
+        || epdesc->w_Max_Packet_اندازه > MAX_MOUSE_EVENT) {
         dprintf(1, "USB mouse wMaxPacketSize=%d; aborting\n"
-                , epdesc->wMaxPacketSize);
-        return -1;
+                , epdesc->w_Max_Packet_اندازه);
+        أرجع -1;
     }
 
     // Enable "boot" protocol.
-    if (set_protocol(usbdev->defpipe, 0, usbdev->iface->bInterfaceNumber))
-        return -1;
+    إذا (سېټ_protocol(usbdev->defpipe, 0, usbdev->iface->b_Interface_شمېره))
+        أرجع -1;
 
-    if (add_pipe_node(&mice, usbdev, epdesc))
-        return -1;
+    إذا (جمع_کړه_pipe_غوټه(&mice, usbdev, epdesc))
+        أرجع -1;
 
     dprintf(1, "USB mouse initialized\n");
-    return 0;
+    أرجع 0;
 }
 
 // Initialize a found USB HID device (if applicable).
-int
-usb_hid_setup(struct usbdevice_s *usbdev)
+صحيح
+usb_hid_تیاری(بنية usbdevice_s *usbdev)
 {
-    if (! CONFIG_USB_KEYBOARD && ! CONFIG_USB_MOUSE)
-        return -1;
+    إذا (! CONFIG_USB_KEYBOARD && ! CONFIG_USB_MOUSE)
+        أرجع -1;
     dprintf(2, "usb_hid_setup %p\n", usbdev->defpipe);
 
-    struct usb_interface_descriptor *iface = usbdev->iface;
-    if (iface->bInterfaceSubClass != USB_INTERFACE_SUBCLASS_BOOT)
+    بنية usb_interface_descriptor *iface = usbdev->iface;
+    إذا (iface->bInterfaceSubClass != USB_INTERFACE_SUBCLASS_BOOT)
         // Doesn't support boot protocol.
-        return -1;
+        أرجع -1;
 
     // Find intr in endpoint.
-    struct usb_endpoint_descriptor *epdesc = usb_find_desc(
-        usbdev, USB_ENDPOINT_XFER_INT, USB_DIR_IN);
-    if (!epdesc) {
+    بنية usb_endpoint_descriptor *epdesc = usb_پیدا_کړه_desc(
+        usbdev, USB_ENDPOINT_XFER_INT, USB_DIR_دننه);
+    إذا (!epdesc) {
         dprintf(1, "No usb hid intr in?\n");
-        return -1;
+        أرجع -1;
     }
 
-    if (iface->bInterfaceProtocol == USB_INTERFACE_PROTOCOL_KEYBOARD)
-        return usb_kbd_setup(usbdev, epdesc);
-    if (iface->bInterfaceProtocol == USB_INTERFACE_PROTOCOL_MOUSE)
-        return usb_mouse_setup(usbdev, epdesc);
-    return -1;
+    إذا (iface->bInterfaceProtocol == USB_INTERFACE_PROTOCOL_KEYBOARD)
+        أرجع usb_kbd_تیاری(usbdev, epdesc);
+    إذا (iface->bInterfaceProtocol == USB_INTERFACE_PROTOCOL_MOUSE)
+        أرجع usb_mouse_تیاری(usbdev, epdesc);
+    أرجع -1;
 }
 
 
@@ -185,7 +185,7 @@ usb_hid_setup(struct usbdevice_s *usbdev)
  ****************************************************************/
 
 // Mapping from USB key id to ps2 key sequence.
-static u16 KeyToScanCode[] VAR16 = {
+ساكن u16 کلی_منزل_لټون_کوډ[] VAR16 = {
     0x0000, 0x0000, 0x0000, 0x0000, 0x001e, 0x0030, 0x002e, 0x0020,
     0x0012, 0x0021, 0x0022, 0x0023, 0x0017, 0x0024, 0x0025, 0x0026,
     0x0032, 0x0031, 0x0018, 0x0019, 0x0010, 0x0013, 0x001f, 0x0014,
@@ -202,188 +202,188 @@ static u16 KeyToScanCode[] VAR16 = {
 };
 
 // Mapping from USB modifier id to ps2 key sequence.
-static u16 ModifierToScanCode[] VAR16 = {
+ساكن u16 Modifier_منزل_لټون_کوډ[] VAR16 = {
     //lcntl, lshift, lalt, lgui, rcntl, rshift, ralt, rgui
     0x001d, 0x002a, 0x0038, 0xe05b, 0xe01d, 0x0036, 0xe038, 0xe05c
 };
 
-#define RELEASEBIT 0x80
+#تعریف_کړه RELEASEBIT 0x80
 
 // Translate data from KeyToScanCode[] to calls to process_key().
-static void
-prockeys(u16 scancode, u8 key_release, u8 mods)
+ساكن فراغ
+prockeys(u16 scancode, u8 کلی_release, u8 mods)
 {
-    if (scancode > 0xff) {
-        if (scancode == 0xe145) {
+    إذا (scancode > 0xff) {
+        إذا (scancode == 0xe145) {
             // XXX - a real AT keyboard would immediately send the key release
-            if (mods & ((1<<0) | (1<<4))) {
+            إذا (mods & ((1<<0) | (1<<4))) {
                 // Cntr+Break key
-                process_key(0xe0);
-                process_key(0x46 | key_release);
-            } else {
+                process_کلی(0xe0);
+                process_کلی(0x46 | کلی_release);
+            } وإلا {
                 // Pause key
-                process_key(0xe1);
-                process_key(0x1d | key_release);
-                process_key(0x45 | key_release);
+                process_کلی(0xe1);
+                process_کلی(0x1d | کلی_release);
+                process_کلی(0x45 | کلی_release);
             }
-            return;
-        } else if (scancode == 0xe037 && mods & ((1<<2) | (1<<6))) {
+            أرجع;
+        } وإلا إذا (scancode == 0xe037 && mods & ((1<<2) | (1<<6))) {
             // Alt+SysReq key
-            process_key(0x54 | key_release);
-            return;
+            process_کلی(0x54 | کلی_release);
+            أرجع;
         }
-        process_key(0xe0);
+        process_کلی(0xe0);
     }
-    process_key(scancode | key_release);
+    process_کلی(scancode | کلی_release);
 }
 
 // Handle a USB key press/release event.
-static void
-procscankey(u8 key, u8 key_release, u8 mods)
+ساكن فراغ
+procscankey(u8 کلی, u8 کلی_release, u8 mods)
 {
-    if (key >= ARRAY_SIZE(KeyToScanCode))
-        return;
-    u16 scancode = GET_GLOBAL(KeyToScanCode[key]);
-    if (scancode)
-        prockeys(scancode, key_release, mods);
+    إذا (کلی >= ARRAY_اندازه(کلی_منزل_لټون_کوډ))
+        أرجع;
+    u16 scancode = GET_GLOBAL(کلی_منزل_لټون_کوډ[کلی]);
+    إذا (scancode)
+        prockeys(scancode, کلی_release, mods);
 }
 
 // Handle a USB modifier press/release event.
-static void
-procmodkey(u8 mods, u8 key_release)
+ساكن فراغ
+procmodkey(u8 mods, u8 کلی_release)
 {
-    int i;
-    for (i=0; mods; i++)
-        if (mods & (1<<i)) {
+    صحيح i;
+    لكل (i=0; mods; i++)
+        إذا (mods & (1<<i)) {
             // Modifier key change.
-            prockeys(GET_GLOBAL(ModifierToScanCode[i]), key_release, 0);
+            prockeys(GET_GLOBAL(Modifier_منزل_لټون_کوډ[i]), کلی_release, 0);
             mods &= ~(1<<i);
         }
 }
 
-struct usbkeyinfo {
-    union {
-        struct {
+بنية usbkeyinfo {
+    اتحاد {
+        بنية {
             u8 modifiers;
             u8 repeatcount;
-            u8 keys[6];
+            u8 کلیګانې[6];
         };
-        u64 data;
+        u64 معلومات;
     };
 };
-struct usbkeyinfo LastUSBkey VARLOW;
+بنية usbkeyinfo وروستی_USBkey VARLOW;
 
 // Process USB keyboard data.
-static void
-handle_key(struct keyevent *data)
+ساكن فراغ
+handle_کلی(بنية keyevent *معلومات)
 {
-    dprintf(9, "Got key %x %x\n", data->modifiers, data->keys[0]);
+    dprintf(9, "Got key %x %x\n", معلومات->modifiers, معلومات->کلیګانې[0]);
 
     // Load old keys.
-    struct usbkeyinfo old;
-    old.data = GET_LOW(LastUSBkey.data);
+    بنية usbkeyinfo old;
+    old.معلومات = GET_ټیټ(وروستی_USBkey.معلومات);
 
     // Check for keys no longer pressed.
-    int addpos = 0;
-    int i;
-    for (i=0; i<ARRAY_SIZE(old.keys); i++) {
-        u8 key = old.keys[i];
-        if (!key)
-            break;
-        int j;
-        for (j=0;; j++) {
-            if (j>=ARRAY_SIZE(data->keys)) {
+    صحيح addpos = 0;
+    صحيح i;
+    لكل (i=0; i<ARRAY_اندازه(old.کلیګانې); i++) {
+        u8 کلی = old.کلیګانې[i];
+        إذا (!کلی)
+            اكسر;
+        صحيح j;
+        لكل (j=0;; j++) {
+            إذا (j>=ARRAY_اندازه(معلومات->کلیګانې)) {
                 // Key released.
-                procscankey(key, RELEASEBIT, data->modifiers);
-                if (i+1 >= ARRAY_SIZE(old.keys) || !old.keys[i+1])
+                procscankey(کلی, RELEASEBIT, معلومات->modifiers);
+                إذا (i+1 >= ARRAY_اندازه(old.کلیګانې) || !old.کلیګانې[i+1])
                     // Last pressed key released - disable repeat.
                     old.repeatcount = 0xff;
-                break;
+                اكسر;
             }
-            if (data->keys[j] == key) {
+            إذا (معلومات->کلیګانې[j] == کلی) {
                 // Key still pressed.
-                data->keys[j] = 0;
-                old.keys[addpos++] = key;
-                break;
+                معلومات->کلیګانې[j] = 0;
+                old.کلیګانې[addpos++] = کلی;
+                اكسر;
             }
         }
     }
-    procmodkey(old.modifiers & ~data->modifiers, RELEASEBIT);
+    procmodkey(old.modifiers & ~معلومات->modifiers, RELEASEBIT);
 
     // Process new keys
-    procmodkey(data->modifiers & ~old.modifiers, 0);
-    old.modifiers = data->modifiers;
-    for (i=0; i<ARRAY_SIZE(data->keys); i++) {
-        u8 key = data->keys[i];
-        if (!key)
-            continue;
+    procmodkey(معلومات->modifiers & ~old.modifiers, 0);
+    old.modifiers = معلومات->modifiers;
+    لكل (i=0; i<ARRAY_اندازه(معلومات->کلیګانې); i++) {
+        u8 کلی = معلومات->کلیګانې[i];
+        إذا (!کلی)
+            استمر;
         // New key pressed.
-        procscankey(key, 0, data->modifiers);
-        old.keys[addpos++] = key;
+        procscankey(کلی, 0, معلومات->modifiers);
+        old.کلیګانې[addpos++] = کلی;
         old.repeatcount = KEYREPEATWAITMS / KEYREPEATMS + 1;
     }
-    if (addpos < ARRAY_SIZE(old.keys))
-        old.keys[addpos] = 0;
+    إذا (addpos < ARRAY_اندازه(old.کلیګانې))
+        old.کلیګانې[addpos] = 0;
 
     // Check for key repeat event.
-    if (addpos) {
-        if (!old.repeatcount)
-            procscankey(old.keys[addpos-1], 0, data->modifiers);
-        else if (old.repeatcount != 0xff)
+    إذا (addpos) {
+        إذا (!old.repeatcount)
+            procscankey(old.کلیګانې[addpos-1], 0, معلومات->modifiers);
+        وإلا إذا (old.repeatcount != 0xff)
             old.repeatcount--;
     }
 
     // Update old keys
-    SET_LOW(LastUSBkey.data, old.data);
+    سېټ_ټیټ(وروستی_USBkey.معلومات, old.معلومات);
 }
 
 // Check if a USB keyboard event is pending and process it if so.
-static void
-usb_check_key(void)
+ساكن فراغ
+usb_check_کلی(فراغ)
 {
-    if (! CONFIG_USB_KEYBOARD)
-        return;
+    إذا (! CONFIG_USB_KEYBOARD)
+        أرجع;
 
-    for (struct pipe_node *node = GET_GLOBAL(keyboards);
-         node;
-         node = GET_GLOBALFLAT(node->next)) {
-        struct usb_pipe *pipe = GET_GLOBALFLAT(node->pipe);
+    لكل (بنية pipe_غوټه *غوټه = GET_GLOBAL(keyboards);
+         غوټه;
+         غوټه = GET_GLOBALFLAT(غوټه->بل)) {
+        بنية usb_pipe *pipe = GET_GLOBALFLAT(غوټه->pipe);
 
-        for (;;) {
-            u8 data[MAX_KBD_EVENT];
-            int ret = usb_poll_intr(pipe, data);
-            if (ret)
-                break;
-            handle_key((void*)data);
+        لكل (;;) {
+            u8 معلومات[MAX_KBD_EVENT];
+            صحيح ret = usb_poll_intr(pipe, معلومات);
+            إذا (ret)
+                اكسر;
+            handle_کلی((فراغ*)معلومات);
         }
     }
 }
 
 // Test if USB keyboard is active.
-inline int
-usb_kbd_active(void)
+مضمن صحيح
+usb_kbd_فعال(فراغ)
 {
-    if (! CONFIG_USB_KEYBOARD)
-        return 0;
+    إذا (! CONFIG_USB_KEYBOARD)
+        أرجع 0;
 
-    return GET_GLOBAL(keyboards) != NULL;
+    أرجع GET_GLOBAL(keyboards) != عدم;
 }
 
 // Handle a ps2 style keyboard command.
-inline int
-usb_kbd_command(int command, u8 *param)
+مضمن صحيح
+usb_kbd_command(صحيح command, u8 *param)
 {
-    if (! CONFIG_USB_KEYBOARD)
-        return -1;
+    إذا (! CONFIG_USB_KEYBOARD)
+        أرجع -1;
     dprintf(9, "usb keyboard cmd=%x\n", command);
-    switch (command) {
-    case ATKBD_CMD_GETID:
+    بدل (command) {
+    حالة ATKBD_CMD_GETID:
         // Return the id of a standard AT keyboard.
         param[0] = 0xab;
         param[1] = 0x83;
-        return 0;
-    default:
-        return -1;
+        أرجع 0;
+    افتراضي:
+        أرجع -1;
     }
 }
 
@@ -393,13 +393,13 @@ usb_kbd_command(int command, u8 *param)
  ****************************************************************/
 
 // Process USB mouse data.
-static void
-handle_mouse(struct mouseevent *data)
+ساكن فراغ
+handle_mouse(بنية mouseevent *معلومات)
 {
-    dprintf(9, "Got mouse b=%x x=%x y=%x\n", data->buttons, data->x, data->y);
+    dprintf(9, "Got mouse b=%x x=%x y=%x\n", معلومات->buttons, معلومات->x, معلومات->y);
 
-    s8 x = data->x, y = -data->y;
-    u8 flag = ((data->buttons & 0x7) | (1<<3)
+    s8 x = معلومات->x, y = -معلومات->y;
+    u8 flag = ((معلومات->buttons & 0x7) | (1<<3)
                | (x & 0x80 ? (1<<4) : 0) | (y & 0x80 ? (1<<5) : 0));
     process_mouse(flag);
     process_mouse(x);
@@ -407,76 +407,76 @@ handle_mouse(struct mouseevent *data)
 }
 
 // Check if a USB mouse event is pending and process it if so.
-static void
-usb_check_mouse(void)
+ساكن فراغ
+usb_check_mouse(فراغ)
 {
-    if (! CONFIG_USB_MOUSE)
-        return;
+    إذا (! CONFIG_USB_MOUSE)
+        أرجع;
 
-    for (struct pipe_node *node = GET_GLOBAL(mice);
-         node;
-         node = GET_GLOBALFLAT(node->next)) {
-        struct usb_pipe *pipe = GET_GLOBALFLAT(node->pipe);
+    لكل (بنية pipe_غوټه *غوټه = GET_GLOBAL(mice);
+         غوټه;
+         غوټه = GET_GLOBALFLAT(غوټه->بل)) {
+        بنية usb_pipe *pipe = GET_GLOBALFLAT(غوټه->pipe);
 
-        for (;;) {
-            u8 data[MAX_MOUSE_EVENT];
-            int ret = usb_poll_intr(pipe, data);
-            if (ret)
-                break;
-            handle_mouse((void*)data);
+        لكل (;;) {
+            u8 معلومات[MAX_MOUSE_EVENT];
+            صحيح ret = usb_poll_intr(pipe, معلومات);
+            إذا (ret)
+                اكسر;
+            handle_mouse((فراغ*)معلومات);
         }
     }
 }
 
 // Test if USB mouse is active.
-inline int
-usb_mouse_active(void)
+مضمن صحيح
+usb_mouse_فعال(فراغ)
 {
-    if (! CONFIG_USB_MOUSE)
-        return 0;
+    إذا (! CONFIG_USB_MOUSE)
+        أرجع 0;
 
-    return GET_GLOBAL(mice) != NULL;
+    أرجع GET_GLOBAL(mice) != عدم;
 }
 
 // Handle a ps2 style mouse command.
-inline int
-usb_mouse_command(int command, u8 *param)
+مضمن صحيح
+usb_mouse_command(صحيح command, u8 *param)
 {
-    if (! CONFIG_USB_MOUSE)
-        return -1;
+    إذا (! CONFIG_USB_MOUSE)
+        أرجع -1;
     dprintf(9, "usb mouse cmd=%x\n", command);
-    switch (command) {
-    case PSMOUSE_CMD_ENABLE:
-    case PSMOUSE_CMD_DISABLE:
-    case PSMOUSE_CMD_SETSCALE11:
-        return 0;
-    case PSMOUSE_CMD_SETSCALE21:
-    case PSMOUSE_CMD_SETRATE:
-    case PSMOUSE_CMD_SETRES:
+    بدل (command) {
+    حالة PSMOUSE_CMD_ENABLE:
+    حالة PSMOUSE_CMD_DISABLE:
+    حالة PSMOUSE_CMD_SETSCALE11:
+        أرجع 0;
+    حالة PSMOUSE_CMD_SETSCALE21:
+    حالة PSMOUSE_CMD_SETRATE:
+    حالة PSMOUSE_CMD_SETRES:
         // XXX
-        return 0;
-    case PSMOUSE_CMD_RESET_BAT:
-    case PSMOUSE_CMD_GETID:
+        أرجع 0;
+    حالة PSMOUSE_CMD_RESET_BAT:
+    حالة PSMOUSE_CMD_GETID:
         // Return the id of a standard AT mouse.
         param[0] = 0xaa;
         param[1] = 0x00;
-        return 0;
+        أرجع 0;
 
-    case PSMOUSE_CMD_GETINFO:
+    حالة PSMOUSE_CMD_GETINFO:
         param[0] = 0x00;
         param[1] = 4;
         param[2] = 100;
-        return 0;
+        أرجع 0;
 
-    default:
-        return -1;
+    افتراضي:
+        أرجع -1;
     }
 }
 
 // Check for USB events pending - called periodically from timer interrupt.
-void
-usb_check_event(void)
+فراغ
+usb_check_event(فراغ)
 {
-    usb_check_key();
+    usb_check_کلی();
     usb_check_mouse();
 }

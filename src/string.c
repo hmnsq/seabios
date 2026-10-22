@@ -4,9 +4,9 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "stacks.h" // yield
-#include "string.h" // memcpy
-#include "farptr.h" // SET_SEG
+#ضمن "stacks.h" // yield
+#ضمن "string.h" // memcpy
+#ضمن "farptr.h" // SET_SEG
 
 
 /****************************************************************
@@ -15,120 +15,120 @@
 
 // Sum the bytes in the specified area.
 u8
-checksum_far(u16 buf_seg, void *buf_far, u32 len)
+checksum_far(u16 buf_seg, فراغ *buf_far, u32 len)
 {
-    SET_SEG(ES, buf_seg);
+    سېټ_SEG(ES, buf_seg);
     u32 i;
-    u8 sum = 0;
-    for (i=0; i<len; i++)
-        sum += GET_VAR(ES, ((u8*)buf_far)[i]);
-    return sum;
+    u8 مجموعه = 0;
+    لكل (i=0; i<len; i++)
+        مجموعه += GET_VAR(ES, ((u8*)buf_far)[i]);
+    أرجع مجموعه;
 }
 
 u8
-checksum(void *buf, u32 len)
+checksum(فراغ *buf, u32 len)
 {
-    return checksum_far(GET_SEG(SS), buf, len);
+    أرجع checksum_far(GET_SEG(SS), buf, len);
 }
 
-size_t
-strlen(const char *s)
+اندازه_t
+مزي_اوږدوالی(ثابت حرف *s)
 {
-    if (__builtin_constant_p(s))
-        return __builtin_strlen(s);
-    const char *p = s;
-    while (*p)
+    إذا (__builtin_constant_p(s))
+        أرجع __builtin_strlen(s);
+    ثابت حرف *p = s;
+    طالما (*p)
         p++;
-    return p-s;
+    أرجع p-s;
 }
 
-int
-memcmp_far(u16 s1seg, const void *s1, u16 s2seg, const void *s2, size_t n)
+صحيح
+memcmp_far(u16 s1seg, ثابت فراغ *s1, u16 s2seg, ثابت فراغ *s2, اندازه_t n)
 {
-    while (n--) {
-        int d = GET_FARVAR(s1seg, *(u8*)s1) - GET_FARVAR(s2seg, *(u8*)s2);
-        if (d)
-            return d < 0 ? -1 : 1;
+    طالما (n--) {
+        صحيح d = GET_FARVAR(s1seg, *(u8*)s1) - GET_FARVAR(s2seg, *(u8*)s2);
+        إذا (d)
+            أرجع d < 0 ? -1 : 1;
         s1++;
         s2++;
     }
-    return 0;
+    أرجع 0;
 }
 
 // Compare two areas of memory.
-int
-memcmp(const void *s1, const void *s2, size_t n)
+صحيح
+memcmp(ثابت فراغ *s1, ثابت فراغ *s2, اندازه_t n)
 {
-    while (n) {
-        if (*(u8*)s1 != *(u8*)s2)
-            return *(u8*)s1 < *(u8*)s2 ? -1 : 1;
+    طالما (n) {
+        إذا (*(u8*)s1 != *(u8*)s2)
+            أرجع *(u8*)s1 < *(u8*)s2 ? -1 : 1;
         s1++;
         s2++;
         n--;
     }
-    return 0;
+    أرجع 0;
 }
 
 // Compare two strings.
-int
-strcmp(const char *s1, const char *s2)
+صحيح
+strcmp(ثابت حرف *s1, ثابت حرف *s2)
 {
-    for (;;) {
-        if (*s1 != *s2)
-            return *s1 < *s2 ? -1 : 1;
-        if (! *s1)
-            return 0;
+    لكل (;;) {
+        إذا (*s1 != *s2)
+            أرجع *s1 < *s2 ? -1 : 1;
+        إذا (! *s1)
+            أرجع 0;
         s1++;
         s2++;
     }
 }
 
-inline void
-memset_far(u16 d_seg, void *d_far, u8 c, size_t len)
+مضمن فراغ
+memset_far(u16 d_seg, فراغ *d_far, u8 c, اندازه_t len)
 {
-    SET_SEG(ES, d_seg);
-    asm volatile(
+    سېټ_SEG(ES, d_seg);
+    asm متطاير(
         "rep stosb %%es:(%%di)"
         : "+c"(len), "+D"(d_far)
         : "a"(c), "m" (__segment_ES)
         : "cc", "memory");
 }
 
-inline void
-memset16_far(u16 d_seg, void *d_far, u16 c, size_t len)
+مضمن فراغ
+memset16_far(u16 d_seg, فراغ *d_far, u16 c, اندازه_t len)
 {
     len /= 2;
-    SET_SEG(ES, d_seg);
-    asm volatile(
+    سېټ_SEG(ES, d_seg);
+    asm متطاير(
         "rep stosw %%es:(%%di)"
         : "+c"(len), "+D"(d_far)
         : "a"(c), "m" (__segment_ES)
         : "cc", "memory");
 }
 
-void *
-memset(void *s, int c, size_t n)
+فراغ *
+memset(فراغ *s, صحيح c, اندازه_t n)
 {
-    while (n)
-        ((char *)s)[--n] = c;
-    return s;
+    طالما (n)
+        ((حرف *)s)[--n] = c;
+    أرجع s;
 }
 
-void memset_fl(void *ptr, u8 val, size_t size)
+فراغ memset_fl(فراغ *ptr, u8 val, اندازه_t اندازه)
 {
-    if (MODESEGMENT)
-        memset_far(FLATPTR_TO_SEG(ptr), (void*)(FLATPTR_TO_OFFSET(ptr)),
-                   val, size);
-    else
-        memset(ptr, val, size);
+    إذا (MODESEGMENT)
+        memset_far(FLATPTR_منزل_SEG(ptr), (فراغ*)(FLATPTR_منزل_دننه_واټن(ptr)),
+                   val, اندازه);
+    وإلا
+        memset(ptr, val, اندازه);
 }
 
-inline void
-memcpy_far(u16 d_seg, void *d_far, u16 s_seg, const void *s_far, size_t len)
+مضمن فراغ
+memcpy_far(u16 d_seg, فراغ *d_far, u16 s_seg, ثابت فراغ *s_far, اندازه_t len)
 {
-    SET_SEG(ES, d_seg);
+    سېټ_SEG(ES, d_seg);
     u16 bkup_ds;
-    asm volatile(
+    asm متطاير(
         "movw %%ds, %w0\n"
         "movw %w4, %%ds\n"
         "rep movsb (%%si),%%es:(%%di)\n"
@@ -138,114 +138,114 @@ memcpy_far(u16 d_seg, void *d_far, u16 s_seg, const void *s_far, size_t len)
         : "cc", "memory");
 }
 
-inline void
-memcpy_fl(void *d_fl, const void *s_fl, size_t len)
+مضمن فراغ
+memcpy_fl(فراغ *d_fl, ثابت فراغ *s_fl, اندازه_t len)
 {
-    if (MODESEGMENT)
-        memcpy_far(FLATPTR_TO_SEG(d_fl), (void*)FLATPTR_TO_OFFSET(d_fl)
-                   , FLATPTR_TO_SEG(s_fl), (void*)FLATPTR_TO_OFFSET(s_fl)
+    إذا (MODESEGMENT)
+        memcpy_far(FLATPTR_منزل_SEG(d_fl), (فراغ*)FLATPTR_منزل_دننه_واټن(d_fl)
+                   , FLATPTR_منزل_SEG(s_fl), (فراغ*)FLATPTR_منزل_دننه_واټن(s_fl)
                    , len);
-    else
-        memcpy(d_fl, s_fl, len);
+    وإلا
+        حافظه_نقل(d_fl, s_fl, len);
 }
 
-void *
-#undef memcpy
-memcpy(void *d1, const void *s1, size_t len)
-#if MODESEGMENT == 0
-#define memcpy __builtin_memcpy
-#endif
+فراغ *
+#تعریف_لغوه حافظه_نقل
+حافظه_نقل(فراغ *d1, ثابت فراغ *s1, اندازه_t len)
+#إذا MODESEGMENT == 0
+#تعریف_کړه حافظه_نقل __builtin_memcpy
+#د_که_پای
 {
-    SET_SEG(ES, GET_SEG(SS));
-    void *d = d1;
-    if (((u32)d1 | (u32)s1 | len) & 3) {
+    سېټ_SEG(ES, GET_SEG(SS));
+    فراغ *d = d1;
+    إذا (((u32)d1 | (u32)s1 | len) & 3) {
         // non-aligned memcpy
-        asm volatile(
+        asm متطاير(
             "rep movsb (%%esi),%%es:(%%edi)"
             : "+c"(len), "+S"(s1), "+D"(d)
             : "m" (__segment_ES) : "cc", "memory");
-        return d1;
+        أرجع d1;
     }
     // Common case - use 4-byte copy
     len /= 4;
-    asm volatile(
+    asm متطاير(
         "rep movsl (%%esi),%%es:(%%edi)"
         : "+c"(len), "+S"(s1), "+D"(d)
         : "m" (__segment_ES) : "cc", "memory");
-    return d1;
+    أرجع d1;
 }
 
 // Copy to/from memory mapped IO.  IO mem is very slow, so yield
 // periodically.
-void
-iomemcpy(void *d, const void *s, u32 len)
+فراغ
+iomemcpy(فراغ *d, ثابت فراغ *s, u32 len)
 {
     ASSERT32FLAT();
     yield();
-    while (len > 3) {
+    طالما (len > 3) {
         u32 copylen = len;
-        if (copylen > 2048)
+        إذا (copylen > 2048)
             copylen = 2048;
         copylen /= 4;
         len -= copylen * 4;
-        asm volatile(
+        asm متطاير(
             "rep movsl (%%esi),%%es:(%%edi)"
             : "+c"(copylen), "+S"(s), "+D"(d)
             : : "cc", "memory");
         yield();
     }
-    if (len)
+    إذا (len)
         // Copy any remaining bytes.
-        memcpy(d, s, len);
+        حافظه_نقل(d, s, len);
 }
 
-void *
-memmove(void *d, const void *s, size_t len)
+فراغ *
+memmove(فراغ *d, ثابت فراغ *s, اندازه_t len)
 {
-    if (s >= d)
-        return memcpy(d, s, len);
+    إذا (s >= d)
+        أرجع حافظه_نقل(d, s, len);
 
     d += len-1;
     s += len-1;
-    while (len--) {
-        *(char*)d = *(char*)s;
+    طالما (len--) {
+        *(حرف*)d = *(حرف*)s;
         d--;
         s--;
     }
 
-    return d;
+    أرجع d;
 }
 
 // Copy a string - truncating it if necessary.
-char *
-strtcpy(char *dest, const char *src, size_t len)
+حرف *
+strtcpy(حرف *dest, ثابت حرف *src, اندازه_t len)
 {
-    char *d = dest;
-    while (--len && *src != '\0')
+    حرف *d = dest;
+    طالما (--len && *src != '\0')
         *d++ = *src++;
     *d = '\0';
-    return dest;
+    أرجع dest;
 }
 
 // locate first occurrence of character c in the string s
-char *
-strchr(const char *s, int c)
+حرف *
+strchr(ثابت حرف *s, صحيح c)
 {
-    for (; *s; s++)
-        if (*s == c)
-            return (char*)s;
-    return NULL;
+    لكل (; *s; s++)
+        إذا (*s == c)
+            أرجع (حرف*)s;
+    أرجع عدم;
 }
 
 // Remove any trailing blank characters (spaces, new lines, carriage returns)
-char *
-nullTrailingSpace(char *buf)
+حرف *
+nullTrailingSpace(حرف *buf)
 {
-    int len = strlen(buf);
-    char *end = &buf[len-1];
-    while (end >= buf && *end <= ' ')
-        *(end--) = '\0';
-    while (*buf && *buf <= ' ')
+    صحيح len = مزي_اوږدوالی(buf);
+    حرف *پای_ټکی = &buf[len-1];
+    طالما (پای_ټکی >= buf && *پای_ټکی <= ' ')
+        *(پای_ټکی--) = '\0';
+    طالما (*buf && *buf <= ' ')
         buf++;
-    return buf;
+    أرجع buf;
 }

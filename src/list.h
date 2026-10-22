@@ -1,91 +1,91 @@
-#ifndef __LIST_H
-#define __LIST_H
+#که_نه_تعریف_شوی __LIST_H
+#تعریف_کړه __LIST_H
 
-#include "types.h" // container_of
+#ضمن "types.h" // container_of
 
 
 /****************************************************************
  * hlist - Double linked lists with a single pointer list head
  ****************************************************************/
 
-struct hlist_node {
-    struct hlist_node *next, **pprev;
+بنية hlist_غوټه {
+    بنية hlist_غوټه *بل, **pprev;
 };
 
-struct hlist_head {
-    struct hlist_node *first;
+بنية hlist_سر {
+    بنية hlist_غوټه *لومړی;
 };
 
-static inline int
-hlist_empty(const struct hlist_head *h)
+ساكن مضمن صحيح
+hlist_تشه(ثابت بنية hlist_سر *h)
 {
-    return !h->first;
+    أرجع !h->لومړی;
 }
 
-static inline void
-hlist_del(struct hlist_node *n)
+ساكن مضمن فراغ
+hlist_del(بنية hlist_غوټه *n)
 {
-    struct hlist_node *next = n->next;
-    struct hlist_node **pprev = n->pprev;
-    *pprev = next;
-    if (next)
-        next->pprev = pprev;
+    بنية hlist_غوټه *بل = n->بل;
+    بنية hlist_غوټه **pprev = n->pprev;
+    *pprev = بل;
+    إذا (بل)
+        بل->pprev = pprev;
 }
 
-static inline void
-hlist_add(struct hlist_node *n, struct hlist_node **pprev)
+ساكن مضمن فراغ
+hlist_جمع_کړه(بنية hlist_غوټه *n, بنية hlist_غوټه **pprev)
 {
-    struct hlist_node *next = *pprev;
+    بنية hlist_غوټه *بل = *pprev;
     n->pprev = pprev;
-    n->next = next;
-    if (next)
-        next->pprev = &n->next;
+    n->بل = بل;
+    إذا (بل)
+        بل->pprev = &n->بل;
     *pprev = n;
 }
 
-static inline void
-hlist_add_head(struct hlist_node *n, struct hlist_head *h)
+ساكن مضمن فراغ
+hlist_جمع_کړه_سر(بنية hlist_غوټه *n, بنية hlist_سر *h)
 {
-    hlist_add(n, &h->first);
+    hlist_جمع_کړه(n, &h->لومړی);
 }
 
-static inline void
-hlist_add_before(struct hlist_node *n, struct hlist_node *next)
+ساكن مضمن فراغ
+hlist_جمع_کړه_before(بنية hlist_غوټه *n, بنية hlist_غوټه *بل)
 {
-    hlist_add(n, next->pprev);
+    hlist_جمع_کړه(n, بل->pprev);
 }
 
-static inline void
-hlist_add_after(struct hlist_node *n, struct hlist_node *prev)
+ساكن مضمن فراغ
+hlist_جمع_کړه_after(بنية hlist_غوټه *n, بنية hlist_غوټه *prev)
 {
-    hlist_add(n, &prev->next);
+    hlist_جمع_کړه(n, &prev->بل);
 }
 
-static inline void
-hlist_replace(struct hlist_node *old, struct hlist_node *new)
+ساكن مضمن فراغ
+hlist_replace(بنية hlist_غوټه *old, بنية hlist_غوټه *new)
 {
-    new->next = old->next;
-    if (new->next)
-        new->next->pprev = &new->next;
+    new->بل = old->بل;
+    إذا (new->بل)
+        new->بل->pprev = &new->بل;
     new->pprev = old->pprev;
     *new->pprev = new;
 }
 
-#define hlist_for_each_entry(pos, head, member)                         \
-    for (pos = container_of((head)->first, typeof(*pos), member)        \
-         ; pos != container_of(NULL, typeof(*pos), member)              \
-         ; pos = container_of(pos->member.next, typeof(*pos), member))
+#تعریف_کړه hlist_for_each_ثبت(pos, سر, member)                         \
+    لكل (pos = container_د((سر)->لومړی, typeof(*pos), member)        \
+         ; pos != container_د(عدم, typeof(*pos), member)              \
+         ; pos = container_د(pos->member.بل, typeof(*pos), member))
 
-#define hlist_for_each_entry_safe(pos, n, head, member)                 \
-    for (pos = container_of((head)->first, typeof(*pos), member)        \
-         ; pos != container_of(NULL, typeof(*pos), member)              \
-             && ({ n = pos->member.next; 1; })                          \
-         ; pos = container_of(n, typeof(*pos), member))
+#تعریف_کړه hlist_for_each_ثبت_خوندي(pos, n, سر, member)                 \
+    لكل (pos = container_د((سر)->لومړی, typeof(*pos), member)        \
+         ; pos != container_د(عدم, typeof(*pos), member)              \
+             && ({ n = pos->member.بل; 1; })                          \
+         ; pos = container_د(n, typeof(*pos), member))
 
-#define hlist_for_each_entry_pprev(pos, pprev, head, member)            \
-    for (pprev = &(head)->first                                         \
-         ; *pprev && ({ pos=container_of(*pprev, typeof(*pos), member); 1; }) \
-         ; pprev = &(*pprev)->next)
+#تعریف_کړه hlist_for_each_ثبت_pprev(pos, pprev, سر, member)            \
+    لكل (pprev = &(سر)->لومړی                                         \
+         ; *pprev && ({ pos=container_د(*pprev, typeof(*pos), member); 1; }) \
+         ; pprev = &(*pprev)->بل)
 
 
-#endif // list.h
+#د_که_پای // list.h

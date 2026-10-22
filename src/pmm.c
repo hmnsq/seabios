@@ -4,79 +4,79 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // FUNC16
-#include "config.h" // CONFIG_*
-#include "malloc.h" // _malloc
-#include "output.h" // dprintf
-#include "e820map.h" // struct e820entry
-#include "std/pmm.h" // PMM_SIGNATURE
-#include "string.h" // checksum
-#include "util.h" // pmm_init
-#include "x86.h" // __ffs
+#ضمن "biosvar.h" // FUNC16
+#ضمن "config.h" // CONFIG_*
+#ضمن "malloc.h" // _malloc
+#ضمن "output.h" // dprintf
+#ضمن "e820map.h" // struct e820entry
+#ضمن "std/pmm.h" // PMM_SIGNATURE
+#ضمن "string.h" // checksum
+#ضمن "util.h" // pmm_init
+#ضمن "x86.h" // __ffs
 
-extern struct pmmheader PMMHEADER;
+خارجي بنية pmmheader PMMHEADER;
 
-#if CONFIG_PMM
-struct pmmheader PMMHEADER __aligned(16) VARFSEG = {
+#إذا CONFIG_PMM
+بنية pmmheader PMMHEADER __aligned(16) VARFSEG = {
     .signature = PMM_SIGNATURE,
-    .version = 0x01,
-    .length = sizeof(PMMHEADER),
+    .نسخه_2 = 0x01,
+    .اوږدتیا = حجم(PMMHEADER),
 };
-#endif
+#د_که_پای
 
 // PMM - allocate
-static u32
-handle_pmm00(u16 *args)
+ساكن u32
+handle_pmm00(u16 *دلیلونه)
 {
-    u32 length = *(u32*)&args[1], handle = *(u32*)&args[3];
-    u16 flags = args[5];
+    u32 اوږدتیا = *(u32*)&دلیلونه[1], handle = *(u32*)&دلیلونه[3];
+    u16 flags = دلیلونه[5];
     dprintf(3, "pmm00: length=%x handle=%x flags=%x\n"
-            , length, handle, flags);
-    struct zone_s *lowzone = &ZoneTmpLow, *highzone = &ZoneTmpHigh;
-    if (flags & 8) {
+            , اوږدتیا, handle, flags);
+    بنية zone_s *lowzone = &Zone_Tmp_ټیټ, *highzone = &Zone_Tmp_لوړ;
+    إذا (flags & 8) {
         // Permanent memory request.
-        lowzone = &ZoneLow;
-        highzone = &ZoneHigh;
+        lowzone = &Zone_ټیټ;
+        highzone = &Zone_لوړ;
     }
-    if (!length) {
+    إذا (!اوږدتیا) {
         // Memory size request
-        switch (flags & 3) {
-        default:
-        case 0:
-            return 0;
-        case 1:
-            return malloc_getspace(lowzone);
-        case 2:
-            return malloc_getspace(highzone);
-        case 3: {
+        بدل (flags & 3) {
+        افتراضي:
+        حالة 0:
+            أرجع 0;
+        حالة 1:
+            أرجع malloc_getspace(lowzone);
+        حالة 2:
+            أرجع malloc_getspace(highzone);
+        حالة 3: {
             u32 spacelow = malloc_getspace(lowzone);
             u32 spacehigh = malloc_getspace(highzone);
-            if (spacelow > spacehigh)
-                return spacelow;
-            return spacehigh;
+            إذا (spacelow > spacehigh)
+                أرجع spacelow;
+            أرجع spacehigh;
         }
         }
     }
-    u32 size = length * 16;
-    if ((s32)size <= 0)
-        return 0;
+    u32 اندازه = اوږدتیا * 16;
+    إذا ((s32)اندازه <= 0)
+        أرجع 0;
     u32 align = MALLOC_MIN_ALIGN;
-    if (flags & 4) {
-        align = 1<<__ffs(size);
-        if (align < MALLOC_MIN_ALIGN)
+    إذا (flags & 4) {
+        align = 1<<__ffs(اندازه);
+        إذا (align < MALLOC_MIN_ALIGN)
             align = MALLOC_MIN_ALIGN;
     }
-    u32 data;
-    switch (flags & 3) {
-    default:
-    case 0:
-        return 0;
-    case 1:
-        data = malloc_palloc(lowzone, size, align);
-        break;
-    case 2:
-        data = malloc_palloc(highzone, size, align);
-        if (!data && (flags & 8)) {
+    u32 معلومات;
+    بدل (flags & 3) {
+    افتراضي:
+    حالة 0:
+        أرجع 0;
+    حالة 1:
+        معلومات = malloc_palloc(lowzone, اندازه, align);
+        اكسر;
+    حالة 2:
+        معلومات = malloc_palloc(highzone, اندازه, align);
+        إذا (!معلومات && (flags & 8)) {
             /*
              * We are out of meory.  So go allocate from the (big)
              * ZoneTmpHigh instead and reserve the block in the e820
@@ -84,93 +84,93 @@ handle_pmm00(u16 *args)
              * handle big permanent allocations without needing a big
              * ZoneHigh.
              */
-            data = malloc_palloc(&ZoneTmpHigh, size, align);
-            if (data)
-                e820_add(data, size, E820_RESERVED);
+            معلومات = malloc_palloc(&Zone_Tmp_لوړ, اندازه, align);
+            إذا (معلومات)
+                e820_جمع_کړه(معلومات, اندازه, E820_RESERVED);
         }
-        break;
-    case 3: {
-        data = malloc_palloc(lowzone, size, align);
-        if (!data)
-            data = malloc_palloc(highzone, size, align);
+        اكسر;
+    حالة 3: {
+        معلومات = malloc_palloc(lowzone, اندازه, align);
+        إذا (!معلومات)
+            معلومات = malloc_palloc(highzone, اندازه, align);
     }
     }
-    if (data && handle != MALLOC_DEFAULT_HANDLE)
-        malloc_sethandle(data, handle);
-    return data;
+    إذا (معلومات && handle != MALLOC_DEFAULT_HANDLE)
+        malloc_sethandle(معلومات, handle);
+    أرجع معلومات;
 }
 
 // PMM - find
-static u32
-handle_pmm01(u16 *args)
+ساكن u32
+handle_pmm01(u16 *دلیلونه)
 {
-    u32 handle = *(u32*)&args[1];
+    u32 handle = *(u32*)&دلیلونه[1];
     dprintf(3, "pmm01: handle=%x\n", handle);
-    if (handle == MALLOC_DEFAULT_HANDLE)
-        return 0;
-    return malloc_findhandle(handle);
+    إذا (handle == MALLOC_DEFAULT_HANDLE)
+        أرجع 0;
+    أرجع malloc_findhandle(handle);
 }
 
 // PMM - deallocate
-static u32
-handle_pmm02(u16 *args)
+ساكن u32
+handle_pmm02(u16 *دلیلونه)
 {
-    u32 buffer = *(u32*)&args[1];
-    dprintf(3, "pmm02: buffer=%x\n", buffer);
-    int ret = malloc_pfree(buffer);
-    if (ret)
+    u32 بفر = *(u32*)&دلیلونه[1];
+    dprintf(3, "pmm02: buffer=%x\n", بفر);
+    صحيح ret = malloc_pfree(بفر);
+    إذا (ret)
         // Error
-        return 1;
-    return 0;
+        أرجع 1;
+    أرجع 0;
 }
 
-static u32
-handle_pmmXX(u16 *args)
+ساكن u32
+handle_pmmXX(u16 *دلیلونه)
 {
-    return PMM_FUNCTION_NOT_SUPPORTED;
+    أرجع PMM_FUNCTION_NOT_SUPPORTED;
 }
 
 u32 VISIBLE32INIT
-handle_pmm(u16 *args)
+handle_pmm(u16 *دلیلونه)
 {
     ASSERT32FLAT();
-    if (! CONFIG_PMM)
-        return PMM_FUNCTION_NOT_SUPPORTED;
+    إذا (! CONFIG_PMM)
+        أرجع PMM_FUNCTION_NOT_SUPPORTED;
 
-    u16 arg1 = args[0];
+    u16 arg1 = دلیلونه[0];
     dprintf(DEBUG_HDL_pmm, "pmm call arg1=%x\n", arg1);
 
     u32 ret;
-    switch (arg1) {
-    case 0x00: ret = handle_pmm00(args); break;
-    case 0x01: ret = handle_pmm01(args); break;
-    case 0x02: ret = handle_pmm02(args); break;
-    default:   ret = handle_pmmXX(args); break;
+    بدل (arg1) {
+    حالة 0x00: ret = handle_pmm00(دلیلونه); اكسر;
+    حالة 0x01: ret = handle_pmm01(دلیلونه); اكسر;
+    حالة 0x02: ret = handle_pmm02(دلیلونه); اكسر;
+    افتراضي:   ret = handle_pmmXX(دلیلونه); اكسر;
     }
 
-    return ret;
+    أرجع ret;
 }
 
-void
-pmm_init(void)
+فراغ
+pmm_init(فراغ)
 {
-    if (! CONFIG_PMM)
-        return;
+    إذا (! CONFIG_PMM)
+        أرجع;
 
     dprintf(3, "init PMM\n");
 
-    PMMHEADER.entry = FUNC16(entry_pmm);
-    PMMHEADER.checksum -= checksum(&PMMHEADER, sizeof(PMMHEADER));
+    PMMHEADER.ثبت = FUNC16(ثبت_pmm);
+    PMMHEADER.checksum -= checksum(&PMMHEADER, حجم(PMMHEADER));
 }
 
-void
-pmm_prepboot(void)
+فراغ
+pmm_prepboot(فراغ)
 {
-    if (! CONFIG_PMM)
-        return;
+    إذا (! CONFIG_PMM)
+        أرجع;
 
     dprintf(3, "finalize PMM\n");
 
     PMMHEADER.signature = 0;
-    PMMHEADER.entry.segoff = 0;
+    PMMHEADER.ثبت.segoff = 0;
 }

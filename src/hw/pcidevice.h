@@ -1,76 +1,76 @@
-#ifndef __PCIDEVICE_H
-#define __PCIDEVICE_H
+#که_نه_تعریف_شوی __PCIDEVICE_H
+#تعریف_کړه __PCIDEVICE_H
 
-#include "types.h" // u32
-#include "list.h" // hlist_node
+#ضمن "types.h" // u32
+#ضمن "list.h" // hlist_node
 
-struct pci_device {
+بنية pci_device {
     u16 bdf;
     u8 rootbus;
-    struct hlist_node node;
-    struct pci_device *parent;
+    بنية hlist_غوټه غوټه;
+    بنية pci_device *پلار;
 
     // Configuration space device information
     u16 vendor, device;
     u16 class;
     u8 prog_if, revision;
-    u8 header_type;
+    u8 سرلیک_type;
     u8 secondary_bus;
 
     // Local information on device.
-    int have_driver;
+    صحيح have_driver;
 };
-extern struct hlist_head PCIDevices;
-extern int MaxPCIBus;
+خارجي بنية hlist_سر PCIDevices;
+خارجي صحيح MaxPCIBus;
 
-static inline u32 pci_classprog(struct pci_device *pci) {
-    return (pci->class << 8) | pci->prog_if;
+ساكن مضمن u32 pci_classprog(بنية pci_device *pci) {
+    أرجع (pci->class << 8) | pci->prog_if;
 }
 
-#define foreachpci(PCI)                                 \
-    hlist_for_each_entry(PCI, &PCIDevices, node)
+#تعریف_کړه foreachpci(PCI)                                 \
+    hlist_for_each_ثبت(PCI, &PCIDevices, غوټه)
 
-#define PCI_ANY_ID      (~0)
-struct pci_device_id {
+#تعریف_کړه PCI_ANY_ID      (~0)
+بنية pci_device_id {
     u32 vendid;
     u32 devid;
     u32 class;
-    u32 class_mask;
-    void (*func)(struct pci_device *pci, void *arg);
+    u32 class_ماسک;
+    فراغ (*func)(بنية pci_device *pci, فراغ *arg);
 };
 
-#define PCI_DEVICE(vendor_id, device_id, init_func)     \
+#تعریف_کړه PCI_DEVICE(vendor_id, device_id, init_func)     \
     {                                                   \
         .vendid = (vendor_id),                          \
         .devid = (device_id),                           \
         .class = PCI_ANY_ID,                            \
-        .class_mask = 0,                                \
+        .class_ماسک = 0,                                \
         .func = (init_func)                             \
     }
 
-#define PCI_DEVICE_CLASS(vendor_id, device_id, class_code, init_func)   \
+#تعریف_کړه PCI_DEVICE_CLASS(vendor_id, device_id, class_کوډ, init_func)   \
     {                                                                   \
         .vendid = (vendor_id),                                          \
         .devid = (device_id),                                           \
-        .class = (class_code),                                          \
-        .class_mask = ~0,                                               \
+        .class = (class_کوډ),                                          \
+        .class_ماسک = ~0,                                               \
         .func = (init_func)                                             \
     }
 
-#define PCI_DEVICE_END                          \
+#تعریف_کړه PCI_DEVICE_پای_ټکی                          \
     {                                           \
         .vendid = 0,                            \
     }
 
-void pci_probe_devices(void);
-struct pci_device *pci_find_device(u16 vendid, u16 devid);
-struct pci_device *pci_find_class(u16 classid);
-int pci_init_device(const struct pci_device_id *ids
-                    , struct pci_device *pci, void *arg);
-struct pci_device *pci_find_init_device(const struct pci_device_id *ids
-                                        , void *arg);
-void pci_enable_busmaster(struct pci_device *pci);
-u16 pci_enable_iobar(struct pci_device *pci, u32 addr);
-void *pci_enable_membar(struct pci_device *pci, u32 addr);
+فراغ pci_probe_devices(فراغ);
+بنية pci_device *pci_پیدا_کړه_device(u16 vendid, u16 devid);
+بنية pci_device *pci_پیدا_کړه_class(u16 classid);
+صحيح pci_init_device(ثابت بنية pci_device_id *ids
+                    , بنية pci_device *pci, فراغ *arg);
+بنية pci_device *pci_پیدا_کړه_init_device(ثابت بنية pci_device_id *ids
+                                        , فراغ *arg);
+فراغ pci_enable_busmaster(بنية pci_device *pci);
+u16 pci_enable_iobar(بنية pci_device *pci, u32 addr);
+فراغ *pci_enable_membar(بنية pci_device *pci, u32 addr);
 
-#endif // pcidevice.h
+#د_که_پای // pcidevice.h

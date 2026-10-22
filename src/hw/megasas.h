@@ -1,8 +1,8 @@
-#ifndef __MEGASAS_H
-#define __MEGASAS_H
+#که_نه_تعریف_شوی __MEGASAS_H
+#تعریف_کړه __MEGASAS_H
 
-struct disk_op_s;
-int megasas_process_op(struct disk_op_s *op);
-void megasas_setup(void);
+بنية disk_op_s;
+صحيح megasas_process_op(بنية disk_op_s *op);
+فراغ megasas_تیاری(فراغ);
 
-#endif /* __MEGASAS_H */
+#د_که_پای /* __MEGASAS_H */

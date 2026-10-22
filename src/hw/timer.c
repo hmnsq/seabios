@@ -4,147 +4,147 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_LOW
-#include "config.h" // CONFIG_*
-#include "output.h" // dprintf
-#include "stacks.h" // yield
-#include "util.h" // timer_setup
-#include "x86.h" // cpuid
+#ضمن "biosvar.h" // GET_LOW
+#ضمن "config.h" // CONFIG_*
+#ضمن "output.h" // dprintf
+#ضمن "stacks.h" // yield
+#ضمن "util.h" // timer_setup
+#ضمن "x86.h" // cpuid
 
-#define PORT_PIT_COUNTER0      0x0040
-#define PORT_PIT_COUNTER1      0x0041
-#define PORT_PIT_COUNTER2      0x0042
-#define PORT_PIT_MODE          0x0043
-#define PORT_PS2_CTRLB         0x0061
+#تعریف_کړه پورټ_PIT_COUNTER0      0x0040
+#تعریف_کړه پورټ_PIT_COUNTER1      0x0041
+#تعریف_کړه پورټ_PIT_COUNTER2      0x0042
+#تعریف_کړه پورټ_PIT_ډېرپېښ          0x0043
+#تعریف_کړه پورټ_PS2_CTRLB         0x0061
 
 // Bits for PORT_PIT_MODE
-#define PM_SEL_TIMER0   (0<<6)
-#define PM_SEL_TIMER1   (1<<6)
-#define PM_SEL_TIMER2   (2<<6)
-#define PM_SEL_READBACK (3<<6)
-#define PM_ACCESS_LATCH  (0<<4)
-#define PM_ACCESS_LOBYTE (1<<4)
-#define PM_ACCESS_HIBYTE (2<<4)
-#define PM_ACCESS_WORD   (3<<4)
-#define PM_MODE0 (0<<1)
-#define PM_MODE1 (1<<1)
-#define PM_MODE2 (2<<1)
-#define PM_MODE3 (3<<1)
-#define PM_MODE4 (4<<1)
-#define PM_MODE5 (5<<1)
-#define PM_CNT_BINARY (0<<0)
-#define PM_CNT_BCD    (1<<0)
-#define PM_READ_COUNTER0 (1<<1)
-#define PM_READ_COUNTER1 (1<<2)
-#define PM_READ_COUNTER2 (1<<3)
-#define PM_READ_STATUSVALUE (0<<4)
-#define PM_READ_VALUE       (1<<4)
-#define PM_READ_STATUS      (2<<4)
+#تعریف_کړه PM_SEL_TIMER0   (0<<6)
+#تعریف_کړه PM_SEL_TIMER1   (1<<6)
+#تعریف_کړه PM_SEL_TIMER2   (2<<6)
+#تعریف_کړه PM_SEL_READBACK (3<<6)
+#تعریف_کړه PM_ACCESS_LATCH  (0<<4)
+#تعریف_کړه PM_ACCESS_LOBYTE (1<<4)
+#تعریف_کړه PM_ACCESS_HIBYTE (2<<4)
+#تعریف_کړه PM_ACCESS_کلمه   (3<<4)
+#تعریف_کړه PM_MODE0 (0<<1)
+#تعریف_کړه PM_MODE1 (1<<1)
+#تعریف_کړه PM_MODE2 (2<<1)
+#تعریف_کړه PM_MODE3 (3<<1)
+#تعریف_کړه PM_MODE4 (4<<1)
+#تعریف_کړه PM_MODE5 (5<<1)
+#تعریف_کړه PM_CNT_دوګونی (0<<0)
+#تعریف_کړه PM_CNT_BCD    (1<<0)
+#تعریف_کړه PM_READ_COUNTER0 (1<<1)
+#تعریف_کړه PM_READ_COUNTER1 (1<<2)
+#تعریف_کړه PM_READ_COUNTER2 (1<<3)
+#تعریف_کړه PM_READ_STATUSVALUE (0<<4)
+#تعریف_کړه PM_READ_ارزښت       (1<<4)
+#تعریف_کړه PM_READ_حالت      (2<<4)
 
 // Bits for PORT_PS2_CTRLB
-#define PPCB_T2GATE (1<<0)
-#define PPCB_SPKR   (1<<1)
-#define PPCB_T2OUT  (1<<5)
+#تعریف_کړه PPCB_T2GATE (1<<0)
+#تعریف_کړه PPCB_SPKR   (1<<1)
+#تعریف_کړه PPCB_T2_بهر  (1<<5)
 
-#define PMTIMER_HZ 3579545      // Underlying Hz of the PM Timer
-#define PMTIMER_TO_PIT 3        // Ratio of pmtimer rate to pit rate
+#تعریف_کړه PMTIMER_HZ 3579545      // Underlying Hz of the PM Timer
+#تعریف_کړه PMTIMER_منزل_PIT 3        // Ratio of pmtimer rate to pit rate
 
-u32 TimerKHz VARFSEG = DIV_ROUND_UP(PMTIMER_HZ, 1000 * PMTIMER_TO_PIT);
-u16 TimerPort VARFSEG = PORT_PIT_COUNTER0;
-u8 ShiftTSC VARFSEG;
+u32 TimerKHz VARFSEG = DIV_پړاو_پورته(PMTIMER_HZ, 1000 * PMTIMER_منزل_PIT);
+u16 Timer_پورټ VARFSEG = پورټ_PIT_COUNTER0;
+u8 ښويدنه_TSC VARFSEG;
 
 
 /****************************************************************
  * Internal timer setup
  ****************************************************************/
 
-#define CALIBRATE_COUNT 0x800   // Approx 1.7ms
+#تعریف_کړه CALIBRATE_شمېر 0x800   // Approx 1.7ms
 
 // Calibrate the CPU time-stamp-counter
-static void
-tsctimer_setup(void)
+ساكن فراغ
+tsctimer_تیاری(فراغ)
 {
     // Setup "timer2"
-    u8 orig = inb(PORT_PS2_CTRLB);
-    outb((orig & ~PPCB_SPKR) | PPCB_T2GATE, PORT_PS2_CTRLB);
+    u8 orig = inb(پورټ_PS2_CTRLB);
+    outb((orig & ~PPCB_SPKR) | PPCB_T2GATE, پورټ_PS2_CTRLB);
     /* binary, mode 0, LSB/MSB, Ch 2 */
-    outb(PM_SEL_TIMER2|PM_ACCESS_WORD|PM_MODE0|PM_CNT_BINARY, PORT_PIT_MODE);
+    outb(PM_SEL_TIMER2|PM_ACCESS_کلمه|PM_MODE0|PM_CNT_دوګونی, پورټ_PIT_ډېرپېښ);
     /* LSB of ticks */
-    outb(CALIBRATE_COUNT & 0xFF, PORT_PIT_COUNTER2);
+    outb(CALIBRATE_شمېر & 0xFF, پورټ_PIT_COUNTER2);
     /* MSB of ticks */
-    outb(CALIBRATE_COUNT >> 8, PORT_PIT_COUNTER2);
+    outb(CALIBRATE_شمېر >> 8, پورټ_PIT_COUNTER2);
 
-    u64 start = rdtscll();
-    while ((inb(PORT_PS2_CTRLB) & PPCB_T2OUT) == 0)
+    u64 پیل = rdtscll();
+    طالما ((inb(پورټ_PS2_CTRLB) & PPCB_T2_بهر) == 0)
         ;
-    u64 end = rdtscll();
+    u64 پای_ټکی = rdtscll();
 
     // Restore PORT_PS2_CTRLB
-    outb(orig, PORT_PS2_CTRLB);
+    outb(orig, پورټ_PS2_CTRLB);
 
     // Store calibrated cpu khz.
-    u64 diff = end - start;
+    u64 diff = پای_ټکی - پیل;
     dprintf(6, "tsc calibrate start=%u end=%u diff=%u\n"
-            , (u32)start, (u32)end, (u32)diff);
-    u64 t = DIV_ROUND_UP(diff * PMTIMER_HZ, CALIBRATE_COUNT);
-    while (t >= (1<<24)) {
-        ShiftTSC++;
+            , (u32)پیل, (u32)پای_ټکی, (u32)diff);
+    u64 t = DIV_پړاو_پورته(diff * PMTIMER_HZ, CALIBRATE_شمېر);
+    طالما (t >= (1<<24)) {
+        ښويدنه_TSC++;
         t = (t + 1) >> 1;
     }
-    TimerKHz = DIV_ROUND_UP((u32)t, 1000 * PMTIMER_TO_PIT);
-    TimerPort = 0;
+    TimerKHz = DIV_پړاو_پورته((u32)t, 1000 * PMTIMER_منزل_PIT);
+    Timer_پورټ = 0;
 
-    dprintf(1, "CPU Mhz=%u\n", (TimerKHz << ShiftTSC) / 1000);
+    dprintf(1, "CPU Mhz=%u\n", (TimerKHz << ښويدنه_TSC) / 1000);
 }
 
 // Setup internal timers.
-void
-timer_setup(void)
+فراغ
+timer_تیاری(فراغ)
 {
-    if (!CONFIG_TSC_TIMER)
-        return;
-    if (TimerPort != PORT_PIT_COUNTER0)
-        return; // have timer already
+    إذا (!CONFIG_TSC_TIMER)
+        أرجع;
+    إذا (Timer_پورټ != پورټ_PIT_COUNTER0)
+        أرجع; // have timer already
 
     // Check if CPU has a timestamp counter
     u32 eax, ebx, ecx, edx, cpuid_features = 0;
     cpuid(0, &eax, &ebx, &ecx, &edx);
-    if (eax > 0)
+    إذا (eax > 0)
         cpuid(1, &eax, &ebx, &ecx, &cpuid_features);
-    if (cpuid_features & CPUID_TSC)
-        tsctimer_setup();
+    إذا (cpuid_features & CPUID_TSC)
+        tsctimer_تیاری();
 }
 
-void
-tsctimer_setfreq(u32 khz, const char *src)
+فراغ
+tsctimer_setfreq(u32 khz, ثابت حرف *src)
 {
-    if (!CONFIG_TSC_TIMER)
-        return;
-    if (TimerPort != PORT_PIT_COUNTER0)
-        return; // have timer already
+    إذا (!CONFIG_TSC_TIMER)
+        أرجع;
+    إذا (Timer_پورټ != پورټ_PIT_COUNTER0)
+        أرجع; // have timer already
 
     TimerKHz = khz;
-    ShiftTSC = 0;
-    while (TimerKHz >= 6000) {
-        ShiftTSC++;
+    ښويدنه_TSC = 0;
+    طالما (TimerKHz >= 6000) {
+        ښويدنه_TSC++;
         TimerKHz = (TimerKHz + 1) >> 1;
     }
-    TimerPort = 0;
+    Timer_پورټ = 0;
 
-    dprintf(1, "CPU Mhz=%u (%s)\n", (TimerKHz << ShiftTSC) / 1000, src);
+    dprintf(1, "CPU Mhz=%u (%s)\n", (TimerKHz << ښويدنه_TSC) / 1000, src);
 }
 
-void
-pmtimer_setup(u16 ioport)
+فراغ
+pmtimer_تیاری(u16 ioport)
 {
-    if (!CONFIG_PMTIMER)
-        return;
-    if (TimerPort != PORT_PIT_COUNTER0)
-        return; // have timer already
+    إذا (!CONFIG_PMTIMER)
+        أرجع;
+    إذا (Timer_پورټ != پورټ_PIT_COUNTER0)
+        أرجع; // have timer already
 
     dprintf(1, "Using pmtimer, ioport 0x%x\n", ioport);
-    TimerPort = ioport;
-    TimerKHz = DIV_ROUND_UP(PMTIMER_HZ, 1000);
+    Timer_پورټ = ioport;
+    TimerKHz = DIV_پړاو_پورته(PMTIMER_HZ, 1000);
 }
 
 
@@ -152,99 +152,99 @@ pmtimer_setup(u16 ioport)
  * Internal timer reading
  ****************************************************************/
 
-u32 TimerLast VARLOW;
+u32 Timer_وروستی VARLOW;
 
 // Add extra high bits to timers that have less than 32bits of precision.
-static u32
-timer_adjust_bits(u32 value, u32 validbits)
+ساكن u32
+timer_adjust_بټونه(u32 ارزښت, u32 validbits)
 {
-    u32 last = GET_LOW(TimerLast);
-    value = (last & ~validbits) | (value & validbits);
-    if (value < last)
-        value += validbits + 1;
-    SET_LOW(TimerLast, value);
-    return value;
+    u32 وروستی = GET_ټیټ(Timer_وروستی);
+    ارزښت = (وروستی & ~validbits) | (ارزښت & validbits);
+    إذا (ارزښت < وروستی)
+        ارزښت += validbits + 1;
+    سېټ_ټیټ(Timer_وروستی, ارزښت);
+    أرجع ارزښت;
 }
 
 // Sample the current timer value.
-static u32
-timer_read(void)
+ساكن u32
+timer_read(فراغ)
 {
-    u16 port = GET_GLOBAL(TimerPort);
-    if (CONFIG_TSC_TIMER && !port)
+    u16 پورټ = GET_GLOBAL(Timer_پورټ);
+    إذا (CONFIG_TSC_TIMER && !پورټ)
         // Read from CPU TSC
-        return rdtscll() >> GET_GLOBAL(ShiftTSC);
-    if (CONFIG_PMTIMER && port != PORT_PIT_COUNTER0)
+        أرجع rdtscll() >> GET_GLOBAL(ښويدنه_TSC);
+    إذا (CONFIG_PMTIMER && پورټ != پورټ_PIT_COUNTER0)
         // Read from PMTIMER
-        return timer_adjust_bits(inl(port), 0xffffff);
+        أرجع timer_adjust_بټونه(inl(پورټ), 0xffffff);
     // Read from PIT.
-    outb(PM_SEL_READBACK | PM_READ_VALUE | PM_READ_COUNTER0, PORT_PIT_MODE);
-    u16 v = inb(PORT_PIT_COUNTER0) | (inb(PORT_PIT_COUNTER0) << 8);
-    return timer_adjust_bits(-v, 0xffff);
+    outb(PM_SEL_READBACK | PM_READ_ارزښت | PM_READ_COUNTER0, پورټ_PIT_ډېرپېښ);
+    u16 v = inb(پورټ_PIT_COUNTER0) | (inb(پورټ_PIT_COUNTER0) << 8);
+    أرجع timer_adjust_بټونه(-v, 0xffff);
 }
 
 // Return the TSC value that is 'msecs' time in the future.
 u32
 timer_calc(u32 msecs)
 {
-    return timer_read() + (GET_GLOBAL(TimerKHz) * msecs);
+    أرجع timer_read() + (GET_GLOBAL(TimerKHz) * msecs);
 }
 u32
 timer_calc_usec(u32 usecs)
 {
     u32 cur = timer_read(), khz = GET_GLOBAL(TimerKHz);
-    if (usecs > 500000)
-        return cur + DIV_ROUND_UP(usecs, 1000) * khz;
-    return cur + DIV_ROUND_UP(usecs * khz, 1000);
+    إذا (usecs > 500000)
+        أرجع cur + DIV_پړاو_پورته(usecs, 1000) * khz;
+    أرجع cur + DIV_پړاو_پورته(usecs * khz, 1000);
 }
-static u32
+ساكن u32
 timer_calc_nsec(u32 nsecs)
 {
     u32 cur = timer_read(), khz = GET_GLOBAL(TimerKHz);
-    if (nsecs > 500000)
-        return cur + DIV_ROUND_UP(nsecs, 1000000) * khz;
-    return cur + DIV_ROUND_UP(nsecs * khz, 1000000);
+    إذا (nsecs > 500000)
+        أرجع cur + DIV_پړاو_پورته(nsecs, 1000000) * khz;
+    أرجع cur + DIV_پړاو_پورته(nsecs * khz, 1000000);
 }
 
 // Check if the current time is past a previously calculated end time.
-int
-timer_check(u32 end)
+صحيح
+timer_check(u32 پای_ټکی)
 {
-    return (s32)(timer_read() - end) > 0;
+    أرجع (s32)(timer_read() - پای_ټکی) > 0;
 }
 
-static void
-timer_delay(u32 end)
+ساكن فراغ
+timer_delay(u32 پای_ټکی)
 {
-    while (!timer_check(end))
+    طالما (!timer_check(پای_ټکی))
         cpu_relax();
 }
 
-static void
-timer_sleep(u32 end)
+ساكن فراغ
+timer_sleep(u32 پای_ټکی)
 {
-    while (!timer_check(end))
+    طالما (!timer_check(پای_ټکی))
         yield();
 }
 
-void ndelay(u32 count) {
-    timer_delay(timer_calc_nsec(count));
+فراغ ndelay(u32 شمېر) {
+    timer_delay(timer_calc_nsec(شمېر));
 }
-void udelay(u32 count) {
-    timer_delay(timer_calc_usec(count));
+فراغ udelay(u32 شمېر) {
+    timer_delay(timer_calc_usec(شمېر));
 }
-void mdelay(u32 count) {
-    timer_delay(timer_calc(count));
+فراغ mdelay(u32 شمېر) {
+    timer_delay(timer_calc(شمېر));
 }
 
-void nsleep(u32 count) {
-    timer_sleep(timer_calc_nsec(count));
+فراغ nsleep(u32 شمېر) {
+    timer_sleep(timer_calc_nsec(شمېر));
 }
-void usleep(u32 count) {
-    timer_sleep(timer_calc_usec(count));
+فراغ usleep(u32 شمېر) {
+    timer_sleep(timer_calc_usec(شمېر));
 }
-void msleep(u32 count) {
-    timer_sleep(timer_calc(count));
+فراغ msleep(u32 شمېر) {
+    timer_sleep(timer_calc(شمېر));
 }
 
 
@@ -252,32 +252,32 @@ void msleep(u32 count) {
  * PIT setup
  ****************************************************************/
 
-#define PIT_TICK_INTERVAL 65536 // Default interval for 18.2Hz timer
+#تعریف_کړه PIT_TICK_INTERVAL 65536 // Default interval for 18.2Hz timer
 
 // Return the number of milliseconds in 'ticks' number of timer irqs.
 u32
-ticks_to_ms(u32 ticks)
+ticks_منزل_ms(u32 ticks)
 {
-    u32 t = PIT_TICK_INTERVAL * 1000 * PMTIMER_TO_PIT * ticks;
-    return DIV_ROUND_UP(t, PMTIMER_HZ);
+    u32 t = PIT_TICK_INTERVAL * 1000 * PMTIMER_منزل_PIT * ticks;
+    أرجع DIV_پړاو_پورته(t, PMTIMER_HZ);
 }
 
 // Return the number of timer irqs in 'ms' number of milliseconds.
 u32
 ticks_from_ms(u32 ms)
 {
-    u32 t = DIV_ROUND_UP((u64)ms * PMTIMER_HZ, PIT_TICK_INTERVAL);
-    return DIV_ROUND_UP(t, 1000 * PMTIMER_TO_PIT);
+    u32 t = DIV_پړاو_پورته((u64)ms * PMTIMER_HZ, PIT_TICK_INTERVAL);
+    أرجع DIV_پړاو_پورته(t, 1000 * PMTIMER_منزل_PIT);
 }
 
-void
-pit_setup(void)
+فراغ
+pit_تیاری(فراغ)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return;
+    إذا (!CONFIG_HARDWARE_IRQ)
+        أرجع;
     // timer0: binary count, 16bit count, mode 2
-    outb(PM_SEL_TIMER0|PM_ACCESS_WORD|PM_MODE2|PM_CNT_BINARY, PORT_PIT_MODE);
+    outb(PM_SEL_TIMER0|PM_ACCESS_کلمه|PM_MODE2|PM_CNT_دوګونی, پورټ_PIT_ډېرپېښ);
     // maximum count of 0000H = 18.2Hz
-    outb(0x0, PORT_PIT_COUNTER0);
-    outb(0x0, PORT_PIT_COUNTER0);
+    outb(0x0, پورټ_PIT_COUNTER0);
+    outb(0x0, پورټ_PIT_COUNTER0);
 }

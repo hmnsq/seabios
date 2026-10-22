@@ -1,23 +1,23 @@
 // Generate assembler offsets.
 
-#include "gen-defs.h" // OFFSET
-#include "bregs.h" // struct bregs
+#ضمن "gen-defs.h" //دننه_واټن
+#ضمن "bregs.h" // struct bregs
 
 /* workaround for a warning with -Wmissing-prototypes */
-void foo(void) VISIBLE16;
+فراغ foo(فراغ) VISIBLE16;
 
-void foo(void)
+فراغ foo(فراغ)
 {
     COMMENT("BREGS");
-    OFFSET(BREGS_es, bregs, es);
-    OFFSET(BREGS_ds, bregs, ds);
-    OFFSET(BREGS_eax, bregs, eax);
-    OFFSET(BREGS_ebx, bregs, ebx);
-    OFFSET(BREGS_ecx, bregs, ecx);
-    OFFSET(BREGS_edx, bregs, edx);
-    OFFSET(BREGS_ebp, bregs, ebp);
-    OFFSET(BREGS_esi, bregs, esi);
-    OFFSET(BREGS_edi, bregs, edi);
-    OFFSET(BREGS_flags, bregs, flags);
-    OFFSET(BREGS_code, bregs, code);
+    دننه_واټن(BREGS_es, bregs, es);
+    دننه_واټن(BREGS_ds, bregs, ds);
+    دننه_واټن(BREGS_eax, bregs, eax);
+    دننه_واټن(BREGS_ebx, bregs, ebx);
+    دننه_واټن(BREGS_ecx, bregs, ecx);
+    دننه_واټن(BREGS_edx, bregs, edx);
+    دننه_واټن(BREGS_ebp, bregs, ebp);
+    دننه_واټن(BREGS_esi, bregs, esi);
+    دننه_واټن(BREGS_edi, bregs, edi);
+    دننه_واټن(BREGS_flags, bregs, flags);
+    دننه_واټن(BREGS_کوډ, bregs, کوډ);
 }

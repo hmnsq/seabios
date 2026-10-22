@@ -1,8 +1,8 @@
-#ifndef __MPT_SCSI_H
-#define __MPT_SCSI_H
+#که_نه_تعریف_شوی __MPT_SCSI_H
+#تعریف_کړه __MPT_SCSI_H
 
-struct disk_op_s;
-int mpt_scsi_process_op(struct disk_op_s *op);
-void mpt_scsi_setup(void);
+بنية disk_op_s;
+صحيح mpt_scsi_process_op(بنية disk_op_s *op);
+فراغ mpt_scsi_تیاری(فراغ);
 
-#endif /* __MPT_SCSI_H */
+#د_که_پای /* __MPT_SCSI_H */

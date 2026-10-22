@@ -39,317 +39,317 @@
  *
  */
 
-#define __LITTLE_ENDIAN
-#include "malloc.h"
-#include "string.h"
-#include "util.h"
-#define ISHIFT 11
+#تعریف_کړه __LITTLE_ENDIAN
+#ضمن "malloc.h"
+#ضمن "string.h"
+#ضمن "util.h"
+#تعریف_کړه ISHIFT 11
 
-#define IFIX(a) ((int)((a) * (1 << ISHIFT) + .5))
-#define IMULT(a, b) (((a) * (b)) >> ISHIFT)
-#define ITOINT(a) ((a) >> ISHIFT)
+#تعریف_کړه IFIX(a) ((صحيح)((a) * (1 << ISHIFT) + .5))
+#تعریف_کړه IMULT(a, b) (((a) * (b)) >> ISHIFT)
+#تعریف_کړه ITOINT(a) ((a) >> ISHIFT)
 
-#ifndef __P
+#که_نه_تعریف_شوی __P
 # define __P(x) x
-#endif
+#د_که_پای
 
 /* special markers */
-#define M_BADHUFF        -1
-#define M_EOF                0x80
+#تعریف_کړه M_BADHUFF        -1
+#تعریف_کړه M_EOF                0x80
 
-struct in {
-    unsigned char *p;
-    unsigned int bits;
-    int left;
-    int marker;
+بنية دننه {
+    بینښه حرف *p;
+    بینښه صحيح بټونه;
+    صحيح کیڼ;
+    صحيح marker;
 
-    int (*func) __P((void *));
-    void *data;
+    صحيح (*func) __P((فراغ *));
+    فراغ *معلومات;
 };
 
 /*********************************/
-struct dec_hufftbl;
-struct enc_hufftbl;
+بنية dec_hufftbl;
+بنية enc_hufftbl;
 
-union hufftblp {
-    struct dec_hufftbl *dhuff;
-    struct enc_hufftbl *ehuff;
+اتحاد hufftblp {
+    بنية dec_hufftbl *dhuff;
+    بنية enc_hufftbl *ehuff;
 };
 
-struct scan {
-    int dc;               /* old dc value */
+بنية لټون {
+    صحيح dc;               /* old dc value */
 
-    union hufftblp hudc;
-    union hufftblp huac;
-    int next;             /* when to switch to next scan */
+    اتحاد hufftblp hudc;
+    اتحاد hufftblp huac;
+    صحيح بل;             /* when to switch to next scan */
 
-    int cid;              /* component id */
-    int hv;               /* horiz/vert, copied from comp */
-    int tq;               /* quant tbl, copied from comp */
+    صحيح cid;              /* component id */
+    صحيح hv;               /* horiz/vert, copied from comp */
+    صحيح tq;               /* quant tbl, copied from comp */
 };
 
 /*********************************/
 
-#define DECBITS 10        /* seems to be the optimum */
+#تعریف_کړه DECBITS 10        /* seems to be the optimum */
 
-struct dec_hufftbl {
-    int maxcode[17];
-    int valptr[16];
-    unsigned char vals[256];
-    unsigned int llvals[1 << DECBITS];
+بنية dec_hufftbl {
+    صحيح maxcode[17];
+    صحيح valptr[16];
+    بینښه حرف vals[256];
+    بینښه صحيح llvals[1 << DECBITS];
 };
 
-static void decode_mcus __P((struct in *, int *, int, struct scan *, int *));
-static int dec_readmarker __P((struct in *));
-static void dec_makehuff __P((struct dec_hufftbl *, int *, unsigned char *));
+ساكن فراغ decode_mcus __P((بنية دننه *, صحيح *, صحيح, بنية لټون *, صحيح *));
+ساكن صحيح dec_readmarker __P((بنية دننه *));
+ساكن فراغ dec_makehuff __P((بنية dec_hufftbl *, صحيح *, بینښه حرف *));
 
-static void setinput __P((struct in *, unsigned char *));
+ساكن فراغ setinput __P((بنية دننه *, بینښه حرف *));
 /*********************************/
 
-#undef PREC
-#define PREC int
+#تعریف_لغوه PREC
+#تعریف_کړه PREC صحيح
 
-static void idctqtab __P((unsigned char *, PREC *));
-static void idct __P((int *, int *, PREC *, PREC, int));
-static void scaleidctqtab __P((PREC *, PREC));
-
-/*********************************/
-
-static void initcol __P((PREC[][64]));
-
-static void col221111 __P((int *, unsigned char *, int));
-static void col221111_16 __P((int *, unsigned char *, int));
-static void col221111_32 __P((int *, unsigned char *, int));
+ساكن فراغ idctqtab __P((بینښه حرف *, PREC *));
+ساكن فراغ idct __P((صحيح *, صحيح *, PREC *, PREC, صحيح));
+ساكن فراغ scaleidctqtab __P((PREC *, PREC));
 
 /*********************************/
 
-#define ERR_NO_SOI 1
-#define ERR_NOT_8BIT 2
-#define ERR_HEIGHT_MISMATCH 3
-#define ERR_WIDTH_MISMATCH 4
-#define ERR_BAD_WIDTH_OR_HEIGHT 5
-#define ERR_TOO_MANY_COMPPS 6
-#define ERR_ILLEGAL_HV 7
-#define ERR_QUANT_TABLE_SELECTOR 8
-#define ERR_NOT_YCBCR_221111 9
-#define ERR_UNKNOWN_CID_IN_SCAN 10
-#define ERR_NOT_SEQUENTIAL_DCT 11
-#define ERR_WRONG_MARKER 12
-#define ERR_NO_EOI 13
-#define ERR_BAD_TABLES 14
-#define ERR_DEPTH_MISMATCH 15
+ساكن فراغ initcol __P((PREC[][64]));
+
+ساكن فراغ col221111 __P((صحيح *, بینښه حرف *, صحيح));
+ساكن فراغ col221111_16 __P((صحيح *, بینښه حرف *, صحيح));
+ساكن فراغ col221111_32 __P((صحيح *, بینښه حرف *, صحيح));
 
 /*********************************/
 
-#define M_SOI   0xd8
-#define M_APP0  0xe0
-#define M_DQT   0xdb
-#define M_SOF0  0xc0
-#define M_DHT   0xc4
-#define M_DRI   0xdd
-#define M_SOS   0xda
-#define M_RST0  0xd0
-#define M_EOI   0xd9
-#define M_COM   0xfe
+#تعریف_کړه ERR_NO_SOI 1
+#تعریف_کړه ERR_NOT_8_بټ 2
+#تعریف_کړه ERR_لوړوالی_MISMATCH 3
+#تعریف_کړه ERR_پلنوالی_MISMATCH 4
+#تعریف_کړه ERR_BAD_پلنوالی_OR_لوړوالی 5
+#تعریف_کړه ERR_TOO_MANY_COMPPS 6
+#تعریف_کړه ERR_ILLEGAL_HV 7
+#تعریف_کړه ERR_QUANT_جدول_SELECTOR 8
+#تعریف_کړه ERR_NOT_YCBCR_221111 9
+#تعریف_کړه ERR_UNKNOWN_CID_دننه_لټون 10
+#تعریف_کړه ERR_NOT_SEQUENTIAL_DCT 11
+#تعریف_کړه ERR_WRONG_MARKER 12
+#تعریف_کړه ERR_NO_EOI 13
+#تعریف_کړه ERR_BAD_TABLES 14
+#تعریف_کړه ERR_ژوروالی_MISMATCH 15
 
-struct comp {
-    int cid;
-    int hv;
-    int tq;
+/*********************************/
+
+#تعریف_کړه M_SOI   0xd8
+#تعریف_کړه M_APP0  0xe0
+#تعریف_کړه M_DQT   0xdb
+#تعریف_کړه M_SOF0  0xc0
+#تعریف_کړه M_DHT   0xc4
+#تعریف_کړه M_DRI   0xdd
+#تعریف_کړه M_SOS   0xda
+#تعریف_کړه M_RST0  0xd0
+#تعریف_کړه M_EOI   0xd9
+#تعریف_کړه M_COM   0xfe
+
+بنية comp {
+    صحيح cid;
+    صحيح hv;
+    صحيح tq;
 };
 
-#define MAXCOMP 4
-struct jpginfo {
-    int nc;   /* number of components */
-    int ns;   /* number of scans */
-    int dri;  /* restart interval */
-    int nm;   /* mcus til next marker */
-    int rm;   /* next restart marker */
+#تعریف_کړه MAXCOMP 4
+بنية jpginfo {
+    صحيح nc;   /* number of components */
+    صحيح ns;   /* number of scans */
+    صحيح dri;  /* restart interval */
+    صحيح nm;   /* mcus til next marker */
+    صحيح rm;   /* next restart marker */
 };
 
-struct jpeg_decdata {
-    int dcts[6 * 64 + 16];
-    int out[64 * 6];
-    int dquant[3][64];
+بنية jpeg_decdata {
+    صحيح dcts[6 * 64 + 16];
+    صحيح بهر[64 * 6];
+    صحيح dquant[3][64];
 
-    unsigned char *datap;
-    struct jpginfo info;
-    struct comp comps[MAXCOMP];
-    struct scan dscans[MAXCOMP];
-    unsigned char quant[4][64];
-    struct dec_hufftbl dhuff[4];
-    struct in in;
+    بینښه حرف *datap;
+    بنية jpginfo info;
+    بنية comp comps[MAXCOMP];
+    بنية لټون dscans[MAXCOMP];
+    بینښه حرف quant[4][64];
+    بنية dec_hufftbl dhuff[4];
+    بنية دننه دننه;
 
-    int height, width;
+    صحيح لوړوالی, پلنوالی;
 };
 
-static int getbyte(struct jpeg_decdata *jpeg)
+ساكن صحيح getbyte(بنية jpeg_decdata *jpeg)
 {
-    return *jpeg->datap++;
+    أرجع *jpeg->datap++;
 }
 
-static int getword(struct jpeg_decdata *jpeg)
+ساكن صحيح getword(بنية jpeg_decdata *jpeg)
 {
-    int c1, c2;
+    صحيح c1, c2;
     c1 = *jpeg->datap++;
     c2 = *jpeg->datap++;
-    return c1 << 8 | c2;
+    أرجع c1 << 8 | c2;
 }
 
-static int readtables(struct jpeg_decdata *jpeg, int till)
+ساكن صحيح readtables(بنية jpeg_decdata *jpeg, صحيح till)
 {
-    int m, l, i, j, lq, pq, tq;
-    int tc, th, tt;
+    صحيح m, l, i, j, lq, pq, tq;
+    صحيح tc, th, tt;
 
-    for (;;) {
-        if (getbyte(jpeg) != 0xff)
-            return -1;
-        if ((m = getbyte(jpeg)) == till)
-            break;
+    لكل (;;) {
+        إذا (getbyte(jpeg) != 0xff)
+            أرجع -1;
+        إذا ((m = getbyte(jpeg)) == till)
+            اكسر;
 
-        switch (m) {
-        case 0xc2:
-            return 0;
+        بدل (m) {
+        حالة 0xc2:
+            أرجع 0;
 
-        case M_DQT:
+        حالة M_DQT:
             lq = getword(jpeg);
-            while (lq > 2) {
+            طالما (lq > 2) {
                 pq = getbyte(jpeg);
                 tq = pq & 15;
-                if (tq > 3)
-                    return -1;
+                إذا (tq > 3)
+                    أرجع -1;
                 pq >>= 4;
-                if (pq != 0)
-                    return -1;
-                for (i = 0; i < 64; i++)
+                إذا (pq != 0)
+                    أرجع -1;
+                لكل (i = 0; i < 64; i++)
                     jpeg->quant[tq][i] = getbyte(jpeg);
                 lq -= 64 + 1;
             }
-            break;
+            اكسر;
 
-        case M_DHT:
+        حالة M_DHT:
             l = getword(jpeg);
-            while (l > 2) {
-                int hufflen[16], k;
-                unsigned char huffvals[256];
+            طالما (l > 2) {
+                صحيح hufflen[16], k;
+                بینښه حرف huffvals[256];
 
                 tc = getbyte(jpeg);
                 th = tc & 15;
                 tc >>= 4;
                 tt = tc * 2 + th;
-                if (tc > 1 || th > 1)
-                    return -1;
-                for (i = 0; i < 16; i++)
+                إذا (tc > 1 || th > 1)
+                    أرجع -1;
+                لكل (i = 0; i < 16; i++)
                     hufflen[i] = getbyte(jpeg);
                 l -= 1 + 16;
                 k = 0;
-                for (i = 0; i < 16; i++) {
-                    for (j = 0; j < hufflen[i]; j++)
+                لكل (i = 0; i < 16; i++) {
+                    لكل (j = 0; j < hufflen[i]; j++)
                         huffvals[k++] = getbyte(jpeg);
                     l -= hufflen[i];
                 }
                 dec_makehuff(jpeg->dhuff + tt, hufflen, huffvals);
             }
-            break;
+            اكسر;
 
-        case M_DRI:
+        حالة M_DRI:
             l = getword(jpeg);
             jpeg->info.dri = getword(jpeg);
-            break;
+            اكسر;
 
-        default:
+        افتراضي:
             l = getword(jpeg);
-            while (l-- > 2)
+            طالما (l-- > 2)
                 getbyte(jpeg);
-            break;
+            اكسر;
         }
     }
-    return 0;
+    أرجع 0;
 }
 
-static void dec_initscans(struct jpeg_decdata *jpeg)
+ساكن فراغ dec_initscans(بنية jpeg_decdata *jpeg)
 {
-    int i;
+    صحيح i;
 
     jpeg->info.nm = jpeg->info.dri + 1;
     jpeg->info.rm = M_RST0;
-    for (i = 0; i < jpeg->info.ns; i++)
+    لكل (i = 0; i < jpeg->info.ns; i++)
         jpeg->dscans[i].dc = 0;
 }
 
-static int dec_checkmarker(struct jpeg_decdata *jpeg)
+ساكن صحيح dec_checkmarker(بنية jpeg_decdata *jpeg)
 {
-    int i;
+    صحيح i;
 
-    if (dec_readmarker(&jpeg->in) != jpeg->info.rm)
-        return -1;
+    إذا (dec_readmarker(&jpeg->دننه) != jpeg->info.rm)
+        أرجع -1;
     jpeg->info.nm = jpeg->info.dri;
     jpeg->info.rm = (jpeg->info.rm + 1) & ~0x08;
-    for (i = 0; i < jpeg->info.ns; i++)
+    لكل (i = 0; i < jpeg->info.ns; i++)
         jpeg->dscans[i].dc = 0;
-    return 0;
+    أرجع 0;
 }
 
-struct jpeg_decdata *jpeg_alloc(void)
+بنية jpeg_decdata *jpeg_alloc(فراغ)
 {
-    struct jpeg_decdata *jpeg = malloc_tmphigh(sizeof(*jpeg));
-    return jpeg;
+    بنية jpeg_decdata *jpeg = malloc_tmphigh(حجم(*jpeg));
+    أرجع jpeg;
 }
 
-int jpeg_decode(struct jpeg_decdata *jpeg, unsigned char *buf)
+صحيح jpeg_decode(بنية jpeg_decdata *jpeg, بینښه حرف *buf)
 {
-    int i, j, m, tac, tdc;
+    صحيح i, j, m, tac, tdc;
 
-    if (!jpeg || !buf)
-        return -1;
+    إذا (!jpeg || !buf)
+        أرجع -1;
     jpeg->datap = buf;
-    if (getbyte(jpeg) != 0xff)
-        return ERR_NO_SOI;
-    if (getbyte(jpeg) != M_SOI)
-        return ERR_NO_SOI;
-    if (readtables(jpeg, M_SOF0))
-        return ERR_BAD_TABLES;
+    إذا (getbyte(jpeg) != 0xff)
+        أرجع ERR_NO_SOI;
+    إذا (getbyte(jpeg) != M_SOI)
+        أرجع ERR_NO_SOI;
+    إذا (readtables(jpeg, M_SOF0))
+        أرجع ERR_BAD_TABLES;
     getword(jpeg);
     i = getbyte(jpeg);
-    if (i != 8)
-        return ERR_NOT_8BIT;
-    jpeg->height = getword(jpeg);
-    jpeg->width = getword(jpeg);
-    if ((jpeg->height & 15) || (jpeg->width & 15))
-        return ERR_BAD_WIDTH_OR_HEIGHT;
+    إذا (i != 8)
+        أرجع ERR_NOT_8_بټ;
+    jpeg->لوړوالی = getword(jpeg);
+    jpeg->پلنوالی = getword(jpeg);
+    إذا ((jpeg->لوړوالی & 15) || (jpeg->پلنوالی & 15))
+        أرجع ERR_BAD_پلنوالی_OR_لوړوالی;
     jpeg->info.nc = getbyte(jpeg);
-    if (jpeg->info.nc > MAXCOMP)
-        return ERR_TOO_MANY_COMPPS;
-    for (i = 0; i < jpeg->info.nc; i++) {
-        int h, v;
+    إذا (jpeg->info.nc > MAXCOMP)
+        أرجع ERR_TOO_MANY_COMPPS;
+    لكل (i = 0; i < jpeg->info.nc; i++) {
+        صحيح h, v;
         jpeg->comps[i].cid = getbyte(jpeg);
         jpeg->comps[i].hv = getbyte(jpeg);
         v = jpeg->comps[i].hv & 15;
         h = jpeg->comps[i].hv >> 4;
         jpeg->comps[i].tq = getbyte(jpeg);
-        if (h > 3 || v > 3)
-            return ERR_ILLEGAL_HV;
-        if (jpeg->comps[i].tq > 3)
-            return ERR_QUANT_TABLE_SELECTOR;
+        إذا (h > 3 || v > 3)
+            أرجع ERR_ILLEGAL_HV;
+        إذا (jpeg->comps[i].tq > 3)
+            أرجع ERR_QUANT_جدول_SELECTOR;
     }
-    if (readtables(jpeg, M_SOS))
-        return ERR_BAD_TABLES;
+    إذا (readtables(jpeg, M_SOS))
+        أرجع ERR_BAD_TABLES;
     getword(jpeg);
     jpeg->info.ns = getbyte(jpeg);
-    if (jpeg->info.ns != 3)
-        return ERR_NOT_YCBCR_221111;
-    for (i = 0; i < 3; i++) {
+    إذا (jpeg->info.ns != 3)
+        أرجع ERR_NOT_YCBCR_221111;
+    لكل (i = 0; i < 3; i++) {
         jpeg->dscans[i].cid = getbyte(jpeg);
         tdc = getbyte(jpeg);
         tac = tdc & 15;
         tdc >>= 4;
-        if (tdc > 1 || tac > 1)
-            return ERR_QUANT_TABLE_SELECTOR;
-        for (j = 0; j < jpeg->info.nc; j++)
-            if (jpeg->comps[j].cid == jpeg->dscans[i].cid)
-                break;
-        if (j == jpeg->info.nc)
-            return ERR_UNKNOWN_CID_IN_SCAN;
+        إذا (tdc > 1 || tac > 1)
+            أرجع ERR_QUANT_جدول_SELECTOR;
+        لكل (j = 0; j < jpeg->info.nc; j++)
+            إذا (jpeg->comps[j].cid == jpeg->dscans[i].cid)
+                اكسر;
+        إذا (j == jpeg->info.nc)
+            أرجع ERR_UNKNOWN_CID_دننه_لټون;
         jpeg->dscans[i].hv = jpeg->comps[j].hv;
         jpeg->dscans[i].tq = jpeg->comps[j].tq;
         jpeg->dscans[i].hudc.dhuff = &jpeg->dhuff[tdc];
@@ -360,269 +360,269 @@ int jpeg_decode(struct jpeg_decdata *jpeg, unsigned char *buf)
     j = getbyte(jpeg);
     m = getbyte(jpeg);
 
-    if (i != 0 || j != 63 || m != 0)
-        return ERR_NOT_SEQUENTIAL_DCT;
+    إذا (i != 0 || j != 63 || m != 0)
+        أرجع ERR_NOT_SEQUENTIAL_DCT;
 
-    if (jpeg->dscans[0].cid != 1 || jpeg->dscans[1].cid != 2
+    إذا (jpeg->dscans[0].cid != 1 || jpeg->dscans[1].cid != 2
         || jpeg->dscans[2].cid != 3)
-        return ERR_NOT_YCBCR_221111;
+        أرجع ERR_NOT_YCBCR_221111;
 
-    if (jpeg->dscans[0].hv != 0x22 || jpeg->dscans[1].hv != 0x11
+    إذا (jpeg->dscans[0].hv != 0x22 || jpeg->dscans[1].hv != 0x11
         || jpeg->dscans[2].hv != 0x11)
-        return ERR_NOT_YCBCR_221111;
+        أرجع ERR_NOT_YCBCR_221111;
 
     idctqtab(jpeg->quant[jpeg->dscans[0].tq], jpeg->dquant[0]);
     idctqtab(jpeg->quant[jpeg->dscans[1].tq], jpeg->dquant[1]);
     idctqtab(jpeg->quant[jpeg->dscans[2].tq], jpeg->dquant[2]);
     initcol(jpeg->dquant);
-    setinput(&jpeg->in, jpeg->datap);
+    setinput(&jpeg->دننه, jpeg->datap);
 
-#if 0
+#إذا 0
     /* landing zone */
     img[len] = 0;
     img[len + 1] = 0xff;
     img[len + 2] = M_EOF;
-#endif
+#د_که_پای
 
     dec_initscans(jpeg);
 
-    return 0;
+    أرجع 0;
 }
 
-void jpeg_get_size(struct jpeg_decdata *jpeg, int *width, int *height)
+فراغ jpeg_get_اندازه(بنية jpeg_decdata *jpeg, صحيح *پلنوالی, صحيح *لوړوالی)
 {
-    *width = jpeg->width;
-    *height = jpeg->height;
+    *پلنوالی = jpeg->پلنوالی;
+    *لوړوالی = jpeg->لوړوالی;
 }
 
-int jpeg_show(struct jpeg_decdata *jpeg, unsigned char *pic, int width
-              , int height, int depth, int bytes_per_line_dest)
+صحيح jpeg_show(بنية jpeg_decdata *jpeg, بینښه حرف *pic, صحيح پلنوالی
+              , صحيح لوړوالی, صحيح ژوروالی, صحيح بایټونه_فی_کرښه_dest)
 {
-    int m, mcusx, mcusy, mx, my, mloffset, jpgbpl;
-    int max[6];
+    صحيح m, mcusx, mcusy, mx, my, mloffset, jpgbpl;
+    صحيح max[6];
 
-    if (jpeg->height != height)
-        return ERR_HEIGHT_MISMATCH;
-    if (jpeg->width != width)
-        return ERR_WIDTH_MISMATCH;
+    إذا (jpeg->لوړوالی != لوړوالی)
+        أرجع ERR_لوړوالی_MISMATCH;
+    إذا (jpeg->پلنوالی != پلنوالی)
+        أرجع ERR_پلنوالی_MISMATCH;
 
-    jpgbpl = width * depth / 8;
-    mloffset = bytes_per_line_dest > jpgbpl ? bytes_per_line_dest : jpgbpl;
+    jpgbpl = پلنوالی * ژوروالی / 8;
+    mloffset = بایټونه_فی_کرښه_dest > jpgbpl ? بایټونه_فی_کرښه_dest : jpgbpl;
 
-    mcusx = jpeg->width >> 4;
-    mcusy = jpeg->height >> 4;
+    mcusx = jpeg->پلنوالی >> 4;
+    mcusy = jpeg->لوړوالی >> 4;
 
-    jpeg->dscans[0].next = 6 - 4;
-    jpeg->dscans[1].next = 6 - 4 - 1;
-    jpeg->dscans[2].next = 6 - 4 - 1 - 1;        /* 411 encoding */
-    for (my = 0; my < mcusy; my++) {
-        for (mx = 0; mx < mcusx; mx++) {
-            if (jpeg->info.dri && !--jpeg->info.nm)
-                if (dec_checkmarker(jpeg))
-                    return ERR_WRONG_MARKER;
+    jpeg->dscans[0].بل = 6 - 4;
+    jpeg->dscans[1].بل = 6 - 4 - 1;
+    jpeg->dscans[2].بل = 6 - 4 - 1 - 1;        /* 411 encoding */
+    لكل (my = 0; my < mcusy; my++) {
+        لكل (mx = 0; mx < mcusx; mx++) {
+            إذا (jpeg->info.dri && !--jpeg->info.nm)
+                إذا (dec_checkmarker(jpeg))
+                    أرجع ERR_WRONG_MARKER;
 
-            decode_mcus(&jpeg->in, jpeg->dcts, 6, jpeg->dscans, max);
-            idct(jpeg->dcts, jpeg->out, jpeg->dquant[0],
+            decode_mcus(&jpeg->دننه, jpeg->dcts, 6, jpeg->dscans, max);
+            idct(jpeg->dcts, jpeg->بهر, jpeg->dquant[0],
                  IFIX(128.5), max[0]);
-            idct(jpeg->dcts + 64, jpeg->out + 64, jpeg->dquant[0],
+            idct(jpeg->dcts + 64, jpeg->بهر + 64, jpeg->dquant[0],
                  IFIX(128.5), max[1]);
-            idct(jpeg->dcts + 128, jpeg->out + 128, jpeg->dquant[0],
+            idct(jpeg->dcts + 128, jpeg->بهر + 128, jpeg->dquant[0],
                  IFIX(128.5), max[2]);
-            idct(jpeg->dcts + 192, jpeg->out + 192, jpeg->dquant[0],
+            idct(jpeg->dcts + 192, jpeg->بهر + 192, jpeg->dquant[0],
                  IFIX(128.5), max[3]);
-            idct(jpeg->dcts + 256, jpeg->out + 256, jpeg->dquant[1],
+            idct(jpeg->dcts + 256, jpeg->بهر + 256, jpeg->dquant[1],
                  IFIX(0.5), max[4]);
-            idct(jpeg->dcts + 320, jpeg->out + 320, jpeg->dquant[2],
+            idct(jpeg->dcts + 320, jpeg->بهر + 320, jpeg->dquant[2],
                  IFIX(0.5), max[5]);
 
-            switch (depth) {
-            case 32:
-                col221111_32(jpeg->out,
+            بدل (ژوروالی) {
+            حالة 32:
+                col221111_32(jpeg->بهر,
                              pic + (my * 16 * mloffset + mx * 16 * 4),
                              mloffset);
-                break;
-            case 24:
-                col221111(jpeg->out,
+                اكسر;
+            حالة 24:
+                col221111(jpeg->بهر,
                           pic + (my * 16 * mloffset + mx * 16 * 3),
                           mloffset);
-                break;
-            case 16:
-                col221111_16(jpeg->out,
+                اكسر;
+            حالة 16:
+                col221111_16(jpeg->بهر,
                              pic + (my * 16 * mloffset + mx * 16 * 2),
                              mloffset);
-                break;
-            default:
-                return ERR_DEPTH_MISMATCH;
-                break;
+                اكسر;
+            افتراضي:
+                أرجع ERR_ژوروالی_MISMATCH;
+                اكسر;
             }
         }
     }
 
-    m = dec_readmarker(&jpeg->in);
-    if (m != M_EOI)
-        return ERR_NO_EOI;
+    m = dec_readmarker(&jpeg->دننه);
+    إذا (m != M_EOI)
+        أرجع ERR_NO_EOI;
 
-    return 0;
+    أرجع 0;
 }
 
 /****************************************************************/
 /**************       huffman decoder             ***************/
 /****************************************************************/
 
-static int fillbits __P((struct in *, int, unsigned int));
-static int dec_rec2 __P((struct in *, struct dec_hufftbl *, int *, int, int));
+ساكن صحيح fillbits __P((بنية دننه *, صحيح, بینښه صحيح));
+ساكن صحيح dec_rec2 __P((بنية دننه *, بنية dec_hufftbl *, صحيح *, صحيح, صحيح));
 
-static void setinput(struct in *in, unsigned char *p)
+ساكن فراغ setinput(بنية دننه *دننه, بینښه حرف *p)
 {
-    in->p = p;
-    in->left = 0;
-    in->bits = 0;
-    in->marker = 0;
+    دننه->p = p;
+    دننه->کیڼ = 0;
+    دننه->بټونه = 0;
+    دننه->marker = 0;
 }
 
-static int fillbits(struct in *in, int le, unsigned int bi)
+ساكن صحيح fillbits(بنية دننه *دننه, صحيح le, بینښه صحيح bi)
 {
-    int b, m;
+    صحيح b, m;
 
-    if (in->marker) {
-        if (le <= 16)
-            in->bits = bi << 16, le += 16;
-        return le;
+    إذا (دننه->marker) {
+        إذا (le <= 16)
+            دننه->بټونه = bi << 16, le += 16;
+        أرجع le;
     }
-    while (le <= 24) {
-        b = *in->p++;
-        if (b == 0xff && (m = *in->p++) != 0) {
-            if (m == M_EOF) {
-                if (in->func && (m = in->func(in->data)) == 0)
-                    continue;
+    طالما (le <= 24) {
+        b = *دننه->p++;
+        إذا (b == 0xff && (m = *دننه->p++) != 0) {
+            إذا (m == M_EOF) {
+                إذا (دننه->func && (m = دننه->func(دننه->معلومات)) == 0)
+                    استمر;
             }
-            in->marker = m;
-            if (le <= 16)
+            دننه->marker = m;
+            إذا (le <= 16)
                 bi = bi << 16, le += 16;
-            break;
+            اكسر;
         }
         bi = bi << 8 | b;
         le += 8;
     }
-    in->bits = bi;                /* tmp... 2 return values needed */
-    return le;
+    دننه->بټونه = bi;                /* tmp... 2 return values needed */
+    أرجع le;
 }
 
-static int dec_readmarker(struct in *in)
+ساكن صحيح dec_readmarker(بنية دننه *دننه)
 {
-    int m;
+    صحيح m;
 
-    in->left = fillbits(in, in->left, in->bits);
-    if ((m = in->marker) == 0)
-        return 0;
-    in->left = 0;
-    in->marker = 0;
-    return m;
+    دننه->کیڼ = fillbits(دننه, دننه->کیڼ, دننه->بټونه);
+    إذا ((m = دننه->marker) == 0)
+        أرجع 0;
+    دننه->کیڼ = 0;
+    دننه->marker = 0;
+    أرجع m;
 }
 
-#define LEBI_DCL       int le, bi
-#define LEBI_GET(in)   (le = in->left, bi = in->bits)
-#define LEBI_PUT(in)   (in->left = le, in->bits = bi)
+#تعریف_کړه LEBI_DCL       صحيح le, bi
+#تعریف_کړه LEBI_GET(دننه)   (le = دننه->کیڼ, bi = دننه->بټونه)
+#تعریف_کړه LEBI_PUT(دننه)   (دننه->کیڼ = le, دننه->بټونه = bi)
 
-#define GETBITS(in, n) (                                     \
-  (le < (n) ? le = fillbits(in, le, bi), bi = in->bits : 0), \
+#تعریف_کړه GETBITS(دننه, n) (                                     \
+  (le < (n) ? le = fillbits(دننه, le, bi), bi = دننه->بټونه : 0), \
   (le -= (n)),                                               \
   bi >> le & ((1 << (n)) - 1)                                \
 )
 
-#define UNGETBITS(in, n) ( \
+#تعریف_کړه UNGETBITS(دننه, n) ( \
   le += (n)                \
 )
 
 
-static int dec_rec2(struct in *in, struct dec_hufftbl *hu, int *runp,
-                    int c, int i)
+ساكن صحيح dec_rec2(بنية دننه *دننه, بنية dec_hufftbl *hu, صحيح *runp,
+                    صحيح c, صحيح i)
 {
     LEBI_DCL;
 
-    LEBI_GET(in);
-    if (i) {
-        UNGETBITS(in, i & 127);
+    LEBI_GET(دننه);
+    إذا (i) {
+        UNGETBITS(دننه, i & 127);
         *runp = i >> 8 & 15;
         i >>= 16;
-    } else {
-        for (i = DECBITS;
-             (c = ((c << 1) | GETBITS(in, 1))) >= (hu->maxcode[i]); i++);
-        if (i >= 16) {
-            in->marker = M_BADHUFF;
-            return 0;
+    } وإلا {
+        لكل (i = DECBITS;
+             (c = ((c << 1) | GETBITS(دننه, 1))) >= (hu->maxcode[i]); i++);
+        إذا (i >= 16) {
+            دننه->marker = M_BADHUFF;
+            أرجع 0;
         }
         i = hu->vals[hu->valptr[i] + c - hu->maxcode[i - 1] * 2];
         *runp = i >> 4;
         i &= 15;
     }
-    if (i == 0) {                /* sigh, 0xf0 is 11 bit */
-        LEBI_PUT(in);
-        return 0;
+    إذا (i == 0) {                /* sigh, 0xf0 is 11 bit */
+        LEBI_PUT(دننه);
+        أرجع 0;
     }
     /* receive part */
-    c = GETBITS(in, i);
-    if (c < (1 << (i - 1)))
+    c = GETBITS(دننه, i);
+    إذا (c < (1 << (i - 1)))
         c += (-1 << i) + 1;
-    LEBI_PUT(in);
-    return c;
+    LEBI_PUT(دننه);
+    أرجع c;
 }
 
-#define DEC_REC(in, hu, r, i)         (  \
-  r = GETBITS(in, DECBITS),              \
+#تعریف_کړه DEC_REC(دننه, hu, r, i)         (  \
+  r = GETBITS(دننه, DECBITS),              \
   i = hu->llvals[r],                     \
   i & 128 ?                              \
     (                                    \
-      UNGETBITS(in, i & 127),            \
+      UNGETBITS(دننه, i & 127),            \
       r = i >> 8 & 15,                   \
       i >> 16                            \
     )                                    \
   :                                      \
     (                                    \
-      LEBI_PUT(in),                      \
-      i = dec_rec2(in, hu, &r, r, i),    \
-      LEBI_GET(in),                      \
+      LEBI_PUT(دننه),                      \
+      i = dec_rec2(دننه, hu, &r, r, i),    \
+      LEBI_GET(دننه),                      \
       i                                  \
     )                                    \
 )
 
-static void decode_mcus(struct in *in, int *dct, int n, struct scan *sc,
-                        int *maxp)
+ساكن فراغ decode_mcus(بنية دننه *دننه, صحيح *dct, صحيح n, بنية لټون *sc,
+                        صحيح *maxp)
 {
-    struct dec_hufftbl *hu;
-    int i, r, t;
+    بنية dec_hufftbl *hu;
+    صحيح i, r, t;
     LEBI_DCL;
 
-    memset(dct, 0, n * 64 * sizeof(*dct));
-    LEBI_GET(in);
-    while (n-- > 0) {
+    memset(dct, 0, n * 64 * حجم(*dct));
+    LEBI_GET(دننه);
+    طالما (n-- > 0) {
         hu = sc->hudc.dhuff;
-        *dct++ = (sc->dc += DEC_REC(in, hu, r, t));
+        *dct++ = (sc->dc += DEC_REC(دننه, hu, r, t));
 
         hu = sc->huac.dhuff;
         i = 63;
-        while (i > 0) {
-            t = DEC_REC(in, hu, r, t);
-            if (t == 0 && r == 0) {
+        طالما (i > 0) {
+            t = DEC_REC(دننه, hu, r, t);
+            إذا (t == 0 && r == 0) {
                 dct += i;
-                break;
+                اكسر;
             }
             dct += r;
             *dct++ = t;
             i -= r + 1;
         }
         *maxp++ = 64 - i;
-        if (n == sc->next)
+        إذا (n == sc->بل)
             sc++;
     }
-    LEBI_PUT(in);
+    LEBI_PUT(دننه);
 }
 
-static void dec_makehuff(struct dec_hufftbl *hu, int *hufflen,
-                         unsigned char *huffvals)
+ساكن فراغ dec_makehuff(بنية dec_hufftbl *hu, صحيح *hufflen,
+                         بینښه حرف *huffvals)
 {
-    int code, k, i, j, d, x, c, v;
-    for (i = 0; i < (1 << DECBITS); i++)
+    صحيح کوډ, k, i, j, d, x, c, v;
+    لكل (i = 0; i < (1 << DECBITS); i++)
         hu->llvals[i] = 0;
 
     /*
@@ -636,32 +636,32 @@ static void dec_makehuff(struct dec_hufftbl *hu, int *hufflen,
      *  0000000000000000 0000 0000 0 0000000
      */
 
-    code = 0;
+    کوډ = 0;
     k = 0;
-    for (i = 0; i < 16; i++, code <<= 1) {        /* sizes */
+    لكل (i = 0; i < 16; i++, کوډ <<= 1) {        /* sizes */
         hu->valptr[i] = k;
-        for (j = 0; j < hufflen[i]; j++) {
+        لكل (j = 0; j < hufflen[i]; j++) {
             hu->vals[k] = *huffvals++;
-            if (i < DECBITS) {
-                c = code << (DECBITS - 1 - i);
-                v = hu->vals[k] & 0x0f;        /* size */
-                for (d = 1 << (DECBITS - 1 - i); --d >= 0;) {
-                    if (v + i < DECBITS) {        /* both fit in table */
+            إذا (i < DECBITS) {
+                c = کوډ << (DECBITS - 1 - i);
+                v = hu->vals[k] & 0x0f;        /*اندازه*/
+                لكل (d = 1 << (DECBITS - 1 - i); --d >= 0;) {
+                    إذا (v + i < DECBITS) {        /* both fit in table */
                         x = d >> (DECBITS - 1 - v - i);
-                        if (v && x < (1 << (v - 1)))
+                        إذا (v && x < (1 << (v - 1)))
                             x += (-1 << v) + 1;
                         x = x << 16 | (hu->vals[k] & 0xf0) << 4 |
                             (DECBITS - (i + 1 + v)) | 128;
-                    } else
+                    } وإلا
                         x = v << 16 | (hu->vals[k] & 0xf0) << 4 |
                             (DECBITS - (i + 1));
                     hu->llvals[c | d] = x;
                 }
             }
-            code++;
+            کوډ++;
             k++;
         }
-        hu->maxcode[i] = code;
+        hu->maxcode[i] = کوډ;
     }
     hu->maxcode[16] = 0x20000;        /* always terminate decode */
 }
@@ -670,28 +670,28 @@ static void dec_makehuff(struct dec_hufftbl *hu, int *hufflen,
 /**************             idct                  ***************/
 /****************************************************************/
 
-#define ONE ((PREC)IFIX(1.))
-#define S2  ((PREC)IFIX(0.382683432))
-#define C2  ((PREC)IFIX(0.923879532))
-#define C4  ((PREC)IFIX(0.707106781))
+#تعریف_کړه ONE ((PREC)IFIX(1.))
+#تعریف_کړه S2  ((PREC)IFIX(0.382683432))
+#تعریف_کړه C2  ((PREC)IFIX(0.923879532))
+#تعریف_کړه C4  ((PREC)IFIX(0.707106781))
 
-#define S22 ((PREC)IFIX(2 * 0.382683432))
-#define C22 ((PREC)IFIX(2 * 0.923879532))
-#define IC4 ((PREC)IFIX(1 / 0.707106781))
+#تعریف_کړه S22 ((PREC)IFIX(2 * 0.382683432))
+#تعریف_کړه C22 ((PREC)IFIX(2 * 0.923879532))
+#تعریف_کړه IC4 ((PREC)IFIX(1 / 0.707106781))
 
-#define C3IC1 ((PREC)IFIX(0.847759065))        /* c3/c1 */
-#define C5IC1 ((PREC)IFIX(0.566454497))        /* c5/c1 */
-#define C7IC1 ((PREC)IFIX(0.198912367))        /* c7/c1 */
+#تعریف_کړه C3IC1 ((PREC)IFIX(0.847759065))        /* c3/c1 */
+#تعریف_کړه C5IC1 ((PREC)IFIX(0.566454497))        /* c5/c1 */
+#تعریف_کړه C7IC1 ((PREC)IFIX(0.198912367))        /* c7/c1 */
 
-#define XPP(a,b) (t = a + b, b = a - b, a = t)
-#define XMP(a,b) (t = a - b, b = a + b, a = t)
-#define XPM(a,b) (t = a + b, b = b - a, a = t)
+#تعریف_کړه XPP(a,b) (t = a + b, b = a - b, a = t)
+#تعریف_کړه XMP(a,b) (t = a - b, b = a + b, a = t)
+#تعریف_کړه XPM(a,b) (t = a + b, b = b - a, a = t)
 
-#define ROT(a,b,s,c) (  t = IMULT(a + b, s),      \
+#تعریف_کړه ROT(a,b,s,c) (  t = IMULT(a + b, s),      \
                         a = IMULT(a, c - s) + t,  \
                         b = IMULT(b, c + s) - t)
 
-#define IDCT                \
+#تعریف_کړه IDCT                \
 (                           \
   XPP(t0, t1),              \
   XMP(t2, t3),              \
@@ -712,7 +712,7 @@ static void dec_makehuff(struct dec_hufftbl *hu, int *hufflen,
   XPP(t3, t4)               \
 )
 
-static unsigned char zig2[64] = {
+ساكن بینښه حرف zig2[64] = {
      0,  2,  3,  9, 10, 20, 21, 35,
     14, 16, 25, 31, 39, 46, 50, 57,
      5,  7, 12, 18, 23, 33, 37, 48,
@@ -723,39 +723,39 @@ static unsigned char zig2[64] = {
      6, 13, 17, 24, 32, 38, 47, 49
 };
 
-static void idct(int *in, int *out, PREC * quant, PREC off, int max)
+ساكن فراغ idct(صحيح *دننه, صحيح *بهر, PREC * quant, PREC off, صحيح max)
 {
     PREC t0, t1, t2, t3, t4, t5, t6, t7, t;
     PREC tmp[64], *tmpp;
-    int i, j;
-    unsigned char *zig2p;
+    صحيح i, j;
+    بینښه حرف *zig2p;
 
     t0 = off;
-    if (max == 1) {
-        t0 += in[0] * quant[0];
-        for (i = 0; i < 64; i++)
-            out[i] = ITOINT(t0);
-        return;
+    إذا (max == 1) {
+        t0 += دننه[0] * quant[0];
+        لكل (i = 0; i < 64; i++)
+            بهر[i] = ITOINT(t0);
+        أرجع;
     }
     zig2p = zig2;
     tmpp = tmp;
-    for (i = 0; i < 8; i++) {
+    لكل (i = 0; i < 8; i++) {
         j = *zig2p++;
-        t0 += in[j] * quant[j];
+        t0 += دننه[j] * quant[j];
         j = *zig2p++;
-        t5 = in[j] * quant[j];
+        t5 = دننه[j] * quant[j];
         j = *zig2p++;
-        t2 = in[j] * quant[j];
+        t2 = دننه[j] * quant[j];
         j = *zig2p++;
-        t7 = in[j] * quant[j];
+        t7 = دننه[j] * quant[j];
         j = *zig2p++;
-        t1 = in[j] * quant[j];
+        t1 = دننه[j] * quant[j];
         j = *zig2p++;
-        t4 = in[j] * quant[j];
+        t4 = دننه[j] * quant[j];
         j = *zig2p++;
-        t3 = in[j] * quant[j];
+        t3 = دننه[j] * quant[j];
         j = *zig2p++;
-        t6 = in[j] * quant[j];
+        t6 = دننه[j] * quant[j];
         IDCT;
         tmpp[0 * 8] = t0;
         tmpp[1 * 8] = t1;
@@ -768,7 +768,7 @@ static void idct(int *in, int *out, PREC * quant, PREC off, int max)
         tmpp++;
         t0 = 0;
     }
-    for (i = 0; i < 8; i++) {
+    لكل (i = 0; i < 8; i++) {
         t0 = tmp[8 * i + 0];
         t1 = tmp[8 * i + 1];
         t2 = tmp[8 * i + 2];
@@ -778,18 +778,18 @@ static void idct(int *in, int *out, PREC * quant, PREC off, int max)
         t6 = tmp[8 * i + 6];
         t7 = tmp[8 * i + 7];
         IDCT;
-        out[8 * i + 0] = ITOINT(t0);
-        out[8 * i + 1] = ITOINT(t1);
-        out[8 * i + 2] = ITOINT(t2);
-        out[8 * i + 3] = ITOINT(t3);
-        out[8 * i + 4] = ITOINT(t4);
-        out[8 * i + 5] = ITOINT(t5);
-        out[8 * i + 6] = ITOINT(t6);
-        out[8 * i + 7] = ITOINT(t7);
+        بهر[8 * i + 0] = ITOINT(t0);
+        بهر[8 * i + 1] = ITOINT(t1);
+        بهر[8 * i + 2] = ITOINT(t2);
+        بهر[8 * i + 3] = ITOINT(t3);
+        بهر[8 * i + 4] = ITOINT(t4);
+        بهر[8 * i + 5] = ITOINT(t5);
+        بهر[8 * i + 6] = ITOINT(t6);
+        بهر[8 * i + 7] = ITOINT(t7);
     }
 }
 
-static unsigned char zig[64] = {
+ساكن بینښه حرف zig[64] = {
      0,  1,  5,  6, 14, 15, 27, 28,
      2,  4,  7, 13, 16, 26, 29, 42,
      3,  8, 12, 17, 25, 30, 41, 43,
@@ -800,7 +800,7 @@ static unsigned char zig[64] = {
     35, 36, 48, 49, 57, 58, 62, 63
 };
 
-static PREC aaidct[8] = {
+ساكن PREC aaidct[8] = {
     IFIX(0.3535533906), IFIX(0.4903926402),
     IFIX(0.4619397663), IFIX(0.4157348062),
     IFIX(0.3535533906), IFIX(0.2777851165),
@@ -808,21 +808,21 @@ static PREC aaidct[8] = {
 };
 
 
-static void idctqtab(unsigned char *qin, PREC * qout)
+ساكن فراغ idctqtab(بینښه حرف *qin, PREC * qout)
 {
-    int i, j;
+    صحيح i, j;
 
-    for (i = 0; i < 8; i++)
-        for (j = 0; j < 8; j++)
+    لكل (i = 0; i < 8; i++)
+        لكل (j = 0; j < 8; j++)
             qout[zig[i * 8 + j]] = qin[zig[i * 8 + j]] *
                 IMULT(aaidct[i], aaidct[j]);
 }
 
-static void scaleidctqtab(PREC * q, PREC sc)
+ساكن فراغ scaleidctqtab(PREC * q, PREC sc)
 {
-    int i;
+    صحيح i;
 
-    for (i = 0; i < 64; i++)
+    لكل (i = 0; i < 64; i++)
         q[i] = IMULT(q[i], sc);
 }
 
@@ -830,7 +830,7 @@ static void scaleidctqtab(PREC * q, PREC sc)
 /**************          color decoder            ***************/
 /****************************************************************/
 
-#define ROUND
+#تعریف_کړه پړاو
 
 /*
  * YCbCr Color transformation:
@@ -853,97 +853,97 @@ static void scaleidctqtab(PREC * q, PREC sc)
  *      Cg = (50 * Cb + 130 * Cr + 128) >> 8;
  */
 
-static void initcol(PREC q[][64])
+ساكن فراغ initcol(PREC q[][64])
 {
     scaleidctqtab(q[1], IFIX(1.77200));
     scaleidctqtab(q[2], IFIX(1.40200));
 }
 
 /* This is optimized for the stupid sun SUNWspro compiler. */
-#define STORECLAMP(a,x)                          \
+#تعریف_کړه STORECLAMP(a,x)                          \
 (                                                \
   (a) = (x),                                     \
-  (unsigned int)(x) >= 256 ?                     \
+  (بینښه صحيح)(x) >= 256 ?                     \
     ((a) = (x) < 0 ? 0 : 255)                    \
   :                                              \
     0                                            \
 )
 
-#define CLAMP(x) ((unsigned int)(x) >= 256 ? ((x) < 0 ? 0 : 255) : (x))
+#تعریف_کړه CLAMP(x) ((بینښه صحيح)(x) >= 256 ? ((x) < 0 ? 0 : 255) : (x))
 
-#ifdef ROUND
+#که_تعریف_شوی پړاو
 
-#define CBCRCG(yin, xin)                         \
+#تعریف_کړه CBCRCG(yin, xin)                         \
 (                                                \
   cb = outc[0 +yin*8+xin],                       \
   cr = outc[64+yin*8+xin],                       \
   cg = (50 * cb + 130 * cr + 128) >> 8           \
 )
 
-#else
+#وإلا
 
-#define CBCRCG(yin, xin)                         \
+#تعریف_کړه CBCRCG(yin, xin)                         \
 (                                                \
   cb = outc[0 +yin*8+xin],                       \
   cr = outc[64+yin*8+xin],                       \
   cg = (3 * cb + 8 * cr) >> 4                    \
 )
 
-#endif
+#د_که_پای
 
-#ifdef __LITTLE_ENDIAN
-#define PIC(yin, xin, p, xout)                   \
+#که_تعریف_شوی __LITTLE_ENDIAN
+#تعریف_کړه PIC(yin, xin, p, xout)                   \
 (                                                \
   y = outy[(yin) * 8 + xin],                     \
   STORECLAMP(p[(xout) * 3 + 2], y + cr),         \
   STORECLAMP(p[(xout) * 3 + 1], y - cg),         \
   STORECLAMP(p[(xout) * 3 + 0], y + cb)          \
 )
-#else
-#define PIC(yin, xin, p, xout)                   \
+#وإلا
+#تعریف_کړه PIC(yin, xin, p, xout)                   \
 (                                                \
   y = outy[(yin) * 8 + xin],                     \
   STORECLAMP(p[(xout) * 3 + 0], y + cr),         \
   STORECLAMP(p[(xout) * 3 + 1], y - cg),         \
   STORECLAMP(p[(xout) * 3 + 2], y + cb)          \
 )
-#endif
+#د_که_پای
 
-#ifdef __LITTLE_ENDIAN
-#define PIC_16(yin, xin, p, xout, add)           \
+#که_تعریف_شوی __LITTLE_ENDIAN
+#تعریف_کړه PIC_16(yin, xin, p, xout, جمع_کړه)           \
 (                                                \
   y = outy[(yin) * 8 + xin],                     \
-  y = ((CLAMP(y + cr + add*2+1) & 0xf8) <<  8) | \
-      ((CLAMP(y - cg + add    ) & 0xfc) <<  3) | \
-      ((CLAMP(y + cb + add*2+1)       ) >>  3),  \
+  y = ((CLAMP(y + cr + جمع_کړه*2+1) & 0xf8) <<  8) | \
+      ((CLAMP(y - cg + جمع_کړه    ) & 0xfc) <<  3) | \
+      ((CLAMP(y + cb + جمع_کړه*2+1)       ) >>  3),  \
   p[(xout) * 2 + 0] = y & 0xff,                  \
   p[(xout) * 2 + 1] = y >> 8                     \
 )
-#else
-#ifdef CONFIG_PPC
-#define PIC_16(yin, xin, p, xout, add)           \
+#وإلا
+#که_تعریف_شوی CONFIG_PPC
+#تعریف_کړه PIC_16(yin, xin, p, xout, جمع_کړه)           \
 (                                                \
   y = outy[(yin) * 8 + xin],                     \
-  y = ((CLAMP(y + cr + add*2+1) & 0xf8) <<  7) | \
-      ((CLAMP(y - cg + add*2+1) & 0xf8) <<  2) | \
-      ((CLAMP(y + cb + add*2+1)       ) >>  3),  \
+  y = ((CLAMP(y + cr + جمع_کړه*2+1) & 0xf8) <<  7) | \
+      ((CLAMP(y - cg + جمع_کړه*2+1) & 0xf8) <<  2) | \
+      ((CLAMP(y + cb + جمع_کړه*2+1)       ) >>  3),  \
   p[(xout) * 2 + 0] = y >> 8,                    \
   p[(xout) * 2 + 1] = y & 0xff                   \
 )
-#else
-#define PIC_16(yin, xin, p, xout, add)           \
+#وإلا
+#تعریف_کړه PIC_16(yin, xin, p, xout, جمع_کړه)           \
 (                                                \
   y = outy[(yin) * 8 + xin],                     \
-  y = ((CLAMP(y + cr + add*2+1) & 0xf8) <<  8) | \
-      ((CLAMP(y - cg + add    ) & 0xfc) <<  3) | \
-      ((CLAMP(y + cb + add*2+1)       ) >>  3),  \
+  y = ((CLAMP(y + cr + جمع_کړه*2+1) & 0xf8) <<  8) | \
+      ((CLAMP(y - cg + جمع_کړه    ) & 0xfc) <<  3) | \
+      ((CLAMP(y + cb + جمع_کړه*2+1)       ) >>  3),  \
   p[(xout) * 2 + 0] = y >> 8,                    \
   p[(xout) * 2 + 1] = y & 0xff                   \
 )
-#endif
-#endif
+#د_که_پای
+#د_که_پای
 
-#define PIC_32(yin, xin, p, xout)               \
+#تعریف_کړه PIC_32(yin, xin, p, xout)               \
 (                                               \
   y = outy[(yin) * 8 + xin],                    \
   STORECLAMP(p[(xout) * 4 + 0], y + cr),        \
@@ -952,7 +952,7 @@ static void initcol(PREC q[][64])
   p[(xout) * 4 + 3] = 0                         \
 )
 
-#define PIC221111(xin)                                              \
+#تعریف_کړه PIC221111(xin)                                              \
 (                                                                   \
   CBCRCG(0, xin),                                                   \
   PIC(xin / 4 * 8 + 0, (xin & 3) * 2 + 0, pic0, xin * 2 + 0),       \
@@ -961,7 +961,7 @@ static void initcol(PREC q[][64])
   PIC(xin / 4 * 8 + 1, (xin & 3) * 2 + 1, pic1, xin * 2 + 1)        \
 )
 
-#define PIC221111_16(xin)                                           \
+#تعریف_کړه PIC221111_16(xin)                                           \
 (                                                                   \
   CBCRCG(0, xin),                                                   \
   PIC_16(xin / 4 * 8 + 0, (xin & 3) * 2 + 0, pic0, xin * 2 + 0, 3), \
@@ -970,7 +970,7 @@ static void initcol(PREC q[][64])
   PIC_16(xin / 4 * 8 + 1, (xin & 3) * 2 + 1, pic1, xin * 2 + 1, 2)  \
 )
 
-#define PIC221111_32(xin)                                           \
+#تعریف_کړه PIC221111_32(xin)                                           \
 (                                                                   \
   CBCRCG(0, xin),                                                   \
   PIC_32(xin / 4 * 8 + 0, (xin & 3) * 2 + 0, pic0, xin * 2 + 0),    \
@@ -979,76 +979,76 @@ static void initcol(PREC q[][64])
   PIC_32(xin / 4 * 8 + 1, (xin & 3) * 2 + 1, pic1, xin * 2 + 1)     \
 )
 
-static void col221111(int *out, unsigned char *pic, int width)
+ساكن فراغ col221111(صحيح *بهر, بینښه حرف *pic, صحيح پلنوالی)
 {
-    int i, j, k;
-    unsigned char *pic0, *pic1;
-    int *outy, *outc;
-    int cr, cg, cb, y;
+    صحيح i, j, k;
+    بینښه حرف *pic0, *pic1;
+    صحيح *outy, *outc;
+    صحيح cr, cg, cb, y;
 
     pic0 = pic;
-    pic1 = pic + width;
-    outy = out;
-    outc = out + 64 * 4;
-    for (i = 2; i > 0; i--) {
-        for (j = 4; j > 0; j--) {
-            for (k = 0; k < 8; k++) {
+    pic1 = pic + پلنوالی;
+    outy = بهر;
+    outc = بهر + 64 * 4;
+    لكل (i = 2; i > 0; i--) {
+        لكل (j = 4; j > 0; j--) {
+            لكل (k = 0; k < 8; k++) {
                 PIC221111(k);
             }
             outc += 8;
             outy += 16;
-            pic0 += 2 * width;
-            pic1 += 2 * width;
+            pic0 += 2 * پلنوالی;
+            pic1 += 2 * پلنوالی;
         }
         outy += 64 * 2 - 16 * 4;
     }
 }
 
-static void col221111_16(int *out, unsigned char *pic, int width)
+ساكن فراغ col221111_16(صحيح *بهر, بینښه حرف *pic, صحيح پلنوالی)
 {
-    int i, j, k;
-    unsigned char *pic0, *pic1;
-    int *outy, *outc;
-    int cr, cg, cb, y;
+    صحيح i, j, k;
+    بینښه حرف *pic0, *pic1;
+    صحيح *outy, *outc;
+    صحيح cr, cg, cb, y;
 
     pic0 = pic;
-    pic1 = pic + width;
-    outy = out;
-    outc = out + 64 * 4;
-    for (i = 2; i > 0; i--) {
-        for (j = 4; j > 0; j--) {
-            for (k = 0; k < 8; k++) {
+    pic1 = pic + پلنوالی;
+    outy = بهر;
+    outc = بهر + 64 * 4;
+    لكل (i = 2; i > 0; i--) {
+        لكل (j = 4; j > 0; j--) {
+            لكل (k = 0; k < 8; k++) {
                 PIC221111_16(k);
             }
             outc += 8;
             outy += 16;
-            pic0 += 2 * width;
-            pic1 += 2 * width;
+            pic0 += 2 * پلنوالی;
+            pic1 += 2 * پلنوالی;
         }
         outy += 64 * 2 - 16 * 4;
     }
 }
 
-static void col221111_32(int *out, unsigned char *pic, int width)
+ساكن فراغ col221111_32(صحيح *بهر, بینښه حرف *pic, صحيح پلنوالی)
 {
-    int i, j, k;
-    unsigned char *pic0, *pic1;
-    int *outy, *outc;
-    int cr, cg, cb, y;
+    صحيح i, j, k;
+    بینښه حرف *pic0, *pic1;
+    صحيح *outy, *outc;
+    صحيح cr, cg, cb, y;
 
     pic0 = pic;
-    pic1 = pic + width;
-    outy = out;
-    outc = out + 64 * 4;
-    for (i = 2; i > 0; i--) {
-        for (j = 4; j > 0; j--) {
-            for (k = 0; k < 8; k++) {
+    pic1 = pic + پلنوالی;
+    outy = بهر;
+    outc = بهر + 64 * 4;
+    لكل (i = 2; i > 0; i--) {
+        لكل (j = 4; j > 0; j--) {
+            لكل (k = 0; k < 8; k++) {
                 PIC221111_32(k);
             }
             outc += 8;
             outy += 16;
-            pic0 += 2 * width;
-            pic1 += 2 * width;
+            pic0 += 2 * پلنوالی;
+            pic1 += 2 * پلنوالی;
         }
         outy += 64 * 2 - 16 * 4;
     }

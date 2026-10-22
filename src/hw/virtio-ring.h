@@ -1,121 +1,121 @@
-#ifndef _VIRTIO_RING_H
-#define _VIRTIO_RING_H
+#که_نه_تعریف_شوی _VIRTIO_RING_H
+#تعریف_کړه _VIRTIO_RING_H
 
-#include "types.h" // u64
-#include "memmap.h" // PAGE_SIZE
+#ضمن "types.h" // u64
+#ضمن "memmap.h" // PAGE_SIZE
 
 /* Status byte for guest to report progress, and synchronize features. */
 /* We have seen device and processed generic fields (VIRTIO_CONFIG_F_VIRTIO) */
-#define VIRTIO_CONFIG_S_ACKNOWLEDGE     1
+#تعریف_کړه VIRTIO_CONFIG_S_ACKNOWLEDGE     1
 /* We have found a driver for the device. */
-#define VIRTIO_CONFIG_S_DRIVER          2
+#تعریف_کړه VIRTIO_CONFIG_S_DRIVER          2
 /* Driver has used its parts of the config, and is happy */
-#define VIRTIO_CONFIG_S_DRIVER_OK       4
+#تعریف_کړه VIRTIO_CONFIG_S_DRIVER_OK       4
 /* Driver has finished configuring features */
-#define VIRTIO_CONFIG_S_FEATURES_OK     8
+#تعریف_کړه VIRTIO_CONFIG_S_FEATURES_OK     8
 /* We've given up on this device. */
-#define VIRTIO_CONFIG_S_FAILED          0x80
+#تعریف_کړه VIRTIO_CONFIG_S_FAILED          0x80
 
 /* v1.0 compliant. */
-#define VIRTIO_F_VERSION_1              32
-#define VIRTIO_F_IOMMU_PLATFORM         33
+#تعریف_کړه VIRTIO_F_نسخه_1              32
+#تعریف_کړه VIRTIO_F_IOMMU_PLATFORM         33
 
-#define MAX_QUEUE_NUM      (256)
+#تعریف_کړه MAX_کتار_عدد      (256)
 
-#define VRING_DESC_F_NEXT  1
-#define VRING_DESC_F_WRITE 2
+#تعریف_کړه VRING_DESC_F_بل  1
+#تعریف_کړه VRING_DESC_F_WRITE 2
 
-#define VRING_AVAIL_F_NO_INTERRUPT 1
+#تعریف_کړه VRING_AVAIL_F_NO_مداخله 1
 
-#define VRING_USED_F_NO_NOTIFY     1
+#تعریف_کړه VRING_کارول_شوی_F_NO_NOTIFY     1
 
-struct vring_desc
+بنية vring_desc
 {
    u64 addr;
    u32 len;
    u16 flags;
-   u16 next;
+   u16 بل;
 };
 
-struct vring_avail
+بنية vring_avail
 {
    u16 flags;
    u16 idx;
    u16 ring[0];
 };
 
-struct vring_used_elem
+بنية vring_کارول_شوی_elem
 {
    u32 id;
    u32 len;
 };
 
-struct vring_used
+بنية vring_کارول_شوی
 {
    u16 flags;
    u16 idx;
-   struct vring_used_elem ring[];
+   بنية vring_کارول_شوی_elem ring[];
 };
 
-struct vring {
-   unsigned int num;
-   struct vring_desc *desc;
-   struct vring_avail *avail;
-   struct vring_used *used;
+بنية vring {
+   بینښه صحيح عدد;
+   بنية vring_desc *desc;
+   بنية vring_avail *avail;
+   بنية vring_کارول_شوی *کارول_شوی;
 };
 
-#define vring_size(num) \
-    (ALIGN(sizeof(struct vring_desc) * num + sizeof(struct vring_avail) \
-           + sizeof(u16) * num, PAGE_SIZE)                              \
-     + sizeof(struct vring_used) + sizeof(struct vring_used_elem) * num)
+#تعریف_کړه vring_اندازه(عدد) \
+    (ALIGN(حجم(بنية vring_desc) * عدد + حجم(بنية vring_avail) \
+           + حجم(u16) * عدد, پاڼه_اندازه)                              \
+     + حجم(بنية vring_کارول_شوی) + حجم(بنية vring_کارول_شوی_elem) * عدد)
 
-typedef unsigned char virtio_queue_t[vring_size(MAX_QUEUE_NUM)];
+تعريفنوع بینښه حرف virtio_کتار_t[vring_اندازه(MAX_کتار_عدد)];
 
-struct vring_virtqueue {
-   virtio_queue_t queue;
-   struct vring vring;
-   u16 free_head;
-   u16 last_used_idx;
-   u16 vdata[MAX_QUEUE_NUM];
+بنية vring_virtqueue {
+   virtio_کتار_t کتار;
+   بنية vring vring;
+   u16 free_سر;
+   u16 وروستی_کارول_شوی_idx;
+   u16 vdata[MAX_کتار_عدد];
    /* PCI */
-   int queue_index;
-   int queue_notify_off;
+   صحيح کتار_شاخص;
+   صحيح کتار_notify_off;
 };
 
-struct vring_list {
-  char *addr;
-  unsigned int length;
+بنية vring_list {
+  حرف *addr;
+  بینښه صحيح اوږدتیا;
 };
 
-static inline void
-vring_init(struct vring *vr, unsigned int num, unsigned char *queue)
+ساكن مضمن فراغ
+vring_init(بنية vring *vr, بینښه صحيح عدد, بینښه حرف *کتار)
 {
    ASSERT32FLAT();
-   vr->num = num;
+   vr->عدد = عدد;
 
    /* physical address of desc must be page aligned */
-   vr->desc = (void*)ALIGN((u32)queue, PAGE_SIZE);
+   vr->desc = (فراغ*)ALIGN((u32)کتار, پاڼه_اندازه);
 
-   vr->avail = (struct vring_avail *)&vr->desc[num];
+   vr->avail = (بنية vring_avail *)&vr->desc[عدد];
    /* disable interrupts */
-   vr->avail->flags |= VRING_AVAIL_F_NO_INTERRUPT;
+   vr->avail->flags |= VRING_AVAIL_F_NO_مداخله;
 
    /* physical address of used must be page aligned */
-   vr->used = (void*)ALIGN((u32)&vr->avail->ring[num], PAGE_SIZE);
+   vr->کارول_شوی = (فراغ*)ALIGN((u32)&vr->avail->ring[عدد], پاڼه_اندازه);
 
-   int i;
-   for (i = 0; i < num - 1; i++)
-       vr->desc[i].next = i + 1;
-   vr->desc[i].next = 0;
+   صحيح i;
+   لكل (i = 0; i < عدد - 1; i++)
+       vr->desc[i].بل = i + 1;
+   vr->desc[i].بل = 0;
 }
 
-struct vp_device;
-int vring_more_used(struct vring_virtqueue *vq);
-void vring_detach(struct vring_virtqueue *vq, unsigned int head);
-int vring_get_buf(struct vring_virtqueue *vq, unsigned int *len);
-void vring_add_buf(struct vring_virtqueue *vq, struct vring_list list[],
-                   unsigned int out, unsigned int in,
-                   int index, int num_added);
-void vring_kick(struct vp_device *vp, struct vring_virtqueue *vq, int num_added);
+بنية vp_device;
+صحيح vring_نور_کارول_شوی(بنية vring_virtqueue *vq);
+فراغ vring_detach(بنية vring_virtqueue *vq, بینښه صحيح سر);
+صحيح vring_get_buf(بنية vring_virtqueue *vq, بینښه صحيح *len);
+فراغ vring_جمع_کړه_buf(بنية vring_virtqueue *vq, بنية vring_list list[],
+                   بینښه صحيح بهر, بینښه صحيح دننه,
+                   صحيح شاخص, صحيح عدد_added);
+فراغ vring_kick(بنية vp_device *vp, بنية vring_virtqueue *vq, صحيح عدد_added);
 
-#endif /* _VIRTIO_RING_H_ */
+#د_که_پای /* _VIRTIO_RING_H_ */

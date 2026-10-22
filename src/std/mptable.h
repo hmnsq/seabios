@@ -1,14 +1,14 @@
-#ifndef __MPTABLE_H
-#define __MPTABLE_H
+#که_نه_تعریف_شوی __MPTABLE_H
+#تعریف_کړه __MPTABLE_H
 
-#include "types.h" // u32
+#ضمن "types.h" // u32
 
-#define MPTABLE_SIGNATURE 0x5f504d5f  // "_MP_"
+#تعریف_کړه MPTABLE_SIGNATURE 0x5f504d5f  // "_MP_"
 
-struct mptable_floating_s {
+بنية mptable_floating_s {
     u32 signature;
     u32 physaddr;
-    u8 length;
+    u8 اوږدتیا;
     u8 spec_rev;
     u8 checksum;
     u8 feature1;
@@ -16,31 +16,31 @@ struct mptable_floating_s {
     u8 reserved[3];
 };
 
-#define MPCONFIG_SIGNATURE 0x504d4350  // "PCMP"
+#تعریف_کړه MPCONFIG_SIGNATURE 0x504d4350  // "PCMP"
 
-struct mptable_config_s {
+بنية mptable_config_s {
     u32 signature;
-    u16 length;
+    u16 اوږدتیا;
     u8 spec;
     u8 checksum;
-    char oemid[8];
-    char productid[12];
+    حرف oemid[8];
+    حرف productid[12];
     u32 oemptr;
     u16 oemsize;
     u16 entrycount;
     u32 lapic;
-    u16 exttable_length;
+    u16 exttable_اوږدتیا;
     u8 exttable_checksum;
     u8 reserved;
 } PACKED;
 
-#define MPT_TYPE_CPU 0
-#define MPT_TYPE_BUS 1
-#define MPT_TYPE_IOAPIC 2
-#define MPT_TYPE_INTSRC 3
-#define MPT_TYPE_LOCAL_INT 4
+#تعریف_کړه MPT_TYPE_CPU 0
+#تعریف_کړه MPT_TYPE_BUS 1
+#تعریف_کړه MPT_TYPE_IOAPIC 2
+#تعریف_کړه MPT_TYPE_INTSRC 3
+#تعریف_کړه MPT_TYPE_LOCAL_INT 4
 
-struct mpt_cpu {
+بنية mpt_cpu {
     u8 type;
     u8 apicid;
     u8 apicver;
@@ -50,13 +50,13 @@ struct mpt_cpu {
     u32 reserved[2];
 } PACKED;
 
-struct mpt_bus {
+بنية mpt_bus {
     u8 type;
     u8 busid;
-    char bustype[6];
+    حرف bustype[6];
 } PACKED;
 
-struct mpt_ioapic {
+بنية mpt_ioapic {
     u8 type;
     u8 apicid;
     u8 apicver;
@@ -64,7 +64,7 @@ struct mpt_ioapic {
     u32 apicaddr;
 } PACKED;
 
-struct mpt_intsrc {
+بنية mpt_intsrc {
     u8 type;
     u8 irqtype;
     u16 irqflag;
@@ -74,4 +74,4 @@ struct mpt_intsrc {
     u8 dstirq;
 } PACKED;
 
-#endif // mptable.h
+#د_که_پای // mptable.h

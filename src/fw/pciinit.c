@@ -5,96 +5,96 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "byteorder.h" // le64_to_cpu
-#include "config.h" // CONFIG_*
-#include "dev-q35.h" // Q35_HOST_BRIDGE_PCIEXBAR_ADDR
-#include "dev-piix.h" // PIIX_*
-#include "e820map.h" // e820_add
-#include "hw/ata.h" // PORT_ATA1_CMD_BASE
-#include "hw/pci.h" // pci_config_readl
-#include "hw/pcidevice.h" // pci_probe_devices
-#include "hw/pci_ids.h" // PCI_VENDOR_ID_INTEL
-#include "hw/pci_regs.h" // PCI_COMMAND
-#include "fw/dev-pci.h" // REDHAT_CAP_RESOURCE_RESERVE
-#include "list.h" // struct hlist_node
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "paravirt.h" // RamSize
-#include "romfile.h" // romfile_loadint
-#include "string.h" // memset
-#include "util.h" // pci_setup
-#include "x86.h" // outb
+#ضمن "byteorder.h" // le64_to_cpu
+#ضمن "config.h" // CONFIG_*
+#ضمن "dev-q35.h" // Q35_HOST_BRIDGE_PCIEXBAR_ADDR
+#ضمن "dev-piix.h" // PIIX_*
+#ضمن "e820map.h" // e820_add
+#ضمن "hw/ata.h" // PORT_ATA1_CMD_BASE
+#ضمن "hw/pci.h" // pci_config_readl
+#ضمن "hw/pcidevice.h" // pci_probe_devices
+#ضمن "hw/pci_ids.h" // PCI_VENDOR_ID_INTEL
+#ضمن "hw/pci_regs.h" // PCI_COMMAND
+#ضمن "fw/dev-pci.h" // REDHAT_CAP_RESOURCE_RESERVE
+#ضمن "list.h" // struct hlist_node
+#ضمن "malloc.h" // free
+#ضمن "output.h" // dprintf
+#ضمن "paravirt.h" // RamSize
+#ضمن "romfile.h" // romfile_loadint
+#ضمن "string.h" // memset
+#ضمن "util.h" // pci_setup
+#ضمن "x86.h" // outb
 
-#define PCI_DEVICE_MEM_MIN    (1<<12)  // 4k == page size
-#define PCI_BRIDGE_MEM_MIN    (1<<21)  // 2M == hugepage size
-#define PCI_BRIDGE_IO_MIN      0x1000  // mandated by pci bridge spec
+#تعریف_کړه PCI_DEVICE_MEM_MIN    (1<<12)  // 4k == page size
+#تعریف_کړه PCI_BRIDGE_MEM_MIN    (1<<21)  // 2M == hugepage size
+#تعریف_کړه PCI_BRIDGE_IO_MIN      0x1000  // mandated by pci bridge spec
 
-#define PCI_ROM_SLOT 6
-#define PCI_NUM_REGIONS 7
-#define PCI_BRIDGE_NUM_REGIONS 2
+#تعریف_کړه PCI_ROM_خونه 6
+#تعریف_کړه PCI_عدد_REGIONS 7
+#تعریف_کړه PCI_BRIDGE_عدد_REGIONS 2
 
-enum pci_region_type {
+تعداد pci_region_type {
     PCI_REGION_TYPE_IO,
     PCI_REGION_TYPE_MEM,
     PCI_REGION_TYPE_PREFMEM,
-    PCI_REGION_TYPE_COUNT,
+    PCI_REGION_TYPE_شمېر,
 };
 
-static const char *region_type_name[] = {
+ساكن ثابت حرف *region_type_name[] = {
     [ PCI_REGION_TYPE_IO ]      = "io",
     [ PCI_REGION_TYPE_MEM ]     = "mem",
     [ PCI_REGION_TYPE_PREFMEM ] = "prefmem",
 };
 
 // Memory ranges exported to legacy ACPI type table generation
-u64 pcimem_start   = BUILD_PCIMEM_START;
-u64 pcimem_end     = BUILD_PCIMEM_END;
-u64 pcimem64_start = BUILD_PCIMEM64_START;
-u64 pcimem64_end   = BUILD_PCIMEM64_END;
+u64 pcimem_پیل   = BUILD_PCIMEM_پیل;
+u64 pcimem_پای_ټکی     = BUILD_PCIMEM_پای_ټکی;
+u64 pcimem64_پیل = BUILD_PCIMEM64_پیل;
+u64 pcimem64_پای_ټکی   = BUILD_PCIMEM64_پای_ټکی;
 
 // Resource allocation limits
-static u64 pci_io_low_end = 0xa000;
-static u64 pci_mem64_top  = 0;
-static u32 pci_pad_mem64  = -1;
+ساكن u64 pci_io_ټیټ_پای_ټکی = 0xa000;
+ساكن u64 pci_mem64_سر  = 0;
+ساكن u32 pci_pad_mem64  = -1;
 
-struct pci_region_entry {
-    struct pci_device *dev;
-    int bar;
-    u64 size;
+بنية pci_region_ثبت {
+    بنية pci_device *dev;
+    صحيح bar;
+    u64 اندازه;
     u64 align;
-    int is64;
-    enum pci_region_type type;
-    struct hlist_node node;
+    صحيح is64;
+    تعداد pci_region_type type;
+    بنية hlist_غوټه غوټه;
 };
 
-struct pci_region {
+بنية pci_region {
     /* pci region assignments */
-    u64 base;
-    struct hlist_head list;
+    u64 بنسټ;
+    بنية hlist_سر list;
 };
 
-struct pci_bus {
-    struct pci_region r[PCI_REGION_TYPE_COUNT];
-    struct pci_device *bus_dev;
+بنية pci_bus {
+    بنية pci_region r[PCI_REGION_TYPE_شمېر];
+    بنية pci_device *bus_dev;
 };
 
-static u32 pci_bar(struct pci_device *pci, int region_num)
+ساكن u32 pci_bar(بنية pci_device *pci, صحيح region_عدد)
 {
-    if (region_num != PCI_ROM_SLOT) {
-        return PCI_BASE_ADDRESS_0 + region_num * 4;
+    إذا (region_عدد != PCI_ROM_خونه) {
+        أرجع PCI_بنسټ_پته_0 + region_عدد * 4;
     }
 
-#define PCI_HEADER_TYPE_MULTI_FUNCTION 0x80
-    u8 type = pci->header_type & ~PCI_HEADER_TYPE_MULTI_FUNCTION;
-    return type == PCI_HEADER_TYPE_BRIDGE ? PCI_ROM_ADDRESS1 : PCI_ROM_ADDRESS;
+#تعریف_کړه PCI_سرلیک_TYPE_MULTI_FUNCTION 0x80
+    u8 type = pci->سرلیک_type & ~PCI_سرلیک_TYPE_MULTI_FUNCTION;
+    أرجع type == PCI_سرلیک_TYPE_BRIDGE ? PCI_ROM_ADDRESS1 : PCI_ROM_پته;
 }
 
-static void
-pci_set_io_region_addr(struct pci_device *pci, int bar, u64 addr, int is64)
+ساكن فراغ
+pci_سېټ_io_region_addr(بنية pci_device *pci, صحيح bar, u64 addr, صحيح is64)
 {
     u32 ofs = pci_bar(pci, bar);
     pci_config_writel(pci->bdf, ofs, addr);
-    if (is64)
+    إذا (is64)
         pci_config_writel(pci->bdf, ofs + 4, addr >> 32);
 }
 
@@ -104,74 +104,74 @@ pci_set_io_region_addr(struct pci_device *pci, int bar, u64 addr, int is64)
  ****************************************************************/
 
 /* host irqs corresponding to PCI irqs A-D */
-const u8 pci_irqs[4] = {
+ثابت u8 pci_irqs[4] = {
     10, 10, 11, 11
 };
 
-static int dummy_pci_slot_get_irq(struct pci_device *pci, int pin)
+ساكن صحيح dummy_pci_خونه_get_irq(بنية pci_device *pci, صحيح pin)
 {
     dprintf(1, "pci_slot_get_irq called with unknown routing\n");
 
-    return 0xff; /* PCI defined "unknown" or "no connection" for x86 */
+    أرجع 0xff; /* PCI defined "unknown" or "no connection" for x86 */
 }
 
-static int (*pci_slot_get_irq)(struct pci_device *pci, int pin) =
-    dummy_pci_slot_get_irq;
+ساكن صحيح (*pci_خونه_get_irq)(بنية pci_device *pci, صحيح pin) =
+    dummy_pci_خونه_get_irq;
 
 // Return the global irq number corresponding to a host bus device irq pin.
-static int piix_pci_slot_get_irq(struct pci_device *pci, int pin)
+ساكن صحيح piix_pci_خونه_get_irq(بنية pci_device *pci, صحيح pin)
 {
-    int slot_addend = 0;
+    صحيح خونه_addend = 0;
 
-    while (pci->parent != NULL) {
-        slot_addend += pci_bdf_to_dev(pci->bdf);
-        pci = pci->parent;
+    طالما (pci->پلار != عدم) {
+        خونه_addend += pci_bdf_منزل_dev(pci->bdf);
+        pci = pci->پلار;
     }
-    slot_addend += pci_bdf_to_dev(pci->bdf) - 1;
-    return pci_irqs[(pin - 1 + slot_addend) & 3];
+    خونه_addend += pci_bdf_منزل_dev(pci->bdf) - 1;
+    أرجع pci_irqs[(pin - 1 + خونه_addend) & 3];
 }
 
-static int mch_pci_slot_get_irq(struct pci_device *pci, int pin)
+ساكن صحيح mch_pci_خونه_get_irq(بنية pci_device *pci, صحيح pin)
 {
-    int pin_addend = 0;
-    while (pci->parent != NULL) {
-        pin_addend += pci_bdf_to_dev(pci->bdf);
-        pci = pci->parent;
+    صحيح pin_addend = 0;
+    طالما (pci->پلار != عدم) {
+        pin_addend += pci_bdf_منزل_dev(pci->bdf);
+        pci = pci->پلار;
     }
-    u8 slot = pci_bdf_to_dev(pci->bdf);
-    if (slot <= 24)
+    u8 خونه = pci_bdf_منزل_dev(pci->bdf);
+    إذا (خونه <= 24)
         /* Slots 0-24 rotate slot:pin mapping similar to piix above, but
            with a different starting index - see q35-acpi-dsdt.dsl */
-        return pci_irqs[(pin - 1 + pin_addend + slot) & 3];
+        أرجع pci_irqs[(pin - 1 + pin_addend + خونه) & 3];
     /* Slots 25-31 all use LNKA mapping (or LNKE, but A:D = E:H) */
-    return pci_irqs[(pin - 1 + pin_addend) & 3];
+    أرجع pci_irqs[(pin - 1 + pin_addend) & 3];
 }
 
 /* PIIX3/PIIX4 PCI to ISA bridge */
-static void piix_isa_bridge_setup(struct pci_device *pci, void *arg)
+ساكن فراغ piix_isa_bridge_تیاری(بنية pci_device *pci, فراغ *arg)
 {
-    int i, irq;
+    صحيح i, irq;
     u8 elcr[2];
 
     elcr[0] = 0x00;
     elcr[1] = 0x00;
-    for (i = 0; i < 4; i++) {
+    لكل (i = 0; i < 4; i++) {
         irq = pci_irqs[i];
         /* set to trigger level */
         elcr[irq >> 3] |= (1 << (irq & 7));
         /* activate irq remapping in PIIX */
         pci_config_writeb(pci->bdf, 0x60 + i, irq);
     }
-    outb(elcr[0], PIIX_PORT_ELCR1);
-    outb(elcr[1], PIIX_PORT_ELCR2);
+    outb(elcr[0], PIIX_پورټ_ELCR1);
+    outb(elcr[1], PIIX_پورټ_ELCR2);
     dprintf(1, "PIIX3/PIIX4 init: elcr=%02x %02x\n", elcr[0], elcr[1]);
 }
 
-static void mch_isa_lpc_setup(u16 bdf)
+ساكن فراغ mch_isa_lpc_تیاری(u16 bdf)
 {
     /* pm io base */
     pci_config_writel(bdf, ICH9_LPC_PMBASE,
-                      acpi_pm_base | ICH9_LPC_PMBASE_RTE);
+                      acpi_pm_بنسټ | ICH9_LPC_PMBASE_RTE);
 
     /* acpi enable, SCI: IRQ9 000b = irq9*/
     pci_config_writeb(bdf, ICH9_LPC_ACPI_CTRL, ICH9_LPC_ACPI_CTRL_ACPI_EN);
@@ -181,20 +181,20 @@ static void mch_isa_lpc_setup(u16 bdf)
                       ICH9_LPC_RCBA_ADDR | ICH9_LPC_RCBA_EN);
 }
 
-static int ICH9LpcBDF = -1;
+ساكن صحيح ICH9LpcBDF = -1;
 
 /* ICH9 LPC PCI to ISA bridge */
 /* PCI_VENDOR_ID_INTEL && PCI_DEVICE_ID_INTEL_ICH9_LPC */
-static void mch_isa_bridge_setup(struct pci_device *dev, void *arg)
+ساكن فراغ mch_isa_bridge_تیاری(بنية pci_device *dev, فراغ *arg)
 {
     u16 bdf = dev->bdf;
-    int i, irq;
+    صحيح i, irq;
     u8 elcr[2];
 
     elcr[0] = 0x00;
     elcr[1] = 0x00;
 
-    for (i = 0; i < 4; i++) {
+    لكل (i = 0; i < 4; i++) {
         irq = pci_irqs[i];
         /* set to trigger level */
         elcr[irq >> 3] |= (1 << (irq & 7));
@@ -206,260 +206,260 @@ static void mch_isa_bridge_setup(struct pci_device *dev, void *arg)
         /* PIRQ[E-H] routing */
         pci_config_writeb(bdf, ICH9_LPC_PIRQE_ROUT + i, irq);
     }
-    outb(elcr[0], ICH9_LPC_PORT_ELCR1);
-    outb(elcr[1], ICH9_LPC_PORT_ELCR2);
+    outb(elcr[0], ICH9_LPC_پورټ_ELCR1);
+    outb(elcr[1], ICH9_LPC_پورټ_ELCR2);
     dprintf(1, "Q35 LPC init: elcr=%02x %02x\n", elcr[0], elcr[1]);
 
     ICH9LpcBDF = bdf;
 
-    mch_isa_lpc_setup(bdf);
+    mch_isa_lpc_تیاری(bdf);
 
-    e820_add(ICH9_LPC_RCBA_ADDR, 16*1024, E820_RESERVED);
+    e820_جمع_کړه(ICH9_LPC_RCBA_ADDR, 16*1024, E820_RESERVED);
 
-    acpi_pm1a_cnt = acpi_pm_base + 0x04;
-    pmtimer_setup(acpi_pm_base + 0x08);
+    acpi_pm1a_cnt = acpi_pm_بنسټ + 0x04;
+    pmtimer_تیاری(acpi_pm_بنسټ + 0x08);
 }
 
-static void storage_ide_setup(struct pci_device *pci, void *arg)
+ساكن فراغ storage_ide_تیاری(بنية pci_device *pci, فراغ *arg)
 {
     /* IDE: we map it as in ISA mode */
-    pci_set_io_region_addr(pci, 0, PORT_ATA1_CMD_BASE, 0);
-    pci_set_io_region_addr(pci, 1, PORT_ATA1_CTRL_BASE, 0);
-    pci_set_io_region_addr(pci, 2, PORT_ATA2_CMD_BASE, 0);
-    pci_set_io_region_addr(pci, 3, PORT_ATA2_CTRL_BASE, 0);
+    pci_سېټ_io_region_addr(pci, 0, پورټ_ATA1_CMD_بنسټ, 0);
+    pci_سېټ_io_region_addr(pci, 1, پورټ_ATA1_CTRL_بنسټ, 0);
+    pci_سېټ_io_region_addr(pci, 2, پورټ_ATA2_CMD_بنسټ, 0);
+    pci_سېټ_io_region_addr(pci, 3, پورټ_ATA2_CTRL_بنسټ, 0);
 }
 
 /* PIIX3/PIIX4 IDE */
-static void piix_ide_setup(struct pci_device *pci, void *arg)
+ساكن فراغ piix_ide_تیاری(بنية pci_device *pci, فراغ *arg)
 {
     u16 bdf = pci->bdf;
     pci_config_writew(bdf, 0x40, 0x8000); // enable IDE0
     pci_config_writew(bdf, 0x42, 0x8000); // enable IDE1
 }
 
-static void pic_ibm_setup(struct pci_device *pci, void *arg)
+ساكن فراغ pic_ibm_تیاری(بنية pci_device *pci, فراغ *arg)
 {
     /* PIC, IBM, MPIC & MPIC2 */
-    pci_set_io_region_addr(pci, 0, 0x80800000 + 0x00040000, 0);
+    pci_سېټ_io_region_addr(pci, 0, 0x80800000 + 0x00040000, 0);
 }
 
-static void apple_macio_setup(struct pci_device *pci, void *arg)
+ساكن فراغ apple_macio_تیاری(بنية pci_device *pci, فراغ *arg)
 {
     /* macio bridge */
-    pci_set_io_region_addr(pci, 0, 0x80800000, 0);
+    pci_سېټ_io_region_addr(pci, 0, 0x80800000, 0);
 }
 
-static void piix4_pm_config_setup(u16 bdf)
+ساكن فراغ piix4_pm_config_تیاری(u16 bdf)
 {
     // acpi sci is hardwired to 9
-    pci_config_writeb(bdf, PCI_INTERRUPT_LINE, 9);
+    pci_config_writeb(bdf, PCI_مداخله_کرښه, 9);
 
-    pci_config_writel(bdf, PIIX_PMBASE, acpi_pm_base | 1);
+    pci_config_writel(bdf, PIIX_PMBASE, acpi_pm_بنسټ | 1);
     pci_config_writeb(bdf, PIIX_PMREGMISC, 0x01); /* enable PM io space */
-    pci_config_writel(bdf, PIIX_SMBHSTBASE, (acpi_pm_base + 0x100) | 1);
+    pci_config_writel(bdf, PIIX_SMBHSTBASE, (acpi_pm_بنسټ + 0x100) | 1);
     pci_config_writeb(bdf, PIIX_SMBHSTCFG, 0x09); /* enable SMBus io space */
 }
 
-static int PiixPmBDF = -1;
+ساكن صحيح PiixPmBDF = -1;
 
 /* PIIX4 Power Management device (for ACPI) */
-static void piix4_pm_setup(struct pci_device *pci, void *arg)
+ساكن فراغ piix4_pm_تیاری(بنية pci_device *pci, فراغ *arg)
 {
     PiixPmBDF = pci->bdf;
-    piix4_pm_config_setup(pci->bdf);
+    piix4_pm_config_تیاری(pci->bdf);
 
-    acpi_pm1a_cnt = acpi_pm_base + 0x04;
-    pmtimer_setup(acpi_pm_base + 0x08);
+    acpi_pm1a_cnt = acpi_pm_بنسټ + 0x04;
+    pmtimer_تیاری(acpi_pm_بنسټ + 0x08);
 }
 
-static void ich9_smbus_enable(u16 bdf)
+ساكن فراغ ich9_smbus_enable(u16 bdf)
 {
     /* map smbus into io space */
-    pci_config_writel(bdf, ICH9_SMB_SMB_BASE,
-                      (acpi_pm_base + 0x100) | PCI_BASE_ADDRESS_SPACE_IO);
+    pci_config_writel(bdf, ICH9_SMB_SMB_بنسټ,
+                      (acpi_pm_بنسټ + 0x100) | PCI_بنسټ_پته_SPACE_IO);
 
     /* enable SMBus */
     pci_config_writeb(bdf, ICH9_SMB_HOSTC, ICH9_SMB_HOSTC_HST_EN);
 }
 
-static int ICH9SmbusBDF = -1;
+ساكن صحيح ICH9SmbusBDF = -1;
 
 /* ICH9 SMBUS */
 /* PCI_VENDOR_ID_INTEL && PCI_DEVICE_ID_INTEL_ICH9_SMBUS */
-static void ich9_smbus_setup(struct pci_device *dev, void *arg)
+ساكن فراغ ich9_smbus_تیاری(بنية pci_device *dev, فراغ *arg)
 {
     ICH9SmbusBDF = dev->bdf;
 
     ich9_smbus_enable(dev->bdf);
 }
 
-static void intel_igd_setup(struct pci_device *dev, void *arg)
+ساكن فراغ intel_igd_تیاری(بنية pci_device *dev, فراغ *arg)
 {
-    struct romfile_s *opregion = romfile_find("etc/igd-opregion");
-    u64 bdsm_size = le64_to_cpu(romfile_loadint("etc/igd-bdsm-size", 0));
+    بنية romfile_s *opregion = romfile_پیدا_کړه("etc/igd-opregion");
+    u64 bdsm_اندازه = le64_منزل_cpu(romfile_loadint("etc/igd-bdsm-size", 0));
 
     /* Apply OpRegion to any Intel VGA device, more than one is undefined */
-    if (opregion && opregion->size) {
-        void *addr = memalign_high(PAGE_SIZE, opregion->size);
-        if (!addr) {
+    إذا (opregion && opregion->اندازه) {
+        فراغ *addr = memalign_لوړ(پاڼه_اندازه, opregion->اندازه);
+        إذا (!addr) {
             warn_noalloc();
-            return;
+            أرجع;
         }
 
-        if (opregion->copy(opregion, addr, opregion->size) < 0) {
-            free(addr);
-            return;
+        إذا (opregion->copy(opregion, addr, opregion->اندازه) < 0) {
+            حرر(addr);
+            أرجع;
         }
 
-        pci_config_writel(dev->bdf, 0xFC, cpu_to_le32((u32)addr));
+        pci_config_writel(dev->bdf, 0xFC, cpu_منزل_le32((u32)addr));
 
         dprintf(1, "Intel IGD OpRegion enabled at 0x%08x, size %dKB, dev %pP\n"
-                , (u32)addr, opregion->size >> 10, dev);
+                , (u32)addr, opregion->اندازه >> 10, dev);
     }
 
     /* Apply BDSM only to Intel VGA at 00:02.0 */
-    if (bdsm_size && (dev->bdf == pci_to_bdf(0, 2, 0))) {
-        void *addr = memalign_tmphigh(1024 * 1024, bdsm_size);
-        if (!addr) {
+    إذا (bdsm_اندازه && (dev->bdf == pci_منزل_bdf(0, 2, 0))) {
+        فراغ *addr = memalign_tmphigh(1024 * 1024, bdsm_اندازه);
+        إذا (!addr) {
             warn_noalloc();
-            return;
+            أرجع;
         }
 
-        e820_add((u32)addr, bdsm_size, E820_RESERVED);
+        e820_جمع_کړه((u32)addr, bdsm_اندازه, E820_RESERVED);
 
-        pci_config_writel(dev->bdf, 0x5C, cpu_to_le32((u32)addr));
+        pci_config_writel(dev->bdf, 0x5C, cpu_منزل_le32((u32)addr));
 
         dprintf(1, "Intel IGD BDSM enabled at 0x%08x, size %lldMB, dev %pP\n"
-                , (u32)addr, bdsm_size >> 20, dev);
+                , (u32)addr, bdsm_اندازه >> 20, dev);
     }
 }
 
-static const struct pci_device_id pci_device_tbl[] = {
+ساكن ثابت بنية pci_device_id pci_device_tbl[] = {
     /* PIIX3/PIIX4 PCI to ISA bridge */
     PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82371SB_0,
-               piix_isa_bridge_setup),
+               piix_isa_bridge_تیاری),
     PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82371AB_0,
-               piix_isa_bridge_setup),
+               piix_isa_bridge_تیاری),
     PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH9_LPC,
-               mch_isa_bridge_setup),
+               mch_isa_bridge_تیاری),
 
     /* STORAGE IDE */
     PCI_DEVICE_CLASS(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82371SB_1,
-                     PCI_CLASS_STORAGE_IDE, piix_ide_setup),
+                     PCI_CLASS_STORAGE_IDE, piix_ide_تیاری),
     PCI_DEVICE_CLASS(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82371AB,
-                     PCI_CLASS_STORAGE_IDE, piix_ide_setup),
+                     PCI_CLASS_STORAGE_IDE, piix_ide_تیاری),
     PCI_DEVICE_CLASS(PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_STORAGE_IDE,
-                     storage_ide_setup),
+                     storage_ide_تیاری),
 
     /* PIC, IBM, MPIC & MPIC2 */
     PCI_DEVICE_CLASS(PCI_VENDOR_ID_IBM, 0x0046, PCI_CLASS_SYSTEM_PIC,
-                     pic_ibm_setup),
+                     pic_ibm_تیاری),
     PCI_DEVICE_CLASS(PCI_VENDOR_ID_IBM, 0xFFFF, PCI_CLASS_SYSTEM_PIC,
-                     pic_ibm_setup),
+                     pic_ibm_تیاری),
 
     /* PIIX4 Power Management device (for ACPI) */
     PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82371AB_3,
-               piix4_pm_setup),
+               piix4_pm_تیاری),
     PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH9_SMBUS,
-               ich9_smbus_setup),
+               ich9_smbus_تیاری),
 
     /* 0xff00 */
-    PCI_DEVICE_CLASS(PCI_VENDOR_ID_APPLE, 0x0017, 0xff00, apple_macio_setup),
-    PCI_DEVICE_CLASS(PCI_VENDOR_ID_APPLE, 0x0022, 0xff00, apple_macio_setup),
+    PCI_DEVICE_CLASS(PCI_VENDOR_ID_APPLE, 0x0017, 0xff00, apple_macio_تیاری),
+    PCI_DEVICE_CLASS(PCI_VENDOR_ID_APPLE, 0x0022, 0xff00, apple_macio_تیاری),
 
     /* Intel IGD OpRegion setup */
     PCI_DEVICE_CLASS(PCI_VENDOR_ID_INTEL, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA,
-                     intel_igd_setup),
+                     intel_igd_تیاری),
 
-    PCI_DEVICE_END,
+    PCI_DEVICE_پای_ټکی,
 };
 
-static int MCHMmcfgBDF = -1;
-static void mch_mmconfig_setup(u16 bdf);
+ساكن صحيح MCHMmcfgBDF = -1;
+ساكن فراغ mch_mmconfig_تیاری(u16 bdf);
 
-void pci_resume(void)
+فراغ pci_resume(فراغ)
 {
-    if (!CONFIG_QEMU) {
-        return;
+    إذا (!CONFIG_QEMU) {
+        أرجع;
     }
 
-    if (PiixPmBDF >= 0) {
-        piix4_pm_config_setup(PiixPmBDF);
+    إذا (PiixPmBDF >= 0) {
+        piix4_pm_config_تیاری(PiixPmBDF);
     }
 
-    if (ICH9LpcBDF >= 0) {
-        mch_isa_lpc_setup(ICH9LpcBDF);
+    إذا (ICH9LpcBDF >= 0) {
+        mch_isa_lpc_تیاری(ICH9LpcBDF);
     }
 
-    if (ICH9SmbusBDF >= 0) {
+    إذا (ICH9SmbusBDF >= 0) {
         ich9_smbus_enable(ICH9SmbusBDF);
     }
 
-    if(MCHMmcfgBDF >= 0) {
-        mch_mmconfig_setup(MCHMmcfgBDF);
+    إذا(MCHMmcfgBDF >= 0) {
+        mch_mmconfig_تیاری(MCHMmcfgBDF);
     }
 }
 
-static void pci_bios_init_device(struct pci_device *pci)
+ساكن فراغ pci_bios_init_device(بنية pci_device *pci)
 {
     dprintf(1, "PCI: init bdf=%pP id=%04x:%04x\n"
             , pci, pci->vendor, pci->device);
 
     /* map the interrupt */
     u16 bdf = pci->bdf;
-    int pin = pci_config_readb(bdf, PCI_INTERRUPT_PIN);
-    if (pin != 0)
-        pci_config_writeb(bdf, PCI_INTERRUPT_LINE, pci_slot_get_irq(pci, pin));
+    صحيح pin = pci_config_readb(bdf, PCI_مداخله_PIN);
+    إذا (pin != 0)
+        pci_config_writeb(bdf, PCI_مداخله_کرښه, pci_خونه_get_irq(pci, pin));
 
-    pci_init_device(pci_device_tbl, pci, NULL);
+    pci_init_device(pci_device_tbl, pci, عدم);
 
     /* enable memory mappings */
     pci_config_maskw(bdf, PCI_COMMAND, 0,
-                     PCI_COMMAND_IO | PCI_COMMAND_MEMORY | PCI_COMMAND_SERR);
+                     PCI_COMMAND_IO | PCI_COMMAND_حافظه | PCI_COMMAND_SERR);
     /* enable SERR# for forwarding */
-    if (pci->header_type & PCI_HEADER_TYPE_BRIDGE)
+    إذا (pci->سرلیک_type & PCI_سرلیک_TYPE_BRIDGE)
         pci_config_maskw(bdf, PCI_BRIDGE_CONTROL, 0,
                          PCI_BRIDGE_CTL_SERR);
 }
 
-static void pci_bios_init_devices(void)
+ساكن فراغ pci_bios_init_devices(فراغ)
 {
-    struct pci_device *pci;
+    بنية pci_device *pci;
     foreachpci(pci) {
         pci_bios_init_device(pci);
     }
 }
 
-static void pci_enable_default_vga(void)
+ساكن فراغ pci_enable_default_vga(فراغ)
 {
-    struct pci_device *pci;
+    بنية pci_device *pci;
 
     foreachpci(pci) {
-        if (is_pci_vga(pci)) {
+        إذا (is_pci_vga(pci)) {
             dprintf(1, "PCI: Using %pP for primary VGA\n", pci);
-            return;
+            أرجع;
         }
     }
 
-    pci = pci_find_class(PCI_CLASS_DISPLAY_VGA);
-    if (!pci) {
+    pci = pci_پیدا_کړه_class(PCI_CLASS_DISPLAY_VGA);
+    إذا (!pci) {
         dprintf(1, "PCI: No VGA devices found\n");
-        return;
+        أرجع;
     }
 
     dprintf(1, "PCI: Enabling %pP for primary VGA\n", pci);
 
     pci_config_maskw(pci->bdf, PCI_COMMAND, 0,
-                     PCI_COMMAND_IO | PCI_COMMAND_MEMORY);
+                     PCI_COMMAND_IO | PCI_COMMAND_حافظه);
 
-    while (pci->parent) {
-        pci = pci->parent;
+    طالما (pci->پلار) {
+        pci = pci->پلار;
 
         dprintf(1, "PCI: Setting VGA enable on bridge %pP\n", pci);
 
         pci_config_maskw(pci->bdf, PCI_BRIDGE_CONTROL, 0, PCI_BRIDGE_CTL_VGA);
         pci_config_maskw(pci->bdf, PCI_COMMAND, 0,
-                         PCI_COMMAND_IO | PCI_COMMAND_MEMORY);
+                         PCI_COMMAND_IO | PCI_COMMAND_حافظه);
     }
 }
 
@@ -467,109 +467,109 @@ static void pci_enable_default_vga(void)
  * Platform device initialization
  ****************************************************************/
 
-static void i440fx_mem_addr_setup(struct pci_device *dev, void *arg)
+ساكن فراغ i440fx_mem_addr_تیاری(بنية pci_device *dev, فراغ *arg)
 {
-    if (RamSize <= 0x80000000)
-        pcimem_start = 0x80000000;
-    else if (RamSize <= 0xc0000000)
-        pcimem_start = 0xc0000000;
+    إذا (Ram_اندازه <= 0x80000000)
+        pcimem_پیل = 0x80000000;
+    وإلا إذا (Ram_اندازه <= 0xc0000000)
+        pcimem_پیل = 0xc0000000;
 
-    pci_slot_get_irq = piix_pci_slot_get_irq;
+    pci_خونه_get_irq = piix_pci_خونه_get_irq;
 }
 
-static void mch_mmconfig_setup(u16 bdf)
+ساكن فراغ mch_mmconfig_تیاری(u16 bdf)
 {
     u64 addr = Q35_HOST_BRIDGE_PCIEXBAR_ADDR;
-    u32 upper = addr >> 32;
-    u32 lower = (addr & 0xffffffff) | Q35_HOST_BRIDGE_PCIEXBAREN;
+    u32 پاسنی = addr >> 32;
+    u32 ښکتنی = (addr & 0xffffffff) | Q35_HOST_BRIDGE_PCIEXBAREN;
     pci_config_writel(bdf, Q35_HOST_BRIDGE_PCIEXBAR, 0);
-    pci_config_writel(bdf, Q35_HOST_BRIDGE_PCIEXBAR + 4, upper);
-    pci_config_writel(bdf, Q35_HOST_BRIDGE_PCIEXBAR, lower);
+    pci_config_writel(bdf, Q35_HOST_BRIDGE_PCIEXBAR + 4, پاسنی);
+    pci_config_writel(bdf, Q35_HOST_BRIDGE_PCIEXBAR, ښکتنی);
     pci_enable_mmconfig(Q35_HOST_BRIDGE_PCIEXBAR_ADDR, "q35");
 }
 
-static void mch_mem_addr_setup(struct pci_device *dev, void *arg)
+ساكن فراغ mch_mem_addr_تیاری(بنية pci_device *dev, فراغ *arg)
 {
     u64 addr = Q35_HOST_BRIDGE_PCIEXBAR_ADDR;
-    u32 size = Q35_HOST_BRIDGE_PCIEXBAR_SIZE;
+    u32 اندازه = Q35_HOST_BRIDGE_PCIEXBAR_اندازه;
 
     /* setup mmconfig */
     MCHMmcfgBDF = dev->bdf;
-    mch_mmconfig_setup(dev->bdf);
-    e820_add(addr, size, E820_RESERVED);
+    mch_mmconfig_تیاری(dev->bdf);
+    e820_جمع_کړه(addr, اندازه, E820_RESERVED);
 
     /* setup pci i/o window (above mmconfig) */
-    pcimem_start = addr + size;
+    pcimem_پیل = addr + اندازه;
 
-    pci_slot_get_irq = mch_pci_slot_get_irq;
+    pci_خونه_get_irq = mch_pci_خونه_get_irq;
 
     /* setup io address space */
-    if (acpi_pm_base < 0x1000)
-        pci_io_low_end = 0x10000;
-    else
-        pci_io_low_end = acpi_pm_base;
+    إذا (acpi_pm_بنسټ < 0x1000)
+        pci_io_ټیټ_پای_ټکی = 0x10000;
+    وإلا
+        pci_io_ټیټ_پای_ټکی = acpi_pm_بنسټ;
 }
 
-static const struct pci_device_id pci_platform_tbl[] = {
+ساكن ثابت بنية pci_device_id pci_platform_tbl[] = {
     PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82441,
-               i440fx_mem_addr_setup),
+               i440fx_mem_addr_تیاری),
     PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_Q35_MCH,
-               mch_mem_addr_setup),
-    PCI_DEVICE_END
+               mch_mem_addr_تیاری),
+    PCI_DEVICE_پای_ټکی
 };
 
-static void pci_bios_init_platform(void)
+ساكن فراغ pci_bios_init_platform(فراغ)
 {
-    struct pci_device *pci;
+    بنية pci_device *pci;
     foreachpci(pci) {
-        pci_init_device(pci_platform_tbl, pci, NULL);
+        pci_init_device(pci_platform_tbl, pci, عدم);
     }
 }
 
-static u8 pci_find_resource_reserve_capability(u16 bdf)
+ساكن u8 pci_پیدا_کړه_resource_reserve_capability(u16 bdf)
 {
     u16 device_id;
 
-    if (pci_config_readw(bdf, PCI_VENDOR_ID) != PCI_VENDOR_ID_REDHAT) {
+    إذا (pci_config_readw(bdf, PCI_VENDOR_ID) != PCI_VENDOR_ID_REDHAT) {
         dprintf(3, "PCI: This is non-QEMU bridge.\n");
-        return 0;
+        أرجع 0;
     }
 
     device_id = pci_config_readw(bdf, PCI_DEVICE_ID);
 
-    if (device_id != PCI_DEVICE_ID_REDHAT_ROOT_PORT &&
+    إذا (device_id != PCI_DEVICE_ID_REDHAT_ریښه_پورټ &&
         device_id != PCI_DEVICE_ID_REDHAT_BRIDGE) {
         dprintf(1, "PCI: QEMU resource reserve cap device ID doesn't match.\n");
-        return 0;
+        أرجع 0;
     }
     u8 cap = 0;
 
-    do {
-        cap = pci_find_capability(bdf, PCI_CAP_ID_VNDR, cap);
-    } while (cap &&
-             pci_config_readb(bdf, cap + PCI_CAP_REDHAT_TYPE_OFFSET) !=
+    افعل {
+        cap = pci_پیدا_کړه_capability(bdf, PCI_CAP_ID_VNDR, cap);
+    } طالما (cap &&
+             pci_config_readb(bdf, cap + PCI_CAP_REDHAT_TYPE_دننه_واټن) !=
                               REDHAT_CAP_RESOURCE_RESERVE);
-    if (cap) {
+    إذا (cap) {
         u8 cap_len = pci_config_readb(bdf, cap + PCI_CAP_FLAGS);
-        if (cap_len < RES_RESERVE_CAP_SIZE) {
+        إذا (cap_len < RES_RESERVE_CAP_اندازه) {
             dprintf(1, "PCI: QEMU resource reserve cap length %d is invalid\n",
                     cap_len);
-            return 0;
+            أرجع 0;
         }
-    } else {
+    } وإلا {
         dprintf(1, "PCI: QEMU resource reserve cap not found\n");
     }
-    return cap;
+    أرجع cap;
 }
 
 /****************************************************************
  * Bus initialization
  ****************************************************************/
 
-static void
-pci_bios_init_bus_rec(int bus, u8 *pci_bus)
+ساكن فراغ
+pci_bios_init_bus_rec(صحيح bus, u8 *pci_bus)
 {
-    int bdf;
+    صحيح bdf;
     u16 class;
 
     dprintf(1, "PCI: %s bus = 0x%x\n", __func__, bus);
@@ -577,7 +577,7 @@ pci_bios_init_bus_rec(int bus, u8 *pci_bus)
     /* prevent accidental access to unintended devices */
     foreachbdf(bdf, bus) {
         class = pci_config_readw(bdf, PCI_CLASS_DEVICE);
-        if (class == PCI_CLASS_BRIDGE_PCI) {
+        إذا (class == PCI_CLASS_BRIDGE_PCI) {
             pci_config_writeb(bdf, PCI_SECONDARY_BUS, 255);
             pci_config_writeb(bdf, PCI_SUBORDINATE_BUS, 0);
         }
@@ -585,27 +585,27 @@ pci_bios_init_bus_rec(int bus, u8 *pci_bus)
 
     foreachbdf(bdf, bus) {
         class = pci_config_readw(bdf, PCI_CLASS_DEVICE);
-        if (class != PCI_CLASS_BRIDGE_PCI) {
-            continue;
+        إذا (class != PCI_CLASS_BRIDGE_PCI) {
+            استمر;
         }
         dprintf(1, "PCI: %s bdf = 0x%x\n", __func__, bdf);
 
         u8 pribus = pci_config_readb(bdf, PCI_PRIMARY_BUS);
-        if (pribus != bus) {
+        إذا (pribus != bus) {
             dprintf(1, "PCI: primary bus = 0x%x -> 0x%x\n", pribus, bus);
             pci_config_writeb(bdf, PCI_PRIMARY_BUS, bus);
-        } else {
+        } وإلا {
             dprintf(1, "PCI: primary bus = 0x%x\n", pribus);
         }
 
         u8 secbus = pci_config_readb(bdf, PCI_SECONDARY_BUS);
         (*pci_bus)++;
-        if (*pci_bus != secbus) {
+        إذا (*pci_bus != secbus) {
             dprintf(1, "PCI: secondary bus = 0x%x -> 0x%x\n",
                     secbus, *pci_bus);
             secbus = *pci_bus;
             pci_config_writeb(bdf, PCI_SECONDARY_BUS, secbus);
-        } else {
+        } وإلا {
             dprintf(1, "PCI: secondary bus = 0x%x\n", secbus);
         }
 
@@ -616,22 +616,22 @@ pci_bios_init_bus_rec(int bus, u8 *pci_bus)
 
         pci_bios_init_bus_rec(secbus, pci_bus);
 
-        if (subbus != *pci_bus) {
+        إذا (subbus != *pci_bus) {
             u8 res_bus = *pci_bus;
-            u8 cap = pci_find_resource_reserve_capability(bdf);
+            u8 cap = pci_پیدا_کړه_resource_reserve_capability(bdf);
 
-            if (cap) {
+            إذا (cap) {
                 u32 tmp_res_bus = pci_config_readl(bdf,
                         cap + RES_RESERVE_BUS_RES);
-                if (tmp_res_bus != (u32)-1) {
+                إذا (tmp_res_bus != (u32)-1) {
                     res_bus = tmp_res_bus & 0xFF;
-                    if ((u8)(res_bus + secbus) < secbus ||
+                    إذا ((u8)(res_bus + secbus) < secbus ||
                             (u8)(res_bus + secbus) < res_bus) {
                         dprintf(1, "PCI: bus_reserve value %d is invalid\n",
                                 res_bus);
                         res_bus = 0;
                     }
-                    if (secbus + res_bus > *pci_bus) {
+                    إذا (secbus + res_bus > *pci_bus) {
                         dprintf(1, "PCI: QEMU resource reserve cap: bus = %u\n",
                                 res_bus);
                         res_bus = secbus + res_bus;
@@ -642,23 +642,23 @@ pci_bios_init_bus_rec(int bus, u8 *pci_bus)
                     subbus, res_bus);
             subbus = res_bus;
             *pci_bus = res_bus;
-        } else {
+        } وإلا {
             dprintf(1, "PCI: subordinate bus = 0x%x\n", subbus);
         }
         pci_config_writeb(bdf, PCI_SUBORDINATE_BUS, subbus);
     }
 }
 
-static void
-pci_bios_init_bus(void)
+ساكن فراغ
+pci_bios_init_bus(فراغ)
 {
     u8 extraroots = romfile_loadint("etc/extra-pci-roots", 0);
     u8 pci_bus = 0;
 
     pci_bios_init_bus_rec(0 /* host bus */, &pci_bus);
 
-    if (extraroots) {
-        while (pci_bus < 0xff) {
+    إذا (extraroots) {
+        طالما (pci_bus < 0xff) {
             pci_bus++;
             pci_bios_init_bus_rec(pci_bus, &pci_bus);
         }
@@ -670,157 +670,157 @@ pci_bios_init_bus(void)
  * Bus sizing
  ****************************************************************/
 
-static void
-pci_bios_get_bar(struct pci_device *pci, int bar,
-                 int *ptype, u64 *psize, int *pis64)
+ساكن فراغ
+pci_bios_get_bar(بنية pci_device *pci, صحيح bar,
+                 صحيح *ptype, u64 *psize, صحيح *pis64)
 {
     u32 ofs = pci_bar(pci, bar);
     u16 bdf = pci->bdf;
     u32 old = pci_config_readl(bdf, ofs);
-    int is64 = 0, type = PCI_REGION_TYPE_MEM;
-    u64 mask;
+    صحيح is64 = 0, type = PCI_REGION_TYPE_MEM;
+    u64 ماسک;
 
-    if (bar == PCI_ROM_SLOT) {
-        mask = PCI_ROM_ADDRESS_MASK;
-        pci_config_writel(bdf, ofs, mask);
-    } else {
-        if (old & PCI_BASE_ADDRESS_SPACE_IO) {
-            mask = PCI_BASE_ADDRESS_IO_MASK;
+    إذا (bar == PCI_ROM_خونه) {
+        ماسک = PCI_ROM_پته_ماسک;
+        pci_config_writel(bdf, ofs, ماسک);
+    } وإلا {
+        إذا (old & PCI_بنسټ_پته_SPACE_IO) {
+            ماسک = PCI_بنسټ_پته_IO_ماسک;
             type = PCI_REGION_TYPE_IO;
-        } else {
-            mask = PCI_BASE_ADDRESS_MEM_MASK;
-            if (old & PCI_BASE_ADDRESS_MEM_PREFETCH)
+        } وإلا {
+            ماسک = PCI_بنسټ_پته_MEM_ماسک;
+            إذا (old & PCI_بنسټ_پته_MEM_PREFETCH)
                 type = PCI_REGION_TYPE_PREFMEM;
-            is64 = ((old & PCI_BASE_ADDRESS_MEM_TYPE_MASK)
-                    == PCI_BASE_ADDRESS_MEM_TYPE_64);
+            is64 = ((old & PCI_بنسټ_پته_MEM_TYPE_ماسک)
+                    == PCI_بنسټ_پته_MEM_TYPE_64);
         }
         pci_config_writel(bdf, ofs, ~0);
     }
     u64 val = pci_config_readl(bdf, ofs);
     pci_config_writel(bdf, ofs, old);
-    if (is64) {
+    إذا (is64) {
         u32 hold = pci_config_readl(bdf, ofs + 4);
         pci_config_writel(bdf, ofs + 4, ~0);
-        u32 high = pci_config_readl(bdf, ofs + 4);
+        u32 لوړ = pci_config_readl(bdf, ofs + 4);
         pci_config_writel(bdf, ofs + 4, hold);
-        val |= ((u64)high << 32);
-        mask |= ((u64)0xffffffff << 32);
-        *psize = (~(val & mask)) + 1;
-    } else {
-        *psize = ((~(val & mask)) + 1) & 0xffffffff;
+        val |= ((u64)لوړ << 32);
+        ماسک |= ((u64)0xffffffff << 32);
+        *psize = (~(val & ماسک)) + 1;
+    } وإلا {
+        *psize = ((~(val & ماسک)) + 1) & 0xffffffff;
     }
     *ptype = type;
     *pis64 = is64;
 }
 
-static int pci_bios_bridge_region_is64(struct pci_region *r,
-                                 struct pci_device *pci, int type)
+ساكن صحيح pci_bios_bridge_region_is64(بنية pci_region *r,
+                                 بنية pci_device *pci, صحيح type)
 {
-    if (type != PCI_REGION_TYPE_PREFMEM)
-        return 0;
-    u32 pmem = pci_config_readl(pci->bdf, PCI_PREF_MEMORY_BASE);
-    if (!pmem) {
-        pci_config_writel(pci->bdf, PCI_PREF_MEMORY_BASE, 0xfff0fff0);
-        pmem = pci_config_readl(pci->bdf, PCI_PREF_MEMORY_BASE);
-        pci_config_writel(pci->bdf, PCI_PREF_MEMORY_BASE, 0x0);
+    إذا (type != PCI_REGION_TYPE_PREFMEM)
+        أرجع 0;
+    u32 pmem = pci_config_readl(pci->bdf, PCI_PREF_حافظه_بنسټ);
+    إذا (!pmem) {
+        pci_config_writel(pci->bdf, PCI_PREF_حافظه_بنسټ, 0xfff0fff0);
+        pmem = pci_config_readl(pci->bdf, PCI_PREF_حافظه_بنسټ);
+        pci_config_writel(pci->bdf, PCI_PREF_حافظه_بنسټ, 0x0);
     }
-    if ((pmem & PCI_PREF_RANGE_TYPE_MASK) != PCI_PREF_RANGE_TYPE_64)
-       return 0;
-    struct pci_region_entry *entry;
-    hlist_for_each_entry(entry, &r->list, node) {
-        if (!entry->is64)
-            return 0;
+    إذا ((pmem & PCI_PREF_RANGE_TYPE_ماسک) != PCI_PREF_RANGE_TYPE_64)
+       أرجع 0;
+    بنية pci_region_ثبت *ثبت;
+    hlist_for_each_ثبت(ثبت, &r->list, غوټه) {
+        إذا (!ثبت->is64)
+            أرجع 0;
     }
-    return 1;
+    أرجع 1;
 }
 
-static u64 pci_region_align(struct pci_region *r)
+ساكن u64 pci_region_align(بنية pci_region *r)
 {
-    struct pci_region_entry *entry;
-    hlist_for_each_entry(entry, &r->list, node) {
+    بنية pci_region_ثبت *ثبت;
+    hlist_for_each_ثبت(ثبت, &r->list, غوټه) {
         // The first entry in the sorted list has the largest alignment
-        return entry->align;
+        أرجع ثبت->align;
     }
-    return 1;
+    أرجع 1;
 }
 
-static u64 pci_region_sum(struct pci_region *r)
+ساكن u64 pci_region_مجموعه(بنية pci_region *r)
 {
-    u64 sum = 0;
-    struct pci_region_entry *entry;
-    hlist_for_each_entry(entry, &r->list, node) {
-        sum += entry->size;
+    u64 مجموعه = 0;
+    بنية pci_region_ثبت *ثبت;
+    hlist_for_each_ثبت(ثبت, &r->list, غوټه) {
+        مجموعه += ثبت->اندازه;
     }
-    return sum;
+    أرجع مجموعه;
 }
 
-static void pci_region_migrate_64bit_entries(struct pci_region *from,
-                                             struct pci_region *to)
+ساكن فراغ pci_region_migrate_64bit_entries(بنية pci_region *from,
+                                             بنية pci_region *منزل)
 {
-    struct hlist_node *n, **last = &to->list.first;
-    struct pci_region_entry *entry;
-    hlist_for_each_entry_safe(entry, n, &from->list, node) {
-        if (!entry->is64)
-            continue;
-        if (entry->dev->class == PCI_CLASS_SERIAL_USB)
-            continue;
-        if (entry->dev->class == PCI_CLASS_STORAGE_NVME)
-            continue;
+    بنية hlist_غوټه *n, **وروستی = &منزل->list.لومړی;
+    بنية pci_region_ثبت *ثبت;
+    hlist_for_each_ثبت_خوندي(ثبت, n, &from->list, غوټه) {
+        إذا (!ثبت->is64)
+            استمر;
+        إذا (ثبت->dev->class == PCI_CLASS_SERIAL_USB)
+            استمر;
+        إذا (ثبت->dev->class == PCI_CLASS_STORAGE_NVME)
+            استمر;
         // Move from source list to destination list.
-        hlist_del(&entry->node);
-        hlist_add(&entry->node, last);
-        last = &entry->node.next;
+        hlist_del(&ثبت->غوټه);
+        hlist_جمع_کړه(&ثبت->غوټه, وروستی);
+        وروستی = &ثبت->غوټه.بل;
     }
 }
 
-static struct pci_region_entry *
-pci_region_create_entry(struct pci_bus *bus, struct pci_device *dev,
-                        int bar, u64 size, u64 align, int type, int is64)
+ساكن بنية pci_region_ثبت *
+pci_region_create_ثبت(بنية pci_bus *bus, بنية pci_device *dev,
+                        صحيح bar, u64 اندازه, u64 align, صحيح type, صحيح is64)
 {
-    struct pci_region_entry *entry = malloc_tmp(sizeof(*entry));
-    if (!entry) {
+    بنية pci_region_ثبت *ثبت = malloc_tmp(حجم(*ثبت));
+    إذا (!ثبت) {
         warn_noalloc();
-        return NULL;
+        أرجع عدم;
     }
-    memset(entry, 0, sizeof(*entry));
-    entry->dev = dev;
-    entry->bar = bar;
-    entry->size = size;
-    entry->align = align;
-    entry->is64 = is64;
-    entry->type = type;
+    memset(ثبت, 0, حجم(*ثبت));
+    ثبت->dev = dev;
+    ثبت->bar = bar;
+    ثبت->اندازه = اندازه;
+    ثبت->align = align;
+    ثبت->is64 = is64;
+    ثبت->type = type;
     // Insert into list in sorted order.
-    struct hlist_node **pprev;
-    struct pci_region_entry *pos;
-    hlist_for_each_entry_pprev(pos, pprev, &bus->r[type].list, node) {
-        if (pos->align < align || (pos->align == align && pos->size < size))
-            break;
+    بنية hlist_غوټه **pprev;
+    بنية pci_region_ثبت *pos;
+    hlist_for_each_ثبت_pprev(pos, pprev, &bus->r[type].list, غوټه) {
+        إذا (pos->align < align || (pos->align == align && pos->اندازه < اندازه))
+            اكسر;
     }
-    hlist_add(&entry->node, pprev);
-    return entry;
+    hlist_جمع_کړه(&ثبت->غوټه, pprev);
+    أرجع ثبت;
 }
 
-typedef enum hotplug_type_t {
+تعريفنوع تعداد hotplug_type_t {
     HOTPLUG_NO_SUPPORTED = 0,
     HOTPLUG_PCIE,
     HOTPLUG_SHPC
 } hotplug_type_t;
 
-static hotplug_type_t pci_bus_hotplug_support(struct pci_bus *bus, u8 pcie_cap)
+ساكن hotplug_type_t pci_bus_hotplug_support(بنية pci_bus *bus, u8 pcie_cap)
 {
     u8 shpc_cap;
 
-    if (pcie_cap) {
+    إذا (pcie_cap) {
         u16 pcie_flags = pci_config_readw(bus->bus_dev->bdf,
                                           pcie_cap + PCI_EXP_FLAGS);
-        u8 port_type = ((pcie_flags & PCI_EXP_FLAGS_TYPE) >>
+        u8 پورټ_type = ((pcie_flags & PCI_EXP_FLAGS_TYPE) >>
                        (__builtin_ffs(PCI_EXP_FLAGS_TYPE) - 1));
 
-        if (port_type == PCI_EXP_TYPE_PCI_BRIDGE)
-            goto check_shpc;
+        إذا (پورټ_type == PCI_EXP_TYPE_PCI_BRIDGE)
+            اذهب check_shpc;
 
-        u8 downstream_port = (port_type == PCI_EXP_TYPE_DOWNSTREAM) ||
-                             (port_type == PCI_EXP_TYPE_ROOT_PORT);
+        u8 downstream_پورټ = (پورټ_type == PCI_EXP_TYPE_DOWNSTREAM) ||
+                             (پورټ_type == PCI_EXP_TYPE_ریښه_پورټ);
         /*
          * PCI Express SPEC, 7.8.2:
          *   Slot Implemented – When Set, this bit indicates that the Link
@@ -830,176 +830,176 @@ static hotplug_type_t pci_bus_hotplug_support(struct pci_bus *bus, u8 pcie_cap)
          *   This bit is valid for Downstream Ports. This bit is undefined
          *   for Upstream Ports.
          */
-        u16 slot_implemented = pcie_flags & PCI_EXP_FLAGS_SLOT;
+        u16 خونه_implemented = pcie_flags & PCI_EXP_FLAGS_خونه;
 
-        return downstream_port && slot_implemented ?
+        أرجع downstream_پورټ && خونه_implemented ?
             HOTPLUG_PCIE : HOTPLUG_NO_SUPPORTED;
     }
 
 check_shpc:
-    shpc_cap = pci_find_capability(bus->bus_dev->bdf, PCI_CAP_ID_SHPC, 0);
-    return !!shpc_cap ? HOTPLUG_SHPC : HOTPLUG_NO_SUPPORTED;
+    shpc_cap = pci_پیدا_کړه_capability(bus->bus_dev->bdf, PCI_CAP_ID_SHPC, 0);
+    أرجع !!shpc_cap ? HOTPLUG_SHPC : HOTPLUG_NO_SUPPORTED;
 }
 
 /* Test whether bridge support forwarding of transactions
  * of a specific type.
  * Note: disables bridge's window registers as a side effect.
  */
-static int pci_bridge_has_region(struct pci_device *pci,
-                                 enum pci_region_type region_type)
+ساكن صحيح pci_bridge_has_region(بنية pci_device *pci,
+                                 تعداد pci_region_type region_type)
 {
-    u8 base;
+    u8 بنسټ;
 
-    switch (region_type) {
-        case PCI_REGION_TYPE_IO:
-            base = PCI_IO_BASE;
-            break;
-        case PCI_REGION_TYPE_PREFMEM:
-            base = PCI_PREF_MEMORY_BASE;
-            break;
-        default:
+    بدل (region_type) {
+        حالة PCI_REGION_TYPE_IO:
+            بنسټ = PCI_IO_بنسټ;
+            اكسر;
+        حالة PCI_REGION_TYPE_PREFMEM:
+            بنسټ = PCI_PREF_حافظه_بنسټ;
+            اكسر;
+        افتراضي:
             /* Regular memory support is mandatory */
-            return 1;
+            أرجع 1;
     }
 
-    pci_config_writeb(pci->bdf, base, 0xFF);
+    pci_config_writeb(pci->bdf, بنسټ, 0xFF);
 
-    return pci_config_readb(pci->bdf, base) != 0;
+    أرجع pci_config_readb(pci->bdf, بنسټ) != 0;
 }
 
-static int pci_bios_check_devices(struct pci_bus *busses)
+ساكن صحيح pci_bios_check_devices(بنية pci_bus *busses)
 {
     dprintf(1, "PCI: check devices\n");
 
     // Calculate resources needed for regular (non-bus) devices.
-    struct pci_device *pci;
+    بنية pci_device *pci;
     foreachpci(pci) {
-        if (pci->class == PCI_CLASS_BRIDGE_PCI)
+        إذا (pci->class == PCI_CLASS_BRIDGE_PCI)
             busses[pci->secondary_bus].bus_dev = pci;
 
-        struct pci_bus *bus = &busses[pci_bdf_to_bus(pci->bdf)];
-        if (!bus->bus_dev)
+        بنية pci_bus *bus = &busses[pci_bdf_منزل_bus(pci->bdf)];
+        إذا (!bus->bus_dev)
             /*
              * Resources for all root busses go in busses[0]
              */
             bus = &busses[0];
-        int i;
-        for (i = 0; i < PCI_NUM_REGIONS; i++) {
-            if ((pci->class == PCI_CLASS_BRIDGE_PCI) &&
-                (i >= PCI_BRIDGE_NUM_REGIONS && i < PCI_ROM_SLOT))
-                continue;
-            int type, is64;
-            u64 size;
-            pci_bios_get_bar(pci, i, &type, &size, &is64);
-            if (size == 0)
-                continue;
+        صحيح i;
+        لكل (i = 0; i < PCI_عدد_REGIONS; i++) {
+            إذا ((pci->class == PCI_CLASS_BRIDGE_PCI) &&
+                (i >= PCI_BRIDGE_عدد_REGIONS && i < PCI_ROM_خونه))
+                استمر;
+            صحيح type, is64;
+            u64 اندازه;
+            pci_bios_get_bar(pci, i, &type, &اندازه, &is64);
+            إذا (اندازه == 0)
+                استمر;
 
-            if (type != PCI_REGION_TYPE_IO && size < PCI_DEVICE_MEM_MIN)
-                size = PCI_DEVICE_MEM_MIN;
-            struct pci_region_entry *entry = pci_region_create_entry(
-                bus, pci, i, size, size, type, is64);
-            if (!entry)
-                return -1;
+            إذا (type != PCI_REGION_TYPE_IO && اندازه < PCI_DEVICE_MEM_MIN)
+                اندازه = PCI_DEVICE_MEM_MIN;
+            بنية pci_region_ثبت *ثبت = pci_region_create_ثبت(
+                bus, pci, i, اندازه, اندازه, type, is64);
+            إذا (!ثبت)
+                أرجع -1;
 
-            if (is64)
+            إذا (is64)
                 i++;
         }
     }
 
     // Propagate required bus resources to parent busses.
-    int secondary_bus;
-    for (secondary_bus=MaxPCIBus; secondary_bus>0; secondary_bus--) {
-        struct pci_bus *s = &busses[secondary_bus];
-        if (!s->bus_dev)
-            continue;
-        struct pci_bus *parent = &busses[pci_bdf_to_bus(s->bus_dev->bdf)];
-        if (!parent->bus_dev)
+    صحيح secondary_bus;
+    لكل (secondary_bus=MaxPCIBus; secondary_bus>0; secondary_bus--) {
+        بنية pci_bus *s = &busses[secondary_bus];
+        إذا (!s->bus_dev)
+            استمر;
+        بنية pci_bus *پلار = &busses[pci_bdf_منزل_bus(s->bus_dev->bdf)];
+        إذا (!پلار->bus_dev)
             /*
              * Resources for all root busses go in busses[0]
              */
-            parent = &busses[0];
-        int type;
+            پلار = &busses[0];
+        صحيح type;
         u16 bdf = s->bus_dev->bdf;
-        u8 pcie_cap = pci_find_capability(bdf, PCI_CAP_ID_EXP, 0);
-        u8 qemu_cap = pci_find_resource_reserve_capability(bdf);
+        u8 pcie_cap = pci_پیدا_کړه_capability(bdf, PCI_CAP_ID_EXP, 0);
+        u8 qemu_cap = pci_پیدا_کړه_resource_reserve_capability(bdf);
 
         hotplug_type_t hotplug_support = pci_bus_hotplug_support(s, pcie_cap);
-        for (type = 0; type < PCI_REGION_TYPE_COUNT; type++) {
+        لكل (type = 0; type < PCI_REGION_TYPE_شمېر; type++) {
             u64 align = (type == PCI_REGION_TYPE_IO) ?
                 PCI_BRIDGE_IO_MIN : PCI_BRIDGE_MEM_MIN;
-            if (!pci_bridge_has_region(s->bus_dev, type))
-                continue;
-            u64 size = 0;
-            if (qemu_cap) {
-                u32 tmp_size;
-                u64 tmp_size_64;
-                switch(type) {
-                case PCI_REGION_TYPE_IO:
-                    tmp_size_64 = (pci_config_readl(bdf, qemu_cap + RES_RESERVE_IO) |
+            إذا (!pci_bridge_has_region(s->bus_dev, type))
+                استمر;
+            u64 اندازه = 0;
+            إذا (qemu_cap) {
+                u32 tmp_اندازه;
+                u64 tmp_اندازه_64;
+                بدل(type) {
+                حالة PCI_REGION_TYPE_IO:
+                    tmp_اندازه_64 = (pci_config_readl(bdf, qemu_cap + RES_RESERVE_IO) |
                             (u64)pci_config_readl(bdf, qemu_cap + RES_RESERVE_IO + 4) << 32);
-                    if (tmp_size_64 != (u64)-1) {
-                        size = tmp_size_64;
+                    إذا (tmp_اندازه_64 != (u64)-1) {
+                        اندازه = tmp_اندازه_64;
                     }
-                    break;
-                case PCI_REGION_TYPE_MEM:
-                    tmp_size = pci_config_readl(bdf, qemu_cap + RES_RESERVE_MEM);
-                    if (tmp_size != (u32)-1) {
-                        size = tmp_size;
+                    اكسر;
+                حالة PCI_REGION_TYPE_MEM:
+                    tmp_اندازه = pci_config_readl(bdf, qemu_cap + RES_RESERVE_MEM);
+                    إذا (tmp_اندازه != (u32)-1) {
+                        اندازه = tmp_اندازه;
                     }
-                    break;
-                case PCI_REGION_TYPE_PREFMEM:
-                    tmp_size = pci_config_readl(bdf, qemu_cap + RES_RESERVE_PREF_MEM_32);
-                    tmp_size_64 = (pci_config_readl(bdf, qemu_cap + RES_RESERVE_PREF_MEM_64) |
+                    اكسر;
+                حالة PCI_REGION_TYPE_PREFMEM:
+                    tmp_اندازه = pci_config_readl(bdf, qemu_cap + RES_RESERVE_PREF_MEM_32);
+                    tmp_اندازه_64 = (pci_config_readl(bdf, qemu_cap + RES_RESERVE_PREF_MEM_64) |
                             (u64)pci_config_readl(bdf, qemu_cap + RES_RESERVE_PREF_MEM_64 + 4) << 32);
-                    if (tmp_size != (u32)-1 && tmp_size_64 == (u64)-1) {
-                        size = tmp_size;
-                    } else if (tmp_size == (u32)-1 && tmp_size_64 != (u64)-1) {
-                        size = tmp_size_64;
-                    } else if (tmp_size != (u32)-1 && tmp_size_64 != (u64)-1) {
+                    إذا (tmp_اندازه != (u32)-1 && tmp_اندازه_64 == (u64)-1) {
+                        اندازه = tmp_اندازه;
+                    } وإلا إذا (tmp_اندازه == (u32)-1 && tmp_اندازه_64 != (u64)-1) {
+                        اندازه = tmp_اندازه_64;
+                    } وإلا إذا (tmp_اندازه != (u32)-1 && tmp_اندازه_64 != (u64)-1) {
                         dprintf(1, "PCI: resource reserve cap PREF32 and PREF64"
                                 " conflict\n");
                     }
-                    break;
-                default:
-                    break;
+                    اكسر;
+                افتراضي:
+                    اكسر;
                 }
             }
-            if (pci_region_align(&s->r[type]) > align)
+            إذا (pci_region_align(&s->r[type]) > align)
                  align = pci_region_align(&s->r[type]);
-            u64 sum = pci_region_sum(&s->r[type]);
-            int is64 = pci_bios_bridge_region_is64(&s->r[type],
+            u64 مجموعه = pci_region_مجموعه(&s->r[type]);
+            صحيح is64 = pci_bios_bridge_region_is64(&s->r[type],
                                                    s->bus_dev, type);
-            int resource_optional = 0;
-            if (hotplug_support == HOTPLUG_PCIE)
+            صحيح resource_optional = 0;
+            إذا (hotplug_support == HOTPLUG_PCIE)
                 resource_optional = pcie_cap && (type == PCI_REGION_TYPE_IO);
 
-            u64 top_align = pci_mem64_top >> 11;
-            if (hotplug_support && pci_pad_mem64 && is64
-                && (type == PCI_REGION_TYPE_PREFMEM) && (top_align > align))
-                align = top_align;
-            if (align > sum && hotplug_support && !resource_optional)
-                sum = align; /* reserve min size for hot-plug */
-            if (size > sum) {
+            u64 سر_align = pci_mem64_سر >> 11;
+            إذا (hotplug_support && pci_pad_mem64 && is64
+                && (type == PCI_REGION_TYPE_PREFMEM) && (سر_align > align))
+                align = سر_align;
+            إذا (align > مجموعه && hotplug_support && !resource_optional)
+                مجموعه = align; /* reserve min size for hot-plug */
+            إذا (اندازه > مجموعه) {
                 dprintf(1, "PCI: QEMU resource reserve cap: "
                         "size %08llx type %s\n",
-                        size, region_type_name[type]);
-                if (type != PCI_REGION_TYPE_IO) {
-                    size = ALIGN(size, align);
+                        اندازه, region_type_name[type]);
+                إذا (type != PCI_REGION_TYPE_IO) {
+                    اندازه = ALIGN(اندازه, align);
                 }
-            } else {
-                size = ALIGN(sum, align);
+            } وإلا {
+                اندازه = ALIGN(مجموعه, align);
             }
             // entry->bar is -1 if the entry represents a bridge region
-            struct pci_region_entry *entry = pci_region_create_entry(
-                parent, s->bus_dev, -1, size, align, type, is64);
-            if (!entry)
-                return -1;
+            بنية pci_region_ثبت *ثبت = pci_region_create_ثبت(
+                پلار, s->bus_dev, -1, اندازه, align, type, is64);
+            إذا (!ثبت)
+                أرجع -1;
             dprintf(1, "PCI: secondary bus %d size %08llx type %s\n",
-                      entry->dev->secondary_bus, size,
-                      region_type_name[entry->type]);
+                      ثبت->dev->secondary_bus, اندازه,
+                      region_type_name[ثبت->type]);
         }
     }
-    return 0;
+    أرجع 0;
 }
 
 
@@ -1008,7 +1008,7 @@ static int pci_bios_check_devices(struct pci_bus *busses)
  ****************************************************************/
 
 // Setup region bases (given the regions' size and alignment)
-static int pci_bios_init_root_regions_io(struct pci_bus *bus)
+ساكن صحيح pci_bios_init_ریښه_regions_io(بنية pci_bus *bus)
 {
     /*
      * QEMU I/O address space usage:
@@ -1021,157 +1021,157 @@ static int pci_bios_init_root_regions_io(struct pci_bus *bus)
      *                    where they want, on older versions its fixed ]
      *   c000 - ffff    free, traditionally used for pci io
      */
-    struct pci_region *r_io = &bus->r[PCI_REGION_TYPE_IO];
-    u64 sum = pci_region_sum(r_io);
-    if (sum < 0x4000) {
+    بنية pci_region *r_io = &bus->r[PCI_REGION_TYPE_IO];
+    u64 مجموعه = pci_region_مجموعه(r_io);
+    إذا (مجموعه < 0x4000) {
         /* traditional region is big enougth, use it */
-        r_io->base = 0xc000;
-    } else if (sum < pci_io_low_end - 0x1000) {
+        r_io->بنسټ = 0xc000;
+    } وإلا إذا (مجموعه < pci_io_ټیټ_پای_ټکی - 0x1000) {
         /* use the larger region at 0x1000 */
-        r_io->base = 0x1000;
-    } else {
+        r_io->بنسټ = 0x1000;
+    } وإلا {
         /* not enouth io address space -> error out */
-        return -1;
+        أرجع -1;
     }
-    dprintf(1, "PCI: IO: %4llx - %4llx\n", r_io->base, r_io->base + sum - 1);
-    return 0;
+    dprintf(1, "PCI: IO: %4llx - %4llx\n", r_io->بنسټ, r_io->بنسټ + مجموعه - 1);
+    أرجع 0;
 }
 
-static int pci_bios_init_root_regions_mem(struct pci_bus *bus)
+ساكن صحيح pci_bios_init_ریښه_regions_mem(بنية pci_bus *bus)
 {
-    struct pci_region *r_end = &bus->r[PCI_REGION_TYPE_PREFMEM];
-    struct pci_region *r_start = &bus->r[PCI_REGION_TYPE_MEM];
+    بنية pci_region *r_پای_ټکی = &bus->r[PCI_REGION_TYPE_PREFMEM];
+    بنية pci_region *r_پیل = &bus->r[PCI_REGION_TYPE_MEM];
 
-    if (pci_region_align(r_start) < pci_region_align(r_end)) {
+    إذا (pci_region_align(r_پیل) < pci_region_align(r_پای_ټکی)) {
         // Swap regions to improve alignment.
-        r_end = r_start;
-        r_start = &bus->r[PCI_REGION_TYPE_PREFMEM];
+        r_پای_ټکی = r_پیل;
+        r_پیل = &bus->r[PCI_REGION_TYPE_PREFMEM];
     }
-    u64 sum = pci_region_sum(r_end);
-    u64 align = pci_region_align(r_end);
-    r_end->base = ALIGN_DOWN((pcimem_end - sum), align);
-    sum = pci_region_sum(r_start);
-    align = pci_region_align(r_start);
-    r_start->base = ALIGN_DOWN((r_end->base - sum), align);
+    u64 مجموعه = pci_region_مجموعه(r_پای_ټکی);
+    u64 align = pci_region_align(r_پای_ټکی);
+    r_پای_ټکی->بنسټ = ALIGN_ښکته((pcimem_پای_ټکی - مجموعه), align);
+    مجموعه = pci_region_مجموعه(r_پیل);
+    align = pci_region_align(r_پیل);
+    r_پیل->بنسټ = ALIGN_ښکته((r_پای_ټکی->بنسټ - مجموعه), align);
 
-    if ((r_start->base < pcimem_start) ||
-         (r_start->base > pcimem_end))
+    إذا ((r_پیل->بنسټ < pcimem_پیل) ||
+         (r_پیل->بنسټ > pcimem_پای_ټکی))
         // Memory range requested is larger than available.
-        return -1;
-    return 0;
+        أرجع -1;
+    أرجع 0;
 }
 
-#define PCI_IO_SHIFT            8
-#define PCI_MEMORY_SHIFT        16
-#define PCI_PREF_MEMORY_SHIFT   16
+#تعریف_کړه PCI_IO_ښويدنه            8
+#تعریف_کړه PCI_حافظه_ښويدنه        16
+#تعریف_کړه PCI_PREF_حافظه_ښويدنه   16
 
-static void
-pci_region_map_one_entry(struct pci_region_entry *entry, u64 addr)
+ساكن فراغ
+pci_region_map_one_ثبت(بنية pci_region_ثبت *ثبت, u64 addr)
 {
-    if (entry->bar >= 0) {
+    إذا (ثبت->bar >= 0) {
         dprintf(1, "PCI: map device bdf=%pP"
                 "  bar %d, addr %08llx, size %08llx [%s]\n",
-                entry->dev,
-                entry->bar, addr, entry->size, region_type_name[entry->type]);
+                ثبت->dev,
+                ثبت->bar, addr, ثبت->اندازه, region_type_name[ثبت->type]);
 
-        pci_set_io_region_addr(entry->dev, entry->bar, addr, entry->is64);
-        return;
+        pci_سېټ_io_region_addr(ثبت->dev, ثبت->bar, addr, ثبت->is64);
+        أرجع;
     }
 
-    u16 bdf = entry->dev->bdf;
-    u64 limit = addr + entry->size - 1;
-    if (entry->type == PCI_REGION_TYPE_IO) {
-        pci_config_writeb(bdf, PCI_IO_BASE, addr >> PCI_IO_SHIFT);
-        pci_config_writew(bdf, PCI_IO_BASE_UPPER16, 0);
-        pci_config_writeb(bdf, PCI_IO_LIMIT, limit >> PCI_IO_SHIFT);
-        pci_config_writew(bdf, PCI_IO_LIMIT_UPPER16, 0);
+    u16 bdf = ثبت->dev->bdf;
+    u64 حد = addr + ثبت->اندازه - 1;
+    إذا (ثبت->type == PCI_REGION_TYPE_IO) {
+        pci_config_writeb(bdf, PCI_IO_بنسټ, addr >> PCI_IO_ښويدنه);
+        pci_config_writew(bdf, PCI_IO_بنسټ_UPPER16, 0);
+        pci_config_writeb(bdf, PCI_IO_حد, حد >> PCI_IO_ښويدنه);
+        pci_config_writew(bdf, PCI_IO_حد_UPPER16, 0);
     }
-    if (entry->type == PCI_REGION_TYPE_MEM) {
-        pci_config_writew(bdf, PCI_MEMORY_BASE, addr >> PCI_MEMORY_SHIFT);
-        pci_config_writew(bdf, PCI_MEMORY_LIMIT, limit >> PCI_MEMORY_SHIFT);
+    إذا (ثبت->type == PCI_REGION_TYPE_MEM) {
+        pci_config_writew(bdf, PCI_حافظه_بنسټ, addr >> PCI_حافظه_ښويدنه);
+        pci_config_writew(bdf, PCI_حافظه_حد, حد >> PCI_حافظه_ښويدنه);
     }
-    if (entry->type == PCI_REGION_TYPE_PREFMEM) {
-        pci_config_writew(bdf, PCI_PREF_MEMORY_BASE, addr >> PCI_PREF_MEMORY_SHIFT);
-        pci_config_writew(bdf, PCI_PREF_MEMORY_LIMIT, limit >> PCI_PREF_MEMORY_SHIFT);
-        pci_config_writel(bdf, PCI_PREF_BASE_UPPER32, addr >> 32);
-        pci_config_writel(bdf, PCI_PREF_LIMIT_UPPER32, limit >> 32);
+    إذا (ثبت->type == PCI_REGION_TYPE_PREFMEM) {
+        pci_config_writew(bdf, PCI_PREF_حافظه_بنسټ, addr >> PCI_PREF_حافظه_ښويدنه);
+        pci_config_writew(bdf, PCI_PREF_حافظه_حد, حد >> PCI_PREF_حافظه_ښويدنه);
+        pci_config_writel(bdf, PCI_PREF_بنسټ_UPPER32, addr >> 32);
+        pci_config_writel(bdf, PCI_PREF_حد_UPPER32, حد >> 32);
     }
 }
 
-static void pci_region_map_entries(struct pci_bus *busses, struct pci_region *r)
+ساكن فراغ pci_region_map_entries(بنية pci_bus *busses, بنية pci_region *r)
 {
-    struct hlist_node *n;
-    struct pci_region_entry *entry;
-    hlist_for_each_entry_safe(entry, n, &r->list, node) {
-        u64 addr = r->base;
-        r->base += entry->size;
-        if (entry->bar == -1)
+    بنية hlist_غوټه *n;
+    بنية pci_region_ثبت *ثبت;
+    hlist_for_each_ثبت_خوندي(ثبت, n, &r->list, غوټه) {
+        u64 addr = r->بنسټ;
+        r->بنسټ += ثبت->اندازه;
+        إذا (ثبت->bar == -1)
             // Update bus base address if entry is a bridge region
-            busses[entry->dev->secondary_bus].r[entry->type].base = addr;
-        pci_region_map_one_entry(entry, addr);
-        hlist_del(&entry->node);
-        free(entry);
+            busses[ثبت->dev->secondary_bus].r[ثبت->type].بنسټ = addr;
+        pci_region_map_one_ثبت(ثبت, addr);
+        hlist_del(&ثبت->غوټه);
+        حرر(ثبت);
     }
 }
 
-static void pci_bios_map_devices(struct pci_bus *busses)
+ساكن فراغ pci_bios_map_devices(بنية pci_bus *busses)
 {
-    if (pci_bios_init_root_regions_io(busses))
+    إذا (pci_bios_init_ریښه_regions_io(busses))
         panic("PCI: out of I/O address space\n");
 
-    dprintf(1, "PCI: 32: %016llx - %016llx\n", pcimem_start, pcimem_end);
-    if (pci_pad_mem64 || pci_bios_init_root_regions_mem(busses)) {
-        struct pci_region r64_mem, r64_pref;
-        r64_mem.list.first = NULL;
-        r64_pref.list.first = NULL;
+    dprintf(1, "PCI: 32: %016llx - %016llx\n", pcimem_پیل, pcimem_پای_ټکی);
+    إذا (pci_pad_mem64 || pci_bios_init_ریښه_regions_mem(busses)) {
+        بنية pci_region r64_mem, r64_pref;
+        r64_mem.list.لومړی = عدم;
+        r64_pref.list.لومړی = عدم;
         pci_region_migrate_64bit_entries(&busses[0].r[PCI_REGION_TYPE_MEM],
                                          &r64_mem);
         pci_region_migrate_64bit_entries(&busses[0].r[PCI_REGION_TYPE_PREFMEM],
                                          &r64_pref);
 
-        if (pci_bios_init_root_regions_mem(busses))
+        إذا (pci_bios_init_ریښه_regions_mem(busses))
             panic("PCI: out of 32bit address space\n");
 
-        u64 sum_mem = pci_region_sum(&r64_mem);
-        u64 sum_pref = pci_region_sum(&r64_pref);
+        u64 مجموعه_mem = pci_region_مجموعه(&r64_mem);
+        u64 مجموعه_pref = pci_region_مجموعه(&r64_pref);
         u64 align_mem = pci_region_align(&r64_mem);
         u64 align_pref = pci_region_align(&r64_pref);
 
-        r64_mem.base = le64_to_cpu(romfile_loadint("etc/reserved-memory-end", 0));
-        if (r64_mem.base < 0x100000000LL + RamSizeOver4G)
-            r64_mem.base = 0x100000000LL + RamSizeOver4G;
-        if (pci_mem64_top) {
-            u64 size = (ALIGN(sum_mem, (1LL<<30)) +
-                        ALIGN(sum_pref, (1LL<<30)));
-            if (pci_pad_mem64)
-                size = ALIGN(size, pci_mem64_top >> 3);
-            if (r64_mem.base < pci_mem64_top - size) {
-                r64_mem.base = pci_mem64_top - size;
+        r64_mem.بنسټ = le64_منزل_cpu(romfile_loadint("etc/reserved-memory-end", 0));
+        إذا (r64_mem.بنسټ < 0x100000000LL + Ram_اندازه_Over4_G)
+            r64_mem.بنسټ = 0x100000000LL + Ram_اندازه_Over4_G;
+        إذا (pci_mem64_سر) {
+            u64 اندازه = (ALIGN(مجموعه_mem, (1LL<<30)) +
+                        ALIGN(مجموعه_pref, (1LL<<30)));
+            إذا (pci_pad_mem64)
+                اندازه = ALIGN(اندازه, pci_mem64_سر >> 3);
+            إذا (r64_mem.بنسټ < pci_mem64_سر - اندازه) {
+                r64_mem.بنسټ = pci_mem64_سر - اندازه;
             }
-            if (e820_is_used(r64_mem.base, size))
-                r64_mem.base -= size;
+            إذا (e820_is_کارول_شوی(r64_mem.بنسټ, اندازه))
+                r64_mem.بنسټ -= اندازه;
         }
-        r64_mem.base = ALIGN(r64_mem.base, align_mem);
-        r64_mem.base = ALIGN(r64_mem.base, (1LL<<30));    // 1G hugepage
-        r64_pref.base = r64_mem.base + sum_mem;
-        r64_pref.base = ALIGN(r64_pref.base, align_pref);
-        r64_pref.base = ALIGN(r64_pref.base, (1LL<<30));  // 1G hugepage
-        pcimem64_start = r64_mem.base;
-        pcimem64_end = r64_pref.base + sum_pref;
-        pcimem64_end = ALIGN(pcimem64_end, (1LL<<30));    // 1G hugepage
-        dprintf(1, "PCI: 64: %016llx - %016llx\n", pcimem64_start, pcimem64_end);
+        r64_mem.بنسټ = ALIGN(r64_mem.بنسټ, align_mem);
+        r64_mem.بنسټ = ALIGN(r64_mem.بنسټ, (1LL<<30));    // 1G hugepage
+        r64_pref.بنسټ = r64_mem.بنسټ + مجموعه_mem;
+        r64_pref.بنسټ = ALIGN(r64_pref.بنسټ, align_pref);
+        r64_pref.بنسټ = ALIGN(r64_pref.بنسټ, (1LL<<30));  // 1G hugepage
+        pcimem64_پیل = r64_mem.بنسټ;
+        pcimem64_پای_ټکی = r64_pref.بنسټ + مجموعه_pref;
+        pcimem64_پای_ټکی = ALIGN(pcimem64_پای_ټکی, (1LL<<30));    // 1G hugepage
+        dprintf(1, "PCI: 64: %016llx - %016llx\n", pcimem64_پیل, pcimem64_پای_ټکی);
 
         pci_region_map_entries(busses, &r64_mem);
         pci_region_map_entries(busses, &r64_pref);
-    } else {
+    } وإلا {
         // no bars mapped high -> drop 64bit window (see dsdt)
-        pcimem64_start = 0;
+        pcimem64_پیل = 0;
     }
     // Map regions on each device.
-    int bus;
-    for (bus = 0; bus<=MaxPCIBus; bus++) {
-        int type;
-        for (type = 0; type < PCI_REGION_TYPE_COUNT; type++)
+    صحيح bus;
+    لكل (bus = 0; bus<=MaxPCIBus; bus++) {
+        صحيح type;
+        لكل (type = 0; type < PCI_REGION_TYPE_شمېر; type++)
             pci_region_map_entries(busses, &busses[bus].r[type]);
     }
 }
@@ -1181,67 +1181,67 @@ static void pci_bios_map_devices(struct pci_bus *busses)
  * Main setup code
  ****************************************************************/
 
-void
-pci_setup(void)
+فراغ
+pci_تیاری(فراغ)
 {
-    if (!CONFIG_QEMU)
-        return;
+    إذا (!CONFIG_QEMU)
+        أرجع;
 
     dprintf(3, "pci setup\n");
 
-    if (CPUPhysBits) {
-        pci_mem64_top = 1LL << CPUPhysBits;
-        if (CPUPhysBits > 44) {
+    إذا (CPUPhys_بټونه) {
+        pci_mem64_سر = 1LL << CPUPhys_بټونه;
+        إذا (CPUPhys_بټونه > 44) {
             // Old linux kernels have trouble dealing with more than 44 (i386
             // kernels) or 46 (x86_64 kernels) phys-bits. Seems to be a bug in
             // the virtio-pci driver.
             // Reported: centos-7, ubuntu-18.04
             // Limit the used address space to mitigate the bug, except we are
             // running in a huge guest with more than 1TB of memory installed.
-            if (RamSizeOver4G < (1LL << 40)) {
-                pci_mem64_top = 1LL << 44;
+            إذا (Ram_اندازه_Over4_G < (1LL << 40)) {
+                pci_mem64_سر = 1LL << 44;
             }
         }
     }
 
     pci_pad_mem64 = romfile_loadbool("opt/org.seabios/pci64", -1);
 
-    if (pci_pad_mem64 == -1)
+    إذا (pci_pad_mem64 == -1)
         // when not set enable in case memory over 4G is present
-        pci_pad_mem64 = RamSizeOver4G ? 1 : 0;
+        pci_pad_mem64 = Ram_اندازه_Over4_G ? 1 : 0;
 
-    if (!CPULongMode)
+    إذا (!CPULong_ډېرپېښ)
         // force off for 32-bit CPUs
         pci_pad_mem64 = 0;
 
     dprintf(1, "=== PCI bus & bridge init ===\n");
-    if (pci_probe_host() != 0) {
-        return;
+    إذا (pci_probe_host() != 0) {
+        أرجع;
     }
     pci_bios_init_bus();
 
     dprintf(1, "=== PCI device probing ===\n");
     pci_probe_devices();
 
-    pcimem_start = RamSize;
+    pcimem_پیل = Ram_اندازه;
     pci_bios_init_platform();
 
     dprintf(1, "=== PCI new allocation pass #1 ===\n");
-    struct pci_bus *busses = malloc_tmp(sizeof(*busses) * (MaxPCIBus + 1));
-    if (!busses) {
+    بنية pci_bus *busses = malloc_tmp(حجم(*busses) * (MaxPCIBus + 1));
+    إذا (!busses) {
         warn_noalloc();
-        return;
+        أرجع;
     }
-    memset(busses, 0, sizeof(*busses) * (MaxPCIBus + 1));
-    if (pci_bios_check_devices(busses))
-        return;
+    memset(busses, 0, حجم(*busses) * (MaxPCIBus + 1));
+    إذا (pci_bios_check_devices(busses))
+        أرجع;
 
     dprintf(1, "=== PCI new allocation pass #2 ===\n");
     pci_bios_map_devices(busses);
 
     pci_bios_init_devices();
 
-    free(busses);
+    حرر(busses);
 
     pci_enable_default_vga();
 }

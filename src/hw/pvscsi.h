@@ -1,8 +1,8 @@
-#ifndef _PVSCSI_H_
-#define _PVSCSI_H_
+#که_نه_تعریف_شوی _PVSCSI_H_
+#تعریف_کړه _PVSCSI_H_
 
-struct disk_op_s;
-int pvscsi_process_op(struct disk_op_s *op);
-void pvscsi_setup(void);
+بنية disk_op_s;
+صحيح pvscsi_process_op(بنية disk_op_s *op);
+فراغ pvscsi_تیاری(فراغ);
 
-#endif /* _PVSCSI_H_ */
+#د_که_پای /* _PVSCSI_H_ */

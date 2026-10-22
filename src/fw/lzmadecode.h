@@ -19,39 +19,39 @@
   to this file, however, are subject to the LGPL or CPL terms.
 */
 
-#ifndef __LZMADECODE_H
-#define __LZMADECODE_H
+#که_نه_تعریف_شوی __LZMADECODE_H
+#تعریف_کړه __LZMADECODE_H
 
-typedef unsigned char Byte;
-typedef unsigned short UInt16;
-typedef unsigned int UInt32;
-typedef UInt32 SizeT;
+تعريفنوع بینښه حرف Byte;
+تعريفنوع بینښه لنډ UInt16;
+تعريفنوع بینښه صحيح UInt32;
+تعريفنوع UInt32 اندازه_T;
 
-#define CProb UInt16
+#تعریف_کړه CProb UInt16
 
-#define LZMA_RESULT_OK 0
-#define LZMA_RESULT_DATA_ERROR 1
+#تعریف_کړه LZMA_پایله_OK 0
+#تعریف_کړه LZMA_پایله_معلومات_ERROR 1
 
 
-#define LZMA_BASE_SIZE 1846
-#define LZMA_LIT_SIZE 768
+#تعریف_کړه LZMA_بنسټ_اندازه 1846
+#تعریف_کړه LZMA_LIT_اندازه 768
 
-#define LZMA_PROPERTIES_SIZE 5
+#تعریف_کړه LZMA_PROPERTIES_اندازه 5
 
-typedef struct _CLzmaProperties
+تعريفنوع بنية _CLzmaProperties
 {
-  int lc;
-  int lp;
-  int pb;
+  صحيح lc;
+  صحيح lp;
+  صحيح pb;
 }CLzmaProperties;
 
-int LzmaDecodeProperties(CLzmaProperties *propsRes, const unsigned char *propsData, int size);
+صحيح LzmaDecodeProperties(CLzmaProperties *propsRes, ثابت بینښه حرف *props_معلومات, صحيح اندازه);
 
-#define LzmaGetNumProbs(Properties) (LZMA_BASE_SIZE + (LZMA_LIT_SIZE << ((Properties)->lc + (Properties)->lp)))
+#تعریف_کړه Lzma_Get_عدد_Probs(Properties) (LZMA_بنسټ_اندازه + (LZMA_LIT_اندازه << ((Properties)->lc + (Properties)->lp)))
 
-#define kLzmaNeedInitId (-2)
+#تعریف_کړه kLzmaNeedInitId (-2)
 
-typedef struct _CLzmaDecoderState
+تعريفنوع بنية _CLzmaDecoderState
 {
   CLzmaProperties Properties;
   CProb *Probs;
@@ -60,8 +60,8 @@ typedef struct _CLzmaDecoderState
 } CLzmaDecoderState;
 
 
-int LzmaDecode(CLzmaDecoderState *vs,
-    const unsigned char *inStream, SizeT inSize, SizeT *inSizeProcessed,
-    unsigned char *outStream, SizeT outSize, SizeT *outSizeProcessed);
+صحيح LzmaDecode(CLzmaDecoderState *vs,
+    ثابت بینښه حرف *دننه_بهیر, اندازه_T دننه_اندازه, اندازه_T *دننه_اندازه_Processed,
+    بینښه حرف *بهر_بهیر, اندازه_T بهر_اندازه, اندازه_T *بهر_اندازه_Processed);
 
-#endif
+#د_که_پای
