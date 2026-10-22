@@ -1,7 +1,7 @@
 #ifndef __E820MAP_H
 #define __E820MAP_H
 
-#include "types.h" // u64
+#ضمن "types.h" // u64
 
 #define E820_RAM            1
 #define E820_RESERVED       2
@@ -10,19 +10,19 @@
 #define E820_UNUSABLE       5
 #define E820_SOFT_RESERVED  0xEFFFFFFF
 
-struct e820entry {
+بنية e820entry {
     u64 start;
     u64 size;
     u32 type;
 };
 
-void e820_add(u64 start, u64 size, u32 type);
-void e820_remove(u64 start, u64 size);
-void e820_prepboot(void);
-int e820_is_used(u64 start, u64 size);
+فراغ e820_add(u64 start, u64 size, u32 type);
+فراغ e820_remove(u64 start, u64 size);
+فراغ e820_prepboot(فراغ);
+صحيح e820_is_used(u64 start, u64 size);
 
 // e820 map storage
-extern struct e820entry e820_list[];
-extern int e820_count;
+خارجي بنية e820entry e820_list[];
+خارجي صحيح e820_عدد;
 
 #endif // e820map.h
