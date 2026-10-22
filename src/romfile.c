@@ -22,60 +22,60 @@ romfile_add(struct romfile_s *file)
 
 // Search for the specified file.
 static struct romfile_s *
-__romfile_findprefix(const char *prefix, int prefixlen, struct romfile_s *prev)
+__romfile_findprefix(const char *prefix, 整数 prefixlen, struct romfile_s *prev)
 {
     struct romfile_s *cur = RomfileRoot;
-    if (prev)
+    如果 (prev)
         cur = prev->next;
-    while (cur) {
-        if (memcmp(prefix, cur->name, prefixlen) == 0)
-            return cur;
+    当 (cur) {
+        如果 (memcmp(prefix, cur->name, prefixlen) == 0)
+            返回 cur;
         cur = cur->next;
     }
-    return NULL;
+    返回 NULL;
 }
 
 struct romfile_s *
 romfile_findprefix(const char *prefix, struct romfile_s *prev)
 {
-    return __romfile_findprefix(prefix, strlen(prefix), prev);
+    返回 __romfile_findprefix(prefix, strlen(prefix), prev);
 }
 
 struct romfile_s *
 romfile_find(const char *name)
 {
-    return __romfile_findprefix(name, strlen(name) + 1, NULL);
+    返回 __romfile_findprefix(name, strlen(name) + 1, NULL);
 }
 
 // Helper function to find, malloc_tmphigh, and copy a romfile.  This
 // function adds a trailing zero to the malloc'd copy.
 void *
-romfile_loadfile(const char *name, int *psize)
+romfile_loadfile(const char *name, 整数 *psize)
 {
     struct romfile_s *file = romfile_find(name);
-    if (!file)
-        return NULL;
+    如果 (!file)
+        返回 NULL;
 
-    int filesize = file->size;
-    if (!filesize)
-        return NULL;
+    整数 filesize = file->size;
+    如果 (!filesize)
+        返回 NULL;
 
     char *data = malloc_tmphigh(filesize+1);
-    if (!data) {
+    如果 (!data) {
         warn_noalloc();
-        return NULL;
+        返回 NULL;
     }
 
     dprintf(5, "Copying romfile '%s' (len %d)\n", name, filesize);
-    int ret = file->copy(file, data, filesize);
-    if (ret < 0) {
+    整数 ret = file->copy(file, data, filesize);
+    如果 (ret < 0) {
         free(data);
-        return NULL;
+        返回 NULL;
     }
-    if (psize)
+    如果 (psize)
         *psize = filesize;
     data[filesize] = '\0';
-    return data;
+    返回 data;
 }
 
 // Attempt to load an integer from the given file - return 'defval'
@@ -84,19 +84,19 @@ u64
 romfile_loadint(const char *name, u64 defval)
 {
     struct romfile_s *file = romfile_find(name);
-    if (!file)
-        return defval;
+    如果 (!file)
+        返回 defval;
 
-    int filesize = file->size;
-    if (!filesize || filesize > sizeof(u64) || (filesize & (filesize-1)))
+    整数 filesize = file->size;
+    如果 (!filesize || filesize > sizeof(u64) || (filesize & (filesize-1)))
         // Doesn't look like a valid integer.
-        return defval;
+        返回 defval;
 
     u64 val = 0;
-    int ret = file->copy(file, &val, sizeof(val));
-    if (ret < 0)
-        return defval;
-    return val;
+    整数 ret = file->copy(file, &val, sizeof(val));
+    如果 (ret < 0)
+        返回 defval;
+    返回 val;
 }
 
 u32
@@ -105,21 +105,21 @@ romfile_loadbool(const char *name, u32 defval)
     static const char *true_strings[] = { "1", "on", "yes" };
     static const char *false_strings[] = { "0", "off", "no" };
     char *str = romfile_loadfile(name, NULL);
-    int i;
+    整数 i;
 
-    if (!str)
-        return defval;
+    如果 (!str)
+        返回 defval;
 
-    for (i = 0; i < ARRAY_SIZE(true_strings); i++)
-        if (0 == strcmp(str, true_strings[i]))
-            return 1;
+    为 (i = 0; i < ARRAY_SIZE(true_strings); i++)
+        如果 (0 == strcmp(str, true_strings[i]))
+            返回 1;
 
-    for (i = 0; i < ARRAY_SIZE(false_strings); i++)
-        if (0 == strcmp(str, false_strings[i]))
-            return 0;
+    为 (i = 0; i < ARRAY_SIZE(false_strings); i++)
+        如果 (0 == strcmp(str, false_strings[i]))
+            返回 0;
 
     dprintf(1, "%s: unknown bool string: %s\n", __func__, str);
-    return defval;
+    返回 defval;
 }
 
 struct const_romfile_s {
@@ -127,26 +127,26 @@ struct const_romfile_s {
     void *data;
 };
 
-static int
+static 整数
 const_read_file(struct romfile_s *file, void *dst, u32 maxlen)
 {
-    if (file->size > maxlen)
-        return -1;
+    如果 (file->size > maxlen)
+        返回 -1;
     struct const_romfile_s *cfile;
     cfile = container_of(file, struct const_romfile_s, file);
-    if (maxlen > file->size)
+    如果 (maxlen > file->size)
         maxlen = file->size;
     memcpy(dst, cfile->data, maxlen);
-    return file->size;
+    返回 file->size;
 }
 
 static void
-const_romfile_add(char *name, void *data, int size)
+const_romfile_add(char *name, void *data, 整数 size)
 {
     struct const_romfile_s *cfile = malloc_tmp(sizeof(*cfile));
-    if (!cfile) {
+    如果 (!cfile) {
         warn_noalloc();
-        return;
+        返回;
     }
     memset(cfile, 0, sizeof(*cfile));
     strtcpy(cfile->file.name, name, sizeof(cfile->file.name));
@@ -160,9 +160,9 @@ void
 const_romfile_add_int(char *name, u32 value)
 {
     u32 *data = malloc_tmp(sizeof(*data));
-    if (!data) {
+    如果 (!data) {
         warn_noalloc();
-        return;
+        返回;
     }
     *data = value;
     const_romfile_add(name, data, sizeof(*data));

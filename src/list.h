@@ -16,10 +16,10 @@ struct hlist_head {
     struct hlist_node *first;
 };
 
-static inline int
+static inline 整数
 hlist_empty(const struct hlist_head *h)
 {
-    return !h->first;
+    返回 !h->first;
 }
 
 static inline void
@@ -28,7 +28,7 @@ hlist_del(struct hlist_node *n)
     struct hlist_node *next = n->next;
     struct hlist_node **pprev = n->pprev;
     *pprev = next;
-    if (next)
+    如果 (next)
         next->pprev = pprev;
 }
 
@@ -38,7 +38,7 @@ hlist_add(struct hlist_node *n, struct hlist_node **pprev)
     struct hlist_node *next = *pprev;
     n->pprev = pprev;
     n->next = next;
-    if (next)
+    如果 (next)
         next->pprev = &n->next;
     *pprev = n;
 }
@@ -65,25 +65,25 @@ static inline void
 hlist_replace(struct hlist_node *old, struct hlist_node *new)
 {
     new->next = old->next;
-    if (new->next)
+    如果 (new->next)
         new->next->pprev = &new->next;
     new->pprev = old->pprev;
     *new->pprev = new;
 }
 
 #define hlist_for_each_entry(pos, head, member)                         \
-    for (pos = container_of((head)->first, typeof(*pos), member)        \
+    为 (pos = container_of((head)->first, typeof(*pos), member)        \
          ; pos != container_of(NULL, typeof(*pos), member)              \
          ; pos = container_of(pos->member.next, typeof(*pos), member))
 
 #define hlist_for_each_entry_safe(pos, n, head, member)                 \
-    for (pos = container_of((head)->first, typeof(*pos), member)        \
+    为 (pos = container_of((head)->first, typeof(*pos), member)        \
          ; pos != container_of(NULL, typeof(*pos), member)              \
              && ({ n = pos->member.next; 1; })                          \
          ; pos = container_of(n, typeof(*pos), member))
 
 #define hlist_for_each_entry_pprev(pos, pprev, head, member)            \
-    for (pprev = &(head)->first                                         \
+    为 (pprev = &(head)->first                                         \
          ; *pprev && ({ pos=container_of(*pprev, typeof(*pos), member); 1; }) \
          ; pprev = &(*pprev)->next)
 

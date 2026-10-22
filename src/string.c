@@ -20,64 +20,64 @@ checksum_far(u16 buf_seg, void *buf_far, u32 len)
     SET_SEG(ES, buf_seg);
     u32 i;
     u8 sum = 0;
-    for (i=0; i<len; i++)
+    为 (i=0; i<len; i++)
         sum += GET_VAR(ES, ((u8*)buf_far)[i]);
-    return sum;
+    返回 sum;
 }
 
 u8
 checksum(void *buf, u32 len)
 {
-    return checksum_far(GET_SEG(SS), buf, len);
+    返回 checksum_far(GET_SEG(SS), buf, len);
 }
 
 size_t
 strlen(const char *s)
 {
-    if (__builtin_constant_p(s))
-        return __builtin_strlen(s);
+    如果 (__builtin_constant_p(s))
+        返回 __builtin_strlen(s);
     const char *p = s;
-    while (*p)
+    当 (*p)
         p++;
-    return p-s;
+    返回 p-s;
 }
 
-int
+整数
 memcmp_far(u16 s1seg, const void *s1, u16 s2seg, const void *s2, size_t n)
 {
-    while (n--) {
-        int d = GET_FARVAR(s1seg, *(u8*)s1) - GET_FARVAR(s2seg, *(u8*)s2);
-        if (d)
-            return d < 0 ? -1 : 1;
+    当 (n--) {
+        整数 d = GET_FARVAR(s1seg, *(u8*)s1) - GET_FARVAR(s2seg, *(u8*)s2);
+        如果 (d)
+            返回 d < 0 ? -1 : 1;
         s1++;
         s2++;
     }
-    return 0;
+    返回 0;
 }
 
 // Compare two areas of memory.
-int
+整数
 memcmp(const void *s1, const void *s2, size_t n)
 {
-    while (n) {
-        if (*(u8*)s1 != *(u8*)s2)
-            return *(u8*)s1 < *(u8*)s2 ? -1 : 1;
+    当 (n) {
+        如果 (*(u8*)s1 != *(u8*)s2)
+            返回 *(u8*)s1 < *(u8*)s2 ? -1 : 1;
         s1++;
         s2++;
         n--;
     }
-    return 0;
+    返回 0;
 }
 
 // Compare two strings.
-int
+整数
 strcmp(const char *s1, const char *s2)
 {
-    for (;;) {
-        if (*s1 != *s2)
-            return *s1 < *s2 ? -1 : 1;
-        if (! *s1)
-            return 0;
+    为 (;;) {
+        如果 (*s1 != *s2)
+            返回 *s1 < *s2 ? -1 : 1;
+        如果 (! *s1)
+            返回 0;
         s1++;
         s2++;
     }
@@ -107,19 +107,19 @@ memset16_far(u16 d_seg, void *d_far, u16 c, size_t len)
 }
 
 void *
-memset(void *s, int c, size_t n)
+memset(void *s, 整数 c, size_t n)
 {
-    while (n)
+    当 (n)
         ((char *)s)[--n] = c;
-    return s;
+    返回 s;
 }
 
 void memset_fl(void *ptr, u8 val, size_t size)
 {
-    if (MODESEGMENT)
+    如果 (MODESEGMENT)
         memset_far(FLATPTR_TO_SEG(ptr), (void*)(FLATPTR_TO_OFFSET(ptr)),
                    val, size);
-    else
+    否则
         memset(ptr, val, size);
 }
 
@@ -141,30 +141,30 @@ memcpy_far(u16 d_seg, void *d_far, u16 s_seg, const void *s_far, size_t len)
 inline void
 memcpy_fl(void *d_fl, const void *s_fl, size_t len)
 {
-    if (MODESEGMENT)
+    如果 (MODESEGMENT)
         memcpy_far(FLATPTR_TO_SEG(d_fl), (void*)FLATPTR_TO_OFFSET(d_fl)
                    , FLATPTR_TO_SEG(s_fl), (void*)FLATPTR_TO_OFFSET(s_fl)
                    , len);
-    else
+    否则
         memcpy(d_fl, s_fl, len);
 }
 
 void *
 #undef memcpy
 memcpy(void *d1, const void *s1, size_t len)
-#if MODESEGMENT == 0
+#如果 MODESEGMENT == 0
 #define memcpy __builtin_memcpy
 #endif
 {
     SET_SEG(ES, GET_SEG(SS));
     void *d = d1;
-    if (((u32)d1 | (u32)s1 | len) & 3) {
+    如果 (((u32)d1 | (u32)s1 | len) & 3) {
         // non-aligned memcpy
         asm volatile(
             "rep movsb (%%esi),%%es:(%%edi)"
             : "+c"(len), "+S"(s1), "+D"(d)
             : "m" (__segment_ES) : "cc", "memory");
-        return d1;
+        返回 d1;
     }
     // Common case - use 4-byte copy
     len /= 4;
@@ -172,7 +172,7 @@ memcpy(void *d1, const void *s1, size_t len)
         "rep movsl (%%esi),%%es:(%%edi)"
         : "+c"(len), "+S"(s1), "+D"(d)
         : "m" (__segment_ES) : "cc", "memory");
-    return d1;
+    返回 d1;
 }
 
 // Copy to/from memory mapped IO.  IO mem is very slow, so yield
@@ -182,9 +182,9 @@ iomemcpy(void *d, const void *s, u32 len)
 {
     ASSERT32FLAT();
     yield();
-    while (len > 3) {
+    当 (len > 3) {
         u32 copylen = len;
-        if (copylen > 2048)
+        如果 (copylen > 2048)
             copylen = 2048;
         copylen /= 4;
         len -= copylen * 4;
@@ -194,7 +194,7 @@ iomemcpy(void *d, const void *s, u32 len)
             : : "cc", "memory");
         yield();
     }
-    if (len)
+    如果 (len)
         // Copy any remaining bytes.
         memcpy(d, s, len);
 }
@@ -202,18 +202,18 @@ iomemcpy(void *d, const void *s, u32 len)
 void *
 memmove(void *d, const void *s, size_t len)
 {
-    if (s >= d)
-        return memcpy(d, s, len);
+    如果 (s >= d)
+        返回 memcpy(d, s, len);
 
     d += len-1;
     s += len-1;
-    while (len--) {
+    当 (len--) {
         *(char*)d = *(char*)s;
         d--;
         s--;
     }
 
-    return d;
+    返回 d;
 }
 
 // Copy a string - truncating it if necessary.
@@ -221,31 +221,31 @@ char *
 strtcpy(char *dest, const char *src, size_t len)
 {
     char *d = dest;
-    while (--len && *src != '\0')
+    当 (--len && *src != '\0')
         *d++ = *src++;
     *d = '\0';
-    return dest;
+    返回 dest;
 }
 
 // locate first occurrence of character c in the string s
 char *
-strchr(const char *s, int c)
+strchr(const char *s, 整数 c)
 {
-    for (; *s; s++)
-        if (*s == c)
-            return (char*)s;
-    return NULL;
+    为 (; *s; s++)
+        如果 (*s == c)
+            返回 (char*)s;
+    返回 NULL;
 }
 
 // Remove any trailing blank characters (spaces, new lines, carriage returns)
 char *
 nullTrailingSpace(char *buf)
 {
-    int len = strlen(buf);
+    整数 len = strlen(buf);
     char *end = &buf[len-1];
-    while (end >= buf && *end <= ' ')
+    当 (end >= buf && *end <= ' ')
         *(end--) = '\0';
-    while (*buf && *buf <= ' ')
+    当 (*buf && *buf <= ' ')
         buf++;
-    return buf;
+    返回 buf;
 }

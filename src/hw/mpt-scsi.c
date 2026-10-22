@@ -114,7 +114,7 @@ typedef struct MptSGEntrySimple32 {
     u32 DataBufferAddressLow;
 } __attribute__((packed)) MptSGEntrySimple32_t;
 
-static int
+static 整数
 mpt_scsi_cmd(u32 iobase, struct disk_op_s *op,
              u8 *cdb, u16 target, u16 lun, u16 blocksize)
 {
@@ -144,10 +144,10 @@ mpt_scsi_cmd(u32 iobase, struct disk_op_s *op,
 
     req.scsi_io.LUN[1] = lun;
     memcpy(req.scsi_io.CDB, cdb, 16);
-    if (blocksize) {
-        if (scsi_is_read(op)) {
+    如果 (blocksize) {
+        如果 (scsi_is_read(op)) {
             req.scsi_io.Control = 2 << 24;
-        } else {
+        } 否则 {
             req.scsi_io.Control = 1 << 24;
             req.sge.FlagsLength |= 0x04000000;
         }
@@ -155,44 +155,44 @@ mpt_scsi_cmd(u32 iobase, struct disk_op_s *op,
 
     outl((u32)MAKE_FLATPTR(GET_SEG(SS), &req), iobase + MPT_REG_REQ_Q);
 
-    for (;;) {
-        if (timer_check(end)) {
-            return DISK_RET_ETIMEOUT;
+    为 (;;) {
+        如果 (timer_check(end)) {
+            返回 DISK_RET_ETIMEOUT;
         }
 
         u32 istatus = inl(iobase + MPT_REG_ISTATUS);
-        if (istatus & MPT_IMASK_REPLY) {
+        如果 (istatus & MPT_IMASK_REPLY) {
             u32 resp = inl(iobase + MPT_REG_REP_Q);
             /* another read to turn interrupt off */
             inl(iobase + MPT_REG_REP_Q);
-            if (resp == req.scsi_io.MessageContext) {
-                return DISK_RET_SUCCESS;
-            } else if (resp & 0x80000000) {
+            如果 (resp == req.scsi_io.MessageContext) {
+                返回 DISK_RET_SUCCESS;
+            } 否则 如果 (resp & 0x80000000) {
                 outl((u32)&reply_msg[0], iobase + MPT_REG_REP_Q);
-                return DISK_RET_EBADTRACK;
+                返回 DISK_RET_EBADTRACK;
             }
         }
         usleep(50);
     }
 }
 
-int
+整数
 mpt_scsi_process_op(struct disk_op_s *op)
 {
-    if (!CONFIG_MPT_SCSI)
-        return DISK_RET_EBADTRACK;
+    如果 (!CONFIG_MPT_SCSI)
+        返回 DISK_RET_EBADTRACK;
 
     u8 cdbcmd[16];
-    int blocksize = scsi_fill_cmd(op, cdbcmd, sizeof(cdbcmd));
-    if (blocksize < 0)
-        return default_process_op(op);
+    整数 blocksize = scsi_fill_cmd(op, cdbcmd, sizeof(cdbcmd));
+    如果 (blocksize < 0)
+        返回 default_process_op(op);
 
     struct mpt_lun_s *llun_gf =
         container_of(op->drive_fl, struct mpt_lun_s, drive);
     u16 target = GET_GLOBALFLAT(llun_gf->target);
     u16 lun = GET_GLOBALFLAT(llun_gf->lun);
     u32 iobase = GET_GLOBALFLAT(llun_gf->iobase);
-    return mpt_scsi_cmd(iobase, op, cdbcmd, target, lun, blocksize);
+    返回 mpt_scsi_cmd(iobase, op, cdbcmd, target, lun, blocksize);
 }
 
 static void
@@ -208,15 +208,15 @@ mpt_scsi_init_lun(struct mpt_lun_s *llun, struct pci_device *pci,
     llun->iobase = iobase;
 }
 
-static int
+static 整数
 mpt_scsi_add_lun(u32 lun, struct drive_s *tmpl_drv)
 {
     struct mpt_lun_s *tmpl_llun =
         container_of(tmpl_drv, struct mpt_lun_s, drive);
     struct mpt_lun_s *llun = malloc_fseg(sizeof(*llun));
-    if (!llun) {
+    如果 (!llun) {
         warn_noalloc();
-        return -1;
+        返回 -1;
     }
     mpt_scsi_init_lun(llun, tmpl_llun->pci, tmpl_llun->iobase,
                       tmpl_llun->target, lun);
@@ -225,17 +225,17 @@ mpt_scsi_add_lun(u32 lun, struct drive_s *tmpl_drv)
                                &(llun->drive.lchs));
     char *name = znprintf(MAXDESCSIZE, "mpt %pP %d:%d",
                           llun->pci, llun->target, llun->lun);
-    int prio = bootprio_find_scsi_device(llun->pci, llun->target, llun->lun);
-    int ret = scsi_drive_setup(&llun->drive, name, prio);
+    整数 prio = bootprio_find_scsi_device(llun->pci, llun->target, llun->lun);
+    整数 ret = scsi_drive_setup(&llun->drive, name, prio);
     free(name);
-    if (ret) {
+    如果 (ret) {
         goto fail;
     }
-    return 0;
+    返回 0;
 
 fail:
     free(llun);
-    return -1;
+    返回 -1;
 }
 
 static void
@@ -245,7 +245,7 @@ mpt_scsi_scan_target(struct pci_device *pci, u32 iobase, u8 target)
 
     mpt_scsi_init_lun(&llun0, pci, iobase, target, 0);
 
-    if (scsi_rep_luns_scan(&llun0.drive, mpt_scsi_add_lun) < 0)
+    如果 (scsi_rep_luns_scan(&llun0.drive, mpt_scsi_add_lun) < 0)
         scsi_sequential_scan(&llun0.drive, 8, mpt_scsi_add_lun);
 }
 
@@ -261,8 +261,8 @@ init_mpt_scsi(void *data)
     struct pci_device *pci = data;
     u16 *msg_in_p;
     u32 iobase = pci_enable_iobar(pci, PCI_BASE_ADDRESS_0);
-    if (!iobase)
-        return;
+    如果 (!iobase)
+        返回;
     struct MptIOCInitReply MptIOCInitReply;
     pci_enable_busmaster(pci);
 
@@ -286,7 +286,7 @@ init_mpt_scsi(void *data)
     // Read the reply 16 bits at a time.  Cannot use insl
     // because the port is 32 bits wide.
     msg_in_p = (u16 *)&MptIOCInitReply;
-    while(msg_in_p != (u16 *)(&MptIOCInitReply + 1))
+    当(msg_in_p != (u16 *)(&MptIOCInitReply + 1))
         *msg_in_p++ = (u16)inl(iobase + MPT_REG_DOORBELL);
 
     // Eat doorbell interrupt
@@ -295,8 +295,8 @@ init_mpt_scsi(void *data)
     // Post reply message used for SCSI errors
     outl((u32)&reply_msg[0], iobase + MPT_REG_REP_Q);
 
-    int i;
-    for (i = 0; i < 7; i++)
+    整数 i;
+    为 (i = 0; i < 7; i++)
         mpt_scsi_scan_target(pci, iobase, i);
 }
 
@@ -304,15 +304,15 @@ void
 mpt_scsi_setup(void)
 {
     ASSERT32FLAT();
-    if (!CONFIG_MPT_SCSI || !runningOnQEMU()) {
-        return;
+    如果 (!CONFIG_MPT_SCSI || !runningOnQEMU()) {
+        返回;
     }
 
     dprintf(3, "init MPT\n");
 
     struct pci_device *pci;
     foreachpci(pci) {
-        if (pci->vendor == PCI_VENDOR_ID_LSI_LOGIC
+        如果 (pci->vendor == PCI_VENDOR_ID_LSI_LOGIC
             && (pci->device == PCI_DEVICE_ID_LSI_53C1030
                 || pci->device == PCI_DEVICE_ID_LSI_SAS1068
                 || pci->device == PCI_DEVICE_ID_LSI_SAS1068E))

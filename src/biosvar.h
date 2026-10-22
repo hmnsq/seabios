@@ -57,13 +57,13 @@ static inline void set_equipment_flags(u16 clear, u16 set) {
 
 // Accessor functions
 static inline u16 get_ebda_seg(void) {
-    return GET_BDA(ebda_seg);
+    返回 GET_BDA(ebda_seg);
 }
 static inline struct extended_bios_data_area_s *
 get_ebda_ptr(void)
 {
     ASSERT32FLAT();
-    return MAKE_FLATPTR(get_ebda_seg(), 0);
+    返回 MAKE_FLATPTR(get_ebda_seg(), 0);
 }
 #define GET_EBDA(eseg, var)                                             \
     GET_FARVAR(eseg, ((struct extended_bios_data_area_s *)0)->var)
@@ -75,7 +75,7 @@ get_ebda_ptr(void)
  * Global variables
  ****************************************************************/
 
-#if MODE16 == 0 && MODESEGMENT == 1
+#如果 MODE16 == 0 && MODESEGMENT == 1
 // In 32bit segmented mode %cs may not be readable and the code may be
 // relocated.  The entry code sets up %gs with a readable segment and
 // the code offset can be determined by get_global_offset().
@@ -86,23 +86,23 @@ static inline u32 __attribute_const get_global_offset(void) {
         "1:popl %0\n"
         "  subl $1b, %0"
         : "=r"(ret));
-    return ret;
+    返回 ret;
 }
-#else
+#否则
 #define GLOBAL_SEGREG CS
 static inline u32 __attribute_const get_global_offset(void) {
-    return 0;
+    返回 0;
 }
 #endif
 static inline u16 get_global_seg(void) {
-    return GET_SEG(GLOBAL_SEGREG);
+    返回 GET_SEG(GLOBAL_SEGREG);
 }
 #define GET_GLOBAL(var)                                                 \
     GET_VAR(GLOBAL_SEGREG, *(typeof(&(var)))((void*)&(var)              \
                                              + get_global_offset()))
-#if MODESEGMENT
+#如果 MODESEGMENT
 #define GLOBALFLAT2GLOBAL(var) ((typeof(var))((void*)(var) - BUILD_BIOS_ADDR))
-#else
+#否则
 #define GLOBALFLAT2GLOBAL(var) (var)
 #endif
 // Access a "flat" pointer known to point to the f-segment.
@@ -115,13 +115,13 @@ static inline u16 get_global_seg(void) {
 
 #define SEG_LOW SYMBOL(_zonelow_seg)
 
-#if MODESEGMENT
+#如果 MODESEGMENT
 #define GET_LOW(var)            GET_FARVAR(SEG_LOW, (var))
 #define SET_LOW(var, val)       SET_FARVAR(SEG_LOW, (var), (val))
 #define LOWFLAT2LOW(var) ((typeof(var))((void*)(var) - SYMBOL(zonelow_base)))
-#else
+#否则
 #define GET_LOW(var)            (var)
-#define SET_LOW(var, val)       do { (var) = (val); } while (0)
+#define SET_LOW(var, val)       do { (var) = (val); } 当 (0)
 #define LOWFLAT2LOW(var) (var)
 #endif
 #define GET_LOWFLAT(var) GET_LOW(*LOWFLAT2LOW(&(var)))

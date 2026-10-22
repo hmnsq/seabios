@@ -21,16 +21,16 @@
 void
 mptable_setup(void)
 {
-    if (! CONFIG_MPTABLE)
-        return;
+    如果 (! CONFIG_MPTABLE)
+        返回;
 
     dprintf(3, "init MPTable\n");
 
     // Config structure in temp area.
     struct mptable_config_s *config = malloc_tmp(32*1024);
-    if (!config) {
+    如果 (!config) {
         warn_noalloc();
-        return;
+        返回;
     }
     memset(config, 0, sizeof(*config));
     config->signature = MPCONFIG_SIGNATURE;
@@ -42,13 +42,13 @@ mptable_setup(void)
     // Detect cpu info
     u32 cpuid_signature, ebx, ecx, cpuid_features;
     cpuid(1, &cpuid_signature, &ebx, &ecx, &cpuid_features);
-    if (! cpuid_signature) {
+    如果 (! cpuid_signature) {
         // Use default values.
         cpuid_signature = 0x600;
         cpuid_features = 0x201;
     }
-    int pkgcpus = 1;
-    if (cpuid_features & (1 << 28)) {
+    整数 pkgcpus = 1;
+    如果 (cpuid_features & (1 << 28)) {
         /* Only populate the MPS tables with the first logical CPU in
            each package */
         pkgcpus = (ebx >> 16) & 0xff;
@@ -58,8 +58,8 @@ mptable_setup(void)
 
     // CPU definitions.
     struct mpt_cpu *cpus = (void*)&config[1], *cpu = cpus;
-    int i;
-    for (i = 0; i < MaxCountCPUs; i+=pkgcpus) {
+    整数 i;
+    为 (i = 0; i < MaxCountCPUs; i+=pkgcpus) {
         memset(cpu, 0, sizeof(*cpu));
         cpu->type = MPT_TYPE_CPU;
         cpu->apicid = i;
@@ -70,11 +70,11 @@ mptable_setup(void)
         cpu->featureflag = cpuid_features;
         cpu++;
     }
-    int entrycount = cpu - cpus;
+    整数 entrycount = cpu - cpus;
 
     // PCI bus
     struct mpt_bus *buses = (void*)cpu, *bus = buses;
-    if (!hlist_empty(&PCIDevices)) {
+    如果 (!hlist_empty(&PCIDevices)) {
         memset(bus, 0, sizeof(*bus));
         bus->type = MPT_TYPE_BUS;
         bus->busid = 0;
@@ -84,7 +84,7 @@ mptable_setup(void)
     }
 
     /* isa bus */
-    int isabusid = bus - buses;
+    整数 isabusid = bus - buses;
     memset(bus, 0, sizeof(*bus));
     bus->type = MPT_TYPE_BUS;
     bus->busid = isabusid;
@@ -105,23 +105,23 @@ mptable_setup(void)
 
     /* irqs */
     struct mpt_intsrc *intsrcs = (void*)&ioapic[1], *intsrc = intsrcs;
-    int dev = -1;
+    整数 dev = -1;
     unsigned short pinmask = 0;
 
     struct pci_device *pci;
     foreachpci(pci) {
         u16 bdf = pci->bdf;
-        if (pci_bdf_to_bus(bdf) != 0)
+        如果 (pci_bdf_to_bus(bdf) != 0)
             break;
-        int pin = pci_config_readb(bdf, PCI_INTERRUPT_PIN);
-        int irq = pci_config_readb(bdf, PCI_INTERRUPT_LINE);
-        if (pin == 0)
+        整数 pin = pci_config_readb(bdf, PCI_INTERRUPT_PIN);
+        整数 irq = pci_config_readb(bdf, PCI_INTERRUPT_LINE);
+        如果 (pin == 0)
             continue;
-        if (dev != pci_bdf_to_busdev(bdf)) {
+        如果 (dev != pci_bdf_to_busdev(bdf)) {
             dev = pci_bdf_to_busdev(bdf);
             pinmask = 0;
         }
-        if (pinmask & (1 << pin)) /* pin was seen already */
+        如果 (pinmask & (1 << pin)) /* pin was seen already */
             continue;
         pinmask |= (1 << pin);
         memset(intsrc, 0, sizeof(*intsrc));
@@ -135,10 +135,10 @@ mptable_setup(void)
         intsrc++;
     }
 
-    int irq0_override = romfile_loadint("etc/irq0-override", 0);
-    for (i = 0; i < 16; i++) {
+    整数 irq0_override = romfile_loadint("etc/irq0-override", 0);
+    为 (i = 0; i < 16; i++) {
         memset(intsrc, 0, sizeof(*intsrc));
-        if (BUILD_PCI_IRQS & (1 << i))
+        如果 (BUILD_PCI_IRQS & (1 << i))
             continue;
         intsrc->type = MPT_TYPE_INTSRC;
         intsrc->irqtype = 0; /* INT */
@@ -147,12 +147,12 @@ mptable_setup(void)
         intsrc->srcbusirq = i;
         intsrc->dstapic = ioapic_id;
         intsrc->dstirq = i;
-        if (irq0_override) {
+        如果 (irq0_override) {
             /* Destination 2 is covered by irq0->inti2 override (i ==
                0). Source IRQ 2 is unused */
-            if (i == 0)
+            如果 (i == 0)
                 intsrc->dstirq = 2;
-            else if (i == 2)
+            否则 如果 (i == 2)
                 intsrc--;
         }
         intsrc++;
@@ -179,7 +179,7 @@ mptable_setup(void)
     entrycount += intsrc - intsrcs;
 
     // Finalize config structure.
-    int length = (void*)intsrc - (void*)config;
+    整数 length = (void*)intsrc - (void*)config;
     config->entrycount = entrycount;
     config->length = length;
     config->checksum -= checksum(config, length);
