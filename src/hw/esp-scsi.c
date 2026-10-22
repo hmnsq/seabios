@@ -10,20 +10,20 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_GLOBALFLAT
-#include "block.h" // struct drive_s
-#include "blockcmd.h" // scsi_drive_setup
-#include "config.h" // CONFIG_*
-#include "fw/paravirt.h" // runningOnQEMU
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "pcidevice.h" // foreachpci
-#include "pci_ids.h" // PCI_DEVICE_ID
-#include "pci_regs.h" // PCI_VENDOR_ID
-#include "stacks.h" // run_thread
-#include "std/disk.h" // DISK_RET_SUCCESS
-#include "string.h" // memset
-#include "util.h" // usleep
+#अन्तर्भाव "biosvar.h" // GET_GLOBALFLAT
+#अन्तर्भाव "block.h" // struct drive_s
+#अन्तर्भाव "blockcmd.h" // scsi_drive_setup
+#अन्तर्भाव "config.h" // CONFIG_*
+#अन्तर्भाव "fw/paravirt.h" // runningOnQEMU
+#अन्तर्भाव "malloc.h" // free
+#अन्तर्भाव "output.h" // dprintf
+#अन्तर्भाव "pcidevice.h" // foreachpci
+#अन्तर्भाव "pci_ids.h" // PCI_DEVICE_ID
+#अन्तर्भाव "pci_regs.h" // PCI_VENDOR_ID
+#अन्तर्भाव "stacks.h" // run_thread
+#अन्तर्भाव "std/disk.h" // DISK_RET_SUCCESS
+#अन्तर्भाव "string.h" // memset
+#अन्तर्भाव "util.h" // usleep
 
 #define ESP_TCLO      0x00
 #define ESP_TCMID     0x04
@@ -55,47 +55,47 @@
 
 #define ESP_STAT_DI      0x01
 #define ESP_STAT_CD      0x02
-#define ESP_STAT_MSG     0x04
+#define ESP_STAT_सन्देश     0x04
 #define ESP_STAT_TC      0x10
 
 #define ESP_INTR_FC      0x08
 #define ESP_INTR_BS      0x10
 #define ESP_INTR_DC      0x20
 
-struct esp_lun_s {
-    struct drive_s drive;
-    struct pci_device *pci;
+संरचना esp_lun_s {
+    संरचना drive_s drive;
+    संरचना pci_device *pci;
     u32 iobase;
     u8 target;
     u8 lun;
 };
 
-static void
-esp_scsi_dma(u32 iobase, u32 buf, u32 len, int read)
+स्थिर शून्य
+esp_scsi_dma(u32 iobase, u32 buf, u32 len, पूर्णाङ्क पठ)
 {
     outb(len         & 0xff, iobase + ESP_TCLO);
     outb((len >> 8)  & 0xff, iobase + ESP_TCMID);
     outb((len >> 16) & 0xff, iobase + ESP_TCHI);
     outl(buf,                iobase + ESP_DMA_SPA);
     outl(len,                iobase + ESP_DMA_STC);
-    outb(read ? 0x83 : 0x03, iobase + ESP_DMA_CMD);
+    outb(पठ ? 0x83 : 0x03, iobase + ESP_DMA_CMD);
 }
 
-int
-esp_scsi_process_op(struct disk_op_s *op)
+पूर्णाङ्क
+esp_scsi_process_op(संरचना disk_op_s *op)
 {
-    if (!CONFIG_ESP_SCSI)
-        return DISK_RET_EBADTRACK;
-    struct esp_lun_s *llun_gf =
-        container_of(op->drive_fl, struct esp_lun_s, drive);
+    यदि (!CONFIG_ESP_SCSI)
+        फर्काऊ DISK_RET_EBADTRACK;
+    संरचना esp_lun_s *llun_gf =
+        container_of(op->drive_fl, संरचना esp_lun_s, drive);
     u16 target = GET_GLOBALFLAT(llun_gf->target);
     u16 lun = GET_GLOBALFLAT(llun_gf->lun);
     u8 cdbcmd[16];
-    int blocksize = scsi_fill_cmd(op, cdbcmd, sizeof(cdbcmd));
-    if (blocksize < 0)
-        return default_process_op(op);
+    पूर्णाङ्क blocksize = scsi_fill_cmd(op, cdbcmd, परिमाण(cdbcmd));
+    यदि (blocksize < 0)
+        फर्काऊ default_process_op(op);
     u32 iobase = GET_GLOBALFLAT(llun_gf->iobase);
-    int i, state;
+    पूर्णाङ्क i, state;
     u8 status;
 
     outb(target, iobase + ESP_WBUSID);
@@ -113,32 +113,32 @@ esp_scsi_process_op(struct disk_op_s *op)
     outb(lun, iobase + ESP_FIFO);
     cdbcmd[1] &= 0x1f;
     cdbcmd[1] |= lun << 5;
-    for (i = 0; i < 12; i++)
+    लागि (i = 0; i < 12; i++)
         outb(cdbcmd[i], iobase + ESP_FIFO);
     outb(ESP_CMD_SELATN, iobase + ESP_CMD);
 
-    for (state = 0;;) {
+    लागि (state = 0;;) {
         u8 stat = inb(iobase + ESP_RSTAT);
         u8 intr;
 
-        if (state == 0) {
+        यदि (state == 0) {
             intr = inb(iobase + ESP_RINTR);
 
             /* Detect disconnected device.  */
-            if (intr & ESP_INTR_DC) {
-                return DISK_RET_ENOTREADY;
+            यदि (intr & ESP_INTR_DC) {
+                फर्काऊ DISK_RET_ENOTREADY;
             }
 
             /* HBA reads command, executes it, sets BS/FC -> do DMA if needed.  */
-            if (intr & (ESP_INTR_BS | ESP_INTR_FC)) {
+            यदि (intr & (ESP_INTR_BS | ESP_INTR_FC)) {
                 state++;
-                if (op->count && blocksize) {
+                यदि (op->गन्ती && blocksize) {
                     /* Data phase.  */
-                    u32 count = (u32)op->count * blocksize;
-                    esp_scsi_dma(iobase, (u32)op->buf_fl, count, scsi_is_read(op));
+                    u32 गन्ती = (u32)op->गन्ती * blocksize;
+                    esp_scsi_dma(iobase, (u32)op->buf_fl, गन्ती, scsi_is_read(op));
                     outb(ESP_CMD_TI | ESP_CMD_DMA, iobase + ESP_CMD);
-                    continue;
-                } else {
+                    जारी;
+                } अन्यथा {
                     /* No data phase.  */
                     state++;
                 }
@@ -146,43 +146,43 @@ esp_scsi_process_op(struct disk_op_s *op)
         }
 
         /* At end of DMA TC is set again -> complete command.  */
-        if (state == 1 && (stat & ESP_STAT_TC)) {
+        यदि (state == 1 && (stat & ESP_STAT_TC)) {
             state++;
             /* Terminate esp_scsi_dma() command */
             outb(0, iobase + ESP_DMA_CMD);
-            continue;
+            जारी;
         }
 
         /* Request message in data.  */
-        if (state == 2) {
+        यदि (state == 2) {
             state++;
             outb(ESP_CMD_ICCS, iobase + ESP_CMD);
-            continue;
+            जारी;
         }
 
         /* Finally read data from the message in phase and accept.  */
-        if (state == 3 && (stat & ESP_STAT_MSG)) {
+        यदि (state == 3 && (stat & ESP_STAT_सन्देश)) {
             state++;
             status = inb(iobase + ESP_FIFO);
             inb(iobase + ESP_FIFO);
             outb(ESP_CMD_MSGACC, iobase + ESP_CMD);
-            break;
+            रोक;
         }
         usleep(5);
     }
 
-    if (status == 0) {
-        return DISK_RET_SUCCESS;
+    यदि (status == 0) {
+        फर्काऊ DISK_RET_SUCCESS;
     }
 
-    return DISK_RET_EBADTRACK;
+    फर्काऊ DISK_RET_EBADTRACK;
 }
 
-static void
-esp_scsi_init_lun(struct esp_lun_s *llun, struct pci_device *pci, u32 iobase,
+स्थिर शून्य
+esp_scsi_init_lun(संरचना esp_lun_s *llun, संरचना pci_device *pci, u32 iobase,
                   u8 target, u8 lun)
 {
-    memset(llun, 0, sizeof(*llun));
+    स_रखो(llun, 0, परिमाण(*llun));
     llun->drive.type = DTYPE_ESP_SCSI;
     llun->drive.cntl_id = pci->bdf;
     llun->pci = pci;
@@ -191,52 +191,52 @@ esp_scsi_init_lun(struct esp_lun_s *llun, struct pci_device *pci, u32 iobase,
     llun->iobase = iobase;
 }
 
-static int
-esp_scsi_add_lun(u32 lun, struct drive_s *tmpl_drv)
+स्थिर पूर्णाङ्क
+esp_scsi_add_lun(u32 lun, संरचना drive_s *tmpl_drv)
 {
-    struct esp_lun_s *tmpl_llun =
-        container_of(tmpl_drv, struct esp_lun_s, drive);
-    struct esp_lun_s *llun = malloc_fseg(sizeof(*llun));
-    if (!llun) {
+    संरचना esp_lun_s *tmpl_llun =
+        container_of(tmpl_drv, संरचना esp_lun_s, drive);
+    संरचना esp_lun_s *llun = malloc_fseg(परिमाण(*llun));
+    यदि (!llun) {
         warn_noalloc();
-        return -1;
+        फर्काऊ -1;
     }
     esp_scsi_init_lun(llun, tmpl_llun->pci, tmpl_llun->iobase,
                       tmpl_llun->target, lun);
 
-    char *name = znprintf(MAXDESCSIZE, "esp %pP %d:%d",
+    वर्ण *name = znprintf(MAXDESCSIZE, "esp %pP %d:%d",
                           llun->pci, llun->target, llun->lun);
     boot_lchs_find_scsi_device(llun->pci, llun->target, llun->lun,
                                &(llun->drive.lchs));
-    int prio = bootprio_find_scsi_device(llun->pci, llun->target, llun->lun);
-    int ret = scsi_drive_setup(&llun->drive, name, prio);
-    free(name);
-    if (ret)
-        goto fail;
-    return 0;
+    पूर्णाङ्क prio = bootprio_find_scsi_device(llun->pci, llun->target, llun->lun);
+    पूर्णाङ्क ret = scsi_drive_setup(&llun->drive, name, prio);
+    मुक्त(name);
+    यदि (ret)
+        गच्छ fail;
+    फर्काऊ 0;
 
 fail:
-    free(llun);
-    return -1;
+    मुक्त(llun);
+    फर्काऊ -1;
 }
 
-static void
-esp_scsi_scan_target(struct pci_device *pci, u32 iobase, u8 target)
+स्थिर शून्य
+esp_scsi_scan_target(संरचना pci_device *pci, u32 iobase, u8 target)
 {
-    struct esp_lun_s llun0;
+    संरचना esp_lun_s llun0;
 
     esp_scsi_init_lun(&llun0, pci, iobase, target, 0);
 
     scsi_rep_luns_scan(&llun0.drive, esp_scsi_add_lun);
 }
 
-static void
-init_esp_scsi(void *data)
+स्थिर शून्य
+init_esp_scsi(शून्य *data)
 {
-    struct pci_device *pci = data;
+    संरचना pci_device *pci = data;
     u32 iobase = pci_enable_iobar(pci, PCI_BASE_ADDRESS_0);
-    if (!iobase)
-        return;
+    यदि (!iobase)
+        फर्काऊ;
     pci_enable_busmaster(pci);
 
     dprintf(1, "found esp at %pP, io @ %x\n", pci, iobase);
@@ -244,25 +244,25 @@ init_esp_scsi(void *data)
     // reset
     outb(ESP_CMD_RESET, iobase + ESP_CMD);
 
-    int i;
-    for (i = 0; i <= 7; i++)
+    पूर्णाङ्क i;
+    लागि (i = 0; i <= 7; i++)
         esp_scsi_scan_target(pci, iobase, i);
 }
 
-void
-esp_scsi_setup(void)
+शून्य
+esp_scsi_setup(शून्य)
 {
     ASSERT32FLAT();
-    if (!CONFIG_ESP_SCSI || !runningOnQEMU())
-        return;
+    यदि (!CONFIG_ESP_SCSI || !runningOnQEMU())
+        फर्काऊ;
 
     dprintf(3, "init esp\n");
 
-    struct pci_device *pci;
+    संरचना pci_device *pci;
     foreachpci(pci) {
-        if (pci->vendor != PCI_VENDOR_ID_AMD
+        यदि (pci->vendor != PCI_VENDOR_ID_AMD
             || pci->device != PCI_DEVICE_ID_AMD_SCSI)
-            continue;
+            जारी;
         run_thread(init_esp_scsi, pci);
     }
 }

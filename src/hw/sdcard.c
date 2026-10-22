@@ -4,24 +4,24 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "block.h" // struct drive_s
-#include "malloc.h" // malloc_fseg
-#include "output.h" // znprintf
-#include "pcidevice.h" // foreachpci
-#include "pci_ids.h" // PCI_CLASS_SYSTEM_SDHCI
-#include "pci_regs.h" // PCI_BASE_ADDRESS_0
-#include "romfile.h" // romfile_findprefix
-#include "stacks.h" // yield
-#include "std/disk.h" // DISK_RET_SUCCESS
-#include "string.h" // memset
-#include "util.h" // boot_add_hd
-#include "x86.h" // writel
+#अन्तर्भाव "block.h" // struct drive_s
+#अन्तर्भाव "malloc.h" // malloc_fseg
+#अन्तर्भाव "output.h" // znprintf
+#अन्तर्भाव "pcidevice.h" // foreachpci
+#अन्तर्भाव "pci_ids.h" // PCI_CLASS_SYSTEM_SDHCI
+#अन्तर्भाव "pci_regs.h" // PCI_BASE_ADDRESS_0
+#अन्तर्भाव "romfile.h" // romfile_findprefix
+#अन्तर्भाव "stacks.h" // yield
+#अन्तर्भाव "std/disk.h" // DISK_RET_SUCCESS
+#अन्तर्भाव "string.h" // memset
+#अन्तर्भाव "util.h" // boot_add_hd
+#अन्तर्भाव "x86.h" // writel
 
 // SDHCI MMIO registers
-struct sdhci_s {
+संरचना sdhci_s {
     u32 sdma_addr;
     u16 block_size;
-    u16 block_count;
+    u16 block_गन्ती;
     u32 arg;
     u16 transfer_mode;
     u16 cmd;
@@ -134,10 +134,10 @@ struct sdhci_s {
 #define SDHCI_PIO_TIMEOUT      1000  // XXX - this is just made up
 
 // Internal 'struct drive_s' storage for a detected card
-struct sddrive_s {
-    struct drive_s drive;
-    struct sdhci_s *regs;
-    int card_type;
+संरचना sddrive_s {
+    संरचना drive_s drive;
+    संरचना sdhci_s *regs;
+    पूर्णाङ्क card_type;
 };
 
 // SD card types
@@ -145,149 +145,149 @@ struct sddrive_s {
 #define SF_HIGHCAPACITY (1<<1)
 
 // Repeatedly read a u16 register until any bit in a given mask is set
-static int
+स्थिर पूर्णाङ्क
 sdcard_waitw(u16 *reg, u16 mask)
 {
     u32 end = timer_calc(SDHCI_PIO_TIMEOUT);
-    for (;;) {
+    लागि (;;) {
         u16 v = readw(reg);
-        if (v & mask)
-            return v;
-        if (timer_check(end)) {
+        यदि (v & mask)
+            फर्काऊ v;
+        यदि (timer_check(end)) {
             dprintf(1, "scard_waitw: %p %x %x\n", reg, mask, v);
             warn_timeout();
-            return -1;
+            फर्काऊ -1;
         }
         yield();
     }
 }
 
 // Send an sdhci reset
-static int
-sdcard_reset(struct sdhci_s *regs, int flags)
+स्थिर पूर्णाङ्क
+sdcard_reset(संरचना sdhci_s *regs, पूर्णाङ्क flags)
 {
     writeb(&regs->software_reset, flags);
     u32 end = timer_calc(SDHCI_PIO_TIMEOUT);
-    while (readb(&regs->software_reset))
-        if (timer_check(end)) {
+    जबसम्म (readb(&regs->software_reset))
+        यदि (timer_check(end)) {
             warn_timeout();
-            return -1;
+            फर्काऊ -1;
         }
-    return 0;
+    फर्काऊ 0;
 }
 
 // Send a command to the card.
-static int
-sdcard_pio(struct sdhci_s *regs, int cmd, u32 *param)
+स्थिर पूर्णाङ्क
+sdcard_pio(संरचना sdhci_s *regs, पूर्णाङ्क cmd, u32 *param)
 {
     u32 state = readl(&regs->present_state);
     dprintf(9, "sdcard_pio cmd %x %x %x\n", cmd, *param, state);
-    if ((state & SP_CMD_INHIBIT)
+    यदि ((state & SP_CMD_INHIBIT)
         || ((cmd & 0x03) == 0x03 && state & SP_DAT_INHIBIT)) {
         dprintf(1, "sdcard_pio not ready %x\n", state);
-        return -1;
+        फर्काऊ -1;
     }
     // Send command
     writel(&regs->arg, *param);
     writew(&regs->cmd, cmd);
-    int ret = sdcard_waitw(&regs->irq_status, SI_ERROR|SI_CMD_COMPLETE);
-    if (ret < 0)
-        return ret;
-    if (ret & SI_ERROR) {
+    पूर्णाङ्क ret = sdcard_waitw(&regs->irq_status, SI_ERROR|SI_CMD_COMPLETE);
+    यदि (ret < 0)
+        फर्काऊ ret;
+    यदि (ret & SI_ERROR) {
         u16 err = readw(&regs->error_irq_status);
         dprintf(3, "sdcard_pio command stop (code=%x)\n", err);
         sdcard_reset(regs, SRF_CMD|SRF_DATA);
         writew(&regs->error_irq_status, err);
-        return -1;
+        फर्काऊ -1;
     }
     writew(&regs->irq_status, SI_CMD_COMPLETE);
     // Read response
-    memcpy(param, regs->response, sizeof(regs->response));
+    स_नकल(param, regs->response, परिमाण(regs->response));
     dprintf(9, "sdcard cmd %x response %x %x %x %x\n"
             , cmd, param[0], param[1], param[2], param[3]);
-    return 0;
+    फर्काऊ 0;
 }
 
 // Send an "app specific" command to the card.
-static int
-sdcard_pio_app(struct sdhci_s *regs, int cmd, u32 *param)
+स्थिर पूर्णाङ्क
+sdcard_pio_app(संरचना sdhci_s *regs, पूर्णाङ्क cmd, u32 *param)
 {
     u32 aparam[4] = {};
-    int ret = sdcard_pio(regs, SC_APP_CMD, aparam);
-    if (ret)
-        return ret;
-    return sdcard_pio(regs, cmd, param);
+    पूर्णाङ्क ret = sdcard_pio(regs, SC_APP_CMD, aparam);
+    यदि (ret)
+        फर्काऊ ret;
+    फर्काऊ sdcard_pio(regs, cmd, param);
 }
 
 // Send a command to the card which transfers data.
-static int
-sdcard_pio_transfer(struct sddrive_s *drive, int cmd, u32 addr
-                    , void *data, int count)
+स्थिर पूर्णाङ्क
+sdcard_pio_transfer(संरचना sddrive_s *drive, पूर्णाङ्क cmd, u32 addr
+                    , शून्य *data, पूर्णाङ्क गन्ती)
 {
     // Send command
     writew(&drive->regs->block_size, DISK_SECTOR_SIZE);
-    writew(&drive->regs->block_count, count);
-    int isread = cmd != SC_WRITE_SINGLE && cmd != SC_WRITE_MULTIPLE;
-    u16 tmode = ((count > 1 ? ST_MULTIPLE|ST_AUTO_CMD12|ST_BLOCKCOUNT : 0)
+    writew(&drive->regs->block_गन्ती, गन्ती);
+    पूर्णाङ्क isread = cmd != SC_WRITE_SINGLE && cmd != SC_WRITE_MULTIPLE;
+    u16 tmode = ((गन्ती > 1 ? ST_MULTIPLE|ST_AUTO_CMD12|ST_BLOCKCOUNT : 0)
                  | (isread ? ST_READ : 0));
     writew(&drive->regs->transfer_mode, tmode);
-    if (!(drive->card_type & SF_HIGHCAPACITY))
+    यदि (!(drive->card_type & SF_HIGHCAPACITY))
         addr *= DISK_SECTOR_SIZE;
     u32 param[4] = { addr };
-    int ret = sdcard_pio(drive->regs, cmd, param);
-    if (ret)
-        return ret;
+    पूर्णाङ्क ret = sdcard_pio(drive->regs, cmd, param);
+    यदि (ret)
+        फर्काऊ ret;
     // Read/write data
     u16 cbit = isread ? SI_READ_READY : SI_WRITE_READY;
-    while (count--) {
+    जबसम्म (गन्ती--) {
         ret = sdcard_waitw(&drive->regs->irq_status, cbit);
-        if (ret < 0)
-            return ret;
+        यदि (ret < 0)
+            फर्काऊ ret;
         writew(&drive->regs->irq_status, cbit);
-        int i;
-        for (i=0; i<DISK_SECTOR_SIZE/4; i++) {
-            if (isread)
+        पूर्णाङ्क i;
+        लागि (i=0; i<DISK_SECTOR_SIZE/4; i++) {
+            यदि (isread)
                 *(u32*)data = readl(&drive->regs->data);
-            else
+            अन्यथा
                 writel(&drive->regs->data, *(u32*)data);
             data += 4;
         }
     }
     // Complete command
     ret = sdcard_waitw(&drive->regs->irq_status, SI_TRANS_DONE);
-    if (ret < 0)
-        return ret;
+    यदि (ret < 0)
+        फर्काऊ ret;
     writew(&drive->regs->irq_status, SI_TRANS_DONE);
-    return 0;
+    फर्काऊ 0;
 }
 
 // Read/write a block of data to/from the card.
-static int
-sdcard_readwrite(struct disk_op_s *op, int iswrite)
+स्थिर पूर्णाङ्क
+sdcard_readwrite(संरचना disk_op_s *op, पूर्णाङ्क iswrite)
 {
-    struct sddrive_s *drive = container_of(
-        op->drive_fl, struct sddrive_s, drive);
-    int cmd = iswrite ? SC_WRITE_SINGLE : SC_READ_SINGLE;
-    if (op->count > 1)
+    संरचना sddrive_s *drive = container_of(
+        op->drive_fl, संरचना sddrive_s, drive);
+    पूर्णाङ्क cmd = iswrite ? SC_WRITE_SINGLE : SC_READ_SINGLE;
+    यदि (op->गन्ती > 1)
         cmd = iswrite ? SC_WRITE_MULTIPLE : SC_READ_MULTIPLE;
-    int ret = sdcard_pio_transfer(drive, cmd, op->lba, op->buf_fl, op->count);
-    if (ret)
-        return DISK_RET_EBADTRACK;
-    return DISK_RET_SUCCESS;
+    पूर्णाङ्क ret = sdcard_pio_transfer(drive, cmd, op->lba, op->buf_fl, op->गन्ती);
+    यदि (ret)
+        फर्काऊ DISK_RET_EBADTRACK;
+    फर्काऊ DISK_RET_SUCCESS;
 }
 
-int
-sdcard_process_op(struct disk_op_s *op)
+पूर्णाङ्क
+sdcard_process_op(संरचना disk_op_s *op)
 {
-    if (!CONFIG_SDCARD)
-        return 0;
-    switch (op->command) {
-    case CMD_READ:
-        return sdcard_readwrite(op, 0);
-    case CMD_WRITE:
-        return sdcard_readwrite(op, 1);
-    default:
-        return default_process_op(op);
+    यदि (!CONFIG_SDCARD)
+        फर्काऊ 0;
+    विकल्प (op->command) {
+    पक्ष CMD_READ:
+        फर्काऊ sdcard_readwrite(op, 0);
+    पक्ष CMD_WRITE:
+        फर्काऊ sdcard_readwrite(op, 1);
+    स्वभाव:
+        फर्काऊ default_process_op(op);
     }
 }
 
@@ -296,141 +296,141 @@ sdcard_process_op(struct disk_op_s *op)
  * Setup
  ****************************************************************/
 
-static int
-sdcard_set_power(struct sdhci_s *regs)
+स्थिर पूर्णाङ्क
+sdcard_set_power(संरचना sdhci_s *regs)
 {
     u32 cap = readl(&regs->cap_lo);
     u32 volt, vbits;
-    if (cap & SD_CAPLO_V33) {
+    यदि (cap & SD_CAPLO_V33) {
         volt = 1<<20;
         vbits = SPC_V33;
-    } else if (cap & SD_CAPLO_V30) {
+    } अन्यथा यदि (cap & SD_CAPLO_V30) {
         volt = 1<<18;
         vbits = SPC_V30;
-    } else if (cap & SD_CAPLO_V18) {
+    } अन्यथा यदि (cap & SD_CAPLO_V18) {
         volt = 1<<7;
         vbits = SPC_V18;
-    } else {
+    } अन्यथा {
         dprintf(1, "SD controller unsupported volt range (%x)\n", cap);
-        return -1;
+        फर्काऊ -1;
     }
     writeb(&regs->power_control, 0);
     msleep(SDHCI_POWER_OFF_TIME);
     writeb(&regs->power_control, vbits | SPC_POWER_ON);
     msleep(SDHCI_POWER_ON_TIME);
-    return volt;
+    फर्काऊ volt;
 }
 
-static int
-sdcard_set_frequency(struct sdhci_s *regs, u32 khz)
+स्थिर पूर्णाङ्क
+sdcard_set_frequency(संरचना sdhci_s *regs, u32 khz)
 {
     u16 ver = readw(&regs->controller_version);
     u32 cap = readl(&regs->cap_lo);
     u32 base_freq = (cap >> SD_CAPLO_BASECLOCK_SHIFT) & SD_CAPLO_BASECLOCK_MASK;
-    if (!base_freq) {
+    यदि (!base_freq) {
         dprintf(1, "Unknown base frequency for SD controller\n");
-        return -1;
+        फर्काऊ -1;
     }
     // Set new frequency
-    u32 divisor = DIV_ROUND_UP(base_freq * 1000, khz);
+    u32 भाजक = DIV_ROUND_UP(base_freq * 1000, khz);
     u16 creg;
-    if ((ver & 0xff) <= 0x01) {
-        divisor = divisor > 1 ? 1 << __fls(divisor-1) : 0;
-        creg = (divisor & SCC_SDCLK_MASK) << SCC_SDCLK_SHIFT;
-    } else {
-        divisor = DIV_ROUND_UP(divisor, 2);
-        creg = (divisor & SCC_SDCLK_MASK) << SCC_SDCLK_SHIFT;
-        creg |= (divisor & SCC_SDCLK_HI_MASK) >> SCC_SDCLK_HI_RSHIFT;
+    यदि ((ver & 0xff) <= 0x01) {
+        भाजक = भाजक > 1 ? 1 << __fls(भाजक-1) : 0;
+        creg = (भाजक & SCC_SDCLK_MASK) << SCC_SDCLK_SHIFT;
+    } अन्यथा {
+        भाजक = DIV_ROUND_UP(भाजक, 2);
+        creg = (भाजक & SCC_SDCLK_MASK) << SCC_SDCLK_SHIFT;
+        creg |= (भाजक & SCC_SDCLK_HI_MASK) >> SCC_SDCLK_HI_RSHIFT;
     }
     dprintf(3, "sdcard_set_frequency %d %d %x\n", base_freq, khz, creg);
     writew(&regs->clock_control, 0);
     writew(&regs->clock_control, creg | SCC_INTERNAL_ENABLE);
     // Wait for frequency to become active
-    int ret = sdcard_waitw(&regs->clock_control, SCC_STABLE);
-    if (ret < 0)
-        return ret;
+    पूर्णाङ्क ret = sdcard_waitw(&regs->clock_control, SCC_STABLE);
+    यदि (ret < 0)
+        फर्काऊ ret;
     // Enable SD clock
     writew(&regs->clock_control, creg | SCC_INTERNAL_ENABLE | SCC_CLOCK_ENABLE);
-    return 0;
+    फर्काऊ 0;
 }
 
 // Obtain the disk size of an SD card
-static int
-sdcard_get_capacity(struct sddrive_s *drive, u8 *csd)
+स्थिर पूर्णाङ्क
+sdcard_get_capacity(संरचना sddrive_s *drive, u8 *csd)
 {
     // Original MMC/SD card capacity formula
     u16 C_SIZE = (csd[6] >> 6) | (csd[7] << 2) | ((csd[8] & 0x03) << 10);
     u8 C_SIZE_MULT = (csd[4] >> 7) | ((csd[5] & 0x03) << 1);
     u8 READ_BL_LEN = csd[9] & 0x0f;
-    u32 count = (C_SIZE+1) << (C_SIZE_MULT + 2 + READ_BL_LEN - 9);
+    u32 गन्ती = (C_SIZE+1) << (C_SIZE_MULT + 2 + READ_BL_LEN - 9);
     // Check for newer encoding formats.
     u8 CSD_STRUCTURE = csd[14] >> 6;
-    if ((drive->card_type & SF_MMC) && CSD_STRUCTURE >= 2) {
+    यदि ((drive->card_type & SF_MMC) && CSD_STRUCTURE >= 2) {
         // Get capacity from EXT_CSD register
         u8 ext_csd[512];
-        int ret = sdcard_pio_transfer(drive, SC_SEND_EXT_CSD, 0, ext_csd, 1);
-        if (ret)
-            return ret;
-        count = *(u32*)&ext_csd[212];
-    } else if (!(drive->card_type & SF_MMC) && CSD_STRUCTURE >= 1) {
+        पूर्णाङ्क ret = sdcard_pio_transfer(drive, SC_SEND_EXT_CSD, 0, ext_csd, 1);
+        यदि (ret)
+            फर्काऊ ret;
+        गन्ती = *(u32*)&ext_csd[212];
+    } अन्यथा यदि (!(drive->card_type & SF_MMC) && CSD_STRUCTURE >= 1) {
         // High capacity SD card
         u32 C_SIZE2 = csd[5] | (csd[6] << 8) | ((csd[7] & 0x3f) << 16);
-        count = (C_SIZE2+1) << (19-9);
+        गन्ती = (C_SIZE2+1) << (19-9);
     }
     // Fill drive struct and return
     drive->drive.blksize = DISK_SECTOR_SIZE;
-    drive->drive.sectors = count;
-    return 0;
+    drive->drive.sectors = गन्ती;
+    फर्काऊ 0;
 }
 
 // Initialize an SD card
-static int
-sdcard_card_setup(struct sddrive_s *drive, int volt, int prio)
+स्थिर पूर्णाङ्क
+sdcard_card_setup(संरचना sddrive_s *drive, पूर्णाङ्क volt, पूर्णाङ्क prio)
 {
-    struct sdhci_s *regs = drive->regs;
+    संरचना sdhci_s *regs = drive->regs;
     // Set controller to initialization clock rate
-    int ret = sdcard_set_frequency(regs, 400);
-    if (ret)
-        return ret;
+    पूर्णाङ्क ret = sdcard_set_frequency(regs, 400);
+    यदि (ret)
+        फर्काऊ ret;
     msleep(SDHCI_CLOCK_ON_TIME);
     // Reset card
     u32 param[4] = { };
     ret = sdcard_pio(regs, SC_GO_IDLE_STATE, param);
-    if (ret)
-        return ret;
+    यदि (ret)
+        फर्काऊ ret;
     // Let card know SDHC/SDXC is supported and confirm voltage
     u32 hcs = 0, vrange = (volt >= (1<<15) ? 0x100 : 0x200) | 0xaa;
     param[0] = vrange;
     ret = sdcard_pio(regs, SC_SEND_IF_COND, param);
-    if (!ret && param[0] == vrange)
+    यदि (!ret && param[0] == vrange)
         hcs = (1<<30);
     // Verify SD card (instead of MMC or SDIO)
     param[0] = 0x00;
     ret = sdcard_pio_app(regs, SC_APP_SEND_OP_COND, param);
-    if (ret) {
+    यदि (ret) {
         // Check for MMC card
         param[0] = 0x00;
         ret = sdcard_pio(regs, SC_SEND_OP_COND, param);
-        if (ret)
-            return ret;
+        यदि (ret)
+            फर्काऊ ret;
         drive->card_type |= SF_MMC;
         hcs = (1<<30);
     }
     // Init card
     u32 end = timer_calc(SDHCI_POWERUP_TIMEOUT);
-    for (;;) {
+    लागि (;;) {
         param[0] = hcs | volt; // high-capacity support and voltage level
-        if (drive->card_type & SF_MMC)
+        यदि (drive->card_type & SF_MMC)
             ret = sdcard_pio(regs, SC_SEND_OP_COND, param);
-        else
+        अन्यथा
             ret = sdcard_pio_app(regs, SC_APP_SEND_OP_COND, param);
-        if (ret)
-            return ret;
-        if (param[0] & SR_OCR_NOTBUSY)
-            break;
-        if (timer_check(end)) {
+        यदि (ret)
+            फर्काऊ ret;
+        यदि (param[0] & SR_OCR_NOTBUSY)
+            रोक;
+        यदि (timer_check(end)) {
             warn_timeout();
-            return -1;
+            फर्काऊ -1;
         }
         msleep(5); // Avoid flooding log when debugging
     }
@@ -438,54 +438,54 @@ sdcard_card_setup(struct sddrive_s *drive, int volt, int prio)
     // Select card (get cid, set rca, get csd, select card)
     param[0] = 0x00;
     ret = sdcard_pio(regs, SC_ALL_SEND_CID, param);
-    if (ret)
-        return ret;
+    यदि (ret)
+        फर्काऊ ret;
     u8 cid[16];
-    memcpy(cid, param, sizeof(cid));
+    स_नकल(cid, param, परिमाण(cid));
     param[0] = drive->card_type & SF_MMC ? 0x0001 << 16 : 0x00;
     ret = sdcard_pio(regs, SC_SEND_RELATIVE_ADDR, param);
-    if (ret)
-        return ret;
+    यदि (ret)
+        फर्काऊ ret;
     u16 rca = drive->card_type & SF_MMC ? 0x0001 : param[0] >> 16;
     param[0] = rca << 16;
     ret = sdcard_pio(regs, SC_SEND_CSD, param);
-    if (ret)
-        return ret;
+    यदि (ret)
+        फर्काऊ ret;
     u8 csd[16];
-    memcpy(csd, param, sizeof(csd));
+    स_नकल(csd, param, परिमाण(csd));
     param[0] = rca << 16;
     ret = sdcard_pio(regs, SC_SELECT_DESELECT_CARD, param);
-    if (ret)
-        return ret;
+    यदि (ret)
+        फर्काऊ ret;
     // Set controller to data transfer clock rate
     ret = sdcard_set_frequency(regs, 25000);
-    if (ret)
-        return ret;
+    यदि (ret)
+        फर्काऊ ret;
     // Register drive
     ret = sdcard_get_capacity(drive, csd);
-    if (ret)
-        return ret;
-    char pnm[7] = {};
-    int i;
-    for (i=0; i < (drive->card_type & SF_MMC ? 6 : 5); i++)
+    यदि (ret)
+        फर्काऊ ret;
+    वर्ण pnm[7] = {};
+    पूर्णाङ्क i;
+    लागि (i=0; i < (drive->card_type & SF_MMC ? 6 : 5); i++)
         pnm[i] = cid[11-i];
-    char *desc = znprintf(MAXDESCSIZE, "%s %s %dMiB"
+    वर्ण *desc = znprintf(MAXDESCSIZE, "%s %s %dMiB"
                           , drive->card_type & SF_MMC ? "MMC drive" : "SD card"
                           , pnm, (u32)(drive->drive.sectors >> 11));
     dprintf(1, "Found sdcard at %p: %s\n", regs, desc);
     boot_add_hd(&drive->drive, desc, prio);
-    return 0;
+    फर्काऊ 0;
 }
 
 // Setup and configure an SD card controller
-static void
-sdcard_controller_setup(struct sdhci_s *regs, int prio)
+स्थिर शून्य
+sdcard_controller_setup(संरचना sdhci_s *regs, पूर्णाङ्क prio)
 {
     // Initialize controller
     u32 present_state = readl(&regs->present_state);
-    if (!(present_state & SP_CARD_INSERTED))
+    यदि (!(present_state & SP_CARD_INSERTED))
         // No card present
-        return;
+        फर्काऊ;
     dprintf(3, "sdhci@%p ver=%x cap=%x %x\n", regs
             , readw(&regs->controller_version)
             , readl(&regs->cap_lo), readl(&regs->cap_hi));
@@ -497,76 +497,76 @@ sdcard_controller_setup(struct sdhci_s *regs, int prio)
     writew(&regs->error_irq_enable, 0x01ff);
     writew(&regs->error_irq_status, readw(&regs->error_irq_status));
     writeb(&regs->timeout_control, 0x0e); // Set to max timeout
-    int volt = sdcard_set_power(regs);
-    if (volt < 0)
-        return;
+    पूर्णाङ्क volt = sdcard_set_power(regs);
+    यदि (volt < 0)
+        फर्काऊ;
 
     // Initialize card
-    struct sddrive_s *drive = malloc_fseg(sizeof(*drive));
-    if (!drive) {
+    संरचना sddrive_s *drive = malloc_fseg(परिमाण(*drive));
+    यदि (!drive) {
         warn_noalloc();
-        goto fail;
+        गच्छ fail;
     }
-    memset(drive, 0, sizeof(*drive));
+    स_रखो(drive, 0, परिमाण(*drive));
     drive->drive.type = DTYPE_SDCARD;
     drive->regs = regs;
-    int ret = sdcard_card_setup(drive, volt, prio);
-    if (ret) {
-        free(drive);
-        goto fail;
+    पूर्णाङ्क ret = sdcard_card_setup(drive, volt, prio);
+    यदि (ret) {
+        मुक्त(drive);
+        गच्छ fail;
     }
-    return;
+    फर्काऊ;
 fail:
     writeb(&regs->power_control, 0);
     writew(&regs->clock_control, 0);
 }
 
-static void
-sdcard_pci_setup(void *data)
+स्थिर शून्य
+sdcard_pci_setup(शून्य *data)
 {
-    struct pci_device *pci = data;
+    संरचना pci_device *pci = data;
     // XXX - bars dependent on slot index register in pci config space
-    struct sdhci_s *regs = pci_enable_membar(pci, PCI_BASE_ADDRESS_0);
-    if (!regs)
-        return;
-    int prio = bootprio_find_pci_device(pci);
+    संरचना sdhci_s *regs = pci_enable_membar(pci, PCI_BASE_ADDRESS_0);
+    यदि (!regs)
+        फर्काऊ;
+    पूर्णाङ्क prio = bootprio_find_pci_device(pci);
     sdcard_controller_setup(regs, prio);
 }
 
-static void
-sdcard_romfile_setup(void *data)
+स्थिर शून्य
+sdcard_romfile_setup(शून्य *data)
 {
-    struct romfile_s *file = data;
-    int prio = bootprio_find_named_rom(file->name, 0);
+    संरचना romfile_s *file = data;
+    पूर्णाङ्क prio = bootprio_find_named_rom(file->name, 0);
     u32 addr = romfile_loadint(file->name, 0);
     dprintf(1, "Starting sdcard controller check at addr %x\n", addr);
-    sdcard_controller_setup((void*)addr, prio);
+    sdcard_controller_setup((शून्य*)addr, prio);
 }
 
-void
-sdcard_setup(void)
+शून्य
+sdcard_setup(शून्य)
 {
-    if (!CONFIG_SDCARD)
-        return;
+    यदि (!CONFIG_SDCARD)
+        फर्काऊ;
 
-    struct romfile_s *file = NULL;
-    int num_romfiles = 0;
-    for (;;) {
+    संरचना romfile_s *file = रिक्त;
+    पूर्णाङ्क अङ्क_romfiles = 0;
+    लागि (;;) {
         file = romfile_findprefix("etc/sdcard", file);
-        if (!file)
-            break;
+        यदि (!file)
+            रोक;
         run_thread(sdcard_romfile_setup, file);
-        num_romfiles++;
+        अङ्क_romfiles++;
     }
-    if (num_romfiles)
+    यदि (अङ्क_romfiles)
         // only scan for PCI controllers if etc/sdcard not used
-        return;
+        फर्काऊ;
 
-    struct pci_device *pci;
+    संरचना pci_device *pci;
     foreachpci(pci) {
-        if (pci->class != PCI_CLASS_SYSTEM_SDHCI || pci->prog_if >= 2)
+        यदि (pci->class != PCI_CLASS_SYSTEM_SDHCI || pci->prog_if >= 2)
             // Not an SDHCI controller following SDHCI spec
-            continue;
+            जारी;
         run_thread(sdcard_pci_setup, pci);
     }
 }

@@ -5,68 +5,68 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "output.h" // dprintf
-#include "pci.h" // pci_config_writel
-#include "pci_regs.h" // PCI_VENDOR_ID
-#include "util.h" // udelay
-#include "x86.h" // outl
+#अन्तर्भाव "output.h" // dprintf
+#अन्तर्भाव "pci.h" // pci_config_writel
+#अन्तर्भाव "pci_regs.h" // PCI_VENDOR_ID
+#अन्तर्भाव "util.h" // udelay
+#अन्तर्भाव "x86.h" // outl
 
 #define PORT_PCI_CMD           0x0cf8
 #define PORT_PCI_DATA          0x0cfc
 
-static u32 mmconfig;
+स्थिर u32 mmconfig;
 
-static void *mmconfig_addr(u16 bdf, u32 addr)
+स्थिर शून्य *mmconfig_addr(u16 bdf, u32 addr)
 {
-    return (void*)(mmconfig + ((u32)bdf << 12) + addr);
+    फर्काऊ (शून्य*)(mmconfig + ((u32)bdf << 12) + addr);
 }
 
-static u32 ioconfig_cmd(u16 bdf, u32 addr)
+स्थिर u32 ioconfig_cmd(u16 bdf, u32 addr)
 {
-    return 0x80000000 | (bdf << 8) | (addr & 0xfc);
+    फर्काऊ 0x80000000 | (bdf << 8) | (addr & 0xfc);
 }
 
-void pci_ioconfig_writel(u16 bdf, u32 addr, u32 val)
+शून्य pci_ioconfig_writel(u16 bdf, u32 addr, u32 val)
 {
     outl(ioconfig_cmd(bdf, addr), PORT_PCI_CMD);
     outl(val, PORT_PCI_DATA);
 }
 
-void pci_config_writel(u16 bdf, u32 addr, u32 val)
+शून्य pci_config_writel(u16 bdf, u32 addr, u32 val)
 {
-    if (!MODESEGMENT && mmconfig) {
+    यदि (!MODESEGMENT && mmconfig) {
         writel(mmconfig_addr(bdf, addr), val);
-    } else {
+    } अन्यथा {
         pci_ioconfig_writel(bdf, addr, val);
     }
 }
 
-void pci_ioconfig_writew(u16 bdf, u32 addr, u16 val)
+शून्य pci_ioconfig_writew(u16 bdf, u32 addr, u16 val)
 {
     outl(ioconfig_cmd(bdf, addr), PORT_PCI_CMD);
     outw(val, PORT_PCI_DATA + (addr & 2));
 }
 
-void pci_config_writew(u16 bdf, u32 addr, u16 val)
+शून्य pci_config_writew(u16 bdf, u32 addr, u16 val)
 {
-    if (!MODESEGMENT && mmconfig) {
+    यदि (!MODESEGMENT && mmconfig) {
         writew(mmconfig_addr(bdf, addr), val);
-    } else {
+    } अन्यथा {
         pci_ioconfig_writew(bdf, addr, val);
     }
 }
 
-void pci_ioconfig_writeb(u16 bdf, u32 addr, u8 val)
+शून्य pci_ioconfig_writeb(u16 bdf, u32 addr, u8 val)
 {
     outl(ioconfig_cmd(bdf, addr), PORT_PCI_CMD);
     outb(val, PORT_PCI_DATA + (addr & 3));
 }
 
-void pci_config_writeb(u16 bdf, u32 addr, u8 val)
+शून्य pci_config_writeb(u16 bdf, u32 addr, u8 val)
 {
-    if (!MODESEGMENT && mmconfig) {
+    यदि (!MODESEGMENT && mmconfig) {
         writeb(mmconfig_addr(bdf, addr), val);
-    } else {
+    } अन्यथा {
         pci_ioconfig_writeb(bdf, addr, val);
     }
 }
@@ -74,49 +74,49 @@ void pci_config_writeb(u16 bdf, u32 addr, u8 val)
 u32 pci_ioconfig_readl(u16 bdf, u32 addr)
 {
     outl(ioconfig_cmd(bdf, addr), PORT_PCI_CMD);
-    return inl(PORT_PCI_DATA);
+    फर्काऊ inl(PORT_PCI_DATA);
 }
 
 u32 pci_config_readl(u16 bdf, u32 addr)
 {
-    if (!MODESEGMENT && mmconfig) {
-        return readl(mmconfig_addr(bdf, addr));
-    } else {
-        return pci_ioconfig_readl(bdf, addr);
+    यदि (!MODESEGMENT && mmconfig) {
+        फर्काऊ readl(mmconfig_addr(bdf, addr));
+    } अन्यथा {
+        फर्काऊ pci_ioconfig_readl(bdf, addr);
     }
 }
 
 u16 pci_ioconfig_readw(u16 bdf, u32 addr)
 {
     outl(ioconfig_cmd(bdf, addr), PORT_PCI_CMD);
-    return inw(PORT_PCI_DATA + (addr & 2));
+    फर्काऊ inw(PORT_PCI_DATA + (addr & 2));
 }
 
 u16 pci_config_readw(u16 bdf, u32 addr)
 {
-    if (!MODESEGMENT && mmconfig) {
-        return readw(mmconfig_addr(bdf, addr));
-    } else {
-        return pci_ioconfig_readw(bdf, addr);
+    यदि (!MODESEGMENT && mmconfig) {
+        फर्काऊ readw(mmconfig_addr(bdf, addr));
+    } अन्यथा {
+        फर्काऊ pci_ioconfig_readw(bdf, addr);
     }
 }
 
 u8 pci_ioconfig_readb(u16 bdf, u32 addr)
 {
     outl(ioconfig_cmd(bdf, addr), PORT_PCI_CMD);
-    return inb(PORT_PCI_DATA + (addr & 3));
+    फर्काऊ inb(PORT_PCI_DATA + (addr & 3));
 }
 
 u8 pci_config_readb(u16 bdf, u32 addr)
 {
-    if (!MODESEGMENT && mmconfig) {
-        return readb(mmconfig_addr(bdf, addr));
-    } else {
-        return pci_ioconfig_readb(bdf, addr);
+    यदि (!MODESEGMENT && mmconfig) {
+        फर्काऊ readb(mmconfig_addr(bdf, addr));
+    } अन्यथा {
+        फर्काऊ pci_ioconfig_readb(bdf, addr);
     }
 }
 
-void
+शून्य
 pci_config_maskw(u16 bdf, u32 addr, u16 off, u16 on)
 {
     u16 val = pci_config_readw(bdf, addr);
@@ -124,108 +124,108 @@ pci_config_maskw(u16 bdf, u32 addr, u16 off, u16 on)
     pci_config_writew(bdf, addr, val);
 }
 
-void
-pci_enable_mmconfig(u64 addr, const char *name)
+शून्य
+pci_enable_mmconfig(u64 addr, अचर वर्ण *name)
 {
-    if (addr >= 0x100000000ll)
-        return;
+    यदि (addr >= 0x100000000ll)
+        फर्काऊ;
     dprintf(1, "PCIe: using %s mmconfig at 0x%llx\n", name, addr);
     mmconfig = addr;
 }
 
 u8 pci_find_capability(u16 bdf, u8 cap_id, u8 cap)
 {
-    int i;
+    पूर्णाङ्क i;
     u16 status = pci_config_readw(bdf, PCI_STATUS);
 
-    if (!(status & PCI_STATUS_CAP_LIST))
-        return 0;
+    यदि (!(status & PCI_STATUS_CAP_LIST))
+        फर्काऊ 0;
 
-    if (cap == 0) {
+    यदि (cap == 0) {
         /* find first */
         cap = pci_config_readb(bdf, PCI_CAPABILITY_LIST);
-    } else {
+    } अन्यथा {
         /* find next */
         cap = pci_config_readb(bdf, cap + PCI_CAP_LIST_NEXT);
     }
-    for (i = 0; cap && i <= 0xff; i++) {
-        if (pci_config_readb(bdf, cap + PCI_CAP_LIST_ID) == cap_id)
-            return cap;
+    लागि (i = 0; cap && i <= 0xff; i++) {
+        यदि (pci_config_readb(bdf, cap + PCI_CAP_LIST_ID) == cap_id)
+            फर्काऊ cap;
         cap = pci_config_readb(bdf, cap + PCI_CAP_LIST_NEXT);
     }
 
-    return 0;
+    फर्काऊ 0;
 }
 
 // Helper function for pci_ioconfig_foreachbdf() macro - return next device
-int pci_ioconfig_next(int bdf, int bus)
+पूर्णाङ्क pci_ioconfig_next(पूर्णाङ्क bdf, पूर्णाङ्क bus)
 {
-    if (pci_bdf_to_fn(bdf) == 0
+    यदि (pci_bdf_to_fn(bdf) == 0
         && (pci_ioconfig_readb(bdf, PCI_HEADER_TYPE) & 0x80) == 0)
         // Last found device wasn't a multi-function device - skip to
         // the next device.
         bdf += 8;
-    else
+    अन्यथा
         bdf += 1;
 
-    for (;;) {
-        if (pci_bdf_to_bus(bdf) != bus)
-            return -1;
+    लागि (;;) {
+        यदि (pci_bdf_to_bus(bdf) != bus)
+            फर्काऊ -1;
 
         u16 v = pci_ioconfig_readw(bdf, PCI_VENDOR_ID);
-        if (v != 0x0000 && v != 0xffff)
+        यदि (v != 0x0000 && v != 0xffff)
             // Device is present.
-            return bdf;
+            फर्काऊ bdf;
 
-        if (pci_bdf_to_fn(bdf) == 0)
+        यदि (pci_bdf_to_fn(bdf) == 0)
             bdf += 8;
-        else
+        अन्यथा
             bdf += 1;
     }
 }
 
 // Helper function for foreachbdf() macro - return next device
-int
-pci_next(int bdf, int bus)
+पूर्णाङ्क
+pci_next(पूर्णाङ्क bdf, पूर्णाङ्क bus)
 {
-    if (pci_bdf_to_fn(bdf) == 0
+    यदि (pci_bdf_to_fn(bdf) == 0
         && (pci_config_readb(bdf, PCI_HEADER_TYPE) & 0x80) == 0)
         // Last found device wasn't a multi-function device - skip to
         // the next device.
         bdf += 8;
-    else
+    अन्यथा
         bdf += 1;
 
-    for (;;) {
-        if (pci_bdf_to_bus(bdf) != bus)
-            return -1;
+    लागि (;;) {
+        यदि (pci_bdf_to_bus(bdf) != bus)
+            फर्काऊ -1;
 
         u16 v = pci_config_readw(bdf, PCI_VENDOR_ID);
-        if (v != 0x0000 && v != 0xffff)
+        यदि (v != 0x0000 && v != 0xffff)
             // Device is present.
-            return bdf;
+            फर्काऊ bdf;
 
-        if (pci_bdf_to_fn(bdf) == 0)
+        यदि (pci_bdf_to_fn(bdf) == 0)
             bdf += 8;
-        else
+        अन्यथा
             bdf += 1;
     }
 }
 
 // Check if PCI is available at all
-int
-pci_probe_host(void)
+पूर्णाङ्क
+pci_probe_host(शून्य)
 {
     outl(0x80000000, PORT_PCI_CMD);
-    if (inl(PORT_PCI_CMD) != 0x80000000) {
+    यदि (inl(PORT_PCI_CMD) != 0x80000000) {
         dprintf(1, "Detected non-PCI system\n");
-        return -1;
+        फर्काऊ -1;
     }
-    return 0;
+    फर्काऊ 0;
 }
 
-void
-pci_reboot(void)
+शून्य
+pci_reboot(शून्य)
 {
     u8 v = inb(PORT_PCI_REBOOT) & ~6;
     outb(v|2, PORT_PCI_REBOOT); /* Request hard reset */

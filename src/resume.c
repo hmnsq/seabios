@@ -4,96 +4,96 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "bregs.h" // struct bregs
-#include "config.h" // CONFIG_*
-#include "farptr.h" // FLATPTR_TO_SEGOFF
-#include "hw/pci.h" // pci_reboot
-#include "hw/pic.h" // pic_eoi2
-#include "hw/ps2port.h" // i8042_reboot
-#include "hw/rtc.h" // rtc_read
-#include "output.h" // dprintf
-#include "stacks.h" // farcall16big
-#include "std/bda.h" // struct bios_data_area_s
-#include "string.h" // memset
-#include "util.h" // dma_setup
-#include "tcgbios.h" // tpm_s3_resume
-#include "fw/romfile_loader.h" // romfile_fw_cfg_resume
+#अन्तर्भाव "bregs.h" // struct bregs
+#अन्तर्भाव "config.h" // CONFIG_*
+#अन्तर्भाव "farptr.h" // FLATPTR_TO_SEGOFF
+#अन्तर्भाव "hw/pci.h" // pci_reboot
+#अन्तर्भाव "hw/pic.h" // pic_eoi2
+#अन्तर्भाव "hw/ps2port.h" // i8042_reboot
+#अन्तर्भाव "hw/rtc.h" // rtc_read
+#अन्तर्भाव "output.h" // dprintf
+#अन्तर्भाव "stacks.h" // farcall16big
+#अन्तर्भाव "std/bda.h" // struct bios_data_area_s
+#अन्तर्भाव "string.h" // memset
+#अन्तर्भाव "util.h" // dma_setup
+#अन्तर्भाव "tcgbios.h" // tpm_s3_resume
+#अन्तर्भाव "fw/romfile_loader.h" // romfile_fw_cfg_resume
 
 // Handler for post calls that look like a resume.
-void VISIBLE16
-handle_resume(void)
+शून्य VISIBLE16
+handle_resume(शून्य)
 {
     ASSERT16();
-    int status = rtc_read(CMOS_RESET_CODE);
+    पूर्णाङ्क status = rtc_read(CMOS_RESET_CODE);
     rtc_write(CMOS_RESET_CODE, 0);
     dprintf(1, "In resume (status=%d)\n", status);
 
     dma_setup();
 
-    switch (status) {
-    case 0x01 ... 0x04:
-    case 0x06 ... 0x09:
+    विकल्प (status) {
+    पक्ष 0x01 ... 0x04:
+    पक्ष 0x06 ... 0x09:
         panic("Unimplemented shutdown status: %02x\n", status);
 
-    case 0x05:
+    पक्ष 0x05:
         // flush keyboard (issue EOI) and jump via 40h:0067h
         pic_eoi2();
         // NO BREAK
-    case 0x0a:
-#define BDA_JUMP (((struct bios_data_area_s *)0)->jump)
+    पक्ष 0x0a:
+#define BDA_JUMP (((संरचना bios_data_area_s *)0)->jump)
         // resume execution by jump via 40h:0067h
-        asm volatile(
+        यंत्र चञ्चल(
             "movw %w1, %%ds\n"
             "ljmpw *%0\n"
             : : "m"(BDA_JUMP), "r"(SEG_BDA)
             );
-        break;
+        रोक;
 
-    case 0x0b:
+    पक्ष 0x0b:
         // resume execution via IRET via 40h:0067h
-        asm volatile(
+        यंत्र चञ्चल(
             "movw %w1, %%ds\n"
             "lssw %0, %%sp\n"
             "iretw\n"
             : : "m"(BDA_JUMP), "r"(SEG_BDA)
             );
-        break;
+        रोक;
 
-    case 0x0c:
+    पक्ष 0x0c:
         // resume execution via RETF via 40h:0067h
-        asm volatile(
+        यंत्र चञ्चल(
             "movw %w1, %%ds\n"
             "lssw %0, %%sp\n"
             "lretw\n"
             : : "m"(BDA_JUMP), "r"(SEG_BDA)
             );
-        break;
+        रोक;
 
-    default:
-        break;
+    स्वभाव:
+        रोक;
     }
 
     // Not a 16bit resume - do remaining checks in 32bit mode
-    asm volatile(
+    यंत्र चञ्चल(
         "movw %w1, %%ss\n"
         "movl %0, %%esp\n"
         "movl $_cfunc32flat_handle_resume32, %%edx\n"
         "jmp transition32\n"
-        : : "i"(BUILD_S3RESUME_STACK_ADDR), "r"(0), "a"(status)
+        : : "i"(BUILD_S3_RESUME_थाक_ADDR), "r"(0), "a"(status)
         );
 }
 
 // Handle an S3 resume event
-static void
-s3_resume(void)
+स्थिर शून्य
+s3_resume(शून्य)
 {
-    if (!CONFIG_S3_RESUME)
-        return;
+    यदि (!CONFIG_S3_RESUME)
+        फर्काऊ;
 
     u32 s3_resume_vector = find_resume_vector();
-    if (!s3_resume_vector) {
+    यदि (!s3_resume_vector) {
         dprintf(1, "No resume vector set!\n");
-        return;
+        फर्काऊ;
     }
 
     pic_setup();
@@ -112,16 +112,16 @@ s3_resume(void)
     make_bios_readonly();
 
     // Invoke the resume vector.
-    struct bregs br;
-    memset(&br, 0, sizeof(br));
+    संरचना bregs br;
+    स_रखो(&br, 0, परिमाण(br));
     dprintf(1, "Jump to resume vector (%x)\n", s3_resume_vector);
-    br.code = FLATPTR_TO_SEGOFF((void*)s3_resume_vector);
+    br.code = FLATPTR_TO_SEGOFF((शून्य*)s3_resume_vector);
     farcall16big(&br);
 }
 
 // Attempt to invoke a hard-reboot.
-static void
-tryReboot(void)
+स्थिर शून्य
+tryReboot(शून्य)
 {
     dprintf(1, "Attempting a hard reboot\n");
 
@@ -138,18 +138,18 @@ tryReboot(void)
     pci_reboot();
 
     // Try triple fault
-    asm volatile("int3");
+    यंत्र चञ्चल("int3");
 
     panic("Could not reboot");
 }
 
-void VISIBLE32FLAT
-handle_resume32(int status)
+शून्य VISIBLE32FLAT
+handle_resume32(पूर्णाङ्क status)
 {
     ASSERT32FLAT();
     dprintf(1, "In 32bit resume\n");
 
-    if (status == 0xfe)
+    यदि (status == 0xfe)
         s3_resume();
 
     // Must be a soft reboot - invoke a hard reboot.

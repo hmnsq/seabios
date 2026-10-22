@@ -4,11 +4,11 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_*
-#include "output.h" // dprintf
-#include "paravirt.h" // RamSize
-#include "util.h" // mtrr_setup
-#include "x86.h" // cpuid
+#अन्तर्भाव "config.h" // CONFIG_*
+#अन्तर्भाव "output.h" // dprintf
+#अन्तर्भाव "paravirt.h" // RamSize
+#अन्तर्भाव "util.h" // mtrr_setup
+#अन्तर्भाव "x86.h" // cpuid
 
 #define MSR_MTRRcap                    0x000000fe
 #define MSR_MTRRfix64K_00000           0x00000250
@@ -33,65 +33,65 @@
 #define MTRR_MEMTYPE_WP 5
 #define MTRR_MEMTYPE_WB 6
 
-void mtrr_setup(void)
+शून्य mtrr_setup(शून्य)
 {
-    if (!CONFIG_MTRR_INIT)
-        return;
+    यदि (!CONFIG_MTRR_INIT)
+        फर्काऊ;
 
     u32 eax, ebx, ecx, edx, cpuid_features;
     cpuid(1, &eax, &ebx, &ecx, &cpuid_features);
-    if (!(cpuid_features & CPUID_MTRR))
-        return;
-    if (!(cpuid_features & CPUID_MSR))
-        return;
+    यदि (!(cpuid_features & CPUID_MTRR))
+        फर्काऊ;
+    यदि (!(cpuid_features & CPUID_MSR))
+        फर्काऊ;
 
     dprintf(3, "init mtrr\n");
 
     u32 mtrr_cap = rdmsr(MSR_MTRRcap);
-    int vcnt = mtrr_cap & 0xff;
-    int fix = mtrr_cap & 0x100;
-    if (!vcnt || !fix)
-       return;
+    पूर्णाङ्क vcnt = mtrr_cap & 0xff;
+    पूर्णाङ्क fix = mtrr_cap & 0x100;
+    यदि (!vcnt || !fix)
+       फर्काऊ;
 
     // Disable MTRRs
     wrmsr_smp(MSR_MTRRdefType, 0);
 
     // Set fixed MTRRs
-    union u64b {
+    सङ्घ u64b {
         u8 valb[8];
         u64 val;
     } u;
     u.val = 0;
-    int i;
-    for (i = 0; i < 8; i++)
-        if (RamSize >= 65536 * (i + 1))
+    पूर्णाङ्क i;
+    लागि (i = 0; i < 8; i++)
+        यदि (RamSize >= 65536 * (i + 1))
             u.valb[i] = MTRR_MEMTYPE_WB;
     wrmsr_smp(MSR_MTRRfix64K_00000, u.val);
     u.val = 0;
-    for (i = 0; i < 8; i++)
-        if (RamSize >= 0x80000 + 16384 * (i + 1))
+    लागि (i = 0; i < 8; i++)
+        यदि (RamSize >= 0x80000 + 16384 * (i + 1))
             u.valb[i] = MTRR_MEMTYPE_WB;
     wrmsr_smp(MSR_MTRRfix16K_80000, u.val);
     wrmsr_smp(MSR_MTRRfix16K_A0000, 0);   // 0xA0000-0xC0000 is uncached
-    int j;
-    for (j = 0; j < 8; j++) {
+    पूर्णाङ्क j;
+    लागि (j = 0; j < 8; j++) {
         u.val = 0;
-        for (i = 0; i < 8; i++)
-            if (RamSize >= 0xC0000 + j * 0x8000 + 4096 * (i + 1))
+        लागि (i = 0; i < 8; i++)
+            यदि (RamSize >= 0xC0000 + j * 0x8000 + 4096 * (i + 1))
                 u.valb[i] = MTRR_MEMTYPE_WP;
         wrmsr_smp(MSR_MTRRfix4K_C0000 + j, u.val);
     }
 
     // Set variable MTRRs
-    int phys_bits = 36;
+    पूर्णाङ्क phys_bits = 36;
     cpuid(0x80000000u, &eax, &ebx, &ecx, &edx);
-    if (eax >= 0x80000008) {
+    यदि (eax >= 0x80000008) {
         /* Get physical bits from leaf 0x80000008 (if available) */
         cpuid(0x80000008u, &eax, &ebx, &ecx, &edx);
         phys_bits = eax & 0xff;
     }
     u64 phys_mask = ((1ull << phys_bits) - 1);
-    for (i=0; i<vcnt; i++) {
+    लागि (i=0; i<vcnt; i++) {
         wrmsr_smp(MTRRphysBase_MSR(i), 0);
         wrmsr_smp(MTRRphysMask_MSR(i), 0);
     }
