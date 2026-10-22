@@ -4,111 +4,111 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "ahci.h" // CDB_CMD_READ_10
-#include "ata.h" // ATA_CB_STAT
-#include "biosvar.h" // GET_GLOBAL
-#include "blockcmd.h" // CDB_CMD_READ_10
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "pci.h" // pci_config_readb
-#include "pcidevice.h" // foreachpci
-#include "pci_ids.h" // PCI_CLASS_STORAGE_OTHER
-#include "pci_regs.h" // PCI_INTERRUPT_LINE
-#include "stacks.h" // yield
-#include "std/disk.h" // DISK_RET_SUCCESS
-#include "string.h" // memset
-#include "util.h" // timer_calc
-#include "x86.h" // inb
+#ضمن "ahci.h" // CDB_CMD_READ_10
+#ضمن "ata.h" // ATA_CB_STAT
+#ضمن "biosvar.h" // GET_GLOBAL
+#ضمن "blockcmd.h" // CDB_CMD_READ_10
+#ضمن "malloc.h" // free
+#ضمن "output.h" // dprintf
+#ضمن "pci.h" // pci_config_readb
+#ضمن "pcidevice.h" // foreachpci
+#ضمن "pci_ids.h" // PCI_CLASS_STORAGE_OTHER
+#ضمن "pci_regs.h" // PCI_INTERRUPT_LINE
+#ضمن "stacks.h" // yield
+#ضمن "std/disk.h" // DISK_RET_SUCCESS
+#ضمن "string.h" // memset
+#ضمن "util.h" // timer_calc
+#ضمن "x86.h" // inb
 
 #define AHCI_REQUEST_TIMEOUT 32000 // 32 seconds max for IDE ops
 #define AHCI_RESET_TIMEOUT     500 // 500 miliseconds
 #define AHCI_LINK_TIMEOUT       10 // 10 miliseconds
 
 // prepare sata command fis
-static void sata_prep_simple(struct sata_cmd_fis *fis, u8 command)
+ساكن فراغ sata_prep_simple(بنية sata_cmd_fis *fis, u8 command)
 {
-    memset_fl(fis, 0, sizeof(*fis));
+    memset_fl(fis, 0, حجم(*fis));
     fis->command = command;
 }
 
-static void sata_prep_readwrite(struct sata_cmd_fis *fis,
-                                struct disk_op_s *op, int iswrite)
+ساكن فراغ sata_prep_readwrite(بنية sata_cmd_fis *fis,
+                                بنية disk_op_s *op, صحيح iswrite)
 {
     u64 lba = op->lba;
     u8 command;
 
-    memset_fl(fis, 0, sizeof(*fis));
+    memset_fl(fis, 0, حجم(*fis));
 
-    if (op->count >= (1<<8) || lba + op->count >= (1<<28)) {
-        fis->sector_count2 = op->count >> 8;
+    إذا (op->تعداد_2 >= (1<<8) || lba + op->تعداد_2 >= (1<<28)) {
+        fis->sector_count2 = op->تعداد_2 >> 8;
         fis->lba_low2      = lba >> 24;
         fis->lba_mid2      = lba >> 32;
         fis->lba_high2     = lba >> 40;
         lba &= 0xffffff;
         command = (iswrite ? ATA_CMD_WRITE_DMA_EXT
                    : ATA_CMD_READ_DMA_EXT);
-    } else {
+    } وإلا {
         command = (iswrite ? ATA_CMD_WRITE_DMA
                    : ATA_CMD_READ_DMA);
     }
     fis->feature      = 1; /* dma */
     fis->command      = command;
-    fis->sector_count = op->count;
-    fis->lba_low      = lba;
+    fis->sector_تعداد = op->تعداد_2;
+    fis->lba_أدنى      = lba;
     fis->lba_mid      = lba >> 8;
-    fis->lba_high     = lba >> 16;
+    fis->lba_أعلى     = lba >> 16;
     fis->device       = ((lba >> 24) & 0xf) | ATA_CB_DH_LBA;
 }
 
-static void sata_prep_atapi(struct sata_cmd_fis *fis, u16 blocksize)
+ساكن فراغ sata_prep_atapi(بنية sata_cmd_fis *fis, u16 blocksize)
 {
-    memset_fl(fis, 0, sizeof(*fis));
+    memset_fl(fis, 0, حجم(*fis));
     fis->command  = ATA_CMD_PACKET;
     fis->feature  = 1; /* dma */
     fis->lba_mid  = blocksize;
-    fis->lba_high = blocksize >> 8;
+    fis->lba_أعلى = blocksize >> 8;
 }
 
 // ahci register access helpers
-static u32 ahci_ctrl_readl(struct ahci_ctrl_s *ctrl, u32 reg)
+ساكن u32 ahci_ctrl_readl(بنية ahci_ctrl_s *ctrl, u32 reg)
 {
-    return readl(ctrl->iobase + reg);
+    إرجاع readl(ctrl->iobase + reg);
 }
 
-static void ahci_ctrl_writel(struct ahci_ctrl_s *ctrl, u32 reg, u32 val)
+ساكن فراغ ahci_ctrl_writel(بنية ahci_ctrl_s *ctrl, u32 reg, u32 val)
 {
     writel(ctrl->iobase + reg, val);
 }
 
-static u32 ahci_port_to_ctrl(u32 pnr, u32 port_reg)
+ساكن u32 ahci_port_to_ctrl(u32 pnr, u32 port_reg)
 {
     u32 ctrl_reg = 0x100;
     ctrl_reg += pnr * 0x80;
     ctrl_reg += port_reg;
-    return ctrl_reg;
+    إرجاع ctrl_reg;
 }
 
-static u32 ahci_port_readl(struct ahci_ctrl_s *ctrl, u32 pnr, u32 reg)
+ساكن u32 ahci_port_readl(بنية ahci_ctrl_s *ctrl, u32 pnr, u32 reg)
 {
     u32 ctrl_reg = ahci_port_to_ctrl(pnr, reg);
-    return ahci_ctrl_readl(ctrl, ctrl_reg);
+    إرجاع ahci_ctrl_readl(ctrl, ctrl_reg);
 }
 
-static void ahci_port_writel(struct ahci_ctrl_s *ctrl, u32 pnr, u32 reg, u32 val)
+ساكن فراغ ahci_port_writel(بنية ahci_ctrl_s *ctrl, u32 pnr, u32 reg, u32 val)
 {
     u32 ctrl_reg = ahci_port_to_ctrl(pnr, reg);
     ahci_ctrl_writel(ctrl, ctrl_reg, val);
 }
 
 // submit ahci command + wait for result
-static int ahci_command(struct ahci_port_s *port_gf, int iswrite, int isatapi,
-                        void *buffer, u32 bsize)
+ساكن صحيح ahci_command(بنية ahci_port_s *port_gf, صحيح iswrite, صحيح isatapi,
+                        فراغ *buffer, u32 bsize)
 {
     u32 val, status, success, flags, intbits, error;
-    struct ahci_ctrl_s *ctrl = port_gf->ctrl;
-    struct ahci_cmd_s  *cmd  = port_gf->cmd;
-    struct ahci_fis_s  *fis  = port_gf->fis;
-    struct ahci_list_s *list = port_gf->list;
+    بنية ahci_ctrl_s *ctrl = port_gf->ctrl;
+    بنية ahci_cmd_s  *cmd  = port_gf->cmd;
+    بنية ahci_fis_s  *fis  = port_gf->fis;
+    بنية ahci_list_s *list = port_gf->list;
     u32 pnr                  = port_gf->pnr;
 
     cmd->fis.reg       = 0x27;
@@ -128,50 +128,50 @@ static int ahci_command(struct ahci_port_s *port_gf, int iswrite, int isatapi,
 
     dprintf(8, "AHCI/%d: send cmd ...\n", pnr);
     intbits = ahci_port_readl(ctrl, pnr, PORT_IRQ_STAT);
-    if (intbits)
+    إذا (intbits)
         ahci_port_writel(ctrl, pnr, PORT_IRQ_STAT, intbits);
     ahci_port_writel(ctrl, pnr, PORT_CMD_ISSUE, 1);
 
     u32 end = timer_calc(AHCI_REQUEST_TIMEOUT);
-    do {
-        for (;;) {
+    افعل {
+        لكل (;;) {
             intbits = ahci_port_readl(ctrl, pnr, PORT_IRQ_STAT);
-            if (intbits) {
+            إذا (intbits) {
                 ahci_port_writel(ctrl, pnr, PORT_IRQ_STAT, intbits);
-                if (intbits & 0x40000000) {
+                إذا (intbits & 0x40000000) {
                     u32 tf = ahci_port_readl(ctrl, pnr, PORT_TFDATA);
                     status = tf & 0xff;
                     error = (tf & 0xff00) >> 8;
-                    break;
+                    اكسر;
                 }
-                if (intbits & 0x02) {
+                إذا (intbits & 0x02) {
                     status = GET_LOWFLAT(fis->psfis[2]);
                     error  = GET_LOWFLAT(fis->psfis[3]);
-                    break;
+                    اكسر;
                 }
-                if (intbits & 0x01) {
+                إذا (intbits & 0x01) {
                     status = GET_LOWFLAT(fis->rfis[2]);
                     error  = GET_LOWFLAT(fis->rfis[3]);
-                    break;
+                    اكسر;
                 }
             }
-            if (timer_check(end)) {
+            إذا (timer_check(end)) {
                 warn_timeout();
-                return -1;
+                إرجاع -1;
             }
             yield();
         }
         dprintf(8, "AHCI/%d: ... intbits 0x%x, status 0x%x ...\n",
                 pnr, intbits, status);
-    } while (status & ATA_CB_STAT_BSY);
+    } بينما (status & ATA_CB_STAT_BSY);
 
     success = (0x00 == (status & (ATA_CB_STAT_BSY | ATA_CB_STAT_DF |
                                   ATA_CB_STAT_ERR)) &&
                ATA_CB_STAT_RDY == (status & (ATA_CB_STAT_RDY)));
-    if (success) {
+    إذا (success) {
         dprintf(8, "AHCI/%d: ... finished, status 0x%x, OK\n", pnr,
                 status);
-    } else {
+    } وإلا {
         dprintf(2, "AHCI/%d: ... finished, status 0x%x, ERROR 0x%x\n", pnr,
                 status, error);
 
@@ -181,10 +181,10 @@ static int ahci_command(struct ahci_port_s *port_gf, int iswrite, int isatapi,
         ahci_port_writel(ctrl, pnr, PORT_CMD, val & ~PORT_CMD_START);
 
         // waits for PxCMD.CR to clear to 0
-        while (1) {
+        بينما (1) {
             val = ahci_port_readl(ctrl, pnr, PORT_CMD);
-            if ((val & PORT_CMD_LIST_ON) == 0)
-                break;
+            إذا ((val & PORT_CMD_LIST_ON) == 0)
+                اكسر;
             yield();
         }
 
@@ -199,7 +199,7 @@ static int ahci_command(struct ahci_port_s *port_gf, int iswrite, int isatapi,
         // If PxTFD.STS.BSY or PxTFD.STS.DRQ is set to 1, issue
         // a COMRESET to the device to put it in an idle state
         val = ahci_port_readl(ctrl, pnr, PORT_TFDATA);
-        if (val & (ATA_CB_STAT_BSY | ATA_CB_STAT_DRQ)) {
+        إذا (val & (ATA_CB_STAT_BSY | ATA_CB_STAT_DRQ)) {
             dprintf(2, "AHCI/%d: issue comreset\n", pnr);
             val = ahci_port_readl(ctrl, pnr, PORT_SCR_CTL);
             // set Device Detection Initialization (DET) to 1 for 1 ms for comreset
@@ -212,125 +212,125 @@ static int ahci_command(struct ahci_port_s *port_gf, int iswrite, int isatapi,
         val = ahci_port_readl(ctrl, pnr, PORT_CMD);
         ahci_port_writel(ctrl, pnr, PORT_CMD, val | PORT_CMD_START);
     }
-    return success ? 0 : -1;
+    إرجاع success ? 0 : -1;
 }
 
 #define CDROM_CDB_SIZE 12
 
-int ahci_atapi_process_op(struct disk_op_s *op)
+صحيح ahci_atapi_process_op(بنية disk_op_s *op)
 {
-    if (! CONFIG_AHCI)
-        return 0;
+    إذا (! CONFIG_AHCI)
+        إرجاع 0;
 
-    struct ahci_port_s *port_gf = container_of(
-        op->drive_fl, struct ahci_port_s, drive);
-    struct ahci_cmd_s *cmd = port_gf->cmd;
+    بنية ahci_port_s *port_gf = container_of(
+        op->drive_fl, بنية ahci_port_s, drive);
+    بنية ahci_cmd_s *cmd = port_gf->cmd;
 
-    if (op->command == CMD_WRITE || op->command == CMD_FORMAT)
-        return DISK_RET_EWRITEPROTECT;
-    int blocksize = scsi_fill_cmd(op, cmd->atapi, CDROM_CDB_SIZE);
-    if (blocksize < 0)
-        return default_process_op(op);
+    إذا (op->command == CMD_WRITE || op->command == CMD_FORMAT)
+        إرجاع DISK_RET_EWRITEPROTECT;
+    صحيح blocksize = scsi_fill_cmd(op, cmd->atapi, CDROM_CDB_SIZE);
+    إذا (blocksize < 0)
+        إرجاع default_process_op(op);
     sata_prep_atapi(&cmd->fis, blocksize);
-    int rc = ahci_command(port_gf, 0, 1, op->buf_fl, op->count * blocksize);
-    if (rc < 0)
-        return DISK_RET_EBADTRACK;
-    return DISK_RET_SUCCESS;
+    صحيح rc = ahci_command(port_gf, 0, 1, op->buf_fl, op->تعداد_2 * blocksize);
+    إذا (rc < 0)
+        إرجاع DISK_RET_EBADTRACK;
+    إرجاع DISK_RET_SUCCESS;
 }
 
 // read/write count blocks from a harddrive, op->buf_fl must be word aligned
-static int
-ahci_disk_readwrite_aligned(struct disk_op_s *op, int iswrite)
+ساكن صحيح
+ahci_disk_readwrite_aligned(بنية disk_op_s *op, صحيح iswrite)
 {
-    struct ahci_port_s *port_gf = container_of(
-        op->drive_fl, struct ahci_port_s, drive);
-    struct ahci_cmd_s *cmd = port_gf->cmd;
-    int rc;
+    بنية ahci_port_s *port_gf = container_of(
+        op->drive_fl, بنية ahci_port_s, drive);
+    بنية ahci_cmd_s *cmd = port_gf->cmd;
+    صحيح rc;
 
     sata_prep_readwrite(&cmd->fis, op, iswrite);
     rc = ahci_command(port_gf, iswrite, 0, op->buf_fl,
-                      op->count * DISK_SECTOR_SIZE);
+                      op->تعداد_2 * DISK_SECTOR_SIZE);
     dprintf(8, "ahci disk %s, lba %6x, count %3x, buf %p, rc %d\n",
-            iswrite ? "write" : "read", (u32)op->lba, op->count, op->buf_fl, rc);
-    if (rc < 0)
-        return DISK_RET_EBADTRACK;
-    return DISK_RET_SUCCESS;
+            iswrite ? "write" : "read", (u32)op->lba, op->تعداد_2, op->buf_fl, rc);
+    إذا (rc < 0)
+        إرجاع DISK_RET_EBADTRACK;
+    إرجاع DISK_RET_SUCCESS;
 }
 
 // read/write count blocks from a harddrive.
-static int
-ahci_disk_readwrite(struct disk_op_s *op, int iswrite)
+ساكن صحيح
+ahci_disk_readwrite(بنية disk_op_s *op, صحيح iswrite)
 {
     // if caller's buffer is word aligned, use it directly
-    if (((u32) op->buf_fl & 1) == 0)
-        return ahci_disk_readwrite_aligned(op, iswrite);
+    إذا (((u32) op->buf_fl & 1) == 0)
+        إرجاع ahci_disk_readwrite_aligned(op, iswrite);
 
     // Use a word aligned buffer for AHCI I/O
-    int rc;
-    struct disk_op_s localop = *op;
+    صحيح rc;
+    بنية disk_op_s localop = *op;
     u8 *alignedbuf_fl = bounce_buf_fl;
     u8 *position = op->buf_fl;
 
     localop.buf_fl = alignedbuf_fl;
-    localop.count = 1;
+    localop.تعداد_2 = 1;
 
-    if (iswrite) {
+    إذا (iswrite) {
         u16 block;
-        for (block = 0; block < op->count; block++) {
+        لكل (block = 0; block < op->تعداد_2; block++) {
             memcpy_fl (alignedbuf_fl, position, DISK_SECTOR_SIZE);
             rc = ahci_disk_readwrite_aligned (&localop, 1);
-            if (rc)
-                return rc;
+            إذا (rc)
+                إرجاع rc;
             position += DISK_SECTOR_SIZE;
             localop.lba++;
         }
-    } else { // read
+    } وإلا { // read
         u16 block;
-        for (block = 0; block < op->count; block++) {
+        لكل (block = 0; block < op->تعداد_2; block++) {
             rc = ahci_disk_readwrite_aligned (&localop, 0);
-            if (rc)
-                return rc;
+            إذا (rc)
+                إرجاع rc;
             memcpy_fl (position, alignedbuf_fl, DISK_SECTOR_SIZE);
             position += DISK_SECTOR_SIZE;
             localop.lba++;
         }
     }
-    return DISK_RET_SUCCESS;
+    إرجاع DISK_RET_SUCCESS;
 }
 
 // command demuxer
-int
-ahci_process_op(struct disk_op_s *op)
+صحيح
+ahci_process_op(بنية disk_op_s *op)
 {
-    if (!CONFIG_AHCI)
-        return 0;
-    switch (op->command) {
-    case CMD_READ:
-        return ahci_disk_readwrite(op, 0);
-    case CMD_WRITE:
-        return ahci_disk_readwrite(op, 1);
-    default:
-        return default_process_op(op);
+    إذا (!CONFIG_AHCI)
+        إرجاع 0;
+    بدل (op->command) {
+    حالة CMD_READ:
+        إرجاع ahci_disk_readwrite(op, 0);
+    حالة CMD_WRITE:
+        إرجاع ahci_disk_readwrite(op, 1);
+    افتراضي:
+        إرجاع default_process_op(op);
     }
 }
 
-static void
-ahci_port_reset(struct ahci_ctrl_s *ctrl, u32 pnr)
+ساكن فراغ
+ahci_port_reset(بنية ahci_ctrl_s *ctrl, u32 pnr)
 {
     u32 val;
 
     /* disable FIS + CMD */
     u32 end = timer_calc(AHCI_RESET_TIMEOUT);
-    for (;;) {
+    لكل (;;) {
         val = ahci_port_readl(ctrl, pnr, PORT_CMD);
-        if (!(val & (PORT_CMD_FIS_RX | PORT_CMD_START |
+        إذا (!(val & (PORT_CMD_FIS_RX | PORT_CMD_START |
                      PORT_CMD_FIS_ON | PORT_CMD_LIST_ON)))
-            break;
+            اكسر;
         val &= ~(PORT_CMD_FIS_RX | PORT_CMD_START);
         ahci_port_writel(ctrl, pnr, PORT_CMD, val);
-        if (timer_check(end)) {
+        إذا (timer_check(end)) {
             warn_timeout();
-            break;
+            اكسر;
         }
         yield();
     }
@@ -338,28 +338,28 @@ ahci_port_reset(struct ahci_ctrl_s *ctrl, u32 pnr)
     /* disable + clear IRQs */
     ahci_port_writel(ctrl, pnr, PORT_IRQ_MASK, 0);
     val = ahci_port_readl(ctrl, pnr, PORT_IRQ_STAT);
-    if (val)
+    إذا (val)
         ahci_port_writel(ctrl, pnr, PORT_IRQ_STAT, val);
 }
 
-static struct ahci_port_s*
-ahci_port_alloc(struct ahci_ctrl_s *ctrl, u32 pnr)
+ساكن بنية ahci_port_s*
+ahci_port_alloc(بنية ahci_ctrl_s *ctrl, u32 pnr)
 {
-    struct ahci_port_s *port = malloc_tmp(sizeof(*port));
+    بنية ahci_port_s *port = malloc_tmp(حجم(*port));
 
-    if (!port) {
+    إذا (!port) {
         warn_noalloc();
-        return NULL;
+        إرجاع عدم;
     }
-    memset(port, 0, sizeof(*port));
+    memset(port, 0, حجم(*port));
     port->pnr = pnr;
     port->ctrl = ctrl;
     port->list = memalign_tmp(1024, 1024);
     port->fis = memalign_tmp(256, 256);
     port->cmd = memalign_tmp(256, 256);
-    if (port->list == NULL || port->fis == NULL || port->cmd == NULL) {
+    إذا (port->list == عدم || port->fis == عدم || port->cmd == عدم) {
         warn_noalloc();
-        return NULL;
+        إرجاع عدم;
     }
     memset(port->list, 0, 1024);
     memset(port->fis, 0, 256);
@@ -367,53 +367,53 @@ ahci_port_alloc(struct ahci_ctrl_s *ctrl, u32 pnr)
 
     ahci_port_writel(ctrl, pnr, PORT_LST_ADDR, (u32)port->list);
     ahci_port_writel(ctrl, pnr, PORT_FIS_ADDR, (u32)port->fis);
-    if (ctrl->caps & HOST_CAP_64) {
+    إذا (ctrl->caps & HOST_CAP_64) {
         ahci_port_writel(ctrl, pnr, PORT_LST_ADDR_HI, 0);
         ahci_port_writel(ctrl, pnr, PORT_FIS_ADDR_HI, 0);
     }
 
-    return port;
+    إرجاع port;
 }
 
-static void ahci_port_release(struct ahci_port_s *port)
+ساكن فراغ ahci_port_release(بنية ahci_port_s *port)
 {
     ahci_port_reset(port->ctrl, port->pnr);
-    free(port->list);
-    free(port->fis);
-    free(port->cmd);
-    free(port);
+    حرر(port->list);
+    حرر(port->fis);
+    حرر(port->cmd);
+    حرر(port);
 }
 
-static struct ahci_port_s* ahci_port_realloc(struct ahci_port_s *port)
+ساكن بنية ahci_port_s* ahci_port_realloc(بنية ahci_port_s *port)
 {
-    struct ahci_port_s *tmp;
+    بنية ahci_port_s *tmp;
     u32 cmd;
 
-    tmp = malloc_fseg(sizeof(*port));
-    if (!tmp) {
+    tmp = malloc_fseg(حجم(*port));
+    إذا (!tmp) {
         warn_noalloc();
         ahci_port_release(port);
-        return NULL;
+        إرجاع عدم;
     }
     *tmp = *port;
-    free(port);
+    حرر(port);
     port = tmp;
 
     ahci_port_reset(port->ctrl, port->pnr);
 
-    free(port->list);
-    free(port->fis);
-    free(port->cmd);
-    port->list = memalign_high(1024, 1024);
-    port->fis = memalign_high(256, 256);
-    port->cmd = memalign_high(256, 256);
-    if (!port->list || !port->fis || !port->cmd) {
+    حرر(port->list);
+    حرر(port->fis);
+    حرر(port->cmd);
+    port->list = memalign_أعلى(1024, 1024);
+    port->fis = memalign_أعلى(256, 256);
+    port->cmd = memalign_أعلى(256, 256);
+    إذا (!port->list || !port->fis || !port->cmd) {
         warn_noalloc();
-        free(port->list);
-        free(port->fis);
-        free(port->cmd);
-        free(port);
-        return NULL;
+        حرر(port->list);
+        حرر(port->fis);
+        حرر(port->cmd);
+        حرر(port);
+        إرجاع عدم;
     }
 
     ahci_port_writel(port->ctrl, port->pnr, PORT_LST_ADDR, (u32)port->list);
@@ -423,20 +423,20 @@ static struct ahci_port_s* ahci_port_realloc(struct ahci_port_s *port)
     cmd |= (PORT_CMD_FIS_RX|PORT_CMD_START);
     ahci_port_writel(port->ctrl, port->pnr, PORT_CMD, cmd);
 
-    return port;
+    إرجاع port;
 }
 
 #define MAXMODEL 40
 
 /* See ahci spec chapter 10.1 "Software Initialization of HBA" */
-static int ahci_port_setup(struct ahci_port_s *port)
+ساكن صحيح ahci_port_setup(بنية ahci_port_s *port)
 {
-    struct ahci_ctrl_s *ctrl = port->ctrl;
+    بنية ahci_ctrl_s *ctrl = port->ctrl;
     u32 pnr = port->pnr;
-    char model[MAXMODEL+1];
+    حرف model[MAXMODEL+1];
     u16 buffer[256];
     u32 cmd, stat, err, tf;
-    int rc;
+    صحيح rc;
 
     /* enable FIS recv */
     cmd = ahci_port_readl(ctrl, pnr, PORT_CMD);
@@ -448,35 +448,35 @@ static int ahci_port_setup(struct ahci_port_s *port)
     cmd |= PORT_CMD_SPIN_UP | PORT_CMD_POWER_ON | PORT_CMD_ICC_ACTIVE;
     ahci_port_writel(ctrl, pnr, PORT_CMD, cmd);
     u32 end = timer_calc(AHCI_LINK_TIMEOUT);
-    for (;;) {
+    لكل (;;) {
         stat = ahci_port_readl(ctrl, pnr, PORT_SCR_STAT);
-        if ((stat & 0x07) == 0x03) {
+        إذا ((stat & 0x07) == 0x03) {
             dprintf(2, "AHCI/%d: link up\n", port->pnr);
-            break;
+            اكسر;
         }
-        if (timer_check(end)) {
+        إذا (timer_check(end)) {
             dprintf(2, "AHCI/%d: link down\n", port->pnr);
-            return -1;
+            إرجاع -1;
         }
         yield();
     }
 
     /* clear error status */
     err = ahci_port_readl(ctrl, pnr, PORT_SCR_ERR);
-    if (err)
+    إذا (err)
         ahci_port_writel(ctrl, pnr, PORT_SCR_ERR, err);
 
     /* wait for device becoming ready */
     end = timer_calc(AHCI_REQUEST_TIMEOUT);
-    for (;;) {
+    لكل (;;) {
         tf = ahci_port_readl(ctrl, pnr, PORT_TFDATA);
-        if (!(tf & (ATA_CB_STAT_BSY |
+        إذا (!(tf & (ATA_CB_STAT_BSY |
                     ATA_CB_STAT_DRQ)))
-            break;
-        if (timer_check(end)) {
+            اكسر;
+        إذا (timer_check(end)) {
             warn_timeout();
             dprintf(1, "AHCI/%d: device not ready (tf 0x%x)\n", port->pnr, tf);
-            return -1;
+            إرجاع -1;
         }
         yield();
     }
@@ -486,21 +486,21 @@ static int ahci_port_setup(struct ahci_port_s *port)
     ahci_port_writel(ctrl, pnr, PORT_CMD, cmd);
 
     sata_prep_simple(&port->cmd->fis, ATA_CMD_IDENTIFY_PACKET_DEVICE);
-    rc = ahci_command(port, 0, 0, buffer, sizeof(buffer));
-    if (rc == 0) {
+    rc = ahci_command(port, 0, 0, buffer, حجم(buffer));
+    إذا (rc == 0) {
         port->atapi = 1;
-    } else {
+    } وإلا {
         port->atapi = 0;
         sata_prep_simple(&port->cmd->fis, ATA_CMD_IDENTIFY_DEVICE);
-        rc = ahci_command(port, 0, 0, buffer, sizeof(buffer));
-        if (rc < 0)
-            return -1;
+        rc = ahci_command(port, 0, 0, buffer, حجم(buffer));
+        إذا (rc < 0)
+            إرجاع -1;
     }
 
     port->drive.cntl_id = pnr;
     port->drive.removable = (buffer[0] & 0x80) ? 1 : 0;
 
-    if (!port->atapi) {
+    إذا (!port->atapi) {
         // found disk (ata)
         port->drive.type = DTYPE_AHCI;
         port->drive.blksize = DISK_SECTOR_SIZE;
@@ -509,14 +509,14 @@ static int ahci_port_setup(struct ahci_port_s *port)
         port->drive.pchs.sector = buffer[6];
 
         u64 sectors;
-        if (buffer[83] & (1 << 10)) // word 83 - lba48 support
+        إذا (buffer[83] & (1 << 10)) // word 83 - lba48 support
             sectors = *(u64*)&buffer[100]; // word 100-103
-        else
+        وإلا
             sectors = *(u32*)&buffer[60]; // word 60 and word 61
         port->drive.sectors = sectors;
         u64 adjsize = sectors >> 11;
-        char adjprefix = 'M';
-        if (adjsize >= (1 << 16)) {
+        حرف adjprefix = 'M';
+        إذا (adjsize >= (1 << 16)) {
             adjsize >>= 10;
             adjprefix = 'G';
         }
@@ -532,23 +532,23 @@ static int ahci_port_setup(struct ahci_port_s *port)
         s8 pio_mode = -1;
         s8 udma_mode = -1;
         // If bit 2 in word 53 is set, udma information is valid in word 88.
-        if (buffer[53] & 0x04) {
+        إذا (buffer[53] & 0x04) {
             udma_mode = 6;
-            while ((udma_mode >= 0) &&
+            بينما ((udma_mode >= 0) &&
                    !((buffer[88] & 0x7f) & ( 1 << udma_mode ))) {
                 udma_mode--;
             }
         }
         // If bit 1 in word 53 is set, multiword-dma and advanced pio modes
         // are available in words 63 and 64.
-        if (buffer[53] & 0x02) {
+        إذا (buffer[53] & 0x02) {
             pio_mode = 4;
             multi_dma = 3;
-            while ((multi_dma >= 0) &&
+            بينما ((multi_dma >= 0) &&
                    !((buffer[63] & 0x7) & ( 1 << multi_dma ))) {
                 multi_dma--;
             }
-            while ((pio_mode >= 3) &&
+            بينما ((pio_mode >= 3) &&
                    !((buffer[64] & 0x3) & ( 1 << ( pio_mode - 3 ) ))) {
                 pio_mode--;
             }
@@ -560,39 +560,39 @@ static int ahci_port_setup(struct ahci_port_s *port)
         port->cmd->fis.feature = ATA_SET_FEATRUE_TRANSFER_MODE;
         // Select used mode. UDMA first, then Multi-DMA followed by
         // advanced PIO modes 3 or 4. If non, set default PIO.
-        if (udma_mode >= 0) {
+        إذا (udma_mode >= 0) {
             dprintf(1, "AHCI/%d: Set transfer mode to UDMA-%d\n",
                     port->pnr, udma_mode);
-            port->cmd->fis.sector_count = ATA_TRANSFER_MODE_ULTRA_DMA
+            port->cmd->fis.sector_تعداد = ATA_TRANSFER_MODE_ULTRA_DMA
                                           | udma_mode;
-        } else if (multi_dma >= 0) {
+        } وإلا إذا (multi_dma >= 0) {
             dprintf(1, "AHCI/%d: Set transfer mode to Multi-DMA-%d\n",
                     port->pnr, multi_dma);
-            port->cmd->fis.sector_count = ATA_TRANSFER_MODE_MULTIWORD_DMA
+            port->cmd->fis.sector_تعداد = ATA_TRANSFER_MODE_MULTIWORD_DMA
                                           | multi_dma;
-        } else if (pio_mode >= 3) {
+        } وإلا إذا (pio_mode >= 3) {
             dprintf(1, "AHCI/%d: Set transfer mode to PIO-%d\n",
                     port->pnr, pio_mode);
-            port->cmd->fis.sector_count = ATA_TRANSFER_MODE_PIO_FLOW_CTRL
+            port->cmd->fis.sector_تعداد = ATA_TRANSFER_MODE_PIO_FLOW_CTRL
                                           | pio_mode;
-        } else {
+        } وإلا {
             dprintf(1, "AHCI/%d: Set transfer mode to default PIO\n",
                     port->pnr);
-            port->cmd->fis.sector_count = ATA_TRANSFER_MODE_DEFAULT_PIO;
+            port->cmd->fis.sector_تعداد = ATA_TRANSFER_MODE_DEFAULT_PIO;
         }
         rc = ahci_command(port, 1, 0, 0, 0);
-        if (rc < 0) {
+        إذا (rc < 0) {
             dprintf(1, "AHCI/%d: Set transfer mode failed.\n", port->pnr);
         }
-    } else {
+    } وإلا {
         // found cdrom (atapi)
         port->drive.type = DTYPE_AHCI_ATAPI;
         port->drive.blksize = CDROM_SECTOR_SIZE;
         port->drive.sectors = (u64)-1;
         u8 iscd = ((buffer[0] >> 8) & 0x1f) == 0x05;
-        if (!iscd) {
+        إذا (!iscd) {
             dprintf(1, "AHCI/%d: atapi device isn't a cdrom\n", port->pnr);
-            return -1;
+            إرجاع -1;
         }
         port->desc = znprintf(MAXDESCSIZE
                               , "DVD/CD [AHCI/%d: %s ATAPI-%d DVD/CD]"
@@ -602,30 +602,30 @@ static int ahci_port_setup(struct ahci_port_s *port)
         port->prio = bootprio_find_ata_device(ctrl->pci_tmp, pnr, 0);
     }
     boot_lchs_find_ata_device(ctrl->pci_tmp, pnr, 0, &(port->drive.lchs));
-    return 0;
+    إرجاع 0;
 }
 
 // Detect any drives attached to a given controller.
-static void
-ahci_port_detect(void *data)
+ساكن فراغ
+ahci_port_detect(فراغ *data)
 {
-    struct ahci_port_s *port = data;
-    int rc;
+    بنية ahci_port_s *port = data;
+    صحيح rc;
 
     dprintf(2, "AHCI/%d: probing\n", port->pnr);
     ahci_port_reset(port->ctrl, port->pnr);
     rc = ahci_port_setup(port);
-    if (rc < 0)
+    إذا (rc < 0)
         ahci_port_release(port);
-    else {
+    وإلا {
         port = ahci_port_realloc(port);
-        if (port == NULL)
-            return;
+        إذا (port == عدم)
+            إرجاع;
         dprintf(1, "AHCI/%d: registering: \"%s\"\n", port->pnr, port->desc);
-        if (!port->atapi) {
+        إذا (!port->atapi) {
             // Register with bcv system.
             boot_add_hd(&port->drive, port->desc, port->prio);
-        } else {
+        } وإلا {
             // fill cdidmap
             boot_add_cd(&port->drive, port->desc, port->prio);
         }
@@ -633,28 +633,28 @@ ahci_port_detect(void *data)
 }
 
 // Initialize an ata controller and detect its drives.
-static void
-ahci_controller_setup(struct pci_device *pci)
+ساكن فراغ
+ahci_controller_setup(بنية pci_device *pci)
 {
-    struct ahci_port_s *port;
+    بنية ahci_port_s *port;
     u32 pnr, max;
 
-    if (create_bounce_buf() < 0)
-        return;
+    إذا (create_bounce_buf() < 0)
+        إرجاع;
 
-    void *iobase = pci_enable_membar(pci, PCI_BASE_ADDRESS_5);
-    if (!iobase)
-        return;
+    فراغ *iobase = pci_enable_membar(pci, PCI_BASE_ADDRESS_5);
+    إذا (!iobase)
+        إرجاع;
 
-    struct ahci_ctrl_s *ctrl = malloc_fseg(sizeof(*ctrl));
-    if (!ctrl) {
+    بنية ahci_ctrl_s *ctrl = malloc_fseg(حجم(*ctrl));
+    إذا (!ctrl) {
         warn_noalloc();
-        return;
+        إرجاع;
     }
 
     ctrl->pci_tmp = pci;
     ctrl->iobase = iobase;
-    ctrl->irq = pci_config_readb(pci->bdf, PCI_INTERRUPT_LINE);
+    ctrl->irq = pci_config_readb(pci->bdf, PCI_INTERRUPT_سطر);
     dprintf(1, "AHCI controller at %pP, iobase %p, irq %d\n"
             , pci, ctrl->iobase, ctrl->irq);
 
@@ -663,20 +663,20 @@ ahci_controller_setup(struct pci_device *pci)
     u32 val = ahci_ctrl_readl(ctrl, HOST_CTL);
     ahci_ctrl_writel(ctrl, HOST_CTL, val | HOST_CTL_RESET);
     u32 end = timer_calc(AHCI_RESET_TIMEOUT);
-    for (;;) {
+    لكل (;;) {
         val = ahci_ctrl_readl(ctrl, HOST_CTL);
-        if (!(val & HOST_CTL_RESET))
-            break;
-        if (timer_check(end)) {
+        إذا (!(val & HOST_CTL_RESET))
+            اكسر;
+        إذا (timer_check(end)) {
             warn_timeout();
             dprintf(1, "AHCI: controller reset failed\n");
-            free(ctrl);
-            return;
+            حرر(ctrl);
+            إرجاع;
         }
         yield();
     }
     ahci_ctrl_writel(ctrl, HOST_CTL, val | HOST_CTL_AHCI_EN);
-    (void)ahci_ctrl_readl(ctrl, HOST_CTL); /* Flush */
+    (فراغ)ahci_ctrl_readl(ctrl, HOST_CTL); /* Flush */
 
     ctrl->caps = ahci_ctrl_readl(ctrl, HOST_CAP);
     ctrl->ports = ahci_ctrl_readl(ctrl, HOST_PORTS_IMPL);
@@ -684,37 +684,37 @@ ahci_controller_setup(struct pci_device *pci)
             ctrl->caps, ctrl->ports);
 
     max = 0x1f;
-    for (pnr = 0; pnr <= max; pnr++) {
-        if (!(ctrl->ports & (1 << pnr)))
-            continue;
+    لكل (pnr = 0; pnr <= max; pnr++) {
+        إذا (!(ctrl->ports & (1 << pnr)))
+            استمر;
         port = ahci_port_alloc(ctrl, pnr);
-        if (port == NULL)
-            continue;
+        إذا (port == عدم)
+            استمر;
         run_thread(ahci_port_detect, port);
     }
 }
 
 // Locate and init ahci controllers.
-static void
-ahci_scan(void)
+ساكن فراغ
+ahci_scan(فراغ)
 {
     // Scan PCI bus for ATA adapters
-    struct pci_device *pci;
+    بنية pci_device *pci;
     foreachpci(pci) {
-        if (pci->class != PCI_CLASS_STORAGE_SATA)
-            continue;
-        if (pci->prog_if != 1 /* AHCI rev 1 */)
-            continue;
+        إذا (pci->class != PCI_CLASS_STORAGE_SATA)
+            استمر;
+        إذا (pci->prog_if != 1 /* AHCI rev 1 */)
+            استمر;
         ahci_controller_setup(pci);
     }
 }
 
-void
-ahci_setup(void)
+فراغ
+ahci_setup(فراغ)
 {
     ASSERT32FLAT();
-    if (!CONFIG_AHCI)
-        return;
+    إذا (!CONFIG_AHCI)
+        إرجاع;
 
     dprintf(3, "init ahci\n");
     ahci_scan();

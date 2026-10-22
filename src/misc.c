@@ -5,22 +5,22 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_BDA
-#include "bregs.h" // struct bregs
-#include "hw/pic.h" // enable_hwirq
-#include "output.h" // debug_enter
-#include "stacks.h" // call16_int
-#include "string.h" // memset
+#ضمن "biosvar.h" // GET_BDA
+#ضمن "bregs.h" // struct bregs
+#ضمن "hw/pic.h" // enable_hwirq
+#ضمن "output.h" // debug_enter
+#ضمن "stacks.h" // call16_int
+#ضمن "string.h" // memset
 
 #define PORT_MATH_CLEAR        0x00f0
 
 // Indicator if POST phase has been started (and if it has completed).
-int HaveRunPost VARFSEG;
+صحيح HaveRunPost VARFSEG;
 
-int
-in_post(void)
+صحيح
+in_post(فراغ)
 {
-    return GET_GLOBAL(HaveRunPost) == 1;
+    إرجاع GET_GLOBAL(HaveRunPost) == 1;
 }
 
 
@@ -29,37 +29,37 @@ in_post(void)
  ****************************************************************/
 
 // INT 12h Memory Size Service Entry Point
-void VISIBLE16
-handle_12(struct bregs *regs)
+فراغ VISIBLE16
+handle_12(بنية bregs *regs)
 {
     debug_enter(regs, DEBUG_HDL_12);
     regs->ax = GET_BDA(mem_size_kb);
 }
 
 // INT 11h Equipment List Service Entry Point
-void VISIBLE16
-handle_11(struct bregs *regs)
+فراغ VISIBLE16
+handle_11(بنية bregs *regs)
 {
     debug_enter(regs, DEBUG_HDL_11);
     regs->ax = GET_BDA(equipment_list_flags);
 }
 
 // INT 05h Print Screen Service Entry Point
-void VISIBLE16
-handle_05(struct bregs *regs)
+فراغ VISIBLE16
+handle_05(بنية bregs *regs)
 {
     debug_enter(regs, DEBUG_HDL_05);
 }
 
 // NMI handler
-void VISIBLE16
-handle_02(void)
+فراغ VISIBLE16
+handle_02(فراغ)
 {
     debug_isr(DEBUG_ISR_02);
 }
 
-void
-mathcp_setup(void)
+فراغ
+mathcp_setup(فراغ)
 {
     dprintf(3, "math cp init\n");
     // 80x87 coprocessor installed
@@ -68,8 +68,8 @@ mathcp_setup(void)
 }
 
 // INT 75 - IRQ13 - MATH COPROCESSOR EXCEPTION
-void VISIBLE16
-handle_75(void)
+فراغ VISIBLE16
+handle_75(فراغ)
 {
     debug_isr(DEBUG_ISR_75);
 
@@ -78,8 +78,8 @@ handle_75(void)
     // clear interrupt
     pic_eoi2();
     // legacy nmi call
-    struct bregs br;
-    memset(&br, 0, sizeof(br));
+    بنية bregs br;
+    memset(&br, 0, حجم(br));
     br.flags = F_IF;
     call16_int(0x02, &br);
 }
@@ -109,8 +109,8 @@ handle_75(void)
 // INT 16/AH=09h (keyboard functionality) supported
 #define CBT_F2_INT1609  (1<<6)
 
-struct bios_config_table_s BIOS_CONFIG_TABLE VARFSEGFIXED(0xe6f5) = {
-    .size     = sizeof(BIOS_CONFIG_TABLE) - 2,
+بنية bios_config_table_s BIOS_CONFIG_TABLE VARFSEGFIXED(0xe6f5) = {
+    .size     = حجم(BIOS_CONFIG_TABLE) - 2,
     .model    = BUILD_MODEL_ID,
     .submodel = BUILD_SUBMODEL_ID,
     .biosrev  = BUILD_BIOS_REVISION,
@@ -129,8 +129,8 @@ struct bios_config_table_s BIOS_CONFIG_TABLE VARFSEGFIXED(0xe6f5) = {
  ****************************************************************/
 
 // Real mode IDT descriptor
-struct descloc_s rmode_IDT_info VARFSEG = {
-    .length = sizeof(struct rmode_IVT) - 1,
+بنية descloc_s rmode_IDT_info VARFSEG = {
+    .length = حجم(بنية rmode_IVT) - 1,
     .addr = (u32)MAKE_FLATPTR(SEG_IVT, 0),
 };
 
@@ -139,8 +139,8 @@ struct descloc_s rmode_IDT_info VARFSEG = {
 u8 dummy_IDT VARFSEG;
 
 // Protected mode IDT descriptor
-struct descloc_s pmode_IDT_info VARFSEG = {
-    .length = sizeof(dummy_IDT) - 1,
+بنية descloc_s pmode_IDT_info VARFSEG = {
+    .length = حجم(dummy_IDT) - 1,
     .addr = (u32)&dummy_IDT,
 };
 
@@ -163,8 +163,8 @@ u64 rombios32_gdt[] VARFSEG __aligned(8) = {
 };
 
 // GDT descriptor
-struct descloc_s rombios32_gdt_48 VARFSEG = {
-    .length = sizeof(rombios32_gdt) - 1,
+بنية descloc_s rombios32_gdt_48 VARFSEG = {
+    .length = حجم(rombios32_gdt) - 1,
     .addr = (u32)rombios32_gdt,
 };
 
@@ -174,16 +174,16 @@ struct descloc_s rombios32_gdt_48 VARFSEG = {
  ****************************************************************/
 
 // BIOS build date
-char BiosDate[] VARFSEGFIXED(0xfff5) = "06/23/99";
+حرف BiosDate[] VARFSEGFIXED(0xfff5) = "06/23/99";
 
 u8 BiosModelId VARFSEGFIXED(0xfffe) = BUILD_MODEL_ID;
 
 u8 BiosChecksum VARFSEGFIXED(0xffff);
 
-struct floppy_dbt_s diskette_param_table VARFSEGFIXED(0xefc7);
+بنية floppy_dbt_s diskette_param_table VARFSEGFIXED(0xefc7);
 
 // Old Fixed Disk Parameter Table (newer tables are in the ebda).
-struct fdpt_s OldFDPT VARFSEGFIXED(0xe401);
+بنية fdpt_s OldFDPT VARFSEGFIXED(0xe401);
 
 // XXX - Baud Rate Generator Table
 u8 BaudTable[16] VARFSEGFIXED(0xe729);

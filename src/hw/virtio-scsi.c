@@ -7,102 +7,102 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "block.h" // struct drive_s
-#include "blockcmd.h" // scsi_drive_setup
-#include "config.h" // CONFIG_*
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "pcidevice.h" // foreachpci
-#include "pci_ids.h" // PCI_DEVICE_ID_VIRTIO_BLK
-#include "pci_regs.h" // PCI_VENDOR_ID
-#include "stacks.h" // run_thread
-#include "std/disk.h" // DISK_RET_SUCCESS
-#include "string.h" // memset
-#include "util.h" // usleep, bootprio_find_pci_device, is_bootprio_strict
-#include "virtio-pci.h"
-#include "virtio-ring.h"
-#include "virtio-scsi.h"
-#include "virtio-mmio.h"
+#ضمن "block.h" // struct drive_s
+#ضمن "blockcmd.h" // scsi_drive_setup
+#ضمن "config.h" // CONFIG_*
+#ضمن "malloc.h" // free
+#ضمن "output.h" // dprintf
+#ضمن "pcidevice.h" // foreachpci
+#ضمن "pci_ids.h" // PCI_DEVICE_ID_VIRTIO_BLK
+#ضمن "pci_regs.h" // PCI_VENDOR_ID
+#ضمن "stacks.h" // run_thread
+#ضمن "std/disk.h" // DISK_RET_SUCCESS
+#ضمن "string.h" // memset
+#ضمن "util.h" // usleep, bootprio_find_pci_device, is_bootprio_strict
+#ضمن "virtio-pci.h"
+#ضمن "virtio-ring.h"
+#ضمن "virtio-scsi.h"
+#ضمن "virtio-mmio.h"
 
-struct virtio_lun_s {
-    struct drive_s drive;
-    struct pci_device *pci;
-    void *mmio;
-    char name[16];
-    struct vring_virtqueue *vq;
-    struct vp_device *vp;
+بنية virtio_lun_s {
+    بنية drive_s drive;
+    بنية pci_device *pci;
+    فراغ *mmio;
+    حرف name[16];
+    بنية vring_virtqueue *vq;
+    بنية vp_device *vp;
     u16 target;
     u16 lun;
 };
 
-int
-virtio_scsi_process_op(struct disk_op_s *op)
+صحيح
+virtio_scsi_process_op(بنية disk_op_s *op)
 {
-    if (! CONFIG_VIRTIO_SCSI)
-        return 0;
-    struct virtio_lun_s *vlun =
-        container_of(op->drive_fl, struct virtio_lun_s, drive);
-    struct vp_device *vp = vlun->vp;
-    struct vring_virtqueue *vq = vlun->vq;
-    struct virtio_scsi_req_cmd req;
-    struct virtio_scsi_resp_cmd resp;
-    struct vring_list sg[3];
+    إذا (! CONFIG_VIRTIO_SCSI)
+        إرجاع 0;
+    بنية virtio_lun_s *vlun =
+        container_of(op->drive_fl, بنية virtio_lun_s, drive);
+    بنية vp_device *vp = vlun->vp;
+    بنية vring_virtqueue *vq = vlun->vq;
+    بنية virtio_scsi_req_cmd req;
+    بنية virtio_scsi_resp_cmd resp;
+    بنية vring_list sg[3];
 
-    memset(&req, 0, sizeof(req));
-    int blocksize = scsi_fill_cmd(op, req.cdb, 16);
-    if (blocksize < 0)
-        return default_process_op(op);
+    memset(&req, 0, حجم(req));
+    صحيح blocksize = scsi_fill_cmd(op, req.cdb, 16);
+    إذا (blocksize < 0)
+        إرجاع default_process_op(op);
     req.lun[0] = 1;
     req.lun[1] = vlun->target;
     req.lun[2] = (vlun->lun >> 8) | 0x40;
     req.lun[3] = (vlun->lun & 0xff);
 
-    u32 len = op->count * blocksize;
-    int datain = scsi_is_read(op);
-    int in_num = (datain ? 2 : 1);
-    int out_num = (len ? 3 : 2) - in_num;
+    u32 len = op->تعداد_2 * blocksize;
+    صحيح datain = scsi_is_read(op);
+    صحيح in_رقم = (datain ? 2 : 1);
+    صحيح out_رقم = (len ? 3 : 2) - in_رقم;
 
-    sg[0].addr   = (void*)(&req);
-    sg[0].length = sizeof(req);
+    sg[0].addr   = (فراغ*)(&req);
+    sg[0].length = حجم(req);
 
-    sg[out_num].addr   = (void*)(&resp);
-    sg[out_num].length = sizeof(resp);
+    sg[out_رقم].addr   = (فراغ*)(&resp);
+    sg[out_رقم].length = حجم(resp);
 
-    if (len) {
-        int data_idx = (datain ? 2 : 1);
+    إذا (len) {
+        صحيح data_idx = (datain ? 2 : 1);
         sg[data_idx].addr   = op->buf_fl;
         sg[data_idx].length = len;
     }
 
     /* Add to virtqueue and kick host */
-    vring_add_buf(vq, sg, out_num, in_num, 0, 0);
+    vring_add_buf(vq, sg, out_رقم, in_رقم, 0, 0);
     vring_kick(vp, vq, 1);
 
     /* Wait for reply */
-    while (!vring_more_used(vq))
+    بينما (!vring_more_used(vq))
         usleep(5);
 
     /* Reclaim virtqueue element */
-    vring_get_buf(vq, NULL);
+    vring_get_buf(vq, عدم);
 
     /* Clear interrupt status register.  Avoid leaving interrupts stuck if
      * VRING_AVAIL_F_NO_INTERRUPT was ignored and interrupts were raised.
      */
     vp_get_isr(vp);
 
-    if (resp.response == VIRTIO_SCSI_S_OK && resp.status == 0) {
-        return DISK_RET_SUCCESS;
+    إذا (resp.response == VIRTIO_SCSI_S_OK && resp.status == 0) {
+        إرجاع DISK_RET_SUCCESS;
     }
-    return DISK_RET_EBADTRACK;
+    إرجاع DISK_RET_EBADTRACK;
 }
 
-static void
-virtio_scsi_init_lun(struct virtio_lun_s *vlun,
-                     struct pci_device *pci, void *mmio,
-                     struct vp_device *vp, struct vring_virtqueue *vq,
+ساكن فراغ
+virtio_scsi_init_lun(بنية virtio_lun_s *vlun,
+                     بنية pci_device *pci, فراغ *mmio,
+                     بنية vp_device *vp, بنية vring_virtqueue *vq,
                      u16 target, u16 lun)
 {
-    memset(vlun, 0, sizeof(*vlun));
+    memset(vlun, 0, حجم(*vlun));
     vlun->drive.type = DTYPE_VIRTIO_SCSI;
     vlun->drive.cntl_id = pci->bdf;
     vlun->pci = pci;
@@ -111,192 +111,192 @@ virtio_scsi_init_lun(struct virtio_lun_s *vlun,
     vlun->vq = vq;
     vlun->target = target;
     vlun->lun = lun;
-    if (vlun->pci)
-        snprintf(vlun->name, sizeof(vlun->name), "pci:%pP", vlun->pci);
-    if (vlun->mmio)
-        snprintf(vlun->name, sizeof(vlun->name), "mmio:%08x", (u32)vlun->mmio);
+    إذا (vlun->pci)
+        snprintf(vlun->name, حجم(vlun->name), "pci:%pP", vlun->pci);
+    إذا (vlun->mmio)
+        snprintf(vlun->name, حجم(vlun->name), "mmio:%08x", (u32)vlun->mmio);
 }
 
-static int
-virtio_scsi_add_lun(u32 lun, struct drive_s *tmpl_drv)
+ساكن صحيح
+virtio_scsi_add_lun(u32 lun, بنية drive_s *tmpl_drv)
 {
     u8 skip_nonbootable = is_bootprio_strict();
-    struct virtio_lun_s *tmpl_vlun =
-        container_of(tmpl_drv, struct virtio_lun_s, drive);
-    int prio = -1;
+    بنية virtio_lun_s *tmpl_vlun =
+        container_of(tmpl_drv, بنية virtio_lun_s, drive);
+    صحيح prio = -1;
 
-    if (tmpl_vlun->pci)
+    إذا (tmpl_vlun->pci)
         prio = bootprio_find_scsi_device(tmpl_vlun->pci, tmpl_vlun->target, lun);
-    if (tmpl_vlun->mmio)
+    إذا (tmpl_vlun->mmio)
         prio = bootprio_find_scsi_mmio_device(tmpl_vlun->mmio, tmpl_vlun->target, lun);
 
-    if (skip_nonbootable && prio < 0) {
+    إذا (skip_nonbootable && prio < 0) {
         dprintf(1, "skipping init of a non-bootable virtio-scsi dev at %s,"
                 " target %d, lun %d\n",
                 tmpl_vlun->name, tmpl_vlun->target, lun);
-        return -1;
+        إرجاع -1;
     }
 
-    struct virtio_lun_s *vlun = malloc_low(sizeof(*vlun));
-    if (!vlun) {
+    بنية virtio_lun_s *vlun = malloc_أدنى(حجم(*vlun));
+    إذا (!vlun) {
         warn_noalloc();
-        return -1;
+        إرجاع -1;
     }
     virtio_scsi_init_lun(vlun, tmpl_vlun->pci, tmpl_vlun->mmio,tmpl_vlun->vp,
                          tmpl_vlun->vq, tmpl_vlun->target, lun);
 
-    if (vlun->pci)
+    إذا (vlun->pci)
         boot_lchs_find_scsi_device(vlun->pci, vlun->target, vlun->lun,
                                    &(vlun->drive.lchs));
-    int ret = scsi_drive_setup(&vlun->drive, "virtio-scsi", prio);
-    if (ret)
-        goto fail;
-    return 0;
+    صحيح ret = scsi_drive_setup(&vlun->drive, "virtio-scsi", prio);
+    إذا (ret)
+        اذهب fail;
+    إرجاع 0;
 
 fail:
-    free(vlun);
-    return -1;
+    حرر(vlun);
+    إرجاع -1;
 }
 
-static int
-virtio_scsi_scan_target(struct pci_device *pci, void *mmio, struct vp_device *vp,
-                        struct vring_virtqueue *vq, u16 target)
+ساكن صحيح
+virtio_scsi_scan_target(بنية pci_device *pci, فراغ *mmio, بنية vp_device *vp,
+                        بنية vring_virtqueue *vq, u16 target)
 {
 
-    struct virtio_lun_s vlun0;
+    بنية virtio_lun_s vlun0;
 
     virtio_scsi_init_lun(&vlun0, pci, mmio, vp, vq, target, 0);
 
-    int ret = scsi_rep_luns_scan(&vlun0.drive, virtio_scsi_add_lun);
-    return ret < 0 ? 0 : ret;
+    صحيح ret = scsi_rep_luns_scan(&vlun0.drive, virtio_scsi_add_lun);
+    إرجاع ret < 0 ? 0 : ret;
 }
 
-static void
-init_virtio_scsi(void *data)
+ساكن فراغ
+init_virtio_scsi(فراغ *data)
 {
-    struct pci_device *pci = data;
+    بنية pci_device *pci = data;
     dprintf(1, "found virtio-scsi at %pP\n", pci);
-    struct vring_virtqueue *vq = NULL;
-    struct vp_device *vp = malloc_high(sizeof(*vp));
-    if (!vp) {
+    بنية vring_virtqueue *vq = عدم;
+    بنية vp_device *vp = malloc_أعلى(حجم(*vp));
+    إذا (!vp) {
         warn_noalloc();
-        return;
+        إرجاع;
     }
     vp_init_simple(vp, pci);
     u8 status = VIRTIO_CONFIG_S_ACKNOWLEDGE | VIRTIO_CONFIG_S_DRIVER;
 
-    if (vp->use_modern) {
+    إذا (vp->use_modern) {
         u64 features = vp_get_features(vp);
         u64 version1 = 1ull << VIRTIO_F_VERSION_1;
         u64 iommu_platform = 1ull << VIRTIO_F_IOMMU_PLATFORM;
-        if (!(features & version1)) {
+        إذا (!(features & version1)) {
             dprintf(1, "modern device without virtio_1 feature bit: %pP\n", pci);
-            goto fail;
+            اذهب fail;
         }
 
         vp_set_features(vp, features & (version1 | iommu_platform));
         status |= VIRTIO_CONFIG_S_FEATURES_OK;
         vp_set_status(vp, status);
-        if (!(vp_get_status(vp) & VIRTIO_CONFIG_S_FEATURES_OK)) {
+        إذا (!(vp_get_status(vp) & VIRTIO_CONFIG_S_FEATURES_OK)) {
             dprintf(1, "device didn't accept features: %pP\n", pci);
-            goto fail;
+            اذهب fail;
         }
     }
 
-    if (vp_find_vq(vp, 2, &vq) < 0 ) {
+    إذا (vp_find_vq(vp, 2, &vq) < 0 ) {
         dprintf(1, "fail to find vq for virtio-scsi %pP\n", pci);
-        goto fail;
+        اذهب fail;
     }
 
     status |= VIRTIO_CONFIG_S_DRIVER_OK;
     vp_set_status(vp, status);
 
-    int i, tot;
-    for (tot = 0, i = 0; i < 256; i++)
-        tot += virtio_scsi_scan_target(pci, NULL, vp, vq, i);
+    صحيح i, tot;
+    لكل (tot = 0, i = 0; i < 256; i++)
+        tot += virtio_scsi_scan_target(pci, عدم, vp, vq, i);
 
-    if (!tot)
-        goto fail;
+    إذا (!tot)
+        اذهب fail;
 
-    return;
+    إرجاع;
 
 fail:
     vp_reset(vp);
-    free(vp);
-    free(vq);
+    حرر(vp);
+    حرر(vq);
 }
 
-void
-init_virtio_scsi_mmio(void *mmio)
+فراغ
+init_virtio_scsi_mmio(فراغ *mmio)
 {
     dprintf(1, "found virtio-scsi-mmio at %p\n", mmio);
-    struct vring_virtqueue *vq = NULL;
-    struct vp_device *vp = malloc_high(sizeof(*vp));
-    if (!vp) {
+    بنية vring_virtqueue *vq = عدم;
+    بنية vp_device *vp = malloc_أعلى(حجم(*vp));
+    إذا (!vp) {
         warn_noalloc();
-        return;
+        إرجاع;
     }
     vp_init_mmio(vp, mmio);
     u8 status = VIRTIO_CONFIG_S_ACKNOWLEDGE | VIRTIO_CONFIG_S_DRIVER;
 
     u64 features = vp_get_features(vp);
     u64 version1 = 1ull << VIRTIO_F_VERSION_1;
-    if (features & version1) {
+    إذا (features & version1) {
         u64 iommu_platform = 1ull << VIRTIO_F_IOMMU_PLATFORM;
 
         vp_set_features(vp, features & (version1 | iommu_platform));
         vp_set_status(vp, VIRTIO_CONFIG_S_FEATURES_OK);
-        if (!(vp_get_status(vp) & VIRTIO_CONFIG_S_FEATURES_OK)) {
+        إذا (!(vp_get_status(vp) & VIRTIO_CONFIG_S_FEATURES_OK)) {
             dprintf(1, "device didn't accept features: %pP\n", mmio);
-            goto fail;
+            اذهب fail;
         }
     }
 
-    if (vp_find_vq(vp, 2, &vq) < 0 ) {
+    إذا (vp_find_vq(vp, 2, &vq) < 0 ) {
         dprintf(1, "fail to find vq for virtio-scsi-mmio %p\n", mmio);
-        goto fail;
+        اذهب fail;
     }
 
     status |= VIRTIO_CONFIG_S_DRIVER_OK;
     vp_set_status(vp, status);
 
-    int i, tot;
-    for (tot = 0, i = 0; i < 256; i++)
-        tot += virtio_scsi_scan_target(NULL, mmio, vp, vq, i);
+    صحيح i, tot;
+    لكل (tot = 0, i = 0; i < 256; i++)
+        tot += virtio_scsi_scan_target(عدم, mmio, vp, vq, i);
 
-    if (!tot)
-        goto fail;
+    إذا (!tot)
+        اذهب fail;
 
-    return;
+    إرجاع;
 
 fail:
     vp_reset(vp);
-    free(vp);
-    free(vq);
+    حرر(vp);
+    حرر(vq);
 }
 
-void
-virtio_scsi_setup(void)
+فراغ
+virtio_scsi_setup(فراغ)
 {
     u8 skip_nonbootable = is_bootprio_strict();
 
     ASSERT32FLAT();
-    if (! CONFIG_VIRTIO_SCSI)
-        return;
+    إذا (! CONFIG_VIRTIO_SCSI)
+        إرجاع;
 
     dprintf(3, "init virtio-scsi\n");
 
-    struct pci_device *pci;
+    بنية pci_device *pci;
     foreachpci(pci) {
-        if (pci->vendor != PCI_VENDOR_ID_REDHAT_QUMRANET ||
+        إذا (pci->vendor != PCI_VENDOR_ID_REDHAT_QUMRANET ||
             (pci->device != PCI_DEVICE_ID_VIRTIO_SCSI_09 &&
              pci->device != PCI_DEVICE_ID_VIRTIO_SCSI_10))
-            continue;
+            استمر;
 
-        if (skip_nonbootable && bootprio_find_pci_device(pci) < 0) {
+        إذا (skip_nonbootable && bootprio_find_pci_device(pci) < 0) {
             dprintf(1, "skipping init of a non-bootable virtio-scsi at %pP\n",
                     pci);
-            continue;
+            استمر;
         }
 
         run_thread(init_virtio_scsi, pci);
