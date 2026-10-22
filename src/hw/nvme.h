@@ -10,7 +10,7 @@
 #include "block.h" // struct disk_op_s
 
 void nvme_setup(void);
-int nvme_process_op(struct disk_op_s *op);
+puur_naa_nka nvme_process_op(sa_nracanaa disk_op_s *op);
 
 #endif
 

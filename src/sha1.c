@@ -17,7 +17,7 @@
 #include "string.h" // memcpy
 #include "x86.h" // rol
 
-typedef struct _sha1_ctx {
+typedef sa_nracanaa _sha1_ctx {
     u32 h[5];
 } sha1_ctx;
 
@@ -49,16 +49,16 @@ sha1_block(u32 *w, sha1_ctx *ctx)
     e = ctx->h[4];
 
     for (i = 0; i <= 79; i++) {
-        if (i <= 19) {
+        ᱡᱩᱫᱤ (i <= 19) {
             f = (b & c) | ((b ^ 0xffffffff) & d);
             idx = 0;
-        } else if (i <= 39) {
+        } ᱵᱟᱝ ᱡᱩᱫᱤ (i <= 39) {
             f = b ^ c ^ d;
             idx = 1;
-        } else if (i <= 59) {
+        } ᱵᱟᱝ ᱡᱩᱫᱤ (i <= 59) {
             f = (b & c) | (b & d) | (c & d);
             idx = 2;
-        } else {
+        } ᱵᱟᱝ {
             f = b ^ c ^ d;
             idx = 3;
         }
@@ -105,10 +105,10 @@ sha1_do(sha1_ctx *ctx, const u8 *data32, u32 length)
 
     memcpy(w, data32 + offset, num);
     ((u8 *)w)[num] = 0x80;
-    if (64 - (num + 1) > 0)
+    ᱡᱩᱫᱤ (64 - (num + 1) > 0)
         memset( &((u8 *)w)[num + 1], 0x0, 64 - (num + 1));
 
-    if (num >= 56) {
+    ᱡᱩᱫᱤ (num >= 56) {
         /* cannot append number of bits here */
         sha1_block((u32 *)w, ctx);
         memset(w, 0x0, 60);
@@ -129,8 +129,8 @@ sha1_do(sha1_ctx *ctx, const u8 *data32, u32 length)
 void
 sha1(const u8 *data, u32 length, u8 *hash)
 {
-    if (!CONFIG_TCGBIOS)
-        return;
+    ᱡᱩᱫᱤ (!CONFIG_TCGBIOS)
+        ᱨᱩᱣᱟᱹᱲ;
 
     sha1_ctx ctx = {
         .h[0] = 0x67452301,
@@ -143,5 +143,5 @@ sha1(const u8 *data, u32 length, u8 *hash)
     sha1_do(&ctx, data, length);
     memcpy(hash, &ctx.h[0], 20);
 
-    return;
+    ᱨᱩᱣᱟᱹᱲ;
 }
