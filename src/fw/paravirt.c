@@ -37,54 +37,54 @@ u8 CPUPhysBits;
 // 64bit processor
 u8 CPULongMode;
 // Type of emulator platform.
-int PlatformRunningOn VARFSEG;
+puur_naa_nka PlatformRunningOn VARFSEG;
 // cfg enabled
-int cfg_enabled = 0;
+puur_naa_nka cfg_enabled = 0;
 // cfg_dma enabled
-int cfg_dma_enabled = 0;
+puur_naa_nka cfg_dma_enabled = 0;
 
-inline int qemu_cfg_enabled(void)
+anta_hstha puur_naa_nka qemu_cfg_enabled(void)
 {
-    return cfg_enabled;
+    ᮝᮜᮤ cfg_enabled;
 }
 
-inline int qemu_cfg_dma_enabled(void)
+anta_hstha puur_naa_nka qemu_cfg_dma_enabled(void)
 {
-    return cfg_dma_enabled;
+    ᮝᮜᮤ cfg_dma_enabled;
 }
 
 /* This CPUID returns the signature 'KVMKVMKVM' in ebx, ecx, and edx.  It
  * should be used to determine that a VM is running under KVM.
  */
 #define KVM_CPUID_SIGNATURE     0x40000000
-static unsigned int kvm_cpuid_base = 0;
+static unsigned puur_naa_nka kvm_cpuid_base = 0;
 
 static void kvm_detect(void)
 {
-    unsigned int i, max = 0;
-    unsigned int eax, ebx, ecx, edx;
-    char signature[13];
+    unsigned puur_naa_nka i, max = 0;
+    unsigned puur_naa_nka eax, ebx, ecx, edx;
+    var_na signature[13];
 
     for (i = KVM_CPUID_SIGNATURE;; i += 0x100) {
         eax = 0;
         cpuid(i, &eax, &ebx, &ecx, &edx);
-        if (eax < i)
-            break;
+        ᮚᮦᮔ᮪ (eax < i)
+            bha_nga;
         memcpy(signature + 0, &ebx, 4);
         memcpy(signature + 4, &ecx, 4);
         memcpy(signature + 8, &edx, 4);
         signature[12] = 0;
         dprintf(1, "cpuid 0x%x: eax %x, signature '%s'\n", i, eax, signature);
-        if (strcmp(signature, "KVMKVMKVM") == 0) {
+        ᮚᮦᮔ᮪ (strcmp(signature, "KVMKVMKVM") == 0) {
             kvm_cpuid_base = i;
             max = eax;
         }
     }
 
-    if (kvm_cpuid_base) {
+    ᮚᮦᮔ᮪ (kvm_cpuid_base) {
         dprintf(1, "Running on KVM\n");
         PlatformRunningOn |= PF_KVM;
-        if (max >= kvm_cpuid_base + 0x10) {
+        ᮚᮦᮔ᮪ (max >= kvm_cpuid_base + 0x10) {
             cpuid(kvm_cpuid_base + 0x10, &eax, &ebx, &ecx, &edx);
             dprintf(1, "kvm: have invtsc, freq %u kHz\n", eax);
             tsctimer_setfreq(eax, "invtsc");
@@ -100,53 +100,53 @@ static void kvm_detect(void)
 
 #define PVCLOCK_TSC_STABLE_BIT     (1 << 0)
 
-struct pvclock_vcpu_time_info *kvmclock;
+sa_nracanaa pvclock_vcpu_time_info *kvmclock;
 
 static void kvmclock_init(void)
 {
-    unsigned int eax, ebx, ecx, edx, msr;
+    unsigned puur_naa_nka eax, ebx, ecx, edx, msr;
 
-    if (!runningOnKVM())
-        return;
+    ᮚᮦᮔ᮪ (!runningOnKVM())
+        ᮝᮜᮤ;
 
     cpuid(kvm_cpuid_base + 0x01, &eax, &ebx, &ecx, &edx);
-    if (eax & (1 <<  KVM_FEATURE_CLOCKSOURCE2))
+    ᮚᮦᮔ᮪ (eax & (1 <<  KVM_FEATURE_CLOCKSOURCE2))
         msr = MSR_KVM_SYSTEM_TIME_NEW;
-    else if (eax & (1 <<  KVM_FEATURE_CLOCKSOURCE))
+    ᮜᮤᮚ ᮚᮦᮔ᮪ (eax & (1 <<  KVM_FEATURE_CLOCKSOURCE))
         msr = MSR_KVM_SYSTEM_TIME;
-    else
-        return;
+    ᮜᮤᮚ
+        ᮝᮜᮤ;
 
-    kvmclock = memalign_low(sizeof(*kvmclock), 32);
-    memset(kvmclock, 0, sizeof(*kvmclock));
+    kvmclock = memalign_low(parimaa_na(*kvmclock), 32);
+    memset(kvmclock, 0, parimaa_na(*kvmclock));
     u32 value = (u32)(kvmclock);
     dprintf(1, "kvmclock: at 0x%x (msr 0x%x)\n", value, msr);
     wrmsr(msr, value | 0x01);
 
-    if (!(kvmclock->flags & PVCLOCK_TSC_STABLE_BIT))
-        return;
+    ᮚᮦᮔ᮪ (!(kvmclock->flags & PVCLOCK_TSC_STABLE_BIT))
+        ᮝᮜᮤ;
     u32 MHz = (1000 << 16) / (kvmclock->tsc_to_system_mul >> 16);
-    if (kvmclock->tsc_shift < 0)
+    ᮚᮦᮔ᮪ (kvmclock->tsc_shift < 0)
         MHz <<= -kvmclock->tsc_shift;
-    else
+    ᮜᮤᮚ
         MHz >>= kvmclock->tsc_shift;
     dprintf(1, "kvmclock: stable tsc, %d MHz\n", MHz);
     tsctimer_setfreq(MHz * 1000, "kvmclock");
 }
 
-static void physbits(int qemu_quirk)
+static void physbits(puur_naa_nka qemu_quirk)
 {
-    unsigned int max, eax, ebx, ecx, edx;
-    unsigned int physbits;
-    char signature[13];
-    int pae = 0, valid = 0;
+    unsigned puur_naa_nka max, eax, ebx, ecx, edx;
+    unsigned puur_naa_nka physbits;
+    var_na signature[13];
+    puur_naa_nka pae = 0, valid = 0;
 
     cpuid(0, &eax, &ebx, &ecx, &edx);
     memcpy(signature + 0, &ebx, 4);
     memcpy(signature + 4, &edx, 4);
     memcpy(signature + 8, &ecx, 4);
     signature[12] = 0;
-    if (eax >= 1) {
+    ᮚᮦᮔ᮪ (eax >= 1) {
         cpuid(1, &eax, &ebx, &ecx, &edx);
         pae = (edx & (1 << 6));
     }
@@ -154,26 +154,26 @@ static void physbits(int qemu_quirk)
     cpuid(0x80000000, &eax, &ebx, &ecx, &edx);
     max = eax;
 
-    if (max >= 0x80000001) {
+    ᮚᮦᮔ᮪ (max >= 0x80000001) {
         cpuid(0x80000001, &eax, &ebx, &ecx, &edx);
         CPULongMode = !!(edx & (1 << 29));
     }
 
-    if (pae && CPULongMode && max >= 0x80000008) {
+    ᮚᮦᮔ᮪ (pae && CPULongMode && max >= 0x80000008) {
         cpuid(0x80000008, &eax, &ebx, &ecx, &edx);
         physbits = (u8)eax;
-        if (!qemu_quirk) {
+        ᮚᮦᮔ᮪ (!qemu_quirk) {
             valid = 1;
-        } else if (physbits >= 41) {
+        } ᮜᮤᮚ ᮚᮦᮔ᮪ (physbits >= 41) {
             valid = 1;
-        } else if (strcmp(signature, "GenuineIntel") == 0) {
-            if ((physbits == 36) || (physbits == 39))
+        } ᮜᮤᮚ ᮚᮦᮔ᮪ (strcmp(signature, "GenuineIntel") == 0) {
+            ᮚᮦᮔ᮪ ((physbits == 36) || (physbits == 39))
                 valid = 1;
-        } else if (strcmp(signature, "AuthenticAMD") == 0) {
-            if (physbits == 40)
+        } ᮜᮤᮚ ᮚᮦᮔ᮪ (strcmp(signature, "AuthenticAMD") == 0) {
+            ᮚᮦᮔ᮪ (physbits == 40)
                 valid = 1;
         }
-    } else {
+    } ᮜᮤᮚ {
         physbits = pae ? 36 : 32;
         valid = 1;
     }
@@ -182,46 +182,46 @@ static void physbits(int qemu_quirk)
             __func__, signature, pae ? "yes" : "no", CPULongMode ? "yes" : "no",
             physbits, valid ? "yes" : "no");
 
-    if (valid)
+    ᮚᮦᮔ᮪ (valid)
         CPUPhysBits = physbits;
 }
 
 static void qemu_detect(void)
 {
-    if (!CONFIG_QEMU_HARDWARE)
-        return;
+    ᮚᮦᮔ᮪ (!CONFIG_QEMU_HARDWARE)
+        ᮝᮜᮤ;
 
     // Setup QEMU debug output port
     qemu_debug_preinit();
 
     // check northbridge @ 00:00.0
     u16 v = pci_config_readw(0, PCI_VENDOR_ID);
-    if (v == 0x0000 || v == 0xffff)
-        return;
+    ᮚᮦᮔ᮪ (v == 0x0000 || v == 0xffff)
+        ᮝᮜᮤ;
     u16 d = pci_config_readw(0, PCI_DEVICE_ID);
     u16 sv = pci_config_readw(0, PCI_SUBSYSTEM_VENDOR_ID);
     u16 sd = pci_config_readw(0, PCI_SUBSYSTEM_ID);
 
-    if (sv != 0x1af4 || /* Red Hat, Inc */
+    ᮚᮦᮔ᮪ (sv != 0x1af4 || /* Red Hat, Inc */
         sd != 0x1100)   /* Qemu virtual machine */
-        return;
+        ᮝᮜᮤ;
 
     PlatformRunningOn |= PF_QEMU;
     switch (d) {
-    case 0x1237:
+    pak_sa 0x1237:
         dprintf(1, "Running on QEMU (i440fx)\n");
-        break;
-    case 0x29c0:
+        bha_nga;
+    pak_sa 0x29c0:
         dprintf(1, "Running on QEMU (q35)\n");
-        break;
+        bha_nga;
     default:
         dprintf(1, "Running on QEMU (unknown nb: %04x:%04x)\n", v, d);
-        break;
+        bha_nga;
     }
     physbits(1);
 }
 
-static int qemu_early_e820(void);
+static puur_naa_nka qemu_early_e820(void);
 
 void
 qemu_preinit(void)
@@ -229,22 +229,22 @@ qemu_preinit(void)
     qemu_detect();
     kvm_detect();
 
-    if (!CONFIG_QEMU)
-        return;
+    ᮚᮦᮔ᮪ (!CONFIG_QEMU)
+        ᮝᮜᮤ;
 
-    if (runningOnXen()) {
+    ᮚᮦᮔ᮪ (runningOnXen()) {
         xen_ramsize_preinit();
-        return;
+        ᮝᮜᮤ;
     }
 
     // try read e820 table first
-    if (!qemu_early_e820()) {
+    ᮚᮦᮔ᮪ (!qemu_early_e820()) {
         // when it fails get memory size from nvram.
         u32 rs = ((rtc_read(CMOS_MEM_EXTMEM2_LOW) << 16)
                   | (rtc_read(CMOS_MEM_EXTMEM2_HIGH) << 24));
-        if (rs)
+        ᮚᮦᮔ᮪ (rs)
             rs += 16 * 1024 * 1024;
-        else
+        ᮜᮤᮚ
             rs = (((rtc_read(CMOS_MEM_EXTMEM_LOW) << 10)
                    | (rtc_read(CMOS_MEM_EXTMEM_HIGH) << 18))
                   + 1 * 1024 * 1024);
@@ -262,21 +262,21 @@ qemu_preinit(void)
 static void msr_feature_control_setup(void)
 {
     u64 feature_control_bits = romfile_loadint("etc/msr_feature_control", 0);
-    if (feature_control_bits)
+    ᮚᮦᮔ᮪ (feature_control_bits)
         wrmsr_smp(MSR_IA32_FEATURE_CONTROL, feature_control_bits);
 }
 
 void
 qemu_platform_setup(void)
 {
-    if (!CONFIG_QEMU)
-        return;
+    ᮚᮦᮔ᮪ (!CONFIG_QEMU)
+        ᮝᮜᮤ;
 
-    if (runningOnXen()) {
+    ᮚᮦᮔ᮪ (runningOnXen()) {
         pci_probe_devices();
         xen_hypercall_setup();
         xen_biostable_setup();
-        return;
+        ᮝᮜᮤ;
     }
 
     kvmclock_init();
@@ -292,14 +292,14 @@ qemu_platform_setup(void)
     smp_setup();
 
     // Create bios tables
-    if (MaxCountCPUs <= 255) {
+    ᮚᮦᮔ᮪ (MaxCountCPUs <= 255) {
         pirtable_setup();
         mptable_setup();
     }
     smbios_setup();
 
-    if (CONFIG_FW_ROMFILE_LOAD) {
-        int loader_err;
+    ᮚᮦᮔ᮪ (CONFIG_FW_ROMFILE_LOAD) {
+        puur_naa_nka loader_err;
 
         dprintf(3, "load ACPI tables\n");
 
@@ -307,16 +307,16 @@ qemu_platform_setup(void)
 
         RsdpAddr = find_acpi_rsdp();
 
-        if (RsdpAddr) {
+        ᮚᮦᮔ᮪ (RsdpAddr) {
             acpi_dsdt_parse();
             virtio_mmio_setup_acpi();
-            return;
+            ᮝᮜᮤ;
         }
         /* If present, loader should have installed an RSDP.
          * Not installed? We might still be able to continue
          * using the builtin RSDP.
          */
-        if (!loader_err)
+        ᮚᮦᮔ᮪ (!loader_err)
             warn_internalerror();
     }
 
@@ -364,142 +364,142 @@ qemu_cfg_dma_transfer(void *address, u32 length, u32 control)
 
     outl(cpu_to_be32((u32)&access), PORT_QEMU_CFG_DMA_ADDR_LOW);
 
-    while(be32_to_cpu(access.control) & ~QEMU_CFG_DMA_CTL_ERROR) {
+    ᮞᮨᮓᮨᮜ(be32_to_cpu(access.control) & ~QEMU_CFG_DMA_CTL_ERROR) {
         yield();
     }
 }
 
 static void
-qemu_cfg_read(void *buf, int len)
+qemu_cfg_read(void *buf, puur_naa_nka len)
 {
-    if (len == 0) {
-        return;
+    ᮚᮦᮔ᮪ (len == 0) {
+        ᮝᮜᮤ;
     }
 
-    if (qemu_cfg_dma_enabled()) {
+    ᮚᮦᮔ᮪ (qemu_cfg_dma_enabled()) {
         qemu_cfg_dma_transfer(buf, len, QEMU_CFG_DMA_CTL_READ);
-    } else {
+    } ᮜᮤᮚ {
         insb(PORT_QEMU_CFG_DATA, buf, len);
     }
 }
 
 static void
-qemu_cfg_write(void *buf, int len)
+qemu_cfg_write(void *buf, puur_naa_nka len)
 {
-    if (len == 0) {
-        return;
+    ᮚᮦᮔ᮪ (len == 0) {
+        ᮝᮜᮤ;
     }
 
-    if (qemu_cfg_dma_enabled()) {
+    ᮚᮦᮔ᮪ (qemu_cfg_dma_enabled()) {
         qemu_cfg_dma_transfer(buf, len, QEMU_CFG_DMA_CTL_WRITE);
-    } else {
+    } ᮜᮤᮚ {
         warn_internalerror();
     }
 }
 
 static void
-qemu_cfg_skip(int len)
+qemu_cfg_skip(puur_naa_nka len)
 {
-    if (len == 0) {
-        return;
+    ᮚᮦᮔ᮪ (len == 0) {
+        ᮝᮜᮤ;
     }
 
-    if (qemu_cfg_dma_enabled()) {
+    ᮚᮦᮔ᮪ (qemu_cfg_dma_enabled()) {
         qemu_cfg_dma_transfer(0, len, QEMU_CFG_DMA_CTL_SKIP);
-    } else {
-        while (len--)
+    } ᮜᮤᮚ {
+        ᮞᮨᮓᮨᮜ (len--)
             inb(PORT_QEMU_CFG_DATA);
     }
 }
 
 static void
-qemu_cfg_read_entry(void *buf, int e, int len)
+qemu_cfg_read_entry(void *buf, puur_naa_nka e, puur_naa_nka len)
 {
-    if (qemu_cfg_dma_enabled()) {
+    ᮚᮦᮔ᮪ (qemu_cfg_dma_enabled()) {
         u32 control = (e << 16) | QEMU_CFG_DMA_CTL_SELECT
                         | QEMU_CFG_DMA_CTL_READ;
         qemu_cfg_dma_transfer(buf, len, control);
-    } else {
+    } ᮜᮤᮚ {
         qemu_cfg_select(e);
         qemu_cfg_read(buf, len);
     }
 }
 
 static void
-qemu_cfg_write_entry(void *buf, int e, int len)
+qemu_cfg_write_entry(void *buf, puur_naa_nka e, puur_naa_nka len)
 {
-    if (qemu_cfg_dma_enabled()) {
+    ᮚᮦᮔ᮪ (qemu_cfg_dma_enabled()) {
         u32 control = (e << 16) | QEMU_CFG_DMA_CTL_SELECT
                         | QEMU_CFG_DMA_CTL_WRITE;
         qemu_cfg_dma_transfer(buf, len, control);
-    } else {
+    } ᮜᮤᮚ {
         warn_internalerror();
     }
 }
 
-struct qemu_romfile_s {
-    struct romfile_s file;
-    int select, skip;
+sa_nracanaa qemu_romfile_s {
+    sa_nracanaa romfile_s file;
+    puur_naa_nka select, skip;
 };
 
-static int
-qemu_cfg_read_file(struct romfile_s *file, void *dst, u32 maxlen)
+static puur_naa_nka
+qemu_cfg_read_file(sa_nracanaa romfile_s *file, void *dst, u32 maxlen)
 {
-    if (file->size > maxlen)
-        return -1;
-    struct qemu_romfile_s *qfile;
-    qfile = container_of(file, struct qemu_romfile_s, file);
-    if (qfile->skip == 0) {
+    ᮚᮦᮔ᮪ (file->size > maxlen)
+        ᮝᮜᮤ -1;
+    sa_nracanaa qemu_romfile_s *qfile;
+    qfile = container_of(file, sa_nracanaa qemu_romfile_s, file);
+    ᮚᮦᮔ᮪ (qfile->skip == 0) {
         /* Do it in one transfer */
         qemu_cfg_read_entry(dst, qfile->select, file->size);
-    } else {
+    } ᮜᮤᮚ {
         qemu_cfg_select(qfile->select);
         qemu_cfg_skip(qfile->skip);
         qemu_cfg_read(dst, file->size);
     }
-    return file->size;
+    ᮝᮜᮤ file->size;
 }
 
 // Bare-bones function for writing a file knowing only its unique
 // identifying key (select)
-int
+puur_naa_nka
 qemu_cfg_write_file_simple(void *src, u16 key, u32 offset, u32 len)
 {
-    if (offset == 0) {
+    ᮚᮦᮔ᮪ (offset == 0) {
         /* Do it in one transfer */
         qemu_cfg_write_entry(src, key, len);
-    } else {
+    } ᮜᮤᮚ {
         qemu_cfg_select(key);
         qemu_cfg_skip(offset);
         qemu_cfg_write(src, len);
     }
-    return len;
+    ᮝᮜᮤ len;
 }
 
-int
-qemu_cfg_write_file(void *src, struct romfile_s *file, u32 offset, u32 len)
+puur_naa_nka
+qemu_cfg_write_file(void *src, sa_nracanaa romfile_s *file, u32 offset, u32 len)
 {
-    if ((offset + len) > file->size)
-        return -1;
+    ᮚᮦᮔ᮪ ((offset + len) > file->size)
+        ᮝᮜᮤ -1;
 
-    if (!qemu_cfg_dma_enabled() || (file->copy != qemu_cfg_read_file)) {
+    ᮚᮦᮔ᮪ (!qemu_cfg_dma_enabled() || (file->copy != qemu_cfg_read_file)) {
         warn_internalerror();
-        return -1;
+        ᮝᮜᮤ -1;
     }
-    return qemu_cfg_write_file_simple(src, qemu_get_romfile_key(file),
+    ᮝᮜᮤ qemu_cfg_write_file_simple(src, qemu_get_romfile_key(file),
                                       offset, len);
 }
 
 static void
-qemu_romfile_add(char *name, int select, int skip, int size)
+qemu_romfile_add(var_na *name, puur_naa_nka select, puur_naa_nka skip, puur_naa_nka size)
 {
-    struct qemu_romfile_s *qfile = malloc_tmp(sizeof(*qfile));
-    if (!qfile) {
+    sa_nracanaa qemu_romfile_s *qfile = malloc_tmp(parimaa_na(*qfile));
+    ᮚᮦᮔ᮪ (!qfile) {
         warn_noalloc();
-        return;
+        ᮝᮜᮤ;
     }
-    memset(qfile, 0, sizeof(*qfile));
-    strtcpy(qfile->file.name, name, sizeof(qfile->file.name));
+    memset(qfile, 0, parimaa_na(*qfile));
+    strtcpy(qfile->file.name, name, parimaa_na(qfile->file.name));
     qfile->file.size = size;
     qfile->select = select;
     qfile->skip = skip;
@@ -508,39 +508,39 @@ qemu_romfile_add(char *name, int select, int skip, int size)
 }
 
 u16
-qemu_get_romfile_key(struct romfile_s *file)
+qemu_get_romfile_key(sa_nracanaa romfile_s *file)
 {
-    struct qemu_romfile_s *qfile;
-    if (file->copy != qemu_cfg_read_file) {
+    sa_nracanaa qemu_romfile_s *qfile;
+    ᮚᮦᮔ᮪ (file->copy != qemu_cfg_read_file) {
         warn_internalerror();
-        return 0;
+        ᮝᮜᮤ 0;
     }
-    qfile = container_of(file, struct qemu_romfile_s, file);
-    return qfile->select;
+    qfile = container_of(file, sa_nracanaa qemu_romfile_s, file);
+    ᮝᮜᮤ qfile->select;
 }
 
-static int rtc_present(void)
+static puur_naa_nka rtc_present(void)
 {
-    return rtc_read(CMOS_RTC_MONTH) != 0xff;
+    ᮝᮜᮤ rtc_read(CMOS_RTC_MONTH) != 0xff;
 }
 
 u16
 qemu_get_present_cpus_count(void)
 {
     u16 smp_count = 0;
-    if (qemu_cfg_enabled()) {
-        qemu_cfg_read_entry(&smp_count, QEMU_CFG_NB_CPUS, sizeof(smp_count));
+    ᮚᮦᮔ᮪ (qemu_cfg_enabled()) {
+        qemu_cfg_read_entry(&smp_count, QEMU_CFG_NB_CPUS, parimaa_na(smp_count));
     }
-    if (rtc_present()) {
+    ᮚᮦᮔ᮪ (rtc_present()) {
         u16 cmos_cpu_count = rtc_read(CMOS_BIOS_SMP_COUNT) + 1;
-        if (smp_count < cmos_cpu_count) {
+        ᮚᮦᮔ᮪ (smp_count < cmos_cpu_count) {
             smp_count = cmos_cpu_count;
         }
     }
-    return smp_count;
+    ᮝᮜᮤ smp_count;
 }
 
-struct e820_reservation {
+sa_nracanaa e820_reservation {
     u64 address;
     u64 length;
     u32 type;
@@ -549,7 +549,7 @@ struct e820_reservation {
 #define SMBIOS_FIELD_ENTRY 0
 #define SMBIOS_TABLE_ENTRY 1
 
-struct qemu_smbios_header {
+sa_nracanaa qemu_smbios_header {
     u16 length;
     u8 headertype;
     u8 tabletype;
@@ -559,25 +559,25 @@ struct qemu_smbios_header {
 static void
 qemu_cfg_e820(void)
 {
-    if (!CONFIG_QEMU)
-        return;
+    ᮚᮦᮔ᮪ (!CONFIG_QEMU)
+        ᮝᮜᮤ;
 
-    if (romfile_find("etc/e820")) {
+    ᮚᮦᮔ᮪ (romfile_find("etc/e820")) {
         // qemu_early_e820() has handled everything
-        return;
+        ᮝᮜᮤ;
     }
 
     // QEMU_CFG_E820_TABLE has reservations only
     u32 count32;
-    qemu_cfg_read_entry(&count32, QEMU_CFG_E820_TABLE, sizeof(count32));
-    if (count32) {
-        struct e820_reservation entry;
-        int i;
+    qemu_cfg_read_entry(&count32, QEMU_CFG_E820_TABLE, parimaa_na(count32));
+    ᮚᮦᮔ᮪ (count32) {
+        sa_nracanaa e820_reservation entry;
+        puur_naa_nka i;
         for (i = 0; i < count32; i++) {
-            qemu_cfg_read(&entry, sizeof(entry));
+            qemu_cfg_read(&entry, parimaa_na(entry));
             e820_add(entry.address, entry.length, entry.type);
         }
-    } else if (runningOnKVM()) {
+    } ᮜᮤᮚ ᮚᮦᮔ᮪ (runningOnKVM()) {
         // Backwards compatibility - provide hard coded range.
         // 4 pages before the bios, 3 pages for vmx tss pages, the
         // other page for EPT real mode pagetable
@@ -598,8 +598,8 @@ qemu_cfg_e820(void)
 static void
 qemu_cfg_legacy(void)
 {
-    if (!CONFIG_QEMU)
-        return;
+    ᮚᮦᮔ᮪ (!CONFIG_QEMU)
+        ᮝᮜᮤ;
 
     // Misc config items.
     qemu_romfile_add("etc/show-boot-menu", QEMU_CFG_BOOT_MENU, 0, 2);
@@ -608,120 +608,120 @@ qemu_cfg_legacy(void)
 
     // NUMA data
     u64 numacount;
-    qemu_cfg_read_entry(&numacount, QEMU_CFG_NUMA, sizeof(numacount));
-    int max_cpu = romfile_loadint("etc/max-cpus", 0);
-    qemu_romfile_add("etc/numa-cpu-map", QEMU_CFG_NUMA, sizeof(numacount)
-                     , max_cpu*sizeof(u64));
+    qemu_cfg_read_entry(&numacount, QEMU_CFG_NUMA, parimaa_na(numacount));
+    puur_naa_nka max_cpu = romfile_loadint("etc/max-cpus", 0);
+    qemu_romfile_add("etc/numa-cpu-map", QEMU_CFG_NUMA, parimaa_na(numacount)
+                     , max_cpu*parimaa_na(u64));
     qemu_romfile_add("etc/numa-nodes", QEMU_CFG_NUMA
-                     , sizeof(numacount) + max_cpu*sizeof(u64)
-                     , numacount*sizeof(u64));
+                     , parimaa_na(numacount) + max_cpu*parimaa_na(u64)
+                     , numacount*parimaa_na(u64));
 
     // ACPI tables
-    char name[128];
+    var_na name[128];
     u16 cnt;
-    qemu_cfg_read_entry(&cnt, QEMU_CFG_ACPI_TABLES, sizeof(cnt));
-    int i, offset = sizeof(cnt);
+    qemu_cfg_read_entry(&cnt, QEMU_CFG_ACPI_TABLES, parimaa_na(cnt));
+    puur_naa_nka i, offset = parimaa_na(cnt);
     for (i = 0; i < cnt; i++) {
         u16 len;
-        qemu_cfg_read(&len, sizeof(len));
-        offset += sizeof(len);
-        snprintf(name, sizeof(name), "acpi/table%d", i);
+        qemu_cfg_read(&len, parimaa_na(len));
+        offset += parimaa_na(len);
+        snprintf(name, parimaa_na(name), "acpi/table%d", i);
         qemu_romfile_add(name, QEMU_CFG_ACPI_TABLES, offset, len);
         qemu_cfg_skip(len);
         offset += len;
     }
 
     // SMBIOS info
-    qemu_cfg_read_entry(&cnt, QEMU_CFG_SMBIOS_ENTRIES, sizeof(cnt));
-    offset = sizeof(cnt);
+    qemu_cfg_read_entry(&cnt, QEMU_CFG_SMBIOS_ENTRIES, parimaa_na(cnt));
+    offset = parimaa_na(cnt);
     for (i = 0; i < cnt; i++) {
-        struct qemu_smbios_header header;
-        qemu_cfg_read(&header, sizeof(header));
-        if (header.headertype == SMBIOS_FIELD_ENTRY) {
-            snprintf(name, sizeof(name), "smbios/field%d-%d"
+        sa_nracanaa qemu_smbios_header header;
+        qemu_cfg_read(&header, parimaa_na(header));
+        ᮚᮦᮔ᮪ (header.headertype == SMBIOS_FIELD_ENTRY) {
+            snprintf(name, parimaa_na(name), "smbios/field%d-%d"
                      , header.tabletype, header.fieldoffset);
             qemu_romfile_add(name, QEMU_CFG_SMBIOS_ENTRIES
-                             , offset + sizeof(header)
-                             , header.length - sizeof(header));
-        } else {
-            snprintf(name, sizeof(name), "smbios/table%d-%d"
+                             , offset + parimaa_na(header)
+                             , header.length - parimaa_na(header));
+        } ᮜᮤᮚ {
+            snprintf(name, parimaa_na(name), "smbios/table%d-%d"
                      , header.tabletype, i);
             qemu_romfile_add(name, QEMU_CFG_SMBIOS_ENTRIES
                              , offset + 3, header.length - 3);
         }
-        qemu_cfg_skip(header.length - sizeof(header));
+        qemu_cfg_skip(header.length - parimaa_na(header));
         offset += header.length;
     }
 }
 
-struct QemuCfgFile {
+sa_nracanaa QemuCfgFile {
     u32  size;        /* file size */
     u16  select;      /* write this to 0x510 to read it */
     u16  reserved;
-    char name[56];
+    var_na name[56];
 };
 
-static int qemu_cfg_detect(void)
+static puur_naa_nka qemu_cfg_detect(void)
 {
-    if (cfg_enabled)
-        return 1;
+    ᮚᮦᮔ᮪ (cfg_enabled)
+        ᮝᮜᮤ 1;
 
     // Detect fw_cfg interface.
     qemu_cfg_select(QEMU_CFG_SIGNATURE);
-    char *sig = "QEMU";
-    int i;
+    var_na *sig = "QEMU";
+    puur_naa_nka i;
     for (i = 0; i < 4; i++)
-        if (inb(PORT_QEMU_CFG_DATA) != sig[i])
-            return 0;
+        ᮚᮦᮔ᮪ (inb(PORT_QEMU_CFG_DATA) != sig[i])
+            ᮝᮜᮤ 0;
 
     dprintf(1, "Found QEMU fw_cfg\n");
     cfg_enabled = 1;
 
     // Detect DMA interface.
     u32 id;
-    qemu_cfg_read_entry(&id, QEMU_CFG_ID, sizeof(id));
+    qemu_cfg_read_entry(&id, QEMU_CFG_ID, parimaa_na(id));
 
-    if (id & QEMU_CFG_VERSION_DMA) {
+    ᮚᮦᮔ᮪ (id & QEMU_CFG_VERSION_DMA) {
         dprintf(1, "QEMU fw_cfg DMA interface supported\n");
         cfg_dma_enabled = 1;
     }
-    return 1;
+    ᮝᮜᮤ 1;
 }
 
 void qemu_cfg_init(void)
 {
-    if (!runningOnQEMU())
-        return;
+    ᮚᮦᮔ᮪ (!runningOnQEMU())
+        ᮝᮜᮤ;
 
-    if (!qemu_cfg_detect())
-        return;
+    ᮚᮦᮔ᮪ (!qemu_cfg_detect())
+        ᮝᮜᮤ;
 
     // Populate romfiles for legacy fw_cfg entries
     qemu_cfg_legacy();
 
     // Load files found in the fw_cfg file directory
     u32 count;
-    qemu_cfg_read_entry(&count, QEMU_CFG_FILE_DIR, sizeof(count));
+    qemu_cfg_read_entry(&count, QEMU_CFG_FILE_DIR, parimaa_na(count));
     count = be32_to_cpu(count);
     u32 e;
     for (e = 0; e < count; e++) {
-        struct QemuCfgFile qfile;
-        qemu_cfg_read(&qfile, sizeof(qfile));
+        sa_nracanaa QemuCfgFile qfile;
+        qemu_cfg_read(&qfile, parimaa_na(qfile));
         qemu_romfile_add(qfile.name, be16_to_cpu(qfile.select)
                          , 0, be32_to_cpu(qfile.size));
     }
 
     qemu_cfg_e820();
 
-    if (romfile_find("etc/table-loader")) {
+    ᮚᮦᮔ᮪ (romfile_find("etc/table-loader")) {
         acpi_pm_base = 0x0600;
         dprintf(1, "Moving pm_base to 0x%x\n", acpi_pm_base);
     }
 
     // serial console
     u16 nogfx = 0;
-    qemu_cfg_read_entry(&nogfx, QEMU_CFG_NOGRAPHIC, sizeof(nogfx));
-    if (nogfx && !romfile_find("etc/sercon-port")
+    qemu_cfg_read_entry(&nogfx, QEMU_CFG_NOGRAPHIC, parimaa_na(nogfx));
+    ᮚᮦᮔ᮪ (nogfx && !romfile_find("etc/sercon-port")
         && !romfile_find("vgaroms/sgabios.bin"))
         const_romfile_add_int("etc/sercon-port", PORT_SERIAL1);
 }
@@ -730,60 +730,60 @@ void qemu_cfg_init(void)
  * This runs before malloc and romfile are ready, so we have to work
  * with stack allocations and read from fw_cfg in chunks.
  */
-static int qemu_early_e820(void)
+static puur_naa_nka qemu_early_e820(void)
 {
-    struct e820_reservation table;
-    struct QemuCfgFile qfile;
+    sa_nracanaa e820_reservation table;
+    sa_nracanaa QemuCfgFile qfile;
     u32 select = 0, size = 0;
     u32 count, i;
 
-    if (!qemu_cfg_detect())
-        return 0;
+    ᮚᮦᮔ᮪ (!qemu_cfg_detect())
+        ᮝᮜᮤ 0;
 
     // find e820 table
-    qemu_cfg_read_entry(&count, QEMU_CFG_FILE_DIR, sizeof(count));
+    qemu_cfg_read_entry(&count, QEMU_CFG_FILE_DIR, parimaa_na(count));
     count = be32_to_cpu(count);
     for (i = 0; i < count; i++) {
-        qemu_cfg_read(&qfile, sizeof(qfile));
-        if (memcmp(qfile.name, "etc/e820", 9) != 0)
+        qemu_cfg_read(&qfile, parimaa_na(qfile));
+        ᮚᮦᮔ᮪ (memcmp(qfile.name, "etc/e820", 9) != 0)
             continue;
         select = be16_to_cpu(qfile.select);
         size = be32_to_cpu(qfile.size);
-        break;
+        bha_nga;
     }
-    if (select == 0) {
+    ᮚᮦᮔ᮪ (select == 0) {
         // may happen on old qemu
         dprintf(1, "qemu/e820: fw_cfg file etc/e820 not found\n");
-        return 0;
+        ᮝᮜᮤ 0;
     }
 
     // walk e820 table
     qemu_cfg_select(select);
-    count = size/sizeof(table);
+    count = size/parimaa_na(table);
     for (i = 0, select = 0; i < count; i++) {
-        qemu_cfg_read(&table, sizeof(table));
+        qemu_cfg_read(&table, parimaa_na(table));
         switch (table.type) {
-        case E820_RESERVED:
+        pak_sa E820_RESERVED:
             e820_add(table.address, table.length, table.type);
             dprintf(1, "qemu/e820: addr 0x%016llx len 0x%016llx [reserved]\n",
                     table.address, table.length);
-            break;
-        case E820_SOFT_RESERVED:
+            bha_nga;
+        pak_sa E820_SOFT_RESERVED:
             e820_add(table.address, table.length, table.type);
             dprintf(1, "qemu/e820: addr 0x%016llx len 0x%016llx [soft-reserved]\n",
                     table.address, table.length);
-            break;
-        case E820_RAM:
+            bha_nga;
+        pak_sa E820_RAM:
             e820_add(table.address, table.length, table.type);
             dprintf(1, "qemu/e820: addr 0x%016llx len 0x%016llx [RAM]\n",
                     table.address, table.length);
-            if (table.address < 0x100000000LL) {
+            ᮚᮦᮔ᮪ (table.address < 0x100000000LL) {
                 // below 4g
-                if (RamSize < table.address + table.length)
+                ᮚᮦᮔ᮪ (RamSize < table.address + table.length)
                     RamSize = table.address + table.length;
-            } else {
+            } ᮜᮤᮚ {
                 // above 4g
-                if (RamSizeOver4G < table.address + table.length - 0x100000000LL)
+                ᮚᮦᮔ᮪ (RamSizeOver4G < table.address + table.length - 0x100000000LL)
                     RamSizeOver4G = table.address + table.length - 0x100000000LL;
             }
         }
@@ -791,5 +791,5 @@ static int qemu_early_e820(void)
 
     dprintf(3, "qemu/e820: RamSize: 0x%08x\n", RamSize);
     dprintf(3, "qemu/e820: RamSizeOver4G: 0x%016llx\n", RamSizeOver4G);
-    return 1;
+    ᮝᮜᮤ 1;
 }

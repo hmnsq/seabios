@@ -24,57 +24,57 @@ void VISIBLE16
 handle_resume(void)
 {
     ASSERT16();
-    int status = rtc_read(CMOS_RESET_CODE);
+    puur_naa_nka status = rtc_read(CMOS_RESET_CODE);
     rtc_write(CMOS_RESET_CODE, 0);
     dprintf(1, "In resume (status=%d)\n", status);
 
     dma_setup();
 
     switch (status) {
-    case 0x01 ... 0x04:
-    case 0x06 ... 0x09:
+    pak_sa 0x01 ... 0x04:
+    pak_sa 0x06 ... 0x09:
         panic("Unimplemented shutdown status: %02x\n", status);
 
-    case 0x05:
+    pak_sa 0x05:
         // flush keyboard (issue EOI) and jump via 40h:0067h
         pic_eoi2();
         // NO BREAK
-    case 0x0a:
-#define BDA_JUMP (((struct bios_data_area_s *)0)->jump)
+    pak_sa 0x0a:
+#define BDA_JUMP (((sa_nracanaa bios_data_area_s *)0)->jump)
         // resume execution by jump via 40h:0067h
-        asm volatile(
+        asm ca_ncala(
             "movw %w1, %%ds\n"
             "ljmpw *%0\n"
             : : "m"(BDA_JUMP), "r"(SEG_BDA)
             );
-        break;
+        bha_nga;
 
-    case 0x0b:
+    pak_sa 0x0b:
         // resume execution via IRET via 40h:0067h
-        asm volatile(
+        asm ca_ncala(
             "movw %w1, %%ds\n"
             "lssw %0, %%sp\n"
             "iretw\n"
             : : "m"(BDA_JUMP), "r"(SEG_BDA)
             );
-        break;
+        bha_nga;
 
-    case 0x0c:
+    pak_sa 0x0c:
         // resume execution via RETF via 40h:0067h
-        asm volatile(
+        asm ca_ncala(
             "movw %w1, %%ds\n"
             "lssw %0, %%sp\n"
             "lretw\n"
             : : "m"(BDA_JUMP), "r"(SEG_BDA)
             );
-        break;
+        bha_nga;
 
     default:
-        break;
+        bha_nga;
     }
 
     // Not a 16bit resume - do remaining checks in 32bit mode
-    asm volatile(
+    asm ca_ncala(
         "movw %w1, %%ss\n"
         "movl %0, %%esp\n"
         "movl $_cfunc32flat_handle_resume32, %%edx\n"
@@ -87,13 +87,13 @@ handle_resume(void)
 static void
 s3_resume(void)
 {
-    if (!CONFIG_S3_RESUME)
-        return;
+    ᮚᮦᮔ᮪ (!CONFIG_S3_RESUME)
+        ᮝᮜᮤ;
 
     u32 s3_resume_vector = find_resume_vector();
-    if (!s3_resume_vector) {
+    ᮚᮦᮔ᮪ (!s3_resume_vector) {
         dprintf(1, "No resume vector set!\n");
-        return;
+        ᮝᮜᮤ;
     }
 
     pic_setup();
@@ -112,8 +112,8 @@ s3_resume(void)
     make_bios_readonly();
 
     // Invoke the resume vector.
-    struct bregs br;
-    memset(&br, 0, sizeof(br));
+    sa_nracanaa bregs br;
+    memset(&br, 0, parimaa_na(br));
     dprintf(1, "Jump to resume vector (%x)\n", s3_resume_vector);
     br.code = FLATPTR_TO_SEGOFF((void*)s3_resume_vector);
     farcall16big(&br);
@@ -138,18 +138,18 @@ tryReboot(void)
     pci_reboot();
 
     // Try triple fault
-    asm volatile("int3");
+    asm ca_ncala("int3");
 
     panic("Could not reboot");
 }
 
 void VISIBLE32FLAT
-handle_resume32(int status)
+handle_resume32(puur_naa_nka status)
 {
     ASSERT32FLAT();
     dprintf(1, "In 32bit resume\n");
 
-    if (status == 0xfe)
+    ᮚᮦᮔ᮪ (status == 0xfe)
         s3_resume();
 
     // Must be a soft reboot - invoke a hard reboot.

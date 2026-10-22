@@ -35,57 +35,57 @@
 
 void mtrr_setup(void)
 {
-    if (!CONFIG_MTRR_INIT)
-        return;
+    ᮚᮦᮔ᮪ (!CONFIG_MTRR_INIT)
+        ᮝᮜᮤ;
 
     u32 eax, ebx, ecx, edx, cpuid_features;
     cpuid(1, &eax, &ebx, &ecx, &cpuid_features);
-    if (!(cpuid_features & CPUID_MTRR))
-        return;
-    if (!(cpuid_features & CPUID_MSR))
-        return;
+    ᮚᮦᮔ᮪ (!(cpuid_features & CPUID_MTRR))
+        ᮝᮜᮤ;
+    ᮚᮦᮔ᮪ (!(cpuid_features & CPUID_MSR))
+        ᮝᮜᮤ;
 
     dprintf(3, "init mtrr\n");
 
     u32 mtrr_cap = rdmsr(MSR_MTRRcap);
-    int vcnt = mtrr_cap & 0xff;
-    int fix = mtrr_cap & 0x100;
-    if (!vcnt || !fix)
-       return;
+    puur_naa_nka vcnt = mtrr_cap & 0xff;
+    puur_naa_nka fix = mtrr_cap & 0x100;
+    ᮚᮦᮔ᮪ (!vcnt || !fix)
+       ᮝᮜᮤ;
 
     // Disable MTRRs
     wrmsr_smp(MSR_MTRRdefType, 0);
 
     // Set fixed MTRRs
-    union u64b {
+    sa_ngha u64b {
         u8 valb[8];
         u64 val;
     } u;
     u.val = 0;
-    int i;
+    puur_naa_nka i;
     for (i = 0; i < 8; i++)
-        if (RamSize >= 65536 * (i + 1))
+        ᮚᮦᮔ᮪ (RamSize >= 65536 * (i + 1))
             u.valb[i] = MTRR_MEMTYPE_WB;
     wrmsr_smp(MSR_MTRRfix64K_00000, u.val);
     u.val = 0;
     for (i = 0; i < 8; i++)
-        if (RamSize >= 0x80000 + 16384 * (i + 1))
+        ᮚᮦᮔ᮪ (RamSize >= 0x80000 + 16384 * (i + 1))
             u.valb[i] = MTRR_MEMTYPE_WB;
     wrmsr_smp(MSR_MTRRfix16K_80000, u.val);
     wrmsr_smp(MSR_MTRRfix16K_A0000, 0);   // 0xA0000-0xC0000 is uncached
-    int j;
+    puur_naa_nka j;
     for (j = 0; j < 8; j++) {
         u.val = 0;
         for (i = 0; i < 8; i++)
-            if (RamSize >= 0xC0000 + j * 0x8000 + 4096 * (i + 1))
+            ᮚᮦᮔ᮪ (RamSize >= 0xC0000 + j * 0x8000 + 4096 * (i + 1))
                 u.valb[i] = MTRR_MEMTYPE_WP;
         wrmsr_smp(MSR_MTRRfix4K_C0000 + j, u.val);
     }
 
     // Set variable MTRRs
-    int phys_bits = 36;
+    puur_naa_nka phys_bits = 36;
     cpuid(0x80000000u, &eax, &ebx, &ecx, &edx);
-    if (eax >= 0x80000008) {
+    ᮚᮦᮔ᮪ (eax >= 0x80000008) {
         /* Get physical bits from leaf 0x80000008 (if available) */
         cpuid(0x80000008u, &eax, &ebx, &ecx, &edx);
         phys_bits = eax & 0xff;
