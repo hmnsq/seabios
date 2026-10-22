@@ -78,12 +78,12 @@ struct ahci_port_s {
     u32                pnr;
     u32                atapi;
     char               *desc;
-    int                prio;
+    整数                prio;
 };
 
 void ahci_setup(void);
-int ahci_process_op(struct disk_op_s *op);
-int ahci_atapi_process_op(struct disk_op_s *op);
+整数 ahci_process_op(struct disk_op_s *op);
+整数 ahci_atapi_process_op(struct disk_op_s *op);
 
 #define AHCI_IRQ_ON_SG            (1 << 31)
 #define AHCI_CMD_ATAPI            (1 << 5)

@@ -99,7 +99,7 @@ handle_1587(struct bregs *regs)
                | GDT_BASE(loc));
     // Initialize CS descriptor
     u64 lim = GDT_LIMIT(0x0ffff);
-    if (in_post())
+    もし (in_post())
         lim = GDT_GRANLIMIT(0xffffffff);
     SET_FARVAR(gdt_seg, gdt_far[4], GDT_CODE | lim | GDT_BASE(BUILD_BIOS_ADDR));
     // Initialize SS descriptor
@@ -173,9 +173,9 @@ handle_1588(struct bregs *regs)
 
     // According to Ralf Brown's interrupt the limit should be 15M,
     // but real machines mostly return max. 63M.
-    if (rs > 64*1024*1024)
+    もし (rs > 64*1024*1024)
         regs->ax = 63 * 1024;
-    else
+    否则
         regs->ax = (rs - 1*1024*1024) / 1024;
     set_success(regs);
 }
@@ -269,12 +269,12 @@ handle_15e801(struct bregs *regs)
     u32 rs = GET_GLOBAL(LegacyRamSize);
 
     // Get the amount of extended memory (above 1M)
-    if (rs > 16*1024*1024) {
+    もし (rs > 16*1024*1024) {
         // limit to 15M
         regs->cx = 15*1024;
         // Get the amount of extended memory above 16M in 64k blocks
         regs->dx = (rs - 16*1024*1024) / (64*1024);
-    } else {
+    } 否则 {
         regs->cx = (rs - 1*1024*1024) / 1024;
         regs->dx = 0;
     }
@@ -289,19 +289,19 @@ handle_15e801(struct bregs *regs)
 static void
 handle_15e820(struct bregs *regs)
 {
-    int count = GET_GLOBAL(e820_count);
-    if (regs->edx != 0x534D4150 || regs->bx >= count
+    整数 count = GET_GLOBAL(e820_count);
+    もし (regs->edx != 0x534D4150 || regs->bx >= count
         || regs->ecx < sizeof(e820_list[0])) {
         set_code_invalid(regs, RET_EUNSUPPORTED);
-        return;
+        戻る;
     }
 
     memcpy_far(regs->es, (void*)(regs->di+0)
                , get_global_seg(), &e820_list[regs->bx]
                , sizeof(e820_list[0]));
-    if (regs->bx == count-1)
+    もし (regs->bx == count-1)
         regs->ebx = 0;
-    else
+    否则
         regs->ebx++;
     regs->eax = 0x534D4150;
     regs->ecx = sizeof(e820_list[0]);

@@ -35,11 +35,11 @@ struct virtio_lun_s {
     u16 lun;
 };
 
-int
+整数
 virtio_scsi_process_op(struct disk_op_s *op)
 {
-    if (! CONFIG_VIRTIO_SCSI)
-        return 0;
+    もし (! CONFIG_VIRTIO_SCSI)
+        戻る 0;
     struct virtio_lun_s *vlun =
         container_of(op->drive_fl, struct virtio_lun_s, drive);
     struct vp_device *vp = vlun->vp;
@@ -49,18 +49,18 @@ virtio_scsi_process_op(struct disk_op_s *op)
     struct vring_list sg[3];
 
     memset(&req, 0, sizeof(req));
-    int blocksize = scsi_fill_cmd(op, req.cdb, 16);
-    if (blocksize < 0)
-        return default_process_op(op);
+    整数 blocksize = scsi_fill_cmd(op, req.cdb, 16);
+    もし (blocksize < 0)
+        戻る default_process_op(op);
     req.lun[0] = 1;
     req.lun[1] = vlun->target;
     req.lun[2] = (vlun->lun >> 8) | 0x40;
     req.lun[3] = (vlun->lun & 0xff);
 
     u32 len = op->count * blocksize;
-    int datain = scsi_is_read(op);
-    int in_num = (datain ? 2 : 1);
-    int out_num = (len ? 3 : 2) - in_num;
+    整数 datain = scsi_is_read(op);
+    整数 in_num = (datain ? 2 : 1);
+    整数 out_num = (len ? 3 : 2) - in_num;
 
     sg[0].addr   = (void*)(&req);
     sg[0].length = sizeof(req);
@@ -68,8 +68,8 @@ virtio_scsi_process_op(struct disk_op_s *op)
     sg[out_num].addr   = (void*)(&resp);
     sg[out_num].length = sizeof(resp);
 
-    if (len) {
-        int data_idx = (datain ? 2 : 1);
+    もし (len) {
+        整数 data_idx = (datain ? 2 : 1);
         sg[data_idx].addr   = op->buf_fl;
         sg[data_idx].length = len;
     }
@@ -79,7 +79,7 @@ virtio_scsi_process_op(struct disk_op_s *op)
     vring_kick(vp, vq, 1);
 
     /* Wait for reply */
-    while (!vring_more_used(vq))
+    ながら (!vring_more_used(vq))
         usleep(5);
 
     /* Reclaim virtqueue element */
@@ -90,10 +90,10 @@ virtio_scsi_process_op(struct disk_op_s *op)
      */
     vp_get_isr(vp);
 
-    if (resp.response == VIRTIO_SCSI_S_OK && resp.status == 0) {
-        return DISK_RET_SUCCESS;
+    もし (resp.response == VIRTIO_SCSI_S_OK && resp.status == 0) {
+        戻る DISK_RET_SUCCESS;
     }
-    return DISK_RET_EBADTRACK;
+    戻る DISK_RET_EBADTRACK;
 }
 
 static void
@@ -111,54 +111,54 @@ virtio_scsi_init_lun(struct virtio_lun_s *vlun,
     vlun->vq = vq;
     vlun->target = target;
     vlun->lun = lun;
-    if (vlun->pci)
+    もし (vlun->pci)
         snprintf(vlun->name, sizeof(vlun->name), "pci:%pP", vlun->pci);
-    if (vlun->mmio)
+    もし (vlun->mmio)
         snprintf(vlun->name, sizeof(vlun->name), "mmio:%08x", (u32)vlun->mmio);
 }
 
-static int
+static 整数
 virtio_scsi_add_lun(u32 lun, struct drive_s *tmpl_drv)
 {
     u8 skip_nonbootable = is_bootprio_strict();
     struct virtio_lun_s *tmpl_vlun =
         container_of(tmpl_drv, struct virtio_lun_s, drive);
-    int prio = -1;
+    整数 prio = -1;
 
-    if (tmpl_vlun->pci)
+    もし (tmpl_vlun->pci)
         prio = bootprio_find_scsi_device(tmpl_vlun->pci, tmpl_vlun->target, lun);
-    if (tmpl_vlun->mmio)
+    もし (tmpl_vlun->mmio)
         prio = bootprio_find_scsi_mmio_device(tmpl_vlun->mmio, tmpl_vlun->target, lun);
 
-    if (skip_nonbootable && prio < 0) {
+    もし (skip_nonbootable && prio < 0) {
         dprintf(1, "skipping init of a non-bootable virtio-scsi dev at %s,"
                 " target %d, lun %d\n",
                 tmpl_vlun->name, tmpl_vlun->target, lun);
-        return -1;
+        戻る -1;
     }
 
     struct virtio_lun_s *vlun = malloc_low(sizeof(*vlun));
-    if (!vlun) {
+    もし (!vlun) {
         warn_noalloc();
-        return -1;
+        戻る -1;
     }
     virtio_scsi_init_lun(vlun, tmpl_vlun->pci, tmpl_vlun->mmio,tmpl_vlun->vp,
                          tmpl_vlun->vq, tmpl_vlun->target, lun);
 
-    if (vlun->pci)
+    もし (vlun->pci)
         boot_lchs_find_scsi_device(vlun->pci, vlun->target, vlun->lun,
                                    &(vlun->drive.lchs));
-    int ret = scsi_drive_setup(&vlun->drive, "virtio-scsi", prio);
-    if (ret)
+    整数 ret = scsi_drive_setup(&vlun->drive, "virtio-scsi", prio);
+    もし (ret)
         goto fail;
-    return 0;
+    戻る 0;
 
 fail:
     free(vlun);
-    return -1;
+    戻る -1;
 }
 
-static int
+static 整数
 virtio_scsi_scan_target(struct pci_device *pci, void *mmio, struct vp_device *vp,
                         struct vring_virtqueue *vq, u16 target)
 {
@@ -167,8 +167,8 @@ virtio_scsi_scan_target(struct pci_device *pci, void *mmio, struct vp_device *vp
 
     virtio_scsi_init_lun(&vlun0, pci, mmio, vp, vq, target, 0);
 
-    int ret = scsi_rep_luns_scan(&vlun0.drive, virtio_scsi_add_lun);
-    return ret < 0 ? 0 : ret;
+    整数 ret = scsi_rep_luns_scan(&vlun0.drive, virtio_scsi_add_lun);
+    戻る ret < 0 ? 0 : ret;
 }
 
 static void
@@ -178,18 +178,18 @@ init_virtio_scsi(void *data)
     dprintf(1, "found virtio-scsi at %pP\n", pci);
     struct vring_virtqueue *vq = NULL;
     struct vp_device *vp = malloc_high(sizeof(*vp));
-    if (!vp) {
+    もし (!vp) {
         warn_noalloc();
-        return;
+        戻る;
     }
     vp_init_simple(vp, pci);
     u8 status = VIRTIO_CONFIG_S_ACKNOWLEDGE | VIRTIO_CONFIG_S_DRIVER;
 
-    if (vp->use_modern) {
+    もし (vp->use_modern) {
         u64 features = vp_get_features(vp);
         u64 version1 = 1ull << VIRTIO_F_VERSION_1;
         u64 iommu_platform = 1ull << VIRTIO_F_IOMMU_PLATFORM;
-        if (!(features & version1)) {
+        もし (!(features & version1)) {
             dprintf(1, "modern device without virtio_1 feature bit: %pP\n", pci);
             goto fail;
         }
@@ -197,13 +197,13 @@ init_virtio_scsi(void *data)
         vp_set_features(vp, features & (version1 | iommu_platform));
         status |= VIRTIO_CONFIG_S_FEATURES_OK;
         vp_set_status(vp, status);
-        if (!(vp_get_status(vp) & VIRTIO_CONFIG_S_FEATURES_OK)) {
+        もし (!(vp_get_status(vp) & VIRTIO_CONFIG_S_FEATURES_OK)) {
             dprintf(1, "device didn't accept features: %pP\n", pci);
             goto fail;
         }
     }
 
-    if (vp_find_vq(vp, 2, &vq) < 0 ) {
+    もし (vp_find_vq(vp, 2, &vq) < 0 ) {
         dprintf(1, "fail to find vq for virtio-scsi %pP\n", pci);
         goto fail;
     }
@@ -211,14 +211,14 @@ init_virtio_scsi(void *data)
     status |= VIRTIO_CONFIG_S_DRIVER_OK;
     vp_set_status(vp, status);
 
-    int i, tot;
-    for (tot = 0, i = 0; i < 256; i++)
+    整数 i, tot;
+    ために (tot = 0, i = 0; i < 256; i++)
         tot += virtio_scsi_scan_target(pci, NULL, vp, vq, i);
 
-    if (!tot)
+    もし (!tot)
         goto fail;
 
-    return;
+    戻る;
 
 fail:
     vp_reset(vp);
@@ -232,27 +232,27 @@ init_virtio_scsi_mmio(void *mmio)
     dprintf(1, "found virtio-scsi-mmio at %p\n", mmio);
     struct vring_virtqueue *vq = NULL;
     struct vp_device *vp = malloc_high(sizeof(*vp));
-    if (!vp) {
+    もし (!vp) {
         warn_noalloc();
-        return;
+        戻る;
     }
     vp_init_mmio(vp, mmio);
     u8 status = VIRTIO_CONFIG_S_ACKNOWLEDGE | VIRTIO_CONFIG_S_DRIVER;
 
     u64 features = vp_get_features(vp);
     u64 version1 = 1ull << VIRTIO_F_VERSION_1;
-    if (features & version1) {
+    もし (features & version1) {
         u64 iommu_platform = 1ull << VIRTIO_F_IOMMU_PLATFORM;
 
         vp_set_features(vp, features & (version1 | iommu_platform));
         vp_set_status(vp, VIRTIO_CONFIG_S_FEATURES_OK);
-        if (!(vp_get_status(vp) & VIRTIO_CONFIG_S_FEATURES_OK)) {
+        もし (!(vp_get_status(vp) & VIRTIO_CONFIG_S_FEATURES_OK)) {
             dprintf(1, "device didn't accept features: %pP\n", mmio);
             goto fail;
         }
     }
 
-    if (vp_find_vq(vp, 2, &vq) < 0 ) {
+    もし (vp_find_vq(vp, 2, &vq) < 0 ) {
         dprintf(1, "fail to find vq for virtio-scsi-mmio %p\n", mmio);
         goto fail;
     }
@@ -260,14 +260,14 @@ init_virtio_scsi_mmio(void *mmio)
     status |= VIRTIO_CONFIG_S_DRIVER_OK;
     vp_set_status(vp, status);
 
-    int i, tot;
-    for (tot = 0, i = 0; i < 256; i++)
+    整数 i, tot;
+    ために (tot = 0, i = 0; i < 256; i++)
         tot += virtio_scsi_scan_target(NULL, mmio, vp, vq, i);
 
-    if (!tot)
+    もし (!tot)
         goto fail;
 
-    return;
+    戻る;
 
 fail:
     vp_reset(vp);
@@ -281,19 +281,19 @@ virtio_scsi_setup(void)
     u8 skip_nonbootable = is_bootprio_strict();
 
     ASSERT32FLAT();
-    if (! CONFIG_VIRTIO_SCSI)
-        return;
+    もし (! CONFIG_VIRTIO_SCSI)
+        戻る;
 
     dprintf(3, "init virtio-scsi\n");
 
     struct pci_device *pci;
     foreachpci(pci) {
-        if (pci->vendor != PCI_VENDOR_ID_REDHAT_QUMRANET ||
+        もし (pci->vendor != PCI_VENDOR_ID_REDHAT_QUMRANET ||
             (pci->device != PCI_DEVICE_ID_VIRTIO_SCSI_09 &&
              pci->device != PCI_DEVICE_ID_VIRTIO_SCSI_10))
             continue;
 
-        if (skip_nonbootable && bootprio_find_pci_device(pci) < 0) {
+        もし (skip_nonbootable && bootprio_find_pci_device(pci) < 0) {
             dprintf(1, "skipping init of a non-bootable virtio-scsi at %pP\n",
                     pci);
             continue;

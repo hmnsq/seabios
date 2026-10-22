@@ -24,120 +24,120 @@
 
 #define I8042_BUFFER_SIZE       16
 
-static int
+static 整数
 i8042_wait_read(void)
 {
     dprintf(7, "i8042_wait_read\n");
-    int i;
-    for (i=0; i<I8042_CTL_TIMEOUT; i++) {
+    整数 i;
+    ために (i=0; i<I8042_CTL_TIMEOUT; i++) {
         u8 status = inb(PORT_PS2_STATUS);
-        if (status & I8042_STR_OBF)
-            return 0;
+        もし (status & I8042_STR_OBF)
+            戻る 0;
         udelay(50);
     }
     warn_timeout();
-    return -1;
+    戻る -1;
 }
 
-static int
+static 整数
 i8042_wait_write(void)
 {
     dprintf(7, "i8042_wait_write\n");
-    int i;
-    for (i=0; i<I8042_CTL_TIMEOUT; i++) {
+    整数 i;
+    ために (i=0; i<I8042_CTL_TIMEOUT; i++) {
         u8 status = inb(PORT_PS2_STATUS);
-        if (! (status & I8042_STR_IBF))
-            return 0;
+        もし (! (status & I8042_STR_IBF))
+            戻る 0;
         udelay(50);
     }
     warn_timeout();
-    return -1;
+    戻る -1;
 }
 
-static int
+static 整数
 i8042_flush(void)
 {
     dprintf(7, "i8042_flush\n");
-    int i;
-    for (i=0; i<I8042_BUFFER_SIZE; i++) {
+    整数 i;
+    ために (i=0; i<I8042_BUFFER_SIZE; i++) {
         u8 status = inb(PORT_PS2_STATUS);
-        if (! (status & I8042_STR_OBF))
-            return 0;
+        もし (! (status & I8042_STR_OBF))
+            戻る 0;
         udelay(50);
         u8 data = inb(PORT_PS2_DATA);
         dprintf(7, "i8042 flushed %x (status=%x)\n", data, status);
     }
 
     warn_timeout();
-    return -1;
+    戻る -1;
 }
 
-static int
-__i8042_command(int command, u8 *param)
+static 整数
+__i8042_command(整数 command, u8 *param)
 {
-    int receive = (command >> 8) & 0xf;
-    int send = (command >> 12) & 0xf;
+    整数 receive = (command >> 8) & 0xf;
+    整数 send = (command >> 12) & 0xf;
 
     // Send the command.
-    int ret = i8042_wait_write();
-    if (ret)
-        return ret;
+    整数 ret = i8042_wait_write();
+    もし (ret)
+        戻る ret;
     outb(command, PORT_PS2_STATUS);
 
     // Send parameters (if any).
-    int i;
-    for (i = 0; i < send; i++) {
+    整数 i;
+    ために (i = 0; i < send; i++) {
         ret = i8042_wait_write();
-        if (ret)
-            return ret;
+        もし (ret)
+            戻る ret;
         outb(param[i], PORT_PS2_DATA);
     }
 
     // Receive parameters (if any).
-    for (i = 0; i < receive; i++) {
+    ために (i = 0; i < receive; i++) {
         ret = i8042_wait_read();
-        if (ret)
-            return ret;
+        もし (ret)
+            戻る ret;
         param[i] = inb(PORT_PS2_DATA);
         dprintf(7, "i8042 param=%x\n", param[i]);
     }
 
-    return 0;
+    戻る 0;
 }
 
-static int
-i8042_command(int command, u8 *param)
+static 整数
+i8042_command(整数 command, u8 *param)
 {
     dprintf(7, "i8042_command cmd=%x\n", command);
-    int ret = __i8042_command(command, param);
-    if (ret)
+    整数 ret = __i8042_command(command, param);
+    もし (ret)
         dprintf(2, "i8042 command %x failed\n", command);
-    return ret;
+    戻る ret;
 }
 
-static int
+static 整数
 i8042_kbd_write(u8 c)
 {
     dprintf(7, "i8042_kbd_write c=%d\n", c);
-    int ret = i8042_wait_write();
-    if (! ret)
+    整数 ret = i8042_wait_write();
+    もし (! ret)
         outb(c, PORT_PS2_DATA);
-    return ret;
+    戻る ret;
 }
 
-static int
+static 整数
 i8042_aux_write(u8 c)
 {
-    return i8042_command(I8042_CMD_AUX_SEND, &c);
+    戻る i8042_command(I8042_CMD_AUX_SEND, &c);
 }
 
 void
 i8042_reboot(void)
 {
-    if (! CONFIG_PS2PORT)
-       return;
-    int i;
-    for (i=0; i<10; i++) {
+    もし (! CONFIG_PS2PORT)
+       戻る;
+    整数 i;
+    ために (i=0; i<10; i++) {
         i8042_wait_write();
         udelay(50);
         outb(0xfe, PORT_PS2_STATUS); /* pulse reset low */
@@ -153,24 +153,24 @@ i8042_reboot(void)
 #define PS2_RET_ACK             0xfa
 #define PS2_RET_NAK             0xfe
 
-static int
-ps2_recvbyte(int aux, int needack, int timeout)
+static 整数
+ps2_recvbyte(整数 aux, 整数 needack, 整数 timeout)
 {
     u32 end = timer_calc(timeout);
-    for (;;) {
+    ために (;;) {
         u8 status = inb(PORT_PS2_STATUS);
-        if (status & I8042_STR_OBF) {
+        もし (status & I8042_STR_OBF) {
             u8 data = inb(PORT_PS2_DATA);
             dprintf(7, "ps2 read %x\n", data);
 
-            if (!!(status & I8042_STR_AUXDATA) == aux) {
-                if (!needack)
-                    return data;
-                if (data == PS2_RET_ACK)
-                    return data;
-                if (data == PS2_RET_NAK) {
+            もし (!!(status & I8042_STR_AUXDATA) == aux) {
+                もし (!needack)
+                    戻る data;
+                もし (data == PS2_RET_ACK)
+                    戻る data;
+                もし (data == PS2_RET_NAK) {
                     dprintf(1, "Got ps2 nak (status=%x)\n", status);
-                    return data;
+                    戻る data;
                 }
             }
 
@@ -178,127 +178,127 @@ ps2_recvbyte(int aux, int needack, int timeout)
             dprintf(1, "Discarding ps2 data %02x (status=%02x)\n", data, status);
         }
 
-        if (timer_check(end)) {
+        もし (timer_check(end)) {
             warn_timeout();
-            return -1;
+            戻る -1;
         }
         yield();
     }
 }
 
-static int
-ps2_sendbyte(int aux, u8 command, int timeout)
+static 整数
+ps2_sendbyte(整数 aux, u8 command, 整数 timeout)
 {
     dprintf(7, "ps2_sendbyte aux=%d cmd=%x\n", aux, command);
-    int ret;
-    if (aux)
+    整数 ret;
+    もし (aux)
         ret = i8042_aux_write(command);
-    else
+    否则
         ret = i8042_kbd_write(command);
-    if (ret)
-        return ret;
+    もし (ret)
+        戻る ret;
 
     // Read ack.
     ret = ps2_recvbyte(aux, 1, timeout);
-    if (ret < 0)
-        return ret;
-    if (ret != PS2_RET_ACK)
-        return -1;
+    もし (ret < 0)
+        戻る ret;
+    もし (ret != PS2_RET_ACK)
+        戻る -1;
 
-    return 0;
+    戻る 0;
 }
 
 u8 Ps2ctr VARLOW = I8042_CTR_KBDDIS | I8042_CTR_AUXDIS;
 
-static int
-__ps2_command(int aux, int command, u8 *param)
+static 整数
+__ps2_command(整数 aux, 整数 command, u8 *param)
 {
-    int ret2;
-    int receive = (command >> 8) & 0xf;
-    int send = (command >> 12) & 0xf;
+    整数 ret2;
+    整数 receive = (command >> 8) & 0xf;
+    整数 send = (command >> 12) & 0xf;
 
     // Disable interrupts and keyboard/mouse.
     u8 ps2ctr = GET_LOW(Ps2ctr);
     u8 newctr = ((ps2ctr | I8042_CTR_AUXDIS | I8042_CTR_KBDDIS)
                  & ~(I8042_CTR_KBDINT|I8042_CTR_AUXINT));
     dprintf(6, "i8042 ctr old=%x new=%x\n", ps2ctr, newctr);
-    int ret = i8042_command(I8042_CMD_CTL_WCTR, &newctr);
-    if (ret)
-        return ret;
+    整数 ret = i8042_command(I8042_CMD_CTL_WCTR, &newctr);
+    もし (ret)
+        戻る ret;
 
     // Flush any interrupts already pending.
     yield();
 
     // Enable port command is being sent to.
     SET_LOW(Ps2ctr, newctr);
-    if (aux)
+    もし (aux)
         newctr &= ~I8042_CTR_AUXDIS;
-    else
+    否则
         newctr &= ~I8042_CTR_KBDDIS;
     ret = i8042_command(I8042_CMD_CTL_WCTR, &newctr);
-    if (ret)
+    もし (ret)
         goto fail;
 
-    if ((u8)command == (u8)ATKBD_CMD_RESET_BAT) {
+    もし ((u8)command == (u8)ATKBD_CMD_RESET_BAT) {
         // Reset is special wrt timeouts.
 
         // Send command.
         ret = ps2_sendbyte(aux, command, 1000);
-        if (ret)
+        もし (ret)
             goto fail;
 
         // Receive parameters.
         ret = ps2_recvbyte(aux, 0, 4000);
-        if (ret < 0)
+        もし (ret < 0)
             goto fail;
         param[0] = ret;
-        if (receive > 1) {
+        もし (receive > 1) {
             ret = ps2_recvbyte(aux, 0, 500);
-            if (ret < 0)
+            もし (ret < 0)
                 goto fail;
             param[1] = ret;
         }
-    } else if (command == ATKBD_CMD_GETID) {
+    } 否则 もし (command == ATKBD_CMD_GETID) {
         // Getid is special wrt bytes received.
 
         // Send command.
         ret = ps2_sendbyte(aux, command, 200);
-        if (ret)
+        もし (ret)
             goto fail;
 
         // Receive parameters.
         ret = ps2_recvbyte(aux, 0, 500);
-        if (ret < 0)
+        もし (ret < 0)
             goto fail;
         param[0] = ret;
-        if (ret == 0xab || ret == 0xac || ret == 0x2b || ret == 0x5d
+        もし (ret == 0xab || ret == 0xac || ret == 0x2b || ret == 0x5d
             || ret == 0x60 || ret == 0x47) {
             // These ids (keyboards) return two bytes.
             ret = ps2_recvbyte(aux, 0, 500);
-            if (ret < 0)
+            もし (ret < 0)
                 goto fail;
             param[1] = ret;
-        } else {
+        } 否则 {
             param[1] = 0;
         }
-    } else {
+    } 否则 {
         // Send command.
         ret = ps2_sendbyte(aux, command, 200);
-        if (ret)
+        もし (ret)
             goto fail;
 
         // Send parameters (if any).
-        int i;
-        for (i = 0; i < send; i++) {
+        整数 i;
+        ために (i = 0; i < send; i++) {
             ret = ps2_sendbyte(aux, param[i], 200);
-            if (ret)
+            もし (ret)
                 goto fail;
         }
 
         // Receive parameters (if any).
-        for (i = 0; i < receive; i++) {
+        ために (i = 0; i < receive; i++) {
             ret = ps2_recvbyte(aux, 0, 500);
-            if (ret < 0)
+            もし (ret < 0)
                 goto fail;
             param[i] = ret;
         }
@@ -310,48 +310,48 @@ fail:
     // Restore interrupts and keyboard/mouse.
     SET_LOW(Ps2ctr, ps2ctr);
     ret2 = i8042_command(I8042_CMD_CTL_WCTR, &ps2ctr);
-    if (ret2)
-        return ret2;
+    もし (ret2)
+        戻る ret2;
 
-    return ret;
+    戻る ret;
 }
 
-static int
-ps2_command(int aux, int command, u8 *param)
+static 整数
+ps2_command(整数 aux, 整数 command, u8 *param)
 {
     dprintf(7, "ps2_command aux=%d cmd=%x\n", aux, command);
-    int ret = __ps2_command(aux, command, param);
-    if (ret)
+    整数 ret = __ps2_command(aux, command, param);
+    もし (ret)
         dprintf(2, "ps2 command %x failed (aux=%d)\n", command, aux);
-    return ret;
+    戻る ret;
 }
 
-int
-ps2_kbd_command(int command, u8 *param)
+整数
+ps2_kbd_command(整数 command, u8 *param)
 {
-    if (! CONFIG_PS2PORT)
-        return -1;
-    return ps2_command(0, command, param);
+    もし (! CONFIG_PS2PORT)
+        戻る -1;
+    戻る ps2_command(0, command, param);
 }
 
-int
-ps2_mouse_command(int command, u8 *param)
+整数
+ps2_mouse_command(整数 command, u8 *param)
 {
-    if (! CONFIG_PS2PORT)
-        return -1;
+    もし (! CONFIG_PS2PORT)
+        戻る -1;
 
     // Update ps2ctr for mouse enable/disable.
-    if (command == PSMOUSE_CMD_ENABLE || command == PSMOUSE_CMD_DISABLE) {
+    もし (command == PSMOUSE_CMD_ENABLE || command == PSMOUSE_CMD_DISABLE) {
         u8 ps2ctr = GET_LOW(Ps2ctr);
-        if (command == PSMOUSE_CMD_ENABLE)
+        もし (command == PSMOUSE_CMD_ENABLE)
             ps2ctr = ((ps2ctr | (CONFIG_HARDWARE_IRQ ? I8042_CTR_AUXINT : 0))
                       & ~I8042_CTR_AUXDIS);
-        else
+        否则
             ps2ctr = (ps2ctr | I8042_CTR_AUXDIS) & ~I8042_CTR_AUXINT;
         SET_LOW(Ps2ctr, ps2ctr);
     }
 
-    return ps2_command(1, command, param);
+    戻る ps2_command(1, command, param);
 }
 
 
@@ -363,20 +363,20 @@ ps2_mouse_command(int command, u8 *param)
 void VISIBLE16
 handle_74(void)
 {
-    if (! CONFIG_PS2PORT)
-        return;
+    もし (! CONFIG_PS2PORT)
+        戻る;
 
     debug_isr(DEBUG_ISR_74);
 
     u8 v = inb(PORT_PS2_STATUS);
-    if ((v & (I8042_STR_OBF|I8042_STR_AUXDATA))
+    もし ((v & (I8042_STR_OBF|I8042_STR_AUXDATA))
         != (I8042_STR_OBF|I8042_STR_AUXDATA)) {
         dprintf(1, "ps2 mouse irq but no mouse data.\n");
         goto done;
     }
     v = inb(PORT_PS2_DATA);
 
-    if (!(GET_LOW(Ps2ctr) & I8042_CTR_AUXINT))
+    もし (!(GET_LOW(Ps2ctr) & I8042_CTR_AUXINT))
         // Interrupts not enabled.
         goto done;
 
@@ -390,20 +390,20 @@ done:
 void VISIBLE16
 handle_09(void)
 {
-    if (! CONFIG_PS2PORT)
-        return;
+    もし (! CONFIG_PS2PORT)
+        戻る;
 
     debug_isr(DEBUG_ISR_09);
 
     // read key from keyboard controller
     u8 v = inb(PORT_PS2_STATUS);
-    if (v & I8042_STR_AUXDATA) {
+    もし (v & I8042_STR_AUXDATA) {
         dprintf(1, "ps2 keyboard irq but found mouse data?!\n");
         goto done;
     }
     v = inb(PORT_PS2_DATA);
 
-    if (!(GET_LOW(Ps2ctr) & I8042_CTR_KBDINT))
+    もし (!(GET_LOW(Ps2ctr) & I8042_CTR_KBDINT))
         // Interrupts not enabled.
         goto done;
 
@@ -420,22 +420,22 @@ done:
 void
 ps2_check_event(void)
 {
-    if (! CONFIG_PS2PORT || CONFIG_HARDWARE_IRQ)
-        return;
+    もし (! CONFIG_PS2PORT || CONFIG_HARDWARE_IRQ)
+        戻る;
     u8 ps2ctr = GET_LOW(Ps2ctr);
-    if ((ps2ctr & (I8042_CTR_KBDDIS|I8042_CTR_AUXDIS))
+    もし ((ps2ctr & (I8042_CTR_KBDDIS|I8042_CTR_AUXDIS))
         == (I8042_CTR_KBDDIS|I8042_CTR_AUXDIS))
-        return;
-    for (;;) {
+        戻る;
+    ために (;;) {
         u8 status = inb(PORT_PS2_STATUS);
-        if (!(status & I8042_STR_OBF))
+        もし (!(status & I8042_STR_OBF))
             break;
         u8 data = inb(PORT_PS2_DATA);
-        if (status & I8042_STR_AUXDATA) {
-            if (!(ps2ctr & I8042_CTR_AUXDIS))
+        もし (status & I8042_STR_AUXDATA) {
+            もし (!(ps2ctr & I8042_CTR_AUXDIS))
                 process_mouse(data);
-        } else {
-            if (!(ps2ctr & I8042_CTR_KBDDIS))
+        } 否则 {
+            もし (!(ps2ctr & I8042_CTR_KBDDIS))
                 process_key(data);
         }
     }
@@ -450,71 +450,71 @@ static void
 ps2_keyboard_setup(void *data)
 {
     // flush incoming keys (also verifies port is likely present)
-    int ret = i8042_flush();
-    if (ret)
-        return;
+    整数 ret = i8042_flush();
+    もし (ret)
+        戻る;
 
     // Disable keyboard / mouse and drain any input they may have sent
     ret = i8042_command(I8042_CMD_KBD_DISABLE, NULL);
-    if (ret)
-        return;
+    もし (ret)
+        戻る;
     ret = i8042_command(I8042_CMD_AUX_DISABLE, NULL);
-    if (ret)
-        return;
+    もし (ret)
+        戻る;
     ret = i8042_flush();
-    if (ret)
-        return;
+    もし (ret)
+        戻る;
 
     // Controller self-test.
     u8 param[2];
     ret = i8042_command(I8042_CMD_CTL_TEST, param);
-    if (ret)
-        return;
-    if (param[0] != 0x55) {
+    もし (ret)
+        戻る;
+    もし (param[0] != 0x55) {
         dprintf(1, "i8042 self test failed (got %x not 0x55)\n", param[0]);
-        return;
+        戻る;
     }
 
     // Controller keyboard test.
     ret = i8042_command(I8042_CMD_KBD_TEST, param);
-    if (ret)
-        return;
-    if (param[0] != 0x00) {
+    もし (ret)
+        戻る;
+    もし (param[0] != 0x00) {
         dprintf(1, "i8042 keyboard test failed (got %x not 0x00)\n", param[0]);
-        return;
+        戻る;
     }
 
 
     /* ------------------- keyboard side ------------------------*/
     /* reset keyboard and self test  (keyboard side) */
-    int spinupdelay = romfile_loadint("etc/ps2-keyboard-spinup", 0);
+    整数 spinupdelay = romfile_loadint("etc/ps2-keyboard-spinup", 0);
     u32 end = timer_calc(spinupdelay);
-    for (;;) {
+    ために (;;) {
         ret = ps2_kbd_command(ATKBD_CMD_RESET_BAT, param);
-        if (!ret)
+        もし (!ret)
             break;
-        if (timer_check(end)) {
-            if (spinupdelay)
+        もし (timer_check(end)) {
+            もし (spinupdelay)
                 warn_timeout();
-            return;
+            戻る;
         }
         yield();
     }
-    if (param[0] != 0xaa) {
+    もし (param[0] != 0xaa) {
         dprintf(1, "keyboard self test failed (got %x not 0xaa)\n", param[0]);
-        return;
+        戻る;
     }
 
     /* Disable keyboard */
     ret = ps2_kbd_command(ATKBD_CMD_RESET_DIS, NULL);
-    if (ret)
-        return;
+    もし (ret)
+        戻る;
 
     // Set scancode command (mode 2)
     param[0] = 0x02;
     ret = ps2_kbd_command(ATKBD_CMD_SSCANSET, param);
-    if (ret)
-        return;
+    もし (ret)
+        戻る;
 
     // Keyboard Mode: disable mouse, scan code convert, enable kbd IRQ
     Ps2ctr = (I8042_CTR_AUXDIS | I8042_CTR_XLATE
@@ -522,8 +522,8 @@ ps2_keyboard_setup(void *data)
 
     /* Enable keyboard */
     ret = ps2_kbd_command(ATKBD_CMD_ENABLE, NULL);
-    if (ret)
-        return;
+    もし (ret)
+        戻る;
 
     dprintf(1, "PS2 keyboard initialized\n");
 }
@@ -532,11 +532,11 @@ void
 ps2port_setup(void)
 {
     ASSERT32FLAT();
-    if (! CONFIG_PS2PORT)
-        return;
-    if (acpi_dsdt_present_eisaid(0x0303) == 0) {
+    もし (! CONFIG_PS2PORT)
+        戻る;
+    もし (acpi_dsdt_present_eisaid(0x0303) == 0) {
         dprintf(1, "ACPI: no PS/2 keyboard present\n");
-        return;
+        戻る;
     }
     dprintf(3, "init ps2port\n");
 

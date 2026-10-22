@@ -16,7 +16,7 @@ rtc_read(u8 index)
 {
     index |= NMI_DISABLE_BIT;
     outb(index, PORT_CMOS_INDEX);
-    return inb(PORT_CMOS_DATA);
+    戻る inb(PORT_CMOS_DATA);
 }
 
 void
@@ -36,7 +36,7 @@ rtc_mask(u8 index, u8 off, u8 on)
     outb((val & ~off) | on, PORT_CMOS_DATA);
 }
 
-int
+整数
 rtc_updating(void)
 {
     // This function checks to see if the update-in-progress bit
@@ -47,15 +47,15 @@ rtc_updating(void)
     // that this bit should be set is constrained to (1984+244)
     // useconds, but we wait for longer just to be sure.
 
-    if ((rtc_read(CMOS_STATUS_A) & RTC_A_UIP) == 0)
-        return 0;
+    もし ((rtc_read(CMOS_STATUS_A) & RTC_A_UIP) == 0)
+        戻る 0;
     u32 end = timer_calc(15);
-    for (;;) {
-        if ((rtc_read(CMOS_STATUS_A) & RTC_A_UIP) == 0)
-            return 0;
-        if (timer_check(end))
+    ために (;;) {
+        もし ((rtc_read(CMOS_STATUS_A) & RTC_A_UIP) == 0)
+            戻る 0;
+        もし (timer_check(end))
             // update-in-progress never transitioned to 0
-            return -1;
+            戻る -1;
         yield();
     }
 }
@@ -63,25 +63,25 @@ rtc_updating(void)
 void
 rtc_setup(void)
 {
-    if (!CONFIG_RTC_TIMER)
-        return;
+    もし (!CONFIG_RTC_TIMER)
+        戻る;
     rtc_write(CMOS_STATUS_A, 0x26);    // 32,768Khz src, 976.5625us updates
     rtc_mask(CMOS_STATUS_B, ~RTC_B_DSE, RTC_B_24HR);
     rtc_read(CMOS_STATUS_C);
     rtc_read(CMOS_STATUS_D);
 }
 
-int RTCusers VARLOW;
+整数 RTCusers VARLOW;
 
 void
 rtc_use(void)
 {
-    if (!CONFIG_RTC_TIMER)
-        return;
-    int count = GET_LOW(RTCusers);
+    もし (!CONFIG_RTC_TIMER)
+        戻る;
+    整数 count = GET_LOW(RTCusers);
     SET_LOW(RTCusers, count+1);
-    if (count)
-        return;
+    もし (count)
+        戻る;
     // Turn on the Periodic Interrupt timer
     rtc_mask(CMOS_STATUS_B, 0, RTC_B_PIE);
 }
@@ -89,12 +89,12 @@ rtc_use(void)
 void
 rtc_release(void)
 {
-    if (!CONFIG_RTC_TIMER)
-        return;
-    int count = GET_LOW(RTCusers);
+    もし (!CONFIG_RTC_TIMER)
+        戻る;
+    整数 count = GET_LOW(RTCusers);
     SET_LOW(RTCusers, count-1);
-    if (count != 1)
-        return;
+    もし (count != 1)
+        戻る;
     // Clear the Periodic Interrupt.
     rtc_mask(CMOS_STATUS_B, RTC_B_PIE, 0);
 }

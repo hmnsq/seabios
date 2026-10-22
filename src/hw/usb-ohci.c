@@ -31,7 +31,7 @@ struct ohci_pipe {
     struct usb_pipe pipe;
     struct ohci_regs *regs;
     void *data;
-    int count;
+    整数 count;
     struct ohci_td *tds;
 };
 
@@ -41,12 +41,12 @@ struct ohci_pipe {
  ****************************************************************/
 
 // Check if device attached to port
-static int
+static 整数
 ohci_hub_detect(struct usbhub_s *hub, u32 port)
 {
     struct usb_ohci_s *cntl = container_of(hub->cntl, struct usb_ohci_s, usb);
     u32 sts = readl(&cntl->regs->roothub_portstatus[port]);
-    return (sts & RH_PS_CCS) ? 1 : 0;
+    戻る (sts & RH_PS_CCS) ? 1 : 0;
 }
 
 // Disable port
@@ -58,32 +58,32 @@ ohci_hub_disconnect(struct usbhub_s *hub, u32 port)
 }
 
 // Reset device on port
-static int
+static 整数
 ohci_hub_reset(struct usbhub_s *hub, u32 port)
 {
     struct usb_ohci_s *cntl = container_of(hub->cntl, struct usb_ohci_s, usb);
     writel(&cntl->regs->roothub_portstatus[port], RH_PS_PRS);
     u32 sts;
     u32 end = timer_calc(USB_TIME_DRSTR * 2);
-    for (;;) {
+    ために (;;) {
         sts = readl(&cntl->regs->roothub_portstatus[port]);
-        if (!(sts & RH_PS_PRS))
+        もし (!(sts & RH_PS_PRS))
             // XXX - need to ensure USB_TIME_DRSTR time in reset?
             break;
-        if (timer_check(end)) {
+        もし (timer_check(end)) {
             // Timeout.
             warn_timeout();
             ohci_hub_disconnect(hub, port);
-            return -1;
+            戻る -1;
         }
         yield();
     }
 
-    if ((sts & (RH_PS_CCS|RH_PS_PES)) != (RH_PS_CCS|RH_PS_PES))
+    もし ((sts & (RH_PS_CCS|RH_PS_PES)) != (RH_PS_CCS|RH_PS_PES))
         // Device no longer present
-        return -1;
+        戻る -1;
 
-    return !!(sts & RH_PS_LSDA);
+    戻る !!(sts & RH_PS_LSDA);
 }
 
 static struct usbhub_op_s ohci_HubOp = {
@@ -93,7 +93,7 @@ static struct usbhub_op_s ohci_HubOp = {
 };
 
 // Find any devices connected to the root hub.
-static int
+static 整数
 check_ohci_ports(struct usb_ohci_s *cntl)
 {
     ASSERT32FLAT();
@@ -113,7 +113,7 @@ check_ohci_ports(struct usb_ohci_s *cntl)
     hub.portcount = rha & RH_A_NDP;
     hub.op = &ohci_HubOp;
     usb_enumerate(&hub);
-    return hub.devcount;
+    戻る hub.devcount;
 }
 
 
@@ -129,12 +129,12 @@ ohci_waittick(struct ohci_regs *regs)
     struct ohci_hcca *hcca = (void*)regs->hcca;
     u32 startframe = hcca->frame_no;
     u32 end = timer_calc(1000 * 5);
-    for (;;) {
-        if (hcca->frame_no != startframe)
+    ために (;;) {
+        もし (hcca->frame_no != startframe)
             break;
-        if (timer_check(end)) {
+        もし (timer_check(end)) {
             warn_timeout();
-            return;
+            戻る;
         }
         yield();
     }
@@ -146,21 +146,21 @@ ohci_free_pipes(struct usb_ohci_s *cntl)
     dprintf(7, "ohci_free_pipes %p\n", cntl);
 
     u32 creg = readl(&cntl->regs->control);
-    if (creg & (OHCI_CTRL_CLE|OHCI_CTRL_BLE)) {
+    もし (creg & (OHCI_CTRL_CLE|OHCI_CTRL_BLE)) {
         writel(&cntl->regs->control, creg & ~(OHCI_CTRL_CLE|OHCI_CTRL_BLE));
         ohci_waittick(cntl->regs);
     }
 
     u32 *pos = &cntl->regs->ed_controlhead;
-    for (;;) {
+    ために (;;) {
         struct ohci_ed *next = (void*)*pos;
-        if (!next)
+        もし (!next)
             break;
         struct ohci_pipe *pipe = container_of(next, struct ohci_pipe, ed);
-        if (usb_is_freelist(&cntl->usb, &pipe->pipe)) {
+        もし (usb_is_freelist(&cntl->usb, &pipe->pipe)) {
             *pos = next->hwNextED;
             free(pipe);
-        } else {
+        } 否则 {
             pos = &next->hwNextED;
         }
     }
@@ -171,7 +171,7 @@ ohci_free_pipes(struct usb_ohci_s *cntl)
     cntl->usb.freelist = NULL;
 }
 
-static int
+static 整数
 start_ohci(struct usb_ohci_s *cntl, struct ohci_hcca *hcca)
 {
     u32 oldfminterval = readl(&cntl->regs->fminterval);
@@ -187,13 +187,13 @@ start_ohci(struct usb_ohci_s *cntl, struct ohci_hcca *hcca)
     // Do software init (min 10us, max 2ms)
     u32 end = timer_calc_usec(10);
     writel(&cntl->regs->cmdstatus, OHCI_HCR);
-    for (;;) {
+    ために (;;) {
         u32 status = readl(&cntl->regs->cmdstatus);
-        if (!(status & OHCI_HCR))
+        もし (!(status & OHCI_HCR))
             break;
-        if (timer_check(end)) {
+        もし (timer_check(end)) {
             warn_timeout();
-            return -1;
+            戻る -1;
         }
     }
 
@@ -218,7 +218,7 @@ start_ohci(struct usb_ohci_s *cntl, struct ohci_hcca *hcca)
               | OHCI_USB_OPER | oldrwc));
     readl(&cntl->regs->control); // flush writes
 
-    return 0;
+    戻る 0;
 }
 
 static void
@@ -237,26 +237,26 @@ configure_ohci(void *data)
     // Allocate memory
     struct ohci_hcca *hcca = memalign_high(256, sizeof(*hcca));
     struct ohci_ed *intr_ed = malloc_high(sizeof(*intr_ed));
-    if (!hcca || !intr_ed) {
+    もし (!hcca || !intr_ed) {
         warn_noalloc();
         goto free;
     }
     memset(hcca, 0, sizeof(*hcca));
     memset(intr_ed, 0, sizeof(*intr_ed));
     intr_ed->hwINFO = ED_SKIP;
-    int i;
-    for (i=0; i<ARRAY_SIZE(hcca->int_table); i++)
+    整数 i;
+    ために (i=0; i<ARRAY_SIZE(hcca->int_table); i++)
         hcca->int_table[i] = (u32)intr_ed;
 
-    int ret = start_ohci(cntl, hcca);
-    if (ret)
+    整数 ret = start_ohci(cntl, hcca);
+    もし (ret)
         goto err;
 
-    int count = check_ohci_ports(cntl);
+    整数 count = check_ohci_ports(cntl);
     ohci_free_pipes(cntl);
-    if (! count)
+    もし (! count)
         goto err;
-    return;
+    戻る;
 
 err:
     stop_ohci(cntl);
@@ -269,13 +269,13 @@ static void
 ohci_controller_setup(struct pci_device *pci)
 {
     struct ohci_regs *regs = pci_enable_membar(pci, PCI_BASE_ADDRESS_0);
-    if (!regs)
-        return;
+    もし (!regs)
+        戻る;
 
     struct usb_ohci_s *cntl = malloc_tmphigh(sizeof(*cntl));
-    if (!cntl) {
+    もし (!cntl) {
         warn_noalloc();
-        return;
+        戻る;
     }
     memset(cntl, 0, sizeof(*cntl));
     cntl->usb.pci = pci;
@@ -298,11 +298,11 @@ ohci_controller_setup(struct pci_device *pci)
 void
 ohci_setup(void)
 {
-    if (! CONFIG_USB_OHCI)
-        return;
+    もし (! CONFIG_USB_OHCI)
+        戻る;
     struct pci_device *pci;
     foreachpci(pci) {
-        if (pci_classprog(pci) == PCI_CLASS_SERIAL_USB_OHCI)
+        もし (pci_classprog(pci) == PCI_CLASS_SERIAL_USB_OHCI)
             ohci_controller_setup(pci);
     }
 }
@@ -332,19 +332,19 @@ ohci_alloc_intr_pipe(struct usbdevice_s *usbdev
 {
     struct usb_ohci_s *cntl = container_of(
         usbdev->hub->cntl, struct usb_ohci_s, usb);
-    int frameexp = usb_get_period(usbdev, epdesc);
+    整数 frameexp = usb_get_period(usbdev, epdesc);
     dprintf(7, "ohci_alloc_intr_pipe %p %d\n", &cntl->usb, frameexp);
 
-    if (frameexp > 5)
+    もし (frameexp > 5)
         frameexp = 5;
-    int maxpacket = epdesc->wMaxPacketSize;
+    整数 maxpacket = epdesc->wMaxPacketSize;
     // Determine number of entries needed for 2 timer ticks.
-    int ms = 1<<frameexp;
-    int count = DIV_ROUND_UP(ticks_to_ms(2), ms) + 1;
+    整数 ms = 1<<frameexp;
+    整数 count = DIV_ROUND_UP(ticks_to_ms(2), ms) + 1;
     struct ohci_pipe *pipe = malloc_low(sizeof(*pipe));
     struct ohci_td *tds = malloc_low(sizeof(*tds) * count);
     void *data = malloc_low(maxpacket * count);
-    if (!pipe || !tds || !data)
+    もし (!pipe || !tds || !data)
         goto err;
     memset(pipe, 0, sizeof(*pipe));
     ohci_desc2pipe(pipe, usbdev, epdesc);
@@ -357,8 +357,8 @@ ohci_alloc_intr_pipe(struct usbdevice_s *usbdev
     ed->hwHeadP = (u32)&tds[0];
     ed->hwTailP = (u32)&tds[count-1];
 
-    int i;
-    for (i=0; i<count-1; i++) {
+    整数 i;
+    ために (i=0; i<count-1; i++) {
         tds[i].hwINFO = TD_DP_IN | TD_T_TOGGLE | TD_CC;
         tds[i].hwCBP = (u32)data + maxpacket * i;
         tds[i].hwNextTD = (u32)&tds[i+1];
@@ -367,88 +367,88 @@ ohci_alloc_intr_pipe(struct usbdevice_s *usbdev
 
     // Add to interrupt schedule.
     struct ohci_hcca *hcca = (void*)cntl->regs->hcca;
-    if (frameexp == 0) {
+    もし (frameexp == 0) {
         // Add to existing interrupt entry.
         struct ohci_ed *intr_ed = (void*)hcca->int_table[0];
         ed->hwNextED = intr_ed->hwNextED;
         barrier();
         intr_ed->hwNextED = (u32)ed;
-    } else {
-        int startpos = 1<<(frameexp-1);
+    } 否则 {
+        整数 startpos = 1<<(frameexp-1);
         ed->hwNextED = hcca->int_table[startpos];
         barrier();
-        for (i=startpos; i<ARRAY_SIZE(hcca->int_table); i+=ms)
+        ために (i=startpos; i<ARRAY_SIZE(hcca->int_table); i+=ms)
             hcca->int_table[i] = (u32)ed;
     }
 
-    return &pipe->pipe;
+    戻る &pipe->pipe;
 
 err:
     free(pipe);
     free(tds);
     free(data);
-    return NULL;
+    戻る NULL;
 }
 
 struct usb_pipe *
 ohci_realloc_pipe(struct usbdevice_s *usbdev, struct usb_pipe *upipe
                   , struct usb_endpoint_descriptor *epdesc)
 {
-    if (! CONFIG_USB_OHCI)
-        return NULL;
+    もし (! CONFIG_USB_OHCI)
+        戻る NULL;
     usb_add_freelist(upipe);
-    if (!epdesc)
-        return NULL;
+    もし (!epdesc)
+        戻る NULL;
     u8 eptype = epdesc->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK;
-    if (eptype == USB_ENDPOINT_XFER_INT)
-        return ohci_alloc_intr_pipe(usbdev, epdesc);
+    もし (eptype == USB_ENDPOINT_XFER_INT)
+        戻る ohci_alloc_intr_pipe(usbdev, epdesc);
     struct usb_ohci_s *cntl = container_of(
         usbdev->hub->cntl, struct usb_ohci_s, usb);
     dprintf(7, "ohci_alloc_async_pipe %p\n", &cntl->usb);
 
     struct usb_pipe *usbpipe = usb_get_freelist(&cntl->usb, eptype);
-    if (usbpipe) {
+    もし (usbpipe) {
         // Use previously allocated pipe.
         struct ohci_pipe *pipe = container_of(usbpipe, struct ohci_pipe, pipe);
         ohci_desc2pipe(pipe, usbdev, epdesc);
-        return usbpipe;
+        戻る usbpipe;
     }
 
     // Allocate a new queue head.
     struct ohci_pipe *pipe;
-    if (eptype == USB_ENDPOINT_XFER_CONTROL)
+    もし (eptype == USB_ENDPOINT_XFER_CONTROL)
         pipe = malloc_tmphigh(sizeof(*pipe));
-    else
+    否则
         pipe = malloc_low(sizeof(*pipe));
-    if (!pipe) {
+    もし (!pipe) {
         warn_noalloc();
-        return NULL;
+        戻る NULL;
     }
     memset(pipe, 0, sizeof(*pipe));
     ohci_desc2pipe(pipe, usbdev, epdesc);
 
     // Add queue head to controller list.
     u32 *head = &cntl->regs->ed_controlhead;
-    if (eptype != USB_ENDPOINT_XFER_CONTROL)
+    もし (eptype != USB_ENDPOINT_XFER_CONTROL)
         head = &cntl->regs->ed_bulkhead;
     pipe->ed.hwNextED = *head;
     barrier();
     *head = (u32)&pipe->ed;
-    return &pipe->pipe;
+    戻る &pipe->pipe;
 }
 
-static int
-wait_ed(struct ohci_ed *ed, int timeout)
+static 整数
+wait_ed(struct ohci_ed *ed, 整数 timeout)
 {
     u32 end = timer_calc(timeout);
-    for (;;) {
-        if ((ed->hwHeadP & ~(ED_C|ED_H)) == ed->hwTailP)
-            return 0;
-        if (timer_check(end)) {
+    ために (;;) {
+        もし ((ed->hwHeadP & ~(ED_C|ED_H)) == ed->hwTailP)
+            戻る 0;
+        もし (timer_check(end)) {
             warn_timeout();
             dprintf(1, "ohci ed info=%x tail=%x head=%x next=%x\n"
                     , ed->hwINFO, ed->hwTailP, ed->hwHeadP, ed->hwNextED);
-            return -1;
+            戻る -1;
         }
         yield();
     }
@@ -457,13 +457,13 @@ wait_ed(struct ohci_ed *ed, int timeout)
 #define STACKOTDS 18
 #define OHCI_TD_ALIGN 16
 
-int
-ohci_send_pipe(struct usb_pipe *p, int dir, const void *cmd
-               , void *data, int datasize)
+整数
+ohci_send_pipe(struct usb_pipe *p, 整数 dir, const void *cmd
+               , void *data, 整数 datasize)
 {
     ASSERT32FLAT();
-    if (! CONFIG_USB_OHCI)
-        return -1;
+    もし (! CONFIG_USB_OHCI)
+        戻る -1;
     dprintf(7, "ohci_send_pipe %p\n", p);
     struct ohci_pipe *pipe = container_of(p, struct ohci_pipe, pipe);
 
@@ -475,7 +475,7 @@ ohci_send_pipe(struct usb_pipe *p, int dir, const void *cmd
     // Setup transfer descriptors
     u16 maxpacket = pipe->pipe.maxpacket;
     u32 toggle = 0, statuscmd = OHCI_BLF;
-    if (cmd) {
+    もし (cmd) {
         // Send setup pid on control transfers
         td->hwINFO = TD_DP_SETUP | TD_T_DATA0 | TD_CC;
         td->hwCBP = (u32)cmd;
@@ -486,15 +486,15 @@ ohci_send_pipe(struct usb_pipe *p, int dir, const void *cmd
         statuscmd = OHCI_CLF;
     }
     u32 dest = (u32)data, dataend = dest + datasize;
-    while (dest < dataend) {
+    ながら (dest < dataend) {
         // Send data pids
-        if (td >= &tds[STACKOTDS]) {
+        もし (td >= &tds[STACKOTDS]) {
             warn_noalloc();
-            return -1;
+            戻る -1;
         }
-        int maxtransfer = 2*PAGE_SIZE - (dest & (PAGE_SIZE-1));
-        int transfer = dataend - dest;
-        if (transfer > maxtransfer)
+        整数 maxtransfer = 2*PAGE_SIZE - (dest & (PAGE_SIZE-1));
+        整数 transfer = dataend - dest;
+        もし (transfer > maxtransfer)
             transfer = ALIGN_DOWN(maxtransfer, maxpacket);
         td->hwINFO = (dir ? TD_DP_IN : TD_DP_OUT) | toggle | TD_CC;
         td->hwCBP = dest;
@@ -503,11 +503,11 @@ ohci_send_pipe(struct usb_pipe *p, int dir, const void *cmd
         td++;
         dest += transfer;
     }
-    if (cmd) {
+    もし (cmd) {
         // Send status pid on control transfers
-        if (td >= &tds[STACKOTDS]) {
+        もし (td >= &tds[STACKOTDS]) {
             warn_noalloc();
-            return -1;
+            戻る -1;
         }
         td->hwINFO = (dir ? TD_DP_OUT : TD_DP_IN) | TD_T_DATA1 | TD_CC;
         td->hwCBP = 0;
@@ -523,34 +523,34 @@ ohci_send_pipe(struct usb_pipe *p, int dir, const void *cmd
     pipe->ed.hwINFO &= ~ED_SKIP;
     writel(&pipe->regs->cmdstatus, statuscmd);
 
-    int ret = wait_ed(&pipe->ed, usb_xfer_time(p, datasize));
+    整数 ret = wait_ed(&pipe->ed, usb_xfer_time(p, datasize));
     pipe->ed.hwINFO |= ED_SKIP;
-    if (ret)
+    もし (ret)
         ohci_waittick(pipe->regs);
-    return ret;
+    戻る ret;
 }
 
-int
+整数
 ohci_poll_intr(struct usb_pipe *p, void *data)
 {
     ASSERT16();
-    if (! CONFIG_USB_OHCI)
-        return -1;
+    もし (! CONFIG_USB_OHCI)
+        戻る -1;
 
     struct ohci_pipe *pipe = container_of(p, struct ohci_pipe, pipe);
     struct ohci_td *tds = GET_LOWFLAT(pipe->tds);
     struct ohci_td *head = (void*)(GET_LOWFLAT(pipe->ed.hwHeadP) & ~(ED_C|ED_H));
     struct ohci_td *tail = (void*)GET_LOWFLAT(pipe->ed.hwTailP);
-    int count = GET_LOWFLAT(pipe->count);
-    int pos = (tail - tds + 1) % count;
+    整数 count = GET_LOWFLAT(pipe->count);
+    整数 pos = (tail - tds + 1) % count;
     struct ohci_td *next = &tds[pos];
-    if (head == next)
+    もし (head == next)
         // No intrs found.
-        return -1;
+        戻る -1;
     // XXX - check for errors.
 
     // Copy data.
-    int maxpacket = GET_LOWFLAT(pipe->pipe.maxpacket);
+    整数 maxpacket = GET_LOWFLAT(pipe->pipe.maxpacket);
     void *pipedata = GET_LOWFLAT((pipe->data));
     void *intrdata = pipedata + maxpacket * pos;
     memcpy_far(GET_SEG(SS), data, SEG_LOW, LOWFLAT2LOW(intrdata), maxpacket);
@@ -564,5 +564,5 @@ ohci_poll_intr(struct usb_pipe *p, void *data)
     barrier();
     SET_LOWFLAT(pipe->ed.hwTailP, (u32)next);
 
-    return 0;
+    戻る 0;
 }

@@ -17,29 +17,29 @@ struct mbfs_romfile_s {
     void *data;
 };
 
-static int
+static 整数
 extract_filename(char *dest, char *src, size_t lim)
 {
     char *ptr;
-    for (ptr = src; *ptr; ptr++) {
-        if (!(ptr == src || ptr[-1] == ' ' || ptr[-1] == '\t'))
+    ために (ptr = src; *ptr; ptr++) {
+        もし (!(ptr == src || ptr[-1] == ' ' || ptr[-1] == '\t'))
             continue;
         /* memcmp stops early if it encounters \0 as it doesn't match name=.  */
-        if (memcmp(ptr, "name=", 5) == 0) {
-            int i;
+        もし (memcmp(ptr, "name=", 5) == 0) {
+            整数 i;
             char *optr = dest;
-            for (i = 0, ptr += 5; *ptr && *ptr != ' ' && i < lim; i++) {
+            ために (i = 0, ptr += 5; *ptr && *ptr != ' ' && i < lim; i++) {
                 *optr++ = *ptr++;
             }
             *optr++ = '\0';
-            return 1;
+            戻る 1;
         }
     }
-    return 0;
+    戻る 0;
 }
 
 // Copy a file to memory
-static int
+static 整数
 mbfs_copyfile(struct romfile_s *file, void *dst, u32 maxlen)
 {
     struct mbfs_romfile_s *cfile;
@@ -49,12 +49,12 @@ mbfs_copyfile(struct romfile_s *file, void *dst, u32 maxlen)
 
     // Not compressed.
     dprintf(3, "Copying data %d@%p to %d@%p\n", size, src, maxlen, dst);
-    if (size > maxlen) {
+    もし (size > maxlen) {
         warn_noalloc();
-        return -1;
+        戻る -1;
     }
     iomemcpy(dst, src, size);
-    return size;
+    戻る size;
 }
 
 u32 __VISIBLE entry_elf_eax, entry_elf_ebx;
@@ -63,34 +63,34 @@ void
 multiboot_init(void)
 {
     struct multiboot_info *mbi;
-    if (!CONFIG_MULTIBOOT)
-        return;
+    もし (!CONFIG_MULTIBOOT)
+        戻る;
     dprintf(1, "multiboot: eax=%x, ebx=%x\n", entry_elf_eax, entry_elf_ebx);
-    if (entry_elf_eax != MULTIBOOT_BOOTLOADER_MAGIC)
-        return;
+    もし (entry_elf_eax != MULTIBOOT_BOOTLOADER_MAGIC)
+        戻る;
     mbi = (void *)entry_elf_ebx;
     dprintf(1, "mbptr=%p\n", mbi);
     dprintf(1, "flags=0x%x, mods=0x%x, mods_c=%d\n", mbi->flags, mbi->mods_addr,
             mbi->mods_count);
-    if (!(mbi->flags & MULTIBOOT_INFO_MODS))
-        return;
-    int i;
+    もし (!(mbi->flags & MULTIBOOT_INFO_MODS))
+        戻る;
+    整数 i;
     struct multiboot_mod_list *mod = (void *)mbi->mods_addr;
-    for (i = 0; i < mbi->mods_count; i++) {
+    ために (i = 0; i < mbi->mods_count; i++) {
         struct mbfs_romfile_s *cfile;
         u8 *copy;
         u32 len;
-        if (!mod[i].cmdline)
+        もし (!mod[i].cmdline)
             continue;
         len = mod[i].mod_end - mod[i].mod_start;
         cfile = malloc_tmp(sizeof(*cfile));
-        if (!cfile) {
+        もし (!cfile) {
             warn_noalloc();
-            return;
+            戻る;
         }
         memset(cfile, 0, sizeof(*cfile));
         dprintf(1, "module %s, size 0x%x\n", (char *)mod[i].cmdline, len);
-        if (!extract_filename(cfile->file.name, (char *)mod[i].cmdline,
+        もし (!extract_filename(cfile->file.name, (char *)mod[i].cmdline,
                               sizeof(cfile->file.name))) {
             free(cfile);
             continue;
@@ -98,10 +98,10 @@ multiboot_init(void)
         dprintf(1, "assigned file name <%s>\n", cfile->file.name);
         cfile->file.size = len;
         copy = malloc_tmp(len);
-        if (!copy) {
+        もし (!copy) {
             warn_noalloc();
             free(cfile);
-            return;
+            戻る;
         }
         memcpy(copy, (void *)mod[i].mod_start, len);
         cfile->file.copy = mbfs_copyfile;

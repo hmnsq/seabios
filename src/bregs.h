@@ -40,11 +40,11 @@ struct bregs {
  ****************************************************************/
 
 static inline void
-set_cf(struct bregs *regs, int cond)
+set_cf(struct bregs *regs, 整数 cond)
 {
-    if (cond)
+    もし (cond)
         regs->flags |= F_CF;
-    else
+    否则
         regs->flags &= ~F_CF;
 }
 

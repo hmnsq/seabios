@@ -14,7 +14,7 @@
 extern struct pnpheader PNPHEADER;
 extern char pnp_string[];
 
-#if CONFIG_PNPBIOS
+#もし CONFIG_PNPBIOS
 struct pnpheader PNPHEADER __aligned(16) VARFSEG = {
     .signature = PNP_SIGNATURE,
     .version = 0x10,
@@ -24,7 +24,7 @@ struct pnpheader PNPHEADER __aligned(16) VARFSEG = {
     .real_ds = SEG_BIOS,
     .prot_database = BUILD_BIOS_ADDR,
 };
-#else
+#否则
 // We need a copy of this string in the 0xf000 segment, but we are not
 // actually a PnP BIOS, so make sure it is *not* aligned, so OSes will
 // not see it if they scan.
@@ -38,36 +38,36 @@ handle_pnp60(u16 *args)
     u16 version_ptr = args[1];
     u16 version_seg = args[2];
     SET_FARVAR(version_seg, *(u16*)(version_ptr+0), 0x0101);
-    return 0;
+    戻る 0;
 }
 
 static u16
 handle_pnpXX(u16 *args)
 {
-    return FUNCTION_NOT_SUPPORTED;
+    戻る FUNCTION_NOT_SUPPORTED;
 }
 
 u16 VISIBLE16
 handle_pnp(u16 *args)
 {
-    if (! CONFIG_PNPBIOS)
-        return FUNCTION_NOT_SUPPORTED;
+    もし (! CONFIG_PNPBIOS)
+        戻る FUNCTION_NOT_SUPPORTED;
 
     u16 arg1 = args[0];
     dprintf(DEBUG_HDL_pnp, "pnp call arg1=%x\n", arg1);
 
     switch (arg1) {
-    case 0x60: return handle_pnp60(args);
-    default:   return handle_pnpXX(args);
+    case 0x60: 戻る handle_pnp60(args);
+    default:   戻る handle_pnpXX(args);
     }
 }
 
 u16
 get_pnp_offset(void)
 {
-    if (! CONFIG_PNPBIOS)
-        return (u32)pnp_string + 1 - BUILD_BIOS_ADDR;
-    return (u32)&PNPHEADER - BUILD_BIOS_ADDR;
+    もし (! CONFIG_PNPBIOS)
+        戻る (u32)pnp_string + 1 - BUILD_BIOS_ADDR;
+    戻る (u32)&PNPHEADER - BUILD_BIOS_ADDR;
 }
 
 // romlayout.S
@@ -77,8 +77,8 @@ extern void entry_pnp_prot(void);
 void
 pnp_init(void)
 {
-    if (! CONFIG_PNPBIOS)
-        return;
+    もし (! CONFIG_PNPBIOS)
+        戻る;
 
     dprintf(3, "init PNPBIOS table\n");
 

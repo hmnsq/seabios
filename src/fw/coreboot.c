@@ -89,42 +89,42 @@ struct cbmem_console {
 static struct cbmem_console *cbcon = NULL;
 
 static u16
-ipchksum(char *buf, int count)
+ipchksum(char *buf, 整数 count)
 {
     u16 *p = (u16*)buf;
     u32 sum = 0;
-    while (count > 1) {
+    ながら (count > 1) {
         sum += GET_FARVAR(0, *p);
         p++;
         count -= 2;
     }
-    if (count)
+    もし (count)
         sum += GET_FARVAR(0, *(u8*)p);
     sum = (sum >> 16) + (sum & 0xffff);
     sum += (sum >> 16);
-    return ~sum;
+    戻る ~sum;
 }
 
 // Try to locate the coreboot header in a given address range.
 static struct cb_header *
-find_cb_header(u32 addr, int len)
+find_cb_header(u32 addr, 整数 len)
 {
     u32 end = addr + len;
-    for (; addr < end; addr += 16) {
+    ために (; addr < end; addr += 16) {
         struct cb_header *cbh = (void*)addr;
-        if (GET_FARVAR(0, cbh->signature) != CB_SIGNATURE)
+        もし (GET_FARVAR(0, cbh->signature) != CB_SIGNATURE)
             continue;
         u32 tsize = GET_FARVAR(0, cbh->table_bytes);
-        if (! tsize)
+        もし (! tsize)
             continue;
-        if (ipchksum((void*)addr, sizeof(*cbh)) != 0)
+        もし (ipchksum((void*)addr, sizeof(*cbh)) != 0)
             continue;
-        if (ipchksum((void*)addr + sizeof(*cbh), tsize)
+        もし (ipchksum((void*)addr + sizeof(*cbh), tsize)
             != GET_FARVAR(0, cbh->table_checksum))
             continue;
-        return cbh;
+        戻る cbh;
     }
-    return NULL;
+    戻る NULL;
 }
 
 // Try to find the coreboot memory table in the given coreboot table.
@@ -133,30 +133,30 @@ find_cb_subtable(struct cb_header *cbh, u32 tag)
 {
     char *tbl = (char *)cbh + sizeof(*cbh);
     u32 count = GET_FARVAR(0, cbh->table_entries);
-    int i;
-    for (i=0; i<count; i++) {
+    整数 i;
+    ために (i=0; i<count; i++) {
         struct cb_memory *cbm = (void*)tbl;
         tbl += GET_FARVAR(0, cbm->size);
-        if (GET_FARVAR(0, cbm->tag) == tag)
-            return cbm;
+        もし (GET_FARVAR(0, cbm->tag) == tag)
+            戻る cbm;
     }
-    return NULL;
+    戻る NULL;
 }
 
 struct cb_header *
 find_cb_table(void)
 {
     struct cb_header *cbh = find_cb_header(0, 0x1000);
-    if (!cbh)
-        return NULL;
+    もし (!cbh)
+        戻る NULL;
     struct cb_forward *cbf = find_cb_subtable(cbh, CB_TAG_FORWARD);
-    if (cbf) {
+    もし (cbf) {
         dprintf(3, "Found coreboot table forwarder.\n");
         cbh = find_cb_header(GET_FARVAR(0, cbf->forward), 0x100);
-        if (!cbh)
-            return NULL;
+        もし (!cbh)
+            戻る NULL;
     }
-    return cbh;
+    戻る cbh;
 }
 
 static struct cb_memory *CBMemTable;
@@ -166,25 +166,25 @@ const char *CBvendor = "", *CBpart = "";
 void
 coreboot_preinit(void)
 {
-    if (!CONFIG_COREBOOT)
-        return;
+    もし (!CONFIG_COREBOOT)
+        戻る;
 
     dprintf(3, "Attempting to find coreboot table\n");
 
     // Find coreboot table.
     struct cb_header *cbh = find_cb_table();
-    if (!cbh)
+    もし (!cbh)
         goto fail;
     dprintf(3, "Now attempting to find coreboot memory map\n");
     struct cb_memory *cbm = CBMemTable = find_cb_subtable(cbh, CB_TAG_MEMORY);
-    if (!cbm)
+    もし (!cbm)
         goto fail;
 
-    int i, count = MEM_RANGE_COUNT(cbm);
-    for (i=0; i<count; i++) {
+    整数 i, count = MEM_RANGE_COUNT(cbm);
+    ために (i=0; i<count; i++) {
         struct cb_memory_range *m = &cbm->map[i];
         u32 type = m->type;
-        if (type == CB_MEM_TABLE)
+        もし (type == CB_MEM_TABLE)
             type = E820_RESERVED;
         e820_add(m->start, m->size, type);
     }
@@ -194,40 +194,40 @@ coreboot_preinit(void)
     e820_add(0, 16*1024, E820_RAM);
 
     struct cb_cbmem_ref *cbref = find_cb_subtable(cbh, CB_TAG_CBMEM_CONSOLE);
-    if (cbref) {
+    もし (cbref) {
         cbcon = (void*)(u32)cbref->cbmem_addr;
         debug_banner();
         dprintf(1, "Found coreboot cbmem console @ %llx\n", cbref->cbmem_addr);
     }
 
     struct cb_mainboard *cbmb = find_cb_subtable(cbh, CB_TAG_MAINBOARD);
-    if (cbmb) {
+    もし (cbmb) {
         CBvendor = &cbmb->strings[cbmb->vendor_idx];
         CBpart = &cbmb->strings[cbmb->part_idx];
         dprintf(1, "Found mainboard %s %s\n", CBvendor, CBpart);
     }
 
-    return;
+    戻る;
 
 fail:
     // No table found..  Use 16Megs as a dummy value.
     dprintf(1, "Unable to find coreboot table!\n");
     e820_add(0, 16*1024*1024, E820_RAM);
-    return;
+    戻る;
 }
 
 void coreboot_debug_putc(char c)
 {
-    if (!CONFIG_DEBUG_COREBOOT)
-        return;
-    if (!cbcon)
-        return;
+    もし (!CONFIG_DEBUG_COREBOOT)
+        戻る;
+    もし (!cbcon)
+        戻る;
     u32 cursor = cbcon->cursor & CBMC_CURSOR_MASK;
     u32 flags = cbcon->cursor & ~CBMC_CURSOR_MASK;
-    if (cursor >= cbcon->size)
-        return; // Old coreboot version with legacy overflow mechanism.
+    もし (cursor >= cbcon->size)
+        戻る; // Old coreboot version with legacy overflow mechanism.
     cbcon->body[cursor++] = c;
-    if (cursor >= cbcon->size) {
+    もし (cursor >= cbcon->size) {
         cursor = 0;
         flags |= CBMC_OVERFLOW;
     }
@@ -245,28 +245,28 @@ scan_tables(u32 start, u32 size)
 {
     void *p = (void*)ALIGN(start, 16);
     void *end = (void*)start + size;
-    for (; p<end; p += 16)
+    ために (; p<end; p += 16)
         copy_table(p);
 }
 
 void
 coreboot_platform_setup(void)
 {
-    if (!CONFIG_COREBOOT)
-        return;
+    もし (!CONFIG_COREBOOT)
+        戻る;
     pci_probe_devices();
 
     struct cb_memory *cbm = CBMemTable;
-    if (!cbm)
-        return;
+    もし (!cbm)
+        戻る;
 
     dprintf(3, "Relocating coreboot bios tables\n");
 
     // Scan CB_MEM_TABLE areas for bios tables.
-    int i, count = MEM_RANGE_COUNT(cbm);
-    for (i=0; i<count; i++) {
+    整数 i, count = MEM_RANGE_COUNT(cbm);
+    ために (i=0; i<count; i++) {
         struct cb_memory_range *m = &cbm->map[i];
-        if (m->type == CB_MEM_TABLE)
+        もし (m->type == CB_MEM_TABLE)
             scan_tables(m->start, m->size);
     }
 
@@ -279,37 +279,37 @@ coreboot_platform_setup(void)
  ****************************************************************/
 
 // Uncompress data in flash to an area of memory.
-static int
+static 整数
 ulzma(u8 *dst, u32 maxlen, const u8 *src, u32 srclen)
 {
     dprintf(3, "Uncompressing data %d@%p to %d@%p\n", srclen, src, maxlen, dst);
     CLzmaDecoderState state;
-    int ret = LzmaDecodeProperties(&state.Properties, src, LZMA_PROPERTIES_SIZE);
-    if (ret != LZMA_RESULT_OK) {
+    整数 ret = LzmaDecodeProperties(&state.Properties, src, LZMA_PROPERTIES_SIZE);
+    もし (ret != LZMA_RESULT_OK) {
         dprintf(1, "LzmaDecodeProperties error - %d\n", ret);
-        return -1;
+        戻る -1;
     }
     u8 scratch[15980];
-    int need = (LzmaGetNumProbs(&state.Properties) * sizeof(CProb));
-    if (need > sizeof(scratch)) {
-        dprintf(1, "LzmaDecode need %d have %d\n", need, (unsigned int)sizeof(scratch));
-        return -1;
+    整数 need = (LzmaGetNumProbs(&state.Properties) * sizeof(CProb));
+    もし (need > sizeof(scratch)) {
+        dprintf(1, "LzmaDecode need %d have %d\n", need, (unsigned 整数)sizeof(scratch));
+        戻る -1;
     }
     state.Probs = (CProb *)scratch;
 
     u32 dstlen = *(u32*)(src + LZMA_PROPERTIES_SIZE);
-    if (dstlen > maxlen) {
+    もし (dstlen > maxlen) {
         dprintf(1, "LzmaDecode too large (max %d need %d)\n", maxlen, dstlen);
-        return -1;
+        戻る -1;
     }
     u32 inProcessed, outProcessed;
     ret = LzmaDecode(&state, src + LZMA_PROPERTIES_SIZE + 8, srclen
                      , &inProcessed, dst, dstlen, &outProcessed);
-    if (ret) {
+    もし (ret) {
         dprintf(1, "LzmaDecode returned %d\n", ret);
-        return -1;
+        戻る -1;
     }
-    return dstlen;
+    戻る dstlen;
 }
 
 
@@ -349,38 +349,38 @@ struct cbfs_romfile_s {
 };
 
 // Copy a file to memory (uncompressing if necessary)
-static int
+static 整数
 cbfs_copyfile(struct romfile_s *file, void *dst, u32 maxlen)
 {
-    if (!CONFIG_COREBOOT_FLASH)
-        return -1;
+    もし (!CONFIG_COREBOOT_FLASH)
+        戻る -1;
 
     struct cbfs_romfile_s *cfile;
     cfile = container_of(file, struct cbfs_romfile_s, file);
     u32 size = cfile->rawsize;
     void *src = cfile->data;
-    if (cfile->flags) {
+    もし (cfile->flags) {
         // Compressed - copy to temp ram and uncompress it.
         void *temp = malloc_tmphigh(size);
-        if (!temp) {
+        もし (!temp) {
             warn_noalloc();
-            return -1;
+            戻る -1;
         }
         iomemcpy(temp, src, size);
-        int ret = ulzma(dst, maxlen, temp, size);
+        整数 ret = ulzma(dst, maxlen, temp, size);
         yield();
         free(temp);
-        return ret;
+        戻る ret;
     }
 
     // Not compressed.
     dprintf(3, "Copying data %d@%p to %d@%p\n", size, src, maxlen, dst);
-    if (size > maxlen) {
+    もし (size > maxlen) {
         warn_noalloc();
-        return -1;
+        戻る -1;
     }
     iomemcpy(dst, src, size);
-    return size;
+    戻る size;
 }
 
 // Process CBFS links file.  The links file is a newline separated
@@ -390,29 +390,29 @@ static void
 process_links_file(void)
 {
     char *links = romfile_loadfile("links", NULL), *next = links;
-    while (next) {
+    ながら (next) {
         // Parse out linkname and destname
         char *linkname = next;
         next = strchr(linkname, '\n');
-        if (next)
+        もし (next)
             *next++ = '\0';
         char *comment = strchr(linkname, '#');
-        if (comment)
+        もし (comment)
             *comment = '\0';
         linkname = nullTrailingSpace(linkname);
         char *destname = strchr(linkname, ' ');
-        if (!destname)
+        もし (!destname)
             continue;
         *destname++ = '\0';
         destname = nullTrailingSpace(destname);
         // Lookup destname and create new romfile entry for linkname
         struct romfile_s *ufile = romfile_find(destname);
-        if (!ufile)
+        もし (!ufile)
             continue;
         struct cbfs_romfile_s *cufile
             = container_of(ufile, struct cbfs_romfile_s, file);
         struct cbfs_romfile_s *cfile = malloc_tmp(sizeof(*cfile));
-        if (!cfile) {
+        もし (!cfile) {
             warn_noalloc();
             break;
         }
@@ -426,35 +426,35 @@ process_links_file(void)
 void
 coreboot_cbfs_init(void)
 {
-    if (!CONFIG_COREBOOT_FLASH)
-        return;
+    もし (!CONFIG_COREBOOT_FLASH)
+        戻る;
 
     struct cbfs_header *hdr = *(void **)(CONFIG_CBFS_LOCATION - 4);
-    if ((u32)hdr & 0x03) {
+    もし ((u32)hdr & 0x03) {
         dprintf(1, "Invalid CBFS pointer %p\n", hdr);
-        return;
+        戻る;
     }
-    if (CONFIG_CBFS_LOCATION && (u32)hdr > CONFIG_CBFS_LOCATION)
+    もし (CONFIG_CBFS_LOCATION && (u32)hdr > CONFIG_CBFS_LOCATION)
         // Looks like the pointer is relative to CONFIG_CBFS_LOCATION
         hdr = (void*)hdr + CONFIG_CBFS_LOCATION;
-    if (hdr->magic != cpu_to_be32(CBFS_HEADER_MAGIC)) {
+    もし (hdr->magic != cpu_to_be32(CBFS_HEADER_MAGIC)) {
         dprintf(1, "Unable to find CBFS (ptr=%p; got %x not %x)\n"
                 , hdr, hdr->magic, cpu_to_be32(CBFS_HEADER_MAGIC));
-        return;
+        戻る;
     }
     dprintf(1, "Found CBFS header at %p\n", hdr);
 
     u32 romsize = be32_to_cpu(hdr->romsize);
     u32 romstart = CONFIG_CBFS_LOCATION - romsize;
     struct cbfs_file *fhdr = (void*)romstart + be32_to_cpu(hdr->offset);
-    for (;;) {
-        if ((u32)fhdr - romstart > romsize)
+    ために (;;) {
+        もし ((u32)fhdr - romstart > romsize)
             break;
         u64 magic = fhdr->magic;
-        if (magic != CBFS_FILE_MAGIC)
+        もし (magic != CBFS_FILE_MAGIC)
             break;
         struct cbfs_romfile_s *cfile = malloc_tmp(sizeof(*cfile));
-        if (!cfile) {
+        もし (!cfile) {
             warn_noalloc();
             break;
         }
@@ -464,8 +464,8 @@ coreboot_cbfs_init(void)
         cfile->fhdr = fhdr;
         cfile->file.copy = cbfs_copyfile;
         cfile->data = (void*)fhdr + be32_to_cpu(fhdr->offset);
-        int len = strlen(cfile->file.name);
-        if (len > 5 && strcmp(&cfile->file.name[len-5], ".lzma") == 0) {
+        整数 len = strlen(cfile->file.name);
+        もし (len > 5 && strcmp(&cfile->file.name[len-5], ".lzma") == 0) {
             // Using compression.
             cfile->flags = 1;
             cfile->file.name[len-5] = '\0';
@@ -502,12 +502,12 @@ struct cbfs_payload {
 void
 cbfs_run_payload(struct cbfs_file *fhdr)
 {
-    if (!CONFIG_COREBOOT_FLASH || !fhdr)
-        return;
+    もし (!CONFIG_COREBOOT_FLASH || !fhdr)
+        戻る;
     dprintf(1, "Run %s\n", fhdr->filename);
     struct cbfs_payload *pay = (void*)fhdr + be32_to_cpu(fhdr->offset);
     struct cbfs_payload_segment *seg = pay->segments;
-    for (;;) {
+    ために (;;) {
         void *src = (void*)pay + be32_to_cpu(seg->offset);
         void *dest = (void*)(u32)be64_to_cpu(seg->load_addr);
         u32 src_len = be32_to_cpu(seg->len);
@@ -521,27 +521,27 @@ cbfs_run_payload(struct cbfs_file *fhdr)
             dprintf(1, "Calling addr %p\n", dest);
             void (*func)(void) = dest;
             func();
-            return;
+            戻る;
         }
         default:
             dprintf(3, "Segment %x %d@%p -> %d@%p\n"
                     , seg->type, src_len, src, dest_len, dest);
-            if (seg->compression == cpu_to_be32(CBFS_COMPRESS_NONE)) {
-                if (src_len > dest_len)
+            もし (seg->compression == cpu_to_be32(CBFS_COMPRESS_NONE)) {
+                もし (src_len > dest_len)
                     src_len = dest_len;
                 memcpy(dest, src, src_len);
-            } else if (CONFIG_LZMA
+            } 否则 もし (CONFIG_LZMA
                        && seg->compression == cpu_to_be32(CBFS_COMPRESS_LZMA)) {
-                int ret = ulzma(dest, dest_len, src, src_len);
-                if (ret < 0)
-                    return;
+                整数 ret = ulzma(dest, dest_len, src, src_len);
+                もし (ret < 0)
+                    戻る;
                 src_len = ret;
-            } else {
+            } 否则 {
                 dprintf(1, "No support for compression type %x\n"
                         , seg->compression);
-                return;
+                戻る;
             }
-            if (dest_len > src_len)
+            もし (dest_len > src_len)
                 memset(dest + src_len, 0, dest_len - src_len);
             break;
         }
@@ -553,12 +553,12 @@ cbfs_run_payload(struct cbfs_file *fhdr)
 void
 cbfs_payload_setup(void)
 {
-    if (!CONFIG_COREBOOT_FLASH)
-        return;
+    もし (!CONFIG_COREBOOT_FLASH)
+        戻る;
     struct romfile_s *file = NULL;
-    for (;;) {
+    ために (;;) {
         file = romfile_findprefix("img/", file);
-        if (!file)
+        もし (!file)
             break;
         struct cbfs_romfile_s *cfile;
         cfile = container_of(file, struct cbfs_romfile_s, file);

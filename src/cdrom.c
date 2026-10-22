@@ -26,7 +26,7 @@ struct eltorito_s CDEmu VARLOW = { .size=sizeof(CDEmu) };
 struct drive_s *emulated_drive_gf VARLOW;
 struct drive_s *cdemu_drive_gf VARFSEG;
 
-static int
+static 整数
 cdemu_read(struct disk_op_s *op)
 {
     struct drive_s *drive_gf = GET_LOW(emulated_drive_gf);
@@ -35,19 +35,19 @@ cdemu_read(struct disk_op_s *op)
     dop.command = op->command;
     dop.lba = GET_LOW(CDEmu.ilba) + op->lba / 4;
 
-    int count = op->count;
+    整数 count = op->count;
     op->count = 0;
     u8 *cdbuf_fl = GET_GLOBAL(bounce_buf_fl);
 
-    if (op->lba & 3) {
+    もし (op->lba & 3) {
         // Partial read of first block.
         dop.count = 1;
         dop.buf_fl = cdbuf_fl;
-        int ret = process_op(&dop);
-        if (ret)
-            return ret;
+        整数 ret = process_op(&dop);
+        もし (ret)
+            戻る ret;
         u8 thiscount = 4 - (op->lba & 3);
-        if (thiscount > count)
+        もし (thiscount > count)
             thiscount = count;
         count -= thiscount;
         memcpy_fl(op->buf_fl, cdbuf_fl + (op->lba & 3) * 512, thiscount * 512);
@@ -56,66 +56,66 @@ cdemu_read(struct disk_op_s *op)
         dop.lba++;
     }
 
-    if (count > 3) {
+    もし (count > 3) {
         // Read n number of regular blocks.
         dop.count = count / 4;
         dop.buf_fl = op->buf_fl;
-        int ret = process_op(&dop);
+        整数 ret = process_op(&dop);
         op->count += dop.count * 4;
-        if (ret)
-            return ret;
+        もし (ret)
+            戻る ret;
         u8 thiscount = count & ~3;
         count &= 3;
         op->buf_fl += thiscount * 512;
         dop.lba += thiscount / 4;
     }
 
-    if (count) {
+    もし (count) {
         // Partial read on last block.
         dop.count = 1;
         dop.buf_fl = cdbuf_fl;
-        int ret = process_op(&dop);
-        if (ret)
-            return ret;
+        整数 ret = process_op(&dop);
+        もし (ret)
+            戻る ret;
         u8 thiscount = count;
         memcpy_fl(op->buf_fl, cdbuf_fl, thiscount * 512);
         op->count += thiscount;
     }
 
-    return DISK_RET_SUCCESS;
+    戻る DISK_RET_SUCCESS;
 }
 
-int
+整数
 cdemu_process_op(struct disk_op_s *op)
 {
-    if (!CONFIG_CDROM_EMU)
-        return 0;
+    もし (!CONFIG_CDROM_EMU)
+        戻る 0;
 
     switch (op->command) {
     case CMD_READ:
-        return cdemu_read(op);
+        戻る cdemu_read(op);
     case CMD_WRITE:
     case CMD_FORMAT:
-        return DISK_RET_EWRITEPROTECT;
+        戻る DISK_RET_EWRITEPROTECT;
     default:
-        return default_process_op(op);
+        戻る default_process_op(op);
     }
 }
 
 void
 cdrom_prepboot(void)
 {
-    if (!CONFIG_CDROM_EMU)
-        return;
-    if (!CDCount)
-        return;
-    if (create_bounce_buf() < 0)
-        return;
+    もし (!CONFIG_CDROM_EMU)
+        戻る;
+    もし (!CDCount)
+        戻る;
+    もし (create_bounce_buf() < 0)
+        戻る;
 
     struct drive_s *drive = malloc_fseg(sizeof(*drive));
-    if (!drive) {
+    もし (!drive) {
         warn_noalloc();
-        return;
+        戻る;
     }
     cdemu_drive_gf = drive;
     memset(drive, 0, sizeof(*drive));
@@ -129,19 +129,19 @@ cdrom_prepboot(void)
  * CD booting
  ****************************************************************/
 
-int
+整数
 cdrom_boot(struct drive_s *drive)
 {
     ASSERT32FLAT();
     struct disk_op_s dop;
-    int cdid = getDriveId(EXTTYPE_CD, drive);
+    整数 cdid = getDriveId(EXTTYPE_CD, drive);
     memset(&dop, 0, sizeof(dop));
     dop.drive_fl = drive;
-    if (!dop.drive_fl || cdid < 0)
-        return 1;
+    もし (!dop.drive_fl || cdid < 0)
+        戻る 1;
 
-    int ret = scsi_is_ready(&dop);
-    if (ret)
+    整数 ret = scsi_is_ready(&dop);
+    もし (ret)
         dprintf(5, "scsi_is_ready returned %d\n", ret);
 
     // Read the Boot Record Volume Descriptor
@@ -151,14 +151,14 @@ cdrom_boot(struct drive_s *drive)
     dop.count = 1;
     dop.buf_fl = buffer;
     ret = process_op(&dop);
-    if (ret)
-        return 3;
+    もし (ret)
+        戻る 3;
 
     // Validity checks
-    if (buffer[0])
-        return 4;
-    if (strcmp((char*)&buffer[1], "CD001\001EL TORITO SPECIFICATION") != 0)
-        return 5;
+    もし (buffer[0])
+        戻る 4;
+    もし (strcmp((char*)&buffer[1], "CD001\001EL TORITO SPECIFICATION") != 0)
+        戻る 5;
 
     // ok, now we calculate the Boot catalog address
     u32 lba = *(u32*)&buffer[0x47];
@@ -167,22 +167,22 @@ cdrom_boot(struct drive_s *drive)
     dop.lba = lba;
     dop.count = 1;
     ret = process_op(&dop);
-    if (ret)
-        return 7;
+    もし (ret)
+        戻る 7;
 
     // Validation entry
-    if (buffer[0x00] != 0x01)
-        return 8;   // Header
-    if (buffer[0x01] != 0x00)
-        return 9;   // Platform
-    if (buffer[0x1E] != 0x55)
-        return 10;  // key 1
-    if (buffer[0x1F] != 0xAA)
-        return 10;  // key 2
+    もし (buffer[0x00] != 0x01)
+        戻る 8;   // Header
+    もし (buffer[0x01] != 0x00)
+        戻る 9;   // Platform
+    もし (buffer[0x1E] != 0x55)
+        戻る 10;  // key 1
+    もし (buffer[0x1F] != 0xAA)
+        戻る 10;  // key 2
 
     // Initial/Default Entry
-    if (buffer[0x20] != 0x88)
-        return 11; // Bootable
+    もし (buffer[0x20] != 0x88)
+        戻る 11; // Bootable
 
     /* measure 2048 bytes (one sector) */
     tpm_add_cdrom_catalog(MAKE_FLATPTR(GET_SEG(SS), buffer), sizeof(buffer));
@@ -192,7 +192,7 @@ cdrom_boot(struct drive_s *drive)
     u8 media = buffer[0x21];
 
     u16 boot_segment = *(u16*)&buffer[0x22];
-    if (!boot_segment)
+    もし (!boot_segment)
         boot_segment = 0x07C0;
     CDEmu.load_segment = boot_segment;
     CDEmu.buffer_segment = 0x0000;
@@ -210,32 +210,32 @@ cdrom_boot(struct drive_s *drive)
     nbsectors = DIV_ROUND_UP(nbsectors, 4);
     dop.lba = lba;
     dop.buf_fl = MAKE_FLATPTR(boot_segment, 0);
-    while (nbsectors) {
-        int count = nbsectors;
-        if (count > 64*1024/CDROM_SECTOR_SIZE)
+    ながら (nbsectors) {
+        整数 count = nbsectors;
+        もし (count > 64*1024/CDROM_SECTOR_SIZE)
             count = 64*1024/CDROM_SECTOR_SIZE;
         dop.count = count;
         ret = process_op(&dop);
-        if (ret)
-            return 12;
+        もし (ret)
+            戻る 12;
         nbsectors -= count;
         dop.lba += count;
         dop.buf_fl += count*CDROM_SECTOR_SIZE;
     }
 
-    if (media == 0) {
+    もし (media == 0) {
         // No emulation requested - return success.
         CDEmu.emulated_drive = EXTSTART_CD + cdid;
-        return 0;
+        戻る 0;
     }
 
     // Emulation of a floppy/harddisk requested
-    if (! CONFIG_CDROM_EMU || !cdemu_drive_gf)
-        return 13;
+    もし (! CONFIG_CDROM_EMU || !cdemu_drive_gf)
+        戻る 13;
 
     // Set emulated drive id and increase bios installed hardware
     // number of devices
-    if (media < 4) {
+    もし (media < 4) {
         // Floppy emulation
         CDEmu.emulated_drive = 0x00;
         // XXX - get and set actual floppy count.
@@ -258,7 +258,7 @@ cdrom_boot(struct drive_s *drive)
             CDEmu.chs.heads = 1;
             break;
         }
-    } else {
+    } 否则 {
         // Harddrive emulation
         CDEmu.emulated_drive = 0x80;
         SET_BDA(hdcount, GET_BDA(hdcount) + 1);
@@ -272,7 +272,7 @@ cdrom_boot(struct drive_s *drive)
     CDEmu.media = media;
     dprintf(6, "cdemu media=%d\n", media);
 
-    return 0;
+    戻る 0;
 }
 
 // check if media is present and the drive is bootable.
@@ -286,9 +286,9 @@ cdrom_media_info(struct drive_s *drive)
     memset(&dop, 0, sizeof(dop));
     dop.drive_fl = drive;
 
-    int ret = scsi_is_ready(&dop);
-    if (ret)
-        return NULL;
+    整数 ret = scsi_is_ready(&dop);
+    もし (ret)
+        戻る NULL;
 
     // Read the Boot Record Volume Descriptor
     u8 buffer[CDROM_SECTOR_SIZE];
@@ -297,14 +297,14 @@ cdrom_media_info(struct drive_s *drive)
     dop.count = 1;
     dop.buf_fl = buffer;
     ret = process_op(&dop);
-    if (ret)
-        return NULL;
+    もし (ret)
+        戻る NULL;
 
     // Is it bootable?
-    if (buffer[0])
-        return NULL;
-    if (strcmp((char*)&buffer[1], "CD001\001EL TORITO SPECIFICATION") != 0)
-        return NULL;
+    もし (buffer[0])
+        戻る NULL;
+    もし (strcmp((char*)&buffer[1], "CD001\001EL TORITO SPECIFICATION") != 0)
+        戻る NULL;
 
     // Read the Primary Volume Descriptor
     dop.command = CMD_READ;
@@ -312,11 +312,11 @@ cdrom_media_info(struct drive_s *drive)
     dop.count = 1;
     dop.buf_fl = buffer;
     ret = process_op(&dop);
-    if (ret)
-        return NULL;
+    もし (ret)
+        戻る NULL;
 
     // Read volume id, trim trailing spaces
     char *volume = znprintf(30, "%s", buffer + 40);
     nullTrailingSpace(volume);
-    return volume;
+    戻る volume;
 }

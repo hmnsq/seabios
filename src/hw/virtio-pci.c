@@ -111,7 +111,7 @@ u64 _vp_read(struct vp_cap *cap, u32 offset, u8 size)
     }
     }
     dprintf(9, "vp read   %x (%d) -> 0x%llx\n", cap->ioaddr + offset, size, var);
-    return var;
+    戻る var;
 }
 
 void _vp_write(struct vp_cap *cap, u32 offset, u8 size, u64 var)
@@ -190,21 +190,21 @@ u64 vp_get_features(struct vp_device *vp)
 {
     u32 f0, f1;
 
-    if (vp->use_mmio) {
+    もし (vp->use_mmio) {
         vp_write(&vp->common, virtio_mmio_cfg, device_feature_select, 0);
         f0 = vp_read(&vp->common, virtio_mmio_cfg, device_feature);
         vp_write(&vp->common, virtio_mmio_cfg, device_feature_select, 1);
         f1 = vp_read(&vp->common, virtio_mmio_cfg, device_feature);
-    } else if (vp->use_modern) {
+    } 否则 もし (vp->use_modern) {
         vp_write(&vp->common, virtio_pci_common_cfg, device_feature_select, 0);
         f0 = vp_read(&vp->common, virtio_pci_common_cfg, device_feature);
         vp_write(&vp->common, virtio_pci_common_cfg, device_feature_select, 1);
         f1 = vp_read(&vp->common, virtio_pci_common_cfg, device_feature);
-    } else {
+    } 否则 {
         f0 = vp_read(&vp->legacy, virtio_pci_legacy, host_features);
         f1 = 0;
     }
-    return ((u64)f1 << 32) | f0;
+    戻る ((u64)f1 << 32) | f0;
 }
 
 void vp_set_features(struct vp_device *vp, u64 features)
@@ -214,65 +214,65 @@ void vp_set_features(struct vp_device *vp, u64 features)
     f0 = features;
     f1 = features >> 32;
 
-    if (vp->use_mmio) {
+    もし (vp->use_mmio) {
         vp_write(&vp->common, virtio_mmio_cfg, guest_feature_select, 0);
         vp_write(&vp->common, virtio_mmio_cfg, guest_feature, f0);
         vp_write(&vp->common, virtio_mmio_cfg, guest_feature_select, 1);
         vp_write(&vp->common, virtio_mmio_cfg, guest_feature, f1);
-    } else if (vp->use_modern) {
+    } 否则 もし (vp->use_modern) {
         vp_write(&vp->common, virtio_pci_common_cfg, guest_feature_select, 0);
         vp_write(&vp->common, virtio_pci_common_cfg, guest_feature, f0);
         vp_write(&vp->common, virtio_pci_common_cfg, guest_feature_select, 1);
         vp_write(&vp->common, virtio_pci_common_cfg, guest_feature, f1);
-    } else {
+    } 否则 {
         vp_write(&vp->legacy, virtio_pci_legacy, guest_features, f0);
     }
 }
 
 u8 vp_get_status(struct vp_device *vp)
 {
-    if (vp->use_mmio) {
-        return vp_read(&vp->common, virtio_mmio_cfg, device_status);
-    } else if (vp->use_modern) {
-        return vp_read(&vp->common, virtio_pci_common_cfg, device_status);
-    } else {
-        return vp_read(&vp->legacy, virtio_pci_legacy, status);
+    もし (vp->use_mmio) {
+        戻る vp_read(&vp->common, virtio_mmio_cfg, device_status);
+    } 否则 もし (vp->use_modern) {
+        戻る vp_read(&vp->common, virtio_pci_common_cfg, device_status);
+    } 否则 {
+        戻る vp_read(&vp->legacy, virtio_pci_legacy, status);
     }
 }
 
 void vp_set_status(struct vp_device *vp, u8 status)
 {
-    if (status == 0)        /* reset */
-        return;
-    if (vp->use_mmio) {
+    もし (status == 0)        /* reset */
+        戻る;
+    もし (vp->use_mmio) {
         vp_write(&vp->common, virtio_mmio_cfg, device_status, status);
-    } else if (vp->use_modern) {
+    } 否则 もし (vp->use_modern) {
         vp_write(&vp->common, virtio_pci_common_cfg, device_status, status);
-    } else {
+    } 否则 {
         vp_write(&vp->legacy, virtio_pci_legacy, status, status);
     }
 }
 
 u8 vp_get_isr(struct vp_device *vp)
 {
-    if (vp->use_mmio) {
-        return vp_read(&vp->common, virtio_mmio_cfg, irq_status);
-    } else if (vp->use_modern) {
-        return vp_read(&vp->isr, virtio_pci_isr, isr);
-    } else {
-        return vp_read(&vp->legacy, virtio_pci_legacy, isr);
+    もし (vp->use_mmio) {
+        戻る vp_read(&vp->common, virtio_mmio_cfg, irq_status);
+    } 否则 もし (vp->use_modern) {
+        戻る vp_read(&vp->isr, virtio_pci_isr, isr);
+    } 否则 {
+        戻る vp_read(&vp->legacy, virtio_pci_legacy, isr);
     }
 }
 
 void vp_reset(struct vp_device *vp)
 {
-    if (vp->use_mmio) {
+    もし (vp->use_mmio) {
         vp_write(&vp->common, virtio_mmio_cfg, device_status, 0);
         vp_read(&vp->common, virtio_mmio_cfg, irq_status);
-    } else if (vp->use_modern) {
+    } 否则 もし (vp->use_modern) {
         vp_write(&vp->common, virtio_pci_common_cfg, device_status, 0);
         vp_read(&vp->isr, virtio_pci_isr, isr);
-    } else {
+    } 否则 {
         vp_write(&vp->legacy, virtio_pci_legacy, status, 0);
         vp_read(&vp->legacy, virtio_pci_legacy, isr);
     }
@@ -280,9 +280,9 @@ void vp_reset(struct vp_device *vp)
 
 void vp_notify(struct vp_device *vp, struct vring_virtqueue *vq)
 {
-    if (vp->use_mmio) {
+    もし (vp->use_mmio) {
         vp_write(&vp->common, virtio_mmio_cfg, queue_notify, vq->queue_index);
-    } else if (vp->use_modern) {
+    } 否则 もし (vp->use_modern) {
         u32 offset = vq->queue_notify_off * vp->notify_off_multiplier;
         switch (vp->notify.mode) {
         case VP_ACCESS_IO:
@@ -307,19 +307,19 @@ void vp_notify(struct vp_device *vp, struct vring_virtqueue *vq)
         }
         dprintf(9, "vp notify %x (%d) -- 0x%x\n",
                 vp->notify.ioaddr, 2, vq->queue_index);
-    } else {
+    } 否则 {
         vp_write(&vp->legacy, virtio_pci_legacy, queue_notify, vq->queue_index);
     }
 }
 
-int vp_find_vq(struct vp_device *vp, int queue_index,
+整数 vp_find_vq(struct vp_device *vp, 整数 queue_index,
                struct vring_virtqueue **p_vq)
 {
    u16 num;
 
    ASSERT32FLAT();
    struct vring_virtqueue *vq = *p_vq = memalign_high(PAGE_SIZE, sizeof(*vq));
-   if (!vq) {
+   もし (!vq) {
        warn_noalloc();
        goto fail;
    }
@@ -327,49 +327,49 @@ int vp_find_vq(struct vp_device *vp, int queue_index,
 
 
    /* select the queue */
-   if (vp->use_mmio) {
+   もし (vp->use_mmio) {
        vp_write(&vp->common, virtio_mmio_cfg, queue_select, queue_index);
-   } else if (vp->use_modern) {
+   } 否则 もし (vp->use_modern) {
        vp_write(&vp->common, virtio_pci_common_cfg, queue_select, queue_index);
-   } else {
+   } 否则 {
        vp_write(&vp->legacy, virtio_pci_legacy, queue_sel, queue_index);
    }
 
    /* check if the queue is available */
-   if (vp->use_mmio) {
+   もし (vp->use_mmio) {
        num = vp_read(&vp->common, virtio_mmio_cfg, queue_num_max);
-       if (num > MAX_QUEUE_NUM)
+       もし (num > MAX_QUEUE_NUM)
            num = MAX_QUEUE_NUM;
        vp_write(&vp->common, virtio_mmio_cfg, queue_num, num);
-   } else if (vp->use_modern) {
+   } 否则 もし (vp->use_modern) {
        num = vp_read(&vp->common, virtio_pci_common_cfg, queue_size);
-       if (num > MAX_QUEUE_NUM) {
+       もし (num > MAX_QUEUE_NUM) {
            vp_write(&vp->common, virtio_pci_common_cfg, queue_size,
                     MAX_QUEUE_NUM);
            num = vp_read(&vp->common, virtio_pci_common_cfg, queue_size);
        }
-   } else {
+   } 否则 {
        num = vp_read(&vp->legacy, virtio_pci_legacy, queue_num);
    }
-   if (!num) {
+   もし (!num) {
        dprintf(1, "ERROR: queue size is 0\n");
        goto fail;
    }
-   if (num > MAX_QUEUE_NUM) {
+   もし (num > MAX_QUEUE_NUM) {
        dprintf(1, "ERROR: queue size %d > %d\n", num, MAX_QUEUE_NUM);
        goto fail;
    }
 
    /* check if the queue is already active */
-   if (vp->use_mmio) {
+   もし (vp->use_mmio) {
        /* TODO */;
-   } else if (vp->use_modern) {
-       if (vp_read(&vp->common, virtio_pci_common_cfg, queue_enable)) {
+   } 否则 もし (vp->use_modern) {
+       もし (vp_read(&vp->common, virtio_pci_common_cfg, queue_enable)) {
            dprintf(1, "ERROR: queue already active\n");
            goto fail;
        }
-   } else {
-       if (vp_read(&vp->legacy, virtio_pci_legacy, queue_pfn)) {
+   } 否则 {
+       もし (vp_read(&vp->legacy, virtio_pci_legacy, queue_pfn)) {
            dprintf(1, "ERROR: queue already active\n");
            goto fail;
        }
@@ -385,8 +385,8 @@ int vp_find_vq(struct vp_device *vp, int queue_index,
     * NOTE: vr->desc is initialized by vring_init()
     */
 
-   if (vp->use_mmio) {
-       if (vp_read(&vp->common, virtio_mmio_cfg, version) == 2) {
+   もし (vp->use_mmio) {
+       もし (vp_read(&vp->common, virtio_mmio_cfg, version) == 2) {
            vp_write(&vp->common, virtio_mmio_cfg, queue_desc_lo,
                     (unsigned long)virt_to_phys(vr->desc));
            vp_write(&vp->common, virtio_mmio_cfg, queue_desc_hi, 0);
@@ -397,13 +397,13 @@ int vp_find_vq(struct vp_device *vp, int queue_index,
                     (unsigned long)virt_to_phys(vr->used));
            vp_write(&vp->common, virtio_mmio_cfg, queue_device_hi, 0);
            vp_write(&vp->common, virtio_mmio_cfg, queue_ready, 1);
-       } else {
+       } 否则 {
            vp_write(&vp->common, virtio_mmio_cfg, legacy_guest_page_size,
                     (unsigned long)1 << PAGE_SHIFT);
            vp_write(&vp->common, virtio_mmio_cfg, legacy_queue_pfn,
                     (unsigned long)virt_to_phys(vr->desc) >> PAGE_SHIFT);
        }
-   } else if (vp->use_modern) {
+   } 否则 もし (vp->use_modern) {
        vp_write(&vp->common, virtio_pci_common_cfg, queue_desc_lo,
                 (unsigned long)virt_to_phys(vr->desc));
        vp_write(&vp->common, virtio_pci_common_cfg, queue_desc_hi, 0);
@@ -416,16 +416,16 @@ int vp_find_vq(struct vp_device *vp, int queue_index,
        vp_write(&vp->common, virtio_pci_common_cfg, queue_enable, 1);
        vq->queue_notify_off = vp_read(&vp->common, virtio_pci_common_cfg,
                                       queue_notify_off);
-   } else {
+   } 否则 {
        vp_write(&vp->legacy, virtio_pci_legacy, queue_pfn,
                 (unsigned long)virt_to_phys(vr->desc) >> PAGE_SHIFT);
    }
-   return num;
+   戻る num;
 
 fail:
    free(vq);
    *p_vq = NULL;
-   return -1;
+   戻る -1;
 }
 
 void vp_init_simple(struct vp_device *vp, struct pci_device *pci)
@@ -438,7 +438,7 @@ void vp_init_simple(struct vp_device *vp, struct pci_device *pci)
     u8 type;
 
     memset(vp, 0, sizeof(*vp));
-    while (cap != 0) {
+    ながら (cap != 0) {
         type = pci_config_readb(pci->bdf, cap +
                                 offsetof(struct virtio_pci_cap, cfg_type));
         switch (type) {
@@ -473,7 +473,7 @@ void vp_init_simple(struct vp_device *vp, struct pci_device *pci)
             vp_cap = NULL;
             break;
         }
-        if (vp_cap && !vp_cap->cap) {
+        もし (vp_cap && !vp_cap->cap) {
             vp_cap->cap = cap;
             vp_cap->bar = pci_config_readb(pci->bdf, cap +
                                            offsetof(struct virtio_pci_cap, bar));
@@ -481,16 +481,16 @@ void vp_init_simple(struct vp_device *vp, struct pci_device *pci)
                                       offsetof(struct virtio_pci_cap, offset));
             base = PCI_BASE_ADDRESS_0 + 4 * vp_cap->bar;
             addr = pci_config_readl(pci->bdf, base);
-            if (addr & PCI_BASE_ADDRESS_SPACE_IO) {
+            もし (addr & PCI_BASE_ADDRESS_SPACE_IO) {
                 addr &= PCI_BASE_ADDRESS_IO_MASK;
                 vp_cap->mode = VP_ACCESS_IO;
-            } else if ((addr & PCI_BASE_ADDRESS_MEM_TYPE_MASK) ==
+            } 否则 もし ((addr & PCI_BASE_ADDRESS_MEM_TYPE_MASK) ==
                        PCI_BASE_ADDRESS_MEM_TYPE_64) {
                 addr &= PCI_BASE_ADDRESS_MEM_MASK;
                 addr |= (u64)pci_config_readl(pci->bdf, base + 4) << 32;
                 vp_cap->mode = (addr > 0xffffffffll) ?
                     VP_ACCESS_PCICFG : VP_ACCESS_MMIO;
-            } else {
+            } 否则 {
                 addr &= PCI_BASE_ADDRESS_MEM_MASK;
                 vp_cap->mode = VP_ACCESS_MMIO;
             }
@@ -498,8 +498,8 @@ void vp_init_simple(struct vp_device *vp, struct pci_device *pci)
             case VP_ACCESS_IO:
             {
                 u32 addr = pci_enable_iobar(pci, base);
-                if (!addr)
-                    return;
+                もし (!addr)
+                    戻る;
                 vp_cap->ioaddr = addr + offset;
                 mode = "io";
                 break;
@@ -507,8 +507,8 @@ void vp_init_simple(struct vp_device *vp, struct pci_device *pci)
             case VP_ACCESS_MMIO:
             {
                 void *addr = pci_enable_membar(pci, base);
-                if (!addr)
-                    return;
+                もし (!addr)
+                    戻る;
                 vp_cap->memaddr = addr + offset;
                 mode = "mmio";
                 break;
@@ -529,15 +529,15 @@ void vp_init_simple(struct vp_device *vp, struct pci_device *pci)
         cap = pci_find_capability(pci->bdf, PCI_CAP_ID_VNDR, cap);
     }
 
-    if (vp->common.cap && vp->notify.cap && vp->isr.cap && vp->device.cap) {
+    もし (vp->common.cap && vp->notify.cap && vp->isr.cap && vp->device.cap) {
         dprintf(1, "pci dev %pP using modern (1.0) virtio mode\n", pci);
         vp->use_modern = 1;
-    } else {
+    } 否则 {
         dprintf(1, "pci dev %pP using legacy (0.9.5) virtio mode\n", pci);
         vp->legacy.bar = 0;
         vp->legacy.ioaddr = pci_enable_iobar(pci, PCI_BASE_ADDRESS_0);
-        if (!vp->legacy.ioaddr)
-            return;
+        もし (!vp->legacy.ioaddr)
+            戻る;
         vp->legacy.mode = VP_ACCESS_IO;
     }
 

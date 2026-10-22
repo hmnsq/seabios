@@ -41,20 +41,20 @@ static void
 handle_1ab102(struct bregs *regs)
 {
     u32 id = (regs->cx << 16) | regs->dx;
-    int count = regs->si;
-    int bus = -1;
-    while (bus < GET_GLOBAL(MaxPCIBus)) {
+    整数 count = regs->si;
+    整数 bus = -1;
+    ながら (bus < GET_GLOBAL(MaxPCIBus)) {
         bus++;
-        int bdf;
+        整数 bdf;
         foreachbdf(bdf, bus) {
             u32 v = pci_config_readl(bdf, PCI_VENDOR_ID);
-            if (v != id)
+            もし (v != id)
                 continue;
-            if (count--)
+            もし (count--)
                 continue;
             regs->bx = bdf;
             set_code_success(regs);
-            return;
+            戻る;
         }
     }
     set_code_invalid(regs, RET_DEVICE_NOT_FOUND);
@@ -64,21 +64,21 @@ handle_1ab102(struct bregs *regs)
 static void
 handle_1ab103(struct bregs *regs)
 {
-    int count = regs->si;
+    整数 count = regs->si;
     u32 classprog = regs->ecx;
-    int bus = -1;
-    while (bus < GET_GLOBAL(MaxPCIBus)) {
+    整数 bus = -1;
+    ながら (bus < GET_GLOBAL(MaxPCIBus)) {
         bus++;
-        int bdf;
+        整数 bdf;
         foreachbdf(bdf, bus) {
             u32 v = pci_config_readl(bdf, PCI_CLASS_REVISION);
-            if ((v>>8) != classprog)
+            もし ((v>>8) != classprog)
                 continue;
-            if (count--)
+            もし (count--)
                 continue;
             regs->bx = bdf;
             set_code_success(regs);
-            return;
+            戻る;
         }
     }
     set_code_invalid(regs, RET_DEVICE_NOT_FOUND);
@@ -137,9 +137,9 @@ static void
 handle_1ab10e(struct bregs *regs)
 {
     struct pir_header *pirtable_gf = GET_GLOBAL(PirAddr);
-    if (! pirtable_gf) {
+    もし (! pirtable_gf) {
         set_code_invalid(regs, RET_FUNC_NOT_SUPPORTED);
-        return;
+        戻る;
     }
     struct pir_header *pirtable_g = GLOBALFLAT2GLOBAL(pirtable_gf);
 
@@ -153,9 +153,9 @@ handle_1ab10e(struct bregs *regs)
     u16 bufsize = GET_FARVAR(regs->es, param_far->size);
     u16 pirsize = GET_GLOBAL(pirtable_g->size) - sizeof(struct pir_header);
     SET_FARVAR(regs->es, param_far->size, pirsize);
-    if (bufsize < pirsize) {
+    もし (bufsize < pirsize) {
         set_code_invalid(regs, RET_BUFFER_TOO_SMALL);
-        return;
+        戻る;
     }
 
     // Get dest buffer.
@@ -184,9 +184,9 @@ handle_1ab1(struct bregs *regs)
 {
     //debug_stub(regs);
 
-    if (! CONFIG_PCIBIOS) {
+    もし (! CONFIG_PCIBIOS) {
         set_invalid(regs);
-        return;
+        戻る;
     }
 
     switch (regs->al) {

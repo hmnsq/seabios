@@ -18,13 +18,13 @@ struct pci_device {
     u8 secondary_bus;
 
     // Local information on device.
-    int have_driver;
+    整数 have_driver;
 };
 extern struct hlist_head PCIDevices;
-extern int MaxPCIBus;
+extern 整数 MaxPCIBus;
 
 static inline u32 pci_classprog(struct pci_device *pci) {
-    return (pci->class << 8) | pci->prog_if;
+    戻る (pci->class << 8) | pci->prog_if;
 }
 
 #define foreachpci(PCI)                                 \
@@ -65,7 +65,7 @@ struct pci_device_id {
 void pci_probe_devices(void);
 struct pci_device *pci_find_device(u16 vendid, u16 devid);
 struct pci_device *pci_find_class(u16 classid);
-int pci_init_device(const struct pci_device_id *ids
+整数 pci_init_device(const struct pci_device_id *ids
                     , struct pci_device *pci, void *arg);
 struct pci_device *pci_find_init_device(const struct pci_device_id *ids
                                         , void *arg);
