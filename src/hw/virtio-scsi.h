@@ -4,9 +4,9 @@
 #define VIRTIO_SCSI_CDB_SIZE      32
 #define VIRTIO_SCSI_SENSE_SIZE    96
 
-struct virtio_scsi_config
+সংরচনা virtio_scsi_config
 {
-    u32 num_queues;
+    u32 অঙ্ক_queues;
     u32 seg_max;
     u32 max_sectors;
     u32 cmd_per_lun;
@@ -19,17 +19,17 @@ struct virtio_scsi_config
 } __attribute__((packed));
 
 /* This is the first element of the "out" scatter-gather list. */
-struct virtio_scsi_req_cmd {
+সংরচনা virtio_scsi_req_cmd {
     u8 lun[8];
     u64 id;
     u8 task_attr;
     u8 prio;
     u8 crn;
-    char cdb[VIRTIO_SCSI_CDB_SIZE];
+    ৱর্ণ cdb[VIRTIO_SCSI_CDB_SIZE];
 } __attribute__((packed));
 
 /* This is the first element of the "in" scatter-gather list. */
-struct virtio_scsi_resp_cmd {
+সংরচনা virtio_scsi_resp_cmd {
     u32 sense_len;
     u32 residual;
     u16 status_qualifier;
@@ -40,9 +40,9 @@ struct virtio_scsi_resp_cmd {
 
 #define VIRTIO_SCSI_S_OK            0
 
-struct disk_op_s;
-int virtio_scsi_process_op(struct disk_op_s *op);
-void virtio_scsi_setup(void);
-void init_virtio_scsi_mmio(void *data);
+সংরচনা disk_op_s;
+পূর্ণাঙ্ক virtio_scsi_process_op(সংরচনা disk_op_s *op);
+শূন্য virtio_scsi_setup(শূন্য);
+শূন্য init_virtio_scsi_mmio(শূন্য *data);
 
 #endif /* _VIRTIO_SCSI_H */

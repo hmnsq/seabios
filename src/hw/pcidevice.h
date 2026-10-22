@@ -1,14 +1,14 @@
 #ifndef __PCIDEVICE_H
 #define __PCIDEVICE_H
 
-#include "types.h" // u32
-#include "list.h" // hlist_node
+#অন্তর্ভাৱ "types.h" // u32
+#অন্তর্ভাৱ "list.h" // hlist_node
 
-struct pci_device {
+সংরচনা pci_device {
     u16 bdf;
     u8 rootbus;
-    struct hlist_node node;
-    struct pci_device *parent;
+    সংরচনা hlist_গ্ৰন্থি গ্ৰন্থি;
+    সংরচনা pci_device *parent;
 
     // Configuration space device information
     u16 vendor, device;
@@ -18,25 +18,25 @@ struct pci_device {
     u8 secondary_bus;
 
     // Local information on device.
-    int have_driver;
+    পূর্ণাঙ্ক have_driver;
 };
-extern struct hlist_head PCIDevices;
-extern int MaxPCIBus;
+বাহ্য সংরচনা hlist_head PCIDevices;
+বাহ্য পূর্ণাঙ্ক MaxPCIBus;
 
-static inline u32 pci_classprog(struct pci_device *pci) {
-    return (pci->class << 8) | pci->prog_if;
+স্থির অন্তঃস্থ u32 pci_classprog(সংরচনা pci_device *pci) {
+    ঘূৰাই (pci->class << 8) | pci->prog_if;
 }
 
 #define foreachpci(PCI)                                 \
-    hlist_for_each_entry(PCI, &PCIDevices, node)
+    hlist_for_each_entry(PCI, &PCIDevices, গ্ৰন্থি)
 
 #define PCI_ANY_ID      (~0)
-struct pci_device_id {
+সংরচনা pci_device_id {
     u32 vendid;
     u32 devid;
     u32 class;
     u32 class_mask;
-    void (*func)(struct pci_device *pci, void *arg);
+    শূন্য (*func)(সংরচনা pci_device *pci, শূন্য *arg);
 };
 
 #define PCI_DEVICE(vendor_id, device_id, init_func)     \
@@ -62,15 +62,15 @@ struct pci_device_id {
         .vendid = 0,                            \
     }
 
-void pci_probe_devices(void);
-struct pci_device *pci_find_device(u16 vendid, u16 devid);
-struct pci_device *pci_find_class(u16 classid);
-int pci_init_device(const struct pci_device_id *ids
-                    , struct pci_device *pci, void *arg);
-struct pci_device *pci_find_init_device(const struct pci_device_id *ids
-                                        , void *arg);
-void pci_enable_busmaster(struct pci_device *pci);
-u16 pci_enable_iobar(struct pci_device *pci, u32 addr);
-void *pci_enable_membar(struct pci_device *pci, u32 addr);
+শূন্য pci_probe_devices(শূন্য);
+সংরচনা pci_device *pci_find_device(u16 vendid, u16 devid);
+সংরচনা pci_device *pci_find_class(u16 classid);
+পূর্ণাঙ্ক pci_init_device(ধ্রুৱ সংরচনা pci_device_id *ids
+                    , সংরচনা pci_device *pci, শূন্য *arg);
+সংরচনা pci_device *pci_find_init_device(ধ্রুৱ সংরচনা pci_device_id *ids
+                                        , শূন্য *arg);
+শূন্য pci_enable_busmaster(সংরচনা pci_device *pci);
+u16 pci_enable_iobar(সংরচনা pci_device *pci, u32 addr);
+শূন্য *pci_enable_membar(সংরচনা pci_device *pci, u32 addr);
 
 #endif // pcidevice.h

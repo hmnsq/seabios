@@ -1,35 +1,35 @@
 #ifndef TPM_DRIVERS_H
 #define TPM_DRIVERS_H
 
-#include "types.h" // u32
+#অন্তর্ভাৱ "types.h" // u32
 
 
-enum tpmDurationType {
+গণনা tpmDurationType {
     TPM_DURATION_TYPE_SHORT = 0,
     TPM_DURATION_TYPE_MEDIUM,
     TPM_DURATION_TYPE_LONG,
 };
 
-typedef u8 TPMVersion;
+প্রকারনির্দেশ u8 TPMVersion;
 
 #define TPM_VERSION_NONE 0
 #define TPM_VERSION_1_2  1
 #define TPM_VERSION_2    2
 
-TPMVersion tpmhw_probe(void);
-int tpmhw_is_present(void);
-struct tpm_req_header;
-int tpmhw_transmit(u8 locty, struct tpm_req_header *req,
-                   void *respbuffer, u32 *respbufferlen,
-                   enum tpmDurationType to_t);
-void tpmhw_set_timeouts(u32 timeouts[4], u32 durations[3]);
+TPMVersion tpmhw_probe(শূন্য);
+পূর্ণাঙ্ক tpmhw_is_present(শূন্য);
+সংরচনা tpm_req_header;
+পূর্ণাঙ্ক tpmhw_transmit(u8 locty, সংরচনা tpm_req_header *req,
+                   শূন্য *respbuffer, u32 *respbufferlen,
+                   গণনা tpmDurationType to_t);
+শূন্য tpmhw_set_timeouts(u32 timeouts[4], u32 durations[3]);
 
 /* CRB driver */
 /* address of locality 0 (CRB) */
 #define TPM_CRB_BASE_ADDRESS        0xfed40000
 
 #define CRB_REG(LOCTY, REG)                                 \
-    (void *)(TPM_CRB_BASE_ADDRESS + (LOCTY << 12) + REG)
+    (শূন্য *)(TPM_CRB_BASE_ADDRESS + (LOCTY << 12) + REG)
 
 /* hardware registers */
 #define CRB_REG_LOC_STATE              0x0
@@ -55,7 +55,7 @@ void tpmhw_set_timeouts(u32 timeouts[4], u32 durations[3]);
 #define TPM_TIS_BASE_ADDRESS        0xfed40000
 
 #define TIS_REG(LOCTY, REG) \
-    (void *)(TPM_TIS_BASE_ADDRESS + (LOCTY << 12) + REG)
+    (শূন্য *)(TPM_TIS_BASE_ADDRESS + (LOCTY << 12) + REG)
 
 /* hardware registers */
 #define TIS_REG_ACCESS                 0x0
@@ -100,7 +100,7 @@ void tpmhw_set_timeouts(u32 timeouts[4], u32 durations[3]);
 #define TIS2_DEFAULT_TIMEOUT_C          200000 /* us */
 #define TIS2_DEFAULT_TIMEOUT_D           30000 /* us */
 
-enum tisTimeoutType {
+গণনা tisTimeoutType {
     TIS_TIMEOUT_TYPE_A = 0,
     TIS_TIMEOUT_TYPE_B,
     TIS_TIMEOUT_TYPE_C,

@@ -1,8 +1,8 @@
 #ifndef _VIRTIO_PCI_H
 #define _VIRTIO_PCI_H
 
-#include "x86.h" // inl
-#include "biosvar.h" // GET_LOWFLAT
+#অন্তর্ভাৱ "x86.h" // inl
+#অন্তর্ভাৱ "biosvar.h" // GET_LOWFLAT
 
 /* The bit of the ISR which indicates a device configuration change. */
 #define VIRTIO_PCI_ISR_CONFIG           0x2
@@ -12,11 +12,11 @@
 
 /* --- virtio 0.9.5 (legacy) struct --------------------------------- */
 
-typedef struct virtio_pci_legacy {
+প্রকারনির্দেশ সংরচনা virtio_pci_legacy {
     u32 host_features;
     u32 guest_features;
     u32 queue_pfn;
-    u16 queue_num;
+    u16 queue_অঙ্ক;
     u16 queue_sel;
     u16 queue_notify;
     u8  status;
@@ -38,7 +38,7 @@ typedef struct virtio_pci_legacy {
 #define VIRTIO_PCI_CAP_PCI_CFG          5
 
 /* This is the PCI capability header: */
-struct virtio_pci_cap {
+সংরচনা virtio_pci_cap {
     u8 cap_vndr;          /* Generic PCI field: PCI_CAP_ID_VNDR */
     u8 cap_next;          /* Generic PCI field: next ptr. */
     u8 cap_len;           /* Generic PCI field: capability length */
@@ -49,24 +49,24 @@ struct virtio_pci_cap {
     u32 length;           /* Length of the structure, in bytes. */
 };
 
-struct virtio_pci_notify_cap {
-    struct virtio_pci_cap cap;
+সংরচনা virtio_pci_notify_cap {
+    সংরচনা virtio_pci_cap cap;
     u32 notify_off_multiplier;   /* Multiplier for queue_notify_off. */
 };
 
-struct virtio_pci_cfg_cap {
-    struct virtio_pci_cap cap;
+সংরচনা virtio_pci_cfg_cap {
+    সংরচনা virtio_pci_cap cap;
     u8 pci_cfg_data[4]; /* Data for BAR access. */
 };
 
-typedef struct virtio_pci_common_cfg {
+প্রকারনির্দেশ সংরচনা virtio_pci_common_cfg {
     /* About the whole device. */
     u32 device_feature_select;   /* read-write */
     u32 device_feature;          /* read-only */
     u32 guest_feature_select;    /* read-write */
     u32 guest_feature;           /* read-write */
     u16 msix_config;             /* read-write */
-    u16 num_queues;              /* read-only */
+    u16 অঙ্ক_queues;              /* read-only */
     u8 device_status;            /* read-write */
     u8 config_generation;        /* read-only */
 
@@ -84,7 +84,7 @@ typedef struct virtio_pci_common_cfg {
     u32 queue_used_hi;           /* read-write */
 } virtio_pci_common_cfg;
 
-typedef struct virtio_pci_isr {
+প্রকারনির্দেশ সংরচনা virtio_pci_isr {
     u8 isr;
 } virtio_pci_isr;
 
@@ -94,9 +94,9 @@ typedef struct virtio_pci_isr {
 #define VP_ACCESS_MMIO     2
 #define VP_ACCESS_PCICFG   3
 
-struct vp_cap {
-    union {
-        void *memaddr;
+সংরচনা vp_cap {
+    সঙ্ঘ {
+        শূন্য *memaddr;
         u32 ioaddr;
         u32 baroff;
     };
@@ -107,46 +107,46 @@ struct vp_cap {
     u8 mode;
 };
 
-struct vp_device {
-    struct vp_cap common, notify, isr, device, legacy;
+সংরচনা vp_device {
+    সংরচনা vp_cap common, notify, isr, device, legacy;
     u32 notify_off_multiplier;
     u8 use_modern;
     u8 use_mmio;
 };
 
-u64 _vp_read(struct vp_cap *cap, u32 offset, u8 size);
-void _vp_write(struct vp_cap *cap, u32 offset, u8 size, u64 var);
+u64 _vp_read(সংরচনা vp_cap *cap, u32 offset, u8 size);
+শূন্য _vp_write(সংরচনা vp_cap *cap, u32 offset, u8 size, u64 var);
 
 #define vp_read(_cap, _struct, _field)        \
     _vp_read(_cap, offsetof(_struct, _field), \
-             sizeof(((_struct *)0)->_field))
+             পরিমাণ(((_struct *)0)->_field))
 
 #define vp_write(_cap, _struct, _field, _var)           \
     _vp_write(_cap, offsetof(_struct, _field),          \
-             sizeof(((_struct *)0)->_field), _var)
+             পরিমাণ(((_struct *)0)->_field), _var)
 
-u64 vp_get_features(struct vp_device *vp);
-void vp_set_features(struct vp_device *vp, u64 features);
+u64 vp_get_features(সংরচনা vp_device *vp);
+শূন্য vp_set_features(সংরচনা vp_device *vp, u64 features);
 
-static inline void vp_get_legacy(struct vp_device *vp, unsigned offset,
-                                 void *buf, unsigned len)
+স্থির অন্তঃস্থ শূন্য vp_get_legacy(সংরচনা vp_device *vp, unsigned offset,
+                                 শূন্য *buf, unsigned len)
 {
     u8 *ptr = buf;
     unsigned i;
 
-    for (i = 0; i < len; i++)
+    বাবে (i = 0; i < len; i++)
         ptr[i] = vp_read(&vp->legacy, virtio_pci_legacy, device[i]);
 }
 
-u8 vp_get_status(struct vp_device *vp);
-void vp_set_status(struct vp_device *vp, u8 status);
-u8 vp_get_isr(struct vp_device *vp);
-void vp_reset(struct vp_device *vp);
+u8 vp_get_status(সংরচনা vp_device *vp);
+শূন্য vp_set_status(সংরচনা vp_device *vp, u8 status);
+u8 vp_get_isr(সংরচনা vp_device *vp);
+শূন্য vp_reset(সংরচনা vp_device *vp);
 
-struct pci_device;
-struct vring_virtqueue;
-void vp_init_simple(struct vp_device *vp, struct pci_device *pci);
-void vp_notify(struct vp_device *vp, struct vring_virtqueue *vq);
-int vp_find_vq(struct vp_device *vp, int queue_index,
-               struct vring_virtqueue **p_vq);
+সংরচনা pci_device;
+সংরচনা vring_virtqueue;
+শূন্য vp_init_simple(সংরচনা vp_device *vp, সংরচনা pci_device *pci);
+শূন্য vp_notify(সংরচনা vp_device *vp, সংরচনা vring_virtqueue *vq);
+পূর্ণাঙ্ক vp_find_vq(সংরচনা vp_device *vp, পূর্ণাঙ্ক queue_index,
+               সংরচনা vring_virtqueue **p_vq);
 #endif /* _VIRTIO_PCI_H_ */

@@ -6,22 +6,22 @@
 *
 * This work is licensed under the terms of the GNU LGPLv3.
 */
-#include "malloc.h" // malloc_tmphigh
-#include "string.h" // memcpy
-#include "util.h" // struct bmp_decdata
+#অন্তর্ভাৱ "malloc.h" // malloc_tmphigh
+#অন্তর্ভাৱ "string.h" // memcpy
+#অন্তর্ভাৱ "util.h" // struct bmp_decdata
 
-struct bmp_decdata {
-    struct tagRGBQUAD *quadp;
-    unsigned char *datap;
-    int width;
-    int height;
-    int bpp;
+সংরচনা bmp_decdata {
+    সংরচনা tagRGBQUAD *quadp;
+    unsigned ৱর্ণ *datap;
+    পূর্ণাঙ্ক width;
+    পূর্ণাঙ্ক height;
+    পূর্ণাঙ্ক bpp;
 };
 
 #define bmp_load4byte(addr) (*(u32 *)(addr))
 #define bmp_load2byte(addr) (*(u16 *)(addr))
 
-typedef struct tagBITMAPFILEHEADER {
+প্রকারনির্দেশ সংরচনা tagBITMAPFILEHEADER {
     u8 bfType[2];
     u8 bfSize[4];
     u8 bfReserved1[2];
@@ -29,12 +29,12 @@ typedef struct tagBITMAPFILEHEADER {
     u8 bfOffBits[4];
 } BITMAPFILEHEADER, tagBITMAPFILEHEADER;
 
-typedef struct tagBITMAPINFOHEADER {
+প্রকারনির্দেশ সংরচনা tagBITMAPINFOHEADER {
     u8 biSize[4];
     u8 biWidth[4];
     u8 biHeight[4];
     u8 biPlanes[2];
-    u8 biBitCount[2];
+    u8 bi_Bit_গুনতি[2];
     u8 biCompression[4];
     u8 biSizeImage[4];
     u8 biXPelsPerMeter[4];
@@ -43,7 +43,7 @@ typedef struct tagBITMAPINFOHEADER {
     u8 biClrImportant[4];
 } BITMAPINFOHEADER, tagBITMAPINFOHEADER;
 
-typedef struct tagRGBQUAD {
+প্রকারনির্দেশ সংরচনা tagRGBQUAD {
     u8 rgbBlue;
     u8 rgbGreen;
     u8 rgbRed;
@@ -56,45 +56,45 @@ typedef struct tagRGBQUAD {
 *   arrange horizontal pixel data, add extra space in the dest buffer
 *       for every line
 */
-static void raw_data_format_adjust(u8 *src, u8 *dest, int width,
-		int height, int bytes_per_line_src, int bytes_per_line_dest)
+স্থির শূন্য raw_data_format_adjust(u8 *src, u8 *dest, পূর্ণাঙ্ক width,
+		পূর্ণাঙ্ক height, পূর্ণাঙ্ক bytes_per_সাৰি_src, পূর্ণাঙ্ক bytes_per_সাৰি_dest)
 {
-    int i;
-    for (i = 0 ; i < height ; i++) {
-        memcpy(dest + i * bytes_per_line_dest,
-           src + (height - 1 - i) * bytes_per_line_src, bytes_per_line_src);
+    পূর্ণাঙ্ক i;
+    বাবে (i = 0 ; i < height ; i++) {
+        memcpy(dest + i * bytes_per_সাৰি_dest,
+           src + (height - 1 - i) * bytes_per_সাৰি_src, bytes_per_সাৰি_src);
     }
 }
 
 /* allocate decdata struct */
-struct bmp_decdata *bmp_alloc(void)
+সংরচনা bmp_decdata *bmp_alloc(শূন্য)
 {
-    struct bmp_decdata *bmp = malloc_tmphigh(sizeof(*bmp));
-    return bmp;
+    সংরচনা bmp_decdata *bmp = malloc_tmphigh(পরিমাণ(*bmp));
+    ঘূৰাই bmp;
 }
 
 /* extract information from bmp file data */
-int bmp_decode(struct bmp_decdata *bmp, unsigned char *data, int data_size)
+পূর্ণাঙ্ক bmp_decode(সংরচনা bmp_decdata *bmp, unsigned ৱর্ণ *data, পূর্ণাঙ্ক data_size)
 {
-    if (data_size < 54)
-        return 1;
+    যদি (data_size < 54)
+        ঘূৰাই 1;
 
     u16 bmp_filehead = bmp_load2byte(data + 0);
-    if (bmp_filehead != 0x4d42)
-        return 2;
+    যদি (bmp_filehead != 0x4d42)
+        ঘূৰাই 2;
     u32 bmp_recordsize = bmp_load4byte(data + 2);
-    if (bmp_recordsize != data_size)
-        return 3;
+    যদি (bmp_recordsize != data_size)
+        ঘূৰাই 3;
     u32 bmp_dataoffset = bmp_load4byte(data + 10);
-    bmp->datap = (unsigned char *)data + bmp_dataoffset;
+    bmp->datap = (unsigned ৱর্ণ *)data + bmp_dataoffset;
     bmp->width = bmp_load4byte(data + 18);
     bmp->height = bmp_load4byte(data + 22);
     bmp->bpp = bmp_load2byte(data + 28);
-    return 0;
+    ঘূৰাই 0;
 }
 
 /* get bmp properties */
-void bmp_get_info(struct bmp_decdata *bmp, int *width, int *height, int *bpp)
+শূন্য bmp_get_info(সংরচনা bmp_decdata *bmp, পূর্ণাঙ্ক *width, পূর্ণাঙ্ক *height, পূর্ণাঙ্ক *bpp)
 {
     *width = bmp->width;
     *height = bmp->height;
@@ -102,15 +102,15 @@ void bmp_get_info(struct bmp_decdata *bmp, int *width, int *height, int *bpp)
 }
 
 /* flush flat picture data to *pc */
-int bmp_show(struct bmp_decdata *bmp, unsigned char *pic, int width,
-             int height, int depth, int bytes_per_line_dest)
+পূর্ণাঙ্ক bmp_show(সংরচনা bmp_decdata *bmp, unsigned ৱর্ণ *pic, পূর্ণাঙ্ক width,
+             পূর্ণাঙ্ক height, পূর্ণাঙ্ক depth, পূর্ণাঙ্ক bytes_per_সাৰি_dest)
 {
-    if (bmp->datap == pic)
-        return 0;
-    if ((depth == bmp->bpp) && (bmp->bpp%8 == 0)) {
+    যদি (bmp->datap == pic)
+        ঘূৰাই 0;
+    যদি ((depth == bmp->bpp) && (bmp->bpp%8 == 0)) {
         raw_data_format_adjust(bmp->datap, pic, width, height,
-			(bmp->bpp/8)*width, bytes_per_line_dest);
-        return 0;
+			(bmp->bpp/8)*width, bytes_per_সাৰি_dest);
+        ঘূৰাই 0;
     }
-    return 1;
+    ঘূৰাই 1;
 }

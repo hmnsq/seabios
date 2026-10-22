@@ -5,31 +5,31 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_*
-#include "malloc.h" // memalign_low
-#include "memmap.h" // PAGE_SIZE
-#include "output.h" // dprintf
-#include "pcidevice.h" // foreachpci
-#include "pci_ids.h" // PCI_CLASS_SERIAL_USB_XHCI
-#include "pci_regs.h" // PCI_BASE_ADDRESS_0
-#include "string.h" // memcpy
-#include "usb.h" // struct usb_s
-#include "usb-xhci.h" // struct ehci_qh
-#include "util.h" // timer_calc
-#include "x86.h" // readl
+#অন্তর্ভাৱ "config.h" // CONFIG_*
+#অন্তর্ভাৱ "malloc.h" // memalign_low
+#অন্তর্ভাৱ "memmap.h" // PAGE_SIZE
+#অন্তর্ভাৱ "output.h" // dprintf
+#অন্তর্ভাৱ "pcidevice.h" // foreachpci
+#অন্তর্ভাৱ "pci_ids.h" // PCI_CLASS_SERIAL_USB_XHCI
+#অন্তর্ভাৱ "pci_regs.h" // PCI_BASE_ADDRESS_0
+#অন্তর্ভাৱ "string.h" // memcpy
+#অন্তর্ভাৱ "usb.h" // struct usb_s
+#অন্তর্ভাৱ "usb-xhci.h" // struct ehci_qh
+#অন্তর্ভাৱ "util.h" // timer_calc
+#অন্তর্ভাৱ "x86.h" // readl
 
 // --------------------------------------------------------------
 // configuration
 
-#define XHCI_RING_ITEMS          16
-#define XHCI_RING_SIZE           (XHCI_RING_ITEMS*sizeof(struct xhci_trb))
+#define XHCI_RING_বস্তুসমূহ          16
+#define XHCI_RING_SIZE           (XHCI_RING_বস্তুসমূহ*পরিমাণ(সংরচনা xhci_trb))
 
 /*
  *  xhci_ring structs are allocated with XHCI_RING_SIZE alignment,
  *  then we can get it from a trb pointer (provided by evt ring).
  */
 #define XHCI_RING(_trb)          \
-    ((struct xhci_ring*)((u32)(_trb) & ~(XHCI_RING_SIZE-1)))
+    ((সংরচনা xhci_ring*)((u32)(_trb) & ~(XHCI_RING_SIZE-1)))
 
 // --------------------------------------------------------------
 // bit definitions
@@ -64,8 +64,8 @@
 #define XHCI_PORTSC_SPEED_SHIFT      10
 #define XHCI_PORTSC_SPEED_MASK   0xf
 #define XHCI_PORTSC_SPEED_FULL   (1<<10)
-#define XHCI_PORTSC_SPEED_LOW    (2<<10)
-#define XHCI_PORTSC_SPEED_HIGH   (3<<10)
+#define XHCI_PORTSC_SPEED_নিচেৰ    (2<<10)
+#define XHCI_PORTSC_SPEED_উপৰেৰ   (3<<10)
 #define XHCI_PORTSC_SPEED_SUPER  (4<<10)
 #define XHCI_PORTSC_PIC_SHIFT        14
 #define XHCI_PORTSC_PIC_MASK     0x3
@@ -122,7 +122,7 @@
 #define TRB_INTR_MASK       0x3ff
 #define TRB_INTR(t)         (((t).status >> TRB_INTR_SHIFT) & TRB_INTR_MASK)
 
-typedef enum TRBType {
+প্রকারনির্দেশ গণনা TRBType {
     TRB_RESERVED = 0,
     TR_NORMAL,
     TR_SETUP,
@@ -157,7 +157,7 @@ typedef enum TRBType {
     ER_MFINDEX_WRAP,
 } TRBType;
 
-typedef enum TRBCCode {
+প্রকারনির্দেশ গণনা TRBCCode {
     CC_INVALID = 0,
     CC_SUCCESS,
     CC_DATA_BUFFER_ERROR,
@@ -195,7 +195,7 @@ typedef enum TRBCCode {
     CC_SPLIT_TRANSACTION_ERROR
 } TRBCCode;
 
-enum {
+গণনা {
     PLS_U0              =  0,
     PLS_U1              =  1,
     PLS_U2              =  2,
@@ -217,59 +217,59 @@ enum {
 // --------------------------------------------------------------
 // state structs
 
-struct xhci_ring {
-    struct xhci_trb      ring[XHCI_RING_ITEMS];
-    struct xhci_trb      evt;
+সংরচনা xhci_ring {
+    সংরচনা xhci_trb      ring[XHCI_RING_বস্তুসমূহ];
+    সংরচনা xhci_trb      evt;
     u32                  eidx;
     u32                  nidx;
     u32                  cs;
-    struct mutex_s       lock;
+    সংরচনা mutex_s       lock;
 };
 
-struct xhci_portmap {
+সংরচনা xhci_portmap {
     u8 start;
-    u8 count;
+    u8 গুনতি;
 };
 
-struct usb_xhci_s {
-    struct usb_s         usb;
+সংরচনা usb_xhci_s {
+    সংরচনা usb_s         usb;
 
     /* devinfo */
     u32                  xcap;
     u32                  ports;
     u32                  slots;
     u8                   context64;
-    struct xhci_portmap  usb2;
-    struct xhci_portmap  usb3;
+    সংরচনা xhci_portmap  usb2;
+    সংরচনা xhci_portmap  usb3;
 
     /* xhci registers */
-    struct xhci_caps     *caps;
-    struct xhci_op       *op;
-    struct xhci_pr       *pr;
-    struct xhci_ir       *ir;
-    struct xhci_db       *db;
+    সংরচনা xhci_caps     *caps;
+    সংরচনা xhci_op       *op;
+    সংরচনা xhci_pr       *pr;
+    সংরচনা xhci_ir       *ir;
+    সংরচনা xhci_db       *db;
 
     /* xhci data structures */
-    struct xhci_devlist  *devs;
-    struct xhci_ring     *cmds;
-    struct xhci_ring     *evts;
-    struct xhci_er_seg   *eseg;
+    সংরচনা xhci_devlist  *devs;
+    সংরচনা xhci_ring     *cmds;
+    সংরচনা xhci_ring     *evts;
+    সংরচনা xhci_er_seg   *eseg;
 };
 
-struct xhci_pipe {
-    struct xhci_ring     reqs;
+সংরচনা xhci_pipe {
+    সংরচনা xhci_ring     reqs;
 
-    struct usb_pipe      pipe;
+    সংরচনা usb_pipe      pipe;
     u32                  slotid;
     u32                  epid;
-    void                 *buf;
-    int                  bufused;
+    শূন্য                 *buf;
+    পূর্ণাঙ্ক                  bufused;
 };
 
 // --------------------------------------------------------------
 // tables
 
-static const char *speed_name[16] = {
+স্থির ধ্রুৱ ৱর্ণ *speed_name[16] = {
     [ 0 ] = " - ",
     [ 1 ] = "Full",
     [ 2 ] = "Low",
@@ -277,7 +277,7 @@ static const char *speed_name[16] = {
     [ 4 ] = "Super",
 };
 
-static const int speed_from_xhci[16] = {
+স্থির ধ্রুৱ পূর্ণাঙ্ক speed_from_xhci[16] = {
     [ 0 ] = -1,
     [ 1 ] = USB_FULLSPEED,
     [ 2 ] = USB_LOWSPEED,
@@ -286,25 +286,25 @@ static const int speed_from_xhci[16] = {
     [ 5 ... 15 ] = -1,
 };
 
-static const int speed_to_xhci[] = {
+স্থির ধ্রুৱ পূর্ণাঙ্ক speed_to_xhci[] = {
     [ USB_FULLSPEED  ] = 1,
     [ USB_LOWSPEED   ] = 2,
     [ USB_HIGHSPEED  ] = 3,
     [ USB_SUPERSPEED ] = 4,
 };
 
-static int wait_bit(u32 *reg, u32 mask, int value, u32 timeout)
+স্থির পূর্ণাঙ্ক wait_bit(u32 *reg, u32 mask, পূর্ণাঙ্ক মান, u32 timeout)
 {
     u32 end = timer_calc(timeout);
 
-    while ((readl(reg) & mask) != value) {
-        if (timer_check(end)) {
+    যেতিয়ালৈ ((readl(reg) & mask) != মান) {
+        যদি (timer_check(end)) {
             warn_timeout();
-            return -1;
+            ঘূৰাই -1;
         }
         yield();
     }
-    return 0;
+    ঘূৰাই 0;
 }
 
 
@@ -315,8 +315,8 @@ static int wait_bit(u32 *reg, u32 mask, int value, u32 timeout)
 #define XHCI_TIME_POSTPOWER 20
 
 // Check if device attached to port
-static void
-xhci_print_port_state(int loglevel, const char *prefix, u32 port, u32 portsc)
+স্থির শূন্য
+xhci_print_port_state(পূর্ণাঙ্ক loglevel, ধ্রুৱ ৱর্ণ *prefix, u32 port, u32 portsc)
 {
     u32 pls = xhci_get_field(portsc, XHCI_PORTSC_PLS);
     u32 speed = xhci_get_field(portsc, XHCI_PORTSC_SPEED);
@@ -328,83 +328,83 @@ xhci_print_port_state(int loglevel, const char *prefix, u32 port, u32 portsc)
             pls, speed, speed_name[speed]);
 }
 
-static int
-xhci_hub_detect(struct usbhub_s *hub, u32 port)
+স্থির পূর্ণাঙ্ক
+xhci_hub_detect(সংরচনা usbhub_s *hub, u32 port)
 {
-    struct usb_xhci_s *xhci = container_of(hub->cntl, struct usb_xhci_s, usb);
+    সংরচনা usb_xhci_s *xhci = container_of(hub->cntl, সংরচনা usb_xhci_s, usb);
     u32 portsc = readl(&xhci->pr[port].portsc);
-    return (portsc & XHCI_PORTSC_CCS) ? 1 : 0;
+    ঘূৰাই (portsc & XHCI_PORTSC_CCS) ? 1 : 0;
 }
 
 // Reset device on port
-static int
-xhci_hub_reset(struct usbhub_s *hub, u32 port)
+স্থির পূর্ণাঙ্ক
+xhci_hub_reset(সংরচনা usbhub_s *hub, u32 port)
 {
-    struct usb_xhci_s *xhci = container_of(hub->cntl, struct usb_xhci_s, usb);
+    সংরচনা usb_xhci_s *xhci = container_of(hub->cntl, সংরচনা usb_xhci_s, usb);
     u32 portsc = readl(&xhci->pr[port].portsc);
-    if (!(portsc & XHCI_PORTSC_CCS))
+    যদি (!(portsc & XHCI_PORTSC_CCS))
         // Device no longer connected?!
-        return -1;
+        ঘূৰাই -1;
 
-    switch (xhci_get_field(portsc, XHCI_PORTSC_PLS)) {
-    case PLS_U0:
+    ৱিকল্প (xhci_get_field(portsc, XHCI_PORTSC_PLS)) {
+    পক্ষ PLS_U0:
         // A USB3 port - controller automatically performs reset
-        break;
-    case PLS_POLLING:
+        ভঙ্গ;
+    পক্ষ PLS_POLLING:
         // A USB2 port - perform device reset
         xhci_print_port_state(3, __func__, port, portsc);
         writel(&xhci->pr[port].portsc, portsc | XHCI_PORTSC_PR);
-        break;
-    default:
-        return -1;
+        ভঙ্গ;
+    স্ৱভাৱ:
+        ঘূৰাই -1;
     }
 
     // Wait for device to complete reset and be enabled
     u32 end = timer_calc(100);
-    for (;;) {
+    বাবে (;;) {
         portsc = readl(&xhci->pr[port].portsc);
-        if (!(portsc & XHCI_PORTSC_CCS))
+        যদি (!(portsc & XHCI_PORTSC_CCS))
             // Device disconnected during reset
-            return -1;
-        if (portsc & XHCI_PORTSC_PED)
+            ঘূৰাই -1;
+        যদি (portsc & XHCI_PORTSC_PED)
             // Reset complete
-            break;
-        if (timer_check(end)) {
+            ভঙ্গ;
+        যদি (timer_check(end)) {
             warn_timeout();
-            return -1;
+            ঘূৰাই -1;
         }
         yield();
     }
 
-    int rc = speed_from_xhci[xhci_get_field(portsc, XHCI_PORTSC_SPEED)];
+    পূর্ণাঙ্ক rc = speed_from_xhci[xhci_get_field(portsc, XHCI_PORTSC_SPEED)];
     xhci_print_port_state(1, "XHCI", port, portsc);
-    return rc;
+    ঘূৰাই rc;
 }
 
-static int
-xhci_hub_portmap(struct usbhub_s *hub, u32 vport)
+স্থির পূর্ণাঙ্ক
+xhci_hub_portmap(সংরচনা usbhub_s *hub, u32 vport)
 {
-    struct usb_xhci_s *xhci = container_of(hub->cntl, struct usb_xhci_s, usb);
+    সংরচনা usb_xhci_s *xhci = container_of(hub->cntl, সংরচনা usb_xhci_s, usb);
     u32 pport = vport + 1;
 
-    if (vport + 1 >= xhci->usb3.start &&
-        vport + 1 < xhci->usb3.start + xhci->usb3.count)
+    যদি (vport + 1 >= xhci->usb3.start &&
+        vport + 1 < xhci->usb3.start + xhci->usb3.গুনতি)
         pport = vport + 2 - xhci->usb3.start;
 
-    if (vport + 1 >= xhci->usb2.start &&
-        vport + 1 < xhci->usb2.start + xhci->usb2.count)
+    যদি (vport + 1 >= xhci->usb2.start &&
+        vport + 1 < xhci->usb2.start + xhci->usb2.গুনতি)
         pport = vport + 2 - xhci->usb2.start;
 
-    return pport;
+    ঘূৰাই pport;
 }
 
-static void
-xhci_hub_disconnect(struct usbhub_s *hub, u32 port)
+স্থির শূন্য
+xhci_hub_disconnect(সংরচনা usbhub_s *hub, u32 port)
 {
     // XXX - should turn the port power off.
 }
 
-static struct usbhub_op_s xhci_hub_ops = {
+স্থির সংরচনা usbhub_op_s xhci_hub_ops = {
     .detect = xhci_hub_detect,
     .reset = xhci_hub_reset,
     .portmap = xhci_hub_portmap,
@@ -412,19 +412,19 @@ static struct usbhub_op_s xhci_hub_ops = {
 };
 
 // Find any devices connected to the root hub.
-static int
-xhci_check_ports(struct usb_xhci_s *xhci)
+স্থির পূর্ণাঙ্ক
+xhci_check_ports(সংরচনা usb_xhci_s *xhci)
 {
     // Wait for port power to stabilize.
     msleep(XHCI_TIME_POSTPOWER);
 
-    struct usbhub_s hub;
-    memset(&hub, 0, sizeof(hub));
+    সংরচনা usbhub_s hub;
+    memset(&hub, 0, পরিমাণ(hub));
     hub.cntl = &xhci->usb;
     hub.portcount = xhci->ports;
     hub.op = &xhci_hub_ops;
     usb_enumerate(&hub);
-    return hub.devcount;
+    ঘূৰাই hub.devcount;
 }
 
 
@@ -432,80 +432,80 @@ xhci_check_ports(struct usb_xhci_s *xhci)
  * Setup
  ****************************************************************/
 
-static void
-xhci_free_pipes(struct usb_xhci_s *xhci)
+স্থির শূন্য
+xhci_free_pipes(সংরচনা usb_xhci_s *xhci)
 {
     // XXX - should walk list of pipes and free unused pipes.
 }
 
-static void
-configure_xhci(void *data)
+স্থির শূন্য
+configure_xhci(শূন্য *data)
 {
-    struct usb_xhci_s *xhci = data;
+    সংরচনা usb_xhci_s *xhci = data;
     u32 reg;
 
-    xhci->devs = memalign_high(64, sizeof(*xhci->devs) * (xhci->slots + 1));
-    xhci->eseg = memalign_high(64, sizeof(*xhci->eseg));
-    xhci->cmds = memalign_high(XHCI_RING_SIZE, sizeof(*xhci->cmds));
-    xhci->evts = memalign_high(XHCI_RING_SIZE, sizeof(*xhci->evts));
-    if (!xhci->devs || !xhci->cmds || !xhci->evts || !xhci->eseg) {
+    xhci->devs = memalign_উপৰেৰ(64, পরিমাণ(*xhci->devs) * (xhci->slots + 1));
+    xhci->eseg = memalign_উপৰেৰ(64, পরিমাণ(*xhci->eseg));
+    xhci->cmds = memalign_উপৰেৰ(XHCI_RING_SIZE, পরিমাণ(*xhci->cmds));
+    xhci->evts = memalign_উপৰেৰ(XHCI_RING_SIZE, পরিমাণ(*xhci->evts));
+    যদি (!xhci->devs || !xhci->cmds || !xhci->evts || !xhci->eseg) {
         warn_noalloc();
-        goto fail;
+        গচ্ছ fail;
     }
-    memset(xhci->devs, 0, sizeof(*xhci->devs) * (xhci->slots + 1));
-    memset(xhci->cmds, 0, sizeof(*xhci->cmds));
-    memset(xhci->evts, 0, sizeof(*xhci->evts));
-    memset(xhci->eseg, 0, sizeof(*xhci->eseg));
+    memset(xhci->devs, 0, পরিমাণ(*xhci->devs) * (xhci->slots + 1));
+    memset(xhci->cmds, 0, পরিমাণ(*xhci->cmds));
+    memset(xhci->evts, 0, পরিমাণ(*xhci->evts));
+    memset(xhci->eseg, 0, পরিমাণ(*xhci->eseg));
 
     reg = readl(&xhci->op->usbcmd);
-    if (reg & XHCI_CMD_RS) {
+    যদি (reg & XHCI_CMD_RS) {
         reg &= ~XHCI_CMD_RS;
         writel(&xhci->op->usbcmd, reg);
-        if (wait_bit(&xhci->op->usbsts, XHCI_STS_HCH, XHCI_STS_HCH, 32) != 0)
-            goto fail;
+        যদি (wait_bit(&xhci->op->usbsts, XHCI_STS_HCH, XHCI_STS_HCH, 32) != 0)
+            গচ্ছ fail;
     }
 
     dprintf(3, "%s: resetting\n", __func__);
     writel(&xhci->op->usbcmd, XHCI_CMD_HCRST);
-    if (wait_bit(&xhci->op->usbcmd, XHCI_CMD_HCRST, 0, 1000) != 0)
-        goto fail;
-    if (wait_bit(&xhci->op->usbsts, XHCI_STS_CNR, 0, 1000) != 0)
-        goto fail;
+    যদি (wait_bit(&xhci->op->usbcmd, XHCI_CMD_HCRST, 0, 1000) != 0)
+        গচ্ছ fail;
+    যদি (wait_bit(&xhci->op->usbsts, XHCI_STS_CNR, 0, 1000) != 0)
+        গচ্ছ fail;
 
     writel(&xhci->op->config, xhci->slots);
-    writel(&xhci->op->dcbaap_low, (u32)xhci->devs);
-    writel(&xhci->op->dcbaap_high, 0);
-    writel(&xhci->op->crcr_low, (u32)xhci->cmds | 1);
-    writel(&xhci->op->crcr_high, 0);
+    writel(&xhci->op->dcbaap_নিচেৰ, (u32)xhci->devs);
+    writel(&xhci->op->dcbaap_উপৰেৰ, 0);
+    writel(&xhci->op->crcr_নিচেৰ, (u32)xhci->cmds | 1);
+    writel(&xhci->op->crcr_উপৰেৰ, 0);
     xhci->cmds->cs = 1;
 
-    xhci->eseg->ptr_low = (u32)xhci->evts;
-    xhci->eseg->ptr_high = 0;
-    xhci->eseg->size = XHCI_RING_ITEMS;
+    xhci->eseg->ptr_নিচেৰ = (u32)xhci->evts;
+    xhci->eseg->ptr_উপৰেৰ = 0;
+    xhci->eseg->size = XHCI_RING_বস্তুসমূহ;
     writel(&xhci->ir->erstsz, 1);
-    writel(&xhci->ir->erdp_low, (u32)xhci->evts);
-    writel(&xhci->ir->erdp_high, 0);
-    writel(&xhci->ir->erstba_low, (u32)xhci->eseg);
-    writel(&xhci->ir->erstba_high, 0);
+    writel(&xhci->ir->erdp_নিচেৰ, (u32)xhci->evts);
+    writel(&xhci->ir->erdp_উপৰেৰ, 0);
+    writel(&xhci->ir->erstba_নিচেৰ, (u32)xhci->eseg);
+    writel(&xhci->ir->erstba_উপৰেৰ, 0);
     xhci->evts->cs = 1;
 
     reg = readl(&xhci->caps->hcsparams2);
     u32 spb = (reg >> 21 & 0x1f) << 5 | reg >> 27;
-    if (spb) {
+    যদি (spb) {
         dprintf(3, "%s: setup %d scratch pad buffers\n", __func__, spb);
-        u64 *spba = memalign_high(64, sizeof(*spba) * spb);
-        void *pad = memalign_high(PAGE_SIZE, PAGE_SIZE * spb);
-        if (!spba || !pad) {
+        u64 *spba = memalign_উপৰেৰ(64, পরিমাণ(*spba) * spb);
+        শূন্য *pad = memalign_উপৰেৰ(PAGE_SIZE, PAGE_SIZE * spb);
+        যদি (!spba || !pad) {
             warn_noalloc();
-            free(spba);
-            free(pad);
-            goto fail;
+            মুক্ত(spba);
+            মুক্ত(pad);
+            গচ্ছ fail;
         }
-        int i;
-        for (i = 0; i < spb; i++)
+        পূর্ণাঙ্ক i;
+        বাবে (i = 0; i < spb; i++)
             spba[i] = (u32)pad + (i * PAGE_SIZE);
-        xhci->devs[0].ptr_low = (u32)spba;
-        xhci->devs[0].ptr_high = 0;
+        xhci->devs[0].ptr_নিচেৰ = (u32)spba;
+        xhci->devs[0].ptr_উপৰেৰ = 0;
     }
 
     reg = readl(&xhci->op->usbcmd);
@@ -513,11 +513,11 @@ configure_xhci(void *data)
     writel(&xhci->op->usbcmd, reg);
 
     // Find devices
-    int count = xhci_check_ports(xhci);
+    পূর্ণাঙ্ক গুনতি = xhci_check_ports(xhci);
     xhci_free_pipes(xhci);
-    if (count)
+    যদি (গুনতি)
         // Success
-        return;
+        ঘূৰাই;
 
     // No devices found - shutdown and free controller.
     dprintf(1, "XHCI no devices found\n");
@@ -527,22 +527,22 @@ configure_xhci(void *data)
     wait_bit(&xhci->op->usbsts, XHCI_STS_HCH, XHCI_STS_HCH, 32);
 
 fail:
-    free(xhci->eseg);
-    free(xhci->evts);
-    free(xhci->cmds);
-    free(xhci->devs);
-    free(xhci);
+    মুক্ত(xhci->eseg);
+    মুক্ত(xhci->evts);
+    মুক্ত(xhci->cmds);
+    মুক্ত(xhci->devs);
+    মুক্ত(xhci);
 }
 
-static struct usb_xhci_s*
-xhci_controller_setup(void *baseaddr)
+স্থির সংরচনা usb_xhci_s*
+xhci_controller_setup(শূন্য *baseaddr)
 {
-    struct usb_xhci_s *xhci = malloc_high(sizeof(*xhci));
-    if (!xhci) {
+    সংরচনা usb_xhci_s *xhci = malloc_উপৰেৰ(পরিমাণ(*xhci));
+    যদি (!xhci) {
         warn_noalloc();
-        return NULL;
+        ঘূৰাই রিক্ত;
     }
-    memset(xhci, 0, sizeof(*xhci));
+    memset(xhci, 0, পরিমাণ(*xhci));
     xhci->caps  = baseaddr;
     xhci->op    = baseaddr + readb(&xhci->caps->caplength);
     xhci->pr    = baseaddr + readb(&xhci->caps->caplength) + 0x400;
@@ -562,19 +562,19 @@ xhci_controller_setup(void *baseaddr)
             , xhci->caps, xhci->ports, xhci->slots
             , xhci->context64 ? 64 : 32);
 
-    if (xhci->xcap) {
+    যদি (xhci->xcap) {
         u32 off;
-        void *addr = baseaddr + xhci->xcap;
-        do {
-            struct xhci_xcap *xcap = addr;
+        শূন্য *addr = baseaddr + xhci->xcap;
+        কৰা {
+            সংরচনা xhci_xcap *xcap = addr;
             u32 ports, name, cap = readl(&xcap->cap);
-            switch (cap & 0xff) {
-            case 0x02:
+            ৱিকল্প (cap & 0xff) {
+            পক্ষ 0x02:
                 name  = readl(&xcap->data[0]);
                 ports = readl(&xcap->data[1]);
                 u8 major = (cap >> 24) & 0xff;
                 u8 minor = (cap >> 16) & 0xff;
-                u8 count = (ports >> 8) & 0xff;
+                u8 গুনতি = (ports >> 8) & 0xff;
                 u8 start = (ports >> 0) & 0xff;
                 dprintf(1, "XHCI    protocol %c%c%c%c %x.%02x"
                         ", %d ports (offset %d), def %x\n"
@@ -583,99 +583,99 @@ xhci_controller_setup(void *baseaddr)
                         , (name >> 16) & 0xff
                         , (name >> 24) & 0xff
                         , major, minor
-                        , count, start
+                        , গুনতি, start
                         , ports >> 16);
-                if (name == 0x20425355 /* "USB " */) {
-                    if (major == 2) {
+                যদি (name == 0x20425355 /* "USB " */) {
+                    যদি (major == 2) {
                         xhci->usb2.start = start;
-                        xhci->usb2.count = count;
+                        xhci->usb2.গুনতি = গুনতি;
                     }
-                    if (major == 3) {
+                    যদি (major == 3) {
                         xhci->usb3.start = start;
-                        xhci->usb3.count = count;
+                        xhci->usb3.গুনতি = গুনতি;
                     }
                 }
-                break;
-            default:
+                ভঙ্গ;
+            স্ৱভাৱ:
                 dprintf(1, "XHCI    extcap 0x%x @ %p\n", cap & 0xff, addr);
-                break;
+                ভঙ্গ;
             }
             off = (cap >> 8) & 0xff;
             addr += off << 2;
-        } while (off > 0);
+        } যেতিয়ালৈ (off > 0);
     }
 
     u32 pagesize = readl(&xhci->op->pagesize);
-    if (PAGE_SIZE != (pagesize<<12)) {
+    যদি (PAGE_SIZE != (pagesize<<12)) {
         dprintf(1, "XHCI driver does not support page size code %d\n"
                 , pagesize<<12);
-        free(xhci);
-        return NULL;
+        মুক্ত(xhci);
+        ঘূৰাই রিক্ত;
     }
 
-    return xhci;
+    ঘূৰাই xhci;
 }
 
-static void
-xhci_controller_setup_pci(struct pci_device *pci)
+স্থির শূন্য
+xhci_controller_setup_pci(সংরচনা pci_device *pci)
 {
-    struct usb_xhci_s *xhci;
-    void *baseaddr;
+    সংরচনা usb_xhci_s *xhci;
+    শূন্য *baseaddr;
 
     baseaddr = pci_enable_membar(pci, PCI_BASE_ADDRESS_0);
-    if (!baseaddr)
-        return;
+    যদি (!baseaddr)
+        ঘূৰাই;
 
     dprintf(1, "PCI: XHCI at %pP (mmio %p)\n", pci, baseaddr);
     pci_enable_busmaster(pci);
 
     xhci = xhci_controller_setup(baseaddr);
-    if (!xhci)
-        return;
+    যদি (!xhci)
+        ঘূৰাই;
 
     xhci->usb.pci = pci;
     run_thread(configure_xhci, xhci);
 }
 
-static void
-xhci_controller_setup_acpi(struct acpi_device *dev)
+স্থির শূন্য
+xhci_controller_setup_acpi(সংরচনা acpi_device *dev)
 {
-    struct usb_xhci_s *xhci;
+    সংরচনা usb_xhci_s *xhci;
     u64 mem, unused;
-    void *baseaddr;
+    শূন্য *baseaddr;
 
-    if (acpi_dsdt_find_mem(dev, &mem, &unused) < 0)
-        return;
-    if (mem >= 0x100000000ll)
-        return;
+    যদি (acpi_dsdt_find_mem(dev, &mem, &unused) < 0)
+        ঘূৰাই;
+    যদি (mem >= 0x100000000ll)
+        ঘূৰাই;
 
-    baseaddr = (void*)(u32)mem;
+    baseaddr = (শূন্য*)(u32)mem;
     dprintf(1, "ACPI: XHCI at mmio %p\n", baseaddr);
 
     xhci = xhci_controller_setup(baseaddr);
-    if (!xhci)
-        return;
+    যদি (!xhci)
+        ঘূৰাই;
 
     xhci->usb.mmio = baseaddr;
     run_thread(configure_xhci, xhci);
 }
 
-void
-xhci_setup(void)
+শূন্য
+xhci_setup(শূন্য)
 {
-    if (! CONFIG_USB_XHCI)
-        return;
+    যদি (! CONFIG_USB_XHCI)
+        ঘূৰাই;
 
-    struct pci_device *pci;
+    সংরচনা pci_device *pci;
     foreachpci(pci) {
-        if (pci_classprog(pci) == PCI_CLASS_SERIAL_USB_XHCI)
+        যদি (pci_classprog(pci) == PCI_CLASS_SERIAL_USB_XHCI)
             xhci_controller_setup_pci(pci);
     }
 
     u16 xhci_eisaid = 0x0d10;
-    struct acpi_device *dev;
-    for (dev = acpi_dsdt_find_eisaid(NULL, xhci_eisaid);
-         dev != NULL;
+    সংরচনা acpi_device *dev;
+    বাবে (dev = acpi_dsdt_find_eisaid(রিক্ত, xhci_eisaid);
+         dev != রিক্ত;
          dev = acpi_dsdt_find_eisaid(dev, xhci_eisaid)) {
         xhci_controller_setup_acpi(dev);
     }
@@ -687,48 +687,48 @@ xhci_setup(void)
  ****************************************************************/
 
 // Signal the hardware to process events on a TRB ring
-static void xhci_doorbell(struct usb_xhci_s *xhci, u32 slotid, u32 value)
+স্থির শূন্য xhci_doorbell(সংরচনা usb_xhci_s *xhci, u32 slotid, u32 মান)
 {
-    dprintf(5, "%s: slotid %d, epid %d\n", __func__, slotid, value);
-    struct xhci_db *db = xhci->db;
-    void *addr = &db[slotid].doorbell;
-    writel(addr, value);
+    dprintf(5, "%s: slotid %d, epid %d\n", __func__, slotid, মান);
+    সংরচনা xhci_db *db = xhci->db;
+    শূন্য *addr = &db[slotid].doorbell;
+    writel(addr, মান);
 }
 
 // Dequeue events on the XHCI command ring generated by the hardware
-static void xhci_process_events(struct usb_xhci_s *xhci)
+স্থির শূন্য xhci_process_events(সংরচনা usb_xhci_s *xhci)
 {
-    struct xhci_ring *evts = xhci->evts;
+    সংরচনা xhci_ring *evts = xhci->evts;
 
-    for (;;) {
+    বাবে (;;) {
         /* check for event */
         u32 nidx = evts->nidx;
         u32 cs = evts->cs;
-        struct xhci_trb *etrb = evts->ring + nidx;
+        সংরচনা xhci_trb *etrb = evts->ring + nidx;
         u32 control = etrb->control;
-        if ((control & TRB_C) != (cs ? 1 : 0))
-            return;
+        যদি ((control & TRB_C) != (cs ? 1 : 0))
+            ঘূৰাই;
 
         /* process event */
         u32 evt_type = TRB_TYPE(control);
         u32 evt_cc = (etrb->status >> 24) & 0xff;
-        switch (evt_type) {
-        case ER_TRANSFER:
-        case ER_COMMAND_COMPLETE:
+        ৱিকল্প (evt_type) {
+        পক্ষ ER_TRANSFER:
+        পক্ষ ER_COMMAND_COMPLETE:
         {
-            struct xhci_trb  *rtrb = (void*)etrb->ptr_low;
-            struct xhci_ring *ring = XHCI_RING(rtrb);
-            struct xhci_trb  *evt = &ring->evt;
+            সংরচনা xhci_trb  *rtrb = (শূন্য*)etrb->ptr_নিচেৰ;
+            সংরচনা xhci_ring *ring = XHCI_RING(rtrb);
+            সংরচনা xhci_trb  *evt = &ring->evt;
             u32 eidx = rtrb - ring->ring + 1;
             dprintf(5, "%s: ring %p [trb %p, evt %p, type %d, eidx %d, cc %d]\n",
                     __func__, ring, rtrb, evt, evt_type, eidx, evt_cc);
-            memcpy(evt, etrb, sizeof(*etrb));
+            memcpy(evt, etrb, পরিমাণ(*etrb));
             ring->eidx = eidx;
-            break;
+            ভঙ্গ;
         }
-        case ER_PORT_STATUS_CHANGE:
+        পক্ষ ER_PORT_STATUS_CHANGE:
         {
-            u32 port = ((etrb->ptr_low >> 24) & 0xff) - 1;
+            u32 port = ((etrb->ptr_নিচেৰ >> 24) & 0xff) - 1;
             // Read status, and clear port status change bits
             u32 portsc = readl(&xhci->pr[port].portsc);
             u32 pclear = (((portsc & ~(XHCI_PORTSC_PED|XHCI_PORTSC_PR))
@@ -737,78 +737,78 @@ static void xhci_process_events(struct usb_xhci_s *xhci)
             writel(&xhci->pr[port].portsc, pclear);
 
             xhci_print_port_state(3, __func__, port, portsc);
-            break;
+            ভঙ্গ;
         }
-        default:
+        স্ৱভাৱ:
             dprintf(1, "%s: unknown event, type %d, cc %d\n",
                     __func__, evt_type, evt_cc);
-            break;
+            ভঙ্গ;
         }
 
         /* move ring index, notify xhci */
         nidx++;
-        if (nidx == XHCI_RING_ITEMS) {
+        যদি (nidx == XHCI_RING_বস্তুসমূহ) {
             nidx = 0;
             cs = cs ? 0 : 1;
             evts->cs = cs;
         }
         evts->nidx = nidx;
-        struct xhci_ir *ir = xhci->ir;
+        সংরচনা xhci_ir *ir = xhci->ir;
         u32 erdp = (u32)(evts->ring + nidx);
-        writel(&ir->erdp_low, erdp);
-        writel(&ir->erdp_high, 0);
+        writel(&ir->erdp_নিচেৰ, erdp);
+        writel(&ir->erdp_উপৰেৰ, 0);
     }
 }
 
 // Check if a ring has any pending TRBs
-static int xhci_ring_busy(struct xhci_ring *ring)
+স্থির পূর্ণাঙ্ক xhci_ring_busy(সংরচনা xhci_ring *ring)
 {
     u32 eidx = ring->eidx;
     u32 nidx = ring->nidx;
-    return (eidx != nidx);
+    ঘূৰাই (eidx != nidx);
 }
 
 // Wait for a ring to empty (all TRBs processed by hardware)
-static int xhci_event_wait(struct usb_xhci_s *xhci,
-                           struct xhci_ring *ring,
+স্থির পূর্ণাঙ্ক xhci_event_wait(সংরচনা usb_xhci_s *xhci,
+                           সংরচনা xhci_ring *ring,
                            u32 timeout)
 {
     u32 end = timer_calc(timeout);
 
-    for (;;) {
+    বাবে (;;) {
         xhci_process_events(xhci);
-        if (!xhci_ring_busy(ring)) {
+        যদি (!xhci_ring_busy(ring)) {
             u32 status = ring->evt.status;
-            return (status >> 24) & 0xff;
+            ঘূৰাই (status >> 24) & 0xff;
         }
-        if (timer_check(end)) {
+        যদি (timer_check(end)) {
             warn_timeout();
-            return -1;
+            ঘূৰাই -1;
         }
         yield();
     }
 }
 
 // Add a TRB to the given ring
-static void xhci_trb_fill(struct xhci_ring *ring
-                          , void *data, u32 xferlen, u32 flags)
+স্থির শূন্য xhci_trb_fill(সংরচনা xhci_ring *ring
+                          , শূন্য *data, u32 xferlen, u32 flags)
 {
-    struct xhci_trb *dst = &ring->ring[ring->nidx];
-    if (flags & TRB_TR_IDT) {
-        memcpy(&dst->ptr_low, data, xferlen);
-    } else {
-        dst->ptr_low = (u32)data;
-        dst->ptr_high = 0;
+    সংরচনা xhci_trb *dst = &ring->ring[ring->nidx];
+    যদি (flags & TRB_TR_IDT) {
+        memcpy(&dst->ptr_নিচেৰ, data, xferlen);
+    } অন্যথা {
+        dst->ptr_নিচেৰ = (u32)data;
+        dst->ptr_উপৰেৰ = 0;
     }
     dst->status = xferlen;
     dst->control = flags | (ring->cs ? TRB_C : 0);
 }
 
 // Queue a TRB onto a ring, wrapping ring as needed
-static void xhci_trb_queue(struct xhci_ring *ring,
-                           void *data, u32 xferlen, u32 flags)
+স্থির শূন্য xhci_trb_queue(সংরচনা xhci_ring *ring,
+                           শূন্য *data, u32 xferlen, u32 flags)
 {
-    if (ring->nidx >= ARRAY_SIZE(ring->ring) - 1) {
+    যদি (ring->nidx >= ARRAY_SIZE(ring->ring) - 1) {
         xhci_trb_fill(ring, ring->ring, 0, (TR_LINK << 10) | TRB_LK_TC);
         ring->nidx = 0;
         ring->cs ^= 1;
@@ -822,102 +822,102 @@ static void xhci_trb_queue(struct xhci_ring *ring,
 }
 
 // Submit a command to the xhci controller ring
-static int xhci_cmd_submit(struct usb_xhci_s *xhci, struct xhci_inctx *inctx
+স্থির পূর্ণাঙ্ক xhci_cmd_submit(সংরচনা usb_xhci_s *xhci, সংরচনা xhci_inctx *inctx
                            , u32 flags)
 {
-    if (inctx) {
-        struct xhci_slotctx *slot = (void*)&inctx[1 << xhci->context64];
+    যদি (inctx) {
+        সংরচনা xhci_slotctx *slot = (শূন্য*)&inctx[1 << xhci->context64];
         u32 port = ((slot->ctx[1] >> 16) & 0xff) - 1;
         u32 portsc = readl(&xhci->pr[port].portsc);
-        if (!(portsc & XHCI_PORTSC_CCS)) {
+        যদি (!(portsc & XHCI_PORTSC_CCS)) {
             // Device no longer connected?!
             xhci_print_port_state(1, __func__, port, portsc);
-            return -1;
+            ঘূৰাই -1;
         }
     }
 
     mutex_lock(&xhci->cmds->lock);
     xhci_trb_queue(xhci->cmds, inctx, 0, flags);
     xhci_doorbell(xhci, 0, 0);
-    int rc = xhci_event_wait(xhci, xhci->cmds, 1000);
+    পূর্ণাঙ্ক rc = xhci_event_wait(xhci, xhci->cmds, 1000);
     mutex_unlock(&xhci->cmds->lock);
-    return rc;
+    ঘূৰাই rc;
 }
 
-static int xhci_cmd_enable_slot(struct usb_xhci_s *xhci)
+স্থির পূর্ণাঙ্ক xhci_cmd_enable_slot(সংরচনা usb_xhci_s *xhci)
 {
     dprintf(3, "%s:\n", __func__);
-    int cc = xhci_cmd_submit(xhci, NULL, CR_ENABLE_SLOT << 10);
-    if (cc != CC_SUCCESS)
-        return -1;
-    return (xhci->cmds->evt.control >> 24) & 0xff;
+    পূর্ণাঙ্ক cc = xhci_cmd_submit(xhci, রিক্ত, CR_ENABLE_SLOT << 10);
+    যদি (cc != CC_SUCCESS)
+        ঘূৰাই -1;
+    ঘূৰাই (xhci->cmds->evt.control >> 24) & 0xff;
 }
 
-static int xhci_cmd_disable_slot(struct usb_xhci_s *xhci, u32 slotid)
+স্থির পূর্ণাঙ্ক xhci_cmd_disable_slot(সংরচনা usb_xhci_s *xhci, u32 slotid)
 {
     dprintf(3, "%s: slotid %d\n", __func__, slotid);
-    return xhci_cmd_submit(xhci, NULL, (CR_DISABLE_SLOT << 10) | (slotid << 24));
+    ঘূৰাই xhci_cmd_submit(xhci, রিক্ত, (CR_DISABLE_SLOT << 10) | (slotid << 24));
 }
 
-static int xhci_cmd_address_device(struct usb_xhci_s *xhci, u32 slotid
-                                   , struct xhci_inctx *inctx)
+স্থির পূর্ণাঙ্ক xhci_cmd_address_device(সংরচনা usb_xhci_s *xhci, u32 slotid
+                                   , সংরচনা xhci_inctx *inctx)
 {
     dprintf(3, "%s: slotid %d\n", __func__, slotid);
-    return xhci_cmd_submit(xhci, inctx
+    ঘূৰাই xhci_cmd_submit(xhci, inctx
                            , (CR_ADDRESS_DEVICE << 10) | (slotid << 24));
 }
 
-static int xhci_cmd_configure_endpoint(struct usb_xhci_s *xhci, u32 slotid
-                                       , struct xhci_inctx *inctx)
+স্থির পূর্ণাঙ্ক xhci_cmd_configure_endpoint(সংরচনা usb_xhci_s *xhci, u32 slotid
+                                       , সংরচনা xhci_inctx *inctx)
 {
     dprintf(3, "%s: slotid %d, add 0x%x, del 0x%x\n", __func__,
             slotid, inctx->add, inctx->del);
-    return xhci_cmd_submit(xhci, inctx
+    ঘূৰাই xhci_cmd_submit(xhci, inctx
                            , (CR_CONFIGURE_ENDPOINT << 10) | (slotid << 24));
 }
 
-static int xhci_cmd_evaluate_context(struct usb_xhci_s *xhci, u32 slotid
-                                     , struct xhci_inctx *inctx)
+স্থির পূর্ণাঙ্ক xhci_cmd_evaluate_context(সংরচনা usb_xhci_s *xhci, u32 slotid
+                                     , সংরচনা xhci_inctx *inctx)
 {
     dprintf(3, "%s: slotid %d, add 0x%x, del 0x%x\n", __func__,
             slotid, inctx->add, inctx->del);
-    return xhci_cmd_submit(xhci, inctx
+    ঘূৰাই xhci_cmd_submit(xhci, inctx
                            , (CR_EVALUATE_CONTEXT << 10) | (slotid << 24));
 }
 
-static struct xhci_inctx *
-xhci_alloc_inctx(struct usbdevice_s *usbdev, int maxepid)
+স্থির সংরচনা xhci_inctx *
+xhci_alloc_inctx(সংরচনা usbdevice_s *usbdev, পূর্ণাঙ্ক maxepid)
 {
-    struct usb_xhci_s *xhci = container_of(
-        usbdev->hub->cntl, struct usb_xhci_s, usb);
-    int size = (sizeof(struct xhci_inctx) * 33) << xhci->context64;
-    struct xhci_inctx *in = memalign_tmphigh(2048 << xhci->context64, size);
-    if (!in) {
+    সংরচনা usb_xhci_s *xhci = container_of(
+        usbdev->hub->cntl, সংরচনা usb_xhci_s, usb);
+    পূর্ণাঙ্ক size = (পরিমাণ(সংরচনা xhci_inctx) * 33) << xhci->context64;
+    সংরচনা xhci_inctx *in = memalign_tmphigh(2048 << xhci->context64, size);
+    যদি (!in) {
         warn_noalloc();
-        return NULL;
+        ঘূৰাই রিক্ত;
     }
     memset(in, 0, size);
 
-    struct xhci_slotctx *slot = (void*)&in[1 << xhci->context64];
+    সংরচনা xhci_slotctx *slot = (শূন্য*)&in[1 << xhci->context64];
     slot->ctx[0]    |= maxepid << 27; // context entries
     slot->ctx[0]    |= speed_to_xhci[usbdev->speed] << 20;
 
     // Set high-speed hub flags.
-    struct usbdevice_s *hubdev = usbdev->hub->usbdev;
-    if (hubdev) {
-        if (usbdev->speed == USB_LOWSPEED || usbdev->speed == USB_FULLSPEED) {
-            struct xhci_pipe *hpipe = container_of(
-                hubdev->defpipe, struct xhci_pipe, pipe);
-            if (hubdev->speed == USB_HIGHSPEED) {
+    সংরচনা usbdevice_s *hubdev = usbdev->hub->usbdev;
+    যদি (hubdev) {
+        যদি (usbdev->speed == USB_LOWSPEED || usbdev->speed == USB_FULLSPEED) {
+            সংরচনা xhci_pipe *hpipe = container_of(
+                hubdev->defpipe, সংরচনা xhci_pipe, pipe);
+            যদি (hubdev->speed == USB_HIGHSPEED) {
                 slot->ctx[2] |= hpipe->slotid;
                 slot->ctx[2] |= (usbdev->port+1) << 8;
-            } else {
-                struct xhci_slotctx *hslot = (void*)xhci->devs[hpipe->slotid].ptr_low;
+            } অন্যথা {
+                সংরচনা xhci_slotctx *hslot = (শূন্য*)xhci->devs[hpipe->slotid].ptr_নিচেৰ;
                 slot->ctx[2] = hslot->ctx[2];
             }
         }
         u32 route = 0;
-        while (usbdev->hub->usbdev) {
+        যেতিয়ালৈ (usbdev->hub->usbdev) {
             route <<= 4;
             route |= (usbdev->port+1) & 0xf;
             usbdev = usbdev->hub->usbdev;
@@ -927,280 +927,280 @@ xhci_alloc_inctx(struct usbdevice_s *usbdev, int maxepid)
 
     slot->ctx[1]    |= (usbdev->port+1) << 16;
 
-    return in;
+    ঘূৰাই in;
 }
 
-static int xhci_config_hub(struct usbhub_s *hub)
+স্থির পূর্ণাঙ্ক xhci_config_hub(সংরচনা usbhub_s *hub)
 {
-    struct usb_xhci_s *xhci = container_of(
-        hub->cntl, struct usb_xhci_s, usb);
-    struct xhci_pipe *pipe = container_of(
-        hub->usbdev->defpipe, struct xhci_pipe, pipe);
-    struct xhci_slotctx *hdslot = (void*)xhci->devs[pipe->slotid].ptr_low;
-    if ((hdslot->ctx[3] >> 27) == 3)
+    সংরচনা usb_xhci_s *xhci = container_of(
+        hub->cntl, সংরচনা usb_xhci_s, usb);
+    সংরচনা xhci_pipe *pipe = container_of(
+        hub->usbdev->defpipe, সংরচনা xhci_pipe, pipe);
+    সংরচনা xhci_slotctx *hdslot = (শূন্য*)xhci->devs[pipe->slotid].ptr_নিচেৰ;
+    যদি ((hdslot->ctx[3] >> 27) == 3)
         // Already configured
-        return 0;
-    struct xhci_inctx *in = xhci_alloc_inctx(hub->usbdev, 1);
-    if (!in)
-        return -1;
+        ঘূৰাই 0;
+    সংরচনা xhci_inctx *in = xhci_alloc_inctx(hub->usbdev, 1);
+    যদি (!in)
+        ঘূৰাই -1;
     in->add = 0x01;
-    struct xhci_slotctx *slot = (void*)&in[1 << xhci->context64];
+    সংরচনা xhci_slotctx *slot = (শূন্য*)&in[1 << xhci->context64];
     slot->ctx[0] |= 1 << 26;
     slot->ctx[1] |= hub->portcount << 24;
 
-    int cc = xhci_cmd_configure_endpoint(xhci, pipe->slotid, in);
-    free(in);
-    if (cc != CC_SUCCESS) {
+    পূর্ণাঙ্ক cc = xhci_cmd_configure_endpoint(xhci, pipe->slotid, in);
+    মুক্ত(in);
+    যদি (cc != CC_SUCCESS) {
         dprintf(1, "%s: configure hub: failed (cc %d)\n", __func__, cc);
-        return -1;
+        ঘূৰাই -1;
     }
-    return 0;
+    ঘূৰাই 0;
 }
 
-static struct usb_pipe *
-xhci_alloc_pipe(struct usbdevice_s *usbdev
-                , struct usb_endpoint_descriptor *epdesc)
+স্থির সংরচনা usb_pipe *
+xhci_alloc_pipe(সংরচনা usbdevice_s *usbdev
+                , সংরচনা usb_endpoint_descriptor *epdesc)
 {
     u8 eptype = epdesc->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK;
-    struct usb_xhci_s *xhci = container_of(
-        usbdev->hub->cntl, struct usb_xhci_s, usb);
-    struct xhci_pipe *pipe;
+    সংরচনা usb_xhci_s *xhci = container_of(
+        usbdev->hub->cntl, সংরচনা usb_xhci_s, usb);
+    সংরচনা xhci_pipe *pipe;
     u32 epid;
 
-    if (epdesc->bEndpointAddress == 0) {
+    যদি (epdesc->bEndpointAddress == 0) {
         epid = 1;
-    } else {
+    } অন্যথা {
         epid = (epdesc->bEndpointAddress & 0x0f) * 2;
         epid += (epdesc->bEndpointAddress & USB_DIR_IN) ? 1 : 0;
     }
 
-    if (eptype == USB_ENDPOINT_XFER_CONTROL)
-        pipe = memalign_high(XHCI_RING_SIZE, sizeof(*pipe));
-    else
-        pipe = memalign_low(XHCI_RING_SIZE, sizeof(*pipe));
-    if (!pipe) {
+    যদি (eptype == USB_ENDPOINT_XFER_CONTROL)
+        pipe = memalign_উপৰেৰ(XHCI_RING_SIZE, পরিমাণ(*pipe));
+    অন্যথা
+        pipe = memalign_নিচেৰ(XHCI_RING_SIZE, পরিমাণ(*pipe));
+    যদি (!pipe) {
         warn_noalloc();
-        return NULL;
+        ঘূৰাই রিক্ত;
     }
-    memset(pipe, 0, sizeof(*pipe));
+    memset(pipe, 0, পরিমাণ(*pipe));
 
     usb_desc2pipe(&pipe->pipe, usbdev, epdesc);
     pipe->epid = epid;
     pipe->reqs.cs = 1;
-    if (eptype == USB_ENDPOINT_XFER_INT) {
-        pipe->buf = malloc_high(pipe->pipe.maxpacket);
-        if (!pipe->buf) {
+    যদি (eptype == USB_ENDPOINT_XFER_INT) {
+        pipe->buf = malloc_উপৰেৰ(pipe->pipe.maxpacket);
+        যদি (!pipe->buf) {
             warn_noalloc();
-            free(pipe);
-            return NULL;
+            মুক্ত(pipe);
+            ঘূৰাই রিক্ত;
         }
     }
 
     // Allocate input context and initialize endpoint info.
-    struct xhci_inctx *in = xhci_alloc_inctx(usbdev, epid);
-    if (!in)
-        goto fail;
+    সংরচনা xhci_inctx *in = xhci_alloc_inctx(usbdev, epid);
+    যদি (!in)
+        গচ্ছ fail;
     in->add = 0x01 | (1 << epid);
-    struct xhci_epctx *ep = (void*)&in[(pipe->epid+1) << xhci->context64];
-    if (eptype == USB_ENDPOINT_XFER_INT)
+    সংরচনা xhci_epctx *ep = (শূন্য*)&in[(pipe->epid+1) << xhci->context64];
+    যদি (eptype == USB_ENDPOINT_XFER_INT)
         ep->ctx[0] = (usb_get_period(usbdev, epdesc) + 3) << 16;
     ep->ctx[1]   |= eptype << 3;
-    if (epdesc->bEndpointAddress & USB_DIR_IN
+    যদি (epdesc->bEndpointAddress & USB_DIR_IN
         || eptype == USB_ENDPOINT_XFER_CONTROL)
         ep->ctx[1] |= 1 << 5;
     ep->ctx[1]   |= pipe->pipe.maxpacket << 16;
-    ep->deq_low  = (u32)&pipe->reqs.ring[0];
-    ep->deq_low  |= 1;         // dcs
+    ep->deq_নিচেৰ  = (u32)&pipe->reqs.ring[0];
+    ep->deq_নিচেৰ  |= 1;         // dcs
     ep->length   = pipe->pipe.maxpacket;
 
     dprintf(3, "%s: usbdev %p, ring %p, slotid %d, epid %d\n", __func__,
             usbdev, &pipe->reqs, pipe->slotid, pipe->epid);
-    if (pipe->epid == 1) {
-        if (usbdev->hub->usbdev) {
+    যদি (pipe->epid == 1) {
+        যদি (usbdev->hub->usbdev) {
             // Make sure parent hub is configured.
-            int ret = xhci_config_hub(usbdev->hub);
-            if (ret)
-                goto fail;
+            পূর্ণাঙ্ক ret = xhci_config_hub(usbdev->hub);
+            যদি (ret)
+                গচ্ছ fail;
         }
         // Enable slot.
-        u32 size = (sizeof(struct xhci_slotctx) * 32) << xhci->context64;
-        struct xhci_slotctx *dev = memalign_high(1024 << xhci->context64, size);
-        if (!dev) {
+        u32 size = (পরিমাণ(সংরচনা xhci_slotctx) * 32) << xhci->context64;
+        সংরচনা xhci_slotctx *dev = memalign_উপৰেৰ(1024 << xhci->context64, size);
+        যদি (!dev) {
             warn_noalloc();
-            goto fail;
+            গচ্ছ fail;
         }
-        int slotid = xhci_cmd_enable_slot(xhci);
-        if (slotid < 0) {
+        পূর্ণাঙ্ক slotid = xhci_cmd_enable_slot(xhci);
+        যদি (slotid < 0) {
             dprintf(1, "%s: enable slot: failed\n", __func__);
-            free(dev);
-            goto fail;
+            মুক্ত(dev);
+            গচ্ছ fail;
         }
         dprintf(3, "%s: enable slot: got slotid %d\n", __func__, slotid);
         memset(dev, 0, size);
-        xhci->devs[slotid].ptr_low = (u32)dev;
-        xhci->devs[slotid].ptr_high = 0;
+        xhci->devs[slotid].ptr_নিচেৰ = (u32)dev;
+        xhci->devs[slotid].ptr_উপৰেৰ = 0;
 
         // Send set_address command.
-        int cc = xhci_cmd_address_device(xhci, slotid, in);
-        if (cc != CC_SUCCESS) {
+        পূর্ণাঙ্ক cc = xhci_cmd_address_device(xhci, slotid, in);
+        যদি (cc != CC_SUCCESS) {
             dprintf(1, "%s: address device: failed (cc %d)\n", __func__, cc);
             cc = xhci_cmd_disable_slot(xhci, slotid);
-            if (cc != CC_SUCCESS) {
+            যদি (cc != CC_SUCCESS) {
                 dprintf(1, "%s: disable failed (cc %d)\n", __func__, cc);
-                goto fail;
+                গচ্ছ fail;
             }
-            xhci->devs[slotid].ptr_low = 0;
-            free(dev);
-            goto fail;
+            xhci->devs[slotid].ptr_নিচেৰ = 0;
+            মুক্ত(dev);
+            গচ্ছ fail;
         }
         pipe->slotid = slotid;
-    } else {
-        struct xhci_pipe *defpipe = container_of(
-            usbdev->defpipe, struct xhci_pipe, pipe);
+    } অন্যথা {
+        সংরচনা xhci_pipe *defpipe = container_of(
+            usbdev->defpipe, সংরচনা xhci_pipe, pipe);
         pipe->slotid = defpipe->slotid;
         // Send configure command.
-        int cc = xhci_cmd_configure_endpoint(xhci, pipe->slotid, in);
-        if (cc != CC_SUCCESS) {
+        পূর্ণাঙ্ক cc = xhci_cmd_configure_endpoint(xhci, pipe->slotid, in);
+        যদি (cc != CC_SUCCESS) {
             dprintf(1, "%s: configure endpoint: failed (cc %d)\n", __func__, cc);
-            goto fail;
+            গচ্ছ fail;
         }
     }
-    free(in);
-    return &pipe->pipe;
+    মুক্ত(in);
+    ঘূৰাই &pipe->pipe;
 
 fail:
-    free(pipe->buf);
-    free(pipe);
-    free(in);
-    return NULL;
+    মুক্ত(pipe->buf);
+    মুক্ত(pipe);
+    মুক্ত(in);
+    ঘূৰাই রিক্ত;
 }
 
-struct usb_pipe *
-xhci_realloc_pipe(struct usbdevice_s *usbdev, struct usb_pipe *upipe
-                  , struct usb_endpoint_descriptor *epdesc)
+সংরচনা usb_pipe *
+xhci_realloc_pipe(সংরচনা usbdevice_s *usbdev, সংরচনা usb_pipe *upipe
+                  , সংরচনা usb_endpoint_descriptor *epdesc)
 {
-    if (!CONFIG_USB_XHCI)
-        return NULL;
-    if (!epdesc) {
+    যদি (!CONFIG_USB_XHCI)
+        ঘূৰাই রিক্ত;
+    যদি (!epdesc) {
         usb_add_freelist(upipe);
-        return NULL;
+        ঘূৰাই রিক্ত;
     }
-    if (!upipe)
-        return xhci_alloc_pipe(usbdev, epdesc);
+    যদি (!upipe)
+        ঘূৰাই xhci_alloc_pipe(usbdev, epdesc);
     u8 eptype = epdesc->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK;
-    int oldmaxpacket = upipe->maxpacket;
+    পূর্ণাঙ্ক oldmaxpacket = upipe->maxpacket;
     usb_desc2pipe(upipe, usbdev, epdesc);
-    struct xhci_pipe *pipe = container_of(upipe, struct xhci_pipe, pipe);
-    struct usb_xhci_s *xhci = container_of(
-        pipe->pipe.cntl, struct usb_xhci_s, usb);
+    সংরচনা xhci_pipe *pipe = container_of(upipe, সংরচনা xhci_pipe, pipe);
+    সংরচনা usb_xhci_s *xhci = container_of(
+        pipe->pipe.cntl, সংরচনা usb_xhci_s, usb);
     dprintf(3, "%s: usbdev %p, ring %p, slotid %d, epid %d\n", __func__,
             usbdev, &pipe->reqs, pipe->slotid, pipe->epid);
-    if (eptype != USB_ENDPOINT_XFER_CONTROL || upipe->maxpacket == oldmaxpacket)
-        return upipe;
+    যদি (eptype != USB_ENDPOINT_XFER_CONTROL || upipe->maxpacket == oldmaxpacket)
+        ঘূৰাই upipe;
 
     // maxpacket has changed on control endpoint - update controller.
     dprintf(1, "%s: reconf ctl endpoint pkt size: %d -> %d\n",
             __func__, oldmaxpacket, pipe->pipe.maxpacket);
-    struct xhci_inctx *in = xhci_alloc_inctx(usbdev, 1);
-    if (!in)
-        return upipe;
+    সংরচনা xhci_inctx *in = xhci_alloc_inctx(usbdev, 1);
+    যদি (!in)
+        ঘূৰাই upipe;
     in->add = (1 << 1);
-    struct xhci_epctx *ep = (void*)&in[2 << xhci->context64];
+    সংরচনা xhci_epctx *ep = (শূন্য*)&in[2 << xhci->context64];
     ep->ctx[1] |= (pipe->pipe.maxpacket << 16);
-    int cc = xhci_cmd_evaluate_context(xhci, pipe->slotid, in);
-    if (cc != CC_SUCCESS) {
+    পূর্ণাঙ্ক cc = xhci_cmd_evaluate_context(xhci, pipe->slotid, in);
+    যদি (cc != CC_SUCCESS) {
         dprintf(1, "%s: reconf ctl endpoint: failed (cc %d)\n",
                 __func__, cc);
     }
-    free(in);
+    মুক্ত(in);
 
-    return upipe;
+    ঘূৰাই upipe;
 }
 
 // Submit a USB "setup" message request to the pipe's ring
-static void xhci_xfer_setup(struct xhci_pipe *pipe, int dir, void *cmd
-                            , void *data, int datalen)
+স্থির শূন্য xhci_xfer_setup(সংরচনা xhci_pipe *pipe, পূর্ণাঙ্ক dir, শূন্য *cmd
+                            , শূন্য *data, পূর্ণাঙ্ক datalen)
 {
-    struct usb_xhci_s *xhci = container_of(
-        pipe->pipe.cntl, struct usb_xhci_s, usb);
+    সংরচনা usb_xhci_s *xhci = container_of(
+        pipe->pipe.cntl, সংরচনা usb_xhci_s, usb);
     xhci_trb_queue(&pipe->reqs, cmd, USB_CONTROL_SETUP_SIZE
                    , (TR_SETUP << 10) | TRB_TR_IDT
                    | ((datalen ? (dir ? 3 : 2) : 0) << 16));
-    if (datalen)
+    যদি (datalen)
         xhci_trb_queue(&pipe->reqs, data, datalen, (TR_DATA << 10)
                        | ((dir ? 1 : 0) << 16));
-    xhci_trb_queue(&pipe->reqs, NULL, 0, (TR_STATUS << 10) | TRB_TR_IOC
+    xhci_trb_queue(&pipe->reqs, রিক্ত, 0, (TR_STATUS << 10) | TRB_TR_IOC
                    | ((dir ? 0 : 1) << 16));
     xhci_doorbell(xhci, pipe->slotid, pipe->epid);
 }
 
 // Submit a USB transfer request to the pipe's ring
-static void xhci_xfer_normal(struct xhci_pipe *pipe,
-                             void *data, int datalen)
+স্থির শূন্য xhci_xfer_normal(সংরচনা xhci_pipe *pipe,
+                             শূন্য *data, পূর্ণাঙ্ক datalen)
 {
-    struct usb_xhci_s *xhci = container_of(
-        pipe->pipe.cntl, struct usb_xhci_s, usb);
+    সংরচনা usb_xhci_s *xhci = container_of(
+        pipe->pipe.cntl, সংরচনা usb_xhci_s, usb);
     xhci_trb_queue(&pipe->reqs, data, datalen, (TR_NORMAL << 10) | TRB_TR_IOC);
     xhci_doorbell(xhci, pipe->slotid, pipe->epid);
 }
 
-int
-xhci_send_pipe(struct usb_pipe *p, int dir, const void *cmd
-               , void *data, int datalen)
+পূর্ণাঙ্ক
+xhci_send_pipe(সংরচনা usb_pipe *p, পূর্ণাঙ্ক dir, ধ্রুৱ শূন্য *cmd
+               , শূন্য *data, পূর্ণাঙ্ক datalen)
 {
-    if (!CONFIG_USB_XHCI)
-        return -1;
-    struct xhci_pipe *pipe = container_of(p, struct xhci_pipe, pipe);
-    struct usb_xhci_s *xhci = container_of(
-        pipe->pipe.cntl, struct usb_xhci_s, usb);
+    যদি (!CONFIG_USB_XHCI)
+        ঘূৰাই -1;
+    সংরচনা xhci_pipe *pipe = container_of(p, সংরচনা xhci_pipe, pipe);
+    সংরচনা usb_xhci_s *xhci = container_of(
+        pipe->pipe.cntl, সংরচনা usb_xhci_s, usb);
 
-    if (cmd) {
-        const struct usb_ctrlrequest *req = cmd;
-        if (req->bRequest == USB_REQ_SET_ADDRESS)
+    যদি (cmd) {
+        ধ্রুৱ সংরচনা usb_ctrlrequest *req = cmd;
+        যদি (req->bRequest == USB_REQ_SET_ADDRESS)
             // Set address command sent during xhci_alloc_pipe.
-            return 0;
-        xhci_xfer_setup(pipe, dir, (void*)req, data, datalen);
-    } else {
+            ঘূৰাই 0;
+        xhci_xfer_setup(pipe, dir, (শূন্য*)req, data, datalen);
+    } অন্যথা {
         xhci_xfer_normal(pipe, data, datalen);
     }
 
-    int cc = xhci_event_wait(xhci, &pipe->reqs, usb_xfer_time(p, datalen));
-    if (cc != CC_SUCCESS) {
+    পূর্ণাঙ্ক cc = xhci_event_wait(xhci, &pipe->reqs, usb_xfer_time(p, datalen));
+    যদি (cc != CC_SUCCESS) {
         dprintf(1, "%s: xfer failed (cc %d)\n", __func__, cc);
-        return -1;
+        ঘূৰাই -1;
     }
 
-    return 0;
+    ঘূৰাই 0;
 }
 
-int VISIBLE32FLAT
-xhci_poll_intr(struct usb_pipe *p, void *data)
+পূর্ণাঙ্ক VISIBLE32FLAT
+xhci_poll_intr(সংরচনা usb_pipe *p, শূন্য *data)
 {
-    if (!CONFIG_USB_XHCI)
-        return -1;
+    যদি (!CONFIG_USB_XHCI)
+        ঘূৰাই -1;
 
-    struct xhci_pipe *pipe = container_of(p, struct xhci_pipe, pipe);
-    struct usb_xhci_s *xhci = container_of(
-        pipe->pipe.cntl, struct usb_xhci_s, usb);
+    সংরচনা xhci_pipe *pipe = container_of(p, সংরচনা xhci_pipe, pipe);
+    সংরচনা usb_xhci_s *xhci = container_of(
+        pipe->pipe.cntl, সংরচনা usb_xhci_s, usb);
     u32 len = pipe->pipe.maxpacket;
-    void *buf = pipe->buf;
-    int bufused = pipe->bufused;
+    শূন্য *buf = pipe->buf;
+    পূর্ণাঙ্ক bufused = pipe->bufused;
 
-    if (!bufused) {
+    যদি (!bufused) {
         xhci_xfer_normal(pipe, buf, len);
         bufused = 1;
         pipe->bufused = bufused;
-        return -1;
+        ঘূৰাই -1;
     }
 
     xhci_process_events(xhci);
-    if (xhci_ring_busy(&pipe->reqs))
-        return -1;
+    যদি (xhci_ring_busy(&pipe->reqs))
+        ঘূৰাই -1;
     dprintf(5, "%s: st %x ct %x [ %p <= %p / %d ]\n", __func__,
             pipe->reqs.evt.status,
             pipe->reqs.evt.control,
             data, buf, len);
     memcpy(data, buf, len);
     xhci_xfer_normal(pipe, buf, len);
-    return 0;
+    ঘূৰাই 0;
 }

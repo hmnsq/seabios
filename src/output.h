@@ -1,49 +1,49 @@
 #ifndef __OUTPUT_H
 #define __OUTPUT_H
 
-#include "config.h" // CONFIG_DEBUG_LEVEL
-#include "types.h" // u32
+#অন্তর্ভাৱ "config.h" // CONFIG_DEBUG_LEVEL
+#অন্তর্ভাৱ "types.h" // u32
 
 // output.c
-void debug_banner(void);
-void panic(const char *fmt, ...)
+শূন্য debug_banner(শূন্য);
+শূন্য panic(ধ্রুৱ ৱর্ণ *fmt, ...)
     __attribute__ ((format (printf, 1, 2))) __noreturn;
-void printf(const char *fmt, ...)
+শূন্য printf(ধ্রুৱ ৱর্ণ *fmt, ...)
     __attribute__ ((format (printf, 1, 2)));
-int snprintf(char *str, size_t size, const char *fmt, ...)
+পূর্ণাঙ্ক snprintf(ৱর্ণ *str, size_t size, ধ্রুৱ ৱর্ণ *fmt, ...)
     __attribute__ ((format (printf, 3, 4)));
-char * znprintf(size_t size, const char *fmt, ...)
+ৱর্ণ * znprintf(size_t size, ধ্রুৱ ৱর্ণ *fmt, ...)
     __attribute__ ((format (printf, 2, 3)));
-void __dprintf(const char *fmt, ...)
+শূন্য __dprintf(ধ্রুৱ ৱর্ণ *fmt, ...)
     __attribute__ ((format (printf, 1, 2)));
-struct bregs;
-void __debug_enter(struct bregs *regs, const char *fname);
-void __debug_isr(const char *fname);
-void __debug_stub(struct bregs *regs, int lineno, const char *fname);
-void __warn_invalid(struct bregs *regs, int lineno, const char *fname);
-void __warn_unimplemented(struct bregs *regs, int lineno, const char *fname);
-void __warn_internalerror(int lineno, const char *fname);
-void __warn_noalloc(int lineno, const char *fname);
-void __warn_timeout(int lineno, const char *fname);
-void __set_invalid(struct bregs *regs, int lineno, const char *fname);
-void __set_unimplemented(struct bregs *regs, int lineno, const char *fname);
-void __set_code_invalid(struct bregs *regs, u32 linecode, const char *fname);
-void __set_code_unimplemented(struct bregs *regs, u32 linecode
-                              , const char *fname);
-void hexdump(const void *d, int len);
+সংরচনা bregs;
+শূন্য __debug_enter(সংরচনা bregs *regs, ধ্রুৱ ৱর্ণ *fname);
+শূন্য __debug_isr(ধ্রুৱ ৱর্ণ *fname);
+শূন্য __debug_stub(সংরচনা bregs *regs, পূর্ণাঙ্ক lineno, ধ্রুৱ ৱর্ণ *fname);
+শূন্য __warn_invalid(সংরচনা bregs *regs, পূর্ণাঙ্ক lineno, ধ্রুৱ ৱর্ণ *fname);
+শূন্য __warn_unimplemented(সংরচনা bregs *regs, পূর্ণাঙ্ক lineno, ধ্রুৱ ৱর্ণ *fname);
+শূন্য __warn_internalerror(পূর্ণাঙ্ক lineno, ধ্রুৱ ৱর্ণ *fname);
+শূন্য __warn_noalloc(পূর্ণাঙ্ক lineno, ধ্রুৱ ৱর্ণ *fname);
+শূন্য __warn_timeout(পূর্ণাঙ্ক lineno, ধ্রুৱ ৱর্ণ *fname);
+শূন্য __set_invalid(সংরচনা bregs *regs, পূর্ণাঙ্ক lineno, ধ্রুৱ ৱর্ণ *fname);
+শূন্য __set_unimplemented(সংরচনা bregs *regs, পূর্ণাঙ্ক lineno, ধ্রুৱ ৱর্ণ *fname);
+শূন্য __set_code_invalid(সংরচনা bregs *regs, u32 linecode, ধ্রুৱ ৱর্ণ *fname);
+শূন্য __set_code_unimplemented(সংরচনা bregs *regs, u32 linecode
+                              , ধ্রুৱ ৱর্ণ *fname);
+শূন্য hexdump(ধ্রুৱ শূন্য *d, পূর্ণাঙ্ক len);
 
-#define dprintf(lvl, fmt, args...) do {                         \
-        if (CONFIG_DEBUG_LEVEL && (lvl) <= CONFIG_DEBUG_LEVEL)  \
+#define dprintf(lvl, fmt, args...) কৰা {                         \
+        যদি (CONFIG_DEBUG_LEVEL && (lvl) <= CONFIG_DEBUG_LEVEL)  \
             __dprintf((fmt) , ##args );                         \
-    } while (0)
-#define debug_enter(regs, lvl) do {                     \
-        if ((lvl) && (lvl) <= CONFIG_DEBUG_LEVEL)       \
+    } যেতিয়ালৈ (0)
+#define debug_enter(regs, lvl) কৰা {                     \
+        যদি ((lvl) && (lvl) <= CONFIG_DEBUG_LEVEL)       \
             __debug_enter((regs), __func__);            \
-    } while (0)
-#define debug_isr(lvl) do {                             \
-        if ((lvl) && (lvl) <= CONFIG_DEBUG_LEVEL)       \
+    } যেতিয়ালৈ (0)
+#define debug_isr(lvl) কৰা {                             \
+        যদি ((lvl) && (lvl) <= CONFIG_DEBUG_LEVEL)       \
             __debug_isr(__func__);                      \
-    } while (0)
+    } যেতিয়ালৈ (0)
 #define debug_stub(regs)                        \
     __debug_stub((regs), __LINE__, __func__)
 #define warn_invalid(regs)                      \

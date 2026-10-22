@@ -1,33 +1,33 @@
 #ifndef __ATA_H
 #define __ATA_H
 
-#include "block.h" // struct drive_s
-#include "config.h" // CONFIG_MAX_ATA_INTERFACES
-#include "types.h" // u8
+#অন্তর্ভাৱ "block.h" // struct drive_s
+#অন্তর্ভাৱ "config.h" // CONFIG_MAX_ATA_INTERFACES
+#অন্তর্ভাৱ "types.h" // u8
 
-struct ata_channel_s {
+সংরচনা ata_channel_s {
     u16 iobase1;
     u16 iobase2;
     u16 iomaster;
     u8  irq;
     u8  chanid;
     u8  ataid;
-    int pci_bdf;
-    struct pci_device *pci_tmp;
+    পূর্ণাঙ্ক pci_bdf;
+    সংরচনা pci_device *pci_tmp;
 };
 
-struct atadrive_s {
-    struct drive_s drive;
-    struct ata_channel_s *chan_gf;
+সংরচনা atadrive_s {
+    সংরচনা drive_s drive;
+    সংরচনা ata_channel_s *chan_gf;
     u8 slave;
 };
 
 // ata.c
-char *ata_extract_model(char *model, u32 size, u16 *buffer);
-int ata_extract_version(u16 *buffer);
-int ata_process_op(struct disk_op_s *op);
-int ata_atapi_process_op(struct disk_op_s *op);
-void ata_setup(void);
+ৱর্ণ *ata_extract_model(ৱর্ণ *model, u32 size, u16 *buffer);
+পূর্ণাঙ্ক ata_extract_version(u16 *buffer);
+পূর্ণাঙ্ক ata_process_op(সংরচনা disk_op_s *op);
+পূর্ণাঙ্ক ata_atapi_process_op(সংরচনা disk_op_s *op);
+শূন্য ata_setup(শূন্য);
 
 #define PORT_ATA2_CMD_BASE     0x0170
 #define PORT_ATA1_CMD_BASE     0x01f0

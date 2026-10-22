@@ -62,7 +62,7 @@
 #define PCI_CLASS_PROG		0x09	/* Reg. Level Programming Interface */
 #define PCI_CLASS_DEVICE	0x0a	/* Device class */
 
-#define PCI_CACHE_LINE_SIZE	0x0c	/* 8 bits */
+#define PCI_CACHE_সাৰি_SIZE	0x0c	/* 8 bits */
 #define PCI_LATENCY_TIMER	0x0d	/* 8 bits */
 #define PCI_HEADER_TYPE		0x0e	/* 8 bits */
 #define  PCI_HEADER_TYPE_NORMAL		0
@@ -109,7 +109,7 @@
 #define PCI_CAPABILITY_LIST	0x34	/* Offset of first capability list entry */
 
 /* 0x35-0x3b are reserved */
-#define PCI_INTERRUPT_LINE	0x3c	/* 8 bits */
+#define PCI_INTERRUPT_সাৰি	0x3c	/* 8 bits */
 #define PCI_INTERRUPT_PIN	0x3d	/* 8 bits */
 #define PCI_MIN_GNT		0x3e	/* 8 bits */
 #define PCI_MAX_LAT		0x3f	/* 8 bits */
@@ -359,7 +359,7 @@
 #define PCI_EXP_FLAGS_TYPE	0x00f0	/* Device/Port type */
 #define  PCI_EXP_TYPE_ENDPOINT	0x0	/* Express Endpoint */
 #define  PCI_EXP_TYPE_LEG_END	0x1	/* Legacy Endpoint */
-#define  PCI_EXP_TYPE_ROOT_PORT 0x4	/* Root Port */
+#define  PCI_EXP_TYPE_মূল_PORT 0x4	/* Root Port */
 #define  PCI_EXP_TYPE_UPSTREAM	0x5	/* Upstream Port */
 #define  PCI_EXP_TYPE_DOWNSTREAM 0x6	/* Downstream Port */
 #define  PCI_EXP_TYPE_PCI_BRIDGE 0x7	/* PCI/PCI-X Bridge */
@@ -469,26 +469,26 @@
 #define  PCI_ERR_CAP_ECRC_CHKC	0x00000080	/* ECRC Check Capable */
 #define  PCI_ERR_CAP_ECRC_CHKE	0x00000100	/* ECRC Check Enable */
 #define PCI_ERR_HEADER_LOG	28	/* Header Log Register (16 bytes) */
-#define PCI_ERR_ROOT_COMMAND	44	/* Root Error Command */
+#define PCI_ERR_মূল_COMMAND	44	/* Root Error Command */
 /* Correctable Err Reporting Enable */
-#define PCI_ERR_ROOT_CMD_COR_EN		0x00000001
+#define PCI_ERR_মূল_CMD_COR_EN		0x00000001
 /* Non-fatal Err Reporting Enable */
-#define PCI_ERR_ROOT_CMD_NONFATAL_EN	0x00000002
+#define PCI_ERR_মূল_CMD_NONFATAL_EN	0x00000002
 /* Fatal Err Reporting Enable */
-#define PCI_ERR_ROOT_CMD_FATAL_EN	0x00000004
-#define PCI_ERR_ROOT_STATUS	48
-#define PCI_ERR_ROOT_COR_RCV		0x00000001	/* ERR_COR Received */
+#define PCI_ERR_মূল_CMD_FATAL_EN	0x00000004
+#define PCI_ERR_মূল_STATUS	48
+#define PCI_ERR_মূল_COR_RCV		0x00000001	/* ERR_COR Received */
 /* Multi ERR_COR Received */
-#define PCI_ERR_ROOT_MULTI_COR_RCV	0x00000002
+#define PCI_ERR_মূল_MULTI_COR_RCV	0x00000002
 /* ERR_FATAL/NONFATAL Recevied */
-#define PCI_ERR_ROOT_UNCOR_RCV		0x00000004
+#define PCI_ERR_মূল_UNCOR_RCV		0x00000004
 /* Multi ERR_FATAL/NONFATAL Recevied */
-#define PCI_ERR_ROOT_MULTI_UNCOR_RCV	0x00000008
-#define PCI_ERR_ROOT_FIRST_FATAL	0x00000010	/* First Fatal */
-#define PCI_ERR_ROOT_NONFATAL_RCV	0x00000020	/* Non-Fatal Received */
-#define PCI_ERR_ROOT_FATAL_RCV		0x00000040	/* Fatal Received */
-#define PCI_ERR_ROOT_COR_SRC	52
-#define PCI_ERR_ROOT_SRC	54
+#define PCI_ERR_মূল_MULTI_UNCOR_RCV	0x00000008
+#define PCI_ERR_মূল_FIRST_FATAL	0x00000010	/* First Fatal */
+#define PCI_ERR_মূল_NONFATAL_RCV	0x00000020	/* Non-Fatal Received */
+#define PCI_ERR_মূল_FATAL_RCV		0x00000040	/* Fatal Received */
+#define PCI_ERR_মূল_COR_SRC	52
+#define PCI_ERR_মূল_SRC	54
 
 /* Virtual Channel */
 #define PCI_VC_PORT_REG1	4
