@@ -4,674 +4,674 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_*
-#include "list.h"   // hlist_*
-#include "malloc.h" // malloc_*
-#include "output.h" // dprintf
-#include "string.h" // memcpy
-#include "util.h"
-#include "std/acpi.h" // struct rsdp_descriptor
+#అన్తర్భావ "config.h" // CONFIG_*
+#అన్తర్భావ "list.h"   // hlist_*
+#అన్తర్భావ "malloc.h" // malloc_*
+#అన్తర్భావ "output.h" // dprintf
+#అన్తర్భావ "string.h" // memcpy
+#అన్తర్భావ "util.h"
+#అన్తర్భావ "std/acpi.h" // struct rsdp_descriptor
 
 /****************************************************************
  * DSDT parser
  ****************************************************************/
 
-struct acpi_device {
-    struct hlist_node node;
-    char name[16];
+నిర్మాణం acpi_device {
+    నిర్మాణం hlist_కణుపు కణుపు;
+    అక్షరం name[16];
     u8 *hid_aml;
     u8 *sta_aml;
-    u8 *crs_data;
-    int crs_size;
+    u8 *crs_దత్తాంశం;
+    పూర్ణాంకం crs_కొలత;
 };
-static struct hlist_head acpi_devices VARVERIFY32INIT;
-static const int parse_dumpdevs = 0;
+స్థిర నిర్మాణం hlist_తల acpi_devices VARVERIFY32INIT;
+స్థిర స్థిరరాశి పూర్ణాంకం parse_dumpdevs = 0;
 
-struct parse_state {
-    char name[32];
-    struct acpi_device *dev;
-    int error;
-    int depth;
+నిర్మాణం parse_state {
+    అక్షరం name[32];
+    నిర్మాణం acpi_device *dev;
+    పూర్ణాంకం error;
+    పూర్ణాంకం లోతు;
 };
 
-static void parse_termlist(struct parse_state *s,
-                           u8 *ptr, int offset, int pkglength);
+స్థిర శూన్య parse_termlist(నిర్మాణం parse_state *s,
+                           u8 *ptr, పూర్ణాంకం స్థానభ్రంశం_2, పూర్ణాంకం pkglength);
 
-static void hex(const u8 *ptr, int count, int lvl, const char *item)
+స్థిర శూన్య hex(స్థిరరాశి u8 *ptr, పూర్ణాంకం లెక్క, పూర్ణాంకం lvl, స్థిరరాశి అక్షరం *అంశం)
 {
-    int l = 0, i;
+    పూర్ణాంకం l = 0, i;
 
-    do {
-        dprintf(lvl, "%s: %04x:  ", item, l);
-        for (i = l; i < l+16; i += 4)
+    చేయి {
+        dprintf(lvl, "%s: %04x:  ", అంశం, l);
+        కొరకు (i = l; i < l+16; i += 4)
             dprintf(lvl, "%02x %02x %02x %02x  ",
                     ptr[i+0], ptr[i+1], ptr[i+2], ptr[i+3]);
-        for (i = l; i < l+16; i++)
+        కొరకు (i = l; i < l+16; i++)
             dprintf(lvl, "%c", (ptr[i] > 0x20 && ptr[i] < 0x80)
                     ? ptr[i] : '.');
         dprintf(lvl, "\n");
         l += 16;
-    } while (l < count);
+    } అయితే (l < లెక్క);
 }
 
-static u64 parse_resource_int(u8 *ptr, int count)
+స్థిర u64 parse_resource_int(u8 *ptr, పూర్ణాంకం లెక్క)
 {
-    u64 value = 0;
-    int index = 0;
+    u64 విలువ = 0;
+    పూర్ణాంకం సూచీ = 0;
 
-    for (index = 0; index < count; index++)
-        value |= (u64)ptr[index] << (index * 8);
-    return value;
+    కొరకు (సూచీ = 0; సూచీ < లెక్క; సూచీ++)
+        విలువ |= (u64)ptr[సూచీ] << (సూచీ * 8);
+    తిరిగి విలువ;
 }
 
-static int parse_resource_bit(u8 *ptr, int count)
+స్థిర పూర్ణాంకం parse_resource_బిట్టు(u8 *ptr, పూర్ణాంకం లెక్క)
 {
-    int bit;
+    పూర్ణాంకం బిట్టు;
 
-    for (bit = 0; bit < count*8; bit++)
-        if (ptr[bit/8] & (1 << (bit%8)))
-            return bit;
-    return 0;
+    కొరకు (బిట్టు = 0; బిట్టు < లెక్క*8; బిట్టు++)
+        ఒకవేళ (ptr[బిట్టు/8] & (1 << (బిట్టు%8)))
+            తిరిగి బిట్టు;
+    తిరిగి 0;
 }
 
-static int parse_resource(u8 *ptr, int length, int *type, u64 *min, u64 *max)
+స్థిర పూర్ణాంకం parse_resource(u8 *ptr, పూర్ణాంకం నిడివి, పూర్ణాంకం *type, u64 *min, u64 *max)
 {
-    int rname, rsize;
+    పూర్ణాంకం rname, rsize;
     u64 len;
 
     *type = -1;
     *min = 0;
     *max = 0;
     len = 0;
-    if (!(ptr[0] & 0x80)) {
+    ఒకవేళ (!(ptr[0] & 0x80)) {
         /* small resource */
         rname = (ptr[0] >> 3) & 0x0f;
         rsize = ptr[0] & 0x07;
         rsize++;
-        switch (rname) {
-        case 0x04: /* irq */
-            *min = parse_resource_bit(ptr + 1, rsize);
+        ఎంపిక (rname) {
+        స్థితి 0x04: /* irq */
+            *min = parse_resource_బిట్టు(ptr + 1, rsize);
             *max = *min;
             *type = 3;
-            break;
-        case 0x0f: /* end marker */
-            return 0;
-        case 0x08: /* io */
+            ఆపు;
+        స్థితి 0x0f: /* end marker */
+            తిరిగి 0;
+        స్థితి 0x08: /* io */
             *min = parse_resource_int(ptr + 2, 2);
             *max = parse_resource_int(ptr + 4, 2);
-            if (*min == *max) {
+            ఒకవేళ (*min == *max) {
                 *max = *min + ptr[7] - 1;
                 *type = 1;
             }
-            break;
-        case 0x09: /* fixed io */
+            ఆపు;
+        స్థితి 0x09: /* fixed io */
             *min = parse_resource_int(ptr + 2, 2);
             *max = *min + ptr[4] - 1;
             *type = 1;
-            break;
-        default:
+            ఆపు;
+        అప్రమేయ:
             dprintf(3, "%s: small: 0x%x (len %d)\n",
                     __func__, rname, rsize);
-            break;
+            ఆపు;
         }
-    } else {
+    } లేకపోతే {
         /* large resource */
         rname = ptr[0] & 0x7f;
         rsize = ptr[2] << 8 | ptr[1];
         rsize += 3;
-        switch (rname) {
-        case 0x06: /* 32-bit Fixed Location Memory Range Descriptor */
+        ఎంపిక (rname) {
+        స్థితి 0x06: /* 32-bit Fixed Location Memory Range Descriptor */
             *min = parse_resource_int(ptr + 4, 4);
             len = parse_resource_int(ptr + 8, 4);
             *max = *min + len - 1;
             *type = 0;
-            break;
-        case 0x07: /* DWORD Address Space Descriptor */
+            ఆపు;
+        స్థితి 0x07: /* DWORD Address Space Descriptor */
             *min = parse_resource_int(ptr + 10, 4);
             *max = parse_resource_int(ptr + 14, 4);
             *type = ptr[3];
-            break;
-        case 0x08: /* WORD Address Space Descriptor */
+            ఆపు;
+        స్థితి 0x08: /* WORD Address Space Descriptor */
             *min = parse_resource_int(ptr +  8, 2);
             *max = parse_resource_int(ptr + 10, 2);
             *type = ptr[3];
-            break;
-        case 0x09: /* irq */
+            ఆపు;
+        స్థితి 0x09: /* irq */
             *min = parse_resource_int(ptr +  5, 4);
             *max = *min;
             *type = 3;
-            break;
-        case 0x0a: /* QWORD Address Space Descriptor */
+            ఆపు;
+        స్థితి 0x0a: /* QWORD Address Space Descriptor */
             *min = parse_resource_int(ptr + 14, 8);
             *max = parse_resource_int(ptr + 22, 8);
             *type = ptr[3];
-            break;
-        default:
+            ఆపు;
+        అప్రమేయ:
             dprintf(3, "%s: large: 0x%x (len %d)\n", __func__, rname, rsize);
-            break;
+            ఆపు;
         }
     }
-    return rsize;
+    తిరిగి rsize;
 }
 
-static int find_resource(u8 *ptr, int len, int kind, u64 *min, u64 *max)
+స్థిర పూర్ణాంకం కనుగొను_resource(u8 *ptr, పూర్ణాంకం len, పూర్ణాంకం రకం_2, u64 *min, u64 *max)
 {
-    int type, size, offset = 0;
+    పూర్ణాంకం type, కొలత, స్థానభ్రంశం_2 = 0;
 
-    do {
-        size = parse_resource(ptr + offset, len - offset,
+    చేయి {
+        కొలత = parse_resource(ptr + స్థానభ్రంశం_2, len - స్థానభ్రంశం_2,
                               &type, min, max);
-        if (kind == type)
-            return 0;
-        offset += size;
-    } while (size > 0 && offset < len);
-    return -1;
+        ఒకవేళ (రకం_2 == type)
+            తిరిగి 0;
+        స్థానభ్రంశం_2 += కొలత;
+    } అయితే (కొలత > 0 && స్థానభ్రంశం_2 < len);
+    తిరిగి -1;
 }
 
-static int print_resources(const char *prefix, u8 *ptr, int len)
+స్థిర పూర్ణాంకం print_resources(స్థిరరాశి అక్షరం *ఉపసర్గ, u8 *ptr, పూర్ణాంకం len)
 {
-    static const char *typename[] = { "mem", "i/o", "bus" };
-    int type, size, offset = 0;
+    స్థిర స్థిరరాశి అక్షరం *typename[] = { "mem", "i/o", "bus" };
+    పూర్ణాంకం type, కొలత, స్థానభ్రంశం_2 = 0;
     u64 min, max;
 
-    do {
-        size = parse_resource(ptr + offset, len - offset,
+    చేయి {
+        కొలత = parse_resource(ptr + స్థానభ్రంశం_2, len - స్థానభ్రంశం_2,
                               &type, &min, &max);
-        switch (type) {
-        case 0:
-        case 1:
-        case 2:
+        ఎంపిక (type) {
+        స్థితి 0:
+        స్థితి 1:
+        స్థితి 2:
             dprintf(1, "%s%s 0x%llx -> 0x%llx\n",
-                    prefix, typename[type], min, max);
-            break;
-        case 3:
-            dprintf(1, "%sirq %lld\n", prefix, min);
-            break;
+                    ఉపసర్గ, typename[type], min, max);
+            ఆపు;
+        స్థితి 3:
+            dprintf(1, "%sirq %lld\n", ఉపసర్గ, min);
+            ఆపు;
         }
-        offset += size;
-    } while (size > 0 && offset < len);
-    return -1;
+        స్థానభ్రంశం_2 += కొలత;
+    } అయితే (కొలత > 0 && స్థానభ్రంశం_2 < len);
+    తిరిగి -1;
 }
 
-static int parse_nameseg(u8 *ptr, char **dst)
+స్థిర పూర్ణాంకం parse_nameseg(u8 *ptr, అక్షరం **dst)
 {
-    if (dst && *dst) {
+    ఒకవేళ (dst && *dst) {
         *(dst[0]++) = ptr[0];
-        if (ptr[1] != '_')
+        ఒకవేళ (ptr[1] != '_')
             *(dst[0]++) = ptr[1];
-        if (ptr[2] != '_')
+        ఒకవేళ (ptr[2] != '_')
             *(dst[0]++) = ptr[2];
-        if (ptr[3] != '_')
+        ఒకవేళ (ptr[3] != '_')
             *(dst[0]++) = ptr[3];
         *(dst[0]) = 0;
     }
-    return 4;
+    తిరిగి 4;
 }
 
-static int parse_namestring(struct parse_state *s,
-                            u8 *ptr, const char *item)
+స్థిర పూర్ణాంకం parse_namestring(నిర్మాణం parse_state *s,
+                            u8 *ptr, స్థిరరాశి అక్షరం *అంశం)
 {
-    char *dst = s->name;
-    int offset = 0;
-    int i, count;
+    అక్షరం *dst = s->name;
+    పూర్ణాంకం స్థానభ్రంశం_2 = 0;
+    పూర్ణాంకం i, లెక్క;
 
-    for (;;) {
-        switch (ptr[offset]) {
-        case 0: /* null name */
-            offset++;
+    కొరకు (;;) {
+        ఎంపిక (ptr[స్థానభ్రంశం_2]) {
+        స్థితి 0: /* null name */
+            స్థానభ్రంశం_2++;
             *(dst++) = 0;
-            break;
-        case 0x2e:
-            offset++;
-            offset += parse_nameseg(ptr + offset, &dst);
+            ఆపు;
+        స్థితి 0x2e:
+            స్థానభ్రంశం_2++;
+            స్థానభ్రంశం_2 += parse_nameseg(ptr + స్థానభ్రంశం_2, &dst);
             *(dst++) = '.';
-            offset += parse_nameseg(ptr + offset, &dst);
-            break;
-        case 0x2f:
-            offset++;
-            count = ptr[offset];
-            offset++;
-            for (i = 0; i < count; i++) {
-                if (i)
+            స్థానభ్రంశం_2 += parse_nameseg(ptr + స్థానభ్రంశం_2, &dst);
+            ఆపు;
+        స్థితి 0x2f:
+            స్థానభ్రంశం_2++;
+            లెక్క = ptr[స్థానభ్రంశం_2];
+            స్థానభ్రంశం_2++;
+            కొరకు (i = 0; i < లెక్క; i++) {
+                ఒకవేళ (i)
                     *(dst++) = '.';
-                offset += parse_nameseg(ptr + offset, &dst);
+                స్థానభ్రంశం_2 += parse_nameseg(ptr + స్థానభ్రంశం_2, &dst);
             }
-            break;
-        case '\\':
+            ఆపు;
+        స్థితి '\\':
             *(dst++) = '\\';
-            offset++;
-            continue;
-        case '^':
+            స్థానభ్రంశం_2++;
+            కొనసాగు;
+        స్థితి '^':
             *(dst++) = '^';
-            offset++;
-            continue;
-        case 'A' ... 'Z':
-        case '_':
-            offset += parse_nameseg(ptr, &dst);
-            break;
-        default:
+            స్థానభ్రంశం_2++;
+            కొనసాగు;
+        స్థితి 'A' ... 'Z':
+        స్థితి '_':
+            స్థానభ్రంశం_2 += parse_nameseg(ptr, &dst);
+            ఆపు;
+        అప్రమేయ:
             hex(ptr, 16, 3, __func__);
             s->error = 1;
-            break;
+            ఆపు;
         }
-        break;
+        ఆపు;
     }
-    dprintf(5, "%s: %d %s '%s'\n", __func__, s->depth,
-            item, s->name);
-    return offset;
+    dprintf(5, "%s: %d %s '%s'\n", __func__, s->లోతు,
+            అంశం, s->name);
+    తిరిగి స్థానభ్రంశం_2;
 }
 
-static int parse_termarg_int(u8 *ptr, int *error, u64 *dst)
+స్థిర పూర్ణాంకం parse_termarg_int(u8 *ptr, పూర్ణాంకం *error, u64 *dst)
 {
-    u64 value;
-    int offset = 1;
+    u64 విలువ;
+    పూర్ణాంకం స్థానభ్రంశం_2 = 1;
 
-    switch (ptr[0]) {
-    case 0x00: /* zero */
-        value = 0;
-        break;
-    case 0x01: /* one */
-        value = 1;
-        break;
-    case 0x0a: /* byte prefix */
-        value = ptr[1];
-        offset++;
-        break;
-    case 0x0b: /* word prefix */
-        value = ptr[1] |
-            ((unsigned long)ptr[2] << 8);
-        offset += 2;
-        break;
-    case 0x0c: /* dword prefix */
-        value = ptr[1] |
-            ((unsigned long)ptr[2] << 8) |
-            ((unsigned long)ptr[3] << 16) |
-            ((unsigned long)ptr[4] << 24);
-        offset += 4;
-        break;
-    default:
-        value = 0;
+    ఎంపిక (ptr[0]) {
+    స్థితి 0x00: /* zero */
+        విలువ = 0;
+        ఆపు;
+    స్థితి 0x01: /* one */
+        విలువ = 1;
+        ఆపు;
+    స్థితి 0x0a: /* byte prefix */
+        విలువ = ptr[1];
+        స్థానభ్రంశం_2++;
+        ఆపు;
+    స్థితి 0x0b: /* word prefix */
+        విలువ = ptr[1] |
+            ((గుర్తులేని దీర్ఘ)ptr[2] << 8);
+        స్థానభ్రంశం_2 += 2;
+        ఆపు;
+    స్థితి 0x0c: /* dword prefix */
+        విలువ = ptr[1] |
+            ((గుర్తులేని దీర్ఘ)ptr[2] << 8) |
+            ((గుర్తులేని దీర్ఘ)ptr[3] << 16) |
+            ((గుర్తులేని దీర్ఘ)ptr[4] << 24);
+        స్థానభ్రంశం_2 += 4;
+        ఆపు;
+    అప్రమేయ:
+        విలువ = 0;
         hex(ptr, 16, 3, __func__);
-        if (error)
+        ఒకవేళ (error)
             *error = 1;
-        break;
+        ఆపు;
     }
 
-    if (dst)
-        *dst = value;
-    dprintf(5, "%s: 0x%llx\n", __func__, value);
-    return offset;
+    ఒకవేళ (dst)
+        *dst = విలువ;
+    dprintf(5, "%s: 0x%llx\n", __func__, విలువ);
+    తిరిగి స్థానభ్రంశం_2;
 }
 
-static int parse_pkglength(u8 *ptr, int *pkglength)
+స్థిర పూర్ణాంకం parse_pkglength(u8 *ptr, పూర్ణాంకం *pkglength)
 {
-    int offset = 2;
+    పూర్ణాంకం స్థానభ్రంశం_2 = 2;
 
     *pkglength = 0;
-    switch (ptr[0] >> 6) {
-    case 3:
+    ఎంపిక (ptr[0] >> 6) {
+    స్థితి 3:
         *pkglength |= ptr[3] << 20;
-        offset++;
-    case 2:
+        స్థానభ్రంశం_2++;
+    స్థితి 2:
         *pkglength |= ptr[2] << 12;
-        offset++;
-    case 1:
+        స్థానభ్రంశం_2++;
+    స్థితి 1:
         *pkglength |= ptr[1] << 4;
         *pkglength |= ptr[0] & 0x0f;
-        return offset;
-    case 0:
-    default:
+        తిరిగి స్థానభ్రంశం_2;
+    స్థితి 0:
+    అప్రమేయ:
         *pkglength |= ptr[0] & 0x3f;
-        return 1;
+        తిరిగి 1;
     }
 }
 
-static int parse_pkg_common(struct parse_state *s,
-                            u8 *ptr, const char *item, int *pkglength)
+స్థిర పూర్ణాంకం parse_pkg_common(నిర్మాణం parse_state *s,
+                            u8 *ptr, స్థిరరాశి అక్షరం *అంశం, పూర్ణాంకం *pkglength)
 {
-    int offset;
+    పూర్ణాంకం స్థానభ్రంశం_2;
 
-    offset = parse_pkglength(ptr, pkglength);
-    offset += parse_namestring(s, ptr + offset, item);
-    return offset;
+    స్థానభ్రంశం_2 = parse_pkglength(ptr, pkglength);
+    స్థానభ్రంశం_2 += parse_namestring(s, ptr + స్థానభ్రంశం_2, అంశం);
+    తిరిగి స్థానభ్రంశం_2;
 }
 
-static int parse_pkg_scope(struct parse_state *s,
+స్థిర పూర్ణాంకం parse_pkg_scope(నిర్మాణం parse_state *s,
                            u8 *ptr)
 {
-    int offset, pkglength;
+    పూర్ణాంకం స్థానభ్రంశం_2, pkglength;
 
-    offset = parse_pkg_common(s, ptr, "scope", &pkglength);
-    parse_termlist(s, ptr, offset, pkglength);
-    return pkglength;
+    స్థానభ్రంశం_2 = parse_pkg_common(s, ptr, "scope", &pkglength);
+    parse_termlist(s, ptr, స్థానభ్రంశం_2, pkglength);
+    తిరిగి pkglength;
 }
 
-static int parse_pkg_device(struct parse_state *s,
+స్థిర పూర్ణాంకం parse_pkg_device(నిర్మాణం parse_state *s,
                             u8 *ptr)
 {
-    int offset, pkglength;
+    పూర్ణాంకం స్థానభ్రంశం_2, pkglength;
 
-    offset = parse_pkg_common(s, ptr, "device", &pkglength);
+    స్థానభ్రంశం_2 = parse_pkg_common(s, ptr, "device", &pkglength);
 
-    s->dev = malloc_tmp(sizeof(struct acpi_device));
-    if (!s->dev) {
+    s->dev = malloc_tmp(పరిమాణం(నిర్మాణం acpi_device));
+    ఒకవేళ (!s->dev) {
         warn_noalloc();
         s->error = 1;
-        return pkglength;
+        తిరిగి pkglength;
     }
 
-    memset(s->dev, 0, sizeof(struct acpi_device));
-    hlist_add_head(&s->dev->node, &acpi_devices);
-    strtcpy(s->dev->name, s->name, sizeof(s->name));
-    parse_termlist(s, ptr, offset, pkglength);
-    s->dev = NULL;
+    memset(s->dev, 0, పరిమాణం(నిర్మాణం acpi_device));
+    hlist_కూడు_తల(&s->dev->కణుపు, &acpi_devices);
+    strtcpy(s->dev->name, s->name, పరిమాణం(s->name));
+    parse_termlist(s, ptr, స్థానభ్రంశం_2, pkglength);
+    s->dev = ఖాళీ;
 
-    return pkglength;
+    తిరిగి pkglength;
 }
 
-static int parse_pkg_buffer(struct parse_state *s,
+స్థిర పూర్ణాంకం parse_pkg_బఫరు(నిర్మాణం parse_state *s,
                             u8 *ptr)
 {
     u64 blen;
-    int pkglength, offset;
+    పూర్ణాంకం pkglength, స్థానభ్రంశం_2;
 
-    offset = parse_pkglength(ptr, &pkglength);
-    offset += parse_termarg_int(ptr + offset, &s->error, &blen);
-    if (s->dev && strcmp(s->name, "_CRS") == 0) {
-        s->dev->crs_data = ptr + offset;
-        s->dev->crs_size = blen;
+    స్థానభ్రంశం_2 = parse_pkglength(ptr, &pkglength);
+    స్థానభ్రంశం_2 += parse_termarg_int(ptr + స్థానభ్రంశం_2, &s->error, &blen);
+    ఒకవేళ (s->dev && strcmp(s->name, "_CRS") == 0) {
+        s->dev->crs_దత్తాంశం = ptr + స్థానభ్రంశం_2;
+        s->dev->crs_కొలత = blen;
     }
-    return pkglength;
+    తిరిగి pkglength;
 }
 
-static int parse_pkg_skip(struct parse_state *s,
-                          u8 *ptr, int op, int name)
+స్థిర పూర్ణాంకం parse_pkg_skip(నిర్మాణం parse_state *s,
+                          u8 *ptr, పూర్ణాంకం op, పూర్ణాంకం name)
 {
-    int pkglength, offset;
-    char item[8];
+    పూర్ణాంకం pkglength, స్థానభ్రంశం_2;
+    అక్షరం అంశం[8];
 
-    snprintf(item, sizeof(item), "op %x", op);
-    offset = parse_pkglength(ptr, &pkglength);
-    if (name) {
-        parse_namestring(s, ptr + offset, item);
-    } else {
-        dprintf(5, "%s: %s (%d)\n", __func__, item, pkglength);
+    snprintf(అంశం, పరిమాణం(అంశం), "op %x", op);
+    స్థానభ్రంశం_2 = parse_pkglength(ptr, &pkglength);
+    ఒకవేళ (name) {
+        parse_namestring(s, ptr + స్థానభ్రంశం_2, అంశం);
+    } లేకపోతే {
+        dprintf(5, "%s: %s (%d)\n", __func__, అంశం, pkglength);
     }
-    return pkglength;
+    తిరిగి pkglength;
 }
 
-static int parse_termobj(struct parse_state *s,
+స్థిర పూర్ణాంకం parse_termobj(నిర్మాణం parse_state *s,
                          u8 *ptr)
 {
-    int offset = 1;
+    పూర్ణాంకం స్థానభ్రంశం_2 = 1;
 
-    if (s->depth == 16) {
+    ఒకవేళ (s->లోతు == 16) {
         dprintf(1, "%s: deep recursion\n", __func__);
         s->error = 1;
-        return offset;
+        తిరిగి స్థానభ్రంశం_2;
     }
 
-    s->depth++;
-    switch (ptr[0]) {
-    case 0x00: /* zero */
-        break;
-    case 0x01: /* one */
-        break;
-    case 0x06: /* AliasOp */
-        offset += parse_namestring(s, ptr + offset, "SourceObject");
-        offset += parse_namestring(s, ptr + offset, "AliasObject");
-        break;
-    case 0x08: /* name op */
-        offset += parse_namestring(s, ptr + offset, "name");
-        offset += parse_termobj(s, ptr + offset);
-        if (s->dev && strcmp(s->name, "_HID") == 0)
+    s->లోతు++;
+    ఎంపిక (ptr[0]) {
+    స్థితి 0x00: /* zero */
+        ఆపు;
+    స్థితి 0x01: /* one */
+        ఆపు;
+    స్థితి 0x06: /* AliasOp */
+        స్థానభ్రంశం_2 += parse_namestring(s, ptr + స్థానభ్రంశం_2, "SourceObject");
+        స్థానభ్రంశం_2 += parse_namestring(s, ptr + స్థానభ్రంశం_2, "AliasObject");
+        ఆపు;
+    స్థితి 0x08: /* name op */
+        స్థానభ్రంశం_2 += parse_namestring(s, ptr + స్థానభ్రంశం_2, "name");
+        స్థానభ్రంశం_2 += parse_termobj(s, ptr + స్థానభ్రంశం_2);
+        ఒకవేళ (s->dev && strcmp(s->name, "_HID") == 0)
             s->dev->hid_aml = ptr;
-        if (s->dev && strcmp(s->name, "_STA") == 0)
+        ఒకవేళ (s->dev && strcmp(s->name, "_STA") == 0)
             s->dev->sta_aml = ptr;
-        break;
-    case 0x0a: /* byte prefix */
-        offset++;
-        break;
-    case 0x0b: /* word prefix */
-        offset += 2;
-        break;
-    case 0x0c: /* dword prefix */
-        offset += 4;
-        break;
-    case 0x0d: /* string prefix */
-        while (ptr[offset])
-            offset++;
-        offset++;
-        break;
-    case 0x10: /* scope op */
-        offset += parse_pkg_scope(s, ptr + offset);
-        break;
-    case 0x11: /* buffer op */
-        offset += parse_pkg_buffer(s, ptr + offset);
-        break;
-    case 0x12: /* package op */
-    case 0x13: /* var package op */
-        offset += parse_pkg_skip(s, ptr + offset, ptr[0], 0);
-        break;
-    case 0x14: /* method op */
-        offset += parse_pkg_skip(s, ptr + offset, ptr[0], 1);
-        if (s->dev && strcmp(s->name, "_STA") == 0)
+        ఆపు;
+    స్థితి 0x0a: /* byte prefix */
+        స్థానభ్రంశం_2++;
+        ఆపు;
+    స్థితి 0x0b: /* word prefix */
+        స్థానభ్రంశం_2 += 2;
+        ఆపు;
+    స్థితి 0x0c: /* dword prefix */
+        స్థానభ్రంశం_2 += 4;
+        ఆపు;
+    స్థితి 0x0d: /* string prefix */
+        అయితే (ptr[స్థానభ్రంశం_2])
+            స్థానభ్రంశం_2++;
+        స్థానభ్రంశం_2++;
+        ఆపు;
+    స్థితి 0x10: /* scope op */
+        స్థానభ్రంశం_2 += parse_pkg_scope(s, ptr + స్థానభ్రంశం_2);
+        ఆపు;
+    స్థితి 0x11: /* buffer op */
+        స్థానభ్రంశం_2 += parse_pkg_బఫరు(s, ptr + స్థానభ్రంశం_2);
+        ఆపు;
+    స్థితి 0x12: /* package op */
+    స్థితి 0x13: /* var package op */
+        స్థానభ్రంశం_2 += parse_pkg_skip(s, ptr + స్థానభ్రంశం_2, ptr[0], 0);
+        ఆపు;
+    స్థితి 0x14: /* method op */
+        స్థానభ్రంశం_2 += parse_pkg_skip(s, ptr + స్థానభ్రంశం_2, ptr[0], 1);
+        ఒకవేళ (s->dev && strcmp(s->name, "_STA") == 0)
             s->dev->sta_aml = ptr;
-        break;
-    case 0x5b: /* ext op prefix */
-        offset++;
-        switch (ptr[1]) {
-        case 0x01: /* mutex op */
-            offset += parse_namestring(s, ptr + offset, "mutex");
-            offset++; /* sync flags */
-            break;
-        case 0x80: /* op region op */
-            offset += parse_namestring(s, ptr + offset, "op region");
-            offset++; /* region space */
-            offset += parse_termarg_int(ptr + offset, &s->error, NULL);
-            offset += parse_termarg_int(ptr + offset, &s->error, NULL);
-            break;
-        case 0x81: /* field op */
-        case 0x83: /* processor op */
-        case 0x84: /* power resource op */
-        case 0x85: /* thermal zone op */
-            offset += parse_pkg_skip(s, ptr + offset, 0x5b00 | ptr[1], 1);
-            break;
-        case 0x82: /* device op */
-            offset += parse_pkg_device(s, ptr + offset);
-            break;
-        default:
+        ఆపు;
+    స్థితి 0x5b: /* ext op prefix */
+        స్థానభ్రంశం_2++;
+        ఎంపిక (ptr[1]) {
+        స్థితి 0x01: /* mutex op */
+            స్థానభ్రంశం_2 += parse_namestring(s, ptr + స్థానభ్రంశం_2, "mutex");
+            స్థానభ్రంశం_2++; /* sync flags */
+            ఆపు;
+        స్థితి 0x80: /* op region op */
+            స్థానభ్రంశం_2 += parse_namestring(s, ptr + స్థానభ్రంశం_2, "op region");
+            స్థానభ్రంశం_2++; /* region space */
+            స్థానభ్రంశం_2 += parse_termarg_int(ptr + స్థానభ్రంశం_2, &s->error, ఖాళీ);
+            స్థానభ్రంశం_2 += parse_termarg_int(ptr + స్థానభ్రంశం_2, &s->error, ఖాళీ);
+            ఆపు;
+        స్థితి 0x81: /* field op */
+        స్థితి 0x83: /* processor op */
+        స్థితి 0x84: /* power resource op */
+        స్థితి 0x85: /* thermal zone op */
+            స్థానభ్రంశం_2 += parse_pkg_skip(s, ptr + స్థానభ్రంశం_2, 0x5b00 | ptr[1], 1);
+            ఆపు;
+        స్థితి 0x82: /* device op */
+            స్థానభ్రంశం_2 += parse_pkg_device(s, ptr + స్థానభ్రంశం_2);
+            ఆపు;
+        అప్రమేయ:
             hex(ptr, 16, 3, __func__);
             s->error = 1;
-            break;
+            ఆపు;
         }
-        break;
-    default:
+        ఆపు;
+    అప్రమేయ:
         hex(ptr, 16, 3, __func__);
         s->error = 1;
-        break;
+        ఆపు;
     }
-    s->depth--;
+    s->లోతు--;
 
-    return offset;
+    తిరిగి స్థానభ్రంశం_2;
 }
 
-static void parse_termlist(struct parse_state *s,
-                           u8 *ptr, int offset, int pkglength)
+స్థిర శూన్య parse_termlist(నిర్మాణం parse_state *s,
+                           u8 *ptr, పూర్ణాంకం స్థానభ్రంశం_2, పూర్ణాంకం pkglength)
 {
-    for (;;) {
-        offset += parse_termobj(s, ptr + offset);
-        if (offset == pkglength)
-            return;
-        if (offset > pkglength) {
+    కొరకు (;;) {
+        స్థానభ్రంశం_2 += parse_termobj(s, ptr + స్థానభ్రంశం_2);
+        ఒకవేళ (స్థానభ్రంశం_2 == pkglength)
+            తిరిగి;
+        ఒకవేళ (స్థానభ్రంశం_2 > pkglength) {
             dprintf(1, "%s: overrun: %d/%d\n", __func__,
-                    offset, pkglength);
+                    స్థానభ్రంశం_2, pkglength);
             s->error = 1;
-            return;
+            తిరిగి;
         }
-        if (s->error) {
+        ఒకవేళ (s->error) {
             dprintf(1, "%s: parse error, skip from %d/%d\n", __func__,
-                    offset, pkglength);
+                    స్థానభ్రంశం_2, pkglength);
             s->error = 0;
-            return;
+            తిరిగి;
         }
     }
 }
 
-static struct acpi_device *acpi_dsdt_find(struct acpi_device *prev,
-                                          const u8 *aml1, int size1,
-                                          const u8 *aml2, int size2)
+స్థిర నిర్మాణం acpi_device *acpi_dsdt_కనుగొను(నిర్మాణం acpi_device *prev,
+                                          స్థిరరాశి u8 *aml1, పూర్ణాంకం size1,
+                                          స్థిరరాశి u8 *aml2, పూర్ణాంకం size2)
 {
-    struct acpi_device *dev;
-    struct hlist_node *node;
+    నిర్మాణం acpi_device *dev;
+    నిర్మాణం hlist_కణుపు *కణుపు;
 
-    if (!prev)
-        node = acpi_devices.first;
-    else
-        node = prev->node.next;
+    ఒకవేళ (!prev)
+        కణుపు = acpi_devices.మొదటి;
+    లేకపోతే
+        కణుపు = prev->కణుపు.తదుపరి;
 
-    for (; node != NULL; node = dev->node.next) {
-        dev = container_of(node, struct acpi_device, node);
-        if (!aml1 && !aml2)
-            return dev;
-        if (!dev->hid_aml)
-            continue;
-        if (aml1 && memcmp(dev->hid_aml + 5, aml1, size1) == 0)
-            return dev;
-        if (aml2 && memcmp(dev->hid_aml + 5, aml2, size2) == 0)
-            return dev;
+    కొరకు (; కణుపు != ఖాళీ; కణుపు = dev->కణుపు.తదుపరి) {
+        dev = container_యొక్క(కణుపు, నిర్మాణం acpi_device, కణుపు);
+        ఒకవేళ (!aml1 && !aml2)
+            తిరిగి dev;
+        ఒకవేళ (!dev->hid_aml)
+            కొనసాగు;
+        ఒకవేళ (aml1 && memcmp(dev->hid_aml + 5, aml1, size1) == 0)
+            తిరిగి dev;
+        ఒకవేళ (aml2 && memcmp(dev->hid_aml + 5, aml2, size2) == 0)
+            తిరిగి dev;
     }
-    return NULL;
+    తిరిగి ఖాళీ;
 }
 
-static int acpi_dsdt_present(struct acpi_device *dev)
+స్థిర పూర్ణాంకం acpi_dsdt_present(నిర్మాణం acpi_device *dev)
 {
-    if (!dev)
-        return 0; /* no */
-    if (!dev->sta_aml)
-        return 1; /* yes */
-    if (dev->sta_aml[0] == 0x14)
-        return -1; /* unknown (can't evaluate method) */
-    if (dev->sta_aml[0] == 0x08) {
-        u64 value = 0;
-        parse_termarg_int(dev->sta_aml + 5, NULL, &value);
-        if (value == 0)
-            return 0; /* no */
-        else
-            return 1; /* yes */
+    ఒకవేళ (!dev)
+        తిరిగి 0; /* no */
+    ఒకవేళ (!dev->sta_aml)
+        తిరిగి 1; /* yes */
+    ఒకవేళ (dev->sta_aml[0] == 0x14)
+        తిరిగి -1; /* unknown (can't evaluate method) */
+    ఒకవేళ (dev->sta_aml[0] == 0x08) {
+        u64 విలువ = 0;
+        parse_termarg_int(dev->sta_aml + 5, ఖాళీ, &విలువ);
+        ఒకవేళ (విలువ == 0)
+            తిరిగి 0; /* no */
+        లేకపోతే
+            తిరిగి 1; /* yes */
     }
-    return -1; /* unknown (should not happen) */
+    తిరిగి -1; /* unknown (should not happen) */
 }
 
 /****************************************************************
  * DSDT parser, public interface
  ****************************************************************/
 
-struct acpi_device *acpi_dsdt_find_string(struct acpi_device *prev,
-                                          const char *hid)
+నిర్మాణం acpi_device *acpi_dsdt_కనుగొను_string(నిర్మాణం acpi_device *prev,
+                                          స్థిరరాశి అక్షరం *hid)
 {
-    if (!CONFIG_ACPI_PARSE)
-        return NULL;
+    ఒకవేళ (!CONFIG_ACPI_PARSE)
+        తిరిగి ఖాళీ;
 
     u8 aml[10];
-    int len = snprintf((char*)aml, sizeof(aml), "\x0d%s", hid);
-    return acpi_dsdt_find(prev, aml, len, NULL, 0);
+    పూర్ణాంకం len = snprintf((అక్షరం*)aml, పరిమాణం(aml), "\x0d%s", hid);
+    తిరిగి acpi_dsdt_కనుగొను(prev, aml, len, ఖాళీ, 0);
 }
 
-struct acpi_device *acpi_dsdt_find_eisaid(struct acpi_device *prev, u16 eisaid)
+నిర్మాణం acpi_device *acpi_dsdt_కనుగొను_eisaid(నిర్మాణం acpi_device *prev, u16 eisaid)
 {
-    if (!CONFIG_ACPI_PARSE)
-        return NULL;
+    ఒకవేళ (!CONFIG_ACPI_PARSE)
+        తిరిగి ఖాళీ;
     u8 aml1[] = {
         0x0c, 0x41, 0xd0,
         eisaid >> 8,
         eisaid & 0xff
     };
     u8 aml2[10];
-    int len2 = snprintf((char*)aml2, sizeof(aml2), "\x0dPNP%04X", eisaid);
-    return acpi_dsdt_find(prev, aml1, 5, aml2, len2);
+    పూర్ణాంకం len2 = snprintf((అక్షరం*)aml2, పరిమాణం(aml2), "\x0dPNP%04X", eisaid);
+    తిరిగి acpi_dsdt_కనుగొను(prev, aml1, 5, aml2, len2);
 }
 
-char *acpi_dsdt_name(struct acpi_device *dev)
+అక్షరం *acpi_dsdt_name(నిర్మాణం acpi_device *dev)
 {
-    if (!CONFIG_ACPI_PARSE || !dev)
-        return NULL;
-    return dev->name;
+    ఒకవేళ (!CONFIG_ACPI_PARSE || !dev)
+        తిరిగి ఖాళీ;
+    తిరిగి dev->name;
 }
 
-int acpi_dsdt_find_io(struct acpi_device *dev, u64 *min, u64 *max)
+పూర్ణాంకం acpi_dsdt_కనుగొను_io(నిర్మాణం acpi_device *dev, u64 *min, u64 *max)
 {
-    if (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
-        return -1;
-    return find_resource(dev->crs_data, dev->crs_size,
+    ఒకవేళ (!CONFIG_ACPI_PARSE || !dev || !dev->crs_దత్తాంశం)
+        తిరిగి -1;
+    తిరిగి కనుగొను_resource(dev->crs_దత్తాంశం, dev->crs_కొలత,
                          1 /* I/O */, min, max);
 }
 
-int acpi_dsdt_find_mem(struct acpi_device *dev, u64 *min, u64 *max)
+పూర్ణాంకం acpi_dsdt_కనుగొను_mem(నిర్మాణం acpi_device *dev, u64 *min, u64 *max)
 {
-    if (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
-        return -1;
-    return find_resource(dev->crs_data, dev->crs_size,
+    ఒకవేళ (!CONFIG_ACPI_PARSE || !dev || !dev->crs_దత్తాంశం)
+        తిరిగి -1;
+    తిరిగి కనుగొను_resource(dev->crs_దత్తాంశం, dev->crs_కొలత,
                          0 /* mem */, min, max);
 }
 
-int acpi_dsdt_find_irq(struct acpi_device *dev, u64 *irq)
+పూర్ణాంకం acpi_dsdt_కనుగొను_irq(నిర్మాణం acpi_device *dev, u64 *irq)
 {
     u64 max;
-    if (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
-        return -1;
-    return find_resource(dev->crs_data, dev->crs_size,
+    ఒకవేళ (!CONFIG_ACPI_PARSE || !dev || !dev->crs_దత్తాంశం)
+        తిరిగి -1;
+    తిరిగి కనుగొను_resource(dev->crs_దత్తాంశం, dev->crs_కొలత,
                          3 /* irq */, irq, &max);
 }
 
-int acpi_dsdt_present_eisaid(u16 eisaid)
+పూర్ణాంకం acpi_dsdt_present_eisaid(u16 eisaid)
 {
-    if (!CONFIG_ACPI_PARSE)
-        return -1; /* unknown */
-    if (hlist_empty(&acpi_devices))
-        return -1; /* unknown (no dsdt table) */
+    ఒకవేళ (!CONFIG_ACPI_PARSE)
+        తిరిగి -1; /* unknown */
+    ఒకవేళ (hlist_ఖాళీలు(&acpi_devices))
+        తిరిగి -1; /* unknown (no dsdt table) */
 
-    struct acpi_device *dev = acpi_dsdt_find_eisaid(NULL, eisaid);
-    return acpi_dsdt_present(dev);
+    నిర్మాణం acpi_device *dev = acpi_dsdt_కనుగొను_eisaid(ఖాళీ, eisaid);
+    తిరిగి acpi_dsdt_present(dev);
 }
 
-void acpi_dsdt_parse(void)
+శూన్య acpi_dsdt_parse(శూన్య)
 {
-    if (!CONFIG_ACPI_PARSE)
-        return;
+    ఒకవేళ (!CONFIG_ACPI_PARSE)
+        తిరిగి;
 
-    struct fadt_descriptor_rev1 *fadt = find_acpi_table(FACP_SIGNATURE);
-    if (!fadt)
-        return;
-    u8 *dsdt = (void*)(fadt->dsdt);
-    if (!dsdt)
-        return;
+    నిర్మాణం fadt_descriptor_rev1 *fadt = కనుగొను_acpi_పట్టిక(FACP_SIGNATURE);
+    ఒకవేళ (!fadt)
+        తిరిగి;
+    u8 *dsdt = (శూన్య*)(fadt->dsdt);
+    ఒకవేళ (!dsdt)
+        తిరిగి;
 
-    u32 length = *(u32*)(dsdt + 4);
-    u32 offset = 0x24;
-    dprintf(1, "ACPI: parse DSDT at %p (len %d)\n", dsdt, length);
+    u32 నిడివి = *(u32*)(dsdt + 4);
+    u32 స్థానభ్రంశం_2 = 0x24;
+    dprintf(1, "ACPI: parse DSDT at %p (len %d)\n", dsdt, నిడివి);
 
-    struct parse_state s;
-    memset(&s, 0, sizeof(s));
-    parse_termlist(&s, dsdt, offset, length);
+    నిర్మాణం parse_state s;
+    memset(&s, 0, పరిమాణం(s));
+    parse_termlist(&s, dsdt, స్థానభ్రంశం_2, నిడివి);
 
-    if (!parse_dumpdevs)
-        return;
+    ఒకవేళ (!parse_dumpdevs)
+        తిరిగి;
 
-    struct acpi_device *dev;
+    నిర్మాణం acpi_device *dev;
     dprintf(1, "ACPI: dumping dsdt devices\n");
-    for (dev = acpi_dsdt_find(NULL, NULL, 0, NULL, 0);
-         dev != NULL;
-         dev = acpi_dsdt_find(dev, NULL, 0, NULL, 0)) {
+    కొరకు (dev = acpi_dsdt_కనుగొను(ఖాళీ, ఖాళీ, 0, ఖాళీ, 0);
+         dev != ఖాళీ;
+         dev = acpi_dsdt_కనుగొను(dev, ఖాళీ, 0, ఖాళీ, 0)) {
         dprintf(1, "    %s", acpi_dsdt_name(dev));
-        if (dev->hid_aml)
+        ఒకవేళ (dev->hid_aml)
             dprintf(1, ", hid");
-        if (dev->sta_aml)
+        ఒకవేళ (dev->sta_aml)
             dprintf(1, ", sta (0x%x)", dev->sta_aml[0]);
-        if (dev->crs_data)
+        ఒకవేళ (dev->crs_దత్తాంశం)
             dprintf(1, ", crs");
         dprintf(1, "\n");
-        if (dev->crs_data)
-            print_resources("        ", dev->crs_data, dev->crs_size);
+        ఒకవేళ (dev->crs_దత్తాంశం)
+            print_resources("        ", dev->crs_దత్తాంశం, dev->crs_కొలత);
     }
 }

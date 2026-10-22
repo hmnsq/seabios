@@ -1,8 +1,8 @@
-#ifndef __MEGASAS_H
-#define __MEGASAS_H
+#నిర్వచితం_కాకపోతే __MEGASAS_H
+#నిర్వచించు __MEGASAS_H
 
-struct disk_op_s;
-int megasas_process_op(struct disk_op_s *op);
-void megasas_setup(void);
+నిర్మాణం disk_op_s;
+పూర్ణాంకం megasas_process_op(నిర్మాణం disk_op_s *op);
+శూన్య megasas_అమరిక(శూన్య);
 
-#endif /* __MEGASAS_H */
+#అయితే_ముగింపు /* __MEGASAS_H */

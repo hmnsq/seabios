@@ -1,15 +1,15 @@
-#ifndef __ROMFILE_LOADER_H
-#define __ROMFILE_LOADER_H
+#నిర్వచితం_కాకపోతే __ROMFILE_LOADER_H
+#నిర్వచించు __ROMFILE_LOADER_H
 
-#include "types.h" // u8
-#include "util.h" // romfile_s
+#అన్తర్భావ "types.h" // u8
+#అన్తర్భావ "util.h" // romfile_s
 
-#define ROMFILE_LOADER_FILESZ 56
+#నిర్వచించు ROMFILE_LOADER_FILESZ 56
 
 /* ROM file linker/loader interface. Linker uses little endian format */
-struct romfile_loader_entry_s {
+నిర్మాణం romfile_loader_నమోదు_s {
     u32 command;
-    union {
+    సంఘం {
         /*
          * COMMAND_ALLOCATE - allocate a table from @alloc.file
          * subject to @alloc.align alignment (must be power of 2)
@@ -18,8 +18,8 @@ struct romfile_loader_entry_s {
          * Must appear exactly once for each file, and before
          * this file is referenced by any other command.
          */
-        struct {
-            char file[ROMFILE_LOADER_FILESZ];
+        నిర్మాణం {
+            అక్షరం file[ROMFILE_LOADER_FILESZ];
             u32 align;
             u8 zone;
         } alloc;
@@ -30,12 +30,12 @@ struct romfile_loader_entry_s {
          * originating from @src_file. 1,2,4 or 8 byte unsigned
          * addition is used depending on @pointer.size.
          */
-        struct {
-            char dest_file[ROMFILE_LOADER_FILESZ];
-            char src_file[ROMFILE_LOADER_FILESZ];
-            u32 offset;
-            u8 size;
-        } pointer;
+        నిర్మాణం {
+            అక్షరం dest_file[ROMFILE_LOADER_FILESZ];
+            అక్షరం src_file[ROMFILE_LOADER_FILESZ];
+            u32 స్థానభ్రంశం_2;
+            u8 కొలత;
+        } సూచిక_2;
 
         /*
          * COMMAND_ADD_CHECKSUM - calculate checksum of the range specified by
@@ -44,11 +44,11 @@ struct romfile_loader_entry_s {
          * Checksum simply sums -X for each byte X in the range
          * using 8-bit math.
          */
-        struct {
-            char file[ROMFILE_LOADER_FILESZ];
-            u32 offset;
-            u32 start;
-            u32 length;
+        నిర్మాణం {
+            అక్షరం file[ROMFILE_LOADER_FILESZ];
+            u32 స్థానభ్రంశం_2;
+            u32 ప్రారంభం;
+            u32 నిడివి;
         } cksum;
 
         /*
@@ -59,33 +59,33 @@ struct romfile_loader_entry_s {
          * 1,2,4 or 8 byte unsigned addition is used depending on
          * @wr_pointer.size.
          */
-        struct {
-            char dest_file[ROMFILE_LOADER_FILESZ];
-            char src_file[ROMFILE_LOADER_FILESZ];
-            u32 dst_offset;
-            u32 src_offset;
-            u8 size;
-        } wr_pointer;
+        నిర్మాణం {
+            అక్షరం dest_file[ROMFILE_LOADER_FILESZ];
+            అక్షరం src_file[ROMFILE_LOADER_FILESZ];
+            u32 dst_స్థానభ్రంశం;
+            u32 src_స్థానభ్రంశం;
+            u8 కొలత;
+        } wr_సూచిక;
 
         /* padding */
-        char pad[124];
+        అక్షరం pad[124];
     };
 };
 
-enum {
+గణన {
     ROMFILE_LOADER_COMMAND_ALLOCATE      = 0x1,
-    ROMFILE_LOADER_COMMAND_ADD_POINTER   = 0x2,
-    ROMFILE_LOADER_COMMAND_ADD_CHECKSUM  = 0x3,
-    ROMFILE_LOADER_COMMAND_WRITE_POINTER = 0x4,
+    ROMFILE_LOADER_COMMAND_కూడు_సూచిక   = 0x2,
+    ROMFILE_LOADER_COMMAND_కూడు_CHECKSUM  = 0x3,
+    ROMFILE_LOADER_COMMAND_WRITE_సూచిక = 0x4,
 };
 
-enum {
-    ROMFILE_LOADER_ALLOC_ZONE_HIGH = 0x1,
+గణన {
+    ROMFILE_LOADER_ALLOC_ZONE_ఎగువ = 0x1,
     ROMFILE_LOADER_ALLOC_ZONE_FSEG = 0x2,
 };
 
-int romfile_loader_execute(const char *name);
+పూర్ణాంకం romfile_loader_execute(స్థిరరాశి అక్షరం *name);
 
-void romfile_fw_cfg_resume(void);
+శూన్య romfile_fw_cfg_resume(శూన్య);
 
-#endif
+#అయితే_ముగింపు

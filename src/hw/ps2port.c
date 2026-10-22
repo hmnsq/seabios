@@ -5,14 +5,14 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_LOW
-#include "output.h" // dprintf
-#include "pic.h" // pic_eoi1
-#include "ps2port.h" // ps2_kbd_command
-#include "romfile.h" // romfile_loadint
-#include "stacks.h" // yield
-#include "util.h" // udelay
-#include "x86.h" // inb
+#అన్తర్భావ "biosvar.h" // GET_LOW
+#అన్తర్భావ "output.h" // dprintf
+#అన్తర్భావ "pic.h" // pic_eoi1
+#అన్తర్భావ "ps2port.h" // ps2_kbd_command
+#అన్తర్భావ "romfile.h" // romfile_loadint
+#అన్తర్భావ "stacks.h" // yield
+#అన్తర్భావ "util.h" // udelay
+#అన్తర్భావ "x86.h" // inb
 
 
 /****************************************************************
@@ -20,127 +20,127 @@
  ****************************************************************/
 
 // Timeout value.
-#define I8042_CTL_TIMEOUT       10000
+#నిర్వచించు I8042_CTL_TIMEOUT       10000
 
-#define I8042_BUFFER_SIZE       16
+#నిర్వచించు I8042_బఫరు_కొలత       16
 
-static int
-i8042_wait_read(void)
+స్థిర పూర్ణాంకం
+i8042_wait_read(శూన్య)
 {
     dprintf(7, "i8042_wait_read\n");
-    int i;
-    for (i=0; i<I8042_CTL_TIMEOUT; i++) {
-        u8 status = inb(PORT_PS2_STATUS);
-        if (status & I8042_STR_OBF)
-            return 0;
+    పూర్ణాంకం i;
+    కొరకు (i=0; i<I8042_CTL_TIMEOUT; i++) {
+        u8 స్థితి_2 = inb(పోర్టు_PS2_స్థితి);
+        ఒకవేళ (స్థితి_2 & I8042_STR_OBF)
+            తిరిగి 0;
         udelay(50);
     }
     warn_timeout();
-    return -1;
+    తిరిగి -1;
 }
 
-static int
-i8042_wait_write(void)
+స్థిర పూర్ణాంకం
+i8042_wait_write(శూన్య)
 {
     dprintf(7, "i8042_wait_write\n");
-    int i;
-    for (i=0; i<I8042_CTL_TIMEOUT; i++) {
-        u8 status = inb(PORT_PS2_STATUS);
-        if (! (status & I8042_STR_IBF))
-            return 0;
+    పూర్ణాంకం i;
+    కొరకు (i=0; i<I8042_CTL_TIMEOUT; i++) {
+        u8 స్థితి_2 = inb(పోర్టు_PS2_స్థితి);
+        ఒకవేళ (! (స్థితి_2 & I8042_STR_IBF))
+            తిరిగి 0;
         udelay(50);
     }
     warn_timeout();
-    return -1;
+    తిరిగి -1;
 }
 
-static int
-i8042_flush(void)
+స్థిర పూర్ణాంకం
+i8042_flush(శూన్య)
 {
     dprintf(7, "i8042_flush\n");
-    int i;
-    for (i=0; i<I8042_BUFFER_SIZE; i++) {
-        u8 status = inb(PORT_PS2_STATUS);
-        if (! (status & I8042_STR_OBF))
-            return 0;
+    పూర్ణాంకం i;
+    కొరకు (i=0; i<I8042_బఫరు_కొలత; i++) {
+        u8 స్థితి_2 = inb(పోర్టు_PS2_స్థితి);
+        ఒకవేళ (! (స్థితి_2 & I8042_STR_OBF))
+            తిరిగి 0;
         udelay(50);
-        u8 data = inb(PORT_PS2_DATA);
-        dprintf(7, "i8042 flushed %x (status=%x)\n", data, status);
+        u8 దత్తాంశం = inb(పోర్టు_PS2_దత్తాంశం);
+        dprintf(7, "i8042 flushed %x (status=%x)\n", దత్తాంశం, స్థితి_2);
     }
 
     warn_timeout();
-    return -1;
+    తిరిగి -1;
 }
 
-static int
-__i8042_command(int command, u8 *param)
+స్థిర పూర్ణాంకం
+__i8042_command(పూర్ణాంకం command, u8 *param)
 {
-    int receive = (command >> 8) & 0xf;
-    int send = (command >> 12) & 0xf;
+    పూర్ణాంకం receive = (command >> 8) & 0xf;
+    పూర్ణాంకం send = (command >> 12) & 0xf;
 
     // Send the command.
-    int ret = i8042_wait_write();
-    if (ret)
-        return ret;
-    outb(command, PORT_PS2_STATUS);
+    పూర్ణాంకం ret = i8042_wait_write();
+    ఒకవేళ (ret)
+        తిరిగి ret;
+    outb(command, పోర్టు_PS2_స్థితి);
 
     // Send parameters (if any).
-    int i;
-    for (i = 0; i < send; i++) {
+    పూర్ణాంకం i;
+    కొరకు (i = 0; i < send; i++) {
         ret = i8042_wait_write();
-        if (ret)
-            return ret;
-        outb(param[i], PORT_PS2_DATA);
+        ఒకవేళ (ret)
+            తిరిగి ret;
+        outb(param[i], పోర్టు_PS2_దత్తాంశం);
     }
 
     // Receive parameters (if any).
-    for (i = 0; i < receive; i++) {
+    కొరకు (i = 0; i < receive; i++) {
         ret = i8042_wait_read();
-        if (ret)
-            return ret;
-        param[i] = inb(PORT_PS2_DATA);
+        ఒకవేళ (ret)
+            తిరిగి ret;
+        param[i] = inb(పోర్టు_PS2_దత్తాంశం);
         dprintf(7, "i8042 param=%x\n", param[i]);
     }
 
-    return 0;
+    తిరిగి 0;
 }
 
-static int
-i8042_command(int command, u8 *param)
+స్థిర పూర్ణాంకం
+i8042_command(పూర్ణాంకం command, u8 *param)
 {
     dprintf(7, "i8042_command cmd=%x\n", command);
-    int ret = __i8042_command(command, param);
-    if (ret)
+    పూర్ణాంకం ret = __i8042_command(command, param);
+    ఒకవేళ (ret)
         dprintf(2, "i8042 command %x failed\n", command);
-    return ret;
+    తిరిగి ret;
 }
 
-static int
+స్థిర పూర్ణాంకం
 i8042_kbd_write(u8 c)
 {
     dprintf(7, "i8042_kbd_write c=%d\n", c);
-    int ret = i8042_wait_write();
-    if (! ret)
-        outb(c, PORT_PS2_DATA);
-    return ret;
+    పూర్ణాంకం ret = i8042_wait_write();
+    ఒకవేళ (! ret)
+        outb(c, పోర్టు_PS2_దత్తాంశం);
+    తిరిగి ret;
 }
 
-static int
+స్థిర పూర్ణాంకం
 i8042_aux_write(u8 c)
 {
-    return i8042_command(I8042_CMD_AUX_SEND, &c);
+    తిరిగి i8042_command(I8042_CMD_AUX_SEND, &c);
 }
 
-void
-i8042_reboot(void)
+శూన్య
+i8042_reboot(శూన్య)
 {
-    if (! CONFIG_PS2PORT)
-       return;
-    int i;
-    for (i=0; i<10; i++) {
+    ఒకవేళ (! CONFIG_PS2_పోర్టు)
+       తిరిగి;
+    పూర్ణాంకం i;
+    కొరకు (i=0; i<10; i++) {
         i8042_wait_write();
         udelay(50);
-        outb(0xfe, PORT_PS2_STATUS); /* pulse reset low */
+        outb(0xfe, పోర్టు_PS2_స్థితి); /* pulse reset low */
         udelay(50);
     }
 }
@@ -150,156 +150,156 @@ i8042_reboot(void)
  * Device commands.
  ****************************************************************/
 
-#define PS2_RET_ACK             0xfa
-#define PS2_RET_NAK             0xfe
+#నిర్వచించు PS2_RET_ACK             0xfa
+#నిర్వచించు PS2_RET_NAK             0xfe
 
-static int
-ps2_recvbyte(int aux, int needack, int timeout)
+స్థిర పూర్ణాంకం
+ps2_recvbyte(పూర్ణాంకం aux, పూర్ణాంకం needack, పూర్ణాంకం timeout)
 {
-    u32 end = timer_calc(timeout);
-    for (;;) {
-        u8 status = inb(PORT_PS2_STATUS);
-        if (status & I8042_STR_OBF) {
-            u8 data = inb(PORT_PS2_DATA);
-            dprintf(7, "ps2 read %x\n", data);
+    u32 చివర = timer_calc(timeout);
+    కొరకు (;;) {
+        u8 స్థితి_2 = inb(పోర్టు_PS2_స్థితి);
+        ఒకవేళ (స్థితి_2 & I8042_STR_OBF) {
+            u8 దత్తాంశం = inb(పోర్టు_PS2_దత్తాంశం);
+            dprintf(7, "ps2 read %x\n", దత్తాంశం);
 
-            if (!!(status & I8042_STR_AUXDATA) == aux) {
-                if (!needack)
-                    return data;
-                if (data == PS2_RET_ACK)
-                    return data;
-                if (data == PS2_RET_NAK) {
-                    dprintf(1, "Got ps2 nak (status=%x)\n", status);
-                    return data;
+            ఒకవేళ (!!(స్థితి_2 & I8042_STR_AUXDATA) == aux) {
+                ఒకవేళ (!needack)
+                    తిరిగి దత్తాంశం;
+                ఒకవేళ (దత్తాంశం == PS2_RET_ACK)
+                    తిరిగి దత్తాంశం;
+                ఒకవేళ (దత్తాంశం == PS2_RET_NAK) {
+                    dprintf(1, "Got ps2 nak (status=%x)\n", స్థితి_2);
+                    తిరిగి దత్తాంశం;
                 }
             }
 
             // This data not part of command - just discard it.
-            dprintf(1, "Discarding ps2 data %02x (status=%02x)\n", data, status);
+            dprintf(1, "Discarding ps2 data %02x (status=%02x)\n", దత్తాంశం, స్థితి_2);
         }
 
-        if (timer_check(end)) {
+        ఒకవేళ (timer_check(చివర)) {
             warn_timeout();
-            return -1;
+            తిరిగి -1;
         }
         yield();
     }
 }
 
-static int
-ps2_sendbyte(int aux, u8 command, int timeout)
+స్థిర పూర్ణాంకం
+ps2_sendbyte(పూర్ణాంకం aux, u8 command, పూర్ణాంకం timeout)
 {
     dprintf(7, "ps2_sendbyte aux=%d cmd=%x\n", aux, command);
-    int ret;
-    if (aux)
+    పూర్ణాంకం ret;
+    ఒకవేళ (aux)
         ret = i8042_aux_write(command);
-    else
+    లేకపోతే
         ret = i8042_kbd_write(command);
-    if (ret)
-        return ret;
+    ఒకవేళ (ret)
+        తిరిగి ret;
 
     // Read ack.
     ret = ps2_recvbyte(aux, 1, timeout);
-    if (ret < 0)
-        return ret;
-    if (ret != PS2_RET_ACK)
-        return -1;
+    ఒకవేళ (ret < 0)
+        తిరిగి ret;
+    ఒకవేళ (ret != PS2_RET_ACK)
+        తిరిగి -1;
 
-    return 0;
+    తిరిగి 0;
 }
 
 u8 Ps2ctr VARLOW = I8042_CTR_KBDDIS | I8042_CTR_AUXDIS;
 
-static int
-__ps2_command(int aux, int command, u8 *param)
+స్థిర పూర్ణాంకం
+__ps2_command(పూర్ణాంకం aux, పూర్ణాంకం command, u8 *param)
 {
-    int ret2;
-    int receive = (command >> 8) & 0xf;
-    int send = (command >> 12) & 0xf;
+    పూర్ణాంకం ret2;
+    పూర్ణాంకం receive = (command >> 8) & 0xf;
+    పూర్ణాంకం send = (command >> 12) & 0xf;
 
     // Disable interrupts and keyboard/mouse.
-    u8 ps2ctr = GET_LOW(Ps2ctr);
+    u8 ps2ctr = GET_దిగువ(Ps2ctr);
     u8 newctr = ((ps2ctr | I8042_CTR_AUXDIS | I8042_CTR_KBDDIS)
                  & ~(I8042_CTR_KBDINT|I8042_CTR_AUXINT));
     dprintf(6, "i8042 ctr old=%x new=%x\n", ps2ctr, newctr);
-    int ret = i8042_command(I8042_CMD_CTL_WCTR, &newctr);
-    if (ret)
-        return ret;
+    పూర్ణాంకం ret = i8042_command(I8042_CMD_CTL_WCTR, &newctr);
+    ఒకవేళ (ret)
+        తిరిగి ret;
 
     // Flush any interrupts already pending.
     yield();
 
     // Enable port command is being sent to.
-    SET_LOW(Ps2ctr, newctr);
-    if (aux)
+    సమితి_దిగువ(Ps2ctr, newctr);
+    ఒకవేళ (aux)
         newctr &= ~I8042_CTR_AUXDIS;
-    else
+    లేకపోతే
         newctr &= ~I8042_CTR_KBDDIS;
     ret = i8042_command(I8042_CMD_CTL_WCTR, &newctr);
-    if (ret)
-        goto fail;
+    ఒకవేళ (ret)
+        వెళ్ళు fail;
 
-    if ((u8)command == (u8)ATKBD_CMD_RESET_BAT) {
+    ఒకవేళ ((u8)command == (u8)ATKBD_CMD_RESET_BAT) {
         // Reset is special wrt timeouts.
 
         // Send command.
         ret = ps2_sendbyte(aux, command, 1000);
-        if (ret)
-            goto fail;
+        ఒకవేళ (ret)
+            వెళ్ళు fail;
 
         // Receive parameters.
         ret = ps2_recvbyte(aux, 0, 4000);
-        if (ret < 0)
-            goto fail;
+        ఒకవేళ (ret < 0)
+            వెళ్ళు fail;
         param[0] = ret;
-        if (receive > 1) {
+        ఒకవేళ (receive > 1) {
             ret = ps2_recvbyte(aux, 0, 500);
-            if (ret < 0)
-                goto fail;
+            ఒకవేళ (ret < 0)
+                వెళ్ళు fail;
             param[1] = ret;
         }
-    } else if (command == ATKBD_CMD_GETID) {
+    } లేకపోతే ఒకవేళ (command == ATKBD_CMD_GETID) {
         // Getid is special wrt bytes received.
 
         // Send command.
         ret = ps2_sendbyte(aux, command, 200);
-        if (ret)
-            goto fail;
+        ఒకవేళ (ret)
+            వెళ్ళు fail;
 
         // Receive parameters.
         ret = ps2_recvbyte(aux, 0, 500);
-        if (ret < 0)
-            goto fail;
+        ఒకవేళ (ret < 0)
+            వెళ్ళు fail;
         param[0] = ret;
-        if (ret == 0xab || ret == 0xac || ret == 0x2b || ret == 0x5d
+        ఒకవేళ (ret == 0xab || ret == 0xac || ret == 0x2b || ret == 0x5d
             || ret == 0x60 || ret == 0x47) {
             // These ids (keyboards) return two bytes.
             ret = ps2_recvbyte(aux, 0, 500);
-            if (ret < 0)
-                goto fail;
+            ఒకవేళ (ret < 0)
+                వెళ్ళు fail;
             param[1] = ret;
-        } else {
+        } లేకపోతే {
             param[1] = 0;
         }
-    } else {
+    } లేకపోతే {
         // Send command.
         ret = ps2_sendbyte(aux, command, 200);
-        if (ret)
-            goto fail;
+        ఒకవేళ (ret)
+            వెళ్ళు fail;
 
         // Send parameters (if any).
-        int i;
-        for (i = 0; i < send; i++) {
+        పూర్ణాంకం i;
+        కొరకు (i = 0; i < send; i++) {
             ret = ps2_sendbyte(aux, param[i], 200);
-            if (ret)
-                goto fail;
+            ఒకవేళ (ret)
+                వెళ్ళు fail;
         }
 
         // Receive parameters (if any).
-        for (i = 0; i < receive; i++) {
+        కొరకు (i = 0; i < receive; i++) {
             ret = ps2_recvbyte(aux, 0, 500);
-            if (ret < 0)
-                goto fail;
+            ఒకవేళ (ret < 0)
+                వెళ్ళు fail;
             param[i] = ret;
         }
     }
@@ -308,50 +308,50 @@ __ps2_command(int aux, int command, u8 *param)
 
 fail:
     // Restore interrupts and keyboard/mouse.
-    SET_LOW(Ps2ctr, ps2ctr);
+    సమితి_దిగువ(Ps2ctr, ps2ctr);
     ret2 = i8042_command(I8042_CMD_CTL_WCTR, &ps2ctr);
-    if (ret2)
-        return ret2;
+    ఒకవేళ (ret2)
+        తిరిగి ret2;
 
-    return ret;
+    తిరిగి ret;
 }
 
-static int
-ps2_command(int aux, int command, u8 *param)
+స్థిర పూర్ణాంకం
+ps2_command(పూర్ణాంకం aux, పూర్ణాంకం command, u8 *param)
 {
     dprintf(7, "ps2_command aux=%d cmd=%x\n", aux, command);
-    int ret = __ps2_command(aux, command, param);
-    if (ret)
+    పూర్ణాంకం ret = __ps2_command(aux, command, param);
+    ఒకవేళ (ret)
         dprintf(2, "ps2 command %x failed (aux=%d)\n", command, aux);
-    return ret;
+    తిరిగి ret;
 }
 
-int
-ps2_kbd_command(int command, u8 *param)
+పూర్ణాంకం
+ps2_kbd_command(పూర్ణాంకం command, u8 *param)
 {
-    if (! CONFIG_PS2PORT)
-        return -1;
-    return ps2_command(0, command, param);
+    ఒకవేళ (! CONFIG_PS2_పోర్టు)
+        తిరిగి -1;
+    తిరిగి ps2_command(0, command, param);
 }
 
-int
-ps2_mouse_command(int command, u8 *param)
+పూర్ణాంకం
+ps2_mouse_command(పూర్ణాంకం command, u8 *param)
 {
-    if (! CONFIG_PS2PORT)
-        return -1;
+    ఒకవేళ (! CONFIG_PS2_పోర్టు)
+        తిరిగి -1;
 
     // Update ps2ctr for mouse enable/disable.
-    if (command == PSMOUSE_CMD_ENABLE || command == PSMOUSE_CMD_DISABLE) {
-        u8 ps2ctr = GET_LOW(Ps2ctr);
-        if (command == PSMOUSE_CMD_ENABLE)
+    ఒకవేళ (command == PSMOUSE_CMD_ENABLE || command == PSMOUSE_CMD_DISABLE) {
+        u8 ps2ctr = GET_దిగువ(Ps2ctr);
+        ఒకవేళ (command == PSMOUSE_CMD_ENABLE)
             ps2ctr = ((ps2ctr | (CONFIG_HARDWARE_IRQ ? I8042_CTR_AUXINT : 0))
                       & ~I8042_CTR_AUXDIS);
-        else
+        లేకపోతే
             ps2ctr = (ps2ctr | I8042_CTR_AUXDIS) & ~I8042_CTR_AUXINT;
-        SET_LOW(Ps2ctr, ps2ctr);
+        సమితి_దిగువ(Ps2ctr, ps2ctr);
     }
 
-    return ps2_command(1, command, param);
+    తిరిగి ps2_command(1, command, param);
 }
 
 
@@ -360,83 +360,83 @@ ps2_mouse_command(int command, u8 *param)
  ****************************************************************/
 
 // INT74h : PS/2 mouse hardware interrupt
-void VISIBLE16
-handle_74(void)
+శూన్య VISIBLE16
+handle_74(శూన్య)
 {
-    if (! CONFIG_PS2PORT)
-        return;
+    ఒకవేళ (! CONFIG_PS2_పోర్టు)
+        తిరిగి;
 
     debug_isr(DEBUG_ISR_74);
 
-    u8 v = inb(PORT_PS2_STATUS);
-    if ((v & (I8042_STR_OBF|I8042_STR_AUXDATA))
+    u8 v = inb(పోర్టు_PS2_స్థితి);
+    ఒకవేళ ((v & (I8042_STR_OBF|I8042_STR_AUXDATA))
         != (I8042_STR_OBF|I8042_STR_AUXDATA)) {
         dprintf(1, "ps2 mouse irq but no mouse data.\n");
-        goto done;
+        వెళ్ళు పూర్తి;
     }
-    v = inb(PORT_PS2_DATA);
+    v = inb(పోర్టు_PS2_దత్తాంశం);
 
-    if (!(GET_LOW(Ps2ctr) & I8042_CTR_AUXINT))
+    ఒకవేళ (!(GET_దిగువ(Ps2ctr) & I8042_CTR_AUXINT))
         // Interrupts not enabled.
-        goto done;
+        వెళ్ళు పూర్తి;
 
     process_mouse(v);
 
-done:
+పూర్తి:
     pic_eoi2();
 }
 
 // INT09h : Keyboard Hardware Service Entry Point
-void VISIBLE16
-handle_09(void)
+శూన్య VISIBLE16
+handle_09(శూన్య)
 {
-    if (! CONFIG_PS2PORT)
-        return;
+    ఒకవేళ (! CONFIG_PS2_పోర్టు)
+        తిరిగి;
 
     debug_isr(DEBUG_ISR_09);
 
     // read key from keyboard controller
-    u8 v = inb(PORT_PS2_STATUS);
-    if (v & I8042_STR_AUXDATA) {
+    u8 v = inb(పోర్టు_PS2_స్థితి);
+    ఒకవేళ (v & I8042_STR_AUXDATA) {
         dprintf(1, "ps2 keyboard irq but found mouse data?!\n");
-        goto done;
+        వెళ్ళు పూర్తి;
     }
-    v = inb(PORT_PS2_DATA);
+    v = inb(పోర్టు_PS2_దత్తాంశం);
 
-    if (!(GET_LOW(Ps2ctr) & I8042_CTR_KBDINT))
+    ఒకవేళ (!(GET_దిగువ(Ps2ctr) & I8042_CTR_KBDINT))
         // Interrupts not enabled.
-        goto done;
+        వెళ్ళు పూర్తి;
 
-    process_key(v);
+    process_కీలకం(v);
 
     // Some old programs expect ISR to turn keyboard back on.
-    i8042_command(I8042_CMD_KBD_ENABLE, NULL);
+    i8042_command(I8042_CMD_KBD_ENABLE, ఖాళీ);
 
-done:
+పూర్తి:
     pic_eoi1();
 }
 
 // Check for ps2 activity on machines without hardware irqs
-void
-ps2_check_event(void)
+శూన్య
+ps2_check_event(శూన్య)
 {
-    if (! CONFIG_PS2PORT || CONFIG_HARDWARE_IRQ)
-        return;
-    u8 ps2ctr = GET_LOW(Ps2ctr);
-    if ((ps2ctr & (I8042_CTR_KBDDIS|I8042_CTR_AUXDIS))
+    ఒకవేళ (! CONFIG_PS2_పోర్టు || CONFIG_HARDWARE_IRQ)
+        తిరిగి;
+    u8 ps2ctr = GET_దిగువ(Ps2ctr);
+    ఒకవేళ ((ps2ctr & (I8042_CTR_KBDDIS|I8042_CTR_AUXDIS))
         == (I8042_CTR_KBDDIS|I8042_CTR_AUXDIS))
-        return;
-    for (;;) {
-        u8 status = inb(PORT_PS2_STATUS);
-        if (!(status & I8042_STR_OBF))
-            break;
-        u8 data = inb(PORT_PS2_DATA);
-        if (status & I8042_STR_AUXDATA) {
-            if (!(ps2ctr & I8042_CTR_AUXDIS))
-                process_mouse(data);
-        } else {
-            if (!(ps2ctr & I8042_CTR_KBDDIS))
-                process_key(data);
+        తిరిగి;
+    కొరకు (;;) {
+        u8 స్థితి_2 = inb(పోర్టు_PS2_స్థితి);
+        ఒకవేళ (!(స్థితి_2 & I8042_STR_OBF))
+            ఆపు;
+        u8 దత్తాంశం = inb(పోర్టు_PS2_దత్తాంశం);
+        ఒకవేళ (స్థితి_2 & I8042_STR_AUXDATA) {
+            ఒకవేళ (!(ps2ctr & I8042_CTR_AUXDIS))
+                process_mouse(దత్తాంశం);
+        } లేకపోతే {
+            ఒకవేళ (!(ps2ctr & I8042_CTR_KBDDIS))
+                process_కీలకం(దత్తాంశం);
         }
     }
 }
@@ -446,102 +446,102 @@ ps2_check_event(void)
  * Setup
  ****************************************************************/
 
-static void
-ps2_keyboard_setup(void *data)
+స్థిర శూన్య
+ps2_keyboard_అమరిక(శూన్య *దత్తాంశం)
 {
     // flush incoming keys (also verifies port is likely present)
-    int ret = i8042_flush();
-    if (ret)
-        return;
+    పూర్ణాంకం ret = i8042_flush();
+    ఒకవేళ (ret)
+        తిరిగి;
 
     // Disable keyboard / mouse and drain any input they may have sent
-    ret = i8042_command(I8042_CMD_KBD_DISABLE, NULL);
-    if (ret)
-        return;
-    ret = i8042_command(I8042_CMD_AUX_DISABLE, NULL);
-    if (ret)
-        return;
+    ret = i8042_command(I8042_CMD_KBD_DISABLE, ఖాళీ);
+    ఒకవేళ (ret)
+        తిరిగి;
+    ret = i8042_command(I8042_CMD_AUX_DISABLE, ఖాళీ);
+    ఒకవేళ (ret)
+        తిరిగి;
     ret = i8042_flush();
-    if (ret)
-        return;
+    ఒకవేళ (ret)
+        తిరిగి;
 
     // Controller self-test.
     u8 param[2];
     ret = i8042_command(I8042_CMD_CTL_TEST, param);
-    if (ret)
-        return;
-    if (param[0] != 0x55) {
+    ఒకవేళ (ret)
+        తిరిగి;
+    ఒకవేళ (param[0] != 0x55) {
         dprintf(1, "i8042 self test failed (got %x not 0x55)\n", param[0]);
-        return;
+        తిరిగి;
     }
 
     // Controller keyboard test.
     ret = i8042_command(I8042_CMD_KBD_TEST, param);
-    if (ret)
-        return;
-    if (param[0] != 0x00) {
+    ఒకవేళ (ret)
+        తిరిగి;
+    ఒకవేళ (param[0] != 0x00) {
         dprintf(1, "i8042 keyboard test failed (got %x not 0x00)\n", param[0]);
-        return;
+        తిరిగి;
     }
 
 
     /* ------------------- keyboard side ------------------------*/
     /* reset keyboard and self test  (keyboard side) */
-    int spinupdelay = romfile_loadint("etc/ps2-keyboard-spinup", 0);
-    u32 end = timer_calc(spinupdelay);
-    for (;;) {
+    పూర్ణాంకం spinupdelay = romfile_loadint("etc/ps2-keyboard-spinup", 0);
+    u32 చివర = timer_calc(spinupdelay);
+    కొరకు (;;) {
         ret = ps2_kbd_command(ATKBD_CMD_RESET_BAT, param);
-        if (!ret)
-            break;
-        if (timer_check(end)) {
-            if (spinupdelay)
+        ఒకవేళ (!ret)
+            ఆపు;
+        ఒకవేళ (timer_check(చివర)) {
+            ఒకవేళ (spinupdelay)
                 warn_timeout();
-            return;
+            తిరిగి;
         }
         yield();
     }
-    if (param[0] != 0xaa) {
+    ఒకవేళ (param[0] != 0xaa) {
         dprintf(1, "keyboard self test failed (got %x not 0xaa)\n", param[0]);
-        return;
+        తిరిగి;
     }
 
     /* Disable keyboard */
-    ret = ps2_kbd_command(ATKBD_CMD_RESET_DIS, NULL);
-    if (ret)
-        return;
+    ret = ps2_kbd_command(ATKBD_CMD_RESET_DIS, ఖాళీ);
+    ఒకవేళ (ret)
+        తిరిగి;
 
     // Set scancode command (mode 2)
     param[0] = 0x02;
     ret = ps2_kbd_command(ATKBD_CMD_SSCANSET, param);
-    if (ret)
-        return;
+    ఒకవేళ (ret)
+        తిరిగి;
 
     // Keyboard Mode: disable mouse, scan code convert, enable kbd IRQ
     Ps2ctr = (I8042_CTR_AUXDIS | I8042_CTR_XLATE
               | (CONFIG_HARDWARE_IRQ ? I8042_CTR_KBDINT : 0));
 
     /* Enable keyboard */
-    ret = ps2_kbd_command(ATKBD_CMD_ENABLE, NULL);
-    if (ret)
-        return;
+    ret = ps2_kbd_command(ATKBD_CMD_ENABLE, ఖాళీ);
+    ఒకవేళ (ret)
+        తిరిగి;
 
     dprintf(1, "PS2 keyboard initialized\n");
 }
 
-void
-ps2port_setup(void)
+శూన్య
+ps2port_అమరిక(శూన్య)
 {
     ASSERT32FLAT();
-    if (! CONFIG_PS2PORT)
-        return;
-    if (acpi_dsdt_present_eisaid(0x0303) == 0) {
+    ఒకవేళ (! CONFIG_PS2_పోర్టు)
+        తిరిగి;
+    ఒకవేళ (acpi_dsdt_present_eisaid(0x0303) == 0) {
         dprintf(1, "ACPI: no PS/2 keyboard present\n");
-        return;
+        తిరిగి;
     }
     dprintf(3, "init ps2port\n");
 
-    enable_hwirq(1, FUNC16(entry_09));
-    enable_hwirq(12, FUNC16(entry_74));
+    enable_hwirq(1, FUNC16(నమోదు_09));
+    enable_hwirq(12, FUNC16(నమోదు_74));
 
-    run_thread(ps2_keyboard_setup, NULL);
+    నిరంతరం_thread(ps2_keyboard_అమరిక, ఖాళీ);
 }

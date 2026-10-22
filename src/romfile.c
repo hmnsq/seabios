@@ -4,166 +4,166 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_*
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "romfile.h" // struct romfile_s
-#include "string.h" // memcmp
+#అన్తర్భావ "config.h" // CONFIG_*
+#అన్తర్భావ "malloc.h" // free
+#అన్తర్భావ "output.h" // dprintf
+#అన్తర్భావ "romfile.h" // struct romfile_s
+#అన్తర్భావ "string.h" // memcmp
 
-static struct romfile_s *RomfileRoot VARVERIFY32INIT;
+స్థిర నిర్మాణం romfile_s *Romfile_మూలం VARVERIFY32INIT;
 
-void
-romfile_add(struct romfile_s *file)
+శూన్య
+romfile_కూడు(నిర్మాణం romfile_s *file)
 {
-    dprintf(3, "Add romfile: %s (size=%d)\n", file->name, file->size);
-    file->next = RomfileRoot;
-    RomfileRoot = file;
+    dprintf(3, "Add romfile: %s (size=%d)\n", file->name, file->కొలత);
+    file->తదుపరి = Romfile_మూలం;
+    Romfile_మూలం = file;
 }
 
 // Search for the specified file.
-static struct romfile_s *
-__romfile_findprefix(const char *prefix, int prefixlen, struct romfile_s *prev)
+స్థిర నిర్మాణం romfile_s *
+__romfile_findprefix(స్థిరరాశి అక్షరం *ఉపసర్గ, పూర్ణాంకం prefixlen, నిర్మాణం romfile_s *prev)
 {
-    struct romfile_s *cur = RomfileRoot;
-    if (prev)
-        cur = prev->next;
-    while (cur) {
-        if (memcmp(prefix, cur->name, prefixlen) == 0)
-            return cur;
-        cur = cur->next;
+    నిర్మాణం romfile_s *cur = Romfile_మూలం;
+    ఒకవేళ (prev)
+        cur = prev->తదుపరి;
+    అయితే (cur) {
+        ఒకవేళ (memcmp(ఉపసర్గ, cur->name, prefixlen) == 0)
+            తిరిగి cur;
+        cur = cur->తదుపరి;
     }
-    return NULL;
+    తిరిగి ఖాళీ;
 }
 
-struct romfile_s *
-romfile_findprefix(const char *prefix, struct romfile_s *prev)
+నిర్మాణం romfile_s *
+romfile_findprefix(స్థిరరాశి అక్షరం *ఉపసర్గ, నిర్మాణం romfile_s *prev)
 {
-    return __romfile_findprefix(prefix, strlen(prefix), prev);
+    తిరిగి __romfile_findprefix(ఉపసర్గ, అక్షరశ్రేణి_పొడవు(ఉపసర్గ), prev);
 }
 
-struct romfile_s *
-romfile_find(const char *name)
+నిర్మాణం romfile_s *
+romfile_కనుగొను(స్థిరరాశి అక్షరం *name)
 {
-    return __romfile_findprefix(name, strlen(name) + 1, NULL);
+    తిరిగి __romfile_findprefix(name, అక్షరశ్రేణి_పొడవు(name) + 1, ఖాళీ);
 }
 
 // Helper function to find, malloc_tmphigh, and copy a romfile.  This
 // function adds a trailing zero to the malloc'd copy.
-void *
-romfile_loadfile(const char *name, int *psize)
+శూన్య *
+romfile_loadfile(స్థిరరాశి అక్షరం *name, పూర్ణాంకం *psize)
 {
-    struct romfile_s *file = romfile_find(name);
-    if (!file)
-        return NULL;
+    నిర్మాణం romfile_s *file = romfile_కనుగొను(name);
+    ఒకవేళ (!file)
+        తిరిగి ఖాళీ;
 
-    int filesize = file->size;
-    if (!filesize)
-        return NULL;
+    పూర్ణాంకం filesize = file->కొలత;
+    ఒకవేళ (!filesize)
+        తిరిగి ఖాళీ;
 
-    char *data = malloc_tmphigh(filesize+1);
-    if (!data) {
+    అక్షరం *దత్తాంశం = malloc_tmphigh(filesize+1);
+    ఒకవేళ (!దత్తాంశం) {
         warn_noalloc();
-        return NULL;
+        తిరిగి ఖాళీ;
     }
 
     dprintf(5, "Copying romfile '%s' (len %d)\n", name, filesize);
-    int ret = file->copy(file, data, filesize);
-    if (ret < 0) {
-        free(data);
-        return NULL;
+    పూర్ణాంకం ret = file->copy(file, దత్తాంశం, filesize);
+    ఒకవేళ (ret < 0) {
+        విడుదల(దత్తాంశం);
+        తిరిగి ఖాళీ;
     }
-    if (psize)
+    ఒకవేళ (psize)
         *psize = filesize;
-    data[filesize] = '\0';
-    return data;
+    దత్తాంశం[filesize] = '\0';
+    తిరిగి దత్తాంశం;
 }
 
 // Attempt to load an integer from the given file - return 'defval'
 // if unsuccessful.
 u64
-romfile_loadint(const char *name, u64 defval)
+romfile_loadint(స్థిరరాశి అక్షరం *name, u64 defval)
 {
-    struct romfile_s *file = romfile_find(name);
-    if (!file)
-        return defval;
+    నిర్మాణం romfile_s *file = romfile_కనుగొను(name);
+    ఒకవేళ (!file)
+        తిరిగి defval;
 
-    int filesize = file->size;
-    if (!filesize || filesize > sizeof(u64) || (filesize & (filesize-1)))
+    పూర్ణాంకం filesize = file->కొలత;
+    ఒకవేళ (!filesize || filesize > పరిమాణం(u64) || (filesize & (filesize-1)))
         // Doesn't look like a valid integer.
-        return defval;
+        తిరిగి defval;
 
     u64 val = 0;
-    int ret = file->copy(file, &val, sizeof(val));
-    if (ret < 0)
-        return defval;
-    return val;
+    పూర్ణాంకం ret = file->copy(file, &val, పరిమాణం(val));
+    ఒకవేళ (ret < 0)
+        తిరిగి defval;
+    తిరిగి val;
 }
 
 u32
-romfile_loadbool(const char *name, u32 defval)
+romfile_loadbool(స్థిరరాశి అక్షరం *name, u32 defval)
 {
-    static const char *true_strings[] = { "1", "on", "yes" };
-    static const char *false_strings[] = { "0", "off", "no" };
-    char *str = romfile_loadfile(name, NULL);
-    int i;
+    స్థిర స్థిరరాశి అక్షరం *true_అక్షరశ్రేణులు[] = { "1", "on", "yes" };
+    స్థిర స్థిరరాశి అక్షరం *false_అక్షరశ్రేణులు[] = { "0", "off", "no" };
+    అక్షరం *str = romfile_loadfile(name, ఖాళీ);
+    పూర్ణాంకం i;
 
-    if (!str)
-        return defval;
+    ఒకవేళ (!str)
+        తిరిగి defval;
 
-    for (i = 0; i < ARRAY_SIZE(true_strings); i++)
-        if (0 == strcmp(str, true_strings[i]))
-            return 1;
+    కొరకు (i = 0; i < ARRAY_కొలత(true_అక్షరశ్రేణులు); i++)
+        ఒకవేళ (0 == strcmp(str, true_అక్షరశ్రేణులు[i]))
+            తిరిగి 1;
 
-    for (i = 0; i < ARRAY_SIZE(false_strings); i++)
-        if (0 == strcmp(str, false_strings[i]))
-            return 0;
+    కొరకు (i = 0; i < ARRAY_కొలత(false_అక్షరశ్రేణులు); i++)
+        ఒకవేళ (0 == strcmp(str, false_అక్షరశ్రేణులు[i]))
+            తిరిగి 0;
 
     dprintf(1, "%s: unknown bool string: %s\n", __func__, str);
-    return defval;
+    తిరిగి defval;
 }
 
-struct const_romfile_s {
-    struct romfile_s file;
-    void *data;
+నిర్మాణం const_romfile_s {
+    నిర్మాణం romfile_s file;
+    శూన్య *దత్తాంశం;
 };
 
-static int
-const_read_file(struct romfile_s *file, void *dst, u32 maxlen)
+స్థిర పూర్ణాంకం
+const_read_file(నిర్మాణం romfile_s *file, శూన్య *dst, u32 maxlen)
 {
-    if (file->size > maxlen)
-        return -1;
-    struct const_romfile_s *cfile;
-    cfile = container_of(file, struct const_romfile_s, file);
-    if (maxlen > file->size)
-        maxlen = file->size;
-    memcpy(dst, cfile->data, maxlen);
-    return file->size;
+    ఒకవేళ (file->కొలత > maxlen)
+        తిరిగి -1;
+    నిర్మాణం const_romfile_s *cfile;
+    cfile = container_యొక్క(file, నిర్మాణం const_romfile_s, file);
+    ఒకవేళ (maxlen > file->కొలత)
+        maxlen = file->కొలత;
+    జ్ఞాపకం_నకలు(dst, cfile->దత్తాంశం, maxlen);
+    తిరిగి file->కొలత;
 }
 
-static void
-const_romfile_add(char *name, void *data, int size)
+స్థిర శూన్య
+const_romfile_కూడు(అక్షరం *name, శూన్య *దత్తాంశం, పూర్ణాంకం కొలత)
 {
-    struct const_romfile_s *cfile = malloc_tmp(sizeof(*cfile));
-    if (!cfile) {
+    నిర్మాణం const_romfile_s *cfile = malloc_tmp(పరిమాణం(*cfile));
+    ఒకవేళ (!cfile) {
         warn_noalloc();
-        return;
+        తిరిగి;
     }
-    memset(cfile, 0, sizeof(*cfile));
-    strtcpy(cfile->file.name, name, sizeof(cfile->file.name));
-    cfile->file.size = size;
+    memset(cfile, 0, పరిమాణం(*cfile));
+    strtcpy(cfile->file.name, name, పరిమాణం(cfile->file.name));
+    cfile->file.కొలత = కొలత;
     cfile->file.copy = const_read_file;
-    cfile->data = data;
-    romfile_add(&cfile->file);
+    cfile->దత్తాంశం = దత్తాంశం;
+    romfile_కూడు(&cfile->file);
 }
 
-void
-const_romfile_add_int(char *name, u32 value)
+శూన్య
+const_romfile_కూడు_int(అక్షరం *name, u32 విలువ)
 {
-    u32 *data = malloc_tmp(sizeof(*data));
-    if (!data) {
+    u32 *దత్తాంశం = malloc_tmp(పరిమాణం(*దత్తాంశం));
+    ఒకవేళ (!దత్తాంశం) {
         warn_noalloc();
-        return;
+        తిరిగి;
     }
-    *data = value;
-    const_romfile_add(name, data, sizeof(*data));
+    *దత్తాంశం = విలువ;
+    const_romfile_కూడు(name, దత్తాంశం, పరిమాణం(*దత్తాంశం));
 }

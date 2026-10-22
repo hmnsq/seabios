@@ -4,79 +4,79 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // FUNC16
-#include "config.h" // CONFIG_*
-#include "malloc.h" // _malloc
-#include "output.h" // dprintf
-#include "e820map.h" // struct e820entry
-#include "std/pmm.h" // PMM_SIGNATURE
-#include "string.h" // checksum
-#include "util.h" // pmm_init
-#include "x86.h" // __ffs
+#అన్తర్భావ "biosvar.h" // FUNC16
+#అన్తర్భావ "config.h" // CONFIG_*
+#అన్తర్భావ "malloc.h" // _malloc
+#అన్తర్భావ "output.h" // dprintf
+#అన్తర్భావ "e820map.h" // struct e820entry
+#అన్తర్భావ "std/pmm.h" // PMM_SIGNATURE
+#అన్తర్భావ "string.h" // checksum
+#అన్తర్భావ "util.h" // pmm_init
+#అన్తర్భావ "x86.h" // __ffs
 
-extern struct pmmheader PMMHEADER;
+బాహ్య నిర్మాణం pmmheader PMMHEADER;
 
-#if CONFIG_PMM
-struct pmmheader PMMHEADER __aligned(16) VARFSEG = {
+#ఒకవేళ CONFIG_PMM
+నిర్మాణం pmmheader PMMHEADER __aligned(16) VARFSEG = {
     .signature = PMM_SIGNATURE,
-    .version = 0x01,
-    .length = sizeof(PMMHEADER),
+    .సంస్కరణ_2 = 0x01,
+    .నిడివి = పరిమాణం(PMMHEADER),
 };
-#endif
+#అయితే_ముగింపు
 
 // PMM - allocate
-static u32
-handle_pmm00(u16 *args)
+స్థిర u32
+handle_pmm00(u16 *వాదనలు)
 {
-    u32 length = *(u32*)&args[1], handle = *(u32*)&args[3];
-    u16 flags = args[5];
+    u32 నిడివి = *(u32*)&వాదనలు[1], handle = *(u32*)&వాదనలు[3];
+    u16 flags = వాదనలు[5];
     dprintf(3, "pmm00: length=%x handle=%x flags=%x\n"
-            , length, handle, flags);
-    struct zone_s *lowzone = &ZoneTmpLow, *highzone = &ZoneTmpHigh;
-    if (flags & 8) {
+            , నిడివి, handle, flags);
+    నిర్మాణం zone_s *lowzone = &Zone_Tmp_దిగువ, *highzone = &Zone_Tmp_ఎగువ;
+    ఒకవేళ (flags & 8) {
         // Permanent memory request.
-        lowzone = &ZoneLow;
-        highzone = &ZoneHigh;
+        lowzone = &Zone_దిగువ;
+        highzone = &Zone_ఎగువ;
     }
-    if (!length) {
+    ఒకవేళ (!నిడివి) {
         // Memory size request
-        switch (flags & 3) {
-        default:
-        case 0:
-            return 0;
-        case 1:
-            return malloc_getspace(lowzone);
-        case 2:
-            return malloc_getspace(highzone);
-        case 3: {
+        ఎంపిక (flags & 3) {
+        అప్రమేయ:
+        స్థితి 0:
+            తిరిగి 0;
+        స్థితి 1:
+            తిరిగి malloc_getspace(lowzone);
+        స్థితి 2:
+            తిరిగి malloc_getspace(highzone);
+        స్థితి 3: {
             u32 spacelow = malloc_getspace(lowzone);
             u32 spacehigh = malloc_getspace(highzone);
-            if (spacelow > spacehigh)
-                return spacelow;
-            return spacehigh;
+            ఒకవేళ (spacelow > spacehigh)
+                తిరిగి spacelow;
+            తిరిగి spacehigh;
         }
         }
     }
-    u32 size = length * 16;
-    if ((s32)size <= 0)
-        return 0;
+    u32 కొలత = నిడివి * 16;
+    ఒకవేళ ((s32)కొలత <= 0)
+        తిరిగి 0;
     u32 align = MALLOC_MIN_ALIGN;
-    if (flags & 4) {
-        align = 1<<__ffs(size);
-        if (align < MALLOC_MIN_ALIGN)
+    ఒకవేళ (flags & 4) {
+        align = 1<<__ffs(కొలత);
+        ఒకవేళ (align < MALLOC_MIN_ALIGN)
             align = MALLOC_MIN_ALIGN;
     }
-    u32 data;
-    switch (flags & 3) {
-    default:
-    case 0:
-        return 0;
-    case 1:
-        data = malloc_palloc(lowzone, size, align);
-        break;
-    case 2:
-        data = malloc_palloc(highzone, size, align);
-        if (!data && (flags & 8)) {
+    u32 దత్తాంశం;
+    ఎంపిక (flags & 3) {
+    అప్రమేయ:
+    స్థితి 0:
+        తిరిగి 0;
+    స్థితి 1:
+        దత్తాంశం = malloc_palloc(lowzone, కొలత, align);
+        ఆపు;
+    స్థితి 2:
+        దత్తాంశం = malloc_palloc(highzone, కొలత, align);
+        ఒకవేళ (!దత్తాంశం && (flags & 8)) {
             /*
              * We are out of meory.  So go allocate from the (big)
              * ZoneTmpHigh instead and reserve the block in the e820
@@ -84,93 +84,93 @@ handle_pmm00(u16 *args)
              * handle big permanent allocations without needing a big
              * ZoneHigh.
              */
-            data = malloc_palloc(&ZoneTmpHigh, size, align);
-            if (data)
-                e820_add(data, size, E820_RESERVED);
+            దత్తాంశం = malloc_palloc(&Zone_Tmp_ఎగువ, కొలత, align);
+            ఒకవేళ (దత్తాంశం)
+                e820_కూడు(దత్తాంశం, కొలత, E820_RESERVED);
         }
-        break;
-    case 3: {
-        data = malloc_palloc(lowzone, size, align);
-        if (!data)
-            data = malloc_palloc(highzone, size, align);
+        ఆపు;
+    స్థితి 3: {
+        దత్తాంశం = malloc_palloc(lowzone, కొలత, align);
+        ఒకవేళ (!దత్తాంశం)
+            దత్తాంశం = malloc_palloc(highzone, కొలత, align);
     }
     }
-    if (data && handle != MALLOC_DEFAULT_HANDLE)
-        malloc_sethandle(data, handle);
-    return data;
+    ఒకవేళ (దత్తాంశం && handle != MALLOC_DEFAULT_HANDLE)
+        malloc_sethandle(దత్తాంశం, handle);
+    తిరిగి దత్తాంశం;
 }
 
 // PMM - find
-static u32
-handle_pmm01(u16 *args)
+స్థిర u32
+handle_pmm01(u16 *వాదనలు)
 {
-    u32 handle = *(u32*)&args[1];
+    u32 handle = *(u32*)&వాదనలు[1];
     dprintf(3, "pmm01: handle=%x\n", handle);
-    if (handle == MALLOC_DEFAULT_HANDLE)
-        return 0;
-    return malloc_findhandle(handle);
+    ఒకవేళ (handle == MALLOC_DEFAULT_HANDLE)
+        తిరిగి 0;
+    తిరిగి malloc_findhandle(handle);
 }
 
 // PMM - deallocate
-static u32
-handle_pmm02(u16 *args)
+స్థిర u32
+handle_pmm02(u16 *వాదనలు)
 {
-    u32 buffer = *(u32*)&args[1];
-    dprintf(3, "pmm02: buffer=%x\n", buffer);
-    int ret = malloc_pfree(buffer);
-    if (ret)
+    u32 బఫరు = *(u32*)&వాదనలు[1];
+    dprintf(3, "pmm02: buffer=%x\n", బఫరు);
+    పూర్ణాంకం ret = malloc_pfree(బఫరు);
+    ఒకవేళ (ret)
         // Error
-        return 1;
-    return 0;
+        తిరిగి 1;
+    తిరిగి 0;
 }
 
-static u32
-handle_pmmXX(u16 *args)
+స్థిర u32
+handle_pmmXX(u16 *వాదనలు)
 {
-    return PMM_FUNCTION_NOT_SUPPORTED;
+    తిరిగి PMM_FUNCTION_NOT_SUPPORTED;
 }
 
 u32 VISIBLE32INIT
-handle_pmm(u16 *args)
+handle_pmm(u16 *వాదనలు)
 {
     ASSERT32FLAT();
-    if (! CONFIG_PMM)
-        return PMM_FUNCTION_NOT_SUPPORTED;
+    ఒకవేళ (! CONFIG_PMM)
+        తిరిగి PMM_FUNCTION_NOT_SUPPORTED;
 
-    u16 arg1 = args[0];
+    u16 arg1 = వాదనలు[0];
     dprintf(DEBUG_HDL_pmm, "pmm call arg1=%x\n", arg1);
 
     u32 ret;
-    switch (arg1) {
-    case 0x00: ret = handle_pmm00(args); break;
-    case 0x01: ret = handle_pmm01(args); break;
-    case 0x02: ret = handle_pmm02(args); break;
-    default:   ret = handle_pmmXX(args); break;
+    ఎంపిక (arg1) {
+    స్థితి 0x00: ret = handle_pmm00(వాదనలు); ఆపు;
+    స్థితి 0x01: ret = handle_pmm01(వాదనలు); ఆపు;
+    స్థితి 0x02: ret = handle_pmm02(వాదనలు); ఆపు;
+    అప్రమేయ:   ret = handle_pmmXX(వాదనలు); ఆపు;
     }
 
-    return ret;
+    తిరిగి ret;
 }
 
-void
-pmm_init(void)
+శూన్య
+pmm_init(శూన్య)
 {
-    if (! CONFIG_PMM)
-        return;
+    ఒకవేళ (! CONFIG_PMM)
+        తిరిగి;
 
     dprintf(3, "init PMM\n");
 
-    PMMHEADER.entry = FUNC16(entry_pmm);
-    PMMHEADER.checksum -= checksum(&PMMHEADER, sizeof(PMMHEADER));
+    PMMHEADER.నమోదు_2 = FUNC16(నమోదు_pmm);
+    PMMHEADER.checksum -= checksum(&PMMHEADER, పరిమాణం(PMMHEADER));
 }
 
-void
-pmm_prepboot(void)
+శూన్య
+pmm_prepboot(శూన్య)
 {
-    if (! CONFIG_PMM)
-        return;
+    ఒకవేళ (! CONFIG_PMM)
+        తిరిగి;
 
     dprintf(3, "finalize PMM\n");
 
     PMMHEADER.signature = 0;
-    PMMHEADER.entry.segoff = 0;
+    PMMHEADER.నమోదు_2.segoff = 0;
 }

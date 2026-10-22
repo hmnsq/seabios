@@ -19,39 +19,39 @@
   to this file, however, are subject to the LGPL or CPL terms.
 */
 
-#ifndef __LZMADECODE_H
-#define __LZMADECODE_H
+#నిర్వచితం_కాకపోతే __LZMADECODE_H
+#నిర్వచించు __LZMADECODE_H
 
-typedef unsigned char Byte;
-typedef unsigned short UInt16;
-typedef unsigned int UInt32;
-typedef UInt32 SizeT;
+రకనిర్వచనం గుర్తులేని అక్షరం Byte;
+రకనిర్వచనం గుర్తులేని పొట్టి UInt16;
+రకనిర్వచనం గుర్తులేని పూర్ణాంకం UInt32;
+రకనిర్వచనం UInt32 కొలత_T;
 
-#define CProb UInt16
+#నిర్వచించు CProb UInt16
 
-#define LZMA_RESULT_OK 0
-#define LZMA_RESULT_DATA_ERROR 1
+#నిర్వచించు LZMA_ఫలితం_OK 0
+#నిర్వచించు LZMA_ఫలితం_దత్తాంశం_ERROR 1
 
 
-#define LZMA_BASE_SIZE 1846
-#define LZMA_LIT_SIZE 768
+#నిర్వచించు LZMA_పునాది_కొలత 1846
+#నిర్వచించు LZMA_LIT_కొలత 768
 
-#define LZMA_PROPERTIES_SIZE 5
+#నిర్వచించు LZMA_PROPERTIES_కొలత 5
 
-typedef struct _CLzmaProperties
+రకనిర్వచనం నిర్మాణం _CLzmaProperties
 {
-  int lc;
-  int lp;
-  int pb;
+  పూర్ణాంకం lc;
+  పూర్ణాంకం lp;
+  పూర్ణాంకం pb;
 }CLzmaProperties;
 
-int LzmaDecodeProperties(CLzmaProperties *propsRes, const unsigned char *propsData, int size);
+పూర్ణాంకం LzmaDecodeProperties(CLzmaProperties *propsRes, స్థిరరాశి గుర్తులేని అక్షరం *props_దత్తాంశం, పూర్ణాంకం కొలత);
 
-#define LzmaGetNumProbs(Properties) (LZMA_BASE_SIZE + (LZMA_LIT_SIZE << ((Properties)->lc + (Properties)->lp)))
+#నిర్వచించు Lzma_Get_అంకె_Probs(Properties) (LZMA_పునాది_కొలత + (LZMA_LIT_కొలత << ((Properties)->lc + (Properties)->lp)))
 
-#define kLzmaNeedInitId (-2)
+#నిర్వచించు kLzmaNeedInitId (-2)
 
-typedef struct _CLzmaDecoderState
+రకనిర్వచనం నిర్మాణం _CLzmaDecoderState
 {
   CLzmaProperties Properties;
   CProb *Probs;
@@ -60,8 +60,8 @@ typedef struct _CLzmaDecoderState
 } CLzmaDecoderState;
 
 
-int LzmaDecode(CLzmaDecoderState *vs,
-    const unsigned char *inStream, SizeT inSize, SizeT *inSizeProcessed,
-    unsigned char *outStream, SizeT outSize, SizeT *outSizeProcessed);
+పూర్ణాంకం LzmaDecode(CLzmaDecoderState *vs,
+    స్థిరరాశి గుర్తులేని అక్షరం *లోపల_ప్రవాహం, కొలత_T లోపల_కొలత, కొలత_T *లోపల_కొలత_Processed,
+    గుర్తులేని అక్షరం *బహిర్గతం_ప్రవాహం, కొలత_T బహిర్గతం_కొలత, కొలత_T *బహిర్గతం_కొలత_Processed);
 
-#endif
+#అయితే_ముగింపు

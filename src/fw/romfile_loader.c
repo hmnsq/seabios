@@ -1,259 +1,259 @@
-#include "romfile_loader.h"
-#include "byteorder.h" // leXX_to_cpu/cpu_to_leXX
-#include "util.h" // checksum
-#include "string.h" // strcmp
-#include "romfile.h" // struct romfile_s
-#include "malloc.h" // Zone*, _malloc
-#include "list.h" // struct hlist_node
-#include "output.h" // warn_*
-#include "paravirt.h" // qemu_cfg_write_file
+#అన్తర్భావ "romfile_loader.h"
+#అన్తర్భావ "byteorder.h" // leXX_to_cpu/cpu_to_leXX
+#అన్తర్భావ "util.h" // checksum
+#అన్తర్భావ "string.h" // strcmp
+#అన్తర్భావ "romfile.h" // struct romfile_s
+#అన్తర్భావ "malloc.h" // Zone*, _malloc
+#అన్తర్భావ "list.h" // struct hlist_node
+#అన్తర్భావ "output.h" // warn_*
+#అన్తర్భావ "paravirt.h" // qemu_cfg_write_file
 
-struct romfile_loader_file {
-    struct romfile_s *file;
-    void *data;
+నిర్మాణం romfile_loader_file {
+    నిర్మాణం romfile_s *file;
+    శూన్య *దత్తాంశం;
 };
-struct romfile_loader_files {
-    int nfiles;
-    struct romfile_loader_file files[];
+నిర్మాణం romfile_loader_files {
+    పూర్ణాంకం nfiles;
+    నిర్మాణం romfile_loader_file files[];
 };
 
 // Data structures for storing "write pointer" entries for possible replay
-struct romfile_wr_pointer_entry {
-    u64 pointer;
-    u32 offset;
-    u16 key;
-    u8 ptr_size;
-    struct hlist_node node;
+నిర్మాణం romfile_wr_సూచిక_నమోదు {
+    u64 సూచిక_2;
+    u32 స్థానభ్రంశం_2;
+    u16 కీలకం;
+    u8 ptr_కొలత;
+    నిర్మాణం hlist_కణుపు కణుపు;
 };
-static struct hlist_head romfile_pointer_list;
+స్థిర నిర్మాణం hlist_తల romfile_సూచిక_list;
 
-static struct romfile_loader_file *
-romfile_loader_find(const char *name,
-                    struct romfile_loader_files *files)
+స్థిర నిర్మాణం romfile_loader_file *
+romfile_loader_కనుగొను(స్థిరరాశి అక్షరం *name,
+                    నిర్మాణం romfile_loader_files *files)
 {
-    int i;
-    if (name[ROMFILE_LOADER_FILESZ - 1])
-        return NULL;
-    for (i = 0; i < files->nfiles; ++i)
-        if (!strcmp(files->files[i].file->name, name))
-            return &files->files[i];
-    return NULL;
+    పూర్ణాంకం i;
+    ఒకవేళ (name[ROMFILE_LOADER_FILESZ - 1])
+        తిరిగి ఖాళీ;
+    కొరకు (i = 0; i < files->nfiles; ++i)
+        ఒకవేళ (!strcmp(files->files[i].file->name, name))
+            తిరిగి &files->files[i];
+    తిరిగి ఖాళీ;
 }
 
 // Replay "write pointer" entries back to QEMU
-void romfile_fw_cfg_resume(void)
+శూన్య romfile_fw_cfg_resume(శూన్య)
 {
-    if (!CONFIG_QEMU)
-        return;
+    ఒకవేళ (!CONFIG_QEMU)
+        తిరిగి;
 
-    struct romfile_wr_pointer_entry *entry;
-    hlist_for_each_entry(entry, &romfile_pointer_list, node) {
-        qemu_cfg_write_file_simple(&entry->pointer, entry->key,
-                                   entry->offset, entry->ptr_size);
+    నిర్మాణం romfile_wr_సూచిక_నమోదు *నమోదు_2;
+    hlist_for_each_నమోదు(నమోదు_2, &romfile_సూచిక_list, కణుపు) {
+        qemu_cfg_write_file_simple(&నమోదు_2->సూచిక_2, నమోదు_2->కీలకం,
+                                   నమోదు_2->స్థానభ్రంశం_2, నమోదు_2->ptr_కొలత);
     }
 }
 
-static void romfile_loader_allocate(struct romfile_loader_entry_s *entry,
-                                    struct romfile_loader_files *files)
+స్థిర శూన్య romfile_loader_allocate(నిర్మాణం romfile_loader_నమోదు_s *నమోదు_2,
+                                    నిర్మాణం romfile_loader_files *files)
 {
-    struct zone_s *zone;
-    struct romfile_loader_file *file = &files->files[files->nfiles];
-    void *data;
-    int ret;
-    unsigned alloc_align = le32_to_cpu(entry->alloc.align);
+    నిర్మాణం zone_s *zone;
+    నిర్మాణం romfile_loader_file *file = &files->files[files->nfiles];
+    శూన్య *దత్తాంశం;
+    పూర్ణాంకం ret;
+    గుర్తులేని alloc_align = le32_గమ్యం_cpu(నమోదు_2->alloc.align);
 
-    if (alloc_align & (alloc_align - 1))
-        goto err;
+    ఒకవేళ (alloc_align & (alloc_align - 1))
+        వెళ్ళు err;
 
-    switch (entry->alloc.zone) {
-        case ROMFILE_LOADER_ALLOC_ZONE_HIGH:
-            zone = &ZoneHigh;
-            break;
-        case ROMFILE_LOADER_ALLOC_ZONE_FSEG:
+    ఎంపిక (నమోదు_2->alloc.zone) {
+        స్థితి ROMFILE_LOADER_ALLOC_ZONE_ఎగువ:
+            zone = &Zone_ఎగువ;
+            ఆపు;
+        స్థితి ROMFILE_LOADER_ALLOC_ZONE_FSEG:
             zone = &ZoneFSeg;
-            break;
-        default:
-            goto err;
+            ఆపు;
+        అప్రమేయ:
+            వెళ్ళు err;
     }
-    if (alloc_align < MALLOC_MIN_ALIGN)
+    ఒకవేళ (alloc_align < MALLOC_MIN_ALIGN)
         alloc_align = MALLOC_MIN_ALIGN;
-    if (entry->alloc.file[ROMFILE_LOADER_FILESZ - 1])
-        goto err;
-    file->file = romfile_find(entry->alloc.file);
-    if (!file->file || !file->file->size)
-        return;
-    data = _malloc(zone, file->file->size, alloc_align);
-    if (!data) {
+    ఒకవేళ (నమోదు_2->alloc.file[ROMFILE_LOADER_FILESZ - 1])
+        వెళ్ళు err;
+    file->file = romfile_కనుగొను(నమోదు_2->alloc.file);
+    ఒకవేళ (!file->file || !file->file->కొలత)
+        తిరిగి;
+    దత్తాంశం = _malloc(zone, file->file->కొలత, alloc_align);
+    ఒకవేళ (!దత్తాంశం) {
         warn_noalloc();
-        return;
+        తిరిగి;
     }
-    ret = file->file->copy(file->file, data, file->file->size);
-    if (ret != file->file->size)
-        goto file_err;
-    file->data = data;
+    ret = file->file->copy(file->file, దత్తాంశం, file->file->కొలత);
+    ఒకవేళ (ret != file->file->కొలత)
+        వెళ్ళు file_err;
+    file->దత్తాంశం = దత్తాంశం;
     files->nfiles++;
-    return;
+    తిరిగి;
 
 file_err:
-    free(data);
+    విడుదల(దత్తాంశం);
 err:
     warn_internalerror();
 }
 
-static void romfile_loader_add_pointer(struct romfile_loader_entry_s *entry,
-                                       struct romfile_loader_files *files)
+స్థిర శూన్య romfile_loader_కూడు_సూచిక(నిర్మాణం romfile_loader_నమోదు_s *నమోదు_2,
+                                       నిర్మాణం romfile_loader_files *files)
 {
-    struct romfile_loader_file *dest_file;
-    struct romfile_loader_file *src_file;
-    unsigned offset = le32_to_cpu(entry->pointer.offset);
-    u64 pointer = 0;
+    నిర్మాణం romfile_loader_file *dest_file;
+    నిర్మాణం romfile_loader_file *src_file;
+    గుర్తులేని స్థానభ్రంశం_2 = le32_గమ్యం_cpu(నమోదు_2->సూచిక_2.స్థానభ్రంశం_2);
+    u64 సూచిక_2 = 0;
 
-    dest_file = romfile_loader_find(entry->pointer.dest_file, files);
-    src_file = romfile_loader_find(entry->pointer.src_file, files);
+    dest_file = romfile_loader_కనుగొను(నమోదు_2->సూచిక_2.dest_file, files);
+    src_file = romfile_loader_కనుగొను(నమోదు_2->సూచిక_2.src_file, files);
 
-    if (!dest_file || !src_file || !dest_file->data || !src_file->data ||
-        offset + entry->pointer.size < offset ||
-        offset + entry->pointer.size > dest_file->file->size ||
-        entry->pointer.size < 1 || entry->pointer.size > 8 ||
-        entry->pointer.size & (entry->pointer.size - 1))
-        goto err;
+    ఒకవేళ (!dest_file || !src_file || !dest_file->దత్తాంశం || !src_file->దత్తాంశం ||
+        స్థానభ్రంశం_2 + నమోదు_2->సూచిక_2.కొలత < స్థానభ్రంశం_2 ||
+        స్థానభ్రంశం_2 + నమోదు_2->సూచిక_2.కొలత > dest_file->file->కొలత ||
+        నమోదు_2->సూచిక_2.కొలత < 1 || నమోదు_2->సూచిక_2.కొలత > 8 ||
+        నమోదు_2->సూచిక_2.కొలత & (నమోదు_2->సూచిక_2.కొలత - 1))
+        వెళ్ళు err;
 
-    memcpy(&pointer, dest_file->data + offset, entry->pointer.size);
-    pointer = le64_to_cpu(pointer);
-    pointer += (unsigned long)src_file->data;
-    pointer = cpu_to_le64(pointer);
-    memcpy(dest_file->data + offset, &pointer, entry->pointer.size);
+    జ్ఞాపకం_నకలు(&సూచిక_2, dest_file->దత్తాంశం + స్థానభ్రంశం_2, నమోదు_2->సూచిక_2.కొలత);
+    సూచిక_2 = le64_గమ్యం_cpu(సూచిక_2);
+    సూచిక_2 += (గుర్తులేని దీర్ఘ)src_file->దత్తాంశం;
+    సూచిక_2 = cpu_గమ్యం_le64(సూచిక_2);
+    జ్ఞాపకం_నకలు(dest_file->దత్తాంశం + స్థానభ్రంశం_2, &సూచిక_2, నమోదు_2->సూచిక_2.కొలత);
 
-    return;
+    తిరిగి;
 err:
     warn_internalerror();
 }
 
-static void romfile_loader_add_checksum(struct romfile_loader_entry_s *entry,
-                                        struct romfile_loader_files *files)
+స్థిర శూన్య romfile_loader_కూడు_checksum(నిర్మాణం romfile_loader_నమోదు_s *నమోదు_2,
+                                        నిర్మాణం romfile_loader_files *files)
 {
-    struct romfile_loader_file *file;
-    unsigned offset = le32_to_cpu(entry->cksum.offset);
-    unsigned start = le32_to_cpu(entry->cksum.start);
-    unsigned len = le32_to_cpu(entry->cksum.length);
-    u8 *data;
+    నిర్మాణం romfile_loader_file *file;
+    గుర్తులేని స్థానభ్రంశం_2 = le32_గమ్యం_cpu(నమోదు_2->cksum.స్థానభ్రంశం_2);
+    గుర్తులేని ప్రారంభం = le32_గమ్యం_cpu(నమోదు_2->cksum.ప్రారంభం);
+    గుర్తులేని len = le32_గమ్యం_cpu(నమోదు_2->cksum.నిడివి);
+    u8 *దత్తాంశం;
 
-    file = romfile_loader_find(entry->cksum.file, files);
+    file = romfile_loader_కనుగొను(నమోదు_2->cksum.file, files);
 
-    if (!file || !file->data || offset >= file->file->size ||
-        start + len < start || start + len > file->file->size)
-        goto err;
+    ఒకవేళ (!file || !file->దత్తాంశం || స్థానభ్రంశం_2 >= file->file->కొలత ||
+        ప్రారంభం + len < ప్రారంభం || ప్రారంభం + len > file->file->కొలత)
+        వెళ్ళు err;
 
-    data = file->data + offset;
-    *data -= checksum(file->data + start, len);
+    దత్తాంశం = file->దత్తాంశం + స్థానభ్రంశం_2;
+    *దత్తాంశం -= checksum(file->దత్తాంశం + ప్రారంభం, len);
 
-    return;
+    తిరిగి;
 err:
     warn_internalerror();
 }
 
-static void romfile_loader_write_pointer(struct romfile_loader_entry_s *entry,
-                                         struct romfile_loader_files *files)
+స్థిర శూన్య romfile_loader_write_సూచిక(నిర్మాణం romfile_loader_నమోదు_s *నమోదు_2,
+                                         నిర్మాణం romfile_loader_files *files)
 {
-    struct romfile_s *dest_file;
-    struct romfile_loader_file *src_file;
-    unsigned dst_offset = le32_to_cpu(entry->wr_pointer.dst_offset);
-    unsigned src_offset = le32_to_cpu(entry->wr_pointer.src_offset);
-    u64 pointer = 0;
+    నిర్మాణం romfile_s *dest_file;
+    నిర్మాణం romfile_loader_file *src_file;
+    గుర్తులేని dst_స్థానభ్రంశం = le32_గమ్యం_cpu(నమోదు_2->wr_సూచిక.dst_స్థానభ్రంశం);
+    గుర్తులేని src_స్థానభ్రంశం = le32_గమ్యం_cpu(నమోదు_2->wr_సూచిక.src_స్థానభ్రంశం);
+    u64 సూచిక_2 = 0;
 
     /* Writing back to a file that may not be loaded in RAM */
-    dest_file = romfile_find(entry->wr_pointer.dest_file);
-    src_file = romfile_loader_find(entry->wr_pointer.src_file, files);
+    dest_file = romfile_కనుగొను(నమోదు_2->wr_సూచిక.dest_file);
+    src_file = romfile_loader_కనుగొను(నమోదు_2->wr_సూచిక.src_file, files);
 
-    if (!dest_file || !src_file || !src_file->data ||
-        dst_offset + entry->wr_pointer.size < dst_offset ||
-        dst_offset + entry->wr_pointer.size > dest_file->size ||
-        src_offset >= src_file->file->size ||
-        entry->wr_pointer.size < 1 || entry->wr_pointer.size > 8 ||
-        entry->wr_pointer.size & (entry->wr_pointer.size - 1)) {
-        goto err;
+    ఒకవేళ (!dest_file || !src_file || !src_file->దత్తాంశం ||
+        dst_స్థానభ్రంశం + నమోదు_2->wr_సూచిక.కొలత < dst_స్థానభ్రంశం ||
+        dst_స్థానభ్రంశం + నమోదు_2->wr_సూచిక.కొలత > dest_file->కొలత ||
+        src_స్థానభ్రంశం >= src_file->file->కొలత ||
+        నమోదు_2->wr_సూచిక.కొలత < 1 || నమోదు_2->wr_సూచిక.కొలత > 8 ||
+        నమోదు_2->wr_సూచిక.కొలత & (నమోదు_2->wr_సూచిక.కొలత - 1)) {
+        వెళ్ళు err;
     }
 
-    pointer = (unsigned long)src_file->data + src_offset;
+    సూచిక_2 = (గుర్తులేని దీర్ఘ)src_file->దత్తాంశం + src_స్థానభ్రంశం;
     /* Make sure the pointer fits within wr_pointer.size */
-    if ((entry->wr_pointer.size != sizeof(u64)) &&
-        ((pointer >> (entry->wr_pointer.size * 8)) > 0)) {
-        goto err;
+    ఒకవేళ ((నమోదు_2->wr_సూచిక.కొలత != పరిమాణం(u64)) &&
+        ((సూచిక_2 >> (నమోదు_2->wr_సూచిక.కొలత * 8)) > 0)) {
+        వెళ్ళు err;
     }
-    pointer = cpu_to_le64(pointer);
+    సూచిక_2 = cpu_గమ్యం_le64(సూచిక_2);
 
     /* Only supported on QEMU */
-    if (qemu_cfg_write_file(&pointer, dest_file, dst_offset,
-                            entry->wr_pointer.size) != entry->wr_pointer.size) {
-        goto err;
+    ఒకవేళ (qemu_cfg_write_file(&సూచిక_2, dest_file, dst_స్థానభ్రంశం,
+                            నమోదు_2->wr_సూచిక.కొలత) != నమోదు_2->wr_సూచిక.కొలత) {
+        వెళ్ళు err;
     }
 
     /* Store the info so it can replayed later if necessary */
-    struct romfile_wr_pointer_entry *store = malloc_high(sizeof(*store));
-    if (!store) {
+    నిర్మాణం romfile_wr_సూచిక_నమోదు *store = malloc_ఎగువ(పరిమాణం(*store));
+    ఒకవేళ (!store) {
         warn_noalloc();
-        return;
+        తిరిగి;
     }
-    store->pointer = pointer;
-    store->key = qemu_get_romfile_key(dest_file);
-    store->offset = dst_offset;
-    store->ptr_size = entry->wr_pointer.size;
-    hlist_add_head(&store->node, &romfile_pointer_list);
+    store->సూచిక_2 = సూచిక_2;
+    store->కీలకం = qemu_get_romfile_కీలకం(dest_file);
+    store->స్థానభ్రంశం_2 = dst_స్థానభ్రంశం;
+    store->ptr_కొలత = నమోదు_2->wr_సూచిక.కొలత;
+    hlist_కూడు_తల(&store->కణుపు, &romfile_సూచిక_list);
 
-    return;
+    తిరిగి;
  err:
     warn_internalerror();
 }
 
-int romfile_loader_execute(const char *name)
+పూర్ణాంకం romfile_loader_execute(స్థిరరాశి అక్షరం *name)
 {
-    struct romfile_loader_entry_s *entry;
-    int size, offset = 0, nfiles;
-    struct romfile_loader_files *files;
-    void *data = romfile_loadfile(name, &size);
-    if (!data)
-        return -1;
+    నిర్మాణం romfile_loader_నమోదు_s *నమోదు_2;
+    పూర్ణాంకం కొలత, స్థానభ్రంశం_2 = 0, nfiles;
+    నిర్మాణం romfile_loader_files *files;
+    శూన్య *దత్తాంశం = romfile_loadfile(name, &కొలత);
+    ఒకవేళ (!దత్తాంశం)
+        తిరిగి -1;
 
-    if (size % sizeof(*entry)) {
+    ఒకవేళ (కొలత % పరిమాణం(*నమోదు_2)) {
         warn_internalerror();
-        goto err;
+        వెళ్ళు err;
     }
 
     /* (over)estimate the number of files to load. */
-    nfiles = size / sizeof(*entry);
-    files = malloc_tmp(sizeof(*files) + nfiles * sizeof(files->files[0]));
-    if (!files) {
+    nfiles = కొలత / పరిమాణం(*నమోదు_2);
+    files = malloc_tmp(పరిమాణం(*files) + nfiles * పరిమాణం(files->files[0]));
+    ఒకవేళ (!files) {
         warn_noalloc();
-        goto err;
+        వెళ్ళు err;
     }
     files->nfiles = 0;
 
-    for (offset = 0; offset < size; offset += sizeof(*entry)) {
-        entry = data + offset;
-        switch (le32_to_cpu(entry->command)) {
-                case ROMFILE_LOADER_COMMAND_ALLOCATE:
-                        romfile_loader_allocate(entry, files);
-                        break;
-                case ROMFILE_LOADER_COMMAND_ADD_POINTER:
-                        romfile_loader_add_pointer(entry, files);
-                        break;
-                case ROMFILE_LOADER_COMMAND_ADD_CHECKSUM:
-                        romfile_loader_add_checksum(entry, files);
-                        break;
-                case ROMFILE_LOADER_COMMAND_WRITE_POINTER:
-                        romfile_loader_write_pointer(entry, files);
-                        break;
-                default:
+    కొరకు (స్థానభ్రంశం_2 = 0; స్థానభ్రంశం_2 < కొలత; స్థానభ్రంశం_2 += పరిమాణం(*నమోదు_2)) {
+        నమోదు_2 = దత్తాంశం + స్థానభ్రంశం_2;
+        ఎంపిక (le32_గమ్యం_cpu(నమోదు_2->command)) {
+                స్థితి ROMFILE_LOADER_COMMAND_ALLOCATE:
+                        romfile_loader_allocate(నమోదు_2, files);
+                        ఆపు;
+                స్థితి ROMFILE_LOADER_COMMAND_కూడు_సూచిక:
+                        romfile_loader_కూడు_సూచిక(నమోదు_2, files);
+                        ఆపు;
+                స్థితి ROMFILE_LOADER_COMMAND_కూడు_CHECKSUM:
+                        romfile_loader_కూడు_checksum(నమోదు_2, files);
+                        ఆపు;
+                స్థితి ROMFILE_LOADER_COMMAND_WRITE_సూచిక:
+                        romfile_loader_write_సూచిక(నమోదు_2, files);
+                        ఆపు;
+                అప్రమేయ:
                         /* Skip commands that we don't recognize. */
-                        break;
+                        ఆపు;
         }
     }
 
-    free(files);
-    free(data);
-    return 0;
+    విడుదల(files);
+    విడుదల(దత్తాంశం);
+    తిరిగి 0;
 
 err:
-    free(data);
-    return -1;
+    విడుదల(దత్తాంశం);
+    తిరిగి -1;
 }

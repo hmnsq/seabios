@@ -1,19 +1,19 @@
-#ifndef TCGBIOS_H
-#define TCGBIOS_H
+#నిర్వచితం_కాకపోతే TCGBIOS_H
+#నిర్వచించు TCGBIOS_H
 
-#include "types.h"
+#అన్తర్భావ "types.h"
 
-struct bregs;
-void tpm_interrupt_handler32(struct bregs *regs);
+నిర్మాణం bregs;
+శూన్య tpm_అంతరాయం_handler32(నిర్మాణం bregs *regs);
 
-void tpm_setup(void);
-void tpm_prepboot(void);
-void tpm_s3_resume(void);
-void tpm_add_bcv(u32 bootdrv, const u8 *addr, u32 length);
-void tpm_add_cdrom(u32 bootdrv, const u8 *addr, u32 length);
-void tpm_add_cdrom_catalog(const u8 *addr, u32 length);
-void tpm_option_rom(const void *addr, u32 len);
-int tpm_can_show_menu(void);
-void tpm_menu(void);
+శూన్య tpm_అమరిక(శూన్య);
+శూన్య tpm_prepboot(శూన్య);
+శూన్య tpm_s3_resume(శూన్య);
+శూన్య tpm_కూడు_bcv(u32 bootdrv, స్థిరరాశి u8 *addr, u32 నిడివి);
+శూన్య tpm_కూడు_cdrom(u32 bootdrv, స్థిరరాశి u8 *addr, u32 నిడివి);
+శూన్య tpm_కూడు_cdrom_catalog(స్థిరరాశి u8 *addr, u32 నిడివి);
+శూన్య tpm_option_rom(స్థిరరాశి శూన్య *addr, u32 len);
+పూర్ణాంకం tpm_can_show_menu(శూన్య);
+శూన్య tpm_menu(శూన్య);
 
-#endif /* TCGBIOS_H */
+#అయితే_ముగింపు /* TCGBIOS_H */

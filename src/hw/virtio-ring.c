@@ -16,14 +16,14 @@
  *
  */
 
-#include "output.h" // panic
-#include "virtio-ring.h"
-#include "virtio-pci.h"
+#అన్తర్భావ "output.h" // panic
+#అన్తర్భావ "virtio-ring.h"
+#అన్తర్భావ "virtio-pci.h"
 
-#define BUG() do {                                                      \
+#నిర్వచించు BUG() చేయి {                                                      \
             panic("BUG: failure at %d/%s()!\n", __LINE__, __func__);    \
-        } while (0)
-#define BUG_ON(condition) do { if (condition) BUG(); } while (0)
+        } అయితే (0)
+#నిర్వచించు BUG_ON(condition) చేయి { ఒకవేళ (condition) BUG(); } అయితే (0)
 
 /*
  * vring_more_used
@@ -32,13 +32,13 @@
  *
  */
 
-int vring_more_used(struct vring_virtqueue *vq)
+పూర్ణాంకం vring_మరిన్ని_వాడిన(నిర్మాణం vring_virtqueue *vq)
 {
-    struct vring_used *used = vq->vring.used;
-    int more = vq->last_used_idx != used->idx;
+    నిర్మాణం vring_వాడిన *వాడిన = vq->vring.వాడిన;
+    పూర్ణాంకం మరిన్ని = vq->చివరి_వాడిన_idx != వాడిన->idx;
     /* Make sure ring reads are done after idx read above. */
     smp_rmb();
-    return more;
+    తిరిగి మరిన్ని;
 }
 
 /*
@@ -47,22 +47,22 @@ int vring_more_used(struct vring_virtqueue *vq)
  * put at the begin of the free list the current desc[head]
  */
 
-void vring_detach(struct vring_virtqueue *vq, unsigned int head)
+శూన్య vring_detach(నిర్మాణం vring_virtqueue *vq, గుర్తులేని పూర్ణాంకం తల)
 {
-    struct vring *vr = &vq->vring;
-    struct vring_desc *desc = GET_LOWFLAT(vr->desc);
-    unsigned int i;
+    నిర్మాణం vring *vr = &vq->vring;
+    నిర్మాణం vring_desc *desc = GET_LOWFLAT(vr->desc);
+    గుర్తులేని పూర్ణాంకం i;
 
     /* find end of given descriptor */
 
-    i = head;
-    while (desc[i].flags & VRING_DESC_F_NEXT)
-        i = desc[i].next;
+    i = తల;
+    అయితే (desc[i].flags & VRING_DESC_F_తదుపరి)
+        i = desc[i].తదుపరి;
 
     /* link it with free list and point to it */
 
-    desc[i].next = vq->free_head;
-    vq->free_head = head;
+    desc[i].తదుపరి = vq->free_తల;
+    vq->free_తల = తల;
 }
 
 /*
@@ -72,76 +72,76 @@ void vring_detach(struct vring_virtqueue *vq, unsigned int head)
  *
  */
 
-int vring_get_buf(struct vring_virtqueue *vq, unsigned int *len)
+పూర్ణాంకం vring_get_buf(నిర్మాణం vring_virtqueue *vq, గుర్తులేని పూర్ణాంకం *len)
 {
-    struct vring *vr = &vq->vring;
-    struct vring_used_elem *elem;
-    struct vring_used *used = vq->vring.used;
+    నిర్మాణం vring *vr = &vq->vring;
+    నిర్మాణం vring_వాడిన_elem *elem;
+    నిర్మాణం vring_వాడిన *వాడిన = vq->vring.వాడిన;
     u32 id;
-    int ret;
+    పూర్ణాంకం ret;
 
 //    BUG_ON(!vring_more_used(vq));
 
-    elem = &used->ring[vq->last_used_idx % vr->num];
+    elem = &వాడిన->ring[vq->చివరి_వాడిన_idx % vr->అంకె];
     id = elem->id;
-    if (len != NULL)
+    ఒకవేళ (len != ఖాళీ)
         *len = elem->len;
 
     ret = vq->vdata[id];
 
     vring_detach(vq, id);
 
-    vq->last_used_idx = vq->last_used_idx + 1;
+    vq->చివరి_వాడిన_idx = vq->చివరి_వాడిన_idx + 1;
 
-    return ret;
+    తిరిగి ret;
 }
 
-void vring_add_buf(struct vring_virtqueue *vq,
-                   struct vring_list list[],
-                   unsigned int out, unsigned int in,
-                   int index, int num_added)
+శూన్య vring_కూడు_buf(నిర్మాణం vring_virtqueue *vq,
+                   నిర్మాణం vring_list list[],
+                   గుర్తులేని పూర్ణాంకం బహిర్గతం, గుర్తులేని పూర్ణాంకం లోపల,
+                   పూర్ణాంకం సూచీ, పూర్ణాంకం అంకె_added)
 {
-    struct vring *vr = &vq->vring;
-    int i, av, head, prev;
-    struct vring_desc *desc = vr->desc;
-    struct vring_avail *avail = vr->avail;
+    నిర్మాణం vring *vr = &vq->vring;
+    పూర్ణాంకం i, av, తల, prev;
+    నిర్మాణం vring_desc *desc = vr->desc;
+    నిర్మాణం vring_avail *avail = vr->avail;
 
-    BUG_ON(out + in == 0);
+    BUG_ON(బహిర్గతం + లోపల == 0);
 
     prev = 0;
-    head = vq->free_head;
-    for (i = head; out; i = desc[i].next, out--) {
-        desc[i].flags = VRING_DESC_F_NEXT;
-        desc[i].addr = (u64)virt_to_phys(list->addr);
-        desc[i].len = list->length;
+    తల = vq->free_తల;
+    కొరకు (i = తల; బహిర్గతం; i = desc[i].తదుపరి, బహిర్గతం--) {
+        desc[i].flags = VRING_DESC_F_తదుపరి;
+        desc[i].addr = (u64)virt_గమ్యం_phys(list->addr);
+        desc[i].len = list->నిడివి;
         prev = i;
         list++;
     }
-    for ( ; in; i = desc[i].next, in--) {
-        desc[i].flags = VRING_DESC_F_NEXT|VRING_DESC_F_WRITE;
-        desc[i].addr = (u64)virt_to_phys(list->addr);
-        desc[i].len = list->length;
+    కొరకు ( ; లోపల; i = desc[i].తదుపరి, లోపల--) {
+        desc[i].flags = VRING_DESC_F_తదుపరి|VRING_DESC_F_WRITE;
+        desc[i].addr = (u64)virt_గమ్యం_phys(list->addr);
+        desc[i].len = list->నిడివి;
         prev = i;
         list++;
     }
-    desc[prev].flags = desc[prev].flags & ~VRING_DESC_F_NEXT;
+    desc[prev].flags = desc[prev].flags & ~VRING_DESC_F_తదుపరి;
 
-    vq->free_head = i;
+    vq->free_తల = i;
 
-    vq->vdata[head] = index;
+    vq->vdata[తల] = సూచీ;
 
-    av = (avail->idx + num_added) % vr->num;
-    avail->ring[av] = head;
+    av = (avail->idx + అంకె_added) % vr->అంకె;
+    avail->ring[av] = తల;
 }
 
-void vring_kick(struct vp_device *vp, struct vring_virtqueue *vq, int num_added)
+శూన్య vring_kick(నిర్మాణం vp_device *vp, నిర్మాణం vring_virtqueue *vq, పూర్ణాంకం అంకె_added)
 {
-    struct vring *vr = &vq->vring;
-    struct vring_avail *avail = vr->avail;
+    నిర్మాణం vring *vr = &vq->vring;
+    నిర్మాణం vring_avail *avail = vr->avail;
 
     /* Make sure idx update is done after ring write. */
     smp_wmb();
-    avail->idx = avail->idx + num_added;
+    avail->idx = avail->idx + అంకె_added;
 
     vp_notify(vp, vq);
 }

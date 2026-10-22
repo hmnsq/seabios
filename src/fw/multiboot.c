@@ -4,108 +4,108 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_*
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "romfile.h" // romfile_add
-#include "std/multiboot.h" // MULTIBOOT_*
-#include "string.h" // memset
-#include "util.h" // multiboot_init
+#అన్తర్భావ "config.h" // CONFIG_*
+#అన్తర్భావ "malloc.h" // free
+#అన్తర్భావ "output.h" // dprintf
+#అన్తర్భావ "romfile.h" // romfile_add
+#అన్తర్భావ "std/multiboot.h" // MULTIBOOT_*
+#అన్తర్భావ "string.h" // memset
+#అన్తర్భావ "util.h" // multiboot_init
 
-struct mbfs_romfile_s {
-    struct romfile_s file;
-    void *data;
+నిర్మాణం mbfs_romfile_s {
+    నిర్మాణం romfile_s file;
+    శూన్య *దత్తాంశం;
 };
 
-static int
-extract_filename(char *dest, char *src, size_t lim)
+స్థిర పూర్ణాంకం
+వెలికితీయి_filename(అక్షరం *dest, అక్షరం *src, కొలత_t lim)
 {
-    char *ptr;
-    for (ptr = src; *ptr; ptr++) {
-        if (!(ptr == src || ptr[-1] == ' ' || ptr[-1] == '\t'))
-            continue;
+    అక్షరం *ptr;
+    కొరకు (ptr = src; *ptr; ptr++) {
+        ఒకవేళ (!(ptr == src || ptr[-1] == ' ' || ptr[-1] == '\t'))
+            కొనసాగు;
         /* memcmp stops early if it encounters \0 as it doesn't match name=.  */
-        if (memcmp(ptr, "name=", 5) == 0) {
-            int i;
-            char *optr = dest;
-            for (i = 0, ptr += 5; *ptr && *ptr != ' ' && i < lim; i++) {
+        ఒకవేళ (memcmp(ptr, "name=", 5) == 0) {
+            పూర్ణాంకం i;
+            అక్షరం *optr = dest;
+            కొరకు (i = 0, ptr += 5; *ptr && *ptr != ' ' && i < lim; i++) {
                 *optr++ = *ptr++;
             }
             *optr++ = '\0';
-            return 1;
+            తిరిగి 1;
         }
     }
-    return 0;
+    తిరిగి 0;
 }
 
 // Copy a file to memory
-static int
-mbfs_copyfile(struct romfile_s *file, void *dst, u32 maxlen)
+స్థిర పూర్ణాంకం
+mbfs_copyfile(నిర్మాణం romfile_s *file, శూన్య *dst, u32 maxlen)
 {
-    struct mbfs_romfile_s *cfile;
-    cfile = container_of(file, struct mbfs_romfile_s, file);
-    u32 size = cfile->file.size;
-    void *src = cfile->data;
+    నిర్మాణం mbfs_romfile_s *cfile;
+    cfile = container_యొక్క(file, నిర్మాణం mbfs_romfile_s, file);
+    u32 కొలత = cfile->file.కొలత;
+    శూన్య *src = cfile->దత్తాంశం;
 
     // Not compressed.
-    dprintf(3, "Copying data %d@%p to %d@%p\n", size, src, maxlen, dst);
-    if (size > maxlen) {
+    dprintf(3, "Copying data %d@%p to %d@%p\n", కొలత, src, maxlen, dst);
+    ఒకవేళ (కొలత > maxlen) {
         warn_noalloc();
-        return -1;
+        తిరిగి -1;
     }
-    iomemcpy(dst, src, size);
-    return size;
+    iomemcpy(dst, src, కొలత);
+    తిరిగి కొలత;
 }
 
-u32 __VISIBLE entry_elf_eax, entry_elf_ebx;
+u32 __VISIBLE నమోదు_elf_eax, నమోదు_elf_ebx;
 
-void
-multiboot_init(void)
+శూన్య
+multiboot_init(శూన్య)
 {
-    struct multiboot_info *mbi;
-    if (!CONFIG_MULTIBOOT)
-        return;
-    dprintf(1, "multiboot: eax=%x, ebx=%x\n", entry_elf_eax, entry_elf_ebx);
-    if (entry_elf_eax != MULTIBOOT_BOOTLOADER_MAGIC)
-        return;
-    mbi = (void *)entry_elf_ebx;
+    నిర్మాణం multiboot_info *mbi;
+    ఒకవేళ (!CONFIG_MULTIBOOT)
+        తిరిగి;
+    dprintf(1, "multiboot: eax=%x, ebx=%x\n", నమోదు_elf_eax, నమోదు_elf_ebx);
+    ఒకవేళ (నమోదు_elf_eax != MULTIBOOT_BOOTLOADER_MAGIC)
+        తిరిగి;
+    mbi = (శూన్య *)నమోదు_elf_ebx;
     dprintf(1, "mbptr=%p\n", mbi);
     dprintf(1, "flags=0x%x, mods=0x%x, mods_c=%d\n", mbi->flags, mbi->mods_addr,
-            mbi->mods_count);
-    if (!(mbi->flags & MULTIBOOT_INFO_MODS))
-        return;
-    int i;
-    struct multiboot_mod_list *mod = (void *)mbi->mods_addr;
-    for (i = 0; i < mbi->mods_count; i++) {
-        struct mbfs_romfile_s *cfile;
+            mbi->mods_లెక్క);
+    ఒకవేళ (!(mbi->flags & MULTIBOOT_INFO_MODS))
+        తిరిగి;
+    పూర్ణాంకం i;
+    నిర్మాణం multiboot_mod_list *mod = (శూన్య *)mbi->mods_addr;
+    కొరకు (i = 0; i < mbi->mods_లెక్క; i++) {
+        నిర్మాణం mbfs_romfile_s *cfile;
         u8 *copy;
         u32 len;
-        if (!mod[i].cmdline)
-            continue;
-        len = mod[i].mod_end - mod[i].mod_start;
-        cfile = malloc_tmp(sizeof(*cfile));
-        if (!cfile) {
+        ఒకవేళ (!mod[i].cmdline)
+            కొనసాగు;
+        len = mod[i].mod_చివర - mod[i].mod_ప్రారంభం;
+        cfile = malloc_tmp(పరిమాణం(*cfile));
+        ఒకవేళ (!cfile) {
             warn_noalloc();
-            return;
+            తిరిగి;
         }
-        memset(cfile, 0, sizeof(*cfile));
-        dprintf(1, "module %s, size 0x%x\n", (char *)mod[i].cmdline, len);
-        if (!extract_filename(cfile->file.name, (char *)mod[i].cmdline,
-                              sizeof(cfile->file.name))) {
-            free(cfile);
-            continue;
+        memset(cfile, 0, పరిమాణం(*cfile));
+        dprintf(1, "module %s, size 0x%x\n", (అక్షరం *)mod[i].cmdline, len);
+        ఒకవేళ (!వెలికితీయి_filename(cfile->file.name, (అక్షరం *)mod[i].cmdline,
+                              పరిమాణం(cfile->file.name))) {
+            విడుదల(cfile);
+            కొనసాగు;
         }
         dprintf(1, "assigned file name <%s>\n", cfile->file.name);
-        cfile->file.size = len;
+        cfile->file.కొలత = len;
         copy = malloc_tmp(len);
-        if (!copy) {
+        ఒకవేళ (!copy) {
             warn_noalloc();
-            free(cfile);
-            return;
+            విడుదల(cfile);
+            తిరిగి;
         }
-        memcpy(copy, (void *)mod[i].mod_start, len);
+        జ్ఞాపకం_నకలు(copy, (శూన్య *)mod[i].mod_ప్రారంభం, len);
         cfile->file.copy = mbfs_copyfile;
-        cfile->data = copy;
-        romfile_add(&cfile->file);
+        cfile->దత్తాంశం = copy;
+        romfile_కూడు(&cfile->file);
     }
 }

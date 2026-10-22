@@ -4,60 +4,60 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "malloc.h" // malloc_tmp
-#include "output.h" // dprintf
-#include "pci.h" // pci_config_writel
-#include "pcidevice.h" // pci_probe_devices
-#include "pci_regs.h" // PCI_VENDOR_ID
-#include "romfile.h" // romfile_loadint
-#include "stacks.h" // wait_preempt
-#include "string.h" // memset
+#అన్తర్భావ "malloc.h" // malloc_tmp
+#అన్తర్భావ "output.h" // dprintf
+#అన్తర్భావ "pci.h" // pci_config_writel
+#అన్తర్భావ "pcidevice.h" // pci_probe_devices
+#అన్తర్భావ "pci_regs.h" // PCI_VENDOR_ID
+#అన్తర్భావ "romfile.h" // romfile_loadint
+#అన్తర్భావ "stacks.h" // wait_preempt
+#అన్తర్భావ "string.h" // memset
 
-struct hlist_head PCIDevices VARVERIFY32INIT;
-int MaxPCIBus VARFSEG;
+నిర్మాణం hlist_తల PCIDevices VARVERIFY32INIT;
+పూర్ణాంకం MaxPCIBus VARFSEG;
 
 // Find all PCI devices and populate PCIDevices linked list.
-void
-pci_probe_devices(void)
+శూన్య
+pci_probe_devices(శూన్య)
 {
     dprintf(3, "PCI probe\n");
-    struct pci_device *busdevs[256];
-    memset(busdevs, 0, sizeof(busdevs));
-    struct hlist_node **pprev = &PCIDevices.first;
-    int extraroots = romfile_loadint("etc/extra-pci-roots", 0);
-    int bus = -1, lastbus = 0, rootbuses = 0, count=0;
-    while (bus < 0xff && (bus < MaxPCIBus || rootbuses < extraroots)) {
+    నిర్మాణం pci_device *busdevs[256];
+    memset(busdevs, 0, పరిమాణం(busdevs));
+    నిర్మాణం hlist_కణుపు **pprev = &PCIDevices.మొదటి;
+    పూర్ణాంకం extraroots = romfile_loadint("etc/extra-pci-roots", 0);
+    పూర్ణాంకం bus = -1, lastbus = 0, rootbuses = 0, లెక్క=0;
+    అయితే (bus < 0xff && (bus < MaxPCIBus || rootbuses < extraroots)) {
         bus++;
-        int bdf;
+        పూర్ణాంకం bdf;
         foreachbdf(bdf, bus) {
             // Create new pci_device struct and add to list.
-            struct pci_device *dev = malloc_tmp(sizeof(*dev));
-            if (!dev) {
+            నిర్మాణం pci_device *dev = malloc_tmp(పరిమాణం(*dev));
+            ఒకవేళ (!dev) {
                 warn_noalloc();
-                return;
+                తిరిగి;
             }
-            memset(dev, 0, sizeof(*dev));
-            hlist_add(&dev->node, pprev);
-            pprev = &dev->node.next;
-            count++;
+            memset(dev, 0, పరిమాణం(*dev));
+            hlist_కూడు(&dev->కణుపు, pprev);
+            pprev = &dev->కణుపు.తదుపరి;
+            లెక్క++;
 
             // Find parent device.
-            int rootbus;
-            struct pci_device *parent = busdevs[bus];
-            if (!parent) {
-                if (bus != lastbus)
+            పూర్ణాంకం rootbus;
+            నిర్మాణం pci_device *మాతృ = busdevs[bus];
+            ఒకవేళ (!మాతృ) {
+                ఒకవేళ (bus != lastbus)
                     rootbuses++;
                 lastbus = bus;
                 rootbus = rootbuses;
-                if (bus > MaxPCIBus)
+                ఒకవేళ (bus > MaxPCIBus)
                     MaxPCIBus = bus;
-            } else {
-                rootbus = parent->rootbus;
+            } లేకపోతే {
+                rootbus = మాతృ->rootbus;
             }
 
             // Populate pci_device info.
             dev->bdf = bdf;
-            dev->parent = parent;
+            dev->మాతృ = మాతృ;
             dev->rootbus = rootbus;
             u32 vendev = pci_config_readl(bdf, PCI_VENDOR_ID);
             dev->vendor = vendev & 0xffff;
@@ -66,77 +66,77 @@ pci_probe_devices(void)
             dev->class = classrev >> 16;
             dev->prog_if = classrev >> 8;
             dev->revision = classrev & 0xff;
-            dev->header_type = pci_config_readb(bdf, PCI_HEADER_TYPE);
-            u8 v = dev->header_type & 0x7f;
-            if (v == PCI_HEADER_TYPE_BRIDGE || v == PCI_HEADER_TYPE_CARDBUS) {
+            dev->శీర్షిక_type = pci_config_readb(bdf, PCI_శీర్షిక_TYPE);
+            u8 v = dev->శీర్షిక_type & 0x7f;
+            ఒకవేళ (v == PCI_శీర్షిక_TYPE_BRIDGE || v == PCI_శీర్షిక_TYPE_CARDBUS) {
                 u8 secbus = pci_config_readb(bdf, PCI_SECONDARY_BUS);
                 dev->secondary_bus = secbus;
-                if (secbus > bus && !busdevs[secbus])
+                ఒకవేళ (secbus > bus && !busdevs[secbus])
                     busdevs[secbus] = dev;
-                if (secbus > MaxPCIBus)
+                ఒకవేళ (secbus > MaxPCIBus)
                     MaxPCIBus = secbus;
             }
             dprintf(4, "PCI device %pP (vd=%04x:%04x c=%04x)\n"
                     , dev, dev->vendor, dev->device, dev->class);
         }
     }
-    dprintf(1, "Found %d PCI devices (max PCI bus is %02x)\n", count, MaxPCIBus);
+    dprintf(1, "Found %d PCI devices (max PCI bus is %02x)\n", లెక్క, MaxPCIBus);
 }
 
 // Search for a device with the specified vendor and device ids.
-struct pci_device *
-pci_find_device(u16 vendid, u16 devid)
+నిర్మాణం pci_device *
+pci_కనుగొను_device(u16 vendid, u16 devid)
 {
-    struct pci_device *pci;
+    నిర్మాణం pci_device *pci;
     foreachpci(pci) {
-        if (pci->vendor == vendid && pci->device == devid)
-            return pci;
+        ఒకవేళ (pci->vendor == vendid && pci->device == devid)
+            తిరిగి pci;
     }
-    return NULL;
+    తిరిగి ఖాళీ;
 }
 
 // Search for a device with the specified class id.
-struct pci_device *
-pci_find_class(u16 classid)
+నిర్మాణం pci_device *
+pci_కనుగొను_class(u16 classid)
 {
-    struct pci_device *pci;
+    నిర్మాణం pci_device *pci;
     foreachpci(pci) {
-        if (pci->class == classid)
-            return pci;
+        ఒకవేళ (pci->class == classid)
+            తిరిగి pci;
     }
-    return NULL;
+    తిరిగి ఖాళీ;
 }
 
-int pci_init_device(const struct pci_device_id *ids
-                    , struct pci_device *pci, void *arg)
+పూర్ణాంకం pci_init_device(స్థిరరాశి నిర్మాణం pci_device_id *ids
+                    , నిర్మాణం pci_device *pci, శూన్య *arg)
 {
-    while (ids->vendid || ids->class_mask) {
-        if ((ids->vendid == PCI_ANY_ID || ids->vendid == pci->vendor) &&
+    అయితే (ids->vendid || ids->class_ముసుగు) {
+        ఒకవేళ ((ids->vendid == PCI_ANY_ID || ids->vendid == pci->vendor) &&
             (ids->devid == PCI_ANY_ID || ids->devid == pci->device) &&
-            !((ids->class ^ pci->class) & ids->class_mask)) {
-            if (ids->func)
+            !((ids->class ^ pci->class) & ids->class_ముసుగు)) {
+            ఒకవేళ (ids->func)
                 ids->func(pci, arg);
-            return 0;
+            తిరిగి 0;
         }
         ids++;
     }
-    return -1;
+    తిరిగి -1;
 }
 
-struct pci_device *
-pci_find_init_device(const struct pci_device_id *ids, void *arg)
+నిర్మాణం pci_device *
+pci_కనుగొను_init_device(స్థిరరాశి నిర్మాణం pci_device_id *ids, శూన్య *arg)
 {
-    struct pci_device *pci;
+    నిర్మాణం pci_device *pci;
     foreachpci(pci) {
-        if (pci_init_device(ids, pci, arg) == 0)
-            return pci;
+        ఒకవేళ (pci_init_device(ids, pci, arg) == 0)
+            తిరిగి pci;
     }
-    return NULL;
+    తిరిగి ఖాళీ;
 }
 
 // Enable PCI bus-mastering (ie, DMA) support on a pci device
-void
-pci_enable_busmaster(struct pci_device *pci)
+శూన్య
+pci_enable_busmaster(నిర్మాణం pci_device *pci)
 {
     wait_preempt();
     pci_config_maskw(pci->bdf, PCI_COMMAND, 0, PCI_COMMAND_MASTER);
@@ -145,48 +145,48 @@ pci_enable_busmaster(struct pci_device *pci)
 
 // Verify an IO bar and return it to the caller
 u16
-pci_enable_iobar(struct pci_device *pci, u32 addr)
+pci_enable_iobar(నిర్మాణం pci_device *pci, u32 addr)
 {
     wait_preempt();
     u32 bar = pci_config_readl(pci->bdf, addr);
-    if (!(bar & PCI_BASE_ADDRESS_SPACE_IO)) {
+    ఒకవేళ (!(bar & PCI_పునాది_చిరునామా_SPACE_IO)) {
         warn_internalerror();
-        return 0;
+        తిరిగి 0;
     }
-    bar &= PCI_BASE_ADDRESS_IO_MASK;
-    if (bar == 0 || bar > 0xffff) {
+    bar &= PCI_పునాది_చిరునామా_IO_ముసుగు;
+    ఒకవేళ (bar == 0 || bar > 0xffff) {
         warn_internalerror();
-        return 0;
+        తిరిగి 0;
     }
     pci_config_maskw(pci->bdf, PCI_COMMAND, 0, PCI_COMMAND_IO);
     pci->have_driver = 1;
-    return bar;
+    తిరిగి bar;
 }
 
 // Verify a memory bar and return it to the caller
-void *
-pci_enable_membar(struct pci_device *pci, u32 addr)
+శూన్య *
+pci_enable_membar(నిర్మాణం pci_device *pci, u32 addr)
 {
     wait_preempt();
     u32 bar = pci_config_readl(pci->bdf, addr);
-    if (bar & PCI_BASE_ADDRESS_SPACE_IO) {
+    ఒకవేళ (bar & PCI_పునాది_చిరునామా_SPACE_IO) {
         warn_internalerror();
-        return NULL;
+        తిరిగి ఖాళీ;
     }
-    if (bar & PCI_BASE_ADDRESS_MEM_TYPE_64) {
-        u32 high = pci_config_readl(pci->bdf, addr+4);
-        if (high) {
+    ఒకవేళ (bar & PCI_పునాది_చిరునామా_MEM_TYPE_64) {
+        u32 ఎగువ = pci_config_readl(pci->bdf, addr+4);
+        ఒకవేళ (ఎగువ) {
             dprintf(1, "Can not map memory bar over 4Gig\n");
-            return NULL;
+            తిరిగి ఖాళీ;
         }
     }
-    bar &= PCI_BASE_ADDRESS_MEM_MASK;
-    if (bar + 4*1024*1024 < 20*1024*1024) {
+    bar &= PCI_పునాది_చిరునామా_MEM_ముసుగు;
+    ఒకవేళ (bar + 4*1024*1024 < 20*1024*1024) {
         // Bar doesn't look valid (it is in last 4M or first 16M)
         warn_internalerror();
-        return NULL;
+        తిరిగి ఖాళీ;
     }
-    pci_config_maskw(pci->bdf, PCI_COMMAND, 0, PCI_COMMAND_MEMORY);
+    pci_config_maskw(pci->bdf, PCI_COMMAND, 0, PCI_COMMAND_జ్ఞాపకం);
     pci->have_driver = 1;
-    return (void*)bar;
+    తిరిగి (శూన్య*)bar;
 }

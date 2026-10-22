@@ -1,8 +1,8 @@
-#ifndef __ESP_SCSI_H
-#define __ESP_SCSI_H
+#నిర్వచితం_కాకపోతే __ESP_SCSI_H
+#నిర్వచించు __ESP_SCSI_H
 
-struct disk_op_s;
-int esp_scsi_process_op(struct disk_op_s *op);
-void esp_scsi_setup(void);
+నిర్మాణం disk_op_s;
+పూర్ణాంకం esp_scsi_process_op(నిర్మాణం disk_op_s *op);
+శూన్య esp_scsi_అమరిక(శూన్య);
 
-#endif /* __ESP_SCSI_H */
+#అయితే_ముగింపు /* __ESP_SCSI_H */

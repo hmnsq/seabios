@@ -6,22 +6,22 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_*
-#include "output.h" // dprintf
-#include "std/pirtable.h" // struct pir_header
-#include "string.h" // checksum
-#include "util.h" // PirAddr
+#అన్తర్భావ "config.h" // CONFIG_*
+#అన్తర్భావ "output.h" // dprintf
+#అన్తర్భావ "std/pirtable.h" // struct pir_header
+#అన్తర్భావ "string.h" // checksum
+#అన్తర్భావ "util.h" // PirAddr
 
-struct pir_table {
-    struct pir_header pir;
-    struct pir_slot slots[6];
+నిర్మాణం pir_పట్టిక {
+    నిర్మాణం pir_శీర్షిక pir;
+    నిర్మాణం pir_స్థానం slots[6];
 } PACKED;
 
-static struct pir_table PIR_TABLE = {
+స్థిర నిర్మాణం pir_పట్టిక PIR_పట్టిక = {
     .pir = {
-        .version = 0x0100,
-        .size = sizeof(struct pir_table),
-        .router_devfunc = 0x08,
+        .సంస్కరణ_2 = 0x0100,
+        .కొలత = పరిమాణం(నిర్మాణం pir_పట్టిక),
+        .మార్గనిర్దేశకం_devfunc = 0x08,
         .compatible_devid = 0x122e8086,
     },
     .slots = {
@@ -34,7 +34,7 @@ static struct pir_table PIR_TABLE = {
                 {.link = 0x62, .bitmap = 0xdef8}, // INTC#
                 {.link = 0x63, .bitmap = 0xdef8}, // INTD#
             },
-            .slot_nr = 0, // embedded
+            .స్థానం_nr = 0, // embedded
         }, {
             // second slot entry: 1st PCI slot
             .dev = 2<<3,
@@ -44,7 +44,7 @@ static struct pir_table PIR_TABLE = {
                 {.link = 0x63, .bitmap = 0xdef8}, // INTC#
                 {.link = 0x60, .bitmap = 0xdef8}, // INTD#
             },
-            .slot_nr = 1,
+            .స్థానం_nr = 1,
         }, {
             // third slot entry: 2nd PCI slot
             .dev = 3<<3,
@@ -54,7 +54,7 @@ static struct pir_table PIR_TABLE = {
                 {.link = 0x60, .bitmap = 0xdef8}, // INTC#
                 {.link = 0x61, .bitmap = 0xdef8}, // INTD#
             },
-            .slot_nr = 2,
+            .స్థానం_nr = 2,
         }, {
             // 4th slot entry: 3rd PCI slot
             .dev = 4<<3,
@@ -64,7 +64,7 @@ static struct pir_table PIR_TABLE = {
                 {.link = 0x61, .bitmap = 0xdef8}, // INTC#
                 {.link = 0x62, .bitmap = 0xdef8}, // INTD#
             },
-            .slot_nr = 3,
+            .స్థానం_nr = 3,
         }, {
             // 5th slot entry: 4th PCI slot
             .dev = 5<<3,
@@ -74,7 +74,7 @@ static struct pir_table PIR_TABLE = {
                 {.link = 0x62, .bitmap = 0xdef8}, // INTC#
                 {.link = 0x63, .bitmap = 0xdef8}, // INTD#
             },
-            .slot_nr = 4,
+            .స్థానం_nr = 4,
         }, {
             // 6th slot entry: 5th PCI slot
             .dev = 6<<3,
@@ -84,20 +84,20 @@ static struct pir_table PIR_TABLE = {
                 {.link = 0x63, .bitmap = 0xdef8}, // INTC#
                 {.link = 0x60, .bitmap = 0xdef8}, // INTD#
             },
-            .slot_nr = 5,
+            .స్థానం_nr = 5,
         },
     }
 };
 
-void
-pirtable_setup(void)
+శూన్య
+pirtable_అమరిక(శూన్య)
 {
-    if (! CONFIG_PIRTABLE)
-        return;
+    ఒకవేళ (! CONFIG_PIRTABLE)
+        తిరిగి;
 
     dprintf(3, "init PIR table\n");
 
-    PIR_TABLE.pir.signature = PIR_SIGNATURE;
-    PIR_TABLE.pir.checksum -= checksum(&PIR_TABLE, sizeof(PIR_TABLE));
-    copy_pir(&PIR_TABLE);
+    PIR_పట్టిక.pir.signature = PIR_SIGNATURE;
+    PIR_పట్టిక.pir.checksum -= checksum(&PIR_పట్టిక, పరిమాణం(PIR_పట్టిక));
+    copy_pir(&PIR_పట్టిక);
 }

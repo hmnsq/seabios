@@ -1,57 +1,57 @@
 // Misc function and variable declarations.
-#ifndef __STACKS_H
-#define __STACKS_H
+#నిర్వచితం_కాకపోతే __STACKS_H
+#నిర్వచించు __STACKS_H
 
-#include "types.h" // u32
+#అన్తర్భావ "types.h" // u32
 
-#define CALL32SMM_CMDID    0xb5
-#define CALL32SMM_ENTERID  0x1234
-#define CALL32SMM_RETURNID 0x5678
+#నిర్వచించు CALL32SMM_CMDID    0xb5
+#నిర్వచించు CALL32SMM_ENTERID  0x1234
+#నిర్వచించు CALL32SMM_RETURNID 0x5678
 
 // stacks.c
-extern int HaveSmmCall32;
-u32 __call32(void *func, u32 eax, u32 errret);
-#define call32(func, eax, errret) ({                            \
-        extern void _cfunc32flat_ ##func (void);                \
+బాహ్య పూర్ణాంకం HaveSmmCall32;
+u32 __call32(శూన్య *func, u32 eax, u32 errret);
+#నిర్వచించు call32(func, eax, errret) ({                            \
+        బాహ్య శూన్య _cfunc32flat_ ##func (శూన్య);                \
         __call32( _cfunc32flat_ ##func , (u32)(eax), (errret)); \
     })
-extern u8 ExtraStack[], *StackPos;
-u32 __stack_hop(u32 eax, u32 edx, void *func);
-#define stack_hop(func, eax, edx)               \
+బాహ్య u8 Extra_దొంతర[], *దొంతర_Pos;
+u32 __stack_hop(u32 eax, u32 edx, శూన్య *func);
+#నిర్వచించు దొంతర_hop(func, eax, edx)               \
     __stack_hop((u32)(eax), (u32)(edx), (func))
-u32 __stack_hop_back(u32 eax, u32 edx, void *func);
-#define stack_hop_back(func, eax, edx) ({                               \
-        extern void _cfunc16_ ##func (void);                            \
+u32 __stack_hop_back(u32 eax, u32 edx, శూన్య *func);
+#నిర్వచించు దొంతర_hop_వెనుక(func, eax, edx) ({                               \
+        బాహ్య శూన్య _cfunc16_ ##func (శూన్య);                            \
         __stack_hop_back((u32)(eax), (u32)(edx), _cfunc16_ ##func );    \
     })
-int on_extra_stack(void);
-struct bregs;
-void farcall16(struct bregs *callregs);
-void farcall16big(struct bregs *callregs);
-void __call16_int(struct bregs *callregs, u16 offset);
-#define call16_int(nr, callregs) do {                           \
-        extern void irq_trampoline_ ##nr (void);                \
+పూర్ణాంకం on_extra_దొంతర(శూన్య);
+నిర్మాణం bregs;
+శూన్య farcall16(నిర్మాణం bregs *callregs);
+శూన్య farcall16big(నిర్మాణం bregs *callregs);
+శూన్య __call16_int(నిర్మాణం bregs *callregs, u16 స్థానభ్రంశం_2);
+#నిర్వచించు call16_int(nr, callregs) చేయి {                           \
+        బాహ్య శూన్య irq_trampoline_ ##nr (శూన్య);                \
         __call16_int((callregs), (u32)&irq_trampoline_ ##nr );  \
-    } while (0)
-void reset(void);
-extern struct thread_info MainThread;
-struct thread_info *getCurThread(void);
-void yield(void);
-void yield_toirq(void);
-void thread_setup(void);
-int threads_during_optionroms(void);
-void run_thread(void (*func)(void*), void *data);
-void wait_threads(void);
-struct mutex_s { u32 isLocked; };
-void mutex_lock(struct mutex_s *mutex);
-void mutex_unlock(struct mutex_s *mutex);
-void start_preempt(void);
-void finish_preempt(void);
-int wait_preempt(void);
-void check_preempt(void);
-u32 __call32_params(void *func, u32 eax, u32 edx, u32 ecx, u32 errret);
-#define call32_params(func, eax, edx, ecx, errret) ({                   \
-        extern void _cfunc32flat_ ##func (void);                        \
+    } అయితే (0)
+శూన్య reset(శూన్య);
+బాహ్య నిర్మాణం thread_info MainThread;
+నిర్మాణం thread_info *getCurThread(శూన్య);
+శూన్య yield(శూన్య);
+శూన్య yield_toirq(శూన్య);
+శూన్య thread_అమరిక(శూన్య);
+పూర్ణాంకం దారాలు_during_optionroms(శూన్య);
+శూన్య నిరంతరం_thread(శూన్య (*func)(శూన్య*), శూన్య *దత్తాంశం);
+శూన్య wait_దారాలు(శూన్య);
+నిర్మాణం mutex_s { u32 isLocked; };
+శూన్య mutex_తాళం(నిర్మాణం mutex_s *mutex);
+శూన్య mutex_unlock(నిర్మాణం mutex_s *mutex);
+శూన్య ప్రారంభం_preempt(శూన్య);
+శూన్య ముగింపు_preempt(శూన్య);
+పూర్ణాంకం wait_preempt(శూన్య);
+శూన్య check_preempt(శూన్య);
+u32 __call32_params(శూన్య *func, u32 eax, u32 edx, u32 ecx, u32 errret);
+#నిర్వచించు call32_params(func, eax, edx, ecx, errret) ({                   \
+        బాహ్య శూన్య _cfunc32flat_ ##func (శూన్య);                        \
         __call32_params( _cfunc32flat_ ##func , (u32)(eax), (u32)(edx)  \
                         , (u32)(ecx), (errret));                        \
     })
@@ -59,10 +59,10 @@ u32 __call32_params(void *func, u32 eax, u32 edx, u32 ecx, u32 errret);
 // Inline functions
 
 // Check if a call to stack_hop_back is needed.
-static inline int
-need_hop_back(void)
+స్థిర అంతఃవరుస పూర్ణాంకం
+need_hop_వెనుక(శూన్య)
 {
-    return !MODESEGMENT || on_extra_stack();
+    తిరిగి !MODESEGMENT || on_extra_దొంతర();
 }
 
-#endif // stacks.h
+#అయితే_ముగింపు // stacks.h

@@ -1,8 +1,8 @@
-#ifndef __LSI_SCSI_H
-#define __LSI_SCSI_H
+#నిర్వచితం_కాకపోతే __LSI_SCSI_H
+#నిర్వచించు __LSI_SCSI_H
 
-struct disk_op_s;
-int lsi_scsi_process_op(struct disk_op_s *op);
-void lsi_scsi_setup(void);
+నిర్మాణం disk_op_s;
+పూర్ణాంకం lsi_scsi_process_op(నిర్మాణం disk_op_s *op);
+శూన్య lsi_scsi_అమరిక(శూన్య);
 
-#endif /* __LSI_SCSI_H */
+#అయితే_ముగింపు /* __LSI_SCSI_H */

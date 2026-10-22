@@ -1,75 +1,75 @@
-#ifndef __RTC_H
-#define __RTC_H
+#నిర్వచితం_కాకపోతే __RTC_H
+#నిర్వచించు __RTC_H
 
-#define PORT_CMOS_INDEX        0x0070
-#define PORT_CMOS_DATA         0x0071
+#నిర్వచించు పోర్టు_CMOS_సూచీ        0x0070
+#నిర్వచించు పోర్టు_CMOS_దత్తాంశం         0x0071
 
 // PORT_CMOS_INDEX nmi disable bit
-#define NMI_DISABLE_BIT 0x80
+#నిర్వచించు NMI_DISABLE_బిట్టు 0x80
 
 // Standard BIOS RTC chip entries
-#define CMOS_RTC_SECONDS         0x00
-#define CMOS_RTC_SECONDS_ALARM   0x01
-#define CMOS_RTC_MINUTES         0x02
-#define CMOS_RTC_MINUTES_ALARM   0x03
-#define CMOS_RTC_HOURS           0x04
-#define CMOS_RTC_HOURS_ALARM     0x05
-#define CMOS_RTC_DAY_WEEK        0x06
-#define CMOS_RTC_DAY_MONTH       0x07
-#define CMOS_RTC_MONTH           0x08
-#define CMOS_RTC_YEAR            0x09
-#define CMOS_STATUS_A            0x0a
-#define CMOS_STATUS_B            0x0b
-#define CMOS_STATUS_C            0x0c
-#define CMOS_STATUS_D            0x0d
-#define CMOS_RESET_CODE          0x0f
+#నిర్వచించు CMOS_RTC_SECONDS         0x00
+#నిర్వచించు CMOS_RTC_SECONDS_ALARM   0x01
+#నిర్వచించు CMOS_RTC_MINUTES         0x02
+#నిర్వచించు CMOS_RTC_MINUTES_ALARM   0x03
+#నిర్వచించు CMOS_RTC_HOURS           0x04
+#నిర్వచించు CMOS_RTC_HOURS_ALARM     0x05
+#నిర్వచించు CMOS_RTC_DAY_WEEK        0x06
+#నిర్వచించు CMOS_RTC_DAY_MONTH       0x07
+#నిర్వచించు CMOS_RTC_MONTH           0x08
+#నిర్వచించు CMOS_RTC_YEAR            0x09
+#నిర్వచించు CMOS_స్థితి_A            0x0a
+#నిర్వచించు CMOS_స్థితి_B            0x0b
+#నిర్వచించు CMOS_స్థితి_C            0x0c
+#నిర్వచించు CMOS_స్థితి_D            0x0d
+#నిర్వచించు CMOS_RESET_సంకేతం          0x0f
 
 // QEMU cmos config fields.  DO NOT ADD MORE.  (All new content should
 // be passed via the fw_cfg "file" interface.)
-#define CMOS_FLOPPY_DRIVE_TYPE   0x10
-#define CMOS_DISK_DATA           0x12
-#define CMOS_EQUIPMENT_INFO      0x14
-#define CMOS_DISK_DRIVE1_TYPE    0x19
-#define CMOS_DISK_DRIVE2_TYPE    0x1a
-#define CMOS_DISK_DRIVE1_CYL     0x1b
-#define CMOS_DISK_DRIVE2_CYL     0x24
-#define CMOS_MEM_EXTMEM_LOW      0x30
-#define CMOS_MEM_EXTMEM_HIGH     0x31
-#define CMOS_CENTURY             0x32
-#define CMOS_MEM_EXTMEM2_LOW     0x34
-#define CMOS_MEM_EXTMEM2_HIGH    0x35
-#define CMOS_BIOS_BOOTFLAG1      0x38
-#define CMOS_BIOS_DISKTRANSFLAG  0x39
-#define CMOS_BIOS_BOOTFLAG2      0x3d
-#define CMOS_MEM_HIGHMEM_LOW     0x5b
-#define CMOS_MEM_HIGHMEM_MID     0x5c
-#define CMOS_MEM_HIGHMEM_HIGH    0x5d
-#define CMOS_BIOS_SMP_COUNT      0x5f
+#నిర్వచించు CMOS_FLOPPY_DRIVE_TYPE   0x10
+#నిర్వచించు CMOS_DISK_దత్తాంశం           0x12
+#నిర్వచించు CMOS_EQUIPMENT_INFO      0x14
+#నిర్వచించు CMOS_DISK_DRIVE1_TYPE    0x19
+#నిర్వచించు CMOS_DISK_DRIVE2_TYPE    0x1a
+#నిర్వచించు CMOS_DISK_DRIVE1_CYL     0x1b
+#నిర్వచించు CMOS_DISK_DRIVE2_CYL     0x24
+#నిర్వచించు CMOS_MEM_EXTMEM_దిగువ      0x30
+#నిర్వచించు CMOS_MEM_EXTMEM_ఎగువ     0x31
+#నిర్వచించు CMOS_CENTURY             0x32
+#నిర్వచించు CMOS_MEM_EXTMEM2_దిగువ     0x34
+#నిర్వచించు CMOS_MEM_EXTMEM2_ఎగువ    0x35
+#నిర్వచించు CMOS_BIOS_BOOTFLAG1      0x38
+#నిర్వచించు CMOS_BIOS_DISKTRANSFLAG  0x39
+#నిర్వచించు CMOS_BIOS_BOOTFLAG2      0x3d
+#నిర్వచించు CMOS_MEM_HIGHMEM_దిగువ     0x5b
+#నిర్వచించు CMOS_MEM_HIGHMEM_MID     0x5c
+#నిర్వచించు CMOS_MEM_HIGHMEM_ఎగువ    0x5d
+#నిర్వచించు CMOS_BIOS_SMP_లెక్క      0x5f
 
 // RTC register flags
-#define RTC_A_UIP 0x80
+#నిర్వచించు RTC_A_UIP 0x80
 
-#define RTC_B_SET  0x80
-#define RTC_B_PIE  0x40
-#define RTC_B_AIE  0x20
-#define RTC_B_UIE  0x10
-#define RTC_B_BIN  0x04
-#define RTC_B_24HR 0x02
-#define RTC_B_DSE  0x01
+#నిర్వచించు RTC_B_సమితి  0x80
+#నిర్వచించు RTC_B_PIE  0x40
+#నిర్వచించు RTC_B_AIE  0x20
+#నిర్వచించు RTC_B_UIE  0x10
+#నిర్వచించు RTC_B_BIN  0x04
+#నిర్వచించు RTC_B_24HR 0x02
+#నిర్వచించు RTC_B_DSE  0x01
 
-#ifndef __ASSEMBLY__
+#నిర్వచితం_కాకపోతే __ASSEMBLY__
 
-#include "types.h" // u8
+#అన్తర్భావ "types.h" // u8
 
 // rtc.c
-u8 rtc_read(u8 index);
-void rtc_write(u8 index, u8 val);
-void rtc_mask(u8 index, u8 off, u8 on);
-int rtc_updating(void);
-void rtc_setup(void);
-void rtc_use(void);
-void rtc_release(void);
+u8 rtc_read(u8 సూచీ);
+శూన్య rtc_write(u8 సూచీ, u8 val);
+శూన్య rtc_ముసుగు(u8 సూచీ, u8 off, u8 on);
+పూర్ణాంకం rtc_updating(శూన్య);
+శూన్య rtc_అమరిక(శూన్య);
+శూన్య rtc_use(శూన్య);
+శూన్య rtc_release(శూన్య);
 
-#endif // !__ASSEMBLY__
+#అయితే_ముగింపు // !__ASSEMBLY__
 
-#endif // rtc.h
+#అయితే_ముగింపు // rtc.h

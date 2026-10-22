@@ -1,8 +1,8 @@
-#ifndef _PVSCSI_H_
-#define _PVSCSI_H_
+#నిర్వచితం_కాకపోతే _PVSCSI_H_
+#నిర్వచించు _PVSCSI_H_
 
-struct disk_op_s;
-int pvscsi_process_op(struct disk_op_s *op);
-void pvscsi_setup(void);
+నిర్మాణం disk_op_s;
+పూర్ణాంకం pvscsi_process_op(నిర్మాణం disk_op_s *op);
+శూన్య pvscsi_అమరిక(శూన్య);
 
-#endif /* _PVSCSI_H_ */
+#అయితే_ముగింపు /* _PVSCSI_H_ */

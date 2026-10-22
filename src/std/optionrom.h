@@ -1,22 +1,22 @@
-#ifndef __OPTIONROMS_H
-#define __OPTIONROMS_H
+#నిర్వచితం_కాకపోతే __OPTIONROMS_H
+#నిర్వచించు __OPTIONROMS_H
 
-#include "types.h" // u32
+#అన్తర్భావ "types.h" // u32
 
-#define OPTION_ROM_SIGNATURE 0xaa55
+#నిర్వచించు OPTION_ROM_SIGNATURE 0xaa55
 
-struct rom_header {
+నిర్మాణం rom_శీర్షిక {
     u16 signature;
-    u8 size;
-    u8 initVector[4];
+    u8 కొలత;
+    u8 init_సదిశ[4];
     u8 reserved[17];
     u16 pcioffset;
     u16 pnpoffset;
 } PACKED;
 
-#define PCI_ROM_SIGNATURE 0x52494350 // "PCIR"
+#నిర్వచించు PCI_ROM_SIGNATURE 0x52494350 // "PCIR"
 
-struct pci_data {
+నిర్మాణం pci_దత్తాంశం {
     u32 signature;
     u16 vendor;
     u16 device;
@@ -32,7 +32,7 @@ struct pci_data {
     u16 reserved;
 } PACKED;
 
-struct pnp_data {
+నిర్మాణం pnp_దత్తాంశం {
     u32 signature;
     u8 revision;
     u8 len;
@@ -52,8 +52,8 @@ struct pnp_data {
     u16 staticresource;
 } PACKED;
 
-#define OPTION_ROM_ALIGN 2048
-#define OPTION_ROM_INITVECTOR offsetof(struct rom_header, initVector[0])
-#define PCIROM_CODETYPE_X86 0
+#నిర్వచించు OPTION_ROM_ALIGN 2048
+#నిర్వచించు OPTION_ROM_INITVECTOR offsetof(నిర్మాణం rom_శీర్షిక, init_సదిశ[0])
+#నిర్వచించు PCIROM_CODETYPE_X86 0
 
-#endif
+#అయితే_ముగింపు

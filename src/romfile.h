@@ -1,22 +1,22 @@
-#ifndef __ROMFILE_H
-#define __ROMFILE_H
+#నిర్వచితం_కాకపోతే __ROMFILE_H
+#నిర్వచించు __ROMFILE_H
 
-#include "types.h" // u32
+#అన్తర్భావ "types.h" // u32
 
 // romfile.c
-struct romfile_s {
-    struct romfile_s *next;
-    char name[128];
-    u32 size;
-    int (*copy)(struct romfile_s *file, void *dest, u32 maxlen);
+నిర్మాణం romfile_s {
+    నిర్మాణం romfile_s *తదుపరి;
+    అక్షరం name[128];
+    u32 కొలత;
+    పూర్ణాంకం (*copy)(నిర్మాణం romfile_s *file, శూన్య *dest, u32 maxlen);
 };
-void romfile_add(struct romfile_s *file);
-struct romfile_s *romfile_findprefix(const char *prefix, struct romfile_s *prev);
-struct romfile_s *romfile_find(const char *name);
-void *romfile_loadfile(const char *name, int *psize);
-u64 romfile_loadint(const char *name, u64 defval);
-u32 romfile_loadbool(const char *name, u32 defval);
+శూన్య romfile_కూడు(నిర్మాణం romfile_s *file);
+నిర్మాణం romfile_s *romfile_findprefix(స్థిరరాశి అక్షరం *ఉపసర్గ, నిర్మాణం romfile_s *prev);
+నిర్మాణం romfile_s *romfile_కనుగొను(స్థిరరాశి అక్షరం *name);
+శూన్య *romfile_loadfile(స్థిరరాశి అక్షరం *name, పూర్ణాంకం *psize);
+u64 romfile_loadint(స్థిరరాశి అక్షరం *name, u64 defval);
+u32 romfile_loadbool(స్థిరరాశి అక్షరం *name, u32 defval);
 
-void const_romfile_add_int(char *name, u32 value);
+శూన్య const_romfile_కూడు_int(అక్షరం *name, u32 విలువ);
 
-#endif // romfile.h
+#అయితే_ముగింపు // romfile.h

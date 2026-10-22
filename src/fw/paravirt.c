@@ -8,145 +8,145 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "byteorder.h" // be32_to_cpu
-#include "config.h" // CONFIG_QEMU
-#include "e820map.h" // e820_add
-#include "hw/pci.h" // pci_config_readw
-#include "hw/pcidevice.h" // pci_probe_devices
-#include "hw/pci_regs.h" // PCI_DEVICE_ID
-#include "hw/serialio.h" // PORT_SERIAL1
-#include "hw/rtc.h" // CMOS_*
-#include "hw/virtio-mmio.h" // virtio_mmio_acpi
-#include "malloc.h" // malloc_tmp
-#include "output.h" // dprintf
-#include "paravirt.h" // qemu_cfg_preinit
-#include "romfile.h" // romfile_loadint
-#include "romfile_loader.h" // romfile_loader_execute
-#include "string.h" // memset
-#include "util.h" // pci_setup
-#include "x86.h" // cpuid
-#include "xen.h" // xen_biostable_setup
-#include "stacks.h" // yield
+#అన్తర్భావ "byteorder.h" // be32_to_cpu
+#అన్తర్భావ "config.h" // CONFIG_QEMU
+#అన్తర్భావ "e820map.h" // e820_add
+#అన్తర్భావ "hw/pci.h" // pci_config_readw
+#అన్తర్భావ "hw/pcidevice.h" // pci_probe_devices
+#అన్తర్భావ "hw/pci_regs.h" // PCI_DEVICE_ID
+#అన్తర్భావ "hw/serialio.h" // PORT_SERIAL1
+#అన్తర్భావ "hw/rtc.h" // CMOS_*
+#అన్తర్భావ "hw/virtio-mmio.h" // virtio_mmio_acpi
+#అన్తర్భావ "malloc.h" // malloc_tmp
+#అన్తర్భావ "output.h" // dprintf
+#అన్తర్భావ "paravirt.h" // qemu_cfg_preinit
+#అన్తర్భావ "romfile.h" // romfile_loadint
+#అన్తర్భావ "romfile_loader.h" // romfile_loader_execute
+#అన్తర్భావ "string.h" // memset
+#అన్తర్భావ "util.h" // pci_setup
+#అన్తర్భావ "x86.h" // cpuid
+#అన్తర్భావ "xen.h" // xen_biostable_setup
+#అన్తర్భావ "stacks.h" // yield
 
 // Amount of continuous ram under 4Gig
-u32 RamSize;
+u32 Ram_కొలత;
 // Amount of continuous ram >4Gig
-u64 RamSizeOver4G;
+u64 Ram_కొలత_Over4_G;
 // physical address space bits
-u8 CPUPhysBits;
+u8 CPUPhys_బిట్లు;
 // 64bit processor
-u8 CPULongMode;
+u8 CPULong_బహుళకం;
 // Type of emulator platform.
-int PlatformRunningOn VARFSEG;
+పూర్ణాంకం PlatformRunningOn VARFSEG;
 // cfg enabled
-int cfg_enabled = 0;
+పూర్ణాంకం cfg_enabled = 0;
 // cfg_dma enabled
-int cfg_dma_enabled = 0;
+పూర్ణాంకం cfg_dma_enabled = 0;
 
-inline int qemu_cfg_enabled(void)
+అంతఃవరుస పూర్ణాంకం qemu_cfg_enabled(శూన్య)
 {
-    return cfg_enabled;
+    తిరిగి cfg_enabled;
 }
 
-inline int qemu_cfg_dma_enabled(void)
+అంతఃవరుస పూర్ణాంకం qemu_cfg_dma_enabled(శూన్య)
 {
-    return cfg_dma_enabled;
+    తిరిగి cfg_dma_enabled;
 }
 
 /* This CPUID returns the signature 'KVMKVMKVM' in ebx, ecx, and edx.  It
  * should be used to determine that a VM is running under KVM.
  */
-#define KVM_CPUID_SIGNATURE     0x40000000
-static unsigned int kvm_cpuid_base = 0;
+#నిర్వచించు KVM_CPUID_SIGNATURE     0x40000000
+స్థిర గుర్తులేని పూర్ణాంకం kvm_cpuid_పునాది = 0;
 
-static void kvm_detect(void)
+స్థిర శూన్య kvm_detect(శూన్య)
 {
-    unsigned int i, max = 0;
-    unsigned int eax, ebx, ecx, edx;
-    char signature[13];
+    గుర్తులేని పూర్ణాంకం i, max = 0;
+    గుర్తులేని పూర్ణాంకం eax, ebx, ecx, edx;
+    అక్షరం signature[13];
 
-    for (i = KVM_CPUID_SIGNATURE;; i += 0x100) {
+    కొరకు (i = KVM_CPUID_SIGNATURE;; i += 0x100) {
         eax = 0;
         cpuid(i, &eax, &ebx, &ecx, &edx);
-        if (eax < i)
-            break;
-        memcpy(signature + 0, &ebx, 4);
-        memcpy(signature + 4, &ecx, 4);
-        memcpy(signature + 8, &edx, 4);
+        ఒకవేళ (eax < i)
+            ఆపు;
+        జ్ఞాపకం_నకలు(signature + 0, &ebx, 4);
+        జ్ఞాపకం_నకలు(signature + 4, &ecx, 4);
+        జ్ఞాపకం_నకలు(signature + 8, &edx, 4);
         signature[12] = 0;
         dprintf(1, "cpuid 0x%x: eax %x, signature '%s'\n", i, eax, signature);
-        if (strcmp(signature, "KVMKVMKVM") == 0) {
-            kvm_cpuid_base = i;
+        ఒకవేళ (strcmp(signature, "KVMKVMKVM") == 0) {
+            kvm_cpuid_పునాది = i;
             max = eax;
         }
     }
 
-    if (kvm_cpuid_base) {
+    ఒకవేళ (kvm_cpuid_పునాది) {
         dprintf(1, "Running on KVM\n");
         PlatformRunningOn |= PF_KVM;
-        if (max >= kvm_cpuid_base + 0x10) {
-            cpuid(kvm_cpuid_base + 0x10, &eax, &ebx, &ecx, &edx);
+        ఒకవేళ (max >= kvm_cpuid_పునాది + 0x10) {
+            cpuid(kvm_cpuid_పునాది + 0x10, &eax, &ebx, &ecx, &edx);
             dprintf(1, "kvm: have invtsc, freq %u kHz\n", eax);
             tsctimer_setfreq(eax, "invtsc");
         }
     }
 }
 
-#define KVM_FEATURE_CLOCKSOURCE           0
-#define KVM_FEATURE_CLOCKSOURCE2          3
+#నిర్వచించు KVM_FEATURE_CLOCKSOURCE           0
+#నిర్వచించు KVM_FEATURE_CLOCKSOURCE2          3
 
-#define MSR_KVM_SYSTEM_TIME            0x12
-#define MSR_KVM_SYSTEM_TIME_NEW  0x4b564d01
+#నిర్వచించు MSR_KVM_SYSTEM_సమయం            0x12
+#నిర్వచించు MSR_KVM_SYSTEM_సమయం_NEW  0x4b564d01
 
-#define PVCLOCK_TSC_STABLE_BIT     (1 << 0)
+#నిర్వచించు PVCLOCK_TSC_STABLE_బిట్టు     (1 << 0)
 
-struct pvclock_vcpu_time_info *kvmclock;
+నిర్మాణం pvclock_vcpu_సమయం_info *kvmclock;
 
-static void kvmclock_init(void)
+స్థిర శూన్య kvmclock_init(శూన్య)
 {
-    unsigned int eax, ebx, ecx, edx, msr;
+    గుర్తులేని పూర్ణాంకం eax, ebx, ecx, edx, msr;
 
-    if (!runningOnKVM())
-        return;
+    ఒకవేళ (!runningOnKVM())
+        తిరిగి;
 
-    cpuid(kvm_cpuid_base + 0x01, &eax, &ebx, &ecx, &edx);
-    if (eax & (1 <<  KVM_FEATURE_CLOCKSOURCE2))
-        msr = MSR_KVM_SYSTEM_TIME_NEW;
-    else if (eax & (1 <<  KVM_FEATURE_CLOCKSOURCE))
-        msr = MSR_KVM_SYSTEM_TIME;
-    else
-        return;
+    cpuid(kvm_cpuid_పునాది + 0x01, &eax, &ebx, &ecx, &edx);
+    ఒకవేళ (eax & (1 <<  KVM_FEATURE_CLOCKSOURCE2))
+        msr = MSR_KVM_SYSTEM_సమయం_NEW;
+    లేకపోతే ఒకవేళ (eax & (1 <<  KVM_FEATURE_CLOCKSOURCE))
+        msr = MSR_KVM_SYSTEM_సమయం;
+    లేకపోతే
+        తిరిగి;
 
-    kvmclock = memalign_low(sizeof(*kvmclock), 32);
-    memset(kvmclock, 0, sizeof(*kvmclock));
-    u32 value = (u32)(kvmclock);
-    dprintf(1, "kvmclock: at 0x%x (msr 0x%x)\n", value, msr);
-    wrmsr(msr, value | 0x01);
+    kvmclock = memalign_దిగువ(పరిమాణం(*kvmclock), 32);
+    memset(kvmclock, 0, పరిమాణం(*kvmclock));
+    u32 విలువ = (u32)(kvmclock);
+    dprintf(1, "kvmclock: at 0x%x (msr 0x%x)\n", విలువ, msr);
+    wrmsr(msr, విలువ | 0x01);
 
-    if (!(kvmclock->flags & PVCLOCK_TSC_STABLE_BIT))
-        return;
-    u32 MHz = (1000 << 16) / (kvmclock->tsc_to_system_mul >> 16);
-    if (kvmclock->tsc_shift < 0)
-        MHz <<= -kvmclock->tsc_shift;
-    else
-        MHz >>= kvmclock->tsc_shift;
+    ఒకవేళ (!(kvmclock->flags & PVCLOCK_TSC_STABLE_బిట్టు))
+        తిరిగి;
+    u32 MHz = (1000 << 16) / (kvmclock->tsc_గమ్యం_system_mul >> 16);
+    ఒకవేళ (kvmclock->tsc_జరుపు < 0)
+        MHz <<= -kvmclock->tsc_జరుపు;
+    లేకపోతే
+        MHz >>= kvmclock->tsc_జరుపు;
     dprintf(1, "kvmclock: stable tsc, %d MHz\n", MHz);
     tsctimer_setfreq(MHz * 1000, "kvmclock");
 }
 
-static void physbits(int qemu_quirk)
+స్థిర శూన్య physbits(పూర్ణాంకం qemu_quirk)
 {
-    unsigned int max, eax, ebx, ecx, edx;
-    unsigned int physbits;
-    char signature[13];
-    int pae = 0, valid = 0;
+    గుర్తులేని పూర్ణాంకం max, eax, ebx, ecx, edx;
+    గుర్తులేని పూర్ణాంకం physbits;
+    అక్షరం signature[13];
+    పూర్ణాంకం pae = 0, valid = 0;
 
     cpuid(0, &eax, &ebx, &ecx, &edx);
-    memcpy(signature + 0, &ebx, 4);
-    memcpy(signature + 4, &edx, 4);
-    memcpy(signature + 8, &ecx, 4);
+    జ్ఞాపకం_నకలు(signature + 0, &ebx, 4);
+    జ్ఞాపకం_నకలు(signature + 4, &edx, 4);
+    జ్ఞాపకం_నకలు(signature + 8, &ecx, 4);
     signature[12] = 0;
-    if (eax >= 1) {
+    ఒకవేళ (eax >= 1) {
         cpuid(1, &eax, &ebx, &ecx, &edx);
         pae = (edx & (1 << 6));
     }
@@ -154,173 +154,173 @@ static void physbits(int qemu_quirk)
     cpuid(0x80000000, &eax, &ebx, &ecx, &edx);
     max = eax;
 
-    if (max >= 0x80000001) {
+    ఒకవేళ (max >= 0x80000001) {
         cpuid(0x80000001, &eax, &ebx, &ecx, &edx);
-        CPULongMode = !!(edx & (1 << 29));
+        CPULong_బహుళకం = !!(edx & (1 << 29));
     }
 
-    if (pae && CPULongMode && max >= 0x80000008) {
+    ఒకవేళ (pae && CPULong_బహుళకం && max >= 0x80000008) {
         cpuid(0x80000008, &eax, &ebx, &ecx, &edx);
         physbits = (u8)eax;
-        if (!qemu_quirk) {
+        ఒకవేళ (!qemu_quirk) {
             valid = 1;
-        } else if (physbits >= 41) {
+        } లేకపోతే ఒకవేళ (physbits >= 41) {
             valid = 1;
-        } else if (strcmp(signature, "GenuineIntel") == 0) {
-            if ((physbits == 36) || (physbits == 39))
+        } లేకపోతే ఒకవేళ (strcmp(signature, "GenuineIntel") == 0) {
+            ఒకవేళ ((physbits == 36) || (physbits == 39))
                 valid = 1;
-        } else if (strcmp(signature, "AuthenticAMD") == 0) {
-            if (physbits == 40)
+        } లేకపోతే ఒకవేళ (strcmp(signature, "AuthenticAMD") == 0) {
+            ఒకవేళ (physbits == 40)
                 valid = 1;
         }
-    } else {
+    } లేకపోతే {
         physbits = pae ? 36 : 32;
         valid = 1;
     }
 
     dprintf(1, "%s: signature=\"%s\", pae=%s, lm=%s, phys-bits=%d, valid=%s\n",
-            __func__, signature, pae ? "yes" : "no", CPULongMode ? "yes" : "no",
+            __func__, signature, pae ? "yes" : "no", CPULong_బహుళకం ? "yes" : "no",
             physbits, valid ? "yes" : "no");
 
-    if (valid)
-        CPUPhysBits = physbits;
+    ఒకవేళ (valid)
+        CPUPhys_బిట్లు = physbits;
 }
 
-static void qemu_detect(void)
+స్థిర శూన్య qemu_detect(శూన్య)
 {
-    if (!CONFIG_QEMU_HARDWARE)
-        return;
+    ఒకవేళ (!CONFIG_QEMU_HARDWARE)
+        తిరిగి;
 
     // Setup QEMU debug output port
     qemu_debug_preinit();
 
     // check northbridge @ 00:00.0
     u16 v = pci_config_readw(0, PCI_VENDOR_ID);
-    if (v == 0x0000 || v == 0xffff)
-        return;
+    ఒకవేళ (v == 0x0000 || v == 0xffff)
+        తిరిగి;
     u16 d = pci_config_readw(0, PCI_DEVICE_ID);
     u16 sv = pci_config_readw(0, PCI_SUBSYSTEM_VENDOR_ID);
     u16 sd = pci_config_readw(0, PCI_SUBSYSTEM_ID);
 
-    if (sv != 0x1af4 || /* Red Hat, Inc */
+    ఒకవేళ (sv != 0x1af4 || /* Red Hat, Inc */
         sd != 0x1100)   /* Qemu virtual machine */
-        return;
+        తిరిగి;
 
     PlatformRunningOn |= PF_QEMU;
-    switch (d) {
-    case 0x1237:
+    ఎంపిక (d) {
+    స్థితి 0x1237:
         dprintf(1, "Running on QEMU (i440fx)\n");
-        break;
-    case 0x29c0:
+        ఆపు;
+    స్థితి 0x29c0:
         dprintf(1, "Running on QEMU (q35)\n");
-        break;
-    default:
+        ఆపు;
+    అప్రమేయ:
         dprintf(1, "Running on QEMU (unknown nb: %04x:%04x)\n", v, d);
-        break;
+        ఆపు;
     }
     physbits(1);
 }
 
-static int qemu_early_e820(void);
+స్థిర పూర్ణాంకం qemu_early_e820(శూన్య);
 
-void
-qemu_preinit(void)
+శూన్య
+qemu_preinit(శూన్య)
 {
     qemu_detect();
     kvm_detect();
 
-    if (!CONFIG_QEMU)
-        return;
+    ఒకవేళ (!CONFIG_QEMU)
+        తిరిగి;
 
-    if (runningOnXen()) {
+    ఒకవేళ (runningOnXen()) {
         xen_ramsize_preinit();
-        return;
+        తిరిగి;
     }
 
     // try read e820 table first
-    if (!qemu_early_e820()) {
+    ఒకవేళ (!qemu_early_e820()) {
         // when it fails get memory size from nvram.
-        u32 rs = ((rtc_read(CMOS_MEM_EXTMEM2_LOW) << 16)
-                  | (rtc_read(CMOS_MEM_EXTMEM2_HIGH) << 24));
-        if (rs)
+        u32 rs = ((rtc_read(CMOS_MEM_EXTMEM2_దిగువ) << 16)
+                  | (rtc_read(CMOS_MEM_EXTMEM2_ఎగువ) << 24));
+        ఒకవేళ (rs)
             rs += 16 * 1024 * 1024;
-        else
-            rs = (((rtc_read(CMOS_MEM_EXTMEM_LOW) << 10)
-                   | (rtc_read(CMOS_MEM_EXTMEM_HIGH) << 18))
+        లేకపోతే
+            rs = (((rtc_read(CMOS_MEM_EXTMEM_దిగువ) << 10)
+                   | (rtc_read(CMOS_MEM_EXTMEM_ఎగువ) << 18))
                   + 1 * 1024 * 1024);
-        RamSize = rs;
-        e820_add(0, rs, E820_RAM);
-        dprintf(1, "RamSize: 0x%08x [cmos]\n", RamSize);
+        Ram_కొలత = rs;
+        e820_కూడు(0, rs, E820_RAM);
+        dprintf(1, "RamSize: 0x%08x [cmos]\n", Ram_కొలత);
     }
 
     /* reserve 256KB BIOS area at the end of 4 GB */
-    e820_add(0xfffc0000, 256*1024, E820_RESERVED);
+    e820_కూడు(0xfffc0000, 256*1024, E820_RESERVED);
 }
 
-#define MSR_IA32_FEATURE_CONTROL 0x0000003a
+#నిర్వచించు MSR_IA32_FEATURE_CONTROL 0x0000003a
 
-static void msr_feature_control_setup(void)
+స్థిర శూన్య msr_feature_control_అమరిక(శూన్య)
 {
-    u64 feature_control_bits = romfile_loadint("etc/msr_feature_control", 0);
-    if (feature_control_bits)
-        wrmsr_smp(MSR_IA32_FEATURE_CONTROL, feature_control_bits);
+    u64 feature_control_బిట్లు = romfile_loadint("etc/msr_feature_control", 0);
+    ఒకవేళ (feature_control_బిట్లు)
+        wrmsr_smp(MSR_IA32_FEATURE_CONTROL, feature_control_బిట్లు);
 }
 
-void
-qemu_platform_setup(void)
+శూన్య
+qemu_platform_అమరిక(శూన్య)
 {
-    if (!CONFIG_QEMU)
-        return;
+    ఒకవేళ (!CONFIG_QEMU)
+        తిరిగి;
 
-    if (runningOnXen()) {
+    ఒకవేళ (runningOnXen()) {
         pci_probe_devices();
-        xen_hypercall_setup();
-        xen_biostable_setup();
-        return;
+        xen_hypercall_అమరిక();
+        xen_biostable_అమరిక();
+        తిరిగి;
     }
 
     kvmclock_init();
 
     // Initialize pci
-    pci_setup();
-    smm_device_setup();
-    smm_setup();
+    pci_అమరిక();
+    smm_device_అమరిక();
+    smm_అమరిక();
 
     // Initialize mtrr, msr_feature_control and smp
-    mtrr_setup();
-    msr_feature_control_setup();
-    smp_setup();
+    mtrr_అమరిక();
+    msr_feature_control_అమరిక();
+    smp_అమరిక();
 
     // Create bios tables
-    if (MaxCountCPUs <= 255) {
-        pirtable_setup();
-        mptable_setup();
+    ఒకవేళ (Max_లెక్క_CPUs <= 255) {
+        pirtable_అమరిక();
+        mptable_అమరిక();
     }
-    smbios_setup();
+    smbios_అమరిక();
 
-    if (CONFIG_FW_ROMFILE_LOAD) {
-        int loader_err;
+    ఒకవేళ (CONFIG_FW_ROMFILE_ఎక్కించు) {
+        పూర్ణాంకం loader_err;
 
         dprintf(3, "load ACPI tables\n");
 
         loader_err = romfile_loader_execute("etc/table-loader");
 
-        RsdpAddr = find_acpi_rsdp();
+        RsdpAddr = కనుగొను_acpi_rsdp();
 
-        if (RsdpAddr) {
+        ఒకవేళ (RsdpAddr) {
             acpi_dsdt_parse();
-            virtio_mmio_setup_acpi();
-            return;
+            virtio_mmio_అమరిక_acpi();
+            తిరిగి;
         }
         /* If present, loader should have installed an RSDP.
          * Not installed? We might still be able to continue
          * using the builtin RSDP.
          */
-        if (!loader_err)
+        ఒకవేళ (!loader_err)
             warn_internalerror();
     }
 
-    acpi_setup();
+    acpi_అమరిక();
 }
 
 
@@ -330,466 +330,466 @@ qemu_platform_setup(void)
 
 // List of QEMU fw_cfg entries.  DO NOT ADD MORE.  (All new content
 // should be passed via the fw_cfg "file" interface.)
-#define QEMU_CFG_SIGNATURE              0x00
-#define QEMU_CFG_ID                     0x01
-#define QEMU_CFG_UUID                   0x02
-#define QEMU_CFG_NOGRAPHIC              0x04
-#define QEMU_CFG_NUMA                   0x0d
-#define QEMU_CFG_BOOT_MENU              0x0e
-#define QEMU_CFG_NB_CPUS                0x05
-#define QEMU_CFG_MAX_CPUS               0x0f
-#define QEMU_CFG_FILE_DIR               0x19
-#define QEMU_CFG_ARCH_LOCAL             0x8000
-#define QEMU_CFG_ACPI_TABLES            (QEMU_CFG_ARCH_LOCAL + 0)
-#define QEMU_CFG_SMBIOS_ENTRIES         (QEMU_CFG_ARCH_LOCAL + 1)
-#define QEMU_CFG_IRQ0_OVERRIDE          (QEMU_CFG_ARCH_LOCAL + 2)
-#define QEMU_CFG_E820_TABLE             (QEMU_CFG_ARCH_LOCAL + 3)
+#నిర్వచించు QEMU_CFG_SIGNATURE              0x00
+#నిర్వచించు QEMU_CFG_ID                     0x01
+#నిర్వచించు QEMU_CFG_UUID                   0x02
+#నిర్వచించు QEMU_CFG_NOGRAPHIC              0x04
+#నిర్వచించు QEMU_CFG_NUMA                   0x0d
+#నిర్వచించు QEMU_CFG_BOOT_MENU              0x0e
+#నిర్వచించు QEMU_CFG_NB_CPUS                0x05
+#నిర్వచించు QEMU_CFG_MAX_CPUS               0x0f
+#నిర్వచించు QEMU_CFG_FILE_DIR               0x19
+#నిర్వచించు QEMU_CFG_ARCH_LOCAL             0x8000
+#నిర్వచించు QEMU_CFG_ACPI_TABLES            (QEMU_CFG_ARCH_LOCAL + 0)
+#నిర్వచించు QEMU_CFG_SMBIOS_ENTRIES         (QEMU_CFG_ARCH_LOCAL + 1)
+#నిర్వచించు QEMU_CFG_IRQ0_OVERRIDE          (QEMU_CFG_ARCH_LOCAL + 2)
+#నిర్వచించు QEMU_CFG_E820_పట్టిక             (QEMU_CFG_ARCH_LOCAL + 3)
 
-static void
+స్థిర శూన్య
 qemu_cfg_select(u16 f)
 {
-    outw(f, PORT_QEMU_CFG_CTL);
+    outw(f, పోర్టు_QEMU_CFG_CTL);
 }
 
-static void
-qemu_cfg_dma_transfer(void *address, u32 length, u32 control)
+స్థిర శూన్య
+qemu_cfg_dma_transfer(శూన్య *చిరునామా, u32 నిడివి, u32 control)
 {
     QemuCfgDmaAccess access;
 
-    access.address = cpu_to_be64((u64)(u32)address);
-    access.length = cpu_to_be32(length);
-    access.control = cpu_to_be32(control);
+    access.చిరునామా = cpu_గమ్యం_be64((u64)(u32)చిరునామా);
+    access.నిడివి = cpu_గమ్యం_be32(నిడివి);
+    access.control = cpu_గమ్యం_be32(control);
 
     barrier();
 
-    outl(cpu_to_be32((u32)&access), PORT_QEMU_CFG_DMA_ADDR_LOW);
+    outl(cpu_గమ్యం_be32((u32)&access), పోర్టు_QEMU_CFG_DMA_ADDR_దిగువ);
 
-    while(be32_to_cpu(access.control) & ~QEMU_CFG_DMA_CTL_ERROR) {
+    అయితే(be32_గమ్యం_cpu(access.control) & ~QEMU_CFG_DMA_CTL_ERROR) {
         yield();
     }
 }
 
-static void
-qemu_cfg_read(void *buf, int len)
+స్థిర శూన్య
+qemu_cfg_read(శూన్య *buf, పూర్ణాంకం len)
 {
-    if (len == 0) {
-        return;
+    ఒకవేళ (len == 0) {
+        తిరిగి;
     }
 
-    if (qemu_cfg_dma_enabled()) {
+    ఒకవేళ (qemu_cfg_dma_enabled()) {
         qemu_cfg_dma_transfer(buf, len, QEMU_CFG_DMA_CTL_READ);
-    } else {
-        insb(PORT_QEMU_CFG_DATA, buf, len);
+    } లేకపోతే {
+        insb(పోర్టు_QEMU_CFG_దత్తాంశం, buf, len);
     }
 }
 
-static void
-qemu_cfg_write(void *buf, int len)
+స్థిర శూన్య
+qemu_cfg_write(శూన్య *buf, పూర్ణాంకం len)
 {
-    if (len == 0) {
-        return;
+    ఒకవేళ (len == 0) {
+        తిరిగి;
     }
 
-    if (qemu_cfg_dma_enabled()) {
+    ఒకవేళ (qemu_cfg_dma_enabled()) {
         qemu_cfg_dma_transfer(buf, len, QEMU_CFG_DMA_CTL_WRITE);
-    } else {
+    } లేకపోతే {
         warn_internalerror();
     }
 }
 
-static void
-qemu_cfg_skip(int len)
+స్థిర శూన్య
+qemu_cfg_skip(పూర్ణాంకం len)
 {
-    if (len == 0) {
-        return;
+    ఒకవేళ (len == 0) {
+        తిరిగి;
     }
 
-    if (qemu_cfg_dma_enabled()) {
+    ఒకవేళ (qemu_cfg_dma_enabled()) {
         qemu_cfg_dma_transfer(0, len, QEMU_CFG_DMA_CTL_SKIP);
-    } else {
-        while (len--)
-            inb(PORT_QEMU_CFG_DATA);
+    } లేకపోతే {
+        అయితే (len--)
+            inb(పోర్టు_QEMU_CFG_దత్తాంశం);
     }
 }
 
-static void
-qemu_cfg_read_entry(void *buf, int e, int len)
+స్థిర శూన్య
+qemu_cfg_read_నమోదు(శూన్య *buf, పూర్ణాంకం e, పూర్ణాంకం len)
 {
-    if (qemu_cfg_dma_enabled()) {
+    ఒకవేళ (qemu_cfg_dma_enabled()) {
         u32 control = (e << 16) | QEMU_CFG_DMA_CTL_SELECT
                         | QEMU_CFG_DMA_CTL_READ;
         qemu_cfg_dma_transfer(buf, len, control);
-    } else {
+    } లేకపోతే {
         qemu_cfg_select(e);
         qemu_cfg_read(buf, len);
     }
 }
 
-static void
-qemu_cfg_write_entry(void *buf, int e, int len)
+స్థిర శూన్య
+qemu_cfg_write_నమోదు(శూన్య *buf, పూర్ణాంకం e, పూర్ణాంకం len)
 {
-    if (qemu_cfg_dma_enabled()) {
+    ఒకవేళ (qemu_cfg_dma_enabled()) {
         u32 control = (e << 16) | QEMU_CFG_DMA_CTL_SELECT
                         | QEMU_CFG_DMA_CTL_WRITE;
         qemu_cfg_dma_transfer(buf, len, control);
-    } else {
+    } లేకపోతే {
         warn_internalerror();
     }
 }
 
-struct qemu_romfile_s {
-    struct romfile_s file;
-    int select, skip;
+నిర్మాణం qemu_romfile_s {
+    నిర్మాణం romfile_s file;
+    పూర్ణాంకం select, skip;
 };
 
-static int
-qemu_cfg_read_file(struct romfile_s *file, void *dst, u32 maxlen)
+స్థిర పూర్ణాంకం
+qemu_cfg_read_file(నిర్మాణం romfile_s *file, శూన్య *dst, u32 maxlen)
 {
-    if (file->size > maxlen)
-        return -1;
-    struct qemu_romfile_s *qfile;
-    qfile = container_of(file, struct qemu_romfile_s, file);
-    if (qfile->skip == 0) {
+    ఒకవేళ (file->కొలత > maxlen)
+        తిరిగి -1;
+    నిర్మాణం qemu_romfile_s *qfile;
+    qfile = container_యొక్క(file, నిర్మాణం qemu_romfile_s, file);
+    ఒకవేళ (qfile->skip == 0) {
         /* Do it in one transfer */
-        qemu_cfg_read_entry(dst, qfile->select, file->size);
-    } else {
+        qemu_cfg_read_నమోదు(dst, qfile->select, file->కొలత);
+    } లేకపోతే {
         qemu_cfg_select(qfile->select);
         qemu_cfg_skip(qfile->skip);
-        qemu_cfg_read(dst, file->size);
+        qemu_cfg_read(dst, file->కొలత);
     }
-    return file->size;
+    తిరిగి file->కొలత;
 }
 
 // Bare-bones function for writing a file knowing only its unique
 // identifying key (select)
-int
-qemu_cfg_write_file_simple(void *src, u16 key, u32 offset, u32 len)
+పూర్ణాంకం
+qemu_cfg_write_file_simple(శూన్య *src, u16 కీలకం, u32 స్థానభ్రంశం_2, u32 len)
 {
-    if (offset == 0) {
+    ఒకవేళ (స్థానభ్రంశం_2 == 0) {
         /* Do it in one transfer */
-        qemu_cfg_write_entry(src, key, len);
-    } else {
-        qemu_cfg_select(key);
-        qemu_cfg_skip(offset);
+        qemu_cfg_write_నమోదు(src, కీలకం, len);
+    } లేకపోతే {
+        qemu_cfg_select(కీలకం);
+        qemu_cfg_skip(స్థానభ్రంశం_2);
         qemu_cfg_write(src, len);
     }
-    return len;
+    తిరిగి len;
 }
 
-int
-qemu_cfg_write_file(void *src, struct romfile_s *file, u32 offset, u32 len)
+పూర్ణాంకం
+qemu_cfg_write_file(శూన్య *src, నిర్మాణం romfile_s *file, u32 స్థానభ్రంశం_2, u32 len)
 {
-    if ((offset + len) > file->size)
-        return -1;
+    ఒకవేళ ((స్థానభ్రంశం_2 + len) > file->కొలత)
+        తిరిగి -1;
 
-    if (!qemu_cfg_dma_enabled() || (file->copy != qemu_cfg_read_file)) {
+    ఒకవేళ (!qemu_cfg_dma_enabled() || (file->copy != qemu_cfg_read_file)) {
         warn_internalerror();
-        return -1;
+        తిరిగి -1;
     }
-    return qemu_cfg_write_file_simple(src, qemu_get_romfile_key(file),
-                                      offset, len);
+    తిరిగి qemu_cfg_write_file_simple(src, qemu_get_romfile_కీలకం(file),
+                                      స్థానభ్రంశం_2, len);
 }
 
-static void
-qemu_romfile_add(char *name, int select, int skip, int size)
+స్థిర శూన్య
+qemu_romfile_కూడు(అక్షరం *name, పూర్ణాంకం select, పూర్ణాంకం skip, పూర్ణాంకం కొలత)
 {
-    struct qemu_romfile_s *qfile = malloc_tmp(sizeof(*qfile));
-    if (!qfile) {
+    నిర్మాణం qemu_romfile_s *qfile = malloc_tmp(పరిమాణం(*qfile));
+    ఒకవేళ (!qfile) {
         warn_noalloc();
-        return;
+        తిరిగి;
     }
-    memset(qfile, 0, sizeof(*qfile));
-    strtcpy(qfile->file.name, name, sizeof(qfile->file.name));
-    qfile->file.size = size;
+    memset(qfile, 0, పరిమాణం(*qfile));
+    strtcpy(qfile->file.name, name, పరిమాణం(qfile->file.name));
+    qfile->file.కొలత = కొలత;
     qfile->select = select;
     qfile->skip = skip;
     qfile->file.copy = qemu_cfg_read_file;
-    romfile_add(&qfile->file);
+    romfile_కూడు(&qfile->file);
 }
 
 u16
-qemu_get_romfile_key(struct romfile_s *file)
+qemu_get_romfile_కీలకం(నిర్మాణం romfile_s *file)
 {
-    struct qemu_romfile_s *qfile;
-    if (file->copy != qemu_cfg_read_file) {
+    నిర్మాణం qemu_romfile_s *qfile;
+    ఒకవేళ (file->copy != qemu_cfg_read_file) {
         warn_internalerror();
-        return 0;
+        తిరిగి 0;
     }
-    qfile = container_of(file, struct qemu_romfile_s, file);
-    return qfile->select;
+    qfile = container_యొక్క(file, నిర్మాణం qemu_romfile_s, file);
+    తిరిగి qfile->select;
 }
 
-static int rtc_present(void)
+స్థిర పూర్ణాంకం rtc_present(శూన్య)
 {
-    return rtc_read(CMOS_RTC_MONTH) != 0xff;
+    తిరిగి rtc_read(CMOS_RTC_MONTH) != 0xff;
 }
 
 u16
-qemu_get_present_cpus_count(void)
+qemu_get_present_cpus_లెక్క(శూన్య)
 {
-    u16 smp_count = 0;
-    if (qemu_cfg_enabled()) {
-        qemu_cfg_read_entry(&smp_count, QEMU_CFG_NB_CPUS, sizeof(smp_count));
+    u16 smp_లెక్క = 0;
+    ఒకవేళ (qemu_cfg_enabled()) {
+        qemu_cfg_read_నమోదు(&smp_లెక్క, QEMU_CFG_NB_CPUS, పరిమాణం(smp_లెక్క));
     }
-    if (rtc_present()) {
-        u16 cmos_cpu_count = rtc_read(CMOS_BIOS_SMP_COUNT) + 1;
-        if (smp_count < cmos_cpu_count) {
-            smp_count = cmos_cpu_count;
+    ఒకవేళ (rtc_present()) {
+        u16 cmos_cpu_లెక్క = rtc_read(CMOS_BIOS_SMP_లెక్క) + 1;
+        ఒకవేళ (smp_లెక్క < cmos_cpu_లెక్క) {
+            smp_లెక్క = cmos_cpu_లెక్క;
         }
     }
-    return smp_count;
+    తిరిగి smp_లెక్క;
 }
 
-struct e820_reservation {
-    u64 address;
-    u64 length;
+నిర్మాణం e820_reservation {
+    u64 చిరునామా;
+    u64 నిడివి;
     u32 type;
 };
 
-#define SMBIOS_FIELD_ENTRY 0
-#define SMBIOS_TABLE_ENTRY 1
+#నిర్వచించు SMBIOS_క్షేత్రం_నమోదు 0
+#నిర్వచించు SMBIOS_పట్టిక_నమోదు 1
 
-struct qemu_smbios_header {
-    u16 length;
+నిర్మాణం qemu_smbios_శీర్షిక {
+    u16 నిడివి;
     u8 headertype;
     u8 tabletype;
     u16 fieldoffset;
 } PACKED;
 
-static void
-qemu_cfg_e820(void)
+స్థిర శూన్య
+qemu_cfg_e820(శూన్య)
 {
-    if (!CONFIG_QEMU)
-        return;
+    ఒకవేళ (!CONFIG_QEMU)
+        తిరిగి;
 
-    if (romfile_find("etc/e820")) {
+    ఒకవేళ (romfile_కనుగొను("etc/e820")) {
         // qemu_early_e820() has handled everything
-        return;
+        తిరిగి;
     }
 
     // QEMU_CFG_E820_TABLE has reservations only
     u32 count32;
-    qemu_cfg_read_entry(&count32, QEMU_CFG_E820_TABLE, sizeof(count32));
-    if (count32) {
-        struct e820_reservation entry;
-        int i;
-        for (i = 0; i < count32; i++) {
-            qemu_cfg_read(&entry, sizeof(entry));
-            e820_add(entry.address, entry.length, entry.type);
+    qemu_cfg_read_నమోదు(&count32, QEMU_CFG_E820_పట్టిక, పరిమాణం(count32));
+    ఒకవేళ (count32) {
+        నిర్మాణం e820_reservation నమోదు_2;
+        పూర్ణాంకం i;
+        కొరకు (i = 0; i < count32; i++) {
+            qemu_cfg_read(&నమోదు_2, పరిమాణం(నమోదు_2));
+            e820_కూడు(నమోదు_2.చిరునామా, నమోదు_2.నిడివి, నమోదు_2.type);
         }
-    } else if (runningOnKVM()) {
+    } లేకపోతే ఒకవేళ (runningOnKVM()) {
         // Backwards compatibility - provide hard coded range.
         // 4 pages before the bios, 3 pages for vmx tss pages, the
         // other page for EPT real mode pagetable
-        e820_add(0xfffbc000, 4*4096, E820_RESERVED);
+        e820_కూడు(0xfffbc000, 4*4096, E820_RESERVED);
     }
 
     // Check for memory over 4Gig in cmos
-    u64 high = ((rtc_read(CMOS_MEM_HIGHMEM_LOW) << 16)
+    u64 ఎగువ = ((rtc_read(CMOS_MEM_HIGHMEM_దిగువ) << 16)
                 | ((u32)rtc_read(CMOS_MEM_HIGHMEM_MID) << 24)
-                | ((u64)rtc_read(CMOS_MEM_HIGHMEM_HIGH) << 32));
-    RamSizeOver4G = high;
-    e820_add(0x100000000ull, high, E820_RAM);
-    dprintf(1, "RamSizeOver4G: 0x%016llx [cmos]\n", RamSizeOver4G);
+                | ((u64)rtc_read(CMOS_MEM_HIGHMEM_ఎగువ) << 32));
+    Ram_కొలత_Over4_G = ఎగువ;
+    e820_కూడు(0x100000000ull, ఎగువ, E820_RAM);
+    dprintf(1, "RamSizeOver4G: 0x%016llx [cmos]\n", Ram_కొలత_Over4_G);
 }
 
 // Populate romfile entries for legacy fw_cfg ports (that predate the
 // "file" interface).
-static void
-qemu_cfg_legacy(void)
+స్థిర శూన్య
+qemu_cfg_legacy(శూన్య)
 {
-    if (!CONFIG_QEMU)
-        return;
+    ఒకవేళ (!CONFIG_QEMU)
+        తిరిగి;
 
     // Misc config items.
-    qemu_romfile_add("etc/show-boot-menu", QEMU_CFG_BOOT_MENU, 0, 2);
-    qemu_romfile_add("etc/irq0-override", QEMU_CFG_IRQ0_OVERRIDE, 0, 1);
-    qemu_romfile_add("etc/max-cpus", QEMU_CFG_MAX_CPUS, 0, 2);
+    qemu_romfile_కూడు("etc/show-boot-menu", QEMU_CFG_BOOT_MENU, 0, 2);
+    qemu_romfile_కూడు("etc/irq0-override", QEMU_CFG_IRQ0_OVERRIDE, 0, 1);
+    qemu_romfile_కూడు("etc/max-cpus", QEMU_CFG_MAX_CPUS, 0, 2);
 
     // NUMA data
     u64 numacount;
-    qemu_cfg_read_entry(&numacount, QEMU_CFG_NUMA, sizeof(numacount));
-    int max_cpu = romfile_loadint("etc/max-cpus", 0);
-    qemu_romfile_add("etc/numa-cpu-map", QEMU_CFG_NUMA, sizeof(numacount)
-                     , max_cpu*sizeof(u64));
-    qemu_romfile_add("etc/numa-nodes", QEMU_CFG_NUMA
-                     , sizeof(numacount) + max_cpu*sizeof(u64)
-                     , numacount*sizeof(u64));
+    qemu_cfg_read_నమోదు(&numacount, QEMU_CFG_NUMA, పరిమాణం(numacount));
+    పూర్ణాంకం max_cpu = romfile_loadint("etc/max-cpus", 0);
+    qemu_romfile_కూడు("etc/numa-cpu-map", QEMU_CFG_NUMA, పరిమాణం(numacount)
+                     , max_cpu*పరిమాణం(u64));
+    qemu_romfile_కూడు("etc/numa-nodes", QEMU_CFG_NUMA
+                     , పరిమాణం(numacount) + max_cpu*పరిమాణం(u64)
+                     , numacount*పరిమాణం(u64));
 
     // ACPI tables
-    char name[128];
+    అక్షరం name[128];
     u16 cnt;
-    qemu_cfg_read_entry(&cnt, QEMU_CFG_ACPI_TABLES, sizeof(cnt));
-    int i, offset = sizeof(cnt);
-    for (i = 0; i < cnt; i++) {
+    qemu_cfg_read_నమోదు(&cnt, QEMU_CFG_ACPI_TABLES, పరిమాణం(cnt));
+    పూర్ణాంకం i, స్థానభ్రంశం_2 = పరిమాణం(cnt);
+    కొరకు (i = 0; i < cnt; i++) {
         u16 len;
-        qemu_cfg_read(&len, sizeof(len));
-        offset += sizeof(len);
-        snprintf(name, sizeof(name), "acpi/table%d", i);
-        qemu_romfile_add(name, QEMU_CFG_ACPI_TABLES, offset, len);
+        qemu_cfg_read(&len, పరిమాణం(len));
+        స్థానభ్రంశం_2 += పరిమాణం(len);
+        snprintf(name, పరిమాణం(name), "acpi/table%d", i);
+        qemu_romfile_కూడు(name, QEMU_CFG_ACPI_TABLES, స్థానభ్రంశం_2, len);
         qemu_cfg_skip(len);
-        offset += len;
+        స్థానభ్రంశం_2 += len;
     }
 
     // SMBIOS info
-    qemu_cfg_read_entry(&cnt, QEMU_CFG_SMBIOS_ENTRIES, sizeof(cnt));
-    offset = sizeof(cnt);
-    for (i = 0; i < cnt; i++) {
-        struct qemu_smbios_header header;
-        qemu_cfg_read(&header, sizeof(header));
-        if (header.headertype == SMBIOS_FIELD_ENTRY) {
-            snprintf(name, sizeof(name), "smbios/field%d-%d"
-                     , header.tabletype, header.fieldoffset);
-            qemu_romfile_add(name, QEMU_CFG_SMBIOS_ENTRIES
-                             , offset + sizeof(header)
-                             , header.length - sizeof(header));
-        } else {
-            snprintf(name, sizeof(name), "smbios/table%d-%d"
-                     , header.tabletype, i);
-            qemu_romfile_add(name, QEMU_CFG_SMBIOS_ENTRIES
-                             , offset + 3, header.length - 3);
+    qemu_cfg_read_నమోదు(&cnt, QEMU_CFG_SMBIOS_ENTRIES, పరిమాణం(cnt));
+    స్థానభ్రంశం_2 = పరిమాణం(cnt);
+    కొరకు (i = 0; i < cnt; i++) {
+        నిర్మాణం qemu_smbios_శీర్షిక శీర్షిక;
+        qemu_cfg_read(&శీర్షిక, పరిమాణం(శీర్షిక));
+        ఒకవేళ (శీర్షిక.headertype == SMBIOS_క్షేత్రం_నమోదు) {
+            snprintf(name, పరిమాణం(name), "smbios/field%d-%d"
+                     , శీర్షిక.tabletype, శీర్షిక.fieldoffset);
+            qemu_romfile_కూడు(name, QEMU_CFG_SMBIOS_ENTRIES
+                             , స్థానభ్రంశం_2 + పరిమాణం(శీర్షిక)
+                             , శీర్షిక.నిడివి - పరిమాణం(శీర్షిక));
+        } లేకపోతే {
+            snprintf(name, పరిమాణం(name), "smbios/table%d-%d"
+                     , శీర్షిక.tabletype, i);
+            qemu_romfile_కూడు(name, QEMU_CFG_SMBIOS_ENTRIES
+                             , స్థానభ్రంశం_2 + 3, శీర్షిక.నిడివి - 3);
         }
-        qemu_cfg_skip(header.length - sizeof(header));
-        offset += header.length;
+        qemu_cfg_skip(శీర్షిక.నిడివి - పరిమాణం(శీర్షిక));
+        స్థానభ్రంశం_2 += శీర్షిక.నిడివి;
     }
 }
 
-struct QemuCfgFile {
-    u32  size;        /* file size */
+నిర్మాణం QemuCfgFile {
+    u32  కొలత;        /* file size */
     u16  select;      /* write this to 0x510 to read it */
     u16  reserved;
-    char name[56];
+    అక్షరం name[56];
 };
 
-static int qemu_cfg_detect(void)
+స్థిర పూర్ణాంకం qemu_cfg_detect(శూన్య)
 {
-    if (cfg_enabled)
-        return 1;
+    ఒకవేళ (cfg_enabled)
+        తిరిగి 1;
 
     // Detect fw_cfg interface.
     qemu_cfg_select(QEMU_CFG_SIGNATURE);
-    char *sig = "QEMU";
-    int i;
-    for (i = 0; i < 4; i++)
-        if (inb(PORT_QEMU_CFG_DATA) != sig[i])
-            return 0;
+    అక్షరం *sig = "QEMU";
+    పూర్ణాంకం i;
+    కొరకు (i = 0; i < 4; i++)
+        ఒకవేళ (inb(పోర్టు_QEMU_CFG_దత్తాంశం) != sig[i])
+            తిరిగి 0;
 
     dprintf(1, "Found QEMU fw_cfg\n");
     cfg_enabled = 1;
 
     // Detect DMA interface.
     u32 id;
-    qemu_cfg_read_entry(&id, QEMU_CFG_ID, sizeof(id));
+    qemu_cfg_read_నమోదు(&id, QEMU_CFG_ID, పరిమాణం(id));
 
-    if (id & QEMU_CFG_VERSION_DMA) {
+    ఒకవేళ (id & QEMU_CFG_సంస్కరణ_DMA) {
         dprintf(1, "QEMU fw_cfg DMA interface supported\n");
         cfg_dma_enabled = 1;
     }
-    return 1;
+    తిరిగి 1;
 }
 
-void qemu_cfg_init(void)
+శూన్య qemu_cfg_init(శూన్య)
 {
-    if (!runningOnQEMU())
-        return;
+    ఒకవేళ (!runningOnQEMU())
+        తిరిగి;
 
-    if (!qemu_cfg_detect())
-        return;
+    ఒకవేళ (!qemu_cfg_detect())
+        తిరిగి;
 
     // Populate romfiles for legacy fw_cfg entries
     qemu_cfg_legacy();
 
     // Load files found in the fw_cfg file directory
-    u32 count;
-    qemu_cfg_read_entry(&count, QEMU_CFG_FILE_DIR, sizeof(count));
-    count = be32_to_cpu(count);
+    u32 లెక్క;
+    qemu_cfg_read_నమోదు(&లెక్క, QEMU_CFG_FILE_DIR, పరిమాణం(లెక్క));
+    లెక్క = be32_గమ్యం_cpu(లెక్క);
     u32 e;
-    for (e = 0; e < count; e++) {
-        struct QemuCfgFile qfile;
-        qemu_cfg_read(&qfile, sizeof(qfile));
-        qemu_romfile_add(qfile.name, be16_to_cpu(qfile.select)
-                         , 0, be32_to_cpu(qfile.size));
+    కొరకు (e = 0; e < లెక్క; e++) {
+        నిర్మాణం QemuCfgFile qfile;
+        qemu_cfg_read(&qfile, పరిమాణం(qfile));
+        qemu_romfile_కూడు(qfile.name, be16_గమ్యం_cpu(qfile.select)
+                         , 0, be32_గమ్యం_cpu(qfile.కొలత));
     }
 
     qemu_cfg_e820();
 
-    if (romfile_find("etc/table-loader")) {
-        acpi_pm_base = 0x0600;
-        dprintf(1, "Moving pm_base to 0x%x\n", acpi_pm_base);
+    ఒకవేళ (romfile_కనుగొను("etc/table-loader")) {
+        acpi_pm_పునాది = 0x0600;
+        dprintf(1, "Moving pm_base to 0x%x\n", acpi_pm_పునాది);
     }
 
     // serial console
     u16 nogfx = 0;
-    qemu_cfg_read_entry(&nogfx, QEMU_CFG_NOGRAPHIC, sizeof(nogfx));
-    if (nogfx && !romfile_find("etc/sercon-port")
-        && !romfile_find("vgaroms/sgabios.bin"))
-        const_romfile_add_int("etc/sercon-port", PORT_SERIAL1);
+    qemu_cfg_read_నమోదు(&nogfx, QEMU_CFG_NOGRAPHIC, పరిమాణం(nogfx));
+    ఒకవేళ (nogfx && !romfile_కనుగొను("etc/sercon-port")
+        && !romfile_కనుగొను("vgaroms/sgabios.bin"))
+        const_romfile_కూడు_int("etc/sercon-port", పోర్టు_SERIAL1);
 }
 
 /*
  * This runs before malloc and romfile are ready, so we have to work
  * with stack allocations and read from fw_cfg in chunks.
  */
-static int qemu_early_e820(void)
+స్థిర పూర్ణాంకం qemu_early_e820(శూన్య)
 {
-    struct e820_reservation table;
-    struct QemuCfgFile qfile;
-    u32 select = 0, size = 0;
-    u32 count, i;
+    నిర్మాణం e820_reservation పట్టిక;
+    నిర్మాణం QemuCfgFile qfile;
+    u32 select = 0, కొలత = 0;
+    u32 లెక్క, i;
 
-    if (!qemu_cfg_detect())
-        return 0;
+    ఒకవేళ (!qemu_cfg_detect())
+        తిరిగి 0;
 
     // find e820 table
-    qemu_cfg_read_entry(&count, QEMU_CFG_FILE_DIR, sizeof(count));
-    count = be32_to_cpu(count);
-    for (i = 0; i < count; i++) {
-        qemu_cfg_read(&qfile, sizeof(qfile));
-        if (memcmp(qfile.name, "etc/e820", 9) != 0)
-            continue;
-        select = be16_to_cpu(qfile.select);
-        size = be32_to_cpu(qfile.size);
-        break;
+    qemu_cfg_read_నమోదు(&లెక్క, QEMU_CFG_FILE_DIR, పరిమాణం(లెక్క));
+    లెక్క = be32_గమ్యం_cpu(లెక్క);
+    కొరకు (i = 0; i < లెక్క; i++) {
+        qemu_cfg_read(&qfile, పరిమాణం(qfile));
+        ఒకవేళ (memcmp(qfile.name, "etc/e820", 9) != 0)
+            కొనసాగు;
+        select = be16_గమ్యం_cpu(qfile.select);
+        కొలత = be32_గమ్యం_cpu(qfile.కొలత);
+        ఆపు;
     }
-    if (select == 0) {
+    ఒకవేళ (select == 0) {
         // may happen on old qemu
         dprintf(1, "qemu/e820: fw_cfg file etc/e820 not found\n");
-        return 0;
+        తిరిగి 0;
     }
 
     // walk e820 table
     qemu_cfg_select(select);
-    count = size/sizeof(table);
-    for (i = 0, select = 0; i < count; i++) {
-        qemu_cfg_read(&table, sizeof(table));
-        switch (table.type) {
-        case E820_RESERVED:
-            e820_add(table.address, table.length, table.type);
+    లెక్క = కొలత/పరిమాణం(పట్టిక);
+    కొరకు (i = 0, select = 0; i < లెక్క; i++) {
+        qemu_cfg_read(&పట్టిక, పరిమాణం(పట్టిక));
+        ఎంపిక (పట్టిక.type) {
+        స్థితి E820_RESERVED:
+            e820_కూడు(పట్టిక.చిరునామా, పట్టిక.నిడివి, పట్టిక.type);
             dprintf(1, "qemu/e820: addr 0x%016llx len 0x%016llx [reserved]\n",
-                    table.address, table.length);
-            break;
-        case E820_SOFT_RESERVED:
-            e820_add(table.address, table.length, table.type);
+                    పట్టిక.చిరునామా, పట్టిక.నిడివి);
+            ఆపు;
+        స్థితి E820_SOFT_RESERVED:
+            e820_కూడు(పట్టిక.చిరునామా, పట్టిక.నిడివి, పట్టిక.type);
             dprintf(1, "qemu/e820: addr 0x%016llx len 0x%016llx [soft-reserved]\n",
-                    table.address, table.length);
-            break;
-        case E820_RAM:
-            e820_add(table.address, table.length, table.type);
+                    పట్టిక.చిరునామా, పట్టిక.నిడివి);
+            ఆపు;
+        స్థితి E820_RAM:
+            e820_కూడు(పట్టిక.చిరునామా, పట్టిక.నిడివి, పట్టిక.type);
             dprintf(1, "qemu/e820: addr 0x%016llx len 0x%016llx [RAM]\n",
-                    table.address, table.length);
-            if (table.address < 0x100000000LL) {
+                    పట్టిక.చిరునామా, పట్టిక.నిడివి);
+            ఒకవేళ (పట్టిక.చిరునామా < 0x100000000LL) {
                 // below 4g
-                if (RamSize < table.address + table.length)
-                    RamSize = table.address + table.length;
-            } else {
+                ఒకవేళ (Ram_కొలత < పట్టిక.చిరునామా + పట్టిక.నిడివి)
+                    Ram_కొలత = పట్టిక.చిరునామా + పట్టిక.నిడివి;
+            } లేకపోతే {
                 // above 4g
-                if (RamSizeOver4G < table.address + table.length - 0x100000000LL)
-                    RamSizeOver4G = table.address + table.length - 0x100000000LL;
+                ఒకవేళ (Ram_కొలత_Over4_G < పట్టిక.చిరునామా + పట్టిక.నిడివి - 0x100000000LL)
+                    Ram_కొలత_Over4_G = పట్టిక.చిరునామా + పట్టిక.నిడివి - 0x100000000LL;
             }
         }
     }
 
-    dprintf(3, "qemu/e820: RamSize: 0x%08x\n", RamSize);
-    dprintf(3, "qemu/e820: RamSizeOver4G: 0x%016llx\n", RamSizeOver4G);
-    return 1;
+    dprintf(3, "qemu/e820: RamSize: 0x%08x\n", Ram_కొలత);
+    dprintf(3, "qemu/e820: RamSizeOver4G: 0x%016llx\n", Ram_కొలత_Over4_G);
+    తిరిగి 1;
 }

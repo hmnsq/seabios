@@ -6,49 +6,49 @@
 *
 * This work is licensed under the terms of the GNU LGPLv3.
 */
-#include "malloc.h" // malloc_tmphigh
-#include "string.h" // memcpy
-#include "util.h" // struct bmp_decdata
+#అన్తర్భావ "malloc.h" // malloc_tmphigh
+#అన్తర్భావ "string.h" // memcpy
+#అన్తర్భావ "util.h" // struct bmp_decdata
 
-struct bmp_decdata {
-    struct tagRGBQUAD *quadp;
-    unsigned char *datap;
-    int width;
-    int height;
-    int bpp;
+నిర్మాణం bmp_decdata {
+    నిర్మాణం ట్యాగ్_RGBQUAD *quadp;
+    గుర్తులేని అక్షరం *datap;
+    పూర్ణాంకం వెడల్పు;
+    పూర్ణాంకం ఎత్తు;
+    పూర్ణాంకం bpp;
 };
 
-#define bmp_load4byte(addr) (*(u32 *)(addr))
-#define bmp_load2byte(addr) (*(u16 *)(addr))
+#నిర్వచించు bmp_load4byte(addr) (*(u32 *)(addr))
+#నిర్వచించు bmp_load2byte(addr) (*(u16 *)(addr))
 
-typedef struct tagBITMAPFILEHEADER {
+రకనిర్వచనం నిర్మాణం ట్యాగ్_BITMAPFILEHEADER {
     u8 bfType[2];
-    u8 bfSize[4];
+    u8 bf_కొలత[4];
     u8 bfReserved1[2];
     u8 bfReserved2[2];
-    u8 bfOffBits[4];
-} BITMAPFILEHEADER, tagBITMAPFILEHEADER;
+    u8 bf_Off_బిట్లు[4];
+} BITMAPFILEHEADER, ట్యాగ్_BITMAPFILEHEADER;
 
-typedef struct tagBITMAPINFOHEADER {
-    u8 biSize[4];
-    u8 biWidth[4];
-    u8 biHeight[4];
+రకనిర్వచనం నిర్మాణం ట్యాగ్_BITMAPINFOHEADER {
+    u8 bi_కొలత[4];
+    u8 bi_వెడల్పు[4];
+    u8 bi_ఎత్తు[4];
     u8 biPlanes[2];
-    u8 biBitCount[2];
+    u8 bi_బిట్టు_లెక్క[2];
     u8 biCompression[4];
-    u8 biSizeImage[4];
-    u8 biXPelsPerMeter[4];
-    u8 biYPelsPerMeter[4];
-    u8 biClrUsed[4];
+    u8 bi_కొలత_Image[4];
+    u8 bi_XPels_చొప్పున_Meter[4];
+    u8 bi_YPels_చొప్పున_Meter[4];
+    u8 bi_Clr_వాడిన[4];
     u8 biClrImportant[4];
-} BITMAPINFOHEADER, tagBITMAPINFOHEADER;
+} BITMAPINFOHEADER, ట్యాగ్_BITMAPINFOHEADER;
 
-typedef struct tagRGBQUAD {
+రకనిర్వచనం నిర్మాణం ట్యాగ్_RGBQUAD {
     u8 rgbBlue;
     u8 rgbGreen;
     u8 rgbRed;
     u8 rgbReserved;
-} RGBQUAD, tagRGBQUAD;
+} RGBQUAD, ట్యాగ్_RGBQUAD;
 
 /* flat picture data adjusting function
 * description:
@@ -56,61 +56,61 @@ typedef struct tagRGBQUAD {
 *   arrange horizontal pixel data, add extra space in the dest buffer
 *       for every line
 */
-static void raw_data_format_adjust(u8 *src, u8 *dest, int width,
-		int height, int bytes_per_line_src, int bytes_per_line_dest)
+స్థిర శూన్య raw_దత్తాంశం_format_adjust(u8 *src, u8 *dest, పూర్ణాంకం వెడల్పు,
+		పూర్ణాంకం ఎత్తు, పూర్ణాంకం బైట్లు_చొప్పున_పంక్తి_src, పూర్ణాంకం బైట్లు_చొప్పున_పంక్తి_dest)
 {
-    int i;
-    for (i = 0 ; i < height ; i++) {
-        memcpy(dest + i * bytes_per_line_dest,
-           src + (height - 1 - i) * bytes_per_line_src, bytes_per_line_src);
+    పూర్ణాంకం i;
+    కొరకు (i = 0 ; i < ఎత్తు ; i++) {
+        జ్ఞాపకం_నకలు(dest + i * బైట్లు_చొప్పున_పంక్తి_dest,
+           src + (ఎత్తు - 1 - i) * బైట్లు_చొప్పున_పంక్తి_src, బైట్లు_చొప్పున_పంక్తి_src);
     }
 }
 
 /* allocate decdata struct */
-struct bmp_decdata *bmp_alloc(void)
+నిర్మాణం bmp_decdata *bmp_alloc(శూన్య)
 {
-    struct bmp_decdata *bmp = malloc_tmphigh(sizeof(*bmp));
-    return bmp;
+    నిర్మాణం bmp_decdata *bmp = malloc_tmphigh(పరిమాణం(*bmp));
+    తిరిగి bmp;
 }
 
 /* extract information from bmp file data */
-int bmp_decode(struct bmp_decdata *bmp, unsigned char *data, int data_size)
+పూర్ణాంకం bmp_decode(నిర్మాణం bmp_decdata *bmp, గుర్తులేని అక్షరం *దత్తాంశం, పూర్ణాంకం దత్తాంశం_కొలత)
 {
-    if (data_size < 54)
-        return 1;
+    ఒకవేళ (దత్తాంశం_కొలత < 54)
+        తిరిగి 1;
 
-    u16 bmp_filehead = bmp_load2byte(data + 0);
-    if (bmp_filehead != 0x4d42)
-        return 2;
-    u32 bmp_recordsize = bmp_load4byte(data + 2);
-    if (bmp_recordsize != data_size)
-        return 3;
-    u32 bmp_dataoffset = bmp_load4byte(data + 10);
-    bmp->datap = (unsigned char *)data + bmp_dataoffset;
-    bmp->width = bmp_load4byte(data + 18);
-    bmp->height = bmp_load4byte(data + 22);
-    bmp->bpp = bmp_load2byte(data + 28);
-    return 0;
+    u16 bmp_filehead = bmp_load2byte(దత్తాంశం + 0);
+    ఒకవేళ (bmp_filehead != 0x4d42)
+        తిరిగి 2;
+    u32 bmp_recordsize = bmp_load4byte(దత్తాంశం + 2);
+    ఒకవేళ (bmp_recordsize != దత్తాంశం_కొలత)
+        తిరిగి 3;
+    u32 bmp_dataoffset = bmp_load4byte(దత్తాంశం + 10);
+    bmp->datap = (గుర్తులేని అక్షరం *)దత్తాంశం + bmp_dataoffset;
+    bmp->వెడల్పు = bmp_load4byte(దత్తాంశం + 18);
+    bmp->ఎత్తు = bmp_load4byte(దత్తాంశం + 22);
+    bmp->bpp = bmp_load2byte(దత్తాంశం + 28);
+    తిరిగి 0;
 }
 
 /* get bmp properties */
-void bmp_get_info(struct bmp_decdata *bmp, int *width, int *height, int *bpp)
+శూన్య bmp_get_info(నిర్మాణం bmp_decdata *bmp, పూర్ణాంకం *వెడల్పు, పూర్ణాంకం *ఎత్తు, పూర్ణాంకం *bpp)
 {
-    *width = bmp->width;
-    *height = bmp->height;
+    *వెడల్పు = bmp->వెడల్పు;
+    *ఎత్తు = bmp->ఎత్తు;
     *bpp = bmp->bpp;
 }
 
 /* flush flat picture data to *pc */
-int bmp_show(struct bmp_decdata *bmp, unsigned char *pic, int width,
-             int height, int depth, int bytes_per_line_dest)
+పూర్ణాంకం bmp_show(నిర్మాణం bmp_decdata *bmp, గుర్తులేని అక్షరం *pic, పూర్ణాంకం వెడల్పు,
+             పూర్ణాంకం ఎత్తు, పూర్ణాంకం లోతు, పూర్ణాంకం బైట్లు_చొప్పున_పంక్తి_dest)
 {
-    if (bmp->datap == pic)
-        return 0;
-    if ((depth == bmp->bpp) && (bmp->bpp%8 == 0)) {
-        raw_data_format_adjust(bmp->datap, pic, width, height,
-			(bmp->bpp/8)*width, bytes_per_line_dest);
-        return 0;
+    ఒకవేళ (bmp->datap == pic)
+        తిరిగి 0;
+    ఒకవేళ ((లోతు == bmp->bpp) && (bmp->bpp%8 == 0)) {
+        raw_దత్తాంశం_format_adjust(bmp->datap, pic, వెడల్పు, ఎత్తు,
+			(bmp->bpp/8)*వెడల్పు, బైట్లు_చొప్పున_పంక్తి_dest);
+        తిరిగి 0;
     }
-    return 1;
+    తిరిగి 1;
 }

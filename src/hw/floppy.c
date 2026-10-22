@@ -5,188 +5,188 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // SET_BDA
-#include "block.h" // struct drive_s
-#include "bregs.h" // struct bregs
-#include "config.h" // CONFIG_FLOPPY
-#include "malloc.h" // malloc_fseg
-#include "output.h" // dprintf
-#include "pcidevice.h" // pci_find_class
-#include "pci_ids.h" // PCI_CLASS_BRIDGE_ISA
-#include "pic.h" // pic_eoi1
-#include "romfile.h" // romfile_loadint
-#include "rtc.h" // rtc_read
-#include "stacks.h" // yield
-#include "std/disk.h" // DISK_RET_SUCCESS
-#include "string.h" // memset
-#include "util.h" // timer_calc
+#అన్తర్భావ "biosvar.h" // SET_BDA
+#అన్తర్భావ "block.h" // struct drive_s
+#అన్తర్భావ "bregs.h" // struct bregs
+#అన్తర్భావ "config.h" // CONFIG_FLOPPY
+#అన్తర్భావ "malloc.h" // malloc_fseg
+#అన్తర్భావ "output.h" // dprintf
+#అన్తర్భావ "pcidevice.h" // pci_find_class
+#అన్తర్భావ "pci_ids.h" // PCI_CLASS_BRIDGE_ISA
+#అన్తర్భావ "pic.h" // pic_eoi1
+#అన్తర్భావ "romfile.h" // romfile_loadint
+#అన్తర్భావ "rtc.h" // rtc_read
+#అన్తర్భావ "stacks.h" // yield
+#అన్తర్భావ "std/disk.h" // DISK_RET_SUCCESS
+#అన్తర్భావ "string.h" // memset
+#అన్తర్భావ "util.h" // timer_calc
 
-#define PORT_FD_BASE           0x03f0
-#define PORT_FD_DOR            0x03f2
-#define PORT_FD_STATUS         0x03f4
-#define PORT_FD_DATA           0x03f5
-#define PORT_FD_DIR            0x03f7
+#నిర్వచించు పోర్టు_FD_పునాది           0x03f0
+#నిర్వచించు పోర్టు_FD_DOR            0x03f2
+#నిర్వచించు పోర్టు_FD_స్థితి         0x03f4
+#నిర్వచించు పోర్టు_FD_దత్తాంశం           0x03f5
+#నిర్వచించు పోర్టు_FD_DIR            0x03f7
 
 // Digital Input Register (read)
-#define FLOPPY_DIR_DSKCHG      0x80
+#నిర్వచించు FLOPPY_DIR_DSKCHG      0x80
 
-#define FLOPPY_SIZE_CODE 0x02 // 512 byte sectors
-#define FLOPPY_DATALEN 0xff   // Not used - because size code is 0x02
-#define FLOPPY_MOTOR_TICKS 37 // ~2 seconds
-#define FLOPPY_FILLBYTE 0xf6
-#define FLOPPY_GAPLEN 0x1B
-#define FLOPPY_FORMAT_GAPLEN 0x6c
-#define FLOPPY_PIO_TIMEOUT 1000
-#define FLOPPY_IRQ_TIMEOUT 5000
-#define FLOPPY_SPECIFY1 0xAF  // step rate 12ms, head unload 240ms
-#define FLOPPY_SPECIFY2 0x02  // head load time 4ms, DMA used
-#define FLOPPY_STARTUP_TIME 8 // 1 second
+#నిర్వచించు FLOPPY_కొలత_సంకేతం 0x02 // 512 byte sectors
+#నిర్వచించు FLOPPY_DATALEN 0xff   // Not used - because size code is 0x02
+#నిర్వచించు FLOPPY_MOTOR_TICKS 37 // ~2 seconds
+#నిర్వచించు FLOPPY_FILLBYTE 0xf6
+#నిర్వచించు FLOPPY_GAPLEN 0x1B
+#నిర్వచించు FLOPPY_FORMAT_GAPLEN 0x6c
+#నిర్వచించు FLOPPY_PIO_TIMEOUT 1000
+#నిర్వచించు FLOPPY_IRQ_TIMEOUT 5000
+#నిర్వచించు FLOPPY_SPECIFY1 0xAF  // step rate 12ms, head unload 240ms
+#నిర్వచించు FLOPPY_SPECIFY2 0x02  // head load time 4ms, DMA used
+#నిర్వచించు FLOPPY_STARTUP_సమయం 8 // 1 second
 
-#define FLOPPY_DOR_MOTOR_D     0x80 // Set to turn drive 3's motor ON
-#define FLOPPY_DOR_MOTOR_C     0x40 // Set to turn drive 2's motor ON
-#define FLOPPY_DOR_MOTOR_B     0x20 // Set to turn drive 1's motor ON
-#define FLOPPY_DOR_MOTOR_A     0x10 // Set to turn drive 0's motor ON
-#define FLOPPY_DOR_MOTOR_MASK  0xf0
-#define FLOPPY_DOR_IRQ         0x08 // Set to enable IRQs and DMA
-#define FLOPPY_DOR_RESET       0x04 // Clear = enter reset mode, Set = normal operation
-#define FLOPPY_DOR_DSEL_MASK   0x03 // "Select" drive number for next access
+#నిర్వచించు FLOPPY_DOR_MOTOR_D     0x80 // Set to turn drive 3's motor ON
+#నిర్వచించు FLOPPY_DOR_MOTOR_C     0x40 // Set to turn drive 2's motor ON
+#నిర్వచించు FLOPPY_DOR_MOTOR_B     0x20 // Set to turn drive 1's motor ON
+#నిర్వచించు FLOPPY_DOR_MOTOR_A     0x10 // Set to turn drive 0's motor ON
+#నిర్వచించు FLOPPY_DOR_MOTOR_ముసుగు  0xf0
+#నిర్వచించు FLOPPY_DOR_IRQ         0x08 // Set to enable IRQs and DMA
+#నిర్వచించు FLOPPY_DOR_RESET       0x04 // Clear = enter reset mode, Set = normal operation
+#నిర్వచించు FLOPPY_DOR_DSEL_ముసుగు   0x03 // "Select" drive number for next access
 
 // New diskette parameter table adding 3 parameters from IBM
 // Since no provisions are made for multiple drive types, most
 // values in this table are ignored.  I set parameters for 1.44M
 // floppy here
-struct floppy_ext_dbt_s diskette_param_table2 VARFSEG = {
+నిర్మాణం floppy_ext_dbt_s diskette_param_table2 VARFSEG = {
     .dbt = {
         .specify1       = FLOPPY_SPECIFY1,
         .specify2       = FLOPPY_SPECIFY2,
         .shutoff_ticks  = FLOPPY_MOTOR_TICKS, // ~2 seconds
-        .bps_code       = FLOPPY_SIZE_CODE,
+        .bps_సంకేతం       = FLOPPY_కొలత_సంకేతం,
         .sectors        = 18,
         .interblock_len = FLOPPY_GAPLEN,
-        .data_len       = FLOPPY_DATALEN,
+        .దత్తాంశం_len       = FLOPPY_DATALEN,
         .gap_len        = FLOPPY_FORMAT_GAPLEN,
         .fill_byte      = FLOPPY_FILLBYTE,
-        .settle_time    = 0x0F, // 15ms
-        .startup_time   = FLOPPY_STARTUP_TIME,
+        .settle_సమయం    = 0x0F, // 15ms
+        .startup_సమయం   = FLOPPY_STARTUP_సమయం,
     },
     .max_track      = 79,   // maximum track
-    .data_rate      = 0,    // data transfer rate
+    .దత్తాంశం_రేటు      = 0,    // data transfer rate
     .drive_type     = 4,    // drive type in cmos
 };
 
-struct floppyinfo_s {
-    struct chs_s chs;
-    u8 floppy_size;
-    u8 data_rate;
+నిర్మాణం floppyinfo_s {
+    నిర్మాణం chs_s chs;
+    u8 floppy_కొలత;
+    u8 దత్తాంశం_రేటు;
 };
 
-#define FLOPPY_SIZE_525 0x01
-#define FLOPPY_SIZE_350 0x02
+#నిర్వచించు FLOPPY_కొలత_525 0x01
+#నిర్వచించు FLOPPY_కొలత_350 0x02
 
-#define FLOPPY_RATE_500K 0x00
-#define FLOPPY_RATE_300K 0x01
-#define FLOPPY_RATE_250K 0x02
-#define FLOPPY_RATE_1M   0x03
+#నిర్వచించు FLOPPY_రేటు_500_K 0x00
+#నిర్వచించు FLOPPY_రేటు_300_K 0x01
+#నిర్వచించు FLOPPY_రేటు_250_K 0x02
+#నిర్వచించు FLOPPY_రేటు_1_M   0x03
 
-struct floppyinfo_s FloppyInfo[] VARFSEG = {
+నిర్మాణం floppyinfo_s FloppyInfo[] VARFSEG = {
     // Unknown
     { {0, 0, 0}, 0x00, 0x00},
     // 1 - 360KB, 5.25" - 2 heads, 40 tracks, 9 sectors
-    { {2, 40, 9}, FLOPPY_SIZE_525, FLOPPY_RATE_300K},
+    { {2, 40, 9}, FLOPPY_కొలత_525, FLOPPY_రేటు_300_K},
     // 2 - 1.2MB, 5.25" - 2 heads, 80 tracks, 15 sectors
-    { {2, 80, 15}, FLOPPY_SIZE_525, FLOPPY_RATE_500K},
+    { {2, 80, 15}, FLOPPY_కొలత_525, FLOPPY_రేటు_500_K},
     // 3 - 720KB, 3.5"  - 2 heads, 80 tracks, 9 sectors
-    { {2, 80, 9}, FLOPPY_SIZE_350, FLOPPY_RATE_250K},
+    { {2, 80, 9}, FLOPPY_కొలత_350, FLOPPY_రేటు_250_K},
     // 4 - 1.44MB, 3.5" - 2 heads, 80 tracks, 18 sectors
-    { {2, 80, 18}, FLOPPY_SIZE_350, FLOPPY_RATE_500K},
+    { {2, 80, 18}, FLOPPY_కొలత_350, FLOPPY_రేటు_500_K},
     // 5 - 2.88MB, 3.5" - 2 heads, 80 tracks, 36 sectors
-    { {2, 80, 36}, FLOPPY_SIZE_350, FLOPPY_RATE_1M},
+    { {2, 80, 36}, FLOPPY_కొలత_350, FLOPPY_రేటు_1_M},
     // 6 - 160k, 5.25"  - 1 heads, 40 tracks, 8 sectors
-    { {1, 40, 8}, FLOPPY_SIZE_525, FLOPPY_RATE_250K},
+    { {1, 40, 8}, FLOPPY_కొలత_525, FLOPPY_రేటు_250_K},
     // 7 - 180k, 5.25"  - 1 heads, 40 tracks, 9 sectors
-    { {1, 40, 9}, FLOPPY_SIZE_525, FLOPPY_RATE_300K},
+    { {1, 40, 9}, FLOPPY_కొలత_525, FLOPPY_రేటు_300_K},
     // 8 - 320k, 5.25"  - 2 heads, 40 tracks, 8 sectors
-    { {2, 40, 8}, FLOPPY_SIZE_525, FLOPPY_RATE_250K},
+    { {2, 40, 8}, FLOPPY_కొలత_525, FLOPPY_రేటు_250_K},
 };
 
-struct drive_s *
-init_floppy(int floppyid, int ftype)
+నిర్మాణం drive_s *
+init_floppy(పూర్ణాంకం floppyid, పూర్ణాంకం ftype)
 {
-    if (ftype <= 0 || ftype >= ARRAY_SIZE(FloppyInfo)) {
+    ఒకవేళ (ftype <= 0 || ftype >= ARRAY_కొలత(FloppyInfo)) {
         dprintf(1, "Bad floppy type %d\n", ftype);
-        return NULL;
+        తిరిగి ఖాళీ;
     }
 
-    struct drive_s *drive = malloc_fseg(sizeof(*drive));
-    if (!drive) {
+    నిర్మాణం drive_s *drive = malloc_fseg(పరిమాణం(*drive));
+    ఒకవేళ (!drive) {
         warn_noalloc();
-        return NULL;
+        తిరిగి ఖాళీ;
     }
-    memset(drive, 0, sizeof(*drive));
+    memset(drive, 0, పరిమాణం(*drive));
     drive->cntl_id = floppyid;
     drive->type = DTYPE_FLOPPY;
-    drive->blksize = DISK_SECTOR_SIZE;
+    drive->blksize = DISK_SECTOR_కొలత;
     drive->floppy_type = ftype;
     drive->sectors = (u64)-1;
 
-    memcpy(&drive->lchs, &FloppyInfo[ftype].chs
-           , sizeof(FloppyInfo[ftype].chs));
-    return drive;
+    జ్ఞాపకం_నకలు(&drive->lchs, &FloppyInfo[ftype].chs
+           , పరిమాణం(FloppyInfo[ftype].chs));
+    తిరిగి drive;
 }
 
-static void
-addFloppy(int floppyid, int ftype)
+స్థిర శూన్య
+కూడు_Floppy(పూర్ణాంకం floppyid, పూర్ణాంకం ftype)
 {
-    struct drive_s *drive = init_floppy(floppyid, ftype);
-    if (!drive)
-        return;
-    char *desc = znprintf(MAXDESCSIZE, "Floppy [drive %c]", 'A' + floppyid);
-    struct pci_device *pci = pci_find_class(PCI_CLASS_BRIDGE_ISA); /* isa-to-pci bridge */
-    int prio = bootprio_find_fdc_device(pci, PORT_FD_BASE, floppyid);
-    boot_add_floppy(drive, desc, prio);
+    నిర్మాణం drive_s *drive = init_floppy(floppyid, ftype);
+    ఒకవేళ (!drive)
+        తిరిగి;
+    అక్షరం *desc = znprintf(MAXDESCSIZE, "Floppy [drive %c]", 'A' + floppyid);
+    నిర్మాణం pci_device *pci = pci_కనుగొను_class(PCI_CLASS_BRIDGE_ISA); /* isa-to-pci bridge */
+    పూర్ణాంకం prio = bootprio_కనుగొను_fdc_device(pci, పోర్టు_FD_పునాది, floppyid);
+    boot_కూడు_floppy(drive, desc, prio);
 }
 
-void
-floppy_setup(void)
+శూన్య
+floppy_అమరిక(శూన్య)
 {
-    memcpy(&diskette_param_table, &diskette_param_table2
-           , sizeof(diskette_param_table));
-    SET_IVT(0x1E, SEGOFF(SEG_BIOS
+    జ్ఞాపకం_నకలు(&diskette_param_పట్టిక, &diskette_param_table2
+           , పరిమాణం(diskette_param_పట్టిక));
+    సమితి_IVT(0x1E, SEGOFF(SEG_BIOS
                          , (u32)&diskette_param_table2 - BUILD_BIOS_ADDR));
 
-    if (! CONFIG_FLOPPY)
-        return;
+    ఒకవేళ (! CONFIG_FLOPPY)
+        తిరిగి;
     dprintf(3, "init floppy drives\n");
 
-    if (CONFIG_QEMU) {
+    ఒకవేళ (CONFIG_QEMU) {
         u8 type = rtc_read(CMOS_FLOPPY_DRIVE_TYPE);
-        if (type & 0xf0)
-            addFloppy(0, type >> 4);
-        if (type & 0x0f)
-            addFloppy(1, type & 0x0f);
-    } else {
+        ఒకవేళ (type & 0xf0)
+            కూడు_Floppy(0, type >> 4);
+        ఒకవేళ (type & 0x0f)
+            కూడు_Floppy(1, type & 0x0f);
+    } లేకపోతే {
         u8 type = romfile_loadint("etc/floppy0", 0);
-        if (type)
-            addFloppy(0, type);
+        ఒకవేళ (type)
+            కూడు_Floppy(0, type);
         type = romfile_loadint("etc/floppy1", 0);
-        if (type)
-            addFloppy(1, type);
+        ఒకవేళ (type)
+            కూడు_Floppy(1, type);
     }
 
-    enable_hwirq(6, FUNC16(entry_0e));
+    enable_hwirq(6, FUNC16(నమోదు_0e));
 }
 
 // Find a floppy type that matches a given image size.
-int
-find_floppy_type(u32 size)
+పూర్ణాంకం
+కనుగొను_floppy_type(u32 కొలత)
 {
-    int i;
-    for (i=1; i<ARRAY_SIZE(FloppyInfo); i++) {
-        struct chs_s *c = &FloppyInfo[i].chs;
-        if (c->cylinder * c->head * c->sector * DISK_SECTOR_SIZE == size)
-            return i;
+    పూర్ణాంకం i;
+    కొరకు (i=1; i<ARRAY_కొలత(FloppyInfo); i++) {
+        నిర్మాణం chs_s *c = &FloppyInfo[i].chs;
+        ఒకవేళ (c->cylinder * c->తల * c->sector * DISK_SECTOR_కొలత == కొలత)
+            తిరిగి i;
     }
-    return -1;
+    తిరిగి -1;
 }
 
 
@@ -196,152 +196,152 @@ find_floppy_type(u32 size)
 
 u8 FloppyDOR VARLOW;
 
-static inline u8
-floppy_dor_read(void)
+స్థిర అంతఃవరుస u8
+floppy_dor_read(శూన్య)
 {
-    return GET_LOW(FloppyDOR);
+    తిరిగి GET_దిగువ(FloppyDOR);
 }
 
-static inline void
+స్థిర అంతఃవరుస శూన్య
 floppy_dor_write(u8 val)
 {
-    outb(val, PORT_FD_DOR);
-    SET_LOW(FloppyDOR, val);
+    outb(val, పోర్టు_FD_DOR);
+    సమితి_దిగువ(FloppyDOR, val);
 }
 
-static inline void
-floppy_dor_mask(u8 off, u8 on)
+స్థిర అంతఃవరుస శూన్య
+floppy_dor_ముసుగు(u8 off, u8 on)
 {
     floppy_dor_write((floppy_dor_read() & ~off) | on);
 }
 
-static void
-floppy_disable_controller(void)
+స్థిర శూన్య
+floppy_disable_controller(శూన్య)
 {
     dprintf(2, "Floppy_disable_controller\n");
     // Clear the reset bit (enter reset state) and clear 'enable IRQ and DMA'
-    floppy_dor_mask(FLOPPY_DOR_IRQ | FLOPPY_DOR_RESET, 0);
+    floppy_dor_ముసుగు(FLOPPY_DOR_IRQ | FLOPPY_DOR_RESET, 0);
 }
 
-static int
-floppy_wait_irq(void)
+స్థిర పూర్ణాంకం
+floppy_wait_irq(శూన్య)
 {
-    u8 frs = GET_BDA(floppy_recalibration_status);
-    SET_BDA(floppy_recalibration_status, frs & ~FRS_IRQ);
-    u32 end = timer_calc(FLOPPY_IRQ_TIMEOUT);
-    for (;;) {
-        if (timer_check(end)) {
+    u8 frs = GET_BDA(floppy_recalibration_స్థితి);
+    సమితి_BDA(floppy_recalibration_స్థితి, frs & ~FRS_IRQ);
+    u32 చివర = timer_calc(FLOPPY_IRQ_TIMEOUT);
+    కొరకు (;;) {
+        ఒకవేళ (timer_check(చివర)) {
             warn_timeout();
             floppy_disable_controller();
-            return DISK_RET_ETIMEOUT;
+            తిరిగి DISK_RET_ETIMEOUT;
         }
-        frs = GET_BDA(floppy_recalibration_status);
-        if (frs & FRS_IRQ)
-            break;
+        frs = GET_BDA(floppy_recalibration_స్థితి);
+        ఒకవేళ (frs & FRS_IRQ)
+            ఆపు;
         // Could use yield_toirq() here, but that causes issues on
         // bochs, so use yield() instead.
         yield();
     }
 
-    SET_BDA(floppy_recalibration_status, frs & ~FRS_IRQ);
-    return DISK_RET_SUCCESS;
+    సమితి_BDA(floppy_recalibration_స్థితి, frs & ~FRS_IRQ);
+    తిరిగి DISK_RET_SUCCESS;
 }
 
 // Floppy commands
-#define FCF_WAITIRQ 0x10000
-#define FC_CHECKIRQ    (0x08 | (0<<8) | (2<<12))
-#define FC_SEEK        (0x0f | (2<<8) | (0<<12) | FCF_WAITIRQ)
-#define FC_RECALIBRATE (0x07 | (1<<8) | (0<<12) | FCF_WAITIRQ)
-#define FC_READID      (0x4a | (1<<8) | (7<<12) | FCF_WAITIRQ)
-#define FC_READ        (0xe6 | (8<<8) | (7<<12) | FCF_WAITIRQ)
-#define FC_WRITE       (0xc5 | (8<<8) | (7<<12) | FCF_WAITIRQ)
-#define FC_FORMAT      (0x4d | (5<<8) | (7<<12) | FCF_WAITIRQ)
-#define FC_SPECIFY     (0x03 | (2<<8) | (0<<12))
+#నిర్వచించు FCF_WAITIRQ 0x10000
+#నిర్వచించు FC_CHECKIRQ    (0x08 | (0<<8) | (2<<12))
+#నిర్వచించు FC_SEEK        (0x0f | (2<<8) | (0<<12) | FCF_WAITIRQ)
+#నిర్వచించు FC_RECALIBRATE (0x07 | (1<<8) | (0<<12) | FCF_WAITIRQ)
+#నిర్వచించు FC_READID      (0x4a | (1<<8) | (7<<12) | FCF_WAITIRQ)
+#నిర్వచించు FC_READ        (0xe6 | (8<<8) | (7<<12) | FCF_WAITIRQ)
+#నిర్వచించు FC_WRITE       (0xc5 | (8<<8) | (7<<12) | FCF_WAITIRQ)
+#నిర్వచించు FC_FORMAT      (0x4d | (5<<8) | (7<<12) | FCF_WAITIRQ)
+#నిర్వచించు FC_SPECIFY     (0x03 | (2<<8) | (0<<12))
 
 // Send the specified command and it's parameters to the floppy controller.
-static int
-floppy_pio(int command, u8 *param)
+స్థిర పూర్ణాంకం
+floppy_pio(పూర్ణాంకం command, u8 *param)
 {
     dprintf(9, "Floppy pio command %x\n", command);
     // Send command and parameters to controller.
-    u32 end = timer_calc(FLOPPY_PIO_TIMEOUT);
-    int send = (command >> 8) & 0xf;
-    int i = 0;
-    for (;;) {
-        u8 sts = inb(PORT_FD_STATUS);
-        if (!(sts & 0x80)) {
-            if (timer_check(end)) {
+    u32 చివర = timer_calc(FLOPPY_PIO_TIMEOUT);
+    పూర్ణాంకం send = (command >> 8) & 0xf;
+    పూర్ణాంకం i = 0;
+    కొరకు (;;) {
+        u8 sts = inb(పోర్టు_FD_స్థితి);
+        ఒకవేళ (!(sts & 0x80)) {
+            ఒకవేళ (timer_check(చివర)) {
                 warn_timeout();
                 floppy_disable_controller();
-                return DISK_RET_ETIMEOUT;
+                తిరిగి DISK_RET_ETIMEOUT;
             }
             yield();
-            continue;
+            కొనసాగు;
         }
-        if (sts & 0x40) {
+        ఒకవేళ (sts & 0x40) {
             floppy_disable_controller();
-            return DISK_RET_ECONTROLLER;
+            తిరిగి DISK_RET_ECONTROLLER;
         }
-        if (i == 0)
-            outb(command & 0xff, PORT_FD_DATA);
-        else
-            outb(param[i-1], PORT_FD_DATA);
-        if (i++ >= send)
-            break;
+        ఒకవేళ (i == 0)
+            outb(command & 0xff, పోర్టు_FD_దత్తాంశం);
+        లేకపోతే
+            outb(param[i-1], పోర్టు_FD_దత్తాంశం);
+        ఒకవేళ (i++ >= send)
+            ఆపు;
     }
 
     // Wait for command to complete.
-    if (command & FCF_WAITIRQ) {
-        int ret = floppy_wait_irq();
-        if (ret)
-            return ret;
+    ఒకవేళ (command & FCF_WAITIRQ) {
+        పూర్ణాంకం ret = floppy_wait_irq();
+        ఒకవేళ (ret)
+            తిరిగి ret;
     }
 
     // Read response from controller.
-    end = timer_calc(FLOPPY_PIO_TIMEOUT);
-    int receive = (command >> 12) & 0xf;
+    చివర = timer_calc(FLOPPY_PIO_TIMEOUT);
+    పూర్ణాంకం receive = (command >> 12) & 0xf;
     i = 0;
-    for (;;) {
-        u8 sts = inb(PORT_FD_STATUS);
-        if (!(sts & 0x80)) {
-            if (timer_check(end)) {
+    కొరకు (;;) {
+        u8 sts = inb(పోర్టు_FD_స్థితి);
+        ఒకవేళ (!(sts & 0x80)) {
+            ఒకవేళ (timer_check(చివర)) {
                 warn_timeout();
                 floppy_disable_controller();
-                return DISK_RET_ETIMEOUT;
+                తిరిగి DISK_RET_ETIMEOUT;
             }
             yield();
-            continue;
+            కొనసాగు;
         }
-        if (i >= receive) {
-            if (sts & 0x40) {
+        ఒకవేళ (i >= receive) {
+            ఒకవేళ (sts & 0x40) {
                 floppy_disable_controller();
-                return DISK_RET_ECONTROLLER;
+                తిరిగి DISK_RET_ECONTROLLER;
             }
-            break;
+            ఆపు;
         }
-        if (!(sts & 0x40)) {
+        ఒకవేళ (!(sts & 0x40)) {
             floppy_disable_controller();
-            return DISK_RET_ECONTROLLER;
+            తిరిగి DISK_RET_ECONTROLLER;
         }
-        param[i++] = inb(PORT_FD_DATA);
+        param[i++] = inb(పోర్టు_FD_దత్తాంశం);
     }
 
-    return DISK_RET_SUCCESS;
+    తిరిగి DISK_RET_SUCCESS;
 }
 
-static int
-floppy_enable_controller(void)
+స్థిర పూర్ణాంకం
+floppy_enable_controller(శూన్య)
 {
     dprintf(2, "Floppy_enable_controller\n");
     // Clear the reset bit (enter reset state), but set 'enable IRQ and DMA'
-    floppy_dor_mask(FLOPPY_DOR_RESET, FLOPPY_DOR_IRQ);
+    floppy_dor_ముసుగు(FLOPPY_DOR_RESET, FLOPPY_DOR_IRQ);
     // Real hardware needs a 4 microsecond delay
     usleep(4);
     // Set the reset bit (normal operation) and keep 'enable IRQ and DMA' on
-    floppy_dor_mask(0, FLOPPY_DOR_IRQ | FLOPPY_DOR_RESET);
-    int ret = floppy_wait_irq();
-    if (ret)
-        return ret;
+    floppy_dor_ముసుగు(0, FLOPPY_DOR_IRQ | FLOPPY_DOR_RESET);
+    పూర్ణాంకం ret = floppy_wait_irq();
+    ఒకవేళ (ret)
+        తిరిగి ret;
 
     // After the interrupt is received, send 4 SENSE INTERRUPT commands to
     // clear the interrupt status for each of the four logical drives,
@@ -351,50 +351,50 @@ floppy_enable_controller(void)
     // Without this, initialization fails on real controllers (but still works
     // in QEMU)
     u8 param[2];
-    int i;
-    for (i=0; i<4; i++) {
+    పూర్ణాంకం i;
+    కొరకు (i=0; i<4; i++) {
         ret = floppy_pio(FC_CHECKIRQ, param);
-        if (ret)
-            return ret;
+        ఒకవేళ (ret)
+            తిరిగి ret;
     }
-    return DISK_RET_SUCCESS;
+    తిరిగి DISK_RET_SUCCESS;
 }
 
 // Activate a drive and send a command to it.
-static int
-floppy_drive_pio(u8 floppyid, int command, u8 *param)
+స్థిర పూర్ణాంకం
+floppy_drive_pio(u8 floppyid, పూర్ణాంకం command, u8 *param)
 {
     // Enable controller if it isn't running.
-    if (!(floppy_dor_read() & FLOPPY_DOR_RESET)) {
-        int ret = floppy_enable_controller();
-        if (ret)
-            return ret;
+    ఒకవేళ (!(floppy_dor_read() & FLOPPY_DOR_RESET)) {
+        పూర్ణాంకం ret = floppy_enable_controller();
+        ఒకవేళ (ret)
+            తిరిగి ret;
     }
 
     // set the disk motor timeout value of INT 08 to the highest value
-    SET_BDA(floppy_motor_counter, 255);
+    సమితి_BDA(floppy_motor_counter, 255);
 
     // Check if the motor is already running
-    u8 motor_mask = FLOPPY_DOR_MOTOR_A << floppyid;
-    int motor_already_running = floppy_dor_read() & motor_mask;
+    u8 motor_ముసుగు = FLOPPY_DOR_MOTOR_A << floppyid;
+    పూర్ణాంకం motor_already_running = floppy_dor_read() & motor_ముసుగు;
 
     // Turn on motor of selected drive, DMA & int enabled, normal operation
-    floppy_dor_write(motor_mask | FLOPPY_DOR_IRQ | FLOPPY_DOR_RESET | floppyid);
+    floppy_dor_write(motor_ముసుగు | FLOPPY_DOR_IRQ | FLOPPY_DOR_RESET | floppyid);
 
     // If the motor was just started, wait for it to get up to speed
-    if (!motor_already_running && !CONFIG_QEMU)
-        msleep(FLOPPY_STARTUP_TIME * 125);
+    ఒకవేళ (!motor_already_running && !CONFIG_QEMU)
+        msleep(FLOPPY_STARTUP_సమయం * 125);
 
     // Send command.
-    int ret = floppy_pio(command, param);
-    SET_BDA(floppy_motor_counter, FLOPPY_MOTOR_TICKS); // reset motor timeout
-    if (ret)
-        return ret;
+    పూర్ణాంకం ret = floppy_pio(command, param);
+    సమితి_BDA(floppy_motor_counter, FLOPPY_MOTOR_TICKS); // reset motor timeout
+    ఒకవేళ (ret)
+        తిరిగి ret;
 
     // Check IRQ command is needed after irq commands with no results
-    if ((command & FCF_WAITIRQ) && ((command >> 12) & 0xf) == 0)
-        return floppy_pio(FC_CHECKIRQ, param);
-    return DISK_RET_SUCCESS;
+    ఒకవేళ ((command & FCF_WAITIRQ) && ((command >> 12) & 0xf) == 0)
+        తిరిగి floppy_pio(FC_CHECKIRQ, param);
+    తిరిగి DISK_RET_SUCCESS;
 }
 
 
@@ -402,71 +402,71 @@ floppy_drive_pio(u8 floppyid, int command, u8 *param)
  * Floppy media sense and seeking
  ****************************************************************/
 
-static int
+స్థిర పూర్ణాంకం
 floppy_drive_recal(u8 floppyid)
 {
     dprintf(2, "Floppy_drive_recal %d\n", floppyid);
     // send Recalibrate command to controller
     u8 param[2];
     param[0] = floppyid;
-    int ret = floppy_drive_pio(floppyid, FC_RECALIBRATE, param);
-    if (ret)
-        return ret;
+    పూర్ణాంకం ret = floppy_drive_pio(floppyid, FC_RECALIBRATE, param);
+    ఒకవేళ (ret)
+        తిరిగి ret;
 
-    u8 frs = GET_BDA(floppy_recalibration_status);
-    SET_BDA(floppy_recalibration_status, frs | (1<<floppyid));
-    SET_BDA(floppy_track[floppyid], 0);
-    return DISK_RET_SUCCESS;
+    u8 frs = GET_BDA(floppy_recalibration_స్థితి);
+    సమితి_BDA(floppy_recalibration_స్థితి, frs | (1<<floppyid));
+    సమితి_BDA(floppy_track[floppyid], 0);
+    తిరిగి DISK_RET_SUCCESS;
 }
 
-static int
+స్థిర పూర్ణాంకం
 floppy_drive_seek(u8 floppyid, u8 cylinder)
 {
     dprintf(2, "Floppy_drive_seek %d to %d\n", floppyid, cylinder);
     u8 param[2];
     param[0] = floppyid;
     param[1] = cylinder;
-    int ret = floppy_drive_pio(floppyid, FC_SEEK, param);
-    if (ret)
-        return ret;
+    పూర్ణాంకం ret = floppy_drive_pio(floppyid, FC_SEEK, param);
+    ఒకవేళ (ret)
+        తిరిగి ret;
 
-    SET_BDA(floppy_track[floppyid], cylinder);
-    return DISK_RET_SUCCESS;
+    సమితి_BDA(floppy_track[floppyid], cylinder);
+    తిరిగి DISK_RET_SUCCESS;
 }
 
-static int
-floppy_drive_specify(void)
+స్థిర పూర్ణాంకం
+floppy_drive_specify(శూన్య)
 {
     u8 param[2];
     param[0] = FLOPPY_SPECIFY1;
     param[1] = FLOPPY_SPECIFY2;
-    return floppy_pio(FC_SPECIFY, param);
+    తిరిగి floppy_pio(FC_SPECIFY, param);
 }
 
-static int
-floppy_drive_readid(u8 floppyid, u8 data_rate, u8 head)
+స్థిర పూర్ణాంకం
+floppy_drive_readid(u8 floppyid, u8 దత్తాంశం_రేటు, u8 తల)
 {
     // Set data rate.
-    outb(data_rate, PORT_FD_DIR);
+    outb(దత్తాంశం_రేటు, పోర్టు_FD_DIR);
 
     // send Read Sector Id command
     u8 param[7];
-    param[0] = (head << 2) | floppyid; // HD DR1 DR2
-    int ret = floppy_drive_pio(floppyid, FC_READID, param);
-    if (ret)
-        return ret;
-    if (param[0] & 0xc0)
-        return -1;
-    return 0;
+    param[0] = (తల << 2) | floppyid; // HD DR1 DR2
+    పూర్ణాంకం ret = floppy_drive_pio(floppyid, FC_READID, param);
+    ఒకవేళ (ret)
+        తిరిగి ret;
+    ఒకవేళ (param[0] & 0xc0)
+        తిరిగి -1;
+    తిరిగి 0;
 }
 
 // Only the 1.2MB 5.25" drive and the 3.5" drives have a disk change line.  On
 // the older 5.25" types the pin is not driven and reads back as a permanent
 // "changed".
-static int
+స్థిర పూర్ణాంకం
 floppy_has_changeline(u8 ftype)
 {
-    return ftype >= 2 && ftype <= 5;
+    తిరిగి ftype >= 2 && ftype <= 5;
 }
 
 // Determine whether a diskette is present, without waiting for a command to
@@ -478,114 +478,114 @@ floppy_has_changeline(u8 ftype)
 // Report a missing medium only when the drive is known to be empty -- an older
 // drive without a change line is reported as present, so this can only ever
 // fall back to the previous behaviour.
-static int
-floppy_check_media(struct drive_s *drive_gf, u8 floppyid)
+స్థిర పూర్ణాంకం
+floppy_check_media(నిర్మాణం drive_s *drive_gf, u8 floppyid)
 {
-    if (!floppy_has_changeline(GET_GLOBALFLAT(drive_gf->floppy_type)))
-        return DISK_RET_SUCCESS;
+    ఒకవేళ (!floppy_has_changeline(GET_GLOBALFLAT(drive_gf->floppy_type)))
+        తిరిగి DISK_RET_SUCCESS;
 
     // The caller has just recalibrated this drive, so it is selected in the
     // DOR and the DIR reflects its change line.
-    if (!(inb(PORT_FD_DIR) & FLOPPY_DIR_DSKCHG))
-        return DISK_RET_SUCCESS;
+    ఒకవేళ (!(inb(పోర్టు_FD_DIR) & FLOPPY_DIR_DSKCHG))
+        తిరిగి DISK_RET_SUCCESS;
 
-    int ret = floppy_drive_seek(floppyid, 1);
-    if (ret)
-        return ret;
+    పూర్ణాంకం ret = floppy_drive_seek(floppyid, 1);
+    ఒకవేళ (ret)
+        తిరిగి ret;
 
-    if (inb(PORT_FD_DIR) & FLOPPY_DIR_DSKCHG) {
+    ఒకవేళ (inb(పోర్టు_FD_DIR) & FLOPPY_DIR_DSKCHG) {
         dprintf(2, "Floppy_check_media %d: no medium\n", floppyid);
-        return DISK_RET_ETIMEOUT;
+        తిరిగి DISK_RET_ETIMEOUT;
     }
 
     // A medium is present.  Put the head back on cylinder 0, where the caller
     // left it, so that media sensing reads the track it always did.
-    return floppy_drive_seek(floppyid, 0);
+    తిరిగి floppy_drive_seek(floppyid, 0);
 }
 
-static int
-floppy_media_sense(struct drive_s *drive_gf)
+స్థిర పూర్ణాంకం
+floppy_media_sense(నిర్మాణం drive_s *drive_gf)
 {
     u8 ftype = GET_GLOBALFLAT(drive_gf->floppy_type), stype = ftype;
     u8 floppyid = GET_GLOBALFLAT(drive_gf->cntl_id);
 
-    u8 data_rate = GET_GLOBAL(FloppyInfo[stype].data_rate);
-    int ret = floppy_drive_readid(floppyid, data_rate, 0);
-    if (ret) {
+    u8 దత్తాంశం_రేటు = GET_GLOBAL(FloppyInfo[stype].దత్తాంశం_రేటు);
+    పూర్ణాంకం ret = floppy_drive_readid(floppyid, దత్తాంశం_రేటు, 0);
+    ఒకవేళ (ret) {
         // Attempt media sense.
-        for (stype=1; ; stype++) {
-            if (stype >= ARRAY_SIZE(FloppyInfo))
-                return DISK_RET_EBADTRACK;
-            if (stype==ftype
-                || (GET_GLOBAL(FloppyInfo[stype].floppy_size)
-                    != GET_GLOBAL(FloppyInfo[ftype].floppy_size))
-                || (GET_GLOBAL(FloppyInfo[stype].chs.head)
-                    > GET_GLOBAL(FloppyInfo[ftype].chs.head))
+        కొరకు (stype=1; ; stype++) {
+            ఒకవేళ (stype >= ARRAY_కొలత(FloppyInfo))
+                తిరిగి DISK_RET_EBADTRACK;
+            ఒకవేళ (stype==ftype
+                || (GET_GLOBAL(FloppyInfo[stype].floppy_కొలత)
+                    != GET_GLOBAL(FloppyInfo[ftype].floppy_కొలత))
+                || (GET_GLOBAL(FloppyInfo[stype].chs.తల)
+                    > GET_GLOBAL(FloppyInfo[ftype].chs.తల))
                 || (GET_GLOBAL(FloppyInfo[stype].chs.cylinder)
                     > GET_GLOBAL(FloppyInfo[ftype].chs.cylinder))
                 || (GET_GLOBAL(FloppyInfo[stype].chs.sector)
                     > GET_GLOBAL(FloppyInfo[ftype].chs.sector)))
-                continue;
-            data_rate = GET_GLOBAL(FloppyInfo[stype].data_rate);
-            ret = floppy_drive_readid(floppyid, data_rate, 0);
-            if (!ret)
-                break;
+                కొనసాగు;
+            దత్తాంశం_రేటు = GET_GLOBAL(FloppyInfo[stype].దత్తాంశం_రేటు);
+            ret = floppy_drive_readid(floppyid, దత్తాంశం_రేటు, 0);
+            ఒకవేళ (!ret)
+                ఆపు;
         }
     }
     dprintf(2, "Floppy_media_sense on drive %d found rate %d\n"
-            , floppyid, data_rate);
+            , floppyid, దత్తాంశం_రేటు);
 
-    u8 old_data_rate = GET_BDA(floppy_media_state[floppyid]) >> 6;
-    SET_BDA(floppy_last_data_rate, (old_data_rate<<2) | (data_rate<<6));
+    u8 old_దత్తాంశం_రేటు = GET_BDA(floppy_media_state[floppyid]) >> 6;
+    సమితి_BDA(floppy_చివరి_దత్తాంశం_రేటు, (old_దత్తాంశం_రేటు<<2) | (దత్తాంశం_రేటు<<6));
     u8 media = (stype == 1 ? 0x04 : (stype == 2 ? 0x05 : 0x07));
-    u8 fms = (data_rate<<6) | FMS_MEDIA_DRIVE_ESTABLISHED | media;
-    if (GET_GLOBAL(FloppyInfo[stype].chs.cylinder)
+    u8 fms = (దత్తాంశం_రేటు<<6) | FMS_MEDIA_DRIVE_ESTABLISHED | media;
+    ఒకవేళ (GET_GLOBAL(FloppyInfo[stype].chs.cylinder)
         < GET_GLOBAL(FloppyInfo[ftype].chs.cylinder))
         fms |= FMS_DOUBLE_STEPPING;
-    SET_BDA(floppy_media_state[floppyid], fms);
+    సమితి_BDA(floppy_media_state[floppyid], fms);
 
-    return DISK_RET_SUCCESS;
+    తిరిగి DISK_RET_SUCCESS;
 }
 
 // Prepare a floppy for a data transfer.
-static int
-floppy_prep(struct drive_s *drive_gf, u8 cylinder)
+స్థిర పూర్ణాంకం
+floppy_prep(నిర్మాణం drive_s *drive_gf, u8 cylinder)
 {
     u8 floppyid = GET_GLOBALFLAT(drive_gf->cntl_id);
-    if (!(GET_BDA(floppy_recalibration_status) & (1<<floppyid)) ||
+    ఒకవేళ (!(GET_BDA(floppy_recalibration_స్థితి) & (1<<floppyid)) ||
         !(GET_BDA(floppy_media_state[floppyid]) & FMS_MEDIA_DRIVE_ESTABLISHED)) {
         // Recalibrate drive.
-        int ret = floppy_drive_recal(floppyid);
-        if (ret)
-            return ret;
+        పూర్ణాంకం ret = floppy_drive_recal(floppyid);
+        ఒకవేళ (ret)
+            తిరిగి ret;
 
         // An empty drive gives no index pulses, so the READ ID that
         // floppy_media_sense() issues would never complete and would wait out
         // its timeout once per data rate.  Ask the disk change line instead.
         ret = floppy_check_media(drive_gf, floppyid);
-        if (ret)
-            return ret;
+        ఒకవేళ (ret)
+            తిరిగి ret;
 
         // Sense media.
         ret = floppy_media_sense(drive_gf);
-        if (ret)
-            return ret;
+        ఒకవేళ (ret)
+            తిరిగి ret;
 
         // Execute a SPECIFY command (sets the Step Rate Time,
         // Head Load Time, Head Unload Time and the DMA enable/disable bit).
         ret = floppy_drive_specify();
-        if (ret)
-            return ret;
+        ఒకవేళ (ret)
+            తిరిగి ret;
     }
 
     // Seek to cylinder if needed.
-    if (cylinder != GET_BDA(floppy_track[floppyid])) {
-        int ret = floppy_drive_seek(floppyid, cylinder);
-        if (ret)
-            return ret;
+    ఒకవేళ (cylinder != GET_BDA(floppy_track[floppyid])) {
+        పూర్ణాంకం ret = floppy_drive_seek(floppyid, cylinder);
+        ఒకవేళ (ret)
+            తిరిగి ret;
     }
 
-    return DISK_RET_SUCCESS;
+    తిరిగి DISK_RET_SUCCESS;
 }
 
 
@@ -594,36 +594,36 @@ floppy_prep(struct drive_s *drive_gf, u8 cylinder)
  ****************************************************************/
 
 // Perform a floppy transfer command (setup DMA and issue PIO).
-static int
-floppy_dma_cmd(struct disk_op_s *op, int count, int command, u8 *param)
+స్థిర పూర్ణాంకం
+floppy_dma_cmd(నిర్మాణం disk_op_s *op, పూర్ణాంకం లెక్క, పూర్ణాంకం command, u8 *param)
 {
     // Setup DMA controller
-    int isWrite = command != FC_READ;
-    int ret = dma_floppy((u32)op->buf_fl, count, isWrite);
-    if (ret)
-        return DISK_RET_EBOUNDARY;
+    పూర్ణాంకం isWrite = command != FC_READ;
+    పూర్ణాంకం ret = dma_floppy((u32)op->buf_fl, లెక్క, isWrite);
+    ఒకవేళ (ret)
+        తిరిగి DISK_RET_EBOUNDARY;
 
     // Invoke floppy controller
     u8 floppyid = GET_GLOBALFLAT(op->drive_fl->cntl_id);
     ret = floppy_drive_pio(floppyid, command, param);
-    if (ret)
-        return ret;
+    ఒకవేళ (ret)
+        తిరిగి ret;
 
     // Populate floppy_return_status in BDA
-    int i;
-    for (i=0; i<7; i++)
-        SET_BDA(floppy_return_status[i], param[i]);
+    పూర్ణాంకం i;
+    కొరకు (i=0; i<7; i++)
+        సమితి_BDA(floppy_return_స్థితి[i], param[i]);
 
-    if (param[0] & 0xc0) {
-        if (param[1] & 0x02)
-            return DISK_RET_EWRITEPROTECT;
+    ఒకవేళ (param[0] & 0xc0) {
+        ఒకవేళ (param[1] & 0x02)
+            తిరిగి DISK_RET_EWRITEPROTECT;
         dprintf(1, "floppy error: %02x %02x %02x %02x %02x %02x %02x\n"
                 , param[0], param[1], param[2], param[3]
                 , param[4], param[5], param[6]);
-        return DISK_RET_ECONTROLLER;
+        తిరిగి DISK_RET_ECONTROLLER;
     }
 
-    return DISK_RET_SUCCESS;
+    తిరిగి DISK_RET_SUCCESS;
 }
 
 
@@ -631,137 +631,137 @@ floppy_dma_cmd(struct disk_op_s *op, int count, int command, u8 *param)
  * Floppy handlers
  ****************************************************************/
 
-static struct chs_s
-lba2chs(struct disk_op_s *op)
+స్థిర నిర్మాణం chs_s
+lba2chs(నిర్మాణం disk_op_s *op)
 {
-    struct chs_s res = { };
+    నిర్మాణం chs_s res = { };
 
     u32 tmp = op->lba;
     u16 nls = GET_GLOBALFLAT(op->drive_fl->lchs.sector);
     res.sector = (tmp % nls) + 1;
 
     tmp /= nls;
-    u16 nlh = GET_GLOBALFLAT(op->drive_fl->lchs.head);
-    res.head = tmp % nlh;
+    u16 nlh = GET_GLOBALFLAT(op->drive_fl->lchs.తల);
+    res.తల = tmp % nlh;
 
     tmp /= nlh;
     res.cylinder = tmp;
 
-    return res;
+    తిరిగి res;
 }
 
 // diskette controller reset
-static int
-floppy_reset(struct disk_op_s *op)
+స్థిర పూర్ణాంకం
+floppy_reset(నిర్మాణం disk_op_s *op)
 {
-    SET_BDA(floppy_recalibration_status, 0);
-    SET_BDA(floppy_media_state[0], 0);
-    SET_BDA(floppy_media_state[1], 0);
-    SET_BDA(floppy_track[0], 0);
-    SET_BDA(floppy_track[1], 0);
-    SET_BDA(floppy_last_data_rate, 0);
+    సమితి_BDA(floppy_recalibration_స్థితి, 0);
+    సమితి_BDA(floppy_media_state[0], 0);
+    సమితి_BDA(floppy_media_state[1], 0);
+    సమితి_BDA(floppy_track[0], 0);
+    సమితి_BDA(floppy_track[1], 0);
+    సమితి_BDA(floppy_చివరి_దత్తాంశం_రేటు, 0);
     floppy_disable_controller();
-    return floppy_enable_controller();
+    తిరిగి floppy_enable_controller();
 }
 
 // Read Diskette Sectors
-static int
-floppy_read(struct disk_op_s *op)
+స్థిర పూర్ణాంకం
+floppy_read(నిర్మాణం disk_op_s *op)
 {
-    struct chs_s chs = lba2chs(op);
-    int ret = floppy_prep(op->drive_fl, chs.cylinder);
-    if (ret)
-        return ret;
+    నిర్మాణం chs_s chs = lba2chs(op);
+    పూర్ణాంకం ret = floppy_prep(op->drive_fl, chs.cylinder);
+    ఒకవేళ (ret)
+        తిరిగి ret;
 
     // send read-normal-data command to controller
     u8 floppyid = GET_GLOBALFLAT(op->drive_fl->cntl_id);
     u8 param[8];
-    param[0] = (chs.head << 2) | floppyid; // HD DR1 DR2
+    param[0] = (chs.తల << 2) | floppyid; // HD DR1 DR2
     param[1] = chs.cylinder;
-    param[2] = chs.head;
+    param[2] = chs.తల;
     param[3] = chs.sector;
-    param[4] = FLOPPY_SIZE_CODE;
-    param[5] = chs.sector + op->count - 1; // last sector to read on track
+    param[4] = FLOPPY_కొలత_సంకేతం;
+    param[5] = chs.sector + op->లెక్క - 1; // last sector to read on track
     param[6] = FLOPPY_GAPLEN;
     param[7] = FLOPPY_DATALEN;
-    return floppy_dma_cmd(op, op->count * DISK_SECTOR_SIZE, FC_READ, param);
+    తిరిగి floppy_dma_cmd(op, op->లెక్క * DISK_SECTOR_కొలత, FC_READ, param);
 }
 
 // Write Diskette Sectors
-static int
-floppy_write(struct disk_op_s *op)
+స్థిర పూర్ణాంకం
+floppy_write(నిర్మాణం disk_op_s *op)
 {
-    struct chs_s chs = lba2chs(op);
-    int ret = floppy_prep(op->drive_fl, chs.cylinder);
-    if (ret)
-        return ret;
+    నిర్మాణం chs_s chs = lba2chs(op);
+    పూర్ణాంకం ret = floppy_prep(op->drive_fl, chs.cylinder);
+    ఒకవేళ (ret)
+        తిరిగి ret;
 
     // send write-normal-data command to controller
     u8 floppyid = GET_GLOBALFLAT(op->drive_fl->cntl_id);
     u8 param[8];
-    param[0] = (chs.head << 2) | floppyid; // HD DR1 DR2
+    param[0] = (chs.తల << 2) | floppyid; // HD DR1 DR2
     param[1] = chs.cylinder;
-    param[2] = chs.head;
+    param[2] = chs.తల;
     param[3] = chs.sector;
-    param[4] = FLOPPY_SIZE_CODE;
-    param[5] = chs.sector + op->count - 1; // last sector to write on track
+    param[4] = FLOPPY_కొలత_సంకేతం;
+    param[5] = chs.sector + op->లెక్క - 1; // last sector to write on track
     param[6] = FLOPPY_GAPLEN;
     param[7] = FLOPPY_DATALEN;
-    return floppy_dma_cmd(op, op->count * DISK_SECTOR_SIZE, FC_WRITE, param);
+    తిరిగి floppy_dma_cmd(op, op->లెక్క * DISK_SECTOR_కొలత, FC_WRITE, param);
 }
 
 // Verify Diskette Sectors
-static int
-floppy_verify(struct disk_op_s *op)
+స్థిర పూర్ణాంకం
+floppy_verify(నిర్మాణం disk_op_s *op)
 {
-    struct chs_s chs = lba2chs(op);
-    int ret = floppy_prep(op->drive_fl, chs.cylinder);
-    if (ret)
-        return ret;
+    నిర్మాణం chs_s chs = lba2chs(op);
+    పూర్ణాంకం ret = floppy_prep(op->drive_fl, chs.cylinder);
+    ఒకవేళ (ret)
+        తిరిగి ret;
 
     // This command isn't implemented - just return success.
-    return DISK_RET_SUCCESS;
+    తిరిగి DISK_RET_SUCCESS;
 }
 
 // format diskette track
-static int
-floppy_format(struct disk_op_s *op)
+స్థిర పూర్ణాంకం
+floppy_format(నిర్మాణం disk_op_s *op)
 {
-    struct chs_s chs = lba2chs(op);
-    int ret = floppy_prep(op->drive_fl, chs.cylinder);
-    if (ret)
-        return ret;
+    నిర్మాణం chs_s chs = lba2chs(op);
+    పూర్ణాంకం ret = floppy_prep(op->drive_fl, chs.cylinder);
+    ఒకవేళ (ret)
+        తిరిగి ret;
 
     // send format-track command to controller
     u8 floppyid = GET_GLOBALFLAT(op->drive_fl->cntl_id);
     u8 param[7];
-    param[0] = (chs.head << 2) | floppyid; // HD DR1 DR2
-    param[1] = FLOPPY_SIZE_CODE;
-    param[2] = op->count; // number of sectors per track
+    param[0] = (chs.తల << 2) | floppyid; // HD DR1 DR2
+    param[1] = FLOPPY_కొలత_సంకేతం;
+    param[2] = op->లెక్క; // number of sectors per track
     param[3] = FLOPPY_FORMAT_GAPLEN;
     param[4] = FLOPPY_FILLBYTE;
-    return floppy_dma_cmd(op, op->count * 4, FC_FORMAT, param);
+    తిరిగి floppy_dma_cmd(op, op->లెక్క * 4, FC_FORMAT, param);
 }
 
-int
-floppy_process_op(struct disk_op_s *op)
+పూర్ణాంకం
+floppy_process_op(నిర్మాణం disk_op_s *op)
 {
-    if (!CONFIG_FLOPPY)
-        return 0;
+    ఒకవేళ (!CONFIG_FLOPPY)
+        తిరిగి 0;
 
-    switch (op->command) {
-    case CMD_RESET:
-        return floppy_reset(op);
-    case CMD_READ:
-        return floppy_read(op);
-    case CMD_WRITE:
-        return floppy_write(op);
-    case CMD_VERIFY:
-        return floppy_verify(op);
-    case CMD_FORMAT:
-        return floppy_format(op);
-    default:
-        return DISK_RET_EPARAM;
+    ఎంపిక (op->command) {
+    స్థితి CMD_RESET:
+        తిరిగి floppy_reset(op);
+    స్థితి CMD_READ:
+        తిరిగి floppy_read(op);
+    స్థితి CMD_WRITE:
+        తిరిగి floppy_write(op);
+    స్థితి CMD_VERIFY:
+        తిరిగి floppy_verify(op);
+    స్థితి CMD_FORMAT:
+        తిరిగి floppy_format(op);
+    అప్రమేయ:
+        తిరిగి DISK_RET_EPARAM;
     }
 }
 
@@ -771,34 +771,34 @@ floppy_process_op(struct disk_op_s *op)
  ****************************************************************/
 
 // INT 0Eh Diskette Hardware ISR Entry Point
-void VISIBLE16
-handle_0e(void)
+శూన్య VISIBLE16
+handle_0e(శూన్య)
 {
-    if (! CONFIG_FLOPPY)
-        return;
+    ఒకవేళ (! CONFIG_FLOPPY)
+        తిరిగి;
     debug_isr(DEBUG_ISR_0e);
 
     // diskette interrupt has occurred
-    u8 frs = GET_BDA(floppy_recalibration_status);
-    SET_BDA(floppy_recalibration_status, frs | FRS_IRQ);
+    u8 frs = GET_BDA(floppy_recalibration_స్థితి);
+    సమితి_BDA(floppy_recalibration_స్థితి, frs | FRS_IRQ);
 
     pic_eoi1();
 }
 
 // Called from int08 handler.
-void
-floppy_tick(void)
+శూన్య
+floppy_tick(శూన్య)
 {
-    if (! CONFIG_FLOPPY)
-        return;
+    ఒకవేళ (! CONFIG_FLOPPY)
+        తిరిగి;
 
     // time to turn off drive(s)?
     u8 fcount = GET_BDA(floppy_motor_counter);
-    if (fcount) {
+    ఒకవేళ (fcount) {
         fcount--;
-        SET_BDA(floppy_motor_counter, fcount);
-        if (fcount == 0)
+        సమితి_BDA(floppy_motor_counter, fcount);
+        ఒకవేళ (fcount == 0)
             // turn motor(s) off
-            floppy_dor_mask(FLOPPY_DOR_MOTOR_MASK, 0);
+            floppy_dor_ముసుగు(FLOPPY_DOR_MOTOR_ముసుగు, 0);
     }
 }

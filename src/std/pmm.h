@@ -1,19 +1,19 @@
-#ifndef __PMM_H
-#define __PMM_H
+#నిర్వచితం_కాకపోతే __PMM_H
+#నిర్వచించు __PMM_H
 
-#include "types.h" // u32
+#అన్తర్భావ "types.h" // u32
 
-#define PMM_SIGNATURE 0x4d4d5024 // $PMM
+#నిర్వచించు PMM_SIGNATURE 0x4d4d5024 // $PMM
 
-struct pmmheader {
+నిర్మాణం pmmheader {
     u32 signature;
-    u8 version;
-    u8 length;
+    u8 సంస్కరణ_2;
+    u8 నిడివి;
     u8 checksum;
-    struct segoff_s entry;
+    నిర్మాణం segoff_s నమోదు_2;
     u8 reserved[5];
 } PACKED;
 
-#define PMM_FUNCTION_NOT_SUPPORTED 0xffffffff
+#నిర్వచించు PMM_FUNCTION_NOT_SUPPORTED 0xffffffff
 
-#endif // pmm.h
+#అయితే_ముగింపు // pmm.h

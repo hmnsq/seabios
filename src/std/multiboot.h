@@ -19,84 +19,84 @@
  *  IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef MULTIBOOT_HEADER
-#define MULTIBOOT_HEADER 1
+#నిర్వచితం_కాకపోతే MULTIBOOT_శీర్షిక
+#నిర్వచించు MULTIBOOT_శీర్షిక 1
 
 /* How many bytes from the start of the file we search for the header.  */
-#define MULTIBOOT_SEARCH			8192
-#define MULTIBOOT_HEADER_ALIGN			4
+#నిర్వచించు MULTIBOOT_శోధన			8192
+#నిర్వచించు MULTIBOOT_శీర్షిక_ALIGN			4
 
 /* The magic field should contain this.  */
-#define MULTIBOOT_HEADER_MAGIC			0x1BADB002
+#నిర్వచించు MULTIBOOT_శీర్షిక_MAGIC			0x1BADB002
 
 /* This should be in %eax.  */
-#define MULTIBOOT_BOOTLOADER_MAGIC		0x2BADB002
+#నిర్వచించు MULTIBOOT_BOOTLOADER_MAGIC		0x2BADB002
 
 /* Alignment of multiboot modules.  */
-#define MULTIBOOT_MOD_ALIGN			0x00001000
+#నిర్వచించు MULTIBOOT_MOD_ALIGN			0x00001000
 
 /* Alignment of the multiboot info structure.  */
-#define MULTIBOOT_INFO_ALIGN			0x00000004
+#నిర్వచించు MULTIBOOT_INFO_ALIGN			0x00000004
 
 /* Flags set in the 'flags' member of the multiboot header.  */
 
 /* Align all boot modules on i386 page (4KB) boundaries.  */
-#define MULTIBOOT_PAGE_ALIGN			0x00000001
+#నిర్వచించు MULTIBOOT_పుట_ALIGN			0x00000001
 
 /* Must pass memory information to OS.  */
-#define MULTIBOOT_MEMORY_INFO			0x00000002
+#నిర్వచించు MULTIBOOT_జ్ఞాపకం_INFO			0x00000002
 
 /* Must pass video information to OS.  */
-#define MULTIBOOT_VIDEO_MODE			0x00000004
+#నిర్వచించు MULTIBOOT_VIDEO_బహుళకం			0x00000004
 
 /* This flag indicates the use of the address fields in the header.  */
-#define MULTIBOOT_AOUT_KLUDGE			0x00010000
+#నిర్వచించు MULTIBOOT_AOUT_KLUDGE			0x00010000
 
 /* Flags to be set in the 'flags' member of the multiboot info structure.  */
 
 /* is there basic lower/upper memory information? */
-#define MULTIBOOT_INFO_MEMORY			0x00000001
+#నిర్వచించు MULTIBOOT_INFO_జ్ఞాపకం			0x00000001
 /* is there a boot device set? */
-#define MULTIBOOT_INFO_BOOTDEV			0x00000002
+#నిర్వచించు MULTIBOOT_INFO_BOOTDEV			0x00000002
 /* is the command-line defined? */
-#define MULTIBOOT_INFO_CMDLINE			0x00000004
+#నిర్వచించు MULTIBOOT_INFO_CMDLINE			0x00000004
 /* are there modules to do something with? */
-#define MULTIBOOT_INFO_MODS			0x00000008
+#నిర్వచించు MULTIBOOT_INFO_MODS			0x00000008
 
 /* These next two are mutually exclusive */
 
 /* is there a symbol table loaded? */
-#define MULTIBOOT_INFO_AOUT_SYMS		0x00000010
+#నిర్వచించు MULTIBOOT_INFO_AOUT_SYMS		0x00000010
 /* is there an ELF section header table? */
-#define MULTIBOOT_INFO_ELF_SHDR			0X00000020
+#నిర్వచించు MULTIBOOT_INFO_ELF_SHDR			0X00000020
 
 /* is there a full memory map? */
-#define MULTIBOOT_INFO_MEM_MAP			0x00000040
+#నిర్వచించు MULTIBOOT_INFO_MEM_MAP			0x00000040
 
 /* Is there drive info?  */
-#define MULTIBOOT_INFO_DRIVE_INFO		0x00000080
+#నిర్వచించు MULTIBOOT_INFO_DRIVE_INFO		0x00000080
 
 /* Is there a config table?  */
-#define MULTIBOOT_INFO_CONFIG_TABLE		0x00000100
+#నిర్వచించు MULTIBOOT_INFO_CONFIG_పట్టిక		0x00000100
 
 /* Is there a boot loader name?  */
-#define MULTIBOOT_INFO_BOOT_LOADER_NAME		0x00000200
+#నిర్వచించు MULTIBOOT_INFO_BOOT_LOADER_NAME		0x00000200
 
 /* Is there a APM table?  */
-#define MULTIBOOT_INFO_APM_TABLE		0x00000400
+#నిర్వచించు MULTIBOOT_INFO_APM_పట్టిక		0x00000400
 
 /* Is there video information?  */
-#define MULTIBOOT_INFO_VBE_INFO		        0x00000800
-#define MULTIBOOT_INFO_FRAMEBUFFER_INFO	        0x00001000
+#నిర్వచించు MULTIBOOT_INFO_VBE_INFO		        0x00000800
+#నిర్వచించు MULTIBOOT_INFO_FRAMEBUFFER_INFO	        0x00001000
 
-#ifndef ASM_FILE
+#నిర్వచితం_కాకపోతే ASM_FILE
 
-typedef unsigned char		multiboot_uint8_t;
-typedef unsigned short		multiboot_uint16_t;
-typedef unsigned int		multiboot_uint32_t;
-typedef unsigned long long	multiboot_uint64_t;
+రకనిర్వచనం గుర్తులేని అక్షరం		multiboot_uint8_t;
+రకనిర్వచనం గుర్తులేని పొట్టి		multiboot_uint16_t;
+రకనిర్వచనం గుర్తులేని పూర్ణాంకం		multiboot_uint32_t;
+రకనిర్వచనం గుర్తులేని దీర్ఘ దీర్ఘ	multiboot_uint64_t;
 
-struct multiboot_header
+నిర్మాణం multiboot_శీర్షిక
 {
   /* Must be MULTIBOOT_MAGIC - see above.  */
   multiboot_uint32_t magic;
@@ -108,47 +108,47 @@ struct multiboot_header
   multiboot_uint32_t checksum;
 
   /* These are only valid if MULTIBOOT_AOUT_KLUDGE is set.  */
-  multiboot_uint32_t header_addr;
-  multiboot_uint32_t load_addr;
-  multiboot_uint32_t load_end_addr;
-  multiboot_uint32_t bss_end_addr;
-  multiboot_uint32_t entry_addr;
+  multiboot_uint32_t శీర్షిక_addr;
+  multiboot_uint32_t ఎక్కించు_addr;
+  multiboot_uint32_t ఎక్కించు_చివర_addr;
+  multiboot_uint32_t bss_చివర_addr;
+  multiboot_uint32_t నమోదు_addr;
 
   /* These are only valid if MULTIBOOT_VIDEO_MODE is set.  */
-  multiboot_uint32_t mode_type;
-  multiboot_uint32_t width;
-  multiboot_uint32_t height;
-  multiboot_uint32_t depth;
+  multiboot_uint32_t బహుళకం_type;
+  multiboot_uint32_t వెడల్పు;
+  multiboot_uint32_t ఎత్తు;
+  multiboot_uint32_t లోతు;
 };
 
 /* The symbol table for a.out.  */
-struct multiboot_aout_symbol_table
+నిర్మాణం multiboot_aout_చిహ్నం_పట్టిక
 {
   multiboot_uint32_t tabsize;
   multiboot_uint32_t strsize;
   multiboot_uint32_t addr;
   multiboot_uint32_t reserved;
 };
-typedef struct multiboot_aout_symbol_table multiboot_aout_symbol_table_t;
+రకనిర్వచనం నిర్మాణం multiboot_aout_చిహ్నం_పట్టిక multiboot_aout_చిహ్నం_పట్టిక_t;
 
 /* The section header table for ELF.  */
-struct multiboot_elf_section_header_table
+నిర్మాణం multiboot_elf_section_శీర్షిక_పట్టిక
 {
-  multiboot_uint32_t num;
-  multiboot_uint32_t size;
+  multiboot_uint32_t అంకె;
+  multiboot_uint32_t కొలత;
   multiboot_uint32_t addr;
   multiboot_uint32_t shndx;
 };
-typedef struct multiboot_elf_section_header_table multiboot_elf_section_header_table_t;
+రకనిర్వచనం నిర్మాణం multiboot_elf_section_శీర్షిక_పట్టిక multiboot_elf_section_శీర్షిక_పట్టిక_t;
 
-struct multiboot_info
+నిర్మాణం multiboot_info
 {
   /* Multiboot info version number */
   multiboot_uint32_t flags;
 
   /* Available memory from BIOS */
-  multiboot_uint32_t mem_lower;
-  multiboot_uint32_t mem_upper;
+  multiboot_uint32_t mem_క్రింది;
+  multiboot_uint32_t mem_పై;
 
   /* "root" partition */
   multiboot_uint32_t boot_device;
@@ -157,95 +157,95 @@ struct multiboot_info
   multiboot_uint32_t cmdline;
 
   /* Boot-Module list */
-  multiboot_uint32_t mods_count;
+  multiboot_uint32_t mods_లెక్క;
   multiboot_uint32_t mods_addr;
 
-  union
+  సంఘం
   {
-    multiboot_aout_symbol_table_t aout_sym;
-    multiboot_elf_section_header_table_t elf_sec;
+    multiboot_aout_చిహ్నం_పట్టిక_t aout_sym;
+    multiboot_elf_section_శీర్షిక_పట్టిక_t elf_sec;
   } u;
 
   /* Memory Mapping buffer */
-  multiboot_uint32_t mmap_length;
+  multiboot_uint32_t mmap_నిడివి;
   multiboot_uint32_t mmap_addr;
 
   /* Drive Info buffer */
-  multiboot_uint32_t drives_length;
+  multiboot_uint32_t drives_నిడివి;
   multiboot_uint32_t drives_addr;
 
   /* ROM configuration table */
-  multiboot_uint32_t config_table;
+  multiboot_uint32_t config_పట్టిక;
 
   /* Boot Loader Name */
   multiboot_uint32_t boot_loader_name;
 
   /* APM table */
-  multiboot_uint32_t apm_table;
+  multiboot_uint32_t apm_పట్టిక;
 
   /* Video */
   multiboot_uint32_t vbe_control_info;
-  multiboot_uint32_t vbe_mode_info;
-  multiboot_uint16_t vbe_mode;
+  multiboot_uint32_t vbe_బహుళకం_info;
+  multiboot_uint16_t vbe_బహుళకం;
   multiboot_uint16_t vbe_interface_seg;
   multiboot_uint16_t vbe_interface_off;
   multiboot_uint16_t vbe_interface_len;
 
   multiboot_uint64_t framebuffer_addr;
   multiboot_uint32_t framebuffer_pitch;
-  multiboot_uint32_t framebuffer_width;
-  multiboot_uint32_t framebuffer_height;
+  multiboot_uint32_t framebuffer_వెడల్పు;
+  multiboot_uint32_t framebuffer_ఎత్తు;
   multiboot_uint8_t framebuffer_bpp;
-#define MULTIBOOT_FRAMEBUFFER_TYPE_INDEXED 0
-#define MULTIBOOT_FRAMEBUFFER_TYPE_RGB     1
-#define MULTIBOOT_FRAMEBUFFER_TYPE_EGA_TEXT	2
+#నిర్వచించు MULTIBOOT_FRAMEBUFFER_TYPE_సూచీకృత 0
+#నిర్వచించు MULTIBOOT_FRAMEBUFFER_TYPE_RGB     1
+#నిర్వచించు MULTIBOOT_FRAMEBUFFER_TYPE_EGA_పాఠ్యం	2
   multiboot_uint8_t framebuffer_type;
-  union
+  సంఘం
   {
-    struct
+    నిర్మాణం
     {
       multiboot_uint32_t framebuffer_palette_addr;
-      multiboot_uint16_t framebuffer_palette_num_colors;
+      multiboot_uint16_t framebuffer_palette_అంకె_colors;
     };
-    struct
+    నిర్మాణం
     {
-      multiboot_uint8_t framebuffer_red_field_position;
-      multiboot_uint8_t framebuffer_red_mask_size;
-      multiboot_uint8_t framebuffer_green_field_position;
-      multiboot_uint8_t framebuffer_green_mask_size;
-      multiboot_uint8_t framebuffer_blue_field_position;
-      multiboot_uint8_t framebuffer_blue_mask_size;
+      multiboot_uint8_t framebuffer_red_క్షేత్రం_position;
+      multiboot_uint8_t framebuffer_red_ముసుగు_కొలత;
+      multiboot_uint8_t framebuffer_green_క్షేత్రం_position;
+      multiboot_uint8_t framebuffer_green_ముసుగు_కొలత;
+      multiboot_uint8_t framebuffer_blue_క్షేత్రం_position;
+      multiboot_uint8_t framebuffer_blue_ముసుగు_కొలత;
     };
   };
 };
-typedef struct multiboot_info multiboot_info_t;
+రకనిర్వచనం నిర్మాణం multiboot_info multiboot_info_t;
 
-struct multiboot_color
+నిర్మాణం multiboot_color
 {
   multiboot_uint8_t red;
   multiboot_uint8_t green;
   multiboot_uint8_t blue;
 };
 
-struct multiboot_mmap_entry
+నిర్మాణం multiboot_mmap_నమోదు
 {
-  multiboot_uint32_t size;
+  multiboot_uint32_t కొలత;
   multiboot_uint64_t addr;
   multiboot_uint64_t len;
-#define MULTIBOOT_MEMORY_AVAILABLE		1
-#define MULTIBOOT_MEMORY_RESERVED		2
-#define MULTIBOOT_MEMORY_ACPI_RECLAIMABLE       3
-#define MULTIBOOT_MEMORY_NVS                    4
-#define MULTIBOOT_MEMORY_BADRAM                 5
+#నిర్వచించు MULTIBOOT_జ్ఞాపకం_అందుబాటు		1
+#నిర్వచించు MULTIBOOT_జ్ఞాపకం_RESERVED		2
+#నిర్వచించు MULTIBOOT_జ్ఞాపకం_ACPI_RECLAIMABLE       3
+#నిర్వచించు MULTIBOOT_జ్ఞాపకం_NVS                    4
+#నిర్వచించు MULTIBOOT_జ్ఞాపకం_BADRAM                 5
   multiboot_uint32_t type;
 } __attribute__((packed));
-typedef struct multiboot_mmap_entry multiboot_memory_map_t;
+రకనిర్వచనం నిర్మాణం multiboot_mmap_నమోదు multiboot_జ్ఞాపకం_map_t;
 
-struct multiboot_mod_list
+నిర్మాణం multiboot_mod_list
 {
   /* the memory used goes from bytes 'mod_start' to 'mod_end-1' inclusive */
-  multiboot_uint32_t mod_start;
-  multiboot_uint32_t mod_end;
+  multiboot_uint32_t mod_ప్రారంభం;
+  multiboot_uint32_t mod_చివర;
 
   /* Module command line */
   multiboot_uint32_t cmdline;
@@ -253,8 +253,8 @@ struct multiboot_mod_list
   /* padding to take it to 16 bytes (must be zero) */
   multiboot_uint32_t pad;
 };
-typedef struct multiboot_mod_list multiboot_module_t;
+రకనిర్వచనం నిర్మాణం multiboot_mod_list multiboot_module_t;
 
-#endif /* ! ASM_FILE */
+#అయితే_ముగింపు /* ! ASM_FILE */
 
-#endif /* ! MULTIBOOT_HEADER */
+#అయితే_ముగింపు /* ! MULTIBOOT_HEADER */

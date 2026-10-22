@@ -1,28 +1,28 @@
-#ifndef __E820MAP_H
-#define __E820MAP_H
+#నిర్వచితం_కాకపోతే __E820MAP_H
+#నిర్వచించు __E820MAP_H
 
-#include "types.h" // u64
+#అన్తర్భావ "types.h" // u64
 
-#define E820_RAM            1
-#define E820_RESERVED       2
-#define E820_ACPI           3
-#define E820_NVS            4
-#define E820_UNUSABLE       5
-#define E820_SOFT_RESERVED  0xEFFFFFFF
+#నిర్వచించు E820_RAM            1
+#నిర్వచించు E820_RESERVED       2
+#నిర్వచించు E820_ACPI           3
+#నిర్వచించు E820_NVS            4
+#నిర్వచించు E820_UNUSABLE       5
+#నిర్వచించు E820_SOFT_RESERVED  0xEFFFFFFF
 
-struct e820entry {
-    u64 start;
-    u64 size;
+నిర్మాణం e820entry {
+    u64 ప్రారంభం;
+    u64 కొలత;
     u32 type;
 };
 
-void e820_add(u64 start, u64 size, u32 type);
-void e820_remove(u64 start, u64 size);
-void e820_prepboot(void);
-int e820_is_used(u64 start, u64 size);
+శూన్య e820_కూడు(u64 ప్రారంభం, u64 కొలత, u32 type);
+శూన్య e820_remove(u64 ప్రారంభం, u64 కొలత);
+శూన్య e820_prepboot(శూన్య);
+పూర్ణాంకం e820_is_వాడిన(u64 ప్రారంభం, u64 కొలత);
 
 // e820 map storage
-extern struct e820entry e820_list[];
-extern int e820_count;
+బాహ్య నిర్మాణం e820entry e820_list[];
+బాహ్య పూర్ణాంకం e820_లెక్క;
 
-#endif // e820map.h
+#అయితే_ముగింపు // e820map.h

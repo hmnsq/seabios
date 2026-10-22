@@ -3,27 +3,27 @@
 // Copyright (C) 2008-2013  Kevin O'Connor <kevin@koconnor.net>
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
-#ifndef __BIOSVAR_H
-#define __BIOSVAR_H
+#నిర్వచితం_కాకపోతే __BIOSVAR_H
+#నిర్వచించు __BIOSVAR_H
 
-#include "config.h" // SEG_BDA
-#include "farptr.h" // GET_FARVAR
-#include "memmap.h" // SYMBOL
-#include "std/bda.h" // struct bios_data_area_s
+#అన్తర్భావ "config.h" // SEG_BDA
+#అన్తర్భావ "farptr.h" // GET_FARVAR
+#అన్తర్భావ "memmap.h" //చిహ్నం
+#అన్తర్భావ "std/bda.h" // struct bios_data_area_s
 
 
 /****************************************************************
  * Interrupt vector table
  ****************************************************************/
 
-#define GET_IVT(vector)                                         \
-    GET_FARVAR(SEG_IVT, ((struct rmode_IVT *)0)->ivec[vector])
-#define SET_IVT(vector, segoff)                                         \
-    SET_FARVAR(SEG_IVT, ((struct rmode_IVT *)0)->ivec[vector], segoff)
+#నిర్వచించు GET_IVT(సదిశ)                                         \
+    GET_FARVAR(SEG_IVT, ((నిర్మాణం rmode_IVT *)0)->ivec[సదిశ])
+#నిర్వచించు సమితి_IVT(సదిశ, segoff)                                         \
+    సమితి_FARVAR(SEG_IVT, ((నిర్మాణం rmode_IVT *)0)->ivec[సదిశ], segoff)
 
-#define FUNC16(func) ({                                 \
+#నిర్వచించు FUNC16(func) ({                                 \
         ASSERT32FLAT();                                 \
-        extern void func (void);                        \
+        బాహ్య శూన్య func (శూన్య);                        \
         SEGOFF(SEG_BIOS, (u32)func - BUILD_BIOS_ADDR);  \
     })
 
@@ -33,15 +33,15 @@
  ****************************************************************/
 
 // Accessor functions
-#define GET_BDA(var) \
-    GET_FARVAR(SEG_BDA, ((struct bios_data_area_s *)0)->var)
-#define SET_BDA(var, val) \
-    SET_FARVAR(SEG_BDA, ((struct bios_data_area_s *)0)->var, (val))
+#నిర్వచించు GET_BDA(var) \
+    GET_FARVAR(SEG_BDA, ((నిర్మాణం bios_దత్తాంశం_area_s *)0)->var)
+#నిర్వచించు సమితి_BDA(var, val) \
+    సమితి_FARVAR(SEG_BDA, ((నిర్మాణం bios_దత్తాంశం_area_s *)0)->var, (val))
 
 // Helper function to set the bits of the equipment_list_flags variable.
-static inline void set_equipment_flags(u16 clear, u16 set) {
+స్థిర అంతఃవరుస శూన్య సమితి_equipment_flags(u16 clear, u16 సమితి) {
     u16 eqf = GET_BDA(equipment_list_flags);
-    SET_BDA(equipment_list_flags, (eqf & ~clear) | set);
+    సమితి_BDA(equipment_list_flags, (eqf & ~clear) | సమితి);
 }
 
 
@@ -50,81 +50,81 @@ static inline void set_equipment_flags(u16 clear, u16 set) {
  ****************************************************************/
 
 // The initial size and location of EBDA
-#define EBDA_SIZE_START \
-    DIV_ROUND_UP(sizeof(struct extended_bios_data_area_s), 1024)
-#define EBDA_SEGMENT_START \
-    FLATPTR_TO_SEG(BUILD_LOWRAM_END - EBDA_SIZE_START*1024)
+#నిర్వచించు EBDA_కొలత_ప్రారంభం \
+    DIV_విడత_పైకి(పరిమాణం(నిర్మాణం extended_bios_దత్తాంశం_area_s), 1024)
+#నిర్వచించు EBDA_SEGMENT_ప్రారంభం \
+    FLATPTR_గమ్యం_SEG(BUILD_LOWRAM_చివర - EBDA_కొలత_ప్రారంభం*1024)
 
 // Accessor functions
-static inline u16 get_ebda_seg(void) {
-    return GET_BDA(ebda_seg);
+స్థిర అంతఃవరుస u16 get_ebda_seg(శూన్య) {
+    తిరిగి GET_BDA(ebda_seg);
 }
-static inline struct extended_bios_data_area_s *
-get_ebda_ptr(void)
+స్థిర అంతఃవరుస నిర్మాణం extended_bios_దత్తాంశం_area_s *
+get_ebda_ptr(శూన్య)
 {
     ASSERT32FLAT();
-    return MAKE_FLATPTR(get_ebda_seg(), 0);
+    తిరిగి MAKE_FLATPTR(get_ebda_seg(), 0);
 }
-#define GET_EBDA(eseg, var)                                             \
-    GET_FARVAR(eseg, ((struct extended_bios_data_area_s *)0)->var)
-#define SET_EBDA(eseg, var, val)                                        \
-    SET_FARVAR(eseg, ((struct extended_bios_data_area_s *)0)->var, (val))
+#నిర్వచించు GET_EBDA(eseg, var)                                             \
+    GET_FARVAR(eseg, ((నిర్మాణం extended_bios_దత్తాంశం_area_s *)0)->var)
+#నిర్వచించు సమితి_EBDA(eseg, var, val)                                        \
+    సమితి_FARVAR(eseg, ((నిర్మాణం extended_bios_దత్తాంశం_area_s *)0)->var, (val))
 
 
 /****************************************************************
  * Global variables
  ****************************************************************/
 
-#if MODE16 == 0 && MODESEGMENT == 1
+#ఒకవేళ MODE16 == 0 && MODESEGMENT == 1
 // In 32bit segmented mode %cs may not be readable and the code may be
 // relocated.  The entry code sets up %gs with a readable segment and
 // the code offset can be determined by get_global_offset().
-#define GLOBAL_SEGREG GS
-static inline u32 __attribute_const get_global_offset(void) {
+#నిర్వచించు GLOBAL_SEGREG GS
+స్థిర అంతఃవరుస u32 __attribute_const get_global_స్థానభ్రంశం(శూన్య) {
     u32 ret;
     asm("  calll 1f\n"
         "1:popl %0\n"
         "  subl $1b, %0"
         : "=r"(ret));
-    return ret;
+    తిరిగి ret;
 }
-#else
-#define GLOBAL_SEGREG CS
-static inline u32 __attribute_const get_global_offset(void) {
-    return 0;
+#లేకపోతే
+#నిర్వచించు GLOBAL_SEGREG CS
+స్థిర అంతఃవరుస u32 __attribute_const get_global_స్థానభ్రంశం(శూన్య) {
+    తిరిగి 0;
 }
-#endif
-static inline u16 get_global_seg(void) {
-    return GET_SEG(GLOBAL_SEGREG);
+#అయితే_ముగింపు
+స్థిర అంతఃవరుస u16 get_global_seg(శూన్య) {
+    తిరిగి GET_SEG(GLOBAL_SEGREG);
 }
-#define GET_GLOBAL(var)                                                 \
-    GET_VAR(GLOBAL_SEGREG, *(typeof(&(var)))((void*)&(var)              \
-                                             + get_global_offset()))
-#if MODESEGMENT
-#define GLOBALFLAT2GLOBAL(var) ((typeof(var))((void*)(var) - BUILD_BIOS_ADDR))
-#else
-#define GLOBALFLAT2GLOBAL(var) (var)
-#endif
+#నిర్వచించు GET_GLOBAL(var)                                                 \
+    GET_VAR(GLOBAL_SEGREG, *(typeof(&(var)))((శూన్య*)&(var)              \
+                                             + get_global_స్థానభ్రంశం()))
+#ఒకవేళ MODESEGMENT
+#నిర్వచించు GLOBALFLAT2GLOBAL(var) ((typeof(var))((శూన్య*)(var) - BUILD_BIOS_ADDR))
+#లేకపోతే
+#నిర్వచించు GLOBALFLAT2GLOBAL(var) (var)
+#అయితే_ముగింపు
 // Access a "flat" pointer known to point to the f-segment.
-#define GET_GLOBALFLAT(var) GET_GLOBAL(*GLOBALFLAT2GLOBAL(&(var)))
+#నిర్వచించు GET_GLOBALFLAT(var) GET_GLOBAL(*GLOBALFLAT2GLOBAL(&(var)))
 
 
 /****************************************************************
  * "Low" memory variables
  ****************************************************************/
 
-#define SEG_LOW SYMBOL(_zonelow_seg)
+#నిర్వచించు SEG_దిగువ చిహ్నం(_zonelow_seg)
 
-#if MODESEGMENT
-#define GET_LOW(var)            GET_FARVAR(SEG_LOW, (var))
-#define SET_LOW(var, val)       SET_FARVAR(SEG_LOW, (var), (val))
-#define LOWFLAT2LOW(var) ((typeof(var))((void*)(var) - SYMBOL(zonelow_base)))
-#else
-#define GET_LOW(var)            (var)
-#define SET_LOW(var, val)       do { (var) = (val); } while (0)
-#define LOWFLAT2LOW(var) (var)
-#endif
-#define GET_LOWFLAT(var) GET_LOW(*LOWFLAT2LOW(&(var)))
-#define SET_LOWFLAT(var, val) SET_LOW(*LOWFLAT2LOW(&(var)), (val))
+#ఒకవేళ MODESEGMENT
+#నిర్వచించు GET_దిగువ(var)            GET_FARVAR(SEG_దిగువ, (var))
+#నిర్వచించు సమితి_దిగువ(var, val)       సమితి_FARVAR(SEG_దిగువ, (var), (val))
+#నిర్వచించు LOWFLAT2_దిగువ(var) ((typeof(var))((శూన్య*)(var) - చిహ్నం(zonelow_పునాది)))
+#లేకపోతే
+#నిర్వచించు GET_దిగువ(var)            (var)
+#నిర్వచించు సమితి_దిగువ(var, val)       చేయి { (var) = (val); } అయితే (0)
+#నిర్వచించు LOWFLAT2_దిగువ(var) (var)
+#అయితే_ముగింపు
+#నిర్వచించు GET_LOWFLAT(var) GET_దిగువ(*LOWFLAT2_దిగువ(&(var)))
+#నిర్వచించు సమితి_LOWFLAT(var, val) సమితి_దిగువ(*LOWFLAT2_దిగువ(&(var)), (val))
 
-#endif // __BIOSVAR_H
+#అయితే_ముగింపు // __BIOSVAR_H

@@ -1,68 +1,68 @@
-#ifndef __OUTPUT_H
-#define __OUTPUT_H
+#నిర్వచితం_కాకపోతే __OUTPUT_H
+#నిర్వచించు __OUTPUT_H
 
-#include "config.h" // CONFIG_DEBUG_LEVEL
-#include "types.h" // u32
+#అన్తర్భావ "config.h" // CONFIG_DEBUG_LEVEL
+#అన్తర్భావ "types.h" // u32
 
 // output.c
-void debug_banner(void);
-void panic(const char *fmt, ...)
-    __attribute__ ((format (printf, 1, 2))) __noreturn;
-void printf(const char *fmt, ...)
-    __attribute__ ((format (printf, 1, 2)));
-int snprintf(char *str, size_t size, const char *fmt, ...)
-    __attribute__ ((format (printf, 3, 4)));
-char * znprintf(size_t size, const char *fmt, ...)
-    __attribute__ ((format (printf, 2, 3)));
-void __dprintf(const char *fmt, ...)
-    __attribute__ ((format (printf, 1, 2)));
-struct bregs;
-void __debug_enter(struct bregs *regs, const char *fname);
-void __debug_isr(const char *fname);
-void __debug_stub(struct bregs *regs, int lineno, const char *fname);
-void __warn_invalid(struct bregs *regs, int lineno, const char *fname);
-void __warn_unimplemented(struct bregs *regs, int lineno, const char *fname);
-void __warn_internalerror(int lineno, const char *fname);
-void __warn_noalloc(int lineno, const char *fname);
-void __warn_timeout(int lineno, const char *fname);
-void __set_invalid(struct bregs *regs, int lineno, const char *fname);
-void __set_unimplemented(struct bregs *regs, int lineno, const char *fname);
-void __set_code_invalid(struct bregs *regs, u32 linecode, const char *fname);
-void __set_code_unimplemented(struct bregs *regs, u32 linecode
-                              , const char *fname);
-void hexdump(const void *d, int len);
+శూన్య debug_banner(శూన్య);
+శూన్య panic(స్థిరరాశి అక్షరం *fmt, ...)
+    __attribute__ ((format (రాయి, 1, 2))) __noreturn;
+శూన్య రాయి(స్థిరరాశి అక్షరం *fmt, ...)
+    __attribute__ ((format (రాయి, 1, 2)));
+పూర్ణాంకం snprintf(అక్షరం *str, కొలత_t కొలత, స్థిరరాశి అక్షరం *fmt, ...)
+    __attribute__ ((format (రాయి, 3, 4)));
+అక్షరం * znprintf(కొలత_t కొలత, స్థిరరాశి అక్షరం *fmt, ...)
+    __attribute__ ((format (రాయి, 2, 3)));
+శూన్య __dprintf(స్థిరరాశి అక్షరం *fmt, ...)
+    __attribute__ ((format (రాయి, 1, 2)));
+నిర్మాణం bregs;
+శూన్య __debug_enter(నిర్మాణం bregs *regs, స్థిరరాశి అక్షరం *fname);
+శూన్య __debug_isr(స్థిరరాశి అక్షరం *fname);
+శూన్య __debug_stub(నిర్మాణం bregs *regs, పూర్ణాంకం lineno, స్థిరరాశి అక్షరం *fname);
+శూన్య __warn_invalid(నిర్మాణం bregs *regs, పూర్ణాంకం lineno, స్థిరరాశి అక్షరం *fname);
+శూన్య __warn_unimplemented(నిర్మాణం bregs *regs, పూర్ణాంకం lineno, స్థిరరాశి అక్షరం *fname);
+శూన్య __warn_internalerror(పూర్ణాంకం lineno, స్థిరరాశి అక్షరం *fname);
+శూన్య __warn_noalloc(పూర్ణాంకం lineno, స్థిరరాశి అక్షరం *fname);
+శూన్య __warn_timeout(పూర్ణాంకం lineno, స్థిరరాశి అక్షరం *fname);
+శూన్య __set_invalid(నిర్మాణం bregs *regs, పూర్ణాంకం lineno, స్థిరరాశి అక్షరం *fname);
+శూన్య __set_unimplemented(నిర్మాణం bregs *regs, పూర్ణాంకం lineno, స్థిరరాశి అక్షరం *fname);
+శూన్య __set_code_invalid(నిర్మాణం bregs *regs, u32 linecode, స్థిరరాశి అక్షరం *fname);
+శూన్య __set_code_unimplemented(నిర్మాణం bregs *regs, u32 linecode
+                              , స్థిరరాశి అక్షరం *fname);
+శూన్య hexdump(స్థిరరాశి శూన్య *d, పూర్ణాంకం len);
 
-#define dprintf(lvl, fmt, args...) do {                         \
-        if (CONFIG_DEBUG_LEVEL && (lvl) <= CONFIG_DEBUG_LEVEL)  \
+#నిర్వచించు dprintf(lvl, fmt, వాదనలు...) చేయి {                         \
+        ఒకవేళ (CONFIG_DEBUG_LEVEL && (lvl) <= CONFIG_DEBUG_LEVEL)  \
             __dprintf((fmt) , ##args );                         \
-    } while (0)
-#define debug_enter(regs, lvl) do {                     \
-        if ((lvl) && (lvl) <= CONFIG_DEBUG_LEVEL)       \
+    } అయితే (0)
+#నిర్వచించు debug_enter(regs, lvl) చేయి {                     \
+        ఒకవేళ ((lvl) && (lvl) <= CONFIG_DEBUG_LEVEL)       \
             __debug_enter((regs), __func__);            \
-    } while (0)
-#define debug_isr(lvl) do {                             \
-        if ((lvl) && (lvl) <= CONFIG_DEBUG_LEVEL)       \
+    } అయితే (0)
+#నిర్వచించు debug_isr(lvl) చేయి {                             \
+        ఒకవేళ ((lvl) && (lvl) <= CONFIG_DEBUG_LEVEL)       \
             __debug_isr(__func__);                      \
-    } while (0)
-#define debug_stub(regs)                        \
+    } అయితే (0)
+#నిర్వచించు debug_stub(regs)                        \
     __debug_stub((regs), __LINE__, __func__)
-#define warn_invalid(regs)                      \
+#నిర్వచించు warn_invalid(regs)                      \
     __warn_invalid((regs), __LINE__, __func__)
-#define warn_unimplemented(regs)                        \
+#నిర్వచించు warn_unimplemented(regs)                        \
     __warn_unimplemented((regs), __LINE__, __func__)
-#define warn_internalerror()                    \
+#నిర్వచించు warn_internalerror()                    \
     __warn_internalerror(__LINE__, __func__)
-#define warn_noalloc()                          \
+#నిర్వచించు warn_noalloc()                          \
     __warn_noalloc(__LINE__, __func__)
-#define warn_timeout()                          \
+#నిర్వచించు warn_timeout()                          \
     __warn_timeout(__LINE__, __func__)
-#define set_invalid(regs)                       \
+#నిర్వచించు సమితి_invalid(regs)                       \
     __set_invalid((regs), __LINE__, __func__)
-#define set_code_invalid(regs, code)                                    \
-    __set_code_invalid((regs), (code) | (__LINE__ << 8), __func__)
-#define set_unimplemented(regs)                         \
+#నిర్వచించు సమితి_సంకేతం_invalid(regs, సంకేతం_2)                                    \
+    __set_code_invalid((regs), (సంకేతం_2) | (__LINE__ << 8), __func__)
+#నిర్వచించు సమితి_unimplemented(regs)                         \
     __set_unimplemented((regs), __LINE__, __func__)
-#define set_code_unimplemented(regs, code)                              \
-    __set_code_unimplemented((regs), (code) | (__LINE__ << 8), __func__)
+#నిర్వచించు సమితి_సంకేతం_unimplemented(regs, సంకేతం_2)                              \
+    __set_code_unimplemented((regs), (సంకేతం_2) | (__LINE__ << 8), __func__)
 
-#endif // output.h
+#అయితే_ముగింపు // output.h

@@ -5,39 +5,39 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_LOW
-#include "rtc.h" // rtc_read
-#include "stacks.h" // yield
-#include "util.h" // timer_calc
-#include "x86.h" // inb
+#అన్తర్భావ "biosvar.h" // GET_LOW
+#అన్తర్భావ "rtc.h" // rtc_read
+#అన్తర్భావ "stacks.h" // yield
+#అన్తర్భావ "util.h" // timer_calc
+#అన్తర్భావ "x86.h" // inb
 
 u8
-rtc_read(u8 index)
+rtc_read(u8 సూచీ)
 {
-    index |= NMI_DISABLE_BIT;
-    outb(index, PORT_CMOS_INDEX);
-    return inb(PORT_CMOS_DATA);
+    సూచీ |= NMI_DISABLE_బిట్టు;
+    outb(సూచీ, పోర్టు_CMOS_సూచీ);
+    తిరిగి inb(పోర్టు_CMOS_దత్తాంశం);
 }
 
-void
-rtc_write(u8 index, u8 val)
+శూన్య
+rtc_write(u8 సూచీ, u8 val)
 {
-    index |= NMI_DISABLE_BIT;
-    outb(index, PORT_CMOS_INDEX);
-    outb(val, PORT_CMOS_DATA);
+    సూచీ |= NMI_DISABLE_బిట్టు;
+    outb(సూచీ, పోర్టు_CMOS_సూచీ);
+    outb(val, పోర్టు_CMOS_దత్తాంశం);
 }
 
-void
-rtc_mask(u8 index, u8 off, u8 on)
+శూన్య
+rtc_ముసుగు(u8 సూచీ, u8 off, u8 on)
 {
-    index |= NMI_DISABLE_BIT;
-    outb(index, PORT_CMOS_INDEX);
-    u8 val = inb(PORT_CMOS_DATA);
-    outb((val & ~off) | on, PORT_CMOS_DATA);
+    సూచీ |= NMI_DISABLE_బిట్టు;
+    outb(సూచీ, పోర్టు_CMOS_సూచీ);
+    u8 val = inb(పోర్టు_CMOS_దత్తాంశం);
+    outb((val & ~off) | on, పోర్టు_CMOS_దత్తాంశం);
 }
 
-int
-rtc_updating(void)
+పూర్ణాంకం
+rtc_updating(శూన్య)
 {
     // This function checks to see if the update-in-progress bit
     // is set in CMOS Status Register A.  If not, it returns 0.
@@ -47,54 +47,54 @@ rtc_updating(void)
     // that this bit should be set is constrained to (1984+244)
     // useconds, but we wait for longer just to be sure.
 
-    if ((rtc_read(CMOS_STATUS_A) & RTC_A_UIP) == 0)
-        return 0;
-    u32 end = timer_calc(15);
-    for (;;) {
-        if ((rtc_read(CMOS_STATUS_A) & RTC_A_UIP) == 0)
-            return 0;
-        if (timer_check(end))
+    ఒకవేళ ((rtc_read(CMOS_స్థితి_A) & RTC_A_UIP) == 0)
+        తిరిగి 0;
+    u32 చివర = timer_calc(15);
+    కొరకు (;;) {
+        ఒకవేళ ((rtc_read(CMOS_స్థితి_A) & RTC_A_UIP) == 0)
+            తిరిగి 0;
+        ఒకవేళ (timer_check(చివర))
             // update-in-progress never transitioned to 0
-            return -1;
+            తిరిగి -1;
         yield();
     }
 }
 
-void
-rtc_setup(void)
+శూన్య
+rtc_అమరిక(శూన్య)
 {
-    if (!CONFIG_RTC_TIMER)
-        return;
-    rtc_write(CMOS_STATUS_A, 0x26);    // 32,768Khz src, 976.5625us updates
-    rtc_mask(CMOS_STATUS_B, ~RTC_B_DSE, RTC_B_24HR);
-    rtc_read(CMOS_STATUS_C);
-    rtc_read(CMOS_STATUS_D);
+    ఒకవేళ (!CONFIG_RTC_TIMER)
+        తిరిగి;
+    rtc_write(CMOS_స్థితి_A, 0x26);    // 32,768Khz src, 976.5625us updates
+    rtc_ముసుగు(CMOS_స్థితి_B, ~RTC_B_DSE, RTC_B_24HR);
+    rtc_read(CMOS_స్థితి_C);
+    rtc_read(CMOS_స్థితి_D);
 }
 
-int RTCusers VARLOW;
+పూర్ణాంకం RTCusers VARLOW;
 
-void
-rtc_use(void)
+శూన్య
+rtc_use(శూన్య)
 {
-    if (!CONFIG_RTC_TIMER)
-        return;
-    int count = GET_LOW(RTCusers);
-    SET_LOW(RTCusers, count+1);
-    if (count)
-        return;
+    ఒకవేళ (!CONFIG_RTC_TIMER)
+        తిరిగి;
+    పూర్ణాంకం లెక్క = GET_దిగువ(RTCusers);
+    సమితి_దిగువ(RTCusers, లెక్క+1);
+    ఒకవేళ (లెక్క)
+        తిరిగి;
     // Turn on the Periodic Interrupt timer
-    rtc_mask(CMOS_STATUS_B, 0, RTC_B_PIE);
+    rtc_ముసుగు(CMOS_స్థితి_B, 0, RTC_B_PIE);
 }
 
-void
-rtc_release(void)
+శూన్య
+rtc_release(శూన్య)
 {
-    if (!CONFIG_RTC_TIMER)
-        return;
-    int count = GET_LOW(RTCusers);
-    SET_LOW(RTCusers, count-1);
-    if (count != 1)
-        return;
+    ఒకవేళ (!CONFIG_RTC_TIMER)
+        తిరిగి;
+    పూర్ణాంకం లెక్క = GET_దిగువ(RTCusers);
+    సమితి_దిగువ(RTCusers, లెక్క-1);
+    ఒకవేళ (లెక్క != 1)
+        తిరిగి;
     // Clear the Periodic Interrupt.
-    rtc_mask(CMOS_STATUS_B, RTC_B_PIE, 0);
+    rtc_ముసుగు(CMOS_స్థితి_B, RTC_B_PIE, 0);
 }

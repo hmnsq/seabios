@@ -4,14 +4,14 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#ifndef __NVME_H
-#define __NVME_H
+#నిర్వచితం_కాకపోతే __NVME_H
+#నిర్వచించు __NVME_H
 
-#include "block.h" // struct disk_op_s
+#అన్తర్భావ "block.h" // struct disk_op_s
 
-void nvme_setup(void);
-int nvme_process_op(struct disk_op_s *op);
+శూన్య nvme_అమరిక(శూన్య);
+పూర్ణాంకం nvme_process_op(నిర్మాణం disk_op_s *op);
 
-#endif
+#అయితే_ముగింపు
 
 /* EOF */

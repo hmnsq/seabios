@@ -1,80 +1,80 @@
-#ifndef __PV_H
-#define __PV_H
+#నిర్వచితం_కాకపోతే __PV_H
+#నిర్వచించు __PV_H
 
-#include "config.h" // CONFIG_*
-#include "biosvar.h" // GET_GLOBAL
-#include "romfile.h" // struct romfile_s
+#అన్తర్భావ "config.h" // CONFIG_*
+#అన్తర్భావ "biosvar.h" // GET_GLOBAL
+#అన్తర్భావ "romfile.h" // struct romfile_s
 
 // kvmclock
-struct pvclock_vcpu_time_info {
-	u32   version;
+నిర్మాణం pvclock_vcpu_సమయం_info {
+	u32   సంస్కరణ_2;
 	u32   pad0;
 	u64   tsc_timestamp;
-	u64   system_time;
-	u32   tsc_to_system_mul;
-	s8    tsc_shift;
+	u64   system_సమయం;
+	u32   tsc_గమ్యం_system_mul;
+	s8    tsc_జరుపు;
 	u8    flags;
 	u8    pad[2];
 } __attribute__((__packed__)); /* 32 bytes */
 
 // Types of paravirtualized platforms.
-#define PF_QEMU     (1<<0)
-#define PF_XEN      (1<<1)
-#define PF_KVM      (1<<2)
+#నిర్వచించు PF_QEMU     (1<<0)
+#నిర్వచించు PF_XEN      (1<<1)
+#నిర్వచించు PF_KVM      (1<<2)
 
-typedef struct QemuCfgDmaAccess {
+రకనిర్వచనం నిర్మాణం QemuCfgDmaAccess {
     u32 control;
-    u32 length;
-    u64 address;
+    u32 నిడివి;
+    u64 చిరునామా;
 } PACKED QemuCfgDmaAccess;
 
-extern u32 RamSize;
-extern u64 RamSizeOver4G;
-extern int PlatformRunningOn;
-extern u8 CPUPhysBits;
-extern u8 CPULongMode;
+బాహ్య u32 Ram_కొలత;
+బాహ్య u64 Ram_కొలత_Over4_G;
+బాహ్య పూర్ణాంకం PlatformRunningOn;
+బాహ్య u8 CPUPhys_బిట్లు;
+బాహ్య u8 CPULong_బహుళకం;
 
-static inline int runningOnQEMU(void) {
-    return CONFIG_QEMU || (
+స్థిర అంతఃవరుస పూర్ణాంకం runningOnQEMU(శూన్య) {
+    తిరిగి CONFIG_QEMU || (
         CONFIG_QEMU_HARDWARE && GET_GLOBAL(PlatformRunningOn) & PF_QEMU);
 }
-static inline int runningOnXen(void) {
-    return CONFIG_XEN && GET_GLOBAL(PlatformRunningOn) & PF_XEN;
+స్థిర అంతఃవరుస పూర్ణాంకం runningOnXen(శూన్య) {
+    తిరిగి CONFIG_XEN && GET_GLOBAL(PlatformRunningOn) & PF_XEN;
 }
-static inline int runningOnKVM(void) {
-    return CONFIG_QEMU && GET_GLOBAL(PlatformRunningOn) & PF_KVM;
+స్థిర అంతఃవరుస పూర్ణాంకం runningOnKVM(శూన్య) {
+    తిరిగి CONFIG_QEMU && GET_GLOBAL(PlatformRunningOn) & PF_KVM;
 }
 
 // Common paravirt ports.
-#define PORT_SMI_CMD                0x00b2
-#define PORT_SMI_STATUS             0x00b3
-#define PORT_QEMU_CFG_CTL           0x0510
-#define PORT_QEMU_CFG_DATA          0x0511
-#define PORT_QEMU_CFG_DMA_ADDR_HIGH 0x0514
-#define PORT_QEMU_CFG_DMA_ADDR_LOW  0x0518
+#నిర్వచించు పోర్టు_SMI_CMD                0x00b2
+#నిర్వచించు పోర్టు_SMI_స్థితి             0x00b3
+#నిర్వచించు పోర్టు_QEMU_CFG_CTL           0x0510
+#నిర్వచించు పోర్టు_QEMU_CFG_దత్తాంశం          0x0511
+#నిర్వచించు పోర్టు_QEMU_CFG_DMA_ADDR_ఎగువ 0x0514
+#నిర్వచించు పోర్టు_QEMU_CFG_DMA_ADDR_దిగువ  0x0518
 
 // QEMU_CFG_DMA_CONTROL bits
-#define QEMU_CFG_DMA_CTL_ERROR   0x01
-#define QEMU_CFG_DMA_CTL_READ    0x02
-#define QEMU_CFG_DMA_CTL_SKIP    0x04
-#define QEMU_CFG_DMA_CTL_SELECT  0x08
-#define QEMU_CFG_DMA_CTL_WRITE   0x10
+#నిర్వచించు QEMU_CFG_DMA_CTL_ERROR   0x01
+#నిర్వచించు QEMU_CFG_DMA_CTL_READ    0x02
+#నిర్వచించు QEMU_CFG_DMA_CTL_SKIP    0x04
+#నిర్వచించు QEMU_CFG_DMA_CTL_SELECT  0x08
+#నిర్వచించు QEMU_CFG_DMA_CTL_WRITE   0x10
 
 // QEMU_CFG_DMA ID bit
-#define QEMU_CFG_VERSION_DMA    2
+#నిర్వచించు QEMU_CFG_సంస్కరణ_DMA    2
 
 // QEMU debugcon read value
-#define QEMU_DEBUGCON_READBACK  0xe9
+#నిర్వచించు QEMU_DEBUGCON_READBACK  0xe9
 
-int qemu_cfg_enabled(void);
-int qemu_cfg_dma_enabled(void);
-void qemu_preinit(void);
-void qemu_platform_setup(void);
-void qemu_cfg_init(void);
+పూర్ణాంకం qemu_cfg_enabled(శూన్య);
+పూర్ణాంకం qemu_cfg_dma_enabled(శూన్య);
+శూన్య qemu_preinit(శూన్య);
+శూన్య qemu_platform_అమరిక(శూన్య);
+శూన్య qemu_cfg_init(శూన్య);
 
-u16 qemu_get_present_cpus_count(void);
-int qemu_cfg_write_file(void *src, struct romfile_s *file, u32 offset, u32 len);
-int qemu_cfg_write_file_simple(void *src, u16 key, u32 offset, u32 len);
-u16 qemu_get_romfile_key(struct romfile_s *file);
+u16 qemu_get_present_cpus_లెక్క(శూన్య);
+పూర్ణాంకం qemu_cfg_write_file(శూన్య *src, నిర్మాణం romfile_s *file, u32 స్థానభ్రంశం_2, u32 len);
+పూర్ణాంకం qemu_cfg_write_file_simple(శూన్య *src, u16 కీలకం, u32 స్థానభ్రంశం_2, u32 len);
+u16 qemu_get_romfile_కీలకం(నిర్మాణం romfile_s *file);
 
-#endif
+#అయితే_ముగింపు

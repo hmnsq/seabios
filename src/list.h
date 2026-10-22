@@ -1,91 +1,91 @@
-#ifndef __LIST_H
-#define __LIST_H
+#నిర్వచితం_కాకపోతే __LIST_H
+#నిర్వచించు __LIST_H
 
-#include "types.h" // container_of
+#అన్తర్భావ "types.h" // container_of
 
 
 /****************************************************************
  * hlist - Double linked lists with a single pointer list head
  ****************************************************************/
 
-struct hlist_node {
-    struct hlist_node *next, **pprev;
+నిర్మాణం hlist_కణుపు {
+    నిర్మాణం hlist_కణుపు *తదుపరి, **pprev;
 };
 
-struct hlist_head {
-    struct hlist_node *first;
+నిర్మాణం hlist_తల {
+    నిర్మాణం hlist_కణుపు *మొదటి;
 };
 
-static inline int
-hlist_empty(const struct hlist_head *h)
+స్థిర అంతఃవరుస పూర్ణాంకం
+hlist_ఖాళీలు(స్థిరరాశి నిర్మాణం hlist_తల *h)
 {
-    return !h->first;
+    తిరిగి !h->మొదటి;
 }
 
-static inline void
-hlist_del(struct hlist_node *n)
+స్థిర అంతఃవరుస శూన్య
+hlist_del(నిర్మాణం hlist_కణుపు *n)
 {
-    struct hlist_node *next = n->next;
-    struct hlist_node **pprev = n->pprev;
-    *pprev = next;
-    if (next)
-        next->pprev = pprev;
+    నిర్మాణం hlist_కణుపు *తదుపరి = n->తదుపరి;
+    నిర్మాణం hlist_కణుపు **pprev = n->pprev;
+    *pprev = తదుపరి;
+    ఒకవేళ (తదుపరి)
+        తదుపరి->pprev = pprev;
 }
 
-static inline void
-hlist_add(struct hlist_node *n, struct hlist_node **pprev)
+స్థిర అంతఃవరుస శూన్య
+hlist_కూడు(నిర్మాణం hlist_కణుపు *n, నిర్మాణం hlist_కణుపు **pprev)
 {
-    struct hlist_node *next = *pprev;
+    నిర్మాణం hlist_కణుపు *తదుపరి = *pprev;
     n->pprev = pprev;
-    n->next = next;
-    if (next)
-        next->pprev = &n->next;
+    n->తదుపరి = తదుపరి;
+    ఒకవేళ (తదుపరి)
+        తదుపరి->pprev = &n->తదుపరి;
     *pprev = n;
 }
 
-static inline void
-hlist_add_head(struct hlist_node *n, struct hlist_head *h)
+స్థిర అంతఃవరుస శూన్య
+hlist_కూడు_తల(నిర్మాణం hlist_కణుపు *n, నిర్మాణం hlist_తల *h)
 {
-    hlist_add(n, &h->first);
+    hlist_కూడు(n, &h->మొదటి);
 }
 
-static inline void
-hlist_add_before(struct hlist_node *n, struct hlist_node *next)
+స్థిర అంతఃవరుస శూన్య
+hlist_కూడు_before(నిర్మాణం hlist_కణుపు *n, నిర్మాణం hlist_కణుపు *తదుపరి)
 {
-    hlist_add(n, next->pprev);
+    hlist_కూడు(n, తదుపరి->pprev);
 }
 
-static inline void
-hlist_add_after(struct hlist_node *n, struct hlist_node *prev)
+స్థిర అంతఃవరుస శూన్య
+hlist_కూడు_after(నిర్మాణం hlist_కణుపు *n, నిర్మాణం hlist_కణుపు *prev)
 {
-    hlist_add(n, &prev->next);
+    hlist_కూడు(n, &prev->తదుపరి);
 }
 
-static inline void
-hlist_replace(struct hlist_node *old, struct hlist_node *new)
+స్థిర అంతఃవరుస శూన్య
+hlist_replace(నిర్మాణం hlist_కణుపు *old, నిర్మాణం hlist_కణుపు *new)
 {
-    new->next = old->next;
-    if (new->next)
-        new->next->pprev = &new->next;
+    new->తదుపరి = old->తదుపరి;
+    ఒకవేళ (new->తదుపరి)
+        new->తదుపరి->pprev = &new->తదుపరి;
     new->pprev = old->pprev;
     *new->pprev = new;
 }
 
-#define hlist_for_each_entry(pos, head, member)                         \
-    for (pos = container_of((head)->first, typeof(*pos), member)        \
-         ; pos != container_of(NULL, typeof(*pos), member)              \
-         ; pos = container_of(pos->member.next, typeof(*pos), member))
+#నిర్వచించు hlist_for_each_నమోదు(pos, తల, member)                         \
+    కొరకు (pos = container_యొక్క((తల)->మొదటి, typeof(*pos), member)        \
+         ; pos != container_యొక్క(ఖాళీ, typeof(*pos), member)              \
+         ; pos = container_యొక్క(pos->member.తదుపరి, typeof(*pos), member))
 
-#define hlist_for_each_entry_safe(pos, n, head, member)                 \
-    for (pos = container_of((head)->first, typeof(*pos), member)        \
-         ; pos != container_of(NULL, typeof(*pos), member)              \
-             && ({ n = pos->member.next; 1; })                          \
-         ; pos = container_of(n, typeof(*pos), member))
+#నిర్వచించు hlist_for_each_నమోదు_సురక్షిత(pos, n, తల, member)                 \
+    కొరకు (pos = container_యొక్క((తల)->మొదటి, typeof(*pos), member)        \
+         ; pos != container_యొక్క(ఖాళీ, typeof(*pos), member)              \
+             && ({ n = pos->member.తదుపరి; 1; })                          \
+         ; pos = container_యొక్క(n, typeof(*pos), member))
 
-#define hlist_for_each_entry_pprev(pos, pprev, head, member)            \
-    for (pprev = &(head)->first                                         \
-         ; *pprev && ({ pos=container_of(*pprev, typeof(*pos), member); 1; }) \
-         ; pprev = &(*pprev)->next)
+#నిర్వచించు hlist_for_each_నమోదు_pprev(pos, pprev, తల, member)            \
+    కొరకు (pprev = &(తల)->మొదటి                                         \
+         ; *pprev && ({ pos=container_యొక్క(*pprev, typeof(*pos), member); 1; }) \
+         ; pprev = &(*pprev)->తదుపరి)
 
 
-#endif // list.h
+#అయితే_ముగింపు // list.h

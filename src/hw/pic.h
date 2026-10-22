@@ -4,57 +4,57 @@
 // Copyright (C) 2002  MandrakeSoft S.A.
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
-#ifndef __PIC_H
-#define __PIC_H
+#నిర్వచితం_కాకపోతే __PIC_H
+#నిర్వచించు __PIC_H
 
-#include "x86.h" // outb
+#అన్తర్భావ "x86.h" // outb
 
-#define PORT_PIC1_CMD          0x0020
-#define PORT_PIC1_DATA         0x0021
-#define PORT_PIC2_CMD          0x00a0
-#define PORT_PIC2_DATA         0x00a1
+#నిర్వచించు పోర్టు_PIC1_CMD          0x0020
+#నిర్వచించు పోర్టు_PIC1_దత్తాంశం         0x0021
+#నిర్వచించు పోర్టు_PIC2_CMD          0x00a0
+#నిర్వచించు పోర్టు_PIC2_దత్తాంశం         0x00a1
 
 // PORT_PIC1 bitdefs
-#define PIC1_IRQ0  (1<<0)
-#define PIC1_IRQ1  (1<<1)
-#define PIC1_IRQ2  (1<<2)
-#define PIC1_IRQ5  (1<<5)
-#define PIC1_IRQ6  (1<<6)
+#నిర్వచించు PIC1_IRQ0  (1<<0)
+#నిర్వచించు PIC1_IRQ1  (1<<1)
+#నిర్వచించు PIC1_IRQ2  (1<<2)
+#నిర్వచించు PIC1_IRQ5  (1<<5)
+#నిర్వచించు PIC1_IRQ6  (1<<6)
 // PORT_PIC2 bitdefs
-#define PIC2_IRQ8  (1<<8)
-#define PIC2_IRQ12 (1<<12)
-#define PIC2_IRQ13 (1<<13)
-#define PIC2_IRQ14 (1<<14)
+#నిర్వచించు PIC2_IRQ8  (1<<8)
+#నిర్వచించు PIC2_IRQ12 (1<<12)
+#నిర్వచించు PIC2_IRQ13 (1<<13)
+#నిర్వచించు PIC2_IRQ14 (1<<14)
 
-#define PIC_IRQMASK_DEFAULT ((u16)~PIC1_IRQ2)
+#నిర్వచించు PIC_IRQMASK_DEFAULT ((u16)~PIC1_IRQ2)
 
-#define BIOS_HWIRQ0_VECTOR 0x08
-#define BIOS_HWIRQ8_VECTOR 0x70
+#నిర్వచించు BIOS_HWIRQ0_సదిశ 0x08
+#నిర్వచించు BIOS_HWIRQ8_సదిశ 0x70
 
-static inline void
-pic_eoi1(void)
+స్థిర అంతఃవరుస శూన్య
+pic_eoi1(శూన్య)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return;
+    ఒకవేళ (!CONFIG_HARDWARE_IRQ)
+        తిరిగి;
     // Send eoi (select OCW2 + eoi)
-    outb(0x20, PORT_PIC1_CMD);
+    outb(0x20, పోర్టు_PIC1_CMD);
 }
 
-static inline void
-pic_eoi2(void)
+స్థిర అంతఃవరుస శూన్య
+pic_eoi2(శూన్య)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return;
+    ఒకవేళ (!CONFIG_HARDWARE_IRQ)
+        తిరిగి;
     // Send eoi (select OCW2 + eoi)
-    outb(0x20, PORT_PIC2_CMD);
+    outb(0x20, పోర్టు_PIC2_CMD);
     pic_eoi1();
 }
 
-u16 pic_irqmask_read(void);
-void pic_irqmask_write(u16 mask);
-void pic_irqmask_mask(u16 off, u16 on);
-void pic_reset(u8 irq0, u8 irq8);
-void pic_setup(void);
-void enable_hwirq(int hwirq, struct segoff_s func);
+u16 pic_irqmask_read(శూన్య);
+శూన్య pic_irqmask_write(u16 ముసుగు);
+శూన్య pic_irqmask_ముసుగు(u16 off, u16 on);
+శూన్య pic_reset(u8 irq0, u8 irq8);
+శూన్య pic_అమరిక(శూన్య);
+శూన్య enable_hwirq(పూర్ణాంకం hwirq, నిర్మాణం segoff_s func);
 
-#endif // pic.h
+#అయితే_ముగింపు // pic.h

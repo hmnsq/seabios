@@ -6,320 +6,320 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_*
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "paravirt.h" // RamSize
-#include "romfile.h" // romfile_findprefix
-#include "std/smbios.h" // struct smbios_21_entry_point
-#include "string.h" // memset
-#include "util.h" // MaxCountCPUs
-#include "x86.h" // cpuid
+#అన్తర్భావ "config.h" // CONFIG_*
+#అన్తర్భావ "malloc.h" // free
+#అన్తర్భావ "output.h" // dprintf
+#అన్తర్భావ "paravirt.h" // RamSize
+#అన్తర్భావ "romfile.h" // romfile_findprefix
+#అన్తర్భావ "std/smbios.h" // struct smbios_21_entry_point
+#అన్తర్భావ "string.h" // memset
+#అన్తర్భావ "util.h" // MaxCountCPUs
+#అన్తర్భావ "x86.h" // cpuid
 
-static void
-smbios_21_entry_point_setup(u16 max_structure_size,
-                         u16 structure_table_length,
-                         void *structure_table_address,
-                         u16 number_of_structures)
+స్థిర శూన్య
+smbios_21_నమోదు_బిందువు_అమరిక(u16 max_structure_కొలత,
+                         u16 structure_పట్టిక_నిడివి,
+                         శూన్య *structure_పట్టిక_చిరునామా,
+                         u16 సంఖ్య_యొక్క_structures)
 {
-    void *finaltable;
-    if (structure_table_length <= BUILD_MAX_SMBIOS_FSEG)
+    శూన్య *finaltable;
+    ఒకవేళ (structure_పట్టిక_నిడివి <= BUILD_MAX_SMBIOS_FSEG)
         // Table is small enough for f-seg - allocate there.  This
         // works around a bug in JunOS (at least for small SMBIOS tables).
-        finaltable = malloc_fseg(structure_table_length);
-    else
-        finaltable = malloc_high(structure_table_length);
-    if (!finaltable) {
+        finaltable = malloc_fseg(structure_పట్టిక_నిడివి);
+    లేకపోతే
+        finaltable = malloc_ఎగువ(structure_పట్టిక_నిడివి);
+    ఒకవేళ (!finaltable) {
         warn_noalloc();
-        return;
+        తిరిగి;
     }
-    memcpy(finaltable, structure_table_address, structure_table_length);
+    జ్ఞాపకం_నకలు(finaltable, structure_పట్టిక_చిరునామా, structure_పట్టిక_నిడివి);
 
-    struct smbios_21_entry_point ep;
-    memset(&ep, 0, sizeof(ep));
+    నిర్మాణం smbios_21_నమోదు_బిందువు ep;
+    memset(&ep, 0, పరిమాణం(ep));
     ep.signature = SMBIOS_21_SIGNATURE;
-    ep.length = 0x1f;
-    ep.smbios_major_version = 2;
-    ep.smbios_minor_version = 4;
-    ep.max_structure_size = max_structure_size;
-    memcpy(ep.intermediate_anchor_string, "_DMI_", 5);
+    ep.నిడివి = 0x1f;
+    ep.smbios_major_సంస్కరణ = 2;
+    ep.smbios_minor_సంస్కరణ = 4;
+    ep.max_structure_కొలత = max_structure_కొలత;
+    జ్ఞాపకం_నకలు(ep.intermediate_anchor_string, "_DMI_", 5);
 
-    ep.structure_table_length = structure_table_length;
-    ep.structure_table_address = (u32)finaltable;
-    ep.number_of_structures = number_of_structures;
+    ep.structure_పట్టిక_నిడివి = structure_పట్టిక_నిడివి;
+    ep.structure_పట్టిక_చిరునామా = (u32)finaltable;
+    ep.సంఖ్య_యొక్క_structures = సంఖ్య_యొక్క_structures;
     ep.smbios_bcd_revision = 0x24;
 
     ep.checksum -= checksum(&ep, 0x10);
 
-    ep.intermediate_checksum -= checksum((void*)&ep + 0x10, ep.length - 0x10);
+    ep.intermediate_checksum -= checksum((శూన్య*)&ep + 0x10, ep.నిడివి - 0x10);
 
     copy_smbios_21(&ep);
 }
 
-static int
-get_field(int type, int offset, void *dest)
+స్థిర పూర్ణాంకం
+get_క్షేత్రం(పూర్ణాంకం type, పూర్ణాంకం స్థానభ్రంశం_2, శూన్య *dest)
 {
-    char name[128];
-    snprintf(name, sizeof(name), "smbios/field%d-%d", type, offset);
-    struct romfile_s *file = romfile_find(name);
-    if (!file)
-        return 0;
-    file->copy(file, dest, file->size);
-    return file->size;
+    అక్షరం name[128];
+    snprintf(name, పరిమాణం(name), "smbios/field%d-%d", type, స్థానభ్రంశం_2);
+    నిర్మాణం romfile_s *file = romfile_కనుగొను(name);
+    ఒకవేళ (!file)
+        తిరిగి 0;
+    file->copy(file, dest, file->కొలత);
+    తిరిగి file->కొలత;
 }
 
-static int
-get_external(int type, char **p, unsigned *nr_structs,
-             unsigned *max_struct_size, char *end)
+స్థిర పూర్ణాంకం
+get_external(పూర్ణాంకం type, అక్షరం **p, గుర్తులేని *nr_structs,
+             గుర్తులేని *max_struct_కొలత, అక్షరం *చివర)
 {
-    static u64 used_bitmap[4] = { 0 };
-    char *start = *p;
+    స్థిర u64 వాడిన_bitmap[4] = { 0 };
+    అక్షరం *ప్రారంభం = *p;
 
     /* Check if we've already reported these tables */
-    if (used_bitmap[(type >> 6) & 0x3] & (1ULL << (type & 0x3f)))
-        return 1;
+    ఒకవేళ (వాడిన_bitmap[(type >> 6) & 0x3] & (1ULL << (type & 0x3f)))
+        తిరిగి 1;
 
     /* Don't introduce spurious end markers */
-    if (type == 127)
-        return 0;
+    ఒకవేళ (type == 127)
+        తిరిగి 0;
 
-    char prefix[128];
-    snprintf(prefix, sizeof(prefix), "smbios/table%d-", type);
-    struct romfile_s *file = NULL;
-    for (;;) {
-        file = romfile_findprefix(prefix, file);
-        if (!file)
-            break;
+    అక్షరం ఉపసర్గ[128];
+    snprintf(ఉపసర్గ, పరిమాణం(ఉపసర్గ), "smbios/table%d-", type);
+    నిర్మాణం romfile_s *file = ఖాళీ;
+    కొరకు (;;) {
+        file = romfile_findprefix(ఉపసర్గ, file);
+        ఒకవేళ (!file)
+            ఆపు;
 
-        if (end - *p < file->size) {
+        ఒకవేళ (చివర - *p < file->కొలత) {
             warn_noalloc();
-            break;
+            ఆపు;
         }
 
-        struct smbios_structure_header *header = (void*)*p;
-        file->copy(file, header, file->size);
-        *p += file->size;
+        నిర్మాణం smbios_structure_శీర్షిక *శీర్షిక = (శూన్య*)*p;
+        file->copy(file, శీర్షిక, file->కొలత);
+        *p += file->కొలత;
 
         /* Entries end with a double NULL char, if there's a string at
          * the end (length is greater than formatted length), the string
          * terminator provides the first NULL. */
         *((u8*)*p) = 0;
         (*p)++;
-        if (header->length >= file->size) {
+        ఒకవేళ (శీర్షిక->నిడివి >= file->కొలత) {
             *((u8*)*p) = 0;
             (*p)++;
         }
 
         (*nr_structs)++;
-        if (*p - (char*)header > *max_struct_size)
-            *max_struct_size = *p - (char*)header;
+        ఒకవేళ (*p - (అక్షరం*)శీర్షిక > *max_struct_కొలత)
+            *max_struct_కొలత = *p - (అక్షరం*)శీర్షిక;
     }
 
-    if (start == *p)
-        return 0;
+    ఒకవేళ (ప్రారంభం == *p)
+        తిరిగి 0;
 
     /* Mark that we've reported on this type */
-    used_bitmap[(type >> 6) & 0x3] |= (1ULL << (type & 0x3f));
-    return 1;
+    వాడిన_bitmap[(type >> 6) & 0x3] |= (1ULL << (type & 0x3f));
+    తిరిగి 1;
 }
 
-#define load_str_field_with_default(type, field, def)                   \
-    do {                                                                \
-        size = get_field(type, offsetof(struct smbios_type_##type,      \
-                                        field), end);                   \
-        if (size == 1) {                                                \
+#నిర్వచించు ఎక్కించు_str_క్షేత్రం_with_default(type, క్షేత్రం, def)                   \
+    చేయి {                                                                \
+        కొలత = get_క్షేత్రం(type, offsetof(నిర్మాణం smbios_type_##type,      \
+                                        క్షేత్రం), చివర);                   \
+        ఒకవేళ (కొలత == 1) {                                                \
             /* zero-length string, skip to avoid bogus end marker */    \
-            p->field = 0;                                               \
-        } else if (size > 1) {                                          \
-            end += size;                                                \
-            p->field = ++str_index;                                     \
-        } else {                                                        \
-            memcpy(end, def, sizeof(def));                              \
-            end += sizeof(def);                                         \
-            p->field = ++str_index;                                     \
+            p->క్షేత్రం = 0;                                               \
+        } లేకపోతే ఒకవేళ (కొలత > 1) {                                          \
+            చివర += కొలత;                                                \
+            p->క్షేత్రం = ++str_సూచీ;                                     \
+        } లేకపోతే {                                                        \
+            జ్ఞాపకం_నకలు(చివర, def, పరిమాణం(def));                              \
+            చివర += పరిమాణం(def);                                         \
+            p->క్షేత్రం = ++str_సూచీ;                                     \
         }                                                               \
-    } while (0)
+    } అయితే (0)
 
-#define load_str_field_or_skip(type, field)                             \
-    do {                                                                \
-        size = get_field(type, offsetof(struct smbios_type_##type,      \
-                                        field), end);                   \
-        if (size > 1) {                                                 \
-            end += size;                                                \
-            p->field = ++str_index;                                     \
-        } else {                                                        \
-            p->field = 0;                                               \
+#నిర్వచించు ఎక్కించు_str_క్షేత్రం_or_skip(type, క్షేత్రం)                             \
+    చేయి {                                                                \
+        కొలత = get_క్షేత్రం(type, offsetof(నిర్మాణం smbios_type_##type,      \
+                                        క్షేత్రం), చివర);                   \
+        ఒకవేళ (కొలత > 1) {                                                 \
+            చివర += కొలత;                                                \
+            p->క్షేత్రం = ++str_సూచీ;                                     \
+        } లేకపోతే {                                                        \
+            p->క్షేత్రం = 0;                                               \
         }                                                               \
-    } while (0)
+    } అయితే (0)
 
-#define set_field_with_default(type, field, def)                        \
-    do {                                                                \
-        if (!get_field(type, offsetof(struct smbios_type_##type,        \
-                                      field), &p->field)) {             \
-            p->field = def;                                             \
+#నిర్వచించు సమితి_క్షేత్రం_with_default(type, క్షేత్రం, def)                        \
+    చేయి {                                                                \
+        ఒకవేళ (!get_క్షేత్రం(type, offsetof(నిర్మాణం smbios_type_##type,        \
+                                      క్షేత్రం), &p->క్షేత్రం)) {             \
+            p->క్షేత్రం = def;                                             \
         }                                                               \
-    } while (0)
+    } అయితే (0)
 
 /* Type 0 -- BIOS Information */
-#define RELEASE_DATE_STR "01/01/2011"
-static void *
-smbios_init_type_0(void *start)
+#నిర్వచించు RELEASE_DATE_STR "01/01/2011"
+స్థిర శూన్య *
+smbios_init_type_0(శూన్య *ప్రారంభం)
 {
-    struct smbios_type_0 *p = (struct smbios_type_0 *)start;
-    char *end = (char *)start + sizeof(struct smbios_type_0);
-    size_t size;
-    int str_index = 0;
+    నిర్మాణం smbios_type_0 *p = (నిర్మాణం smbios_type_0 *)ప్రారంభం;
+    అక్షరం *చివర = (అక్షరం *)ప్రారంభం + పరిమాణం(నిర్మాణం smbios_type_0);
+    కొలత_t కొలత;
+    పూర్ణాంకం str_సూచీ = 0;
 
-    p->header.type = 0;
-    p->header.length = sizeof(struct smbios_type_0);
-    p->header.handle = 0;
+    p->శీర్షిక.type = 0;
+    p->శీర్షిక.నిడివి = పరిమాణం(నిర్మాణం smbios_type_0);
+    p->శీర్షిక.handle = 0;
 
-    load_str_field_with_default(0, vendor_str, BUILD_APPNAME);
-    load_str_field_with_default(0, bios_version_str, BUILD_APPNAME);
+    ఎక్కించు_str_క్షేత్రం_with_default(0, vendor_str, BUILD_APPNAME);
+    ఎక్కించు_str_క్షేత్రం_with_default(0, bios_సంస్కరణ_str, BUILD_APPNAME);
 
-    p->bios_starting_address_segment = 0xe800;
+    p->bios_starting_చిరునామా_segment = 0xe800;
 
-    load_str_field_with_default(0, bios_release_date_str, RELEASE_DATE_STR);
+    ఎక్కించు_str_క్షేత్రం_with_default(0, bios_release_date_str, RELEASE_DATE_STR);
 
-    p->bios_rom_size = 0; /* FIXME */
+    p->bios_rom_కొలత = 0; /* FIXME */
 
-    if (!get_field(0, offsetof(struct smbios_type_0, bios_characteristics),
+    ఒకవేళ (!get_క్షేత్రం(0, offsetof(నిర్మాణం smbios_type_0, bios_characteristics),
                    &p->bios_characteristics)) {
         memset(p->bios_characteristics, 0, 8);
         /* BIOS characteristics not supported */
         p->bios_characteristics[0] = 0x08;
     }
 
-    if (!get_field(0, offsetof(struct smbios_type_0,
-                               bios_characteristics_extension_bytes),
-                   &p->bios_characteristics_extension_bytes)) {
-        p->bios_characteristics_extension_bytes[0] = 0;
+    ఒకవేళ (!get_క్షేత్రం(0, offsetof(నిర్మాణం smbios_type_0,
+                               bios_characteristics_extension_బైట్లు),
+                   &p->bios_characteristics_extension_బైట్లు)) {
+        p->bios_characteristics_extension_బైట్లు[0] = 0;
         /* Enable targeted content distribution. Needed for SVVP */
-        p->bios_characteristics_extension_bytes[1] = 4;
+        p->bios_characteristics_extension_బైట్లు[1] = 4;
     }
 
-    set_field_with_default(0, system_bios_major_release, 1);
-    set_field_with_default(0, system_bios_minor_release, 0);
-    set_field_with_default(0, embedded_controller_major_release, 0xff);
-    set_field_with_default(0, embedded_controller_minor_release, 0xff);
+    సమితి_క్షేత్రం_with_default(0, system_bios_major_release, 1);
+    సమితి_క్షేత్రం_with_default(0, system_bios_minor_release, 0);
+    సమితి_క్షేత్రం_with_default(0, embedded_controller_major_release, 0xff);
+    సమితి_క్షేత్రం_with_default(0, embedded_controller_minor_release, 0xff);
 
-    *end = 0;
-    end++;
-    if (!str_index) {
-        *end = 0;
-        end++;
+    *చివర = 0;
+    చివర++;
+    ఒకవేళ (!str_సూచీ) {
+        *చివర = 0;
+        చివర++;
     }
 
-    return end;
+    తిరిగి చివర;
 }
 
 /* Type 1 -- System Information */
-static void *
-smbios_init_type_1(void *start)
+స్థిర శూన్య *
+smbios_init_type_1(శూన్య *ప్రారంభం)
 {
-    struct smbios_type_1 *p = (struct smbios_type_1 *)start;
-    char *end = (char *)start + sizeof(struct smbios_type_1);
-    size_t size;
-    int str_index = 0;
+    నిర్మాణం smbios_type_1 *p = (నిర్మాణం smbios_type_1 *)ప్రారంభం;
+    అక్షరం *చివర = (అక్షరం *)ప్రారంభం + పరిమాణం(నిర్మాణం smbios_type_1);
+    కొలత_t కొలత;
+    పూర్ణాంకం str_సూచీ = 0;
 
-    p->header.type = 1;
-    p->header.length = sizeof(struct smbios_type_1);
-    p->header.handle = 0x100;
+    p->శీర్షిక.type = 1;
+    p->శీర్షిక.నిడివి = పరిమాణం(నిర్మాణం smbios_type_1);
+    p->శీర్షిక.handle = 0x100;
 
-    load_str_field_with_default(1, manufacturer_str, BUILD_APPNAME);
-    load_str_field_with_default(1, product_name_str, BUILD_APPNAME);
-    load_str_field_or_skip(1, version_str);
-    load_str_field_or_skip(1, serial_number_str);
+    ఎక్కించు_str_క్షేత్రం_with_default(1, manufacturer_str, BUILD_APPNAME);
+    ఎక్కించు_str_క్షేత్రం_with_default(1, లబ్ధం_name_str, BUILD_APPNAME);
+    ఎక్కించు_str_క్షేత్రం_or_skip(1, సంస్కరణ_str);
+    ఎక్కించు_str_క్షేత్రం_or_skip(1, serial_సంఖ్య_str);
 
-    if (!get_field(1, offsetof(struct smbios_type_1, uuid), &p->uuid))
+    ఒకవేళ (!get_క్షేత్రం(1, offsetof(నిర్మాణం smbios_type_1, uuid), &p->uuid))
         memset(p->uuid, 0, 16);
 
-    set_field_with_default(1, wake_up_type, 0x06); /* power switch */
+    సమితి_క్షేత్రం_with_default(1, wake_పైకి_type, 0x06); /* power switch */
 
-    load_str_field_or_skip(1, sku_number_str);
-    load_str_field_or_skip(1, family_str);
+    ఎక్కించు_str_క్షేత్రం_or_skip(1, sku_సంఖ్య_str);
+    ఎక్కించు_str_క్షేత్రం_or_skip(1, family_str);
 
-    *end = 0;
-    end++;
-    if (!str_index) {
-        *end = 0;
-        end++;
+    *చివర = 0;
+    చివర++;
+    ఒకవేళ (!str_సూచీ) {
+        *చివర = 0;
+        చివర++;
     }
 
-    return end;
+    తిరిగి చివర;
 }
 
 /* Type 3 -- System Enclosure */
-static void *
-smbios_init_type_3(void *start)
+స్థిర శూన్య *
+smbios_init_type_3(శూన్య *ప్రారంభం)
 {
-    struct smbios_type_3 *p = (struct smbios_type_3 *)start;
-    char *end = (char *)start + sizeof(struct smbios_type_3);
-    size_t size;
-    int str_index = 0;
+    నిర్మాణం smbios_type_3 *p = (నిర్మాణం smbios_type_3 *)ప్రారంభం;
+    అక్షరం *చివర = (అక్షరం *)ప్రారంభం + పరిమాణం(నిర్మాణం smbios_type_3);
+    కొలత_t కొలత;
+    పూర్ణాంకం str_సూచీ = 0;
 
-    p->header.type = 3;
-    p->header.length = sizeof(struct smbios_type_3);
-    p->header.handle = 0x300;
+    p->శీర్షిక.type = 3;
+    p->శీర్షిక.నిడివి = పరిమాణం(నిర్మాణం smbios_type_3);
+    p->శీర్షిక.handle = 0x300;
 
-    load_str_field_with_default(3, manufacturer_str, BUILD_APPNAME);
-    set_field_with_default(3, type, 0x01); /* other */
+    ఎక్కించు_str_క్షేత్రం_with_default(3, manufacturer_str, BUILD_APPNAME);
+    సమితి_క్షేత్రం_with_default(3, type, 0x01); /* other */
 
-    load_str_field_or_skip(3, version_str);
-    load_str_field_or_skip(3, serial_number_str);
-    load_str_field_or_skip(3, asset_tag_number_str);
+    ఎక్కించు_str_క్షేత్రం_or_skip(3, సంస్కరణ_str);
+    ఎక్కించు_str_క్షేత్రం_or_skip(3, serial_సంఖ్య_str);
+    ఎక్కించు_str_క్షేత్రం_or_skip(3, asset_ట్యాగ్_సంఖ్య_str);
 
-    set_field_with_default(3, boot_up_state, 0x03); /* safe */
-    set_field_with_default(3, power_supply_state, 0x03); /* safe */
-    set_field_with_default(3, thermal_state, 0x03); /* safe */
-    set_field_with_default(3, security_status, 0x02); /* unknown */
+    సమితి_క్షేత్రం_with_default(3, boot_పైకి_state, 0x03); /*సురక్షిత*/
+    సమితి_క్షేత్రం_with_default(3, power_supply_state, 0x03); /*సురక్షిత*/
+    సమితి_క్షేత్రం_with_default(3, thermal_state, 0x03); /*సురక్షిత*/
+    సమితి_క్షేత్రం_with_default(3, security_స్థితి, 0x02); /* unknown */
 
-    set_field_with_default(3, oem_defined, 0);
-    set_field_with_default(3, height, 0);
-    set_field_with_default(3, number_of_power_cords, 0);
-    set_field_with_default(3, contained_element_count, 0);
+    సమితి_క్షేత్రం_with_default(3, oem_defined, 0);
+    సమితి_క్షేత్రం_with_default(3, ఎత్తు, 0);
+    సమితి_క్షేత్రం_with_default(3, సంఖ్య_యొక్క_power_cords, 0);
+    సమితి_క్షేత్రం_with_default(3, contained_element_లెక్క, 0);
 
-    *end = 0;
-    end++;
-    if (!str_index) {
-        *end = 0;
-        end++;
+    *చివర = 0;
+    చివర++;
+    ఒకవేళ (!str_సూచీ) {
+        *చివర = 0;
+        చివర++;
     }
 
-    return end;
+    తిరిగి చివర;
 }
 
 /* Type 4 -- Processor Information */
-static void *
-smbios_init_type_4(void *start, unsigned int cpu_number)
+స్థిర శూన్య *
+smbios_init_type_4(శూన్య *ప్రారంభం, గుర్తులేని పూర్ణాంకం cpu_సంఖ్య)
 {
-    struct smbios_type_4 *p = (struct smbios_type_4 *)start;
-    char *end = (char *)start + sizeof(struct smbios_type_4);
-    size_t size;
-    int str_index = 0;
-    char name[1024];
+    నిర్మాణం smbios_type_4 *p = (నిర్మాణం smbios_type_4 *)ప్రారంభం;
+    అక్షరం *చివర = (అక్షరం *)ప్రారంభం + పరిమాణం(నిర్మాణం smbios_type_4);
+    కొలత_t కొలత;
+    పూర్ణాంకం str_సూచీ = 0;
+    అక్షరం name[1024];
 
-    p->header.type = 4;
-    p->header.length = sizeof(struct smbios_type_4);
-    p->header.handle = 0x400 + cpu_number;
+    p->శీర్షిక.type = 4;
+    p->శీర్షిక.నిడివి = పరిమాణం(నిర్మాణం smbios_type_4);
+    p->శీర్షిక.handle = 0x400 + cpu_సంఖ్య;
 
-    size = get_field(4, offsetof(struct smbios_type_4, socket_designation_str),
+    కొలత = get_క్షేత్రం(4, offsetof(నిర్మాణం smbios_type_4, socket_designation_str),
                      name);
-    if (size)
-        snprintf(name + size - 1, sizeof(name) - size, "%2x", cpu_number);
-    else
-        snprintf(name, sizeof(name), "CPU%2x", cpu_number);
+    ఒకవేళ (కొలత)
+        snprintf(name + కొలత - 1, పరిమాణం(name) - కొలత, "%2x", cpu_సంఖ్య);
+    లేకపోతే
+        snprintf(name, పరిమాణం(name), "CPU%2x", cpu_సంఖ్య);
 
-    memcpy(end, name, strlen(name) + 1);
-    end += strlen(name) + 1;
-    p->socket_designation_str = ++str_index;
+    జ్ఞాపకం_నకలు(చివర, name, అక్షరశ్రేణి_పొడవు(name) + 1);
+    చివర += అక్షరశ్రేణి_పొడవు(name) + 1;
+    p->socket_designation_str = ++str_సూచీ;
 
-    set_field_with_default(4, processor_type, 0x03); /* CPU */
-    set_field_with_default(4, processor_family, 0x01); /* other */
+    సమితి_క్షేత్రం_with_default(4, processor_type, 0x03); /* CPU */
+    సమితి_క్షేత్రం_with_default(4, processor_family, 0x01); /* other */
 
-    load_str_field_with_default(4, processor_manufacturer_str, BUILD_APPNAME);
+    ఎక్కించు_str_క్షేత్రం_with_default(4, processor_manufacturer_str, BUILD_APPNAME);
 
-    if (!get_field(4, offsetof(struct smbios_type_4, processor_id)
+    ఒకవేళ (!get_క్షేత్రం(4, offsetof(నిర్మాణం smbios_type_4, processor_id)
                    , p->processor_id)) {
         u32 cpuid_signature, ebx, ecx, cpuid_features;
         cpuid(1, &cpuid_signature, &ebx, &ecx, &cpuid_features);
@@ -327,263 +327,263 @@ smbios_init_type_4(void *start, unsigned int cpu_number)
         p->processor_id[1] = cpuid_features;
     }
 
-    load_str_field_or_skip(4, processor_version_str);
-    set_field_with_default(4, voltage, 0);
-    set_field_with_default(4, external_clock, 0);
+    ఎక్కించు_str_క్షేత్రం_or_skip(4, processor_సంస్కరణ_str);
+    సమితి_క్షేత్రం_with_default(4, voltage, 0);
+    సమితి_క్షేత్రం_with_default(4, external_clock, 0);
 
-    set_field_with_default(4, max_speed, 2000);
-    set_field_with_default(4, current_speed, 2000);
+    సమితి_క్షేత్రం_with_default(4, max_వేగం, 2000);
+    సమితి_క్షేత్రం_with_default(4, current_వేగం, 2000);
 
-    set_field_with_default(4, status, 0x41); /* socket populated, CPU enabled */
-    set_field_with_default(4, processor_upgrade, 0x01); /* other */
+    సమితి_క్షేత్రం_with_default(4, స్థితి_2, 0x41); /* socket populated, CPU enabled */
+    సమితి_క్షేత్రం_with_default(4, processor_upgrade, 0x01); /* other */
 
     /* cache information structure not provided */
     p->l1_cache_handle =  0xffff;
     p->l2_cache_handle =  0xffff;
     p->l3_cache_handle =  0xffff;
 
-    *end = 0;
-    end++;
-    if (!str_index) {
-        *end = 0;
-        end++;
+    *చివర = 0;
+    చివర++;
+    ఒకవేళ (!str_సూచీ) {
+        *చివర = 0;
+        చివర++;
     }
 
-    return end;
+    తిరిగి చివర;
 }
 
 /* Type 16 -- Physical Memory Array */
-static void *
-smbios_init_type_16(void *start, u32 memory_size_mb, int nr_mem_devs)
+స్థిర శూన్య *
+smbios_init_type_16(శూన్య *ప్రారంభం, u32 జ్ఞాపకం_కొలత_mb, పూర్ణాంకం nr_mem_devs)
 {
-    struct smbios_type_16 *p = (struct smbios_type_16*)start;
+    నిర్మాణం smbios_type_16 *p = (నిర్మాణం smbios_type_16*)ప్రారంభం;
 
-    p->header.type = 16;
-    p->header.length = sizeof(struct smbios_type_16);
-    p->header.handle = 0x1000;
+    p->శీర్షిక.type = 16;
+    p->శీర్షిక.నిడివి = పరిమాణం(నిర్మాణం smbios_type_16);
+    p->శీర్షిక.handle = 0x1000;
 
-    set_field_with_default(16, location, 0x01); /* other */
-    set_field_with_default(16, use, 0x03); /* system memory */
+    సమితి_క్షేత్రం_with_default(16, location, 0x01); /* other */
+    సమితి_క్షేత్రం_with_default(16, use, 0x03); /* system memory */
     /* Multi-bit ECC to make Microsoft happy */
-    set_field_with_default(16, error_correction, 0x06);
+    సమితి_క్షేత్రం_with_default(16, error_correction, 0x06);
     /* 0x80000000 = unknown, accept sizes < 2TB - TODO multiple arrays */
-    p->maximum_capacity = memory_size_mb < 2 << 20 ?
-                          memory_size_mb << 10 : 0x80000000;
-    p->memory_error_information_handle = 0xfffe; /* none provided */
-    p->number_of_memory_devices = nr_mem_devs;
+    p->గరిష్ఠ_సామర్థ్యం = జ్ఞాపకం_కొలత_mb < 2 << 20 ?
+                          జ్ఞాపకం_కొలత_mb << 10 : 0x80000000;
+    p->జ్ఞాపకం_error_information_handle = 0xfffe; /* none provided */
+    p->సంఖ్య_యొక్క_జ్ఞాపకం_devices = nr_mem_devs;
 
-    start += sizeof(struct smbios_type_16);
-    *((u16 *)start) = 0;
+    ప్రారంభం += పరిమాణం(నిర్మాణం smbios_type_16);
+    *((u16 *)ప్రారంభం) = 0;
 
-    return start + 2;
+    తిరిగి ప్రారంభం + 2;
 }
 
 /* Type 17 -- Memory Device */
-static void *
-smbios_init_type_17(void *start, u32 size_mb, int instance)
+స్థిర శూన్య *
+smbios_init_type_17(శూన్య *ప్రారంభం, u32 కొలత_mb, పూర్ణాంకం instance)
 {
-    struct smbios_type_17 *p = (struct smbios_type_17 *)start;
-    char *end = (char *)start + sizeof(struct smbios_type_17);
-    size_t size;
-    int str_index = 0;
-    char name[1024];
+    నిర్మాణం smbios_type_17 *p = (నిర్మాణం smbios_type_17 *)ప్రారంభం;
+    అక్షరం *చివర = (అక్షరం *)ప్రారంభం + పరిమాణం(నిర్మాణం smbios_type_17);
+    కొలత_t కొలత;
+    పూర్ణాంకం str_సూచీ = 0;
+    అక్షరం name[1024];
 
-    p->header.type = 17;
-    p->header.length = sizeof(struct smbios_type_17);
-    p->header.handle = 0x1100 + instance;
+    p->శీర్షిక.type = 17;
+    p->శీర్షిక.నిడివి = పరిమాణం(నిర్మాణం smbios_type_17);
+    p->శీర్షిక.handle = 0x1100 + instance;
 
-    p->physical_memory_array_handle = 0x1000;
-    set_field_with_default(17, total_width, 64);
-    set_field_with_default(17, data_width, 64);
+    p->physical_జ్ఞాపకం_array_handle = 0x1000;
+    సమితి_క్షేత్రం_with_default(17, మొత్తం_వెడల్పు, 64);
+    సమితి_క్షేత్రం_with_default(17, దత్తాంశం_వెడల్పు, 64);
 /* TODO: should assert in case something is wrong   ASSERT((memory_size_mb & ~0x7fff) == 0); */
-    p->size = size_mb;
-    set_field_with_default(17, form_factor, 0x09); /* DIMM */
-    p->device_set = 0;
+    p->కొలత = కొలత_mb;
+    సమితి_క్షేత్రం_with_default(17, form_గుణకం, 0x09); /* DIMM */
+    p->device_సమితి = 0;
 
-    size = get_field(17, offsetof(struct smbios_type_17, device_locator_str),
+    కొలత = get_క్షేత్రం(17, offsetof(నిర్మాణం smbios_type_17, device_locator_str),
                      name);
-    if (size)
-        snprintf(name + size - 1, sizeof(name) - size, "%d", instance);
-    else
-        snprintf(name, sizeof(name), "DIMM %d", instance);
+    ఒకవేళ (కొలత)
+        snprintf(name + కొలత - 1, పరిమాణం(name) - కొలత, "%d", instance);
+    లేకపోతే
+        snprintf(name, పరిమాణం(name), "DIMM %d", instance);
 
-    memcpy(end, name, strlen(name) + 1);
-    end += strlen(name) + 1;
-    p->device_locator_str = ++str_index;
+    జ్ఞాపకం_నకలు(చివర, name, అక్షరశ్రేణి_పొడవు(name) + 1);
+    చివర += అక్షరశ్రేణి_పొడవు(name) + 1;
+    p->device_locator_str = ++str_సూచీ;
 
-    load_str_field_or_skip(17, bank_locator_str);
-    set_field_with_default(17, memory_type, 0x07); /* RAM */
-    set_field_with_default(17, type_detail, 0);
+    ఎక్కించు_str_క్షేత్రం_or_skip(17, bank_locator_str);
+    సమితి_క్షేత్రం_with_default(17, జ్ఞాపకం_type, 0x07); /* RAM */
+    సమితి_క్షేత్రం_with_default(17, type_detail, 0);
 
-    *end = 0;
-    end++;
-    if (!str_index) {
-        *end = 0;
-        end++;
+    *చివర = 0;
+    చివర++;
+    ఒకవేళ (!str_సూచీ) {
+        *చివర = 0;
+        చివర++;
     }
 
-    return end;
+    తిరిగి చివర;
 }
 
 /* Type 19 -- Memory Array Mapped Address */
-static void *
-smbios_init_type_19(void *start, u32 start_mb, u32 size_mb, int instance)
+స్థిర శూన్య *
+smbios_init_type_19(శూన్య *ప్రారంభం, u32 ప్రారంభం_mb, u32 కొలత_mb, పూర్ణాంకం instance)
 {
-    struct smbios_type_19 *p = (struct smbios_type_19 *)start;
+    నిర్మాణం smbios_type_19 *p = (నిర్మాణం smbios_type_19 *)ప్రారంభం;
 
-    p->header.type = 19;
-    p->header.length = sizeof(struct smbios_type_19);
-    p->header.handle = 0x1300 + instance;
+    p->శీర్షిక.type = 19;
+    p->శీర్షిక.నిడివి = పరిమాణం(నిర్మాణం smbios_type_19);
+    p->శీర్షిక.handle = 0x1300 + instance;
 
-    p->starting_address = start_mb << 10;
-    p->ending_address = p->starting_address + (size_mb << 10) - 1;
-    p->memory_array_handle = 0x1000;
-    p->partition_width = 1;
+    p->starting_చిరునామా = ప్రారంభం_mb << 10;
+    p->ending_చిరునామా = p->starting_చిరునామా + (కొలత_mb << 10) - 1;
+    p->జ్ఞాపకం_array_handle = 0x1000;
+    p->విభజన_వెడల్పు = 1;
 
-    start += sizeof(struct smbios_type_19);
-    *((u16 *)start) = 0;
+    ప్రారంభం += పరిమాణం(నిర్మాణం smbios_type_19);
+    *((u16 *)ప్రారంభం) = 0;
 
-    return start + 2;
+    తిరిగి ప్రారంభం + 2;
 }
 
 /* Type 20 -- Memory Device Mapped Address */
-static void *
-smbios_init_type_20(void *start, u32 start_mb, u32 size_mb, int instance,
-                    int dev_handle, int array_handle)
+స్థిర శూన్య *
+smbios_init_type_20(శూన్య *ప్రారంభం, u32 ప్రారంభం_mb, u32 కొలత_mb, పూర్ణాంకం instance,
+                    పూర్ణాంకం dev_handle, పూర్ణాంకం array_handle)
 {
-    struct smbios_type_20 *p = (struct smbios_type_20 *)start;
+    నిర్మాణం smbios_type_20 *p = (నిర్మాణం smbios_type_20 *)ప్రారంభం;
 
-    p->header.type = 20;
-    p->header.length = sizeof(struct smbios_type_20);
-    p->header.handle = 0x1400 + instance;
+    p->శీర్షిక.type = 20;
+    p->శీర్షిక.నిడివి = పరిమాణం(నిర్మాణం smbios_type_20);
+    p->శీర్షిక.handle = 0x1400 + instance;
 
-    p->starting_address = start_mb << 10;
-    p->ending_address = p->starting_address + (size_mb << 10) - 1;
-    p->memory_device_handle = 0x1100 + dev_handle;
-    p->memory_array_mapped_address_handle = 0x1300 + array_handle;
-    p->partition_row_position = 1;
+    p->starting_చిరునామా = ప్రారంభం_mb << 10;
+    p->ending_చిరునామా = p->starting_చిరునామా + (కొలత_mb << 10) - 1;
+    p->జ్ఞాపకం_device_handle = 0x1100 + dev_handle;
+    p->జ్ఞాపకం_array_mapped_చిరునామా_handle = 0x1300 + array_handle;
+    p->విభజన_అడ్డువరుస_position = 1;
     p->interleave_position = 0;
-    p->interleaved_data_depth = 0;
+    p->interleaved_దత్తాంశం_లోతు = 0;
 
-    start += sizeof(struct smbios_type_20);
+    ప్రారంభం += పరిమాణం(నిర్మాణం smbios_type_20);
 
-    *((u16 *)start) = 0;
-    return start+2;
+    *((u16 *)ప్రారంభం) = 0;
+    తిరిగి ప్రారంభం+2;
 }
 
 /* Type 32 -- System Boot Information */
-static void *
-smbios_init_type_32(void *start)
+స్థిర శూన్య *
+smbios_init_type_32(శూన్య *ప్రారంభం)
 {
-    struct smbios_type_32 *p = (struct smbios_type_32 *)start;
+    నిర్మాణం smbios_type_32 *p = (నిర్మాణం smbios_type_32 *)ప్రారంభం;
 
-    p->header.type = 32;
-    p->header.length = sizeof(struct smbios_type_32);
-    p->header.handle = 0x2000;
+    p->శీర్షిక.type = 32;
+    p->శీర్షిక.నిడివి = పరిమాణం(నిర్మాణం smbios_type_32);
+    p->శీర్షిక.handle = 0x2000;
     memset(p->reserved, 0, 6);
-    set_field_with_default(32, boot_status, 0); /* no errors detected */
+    సమితి_క్షేత్రం_with_default(32, boot_స్థితి, 0); /* no errors detected */
 
-    start += sizeof(struct smbios_type_32);
-    *((u16 *)start) = 0;
+    ప్రారంభం += పరిమాణం(నిర్మాణం smbios_type_32);
+    *((u16 *)ప్రారంభం) = 0;
 
-    return start+2;
+    తిరిగి ప్రారంభం+2;
 }
 
 /* Type 127 -- End of Table */
-static void *
-smbios_init_type_127(void *start)
+స్థిర శూన్య *
+smbios_init_type_127(శూన్య *ప్రారంభం)
 {
-    struct smbios_type_127 *p = (struct smbios_type_127 *)start;
+    నిర్మాణం smbios_type_127 *p = (నిర్మాణం smbios_type_127 *)ప్రారంభం;
 
-    p->header.type = 127;
-    p->header.length = sizeof(struct smbios_type_127);
-    p->header.handle = 0x7f00;
+    p->శీర్షిక.type = 127;
+    p->శీర్షిక.నిడివి = పరిమాణం(నిర్మాణం smbios_type_127);
+    p->శీర్షిక.handle = 0x7f00;
 
-    start += sizeof(struct smbios_type_127);
-    *((u16 *)start) = 0;
+    ప్రారంభం += పరిమాణం(నిర్మాణం smbios_type_127);
+    *((u16 *)ప్రారంభం) = 0;
 
-    return start + 2;
+    తిరిగి ప్రారంభం + 2;
 }
 
-#define TEMPSMBIOSSIZE (32 * 1024)
+#నిర్వచించు TEMPSMBIOSSIZE (32 * 1024)
 
-void
-smbios_legacy_setup(void)
+శూన్య
+smbios_legacy_అమరిక(శూన్య)
 {
-    if (! CONFIG_SMBIOS)
-        return;
+    ఒకవేళ (! CONFIG_SMBIOS)
+        తిరిగి;
 
     dprintf(3, "init SMBIOS tables\n");
 
-    char *start = malloc_tmphigh(TEMPSMBIOSSIZE);
-    if (! start) {
+    అక్షరం *ప్రారంభం = malloc_tmphigh(TEMPSMBIOSSIZE);
+    ఒకవేళ (! ప్రారంభం) {
         warn_noalloc();
-        return;
+        తిరిగి;
     }
-    memset(start, 0, TEMPSMBIOSSIZE);
+    memset(ప్రారంభం, 0, TEMPSMBIOSSIZE);
 
-    u32 nr_structs = 0, max_struct_size = 0;
-    char *q, *p = start;
-    char *end = start + TEMPSMBIOSSIZE - sizeof(struct smbios_type_127);
+    u32 nr_structs = 0, max_struct_కొలత = 0;
+    అక్షరం *q, *p = ప్రారంభం;
+    అక్షరం *చివర = ప్రారంభం + TEMPSMBIOSSIZE - పరిమాణం(నిర్మాణం smbios_type_127);
 
-#define add_struct(type, args...)                                       \
-    do {                                                                \
-        if (!get_external(type, &p, &nr_structs, &max_struct_size, end)) { \
-            q = smbios_init_type_##type(args);                          \
+#నిర్వచించు కూడు_struct(type, వాదనలు...)                                       \
+    చేయి {                                                                \
+        ఒకవేళ (!get_external(type, &p, &nr_structs, &max_struct_కొలత, చివర)) { \
+            q = smbios_init_type_##type(వాదనలు);                          \
             nr_structs++;                                               \
-            if ((q - p) > max_struct_size)                              \
-                max_struct_size = q - p;                                \
+            ఒకవేళ ((q - p) > max_struct_కొలత)                              \
+                max_struct_కొలత = q - p;                                \
             p = q;                                                      \
         }                                                               \
-    } while (0)
+    } అయితే (0)
 
-    add_struct(0, p);
-    add_struct(1, p);
-    add_struct(3, p);
+    కూడు_struct(0, p);
+    కూడు_struct(1, p);
+    కూడు_struct(3, p);
 
-    int cpu_num;
-    for (cpu_num = 1; cpu_num <= MaxCountCPUs; cpu_num++)
-        add_struct(4, p, cpu_num);
+    పూర్ణాంకం cpu_అంకె;
+    కొరకు (cpu_అంకె = 1; cpu_అంకె <= Max_లెక్క_CPUs; cpu_అంకె++)
+        కూడు_struct(4, p, cpu_అంకె);
 
-    int ram_mb = (RamSize + RamSizeOver4G) >> 20;
-    int nr_mem_devs = (ram_mb + 0x3fff) >> 14;
-    add_struct(16, p, ram_mb, nr_mem_devs);
+    పూర్ణాంకం ram_mb = (Ram_కొలత + Ram_కొలత_Over4_G) >> 20;
+    పూర్ణాంకం nr_mem_devs = (ram_mb + 0x3fff) >> 14;
+    కూడు_struct(16, p, ram_mb, nr_mem_devs);
 
-    int i, j;
-    for (i = 0; i < nr_mem_devs; i++) {
+    పూర్ణాంకం i, j;
+    కొరకు (i = 0; i < nr_mem_devs; i++) {
         u32 dev_mb = ((i == (nr_mem_devs - 1))
                       ? (((ram_mb - 1) & 0x3fff) + 1)
                       : 16384);
-        add_struct(17, p, dev_mb, i);
+        కూడు_struct(17, p, dev_mb, i);
     }
 
-    add_struct(19, p, 0, RamSize >> 20, 0);
-    if (RamSizeOver4G)
-        add_struct(19, p, 4096, RamSizeOver4G >> 20, 1);
+    కూడు_struct(19, p, 0, Ram_కొలత >> 20, 0);
+    ఒకవేళ (Ram_కొలత_Over4_G)
+        కూడు_struct(19, p, 4096, Ram_కొలత_Over4_G >> 20, 1);
 
-    add_struct(20, p, 0, RamSize >> 20, 0, 0, 0);
-    if (RamSizeOver4G) {
-        u32 start_mb = 4096;
-        for (j = 1, i = 0; i < nr_mem_devs; i++, j++) {
+    కూడు_struct(20, p, 0, Ram_కొలత >> 20, 0, 0, 0);
+    ఒకవేళ (Ram_కొలత_Over4_G) {
+        u32 ప్రారంభం_mb = 4096;
+        కొరకు (j = 1, i = 0; i < nr_mem_devs; i++, j++) {
             u32 dev_mb = ((i == (nr_mem_devs - 1))
                                ? (((ram_mb - 1) & 0x3fff) + 1)
                                : 16384);
-            if (i == 0)
-                dev_mb -= RamSize >> 20;
+            ఒకవేళ (i == 0)
+                dev_mb -= Ram_కొలత >> 20;
 
-            add_struct(20, p, start_mb, dev_mb, j, i, 1);
-            start_mb += dev_mb;
+            కూడు_struct(20, p, ప్రారంభం_mb, dev_mb, j, i, 1);
+            ప్రారంభం_mb += dev_mb;
         }
     }
 
-    add_struct(32, p);
+    కూడు_struct(32, p);
     /* Add any remaining provided entries before the end marker */
-    for (i = 0; i < 256; i++)
-        get_external(i, &p, &nr_structs, &max_struct_size, end);
-    add_struct(127, p);
+    కొరకు (i = 0; i < 256; i++)
+        get_external(i, &p, &nr_structs, &max_struct_కొలత, చివర);
+    కూడు_struct(127, p);
 
-#undef add_struct
+#నిర్వచనం_రద్దు కూడు_struct
 
-    smbios_21_entry_point_setup(max_struct_size, p - start, start, nr_structs);
-    free(start);
+    smbios_21_నమోదు_బిందువు_అమరిక(max_struct_కొలత, p - ప్రారంభం, ప్రారంభం, nr_structs);
+    విడుదల(ప్రారంభం);
 }

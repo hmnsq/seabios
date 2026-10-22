@@ -1,23 +1,23 @@
 // Generate assembler offsets.
 
-#include "gen-defs.h" // OFFSET
-#include "bregs.h" // struct bregs
+#అన్తర్భావ "gen-defs.h" //స్థానభ్రంశం
+#అన్తర్భావ "bregs.h" // struct bregs
 
 /* workaround for a warning with -Wmissing-prototypes */
-void foo(void) VISIBLE16;
+శూన్య foo(శూన్య) VISIBLE16;
 
-void foo(void)
+శూన్య foo(శూన్య)
 {
     COMMENT("BREGS");
-    OFFSET(BREGS_es, bregs, es);
-    OFFSET(BREGS_ds, bregs, ds);
-    OFFSET(BREGS_eax, bregs, eax);
-    OFFSET(BREGS_ebx, bregs, ebx);
-    OFFSET(BREGS_ecx, bregs, ecx);
-    OFFSET(BREGS_edx, bregs, edx);
-    OFFSET(BREGS_ebp, bregs, ebp);
-    OFFSET(BREGS_esi, bregs, esi);
-    OFFSET(BREGS_edi, bregs, edi);
-    OFFSET(BREGS_flags, bregs, flags);
-    OFFSET(BREGS_code, bregs, code);
+    స్థానభ్రంశం(BREGS_es, bregs, es);
+    స్థానభ్రంశం(BREGS_ds, bregs, ds);
+    స్థానభ్రంశం(BREGS_eax, bregs, eax);
+    స్థానభ్రంశం(BREGS_ebx, bregs, ebx);
+    స్థానభ్రంశం(BREGS_ecx, bregs, ecx);
+    స్థానభ్రంశం(BREGS_edx, bregs, edx);
+    స్థానభ్రంశం(BREGS_ebp, bregs, ebp);
+    స్థానభ్రంశం(BREGS_esi, bregs, esi);
+    స్థానభ్రంశం(BREGS_edi, bregs, edi);
+    స్థానభ్రంశం(BREGS_flags, bregs, flags);
+    స్థానభ్రంశం(BREGS_సంకేతం, bregs, సంకేతం_2);
 }

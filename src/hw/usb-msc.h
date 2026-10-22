@@ -1,10 +1,10 @@
-#ifndef __USB_MSC_H
-#define __USB_MSC_H
+#నిర్వచితం_కాకపోతే __USB_MSC_H
+#నిర్వచించు __USB_MSC_H
 
 // usb-msc.c
-struct disk_op_s;
-int usb_process_op(struct disk_op_s *op);
-struct usbdevice_s;
-int usb_msc_setup(struct usbdevice_s *usbdev);
+నిర్మాణం disk_op_s;
+పూర్ణాంకం usb_process_op(నిర్మాణం disk_op_s *op);
+నిర్మాణం usbdevice_s;
+పూర్ణాంకం usb_msc_అమరిక(నిర్మాణం usbdevice_s *usbdev);
 
-#endif // ush-msc.h
+#అయితే_ముగింపు // ush-msc.h

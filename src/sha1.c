@@ -11,33 +11,33 @@
 //       RFC3174, Wikipedia's SHA1 alogrithm description
 //
 
-#include "config.h"
-#include "byteorder.h" // cpu_to_*, __swab64
-#include "sha.h" // sha1
-#include "string.h" // memcpy
-#include "x86.h" // rol
+#అన్తర్భావ "config.h"
+#అన్తర్భావ "byteorder.h" // cpu_to_*, __swab64
+#అన్తర్భావ "sha.h" // sha1
+#అన్తర్భావ "string.h" // memcpy
+#అన్తర్భావ "x86.h" // rol
 
-typedef struct _sha1_ctx {
+రకనిర్వచనం నిర్మాణం _sha1_ctx {
     u32 h[5];
 } sha1_ctx;
 
 
-static void
-sha1_block(u32 *w, sha1_ctx *ctx)
+స్థిర శూన్య
+sha1_ఖండం(u32 *w, sha1_ctx *ctx)
 {
     u32 i;
     u32 a,b,c,d,e,f;
     u32 tmp;
     u32 idx;
 
-    static const u32 sha_ko[4] = {
+    స్థిర స్థిరరాశి u32 sha_ko[4] = {
         0x5a827999, 0x6ed9eba1, 0x8f1bbcdc, 0xca62c1d6 };
 
     /* change endianness of given data */
-    for (i = 0; i < 16; i++)
-        w[i] = be32_to_cpu(w[i]);
+    కొరకు (i = 0; i < 16; i++)
+        w[i] = be32_గమ్యం_cpu(w[i]);
 
-    for (i = 16; i <= 79; i++) {
+    కొరకు (i = 16; i <= 79; i++) {
         tmp = w[i-3] ^ w[i-8] ^ w[i-14] ^ w[i-16];
         w[i] = rol(tmp,1);
     }
@@ -48,17 +48,17 @@ sha1_block(u32 *w, sha1_ctx *ctx)
     d = ctx->h[3];
     e = ctx->h[4];
 
-    for (i = 0; i <= 79; i++) {
-        if (i <= 19) {
+    కొరకు (i = 0; i <= 79; i++) {
+        ఒకవేళ (i <= 19) {
             f = (b & c) | ((b ^ 0xffffffff) & d);
             idx = 0;
-        } else if (i <= 39) {
+        } లేకపోతే ఒకవేళ (i <= 39) {
             f = b ^ c ^ d;
             idx = 1;
-        } else if (i <= 59) {
+        } లేకపోతే ఒకవేళ (i <= 59) {
             f = (b & c) | (b & d) | (c & d);
             idx = 2;
-        } else {
+        } లేకపోతే {
             f = b ^ c ^ d;
             idx = 3;
         }
@@ -83,54 +83,54 @@ sha1_block(u32 *w, sha1_ctx *ctx)
 }
 
 
-static void
-sha1_do(sha1_ctx *ctx, const u8 *data32, u32 length)
+స్థిర శూన్య
+sha1_do(sha1_ctx *ctx, స్థిరరాశి u8 *data32, u32 నిడివి)
 {
-    u32 offset;
-    u16 num;
-    u32 bits = 0;
+    u32 స్థానభ్రంశం_2;
+    u16 అంకె;
+    u32 బిట్లు = 0;
     u32 w[80];
     u64 tmp;
 
     /* treat data in 64-byte chunks */
-    for (offset = 0; length - offset >= 64; offset += 64) {
-        memcpy(w, data32 + offset, 64);
-        sha1_block((u32 *)w, ctx);
-        bits += (64 * 8);
+    కొరకు (స్థానభ్రంశం_2 = 0; నిడివి - స్థానభ్రంశం_2 >= 64; స్థానభ్రంశం_2 += 64) {
+        జ్ఞాపకం_నకలు(w, data32 + స్థానభ్రంశం_2, 64);
+        sha1_ఖండం((u32 *)w, ctx);
+        బిట్లు += (64 * 8);
     }
 
     /* last block with less than 64 bytes */
-    num = length - offset;
-    bits += (num << 3);
+    అంకె = నిడివి - స్థానభ్రంశం_2;
+    బిట్లు += (అంకె << 3);
 
-    memcpy(w, data32 + offset, num);
-    ((u8 *)w)[num] = 0x80;
-    if (64 - (num + 1) > 0)
-        memset( &((u8 *)w)[num + 1], 0x0, 64 - (num + 1));
+    జ్ఞాపకం_నకలు(w, data32 + స్థానభ్రంశం_2, అంకె);
+    ((u8 *)w)[అంకె] = 0x80;
+    ఒకవేళ (64 - (అంకె + 1) > 0)
+        memset( &((u8 *)w)[అంకె + 1], 0x0, 64 - (అంకె + 1));
 
-    if (num >= 56) {
+    ఒకవేళ (అంకె >= 56) {
         /* cannot append number of bits here */
-        sha1_block((u32 *)w, ctx);
+        sha1_ఖండం((u32 *)w, ctx);
         memset(w, 0x0, 60);
     }
 
     /* write number of bits to end of block */
-    tmp = __swab64(bits);
-    memcpy(&w[14], &tmp, 8);
+    tmp = __swab64(బిట్లు);
+    జ్ఞాపకం_నకలు(&w[14], &tmp, 8);
 
-    sha1_block(w, ctx);
+    sha1_ఖండం(w, ctx);
 
     /* need to switch result's endianness */
-    for (num = 0; num < 5; num++)
-        ctx->h[num] = cpu_to_be32(ctx->h[num]);
+    కొరకు (అంకె = 0; అంకె < 5; అంకె++)
+        ctx->h[అంకె] = cpu_గమ్యం_be32(ctx->h[అంకె]);
 }
 
 
-void
-sha1(const u8 *data, u32 length, u8 *hash)
+శూన్య
+sha1(స్థిరరాశి u8 *దత్తాంశం, u32 నిడివి, u8 *hash)
 {
-    if (!CONFIG_TCGBIOS)
-        return;
+    ఒకవేళ (!CONFIG_TCGBIOS)
+        తిరిగి;
 
     sha1_ctx ctx = {
         .h[0] = 0x67452301,
@@ -140,8 +140,8 @@ sha1(const u8 *data, u32 length, u8 *hash)
         .h[4] = 0xc3d2e1f0,
     };
 
-    sha1_do(&ctx, data, length);
-    memcpy(hash, &ctx.h[0], 20);
+    sha1_do(&ctx, దత్తాంశం, నిడివి);
+    జ్ఞాపకం_నకలు(hash, &ctx.h[0], 20);
 
-    return;
+    తిరిగి;
 }

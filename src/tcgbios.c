@@ -9,91 +9,91 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "bregs.h" // struct bregs
-#include "byteorder.h" // cpu_to_*
-#include "config.h" // CONFIG_TCGBIOS
-#include "farptr.h" // MAKE_FLATPTR
-#include "fw/paravirt.h" // runningOnXen
-#include "hw/tpm_drivers.h" // tpm_drivers[]
-#include "output.h" // dprintf
-#include "sha.h" // sha1, sha256, ...
-#include "std/acpi.h"  // RSDP_SIGNATURE, rsdt_descriptor
-#include "std/smbios.h" // struct smbios_21_entry_point
-#include "std/tcg.h" // TCG_PC_LOGOVERFLOW
-#include "string.h" // checksum
-#include "tcgbios.h"// tpm_*, prototypes
-#include "util.h" // printf, get_keystroke
-#include "stacks.h" // wait_threads, reset
-#include "malloc.h" // malloc_high
+#అన్తర్భావ "bregs.h" // struct bregs
+#అన్తర్భావ "byteorder.h" // cpu_to_*
+#అన్తర్భావ "config.h" // CONFIG_TCGBIOS
+#అన్తర్భావ "farptr.h" // MAKE_FLATPTR
+#అన్తర్భావ "fw/paravirt.h" // runningOnXen
+#అన్తర్భావ "hw/tpm_drivers.h" // tpm_drivers[]
+#అన్తర్భావ "output.h" // dprintf
+#అన్తర్భావ "sha.h" // sha1, sha256, ...
+#అన్తర్భావ "std/acpi.h"  // RSDP_SIGNATURE, rsdt_descriptor
+#అన్తర్భావ "std/smbios.h" // struct smbios_21_entry_point
+#అన్తర్భావ "std/tcg.h" // TCG_PC_LOGOVERFLOW
+#అన్తర్భావ "string.h" // checksum
+#అన్తర్భావ "tcgbios.h"// tpm_*, prototypes
+#అన్తర్భావ "util.h" // printf, get_keystroke
+#అన్తర్భావ "stacks.h" // wait_threads, reset
+#అన్తర్భావ "malloc.h" // malloc_high
 
 
 /****************************************************************
  * ACPI TCPA table interface
  ****************************************************************/
 
-struct {
+నిర్మాణం {
     /* length of the TCPA log buffer */
-    u32           log_area_minimum_length;
+    u32           log_area_minimum_నిడివి;
 
     /* start address of TCPA log buffer */
-    u8 *          log_area_start_address;
+    u8 *          log_area_ప్రారంభం_చిరునామా;
 
     /* number of log entries written */
-    u32           entry_count;
+    u32           నమోదు_లెక్క;
 
     /* address to write next log entry to */
-    u8 *          log_area_next_entry;
+    u8 *          log_area_తదుపరి_నమోదు;
 
     /* address of last entry written (need for TCG_StatusCheck) */
-    u8 *          log_area_last_entry;
+    u8 *          log_area_చివరి_నమోదు;
 } tpm_state VARLOW;
 
-static int tpm_set_log_area(u8 *log_area_start_address,
-                            u32 log_area_minimum_length)
+స్థిర పూర్ణాంకం tpm_సమితి_log_area(u8 *log_area_ప్రారంభం_చిరునామా,
+                            u32 log_area_minimum_నిడివి)
 {
-    if (!log_area_start_address || !log_area_minimum_length)
-        return -1;
+    ఒకవేళ (!log_area_ప్రారంభం_చిరునామా || !log_area_minimum_నిడివి)
+        తిరిగి -1;
 
-    memset(log_area_start_address, 0, log_area_minimum_length);
-    tpm_state.log_area_start_address = log_area_start_address;
-    tpm_state.log_area_minimum_length = log_area_minimum_length;
-    tpm_state.log_area_next_entry = log_area_start_address;
-    tpm_state.log_area_last_entry = NULL;
-    tpm_state.entry_count = 0;
-    return 0;
+    memset(log_area_ప్రారంభం_చిరునామా, 0, log_area_minimum_నిడివి);
+    tpm_state.log_area_ప్రారంభం_చిరునామా = log_area_ప్రారంభం_చిరునామా;
+    tpm_state.log_area_minimum_నిడివి = log_area_minimum_నిడివి;
+    tpm_state.log_area_తదుపరి_నమోదు = log_area_ప్రారంభం_చిరునామా;
+    tpm_state.log_area_చివరి_నమోదు = ఖాళీ;
+    tpm_state.నమోదు_లెక్క = 0;
+    తిరిగి 0;
 }
 
-static int
-tpm_tcpa_probe(void)
+స్థిర పూర్ణాంకం
+tpm_tcpa_probe(శూన్య)
 {
-    struct tcpa_descriptor_rev2 *tcpa = find_acpi_table(TCPA_SIGNATURE);
-    if (!tcpa)
-        return -1;
+    నిర్మాణం tcpa_descriptor_rev2 *tcpa = కనుగొను_acpi_పట్టిక(TCPA_SIGNATURE);
+    ఒకవేళ (!tcpa)
+        తిరిగి -1;
 
     dprintf(DEBUG_tcg, "TCGBIOS: TCPA: LASA = %p, LAML = %u\n",
-            (u8 *)(long)tcpa->log_area_start_address,
-            tcpa->log_area_minimum_length);
+            (u8 *)(దీర్ఘ)tcpa->log_area_ప్రారంభం_చిరునామా,
+            tcpa->log_area_minimum_నిడివి);
 
-    return tpm_set_log_area((u8*)(long)tcpa->log_area_start_address,
-                            tcpa->log_area_minimum_length);
+    తిరిగి tpm_సమితి_log_area((u8*)(దీర్ఘ)tcpa->log_area_ప్రారంభం_చిరునామా,
+                            tcpa->log_area_minimum_నిడివి);
 }
 
-static int
-tpm_tpm2_probe(void)
+స్థిర పూర్ణాంకం
+tpm_tpm2_probe(శూన్య)
 {
-    struct tpm2_descriptor_rev2 *tpm2 = find_acpi_table(TPM2_SIGNATURE);
-    if (!tpm2)
-        return -1;
+    నిర్మాణం tpm2_descriptor_rev2 *tpm2 = కనుగొను_acpi_పట్టిక(TPM2_SIGNATURE);
+    ఒకవేళ (!tpm2)
+        తిరిగి -1;
 
-    if (tpm2->length < 76)
-        return -1;
+    ఒకవేళ (tpm2->నిడివి < 76)
+        తిరిగి -1;
 
     dprintf(DEBUG_tcg, "TCGBIOS: TPM2: LASA = %p, LAML = %u\n",
-            (u8 *)(long)tpm2->log_area_start_address,
-            tpm2->log_area_minimum_length);
+            (u8 *)(దీర్ఘ)tpm2->log_area_ప్రారంభం_చిరునామా,
+            tpm2->log_area_minimum_నిడివి);
 
-    return tpm_set_log_area((u8*)(long)tpm2->log_area_start_address,
-                            tpm2->log_area_minimum_length);
+    తిరిగి tpm_సమితి_log_area((u8*)(దీర్ఘ)tpm2->log_area_ప్రారంభం_చిరునామా,
+                            tpm2->log_area_minimum_నిడివి);
 }
 
 /*
@@ -108,36 +108,36 @@ tpm_tpm2_probe(void)
  * Output:
  *  Returns an error code in case of faiure, 0 in case of success
  */
-static int
-tpm_log_event(struct tpm_log_header *entry, int digest_len
-              , const void *event, int event_len)
+స్థిర పూర్ణాంకం
+tpm_log_event(నిర్మాణం tpm_log_శీర్షిక *నమోదు_2, పూర్ణాంకం digest_len
+              , స్థిరరాశి శూన్య *event, పూర్ణాంకం event_len)
 {
     dprintf(DEBUG_tcg, "TCGBIOS: LASA = %p, next entry = %p\n",
-            tpm_state.log_area_start_address, tpm_state.log_area_next_entry);
+            tpm_state.log_area_ప్రారంభం_చిరునామా, tpm_state.log_area_తదుపరి_నమోదు);
 
-    if (tpm_state.log_area_next_entry == NULL)
-        return -1;
+    ఒకవేళ (tpm_state.log_area_తదుపరి_నమోదు == ఖాళీ)
+        తిరిగి -1;
 
-    u32 size = (sizeof(*entry) + digest_len
-                + sizeof(struct tpm_log_trailer) + event_len);
-    u32 logsize = (tpm_state.log_area_next_entry + size
-                   - tpm_state.log_area_start_address);
-    if (logsize > tpm_state.log_area_minimum_length) {
-        dprintf(DEBUG_tcg, "TCGBIOS: LOG OVERFLOW: size = %d\n", size);
-        return -1;
+    u32 కొలత = (పరిమాణం(*నమోదు_2) + digest_len
+                + పరిమాణం(నిర్మాణం tpm_log_trailer) + event_len);
+    u32 logsize = (tpm_state.log_area_తదుపరి_నమోదు + కొలత
+                   - tpm_state.log_area_ప్రారంభం_చిరునామా);
+    ఒకవేళ (logsize > tpm_state.log_area_minimum_నిడివి) {
+        dprintf(DEBUG_tcg, "TCGBIOS: LOG OVERFLOW: size = %d\n", కొలత);
+        తిరిగి -1;
     }
 
-    void *dest = tpm_state.log_area_next_entry;
-    memcpy(dest, entry, sizeof(*entry) + digest_len);
-    struct tpm_log_trailer *t = dest + sizeof(*entry) + digest_len;
+    శూన్య *dest = tpm_state.log_area_తదుపరి_నమోదు;
+    జ్ఞాపకం_నకలు(dest, నమోదు_2, పరిమాణం(*నమోదు_2) + digest_len);
+    నిర్మాణం tpm_log_trailer *t = dest + పరిమాణం(*నమోదు_2) + digest_len;
     t->eventdatasize = event_len;
-    memcpy(t->event, event, event_len);
+    జ్ఞాపకం_నకలు(t->event, event, event_len);
 
-    tpm_state.log_area_last_entry = tpm_state.log_area_next_entry;
-    tpm_state.log_area_next_entry += size;
-    tpm_state.entry_count++;
+    tpm_state.log_area_చివరి_నమోదు = tpm_state.log_area_తదుపరి_నమోదు;
+    tpm_state.log_area_తదుపరి_నమోదు += కొలత;
+    tpm_state.నమోదు_లెక్క++;
 
-    return 0;
+    తిరిగి 0;
 }
 
 
@@ -145,29 +145,29 @@ tpm_log_event(struct tpm_log_header *entry, int digest_len
  * Digest formatting
  ****************************************************************/
 
-static TPMVersion TPM_version;
-static u32 tpm20_pcr_selection_size;
-static struct tpml_pcr_selection *tpm20_pcr_selection;
+స్థిర TPMVersion TPM_సంస్కరణ;
+స్థిర u32 tpm20_pcr_selection_కొలత;
+స్థిర నిర్మాణం tpml_pcr_selection *tpm20_pcr_selection;
 
 // A 'struct tpm_log_entry' is a local data structure containing a
 // 'tpm_log_header' followed by space for the maximum supported
 // digest.  (The digest is a sha1 hash on tpm1.2 or a series of
 // tpm2_digest_value structs on tpm2.0)
-struct tpm_log_entry {
-    struct tpm_log_header hdr;
-    u8 pad[sizeof(struct tpm2_digest_values)
-           + 8 * sizeof(struct tpm2_digest_value)
+నిర్మాణం tpm_log_నమోదు {
+    నిర్మాణం tpm_log_శీర్షిక hdr;
+    u8 pad[పరిమాణం(నిర్మాణం tpm2_digest_విలువలు)
+           + 8 * పరిమాణం(నిర్మాణం tpm2_digest_విలువ)
            + SHA1_BUFSIZE + SHA256_BUFSIZE + SHA384_BUFSIZE
            + SHA512_BUFSIZE + SM3_256_BUFSIZE + SHA3_256_BUFSIZE
            + SHA3_384_BUFSIZE + SHA3_512_BUFSIZE];
 } PACKED;
 
-static const struct hash_parameters {
+స్థిర స్థిరరాశి నిర్మాణం hash_parameters {
     u16 hashalg;
     u8  hashalg_flag;
     u8  hash_buffersize;
-    const char *name;
-    void (*hashfunc)(const u8 *data, u32 length, u8 *hash);
+    స్థిరరాశి అక్షరం *name;
+    శూన్య (*hashfunc)(స్థిరరాశి u8 *దత్తాంశం, u32 నిడివి, u8 *hash);
 } hash_parameters[] = {
     {
         .hashalg = TPM2_ALG_SHA1,
@@ -216,63 +216,63 @@ static const struct hash_parameters {
     }
 };
 
-static int
+స్థిర పూర్ణాంకం
 tpm20_get_hash_buffersize(u16 hashAlg)
 {
-    unsigned i;
+    గుర్తులేని i;
 
-    for (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
-        if (hash_parameters[i].hashalg == hashAlg)
-            return hash_parameters[i].hash_buffersize;
+    కొరకు (i = 0; i < ARRAY_కొలత(hash_parameters); i++) {
+        ఒకవేళ (hash_parameters[i].hashalg == hashAlg)
+            తిరిగి hash_parameters[i].hash_buffersize;
     }
-    return -1;
+    తిరిగి -1;
 }
 
-static u8
-tpm20_hashalg_to_flag(u16 hashAlg)
+స్థిర u8
+tpm20_hashalg_గమ్యం_flag(u16 hashAlg)
 {
-    unsigned i;
+    గుర్తులేని i;
 
-    for (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
-        if (hash_parameters[i].hashalg == hashAlg)
-            return hash_parameters[i].hashalg_flag;
+    కొరకు (i = 0; i < ARRAY_కొలత(hash_parameters); i++) {
+        ఒకవేళ (hash_parameters[i].hashalg == hashAlg)
+            తిరిగి hash_parameters[i].hashalg_flag;
     }
-    return 0;
+    తిరిగి 0;
 }
 
-static u16
-tpm20_hashalg_flag_to_hashalg(u8 hashalg_flag)
+స్థిర u16
+tpm20_hashalg_flag_గమ్యం_hashalg(u8 hashalg_flag)
 {
-    unsigned i;
+    గుర్తులేని i;
 
-    for (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
-        if (hash_parameters[i].hashalg_flag == hashalg_flag)
-            return hash_parameters[i].hashalg;
+    కొరకు (i = 0; i < ARRAY_కొలత(hash_parameters); i++) {
+        ఒకవేళ (hash_parameters[i].hashalg_flag == hashalg_flag)
+            తిరిగి hash_parameters[i].hashalg;
     }
-    return 0;
+    తిరిగి 0;
 }
 
-static const char *
-tpm20_hashalg_flag_to_name(u8 hashalg_flag)
+స్థిర స్థిరరాశి అక్షరం *
+tpm20_hashalg_flag_గమ్యం_name(u8 hashalg_flag)
 {
-    unsigned i;
+    గుర్తులేని i;
 
-    for (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
-        if (hash_parameters[i].hashalg_flag == hashalg_flag)
-            return hash_parameters[i].name;
+    కొరకు (i = 0; i < ARRAY_కొలత(hash_parameters); i++) {
+        ఒకవేళ (hash_parameters[i].hashalg_flag == hashalg_flag)
+            తిరిగి hash_parameters[i].name;
     }
-    return NULL;
+    తిరిగి ఖాళీ;
 }
 
-static void tpm2_hash_data(u16 hashAlg, const u8 *data, u32 data_len, u8 *hash)
+స్థిర శూన్య tpm2_hash_దత్తాంశం(u16 hashAlg, స్థిరరాశి u8 *దత్తాంశం, u32 దత్తాంశం_len, u8 *hash)
 {
-    unsigned i;
+    గుర్తులేని i;
 
-    for (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
-        if (hash_parameters[i].hashalg == hashAlg) {
-            if (hash_parameters[i].hashfunc) {
-                hash_parameters[i].hashfunc(data, data_len, hash);
-            } else {
+    కొరకు (i = 0; i < ARRAY_కొలత(hash_parameters); i++) {
+        ఒకవేళ (hash_parameters[i].hashalg == hashAlg) {
+            ఒకవేళ (hash_parameters[i].hashfunc) {
+                hash_parameters[i].hashfunc(దత్తాంశం, దత్తాంశం_len, hash);
+            } లేకపోతే {
                 memset(hash, 0xff, hash_parameters[i].hash_buffersize);
             }
         }
@@ -280,77 +280,77 @@ static void tpm2_hash_data(u16 hashAlg, const u8 *data, u32 data_len, u8 *hash)
 }
 
 // Add an entry at the start of the log describing digest formats
-static int
-tpm20_write_EfiSpecIdEventStruct(void)
+స్థిర పూర్ణాంకం
+tpm20_write_EfiSpecIdEventStruct(శూన్య)
 {
-    if (!tpm20_pcr_selection)
-        return -1;
+    ఒకవేళ (!tpm20_pcr_selection)
+        తిరిగి -1;
 
-    struct {
-        struct TCG_EfiSpecIdEventStruct hdr;
-        u8 pad[sizeof(struct tpm_log_entry) + sizeof(u8)];
+    నిర్మాణం {
+        నిర్మాణం TCG_EfiSpecIdEventStruct hdr;
+        u8 pad[పరిమాణం(నిర్మాణం tpm_log_నమోదు) + పరిమాణం(u8)];
     } event = {
         .hdr.signature = "Spec ID Event03",
         .hdr.platformClass = TPM_TCPA_ACPI_CLASS_CLIENT,
-        .hdr.specVersionMinor = 0,
-        .hdr.specVersionMajor = 2,
+        .hdr.spec_సంస్కరణ_Minor = 0,
+        .hdr.spec_సంస్కరణ_Major = 2,
         .hdr.specErrata = 2,
-        .hdr.uintnSize = 2,
+        .hdr.uintn_కొలత = 2,
     };
 
-    struct tpms_pcr_selection *sel = tpm20_pcr_selection->selections;
-    void *nsel, *end = (void*)tpm20_pcr_selection + tpm20_pcr_selection_size;
+    నిర్మాణం tpms_pcr_selection *sel = tpm20_pcr_selection->selections;
+    శూన్య *nsel, *చివర = (శూన్య*)tpm20_pcr_selection + tpm20_pcr_selection_కొలత;
 
-    u32 count, numAlgs = 0;
-    for (count = 0; count < be32_to_cpu(tpm20_pcr_selection->count); count++) {
-        u8 sizeOfSelect = sel->sizeOfSelect;
+    u32 లెక్క, అంకె_Algs = 0;
+    కొరకు (లెక్క = 0; లెక్క < be32_గమ్యం_cpu(tpm20_pcr_selection->లెక్క); లెక్క++) {
+        u8 కొలత_యొక్క_Select = sel->కొలత_యొక్క_Select;
 
-        nsel = (void*)sel + sizeof(*sel) + sizeOfSelect;
-        if (nsel > end)
-            break;
+        nsel = (శూన్య*)sel + పరిమాణం(*sel) + కొలత_యొక్క_Select;
+        ఒకవేళ (nsel > చివర)
+            ఆపు;
 
-        if (!sizeOfSelect || sel->pcrSelect[0] == 0) {
+        ఒకవేళ (!కొలత_యొక్క_Select || sel->pcrSelect[0] == 0) {
             sel = nsel;
-            continue;
+            కొనసాగు;
         }
 
-        int hsize = tpm20_get_hash_buffersize(be16_to_cpu(sel->hashAlg));
-        if (hsize < 0) {
+        పూర్ణాంకం hsize = tpm20_get_hash_buffersize(be16_గమ్యం_cpu(sel->hashAlg));
+        ఒకవేళ (hsize < 0) {
             dprintf(DEBUG_tcg, "TPM is using an unsupported hash: %d\n",
-                    be16_to_cpu(sel->hashAlg));
-            return -1;
+                    be16_గమ్యం_cpu(sel->hashAlg));
+            తిరిగి -1;
         }
 
-        int event_size = offsetof(struct TCG_EfiSpecIdEventStruct
-                                  , digestSizes[count+1]);
-        if (event_size > sizeof(event) - sizeof(u8)) {
+        పూర్ణాంకం event_కొలత = offsetof(నిర్మాణం TCG_EfiSpecIdEventStruct
+                                  , digestSizes[లెక్క+1]);
+        ఒకవేళ (event_కొలత > పరిమాణం(event) - పరిమాణం(u8)) {
             dprintf(DEBUG_tcg, "EfiSpecIdEventStruct pad too small\n");
-            return -1;
+            తిరిగి -1;
         }
 
-        event.hdr.digestSizes[numAlgs].algorithmId = be16_to_cpu(sel->hashAlg);
-        event.hdr.digestSizes[numAlgs].digestSize = hsize;
-        numAlgs++;
+        event.hdr.digestSizes[అంకె_Algs].algorithmId = be16_గమ్యం_cpu(sel->hashAlg);
+        event.hdr.digestSizes[అంకె_Algs].digest_కొలత = hsize;
+        అంకె_Algs++;
 
         sel = nsel;
     }
 
-    if (sel != end) {
+    ఒకవేళ (sel != చివర) {
         dprintf(DEBUG_tcg, "Malformed pcr selection structure fron TPM\n");
-        return -1;
+        తిరిగి -1;
     }
 
-    event.hdr.numberOfAlgorithms = numAlgs;
-    int event_size = offsetof(struct TCG_EfiSpecIdEventStruct
-                              , digestSizes[numAlgs]);
-    u8 *vendorInfoSize = (void*)&event + event_size;
-    *vendorInfoSize = 0;
-    event_size += sizeof(*vendorInfoSize);
+    event.hdr.సంఖ్య_యొక్క_Algorithms = అంకె_Algs;
+    పూర్ణాంకం event_కొలత = offsetof(నిర్మాణం TCG_EfiSpecIdEventStruct
+                              , digestSizes[అంకె_Algs]);
+    u8 *vendor_Info_కొలత = (శూన్య*)&event + event_కొలత;
+    *vendor_Info_కొలత = 0;
+    event_కొలత += పరిమాణం(*vendor_Info_కొలత);
 
-    struct tpm_log_entry le = {
+    నిర్మాణం tpm_log_నమోదు le = {
         .hdr.eventtype = EV_NO_ACTION,
     };
-    return tpm_log_event(&le.hdr, SHA1_BUFSIZE, &event, event_size);
+    తిరిగి tpm_log_event(&le.hdr, SHA1_BUFSIZE, &event, event_కొలత);
 }
 
 /*
@@ -369,100 +369,100 @@ tpm20_write_EfiSpecIdEventStruct(void)
  *
  * Returns the digest size; -1 on fatal error
  */
-static int
-tpm20_build_digest(struct tpm_log_entry *le,
-                   const u8 *hashdata, u32 hashdata_len, int bigEndian)
+స్థిర పూర్ణాంకం
+tpm20_build_digest(నిర్మాణం tpm_log_నమోదు *le,
+                   స్థిరరాశి u8 *hashdata, u32 hashdata_len, పూర్ణాంకం bigEndian)
 {
-    if (!tpm20_pcr_selection)
-        return -1;
+    ఒకవేళ (!tpm20_pcr_selection)
+        తిరిగి -1;
 
-    struct tpms_pcr_selection *sel = tpm20_pcr_selection->selections;
-    void *nsel, *end = (void*)tpm20_pcr_selection + tpm20_pcr_selection_size;
-    void *dest = le->hdr.digest + sizeof(struct tpm2_digest_values);
+    నిర్మాణం tpms_pcr_selection *sel = tpm20_pcr_selection->selections;
+    శూన్య *nsel, *చివర = (శూన్య*)tpm20_pcr_selection + tpm20_pcr_selection_కొలత;
+    శూన్య *dest = le->hdr.digest + పరిమాణం(నిర్మాణం tpm2_digest_విలువలు);
 
-    u32 count, numAlgs = 0;
-    for (count = 0; count < be32_to_cpu(tpm20_pcr_selection->count); count++) {
-        u8 sizeOfSelect = sel->sizeOfSelect;
+    u32 లెక్క, అంకె_Algs = 0;
+    కొరకు (లెక్క = 0; లెక్క < be32_గమ్యం_cpu(tpm20_pcr_selection->లెక్క); లెక్క++) {
+        u8 కొలత_యొక్క_Select = sel->కొలత_యొక్క_Select;
 
-        nsel = (void*)sel + sizeof(*sel) + sizeOfSelect;
-        if (nsel > end)
-            break;
+        nsel = (శూన్య*)sel + పరిమాణం(*sel) + కొలత_యొక్క_Select;
+        ఒకవేళ (nsel > చివర)
+            ఆపు;
 
         /* PCR 0-7 unused? -- skip */
-        if (!sizeOfSelect || sel->pcrSelect[0] == 0) {
+        ఒకవేళ (!కొలత_యొక్క_Select || sel->pcrSelect[0] == 0) {
             sel = nsel;
-            continue;
+            కొనసాగు;
         }
 
-        int hsize = tpm20_get_hash_buffersize(be16_to_cpu(sel->hashAlg));
-        if (hsize < 0) {
+        పూర్ణాంకం hsize = tpm20_get_hash_buffersize(be16_గమ్యం_cpu(sel->hashAlg));
+        ఒకవేళ (hsize < 0) {
             dprintf(DEBUG_tcg, "TPM is using an unsupported hash: %d\n",
-                    be16_to_cpu(sel->hashAlg));
-            return -1;
+                    be16_గమ్యం_cpu(sel->hashAlg));
+            తిరిగి -1;
         }
 
         /* buffer size sanity check before writing */
-        struct tpm2_digest_value *v = dest;
-        if (dest + sizeof(*v) + hsize > (void*)le + sizeof(*le)) {
+        నిర్మాణం tpm2_digest_విలువ *v = dest;
+        ఒకవేళ (dest + పరిమాణం(*v) + hsize > (శూన్య*)le + పరిమాణం(*le)) {
             dprintf(DEBUG_tcg, "tpm_log_entry is too small\n");
-            return -1;
+            తిరిగి -1;
         }
 
-        if (bigEndian)
+        ఒకవేళ (bigEndian)
             v->hashAlg = sel->hashAlg;
-        else
-            v->hashAlg = be16_to_cpu(sel->hashAlg);
+        లేకపోతే
+            v->hashAlg = be16_గమ్యం_cpu(sel->hashAlg);
 
-        tpm2_hash_data(be16_to_cpu(sel->hashAlg), hashdata, hashdata_len,
+        tpm2_hash_దత్తాంశం(be16_గమ్యం_cpu(sel->hashAlg), hashdata, hashdata_len,
                        v->hash);
 
-        dest += sizeof(*v) + hsize;
+        dest += పరిమాణం(*v) + hsize;
         sel = nsel;
 
-        numAlgs++;
+        అంకె_Algs++;
     }
 
-    if (sel != end) {
+    ఒకవేళ (sel != చివర) {
         dprintf(DEBUG_tcg, "Malformed pcr selection structure fron TPM\n");
-        return -1;
+        తిరిగి -1;
     }
 
-    struct tpm2_digest_values *v = (void*)le->hdr.digest;
-    if (bigEndian)
-        v->count = cpu_to_be32(numAlgs);
-    else
-        v->count = numAlgs;
+    నిర్మాణం tpm2_digest_విలువలు *v = (శూన్య*)le->hdr.digest;
+    ఒకవేళ (bigEndian)
+        v->లెక్క = cpu_గమ్యం_be32(అంకె_Algs);
+    లేకపోతే
+        v->లెక్క = అంకె_Algs;
 
-    return dest - (void*)le->hdr.digest;
+    తిరిగి dest - (శూన్య*)le->hdr.digest;
 }
 
-static int
-tpm12_build_digest(struct tpm_log_entry *le,
-                   const u8 *hashdata, u32 hashdata_len)
+స్థిర పూర్ణాంకం
+tpm12_build_digest(నిర్మాణం tpm_log_నమోదు *le,
+                   స్థిరరాశి u8 *hashdata, u32 hashdata_len)
 {
     sha1(hashdata, hashdata_len, le->hdr.digest);
-    return SHA1_BUFSIZE;
+    తిరిగి SHA1_BUFSIZE;
 }
 
-static int
-tpm12_build_digest_direct(struct tpm_log_entry *le, const u8 *sha1)
+స్థిర పూర్ణాంకం
+tpm12_build_digest_ప్రత్యక్ష(నిర్మాణం tpm_log_నమోదు *le, స్థిరరాశి u8 *sha1)
 {
     // On TPM 1.2 the digest contains just the SHA1 hash
-    memcpy(le->hdr.digest, sha1, SHA1_BUFSIZE);
-    return SHA1_BUFSIZE;
+    జ్ఞాపకం_నకలు(le->hdr.digest, sha1, SHA1_BUFSIZE);
+    తిరిగి SHA1_BUFSIZE;
 }
 
-static int
-tpm_build_digest(struct tpm_log_entry *le, const u8 *hashdata, u32 hashdata_len
-                 , int bigEndian)
+స్థిర పూర్ణాంకం
+tpm_build_digest(నిర్మాణం tpm_log_నమోదు *le, స్థిరరాశి u8 *hashdata, u32 hashdata_len
+                 , పూర్ణాంకం bigEndian)
 {
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
-        return tpm12_build_digest(le, hashdata, hashdata_len);
-    case TPM_VERSION_2:
-        return tpm20_build_digest(le, hashdata, hashdata_len, bigEndian);
+    ఎంపిక (TPM_సంస్కరణ) {
+    స్థితి TPM_సంస్కరణ_1_2:
+        తిరిగి tpm12_build_digest(le, hashdata, hashdata_len);
+    స్థితి TPM_సంస్కరణ_2:
+        తిరిగి tpm20_build_digest(le, hashdata, hashdata_len, bigEndian);
     }
-    return -1;
+    తిరిగి -1;
 }
 
 
@@ -472,127 +472,127 @@ tpm_build_digest(struct tpm_log_entry *le, const u8 *hashdata, u32 hashdata_len
 
 // Helper function for sending tpm commands that take a single
 // optional parameter (0, 1, or 2 bytes) and have no special response.
-static int
+స్థిర పూర్ణాంకం
 tpm_simple_cmd(u8 locty, u32 ordinal
-               , int param_size, u16 param, enum tpmDurationType to_t)
+               , పూర్ణాంకం param_కొలత, u16 param, గణన tpmDurationType గమ్యం_t)
 {
-    struct {
-        struct tpm_req_header trqh;
+    నిర్మాణం {
+        నిర్మాణం tpm_req_శీర్షిక trqh;
         u16 param;
     } PACKED req = {
-        .trqh.totlen = cpu_to_be32(sizeof(req.trqh) + param_size),
-        .trqh.ordinal = cpu_to_be32(ordinal),
-        .param = param_size == 2 ? cpu_to_be16(param) : param,
+        .trqh.totlen = cpu_గమ్యం_be32(పరిమాణం(req.trqh) + param_కొలత),
+        .trqh.ordinal = cpu_గమ్యం_be32(ordinal),
+        .param = param_కొలత == 2 ? cpu_గమ్యం_be16(param) : param,
     };
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
-        req.trqh.tag = cpu_to_be16(TPM_TAG_RQU_CMD);
-        break;
-    case TPM_VERSION_2:
-        req.trqh.tag = cpu_to_be16(TPM2_ST_NO_SESSIONS);
-        break;
+    ఎంపిక (TPM_సంస్కరణ) {
+    స్థితి TPM_సంస్కరణ_1_2:
+        req.trqh.ట్యాగ్ = cpu_గమ్యం_be16(TPM_ట్యాగ్_RQU_CMD);
+        ఆపు;
+    స్థితి TPM_సంస్కరణ_2:
+        req.trqh.ట్యాగ్ = cpu_గమ్యం_be16(TPM2_ST_NO_SESSIONS);
+        ఆపు;
     }
 
     u8 obuffer[64];
-    struct tpm_rsp_header *trsh = (void*)obuffer;
-    u32 obuffer_len = sizeof(obuffer);
-    memset(obuffer, 0x0, sizeof(obuffer));
+    నిర్మాణం tpm_rsp_శీర్షిక *trsh = (శూన్య*)obuffer;
+    u32 obuffer_len = పరిమాణం(obuffer);
+    memset(obuffer, 0x0, పరిమాణం(obuffer));
 
-    int ret = tpmhw_transmit(locty, &req.trqh, obuffer, &obuffer_len, to_t);
-    ret = ret ? -1 : be32_to_cpu(trsh->errcode);
+    పూర్ణాంకం ret = tpmhw_transmit(locty, &req.trqh, obuffer, &obuffer_len, గమ్యం_t);
+    ret = ret ? -1 : be32_గమ్యం_cpu(trsh->errcode);
     dprintf(DEBUG_tcg, "Return from tpm_simple_cmd(%x, %x) = %x\n",
             ordinal, param, ret);
-    return ret;
+    తిరిగి ret;
 }
 
-static int
-tpm20_getcapability(u32 capability, u32 property, u32 count,
-                    struct tpm_rsp_header *rsp, u32 rsize)
+స్థిర పూర్ణాంకం
+tpm20_getcapability(u32 capability, u32 property, u32 లెక్క,
+                    నిర్మాణం tpm_rsp_శీర్షిక *rsp, u32 rsize)
 {
-    struct tpm2_req_getcapability trg = {
-        .hdr.tag = cpu_to_be16(TPM2_ST_NO_SESSIONS),
-        .hdr.totlen = cpu_to_be32(sizeof(trg)),
-        .hdr.ordinal = cpu_to_be32(TPM2_CC_GetCapability),
-        .capability = cpu_to_be32(capability),
-        .property = cpu_to_be32(property),
-        .propertycount = cpu_to_be32(count),
+    నిర్మాణం tpm2_req_getcapability trg = {
+        .hdr.ట్యాగ్ = cpu_గమ్యం_be16(TPM2_ST_NO_SESSIONS),
+        .hdr.totlen = cpu_గమ్యం_be32(పరిమాణం(trg)),
+        .hdr.ordinal = cpu_గమ్యం_be32(TPM2_CC_GetCapability),
+        .capability = cpu_గమ్యం_be32(capability),
+        .property = cpu_గమ్యం_be32(property),
+        .propertycount = cpu_గమ్యం_be32(లెక్క),
     };
 
-    u32 resp_size = rsize;
-    int ret = tpmhw_transmit(0, &trg.hdr, rsp, &resp_size,
+    u32 resp_కొలత = rsize;
+    పూర్ణాంకం ret = tpmhw_transmit(0, &trg.hdr, rsp, &resp_కొలత,
                              TPM_DURATION_TYPE_SHORT);
     ret = (ret ||
-           rsize < be32_to_cpu(rsp->totlen)) ? -1 : be32_to_cpu(rsp->errcode);
+           rsize < be32_గమ్యం_cpu(rsp->totlen)) ? -1 : be32_గమ్యం_cpu(rsp->errcode);
 
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_GetCapability = 0x%08x\n",
             ret);
 
-    return ret;
+    తిరిగి ret;
 }
 
-static int
-tpm20_get_pcrbanks(void)
+స్థిర పూర్ణాంకం
+tpm20_get_pcrbanks(శూన్య)
 {
-    u8 buffer[128];
-    struct tpm2_res_getcapability *trg =
-      (struct tpm2_res_getcapability *)&buffer;
+    u8 బఫరు[128];
+    నిర్మాణం tpm2_res_getcapability *trg =
+      (నిర్మాణం tpm2_res_getcapability *)&బఫరు;
 
-    int ret = tpm20_getcapability(TPM2_CAP_PCRS, 0, 8, &trg->hdr,
-                                  sizeof(buffer));
-    if (ret)
-        return ret;
+    పూర్ణాంకం ret = tpm20_getcapability(TPM2_CAP_PCRS, 0, 8, &trg->hdr,
+                                  పరిమాణం(బఫరు));
+    ఒకవేళ (ret)
+        తిరిగి ret;
 
     /* defend against (broken) TPM sending packets that are too short */
-    u32 resplen = be32_to_cpu(trg->hdr.totlen);
-    if (resplen <= offsetof(struct tpm2_res_getcapability, data))
-        return -1;
+    u32 resplen = be32_గమ్యం_cpu(trg->hdr.totlen);
+    ఒకవేళ (resplen <= offsetof(నిర్మాణం tpm2_res_getcapability, దత్తాంశం))
+        తిరిగి -1;
 
-    u32 size = resplen - offsetof(struct tpm2_res_getcapability, data);
+    u32 కొలత = resplen - offsetof(నిర్మాణం tpm2_res_getcapability, దత్తాంశం);
     /* we need a valid tpml_pcr_selection up to and including sizeOfSelect */
-    if (size < offsetof(struct tpml_pcr_selection, selections) +
-               offsetof(struct tpms_pcr_selection, pcrSelect))
-        return -1;
+    ఒకవేళ (కొలత < offsetof(నిర్మాణం tpml_pcr_selection, selections) +
+               offsetof(నిర్మాణం tpms_pcr_selection, pcrSelect))
+        తిరిగి -1;
 
-    tpm20_pcr_selection = malloc_high(size);
-    if (tpm20_pcr_selection) {
-        memcpy(tpm20_pcr_selection, &trg->data, size);
-        tpm20_pcr_selection_size = size;
-    } else {
+    tpm20_pcr_selection = malloc_ఎగువ(కొలత);
+    ఒకవేళ (tpm20_pcr_selection) {
+        జ్ఞాపకం_నకలు(tpm20_pcr_selection, &trg->దత్తాంశం, కొలత);
+        tpm20_pcr_selection_కొలత = కొలత;
+    } లేకపోతే {
         warn_noalloc();
         ret = -1;
     }
 
-    return ret;
+    తిరిగి ret;
 }
 
-static int
-tpm20_get_suppt_pcrbanks(u8 *suppt_pcrbanks, u8 *active_pcrbanks)
+స్థిర పూర్ణాంకం
+tpm20_get_suppt_pcrbanks(u8 *suppt_pcrbanks, u8 *చురుకైన_pcrbanks)
 {
     *suppt_pcrbanks = 0;
-    *active_pcrbanks = 0;
+    *చురుకైన_pcrbanks = 0;
 
-    if (!tpm20_pcr_selection)
-        return -1;
+    ఒకవేళ (!tpm20_pcr_selection)
+        తిరిగి -1;
 
-    struct tpms_pcr_selection *sel = tpm20_pcr_selection->selections;
-    void *end = (void*)tpm20_pcr_selection + tpm20_pcr_selection_size;
+    నిర్మాణం tpms_pcr_selection *sel = tpm20_pcr_selection->selections;
+    శూన్య *చివర = (శూన్య*)tpm20_pcr_selection + tpm20_pcr_selection_కొలత;
 
-    while (1) {
-        u8 sizeOfSelect = sel->sizeOfSelect;
-        void *nsel = (void*)sel + sizeof(*sel) + sizeOfSelect;
-        if (nsel > end)
-            return 0;
+    అయితే (1) {
+        u8 కొలత_యొక్క_Select = sel->కొలత_యొక్క_Select;
+        శూన్య *nsel = (శూన్య*)sel + పరిమాణం(*sel) + కొలత_యొక్క_Select;
+        ఒకవేళ (nsel > చివర)
+            తిరిగి 0;
 
-        u16 hashalg = be16_to_cpu(sel->hashAlg);
-        u8 hashalg_flag = tpm20_hashalg_to_flag(hashalg);
+        u16 hashalg = be16_గమ్యం_cpu(sel->hashAlg);
+        u8 hashalg_flag = tpm20_hashalg_గమ్యం_flag(hashalg);
 
         *suppt_pcrbanks |= hashalg_flag;
 
-        unsigned i;
-        for (i = 0; i < sizeOfSelect; i++) {
-            if (sel->pcrSelect[i]) {
-                *active_pcrbanks |= hashalg_flag;
-                break;
+        గుర్తులేని i;
+        కొరకు (i = 0; i < కొలత_యొక్క_Select; i++) {
+            ఒకవేళ (sel->pcrSelect[i]) {
+                *చురుకైన_pcrbanks |= hashalg_flag;
+                ఆపు;
             }
         }
 
@@ -600,137 +600,137 @@ tpm20_get_suppt_pcrbanks(u8 *suppt_pcrbanks, u8 *active_pcrbanks)
     }
 }
 
-static int
-tpm20_set_pcrbanks(u32 active_banks)
+స్థిర పూర్ణాంకం
+tpm20_సమితి_pcrbanks(u32 చురుకైన_banks)
 {
-    struct tpm2_req_pcr_allocate trpa = {
-        .hdr.tag     = cpu_to_be16(TPM2_ST_SESSIONS),
-        .hdr.ordinal = cpu_to_be32(TPM2_CC_PCR_Allocate),
-        .authhandle = cpu_to_be32(TPM2_RH_PLATFORM),
-        .authblocksize = cpu_to_be32(sizeof(trpa.authblock)),
+    నిర్మాణం tpm2_req_pcr_allocate trpa = {
+        .hdr.ట్యాగ్     = cpu_గమ్యం_be16(TPM2_ST_SESSIONS),
+        .hdr.ordinal = cpu_గమ్యం_be32(TPM2_CC_PCR_Allocate),
+        .authhandle = cpu_గమ్యం_be32(TPM2_RH_PLATFORM),
+        .authblocksize = cpu_గమ్యం_be32(పరిమాణం(trpa.authblock)),
         .authblock = {
-            .handle = cpu_to_be32(TPM2_RS_PW),
-            .noncesize = cpu_to_be16(0),
+            .handle = cpu_గమ్యం_be32(TPM2_RS_PW),
+            .noncesize = cpu_గమ్యం_be16(0),
             .contsession = TPM2_YES,
-            .pwdsize = cpu_to_be16(0),
+            .pwdsize = cpu_గమ్యం_be16(0),
         },
     };
-    struct tpms_pcr_selection3 {
+    నిర్మాణం tpms_pcr_selection3 {
         u16 hashAlg;
-        u8 sizeOfSelect;
+        u8 కొలత_యొక్క_Select;
         u8 pcrSelect[3];
-    } tps[ARRAY_SIZE(trpa.tpms_pcr_selections)];
-    int i = 0;
+    } tps[ARRAY_కొలత(trpa.tpms_pcr_selections)];
+    పూర్ణాంకం i = 0;
     u8 hashalg_flag = TPM2_ALG_SHA1_FLAG;
     u8 dontcare, suppt_banks;
 
     tpm20_get_suppt_pcrbanks(&suppt_banks, &dontcare);
 
-    while (hashalg_flag) {
-        if ((hashalg_flag & suppt_banks)) {
-            u16 hashalg = tpm20_hashalg_flag_to_hashalg(hashalg_flag);
+    అయితే (hashalg_flag) {
+        ఒకవేళ ((hashalg_flag & suppt_banks)) {
+            u16 hashalg = tpm20_hashalg_flag_గమ్యం_hashalg(hashalg_flag);
 
-            if (hashalg) {
-                u8 mask = 0;
-                tps[i].hashAlg = cpu_to_be16(hashalg);
-                tps[i].sizeOfSelect = 3;
+            ఒకవేళ (hashalg) {
+                u8 ముసుగు = 0;
+                tps[i].hashAlg = cpu_గమ్యం_be16(hashalg);
+                tps[i].కొలత_యొక్క_Select = 3;
 
-                if (active_banks & hashalg_flag)
-                    mask = 0xff;
+                ఒకవేళ (చురుకైన_banks & hashalg_flag)
+                    ముసుగు = 0xff;
 
-                tps[i].pcrSelect[0] = mask;
-                tps[i].pcrSelect[1] = mask;
-                tps[i].pcrSelect[2] = mask;
+                tps[i].pcrSelect[0] = ముసుగు;
+                tps[i].pcrSelect[1] = ముసుగు;
+                tps[i].pcrSelect[2] = ముసుగు;
                 i++;
             }
         }
         hashalg_flag <<= 1;
     }
 
-    trpa.count = cpu_to_be32(i);
-    memcpy(trpa.tpms_pcr_selections, tps, i * sizeof(tps[0]));
-    trpa.hdr.totlen = cpu_to_be32(offsetof(struct tpm2_req_pcr_allocate,
+    trpa.లెక్క = cpu_గమ్యం_be32(i);
+    జ్ఞాపకం_నకలు(trpa.tpms_pcr_selections, tps, i * పరిమాణం(tps[0]));
+    trpa.hdr.totlen = cpu_గమ్యం_be32(offsetof(నిర్మాణం tpm2_req_pcr_allocate,
                                            tpms_pcr_selections) +
-                                  i * sizeof(tps[0]));
+                                  i * పరిమాణం(tps[0]));
 
-    struct tpm_rsp_header rsp;
-    u32 resp_length = sizeof(rsp);
+    నిర్మాణం tpm_rsp_శీర్షిక rsp;
+    u32 resp_నిడివి = పరిమాణం(rsp);
 
-    int ret = tpmhw_transmit(0, &trpa.hdr, &rsp, &resp_length,
+    పూర్ణాంకం ret = tpmhw_transmit(0, &trpa.hdr, &rsp, &resp_నిడివి,
                              TPM_DURATION_TYPE_SHORT);
-    ret = ret ? -1 : be32_to_cpu(rsp.errcode);
+    ret = ret ? -1 : be32_గమ్యం_cpu(rsp.errcode);
 
-    return ret;
+    తిరిగి ret;
 }
 
-static int tpm20_activate_pcrbanks(u32 active_banks)
+స్థిర పూర్ణాంకం tpm20_activate_pcrbanks(u32 చురుకైన_banks)
 {
-    int ret = tpm20_set_pcrbanks(active_banks);
-    if (!ret)
+    పూర్ణాంకం ret = tpm20_సమితి_pcrbanks(చురుకైన_banks);
+    ఒకవేళ (!ret)
         ret = tpm_simple_cmd(0, TPM2_CC_Shutdown,
                              2, TPM2_SU_CLEAR, TPM_DURATION_TYPE_SHORT);
-    if (!ret)
+    ఒకవేళ (!ret)
         reset();
-    return ret;
+    తిరిగి ret;
 }
 
-static int
-tpm12_get_capability(u32 cap, u32 subcap, struct tpm_rsp_header *rsp, u32 rsize)
+స్థిర పూర్ణాంకం
+tpm12_get_capability(u32 cap, u32 subcap, నిర్మాణం tpm_rsp_శీర్షిక *rsp, u32 rsize)
 {
-    struct tpm_req_getcap trgc = {
-        .hdr.tag = cpu_to_be16(TPM_TAG_RQU_CMD),
-        .hdr.totlen = cpu_to_be32(sizeof(trgc)),
-        .hdr.ordinal = cpu_to_be32(TPM_ORD_GetCapability),
-        .capArea = cpu_to_be32(cap),
-        .subCapSize = cpu_to_be32(sizeof(trgc.subCap)),
-        .subCap = cpu_to_be32(subcap)
+    నిర్మాణం tpm_req_getcap trgc = {
+        .hdr.ట్యాగ్ = cpu_గమ్యం_be16(TPM_ట్యాగ్_RQU_CMD),
+        .hdr.totlen = cpu_గమ్యం_be32(పరిమాణం(trgc)),
+        .hdr.ordinal = cpu_గమ్యం_be32(TPM_ORD_GetCapability),
+        .capArea = cpu_గమ్యం_be32(cap),
+        .sub_Cap_కొలత = cpu_గమ్యం_be32(పరిమాణం(trgc.subCap)),
+        .subCap = cpu_గమ్యం_be32(subcap)
     };
-    u32 resp_size = rsize;
-    int ret = tpmhw_transmit(0, &trgc.hdr, rsp, &resp_size,
+    u32 resp_కొలత = rsize;
+    పూర్ణాంకం ret = tpmhw_transmit(0, &trgc.hdr, rsp, &resp_కొలత,
                              TPM_DURATION_TYPE_SHORT);
-    ret = (ret || resp_size != rsize) ? -1 : be32_to_cpu(rsp->errcode);
+    ret = (ret || resp_కొలత != rsize) ? -1 : be32_గమ్యం_cpu(rsp->errcode);
     dprintf(DEBUG_tcg, "TCGBIOS: Return code from TPM_GetCapability(%d, %d)"
             " = %x\n", cap, subcap, ret);
-    return ret;
+    తిరిగి ret;
 }
 
-static int
-tpm12_read_permanent_flags(char *buf, int buf_len)
+స్థిర పూర్ణాంకం
+tpm12_read_permanent_flags(అక్షరం *buf, పూర్ణాంకం buf_len)
 {
     memset(buf, 0, buf_len);
 
-    struct tpm_res_getcap_perm_flags pf;
-    int ret = tpm12_get_capability(TPM_CAP_FLAG, TPM_CAP_FLAG_PERMANENT
-                                   , &pf.hdr, sizeof(pf));
-    if (ret)
-        return -1;
+    నిర్మాణం tpm_res_getcap_perm_flags pf;
+    పూర్ణాంకం ret = tpm12_get_capability(TPM_CAP_FLAG, TPM_CAP_FLAG_PERMANENT
+                                   , &pf.hdr, పరిమాణం(pf));
+    ఒకవేళ (ret)
+        తిరిగి -1;
 
-    memcpy(buf, &pf.perm_flags, buf_len);
+    జ్ఞాపకం_నకలు(buf, &pf.perm_flags, buf_len);
 
-    return 0;
+    తిరిగి 0;
 }
 
-static int
-tpm12_determine_timeouts(void)
+స్థిర పూర్ణాంకం
+tpm12_determine_timeouts(శూన్య)
 {
-    struct tpm_res_getcap_timeouts timeouts;
-    int ret = tpm12_get_capability(TPM_CAP_PROPERTY, TPM_CAP_PROP_TIS_TIMEOUT
-                                   , &timeouts.hdr, sizeof(timeouts));
-    if (ret)
-        return ret;
+    నిర్మాణం tpm_res_getcap_timeouts timeouts;
+    పూర్ణాంకం ret = tpm12_get_capability(TPM_CAP_PROPERTY, TPM_CAP_PROP_TIS_TIMEOUT
+                                   , &timeouts.hdr, పరిమాణం(timeouts));
+    ఒకవేళ (ret)
+        తిరిగి ret;
 
-    struct tpm_res_getcap_durations durations;
+    నిర్మాణం tpm_res_getcap_durations durations;
     ret = tpm12_get_capability(TPM_CAP_PROPERTY, TPM_CAP_PROP_DURATION
-                               , &durations.hdr, sizeof(durations));
-    if (ret)
-        return ret;
+                               , &durations.hdr, పరిమాణం(durations));
+    ఒకవేళ (ret)
+        తిరిగి ret;
 
-    int i;
-    for (i = 0; i < 3; i++)
-        durations.durations[i] = be32_to_cpu(durations.durations[i]);
+    పూర్ణాంకం i;
+    కొరకు (i = 0; i < 3; i++)
+        durations.durations[i] = be32_గమ్యం_cpu(durations.durations[i]);
 
-    for (i = 0; i < 4; i++)
-        timeouts.timeouts[i] = be32_to_cpu(timeouts.timeouts[i]);
+    కొరకు (i = 0; i < 4; i++)
+        timeouts.timeouts[i] = be32_గమ్యం_cpu(timeouts.timeouts[i]);
 
     dprintf(DEBUG_tcg, "TCGBIOS: timeouts: %u %u %u %u\n",
             timeouts.timeouts[0],
@@ -743,13 +743,13 @@ tpm12_determine_timeouts(void)
             durations.durations[1],
             durations.durations[2]);
 
-    tpmhw_set_timeouts(timeouts.timeouts, durations.durations);
+    tpmhw_సమితి_timeouts(timeouts.timeouts, durations.durations);
 
-    return 0;
+    తిరిగి 0;
 }
 
-static void
-tpm20_set_timeouts(void)
+స్థిర శూన్య
+tpm20_సమితి_timeouts(శూన్య)
 {
     u32 durations[3] = {
         TPM2_DEFAULT_DURATION_SHORT,
@@ -763,194 +763,194 @@ tpm20_set_timeouts(void)
         TIS2_DEFAULT_TIMEOUT_D,
     };
 
-    tpmhw_set_timeouts(timeouts, durations);
+    tpmhw_సమితి_timeouts(timeouts, durations);
 }
 
-static int
-tpm12_extend(struct tpm_log_entry *le, int digest_len)
+స్థిర పూర్ణాంకం
+tpm12_extend(నిర్మాణం tpm_log_నమోదు *le, పూర్ణాంకం digest_len)
 {
-    struct tpm_req_extend tre = {
-        .hdr.tag     = cpu_to_be16(TPM_TAG_RQU_CMD),
-        .hdr.totlen  = cpu_to_be32(sizeof(tre)),
-        .hdr.ordinal = cpu_to_be32(TPM_ORD_Extend),
-        .pcrindex    = cpu_to_be32(le->hdr.pcrindex),
+    నిర్మాణం tpm_req_extend tre = {
+        .hdr.ట్యాగ్     = cpu_గమ్యం_be16(TPM_ట్యాగ్_RQU_CMD),
+        .hdr.totlen  = cpu_గమ్యం_be32(పరిమాణం(tre)),
+        .hdr.ordinal = cpu_గమ్యం_be32(TPM_ORD_Extend),
+        .pcrindex    = cpu_గమ్యం_be32(le->hdr.pcrindex),
     };
-    memcpy(tre.digest, le->hdr.digest, sizeof(tre.digest));
+    జ్ఞాపకం_నకలు(tre.digest, le->hdr.digest, పరిమాణం(tre.digest));
 
-    struct tpm_rsp_extend rsp;
-    u32 resp_length = sizeof(rsp);
-    int ret = tpmhw_transmit(0, &tre.hdr, &rsp, &resp_length,
+    నిర్మాణం tpm_rsp_extend rsp;
+    u32 resp_నిడివి = పరిమాణం(rsp);
+    పూర్ణాంకం ret = tpmhw_transmit(0, &tre.hdr, &rsp, &resp_నిడివి,
                              TPM_DURATION_TYPE_SHORT);
-    if (ret || resp_length != sizeof(rsp) || rsp.hdr.errcode)
-        return -1;
+    ఒకవేళ (ret || resp_నిడివి != పరిమాణం(rsp) || rsp.hdr.errcode)
+        తిరిగి -1;
 
-    return 0;
+    తిరిగి 0;
 }
 
-static int tpm20_extend(struct tpm_log_entry *le, int digest_len)
+స్థిర పూర్ణాంకం tpm20_extend(నిర్మాణం tpm_log_నమోదు *le, పూర్ణాంకం digest_len)
 {
-    struct tpm2_req_extend tmp_tre = {
-        .hdr.tag     = cpu_to_be16(TPM2_ST_SESSIONS),
-        .hdr.totlen  = cpu_to_be32(0),
-        .hdr.ordinal = cpu_to_be32(TPM2_CC_PCR_Extend),
-        .pcrindex    = cpu_to_be32(le->hdr.pcrindex),
-        .authblocksize = cpu_to_be32(sizeof(tmp_tre.authblock)),
+    నిర్మాణం tpm2_req_extend tmp_tre = {
+        .hdr.ట్యాగ్     = cpu_గమ్యం_be16(TPM2_ST_SESSIONS),
+        .hdr.totlen  = cpu_గమ్యం_be32(0),
+        .hdr.ordinal = cpu_గమ్యం_be32(TPM2_CC_PCR_Extend),
+        .pcrindex    = cpu_గమ్యం_be32(le->hdr.pcrindex),
+        .authblocksize = cpu_గమ్యం_be32(పరిమాణం(tmp_tre.authblock)),
         .authblock = {
-            .handle = cpu_to_be32(TPM2_RS_PW),
-            .noncesize = cpu_to_be16(0),
+            .handle = cpu_గమ్యం_be32(TPM2_RS_PW),
+            .noncesize = cpu_గమ్యం_be16(0),
             .contsession = TPM2_YES,
-            .pwdsize = cpu_to_be16(0),
+            .pwdsize = cpu_గమ్యం_be16(0),
         },
     };
-    u8 buffer[sizeof(tmp_tre) + sizeof(le->pad)];
-    struct tpm2_req_extend *tre = (struct tpm2_req_extend *)buffer;
+    u8 బఫరు[పరిమాణం(tmp_tre) + పరిమాణం(le->pad)];
+    నిర్మాణం tpm2_req_extend *tre = (నిర్మాణం tpm2_req_extend *)బఫరు;
 
-    memcpy(tre, &tmp_tre, sizeof(tmp_tre));
-    memcpy(&tre->digest[0], le->hdr.digest, digest_len);
+    జ్ఞాపకం_నకలు(tre, &tmp_tre, పరిమాణం(tmp_tre));
+    జ్ఞాపకం_నకలు(&tre->digest[0], le->hdr.digest, digest_len);
 
-    tre->hdr.totlen = cpu_to_be32(sizeof(tmp_tre) + digest_len);
+    tre->hdr.totlen = cpu_గమ్యం_be32(పరిమాణం(tmp_tre) + digest_len);
 
-    struct tpm_rsp_header rsp;
-    u32 resp_length = sizeof(rsp);
-    int ret = tpmhw_transmit(0, &tre->hdr, &rsp, &resp_length,
+    నిర్మాణం tpm_rsp_శీర్షిక rsp;
+    u32 resp_నిడివి = పరిమాణం(rsp);
+    పూర్ణాంకం ret = tpmhw_transmit(0, &tre->hdr, &rsp, &resp_నిడివి,
                              TPM_DURATION_TYPE_SHORT);
-    if (ret || resp_length != sizeof(rsp) || rsp.errcode)
-        return -1;
+    ఒకవేళ (ret || resp_నిడివి != పరిమాణం(rsp) || rsp.errcode)
+        తిరిగి -1;
 
-    return 0;
+    తిరిగి 0;
 }
 
-static int
-tpm_extend(struct tpm_log_entry *le, int digest_len)
+స్థిర పూర్ణాంకం
+tpm_extend(నిర్మాణం tpm_log_నమోదు *le, పూర్ణాంకం digest_len)
 {
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
-        return tpm12_extend(le, digest_len);
-    case TPM_VERSION_2:
-        return tpm20_extend(le, digest_len);
+    ఎంపిక (TPM_సంస్కరణ) {
+    స్థితి TPM_సంస్కరణ_1_2:
+        తిరిగి tpm12_extend(le, digest_len);
+    స్థితి TPM_సంస్కరణ_2:
+        తిరిగి tpm20_extend(le, digest_len);
     }
-    return -1;
+    తిరిగి -1;
 }
 
-static int
-tpm20_stirrandom(void)
+స్థిర పూర్ణాంకం
+tpm20_stirrandom(శూన్య)
 {
-    struct tpm2_req_stirrandom stir = {
-        .hdr.tag = cpu_to_be16(TPM2_ST_NO_SESSIONS),
-        .hdr.totlen = cpu_to_be32(sizeof(stir)),
-        .hdr.ordinal = cpu_to_be32(TPM2_CC_StirRandom),
-        .size = cpu_to_be16(sizeof(stir.stir)),
+    నిర్మాణం tpm2_req_stirrandom stir = {
+        .hdr.ట్యాగ్ = cpu_గమ్యం_be16(TPM2_ST_NO_SESSIONS),
+        .hdr.totlen = cpu_గమ్యం_be32(పరిమాణం(stir)),
+        .hdr.ordinal = cpu_గమ్యం_be32(TPM2_CC_StirRandom),
+        .కొలత = cpu_గమ్యం_be16(పరిమాణం(stir.stir)),
         .stir = rdtscll(),
     };
     /* set more bits to stir with */
     stir.stir += swab64(rdtscll());
 
-    struct tpm_rsp_header rsp;
-    u32 resp_length = sizeof(rsp);
-    int ret = tpmhw_transmit(0, &stir.hdr, &rsp, &resp_length,
+    నిర్మాణం tpm_rsp_శీర్షిక rsp;
+    u32 resp_నిడివి = పరిమాణం(rsp);
+    పూర్ణాంకం ret = tpmhw_transmit(0, &stir.hdr, &rsp, &resp_నిడివి,
                              TPM_DURATION_TYPE_SHORT);
-    if (ret || resp_length != sizeof(rsp) || rsp.errcode)
+    ఒకవేళ (ret || resp_నిడివి != పరిమాణం(rsp) || rsp.errcode)
         ret = -1;
 
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_StirRandom = 0x%08x\n",
             ret);
 
-    return ret;
+    తిరిగి ret;
 }
 
-static int
+స్థిర పూర్ణాంకం
 tpm20_getrandom(u8 *buf, u16 buf_len)
 {
-    struct tpm2_res_getrandom rsp;
+    నిర్మాణం tpm2_res_getrandom rsp;
 
-    if (buf_len > sizeof(rsp.rnd.buffer))
-        return -1;
+    ఒకవేళ (buf_len > పరిమాణం(rsp.rnd.బఫరు))
+        తిరిగి -1;
 
-    struct tpm2_req_getrandom trgr = {
-        .hdr.tag = cpu_to_be16(TPM2_ST_NO_SESSIONS),
-        .hdr.totlen = cpu_to_be32(sizeof(trgr)),
-        .hdr.ordinal = cpu_to_be32(TPM2_CC_GetRandom),
-        .bytesRequested = cpu_to_be16(buf_len),
+    నిర్మాణం tpm2_req_getrandom trgr = {
+        .hdr.ట్యాగ్ = cpu_గమ్యం_be16(TPM2_ST_NO_SESSIONS),
+        .hdr.totlen = cpu_గమ్యం_be32(పరిమాణం(trgr)),
+        .hdr.ordinal = cpu_గమ్యం_be32(TPM2_CC_GetRandom),
+        .బైట్లు_Requested = cpu_గమ్యం_be16(buf_len),
     };
-    u32 resp_length = sizeof(rsp);
+    u32 resp_నిడివి = పరిమాణం(rsp);
 
-    int ret = tpmhw_transmit(0, &trgr.hdr, &rsp, &resp_length,
+    పూర్ణాంకం ret = tpmhw_transmit(0, &trgr.hdr, &rsp, &resp_నిడివి,
                              TPM_DURATION_TYPE_MEDIUM);
-    if (ret || resp_length != sizeof(rsp) || rsp.hdr.errcode)
+    ఒకవేళ (ret || resp_నిడివి != పరిమాణం(rsp) || rsp.hdr.errcode)
         ret = -1;
-    else
-        memcpy(buf, rsp.rnd.buffer, buf_len);
+    లేకపోతే
+        జ్ఞాపకం_నకలు(buf, rsp.rnd.బఫరు, buf_len);
 
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_GetRandom = 0x%08x\n",
             ret);
 
-    return ret;
+    తిరిగి ret;
 }
 
-static int
+స్థిర పూర్ణాంకం
 tpm20_hierarchycontrol(u32 hierarchy, u8 state)
 {
     /* we will try to deactivate the TPM now - ignoring all errors */
-    struct tpm2_req_hierarchycontrol trh = {
-        .hdr.tag = cpu_to_be16(TPM2_ST_SESSIONS),
-        .hdr.totlen = cpu_to_be32(sizeof(trh)),
-        .hdr.ordinal = cpu_to_be32(TPM2_CC_HierarchyControl),
-        .authhandle = cpu_to_be32(TPM2_RH_PLATFORM),
-        .authblocksize = cpu_to_be32(sizeof(trh.authblock)),
+    నిర్మాణం tpm2_req_hierarchycontrol trh = {
+        .hdr.ట్యాగ్ = cpu_గమ్యం_be16(TPM2_ST_SESSIONS),
+        .hdr.totlen = cpu_గమ్యం_be32(పరిమాణం(trh)),
+        .hdr.ordinal = cpu_గమ్యం_be32(TPM2_CC_HierarchyControl),
+        .authhandle = cpu_గమ్యం_be32(TPM2_RH_PLATFORM),
+        .authblocksize = cpu_గమ్యం_be32(పరిమాణం(trh.authblock)),
         .authblock = {
-            .handle = cpu_to_be32(TPM2_RS_PW),
-            .noncesize = cpu_to_be16(0),
+            .handle = cpu_గమ్యం_be32(TPM2_RS_PW),
+            .noncesize = cpu_గమ్యం_be16(0),
             .contsession = TPM2_YES,
-            .pwdsize = cpu_to_be16(0),
+            .pwdsize = cpu_గమ్యం_be16(0),
         },
-        .enable = cpu_to_be32(hierarchy),
+        .enable = cpu_గమ్యం_be32(hierarchy),
         .state = state,
     };
-    struct tpm_rsp_header rsp;
-    u32 resp_length = sizeof(rsp);
-    int ret = tpmhw_transmit(0, &trh.hdr, &rsp, &resp_length,
+    నిర్మాణం tpm_rsp_శీర్షిక rsp;
+    u32 resp_నిడివి = పరిమాణం(rsp);
+    పూర్ణాంకం ret = tpmhw_transmit(0, &trh.hdr, &rsp, &resp_నిడివి,
                              TPM_DURATION_TYPE_MEDIUM);
-    if (ret || resp_length != sizeof(rsp) || rsp.errcode)
+    ఒకవేళ (ret || resp_నిడివి != పరిమాణం(rsp) || rsp.errcode)
         ret = -1;
 
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_HierarchyControl = 0x%08x\n",
             ret);
 
-    return ret;
+    తిరిగి ret;
 }
 
-static int
+స్థిర పూర్ణాంకం
 tpm20_hierarchychangeauth(u8 auth[20])
 {
-    struct tpm2_req_hierarchychangeauth trhca = {
-        .hdr.tag = cpu_to_be16(TPM2_ST_SESSIONS),
-        .hdr.totlen = cpu_to_be32(sizeof(trhca)),
-        .hdr.ordinal = cpu_to_be32(TPM2_CC_HierarchyChangeAuth),
-        .authhandle = cpu_to_be32(TPM2_RH_PLATFORM),
-        .authblocksize = cpu_to_be32(sizeof(trhca.authblock)),
+    నిర్మాణం tpm2_req_hierarchychangeauth trhca = {
+        .hdr.ట్యాగ్ = cpu_గమ్యం_be16(TPM2_ST_SESSIONS),
+        .hdr.totlen = cpu_గమ్యం_be32(పరిమాణం(trhca)),
+        .hdr.ordinal = cpu_గమ్యం_be32(TPM2_CC_HierarchyChangeAuth),
+        .authhandle = cpu_గమ్యం_be32(TPM2_RH_PLATFORM),
+        .authblocksize = cpu_గమ్యం_be32(పరిమాణం(trhca.authblock)),
         .authblock = {
-            .handle = cpu_to_be32(TPM2_RS_PW),
-            .noncesize = cpu_to_be16(0),
+            .handle = cpu_గమ్యం_be32(TPM2_RS_PW),
+            .noncesize = cpu_గమ్యం_be16(0),
             .contsession = TPM2_YES,
-            .pwdsize = cpu_to_be16(0),
+            .pwdsize = cpu_గమ్యం_be16(0),
         },
         .newAuth = {
-            .size = cpu_to_be16(sizeof(trhca.newAuth.buffer)),
+            .కొలత = cpu_గమ్యం_be16(పరిమాణం(trhca.newAuth.బఫరు)),
         },
     };
-    memcpy(trhca.newAuth.buffer, auth, sizeof(trhca.newAuth.buffer));
+    జ్ఞాపకం_నకలు(trhca.newAuth.బఫరు, auth, పరిమాణం(trhca.newAuth.బఫరు));
 
-    struct tpm_rsp_header rsp;
-    u32 resp_length = sizeof(rsp);
-    int ret = tpmhw_transmit(0, &trhca.hdr, &rsp, &resp_length,
+    నిర్మాణం tpm_rsp_శీర్షిక rsp;
+    u32 resp_నిడివి = పరిమాణం(rsp);
+    పూర్ణాంకం ret = tpmhw_transmit(0, &trhca.hdr, &rsp, &resp_నిడివి,
                              TPM_DURATION_TYPE_MEDIUM);
-    if (ret || resp_length != sizeof(rsp) || rsp.errcode)
+    ఒకవేళ (ret || resp_నిడివి != పరిమాణం(rsp) || rsp.errcode)
         ret = -1;
 
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_HierarchyChangeAuth = 0x%08x\n",
             ret);
 
-    return ret;
+    తిరిగి ret;
 }
 
 
@@ -958,33 +958,33 @@ tpm20_hierarchychangeauth(u8 auth[20])
  * Setup and Measurements
  ****************************************************************/
 
-static int TPM_has_physical_presence;
+స్థిర పూర్ణాంకం TPM_has_physical_presence;
 u8 TPM_working VARLOW;
 
-static int
-tpm_is_working(void)
+స్థిర పూర్ణాంకం
+tpm_is_working(శూన్య)
 {
-    return CONFIG_TCGBIOS && TPM_working;
+    తిరిగి CONFIG_TCGBIOS && TPM_working;
 }
 
-static void
-tpm_set_failure(void)
+స్థిర శూన్య
+tpm_సమితి_failure(శూన్య)
 {
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
+    ఎంపిక (TPM_సంస్కరణ) {
+    స్థితి TPM_సంస్కరణ_1_2:
         /*
          * We will try to deactivate the TPM now - ignoring all errors
          * Physical presence is asserted.
          */
 
-        tpm_simple_cmd(0, TPM_ORD_SetTempDeactivated,
+        tpm_simple_cmd(0, TPM_ORD_సమితి_తాత్కాలిక_Deactivated,
                        0, 0, TPM_DURATION_TYPE_SHORT);
-        break;
-    case TPM_VERSION_2:
+        ఆపు;
+    స్థితి TPM_సంస్కరణ_2:
         tpm20_hierarchycontrol(TPM2_RH_ENDORSEMENT, TPM2_NO);
         tpm20_hierarchycontrol(TPM2_RH_OWNER, TPM2_NO);
         tpm20_hierarchycontrol(TPM2_RH_PLATFORM, TPM2_NO);
-        break;
+        ఆపు;
     }
 
     TPM_working = 0;
@@ -1002,168 +1002,168 @@ tpm_set_failure(void)
  *  hashdata    : pointer to the data to be hashed
  *  hashdata_length: length of the data to be hashed
  */
-static void
-tpm_add_measurement_to_log(u32 pcrindex, u32 event_type,
-                           const char *event, u32 event_length,
-                           const u8 *hashdata, u32 hashdata_length)
+స్థిర శూన్య
+tpm_కూడు_measurement_గమ్యం_log(u32 pcrindex, u32 event_type,
+                           స్థిరరాశి అక్షరం *event, u32 event_నిడివి,
+                           స్థిరరాశి u8 *hashdata, u32 hashdata_నిడివి)
 {
-    if (!tpm_is_working())
-        return;
+    ఒకవేళ (!tpm_is_working())
+        తిరిగి;
 
-    struct tpm_log_entry le = {
+    నిర్మాణం tpm_log_నమోదు le = {
         .hdr.pcrindex = pcrindex,
         .hdr.eventtype = event_type,
     };
-    int digest_len = tpm_build_digest(&le, hashdata, hashdata_length, 1);
-    if (digest_len < 0)
-        return;
-    int ret = tpm_extend(&le, digest_len);
-    if (ret) {
-        tpm_set_failure();
-        return;
+    పూర్ణాంకం digest_len = tpm_build_digest(&le, hashdata, hashdata_నిడివి, 1);
+    ఒకవేళ (digest_len < 0)
+        తిరిగి;
+    పూర్ణాంకం ret = tpm_extend(&le, digest_len);
+    ఒకవేళ (ret) {
+        tpm_సమితి_failure();
+        తిరిగి;
     }
-    tpm_build_digest(&le, hashdata, hashdata_length, 0);
-    tpm_log_event(&le.hdr, digest_len, event, event_length);
+    tpm_build_digest(&le, hashdata, hashdata_నిడివి, 0);
+    tpm_log_event(&le.hdr, digest_len, event, event_నిడివి);
 }
 
 // Add an EV_ACTION measurement to the list of measurements
-static void
-tpm_add_action(u32 pcrIndex, const char *string)
+స్థిర శూన్య
+tpm_కూడు_action(u32 pcr_సూచీ, స్థిరరాశి అక్షరం *string)
 {
-    u32 len = strlen(string);
-    tpm_add_measurement_to_log(pcrIndex, EV_ACTION,
+    u32 len = అక్షరశ్రేణి_పొడవు(string);
+    tpm_కూడు_measurement_గమ్యం_log(pcr_సూచీ, EV_ACTION,
                                string, len, (u8 *)string, len);
 }
 
 /*
  * Add event separators for PCRs 0 to 7; specs on 'Measuring Boot Events'
  */
-static void
-tpm_add_event_separators(void)
+స్థిర శూన్య
+tpm_కూడు_event_separators(శూన్య)
 {
-    static const u8 evt_separator[] = {0xff,0xff,0xff,0xff};
-    u32 pcrIndex;
-    for (pcrIndex = 0; pcrIndex <= 7; pcrIndex++)
-        tpm_add_measurement_to_log(pcrIndex, EV_SEPARATOR,
-                                   (const char *)evt_separator,
-                                   sizeof(evt_separator),
+    స్థిర స్థిరరాశి u8 evt_separator[] = {0xff,0xff,0xff,0xff};
+    u32 pcr_సూచీ;
+    కొరకు (pcr_సూచీ = 0; pcr_సూచీ <= 7; pcr_సూచీ++)
+        tpm_కూడు_measurement_గమ్యం_log(pcr_సూచీ, EV_SEPARATOR,
+                                   (స్థిరరాశి అక్షరం *)evt_separator,
+                                   పరిమాణం(evt_separator),
                                    evt_separator,
-                                   sizeof(evt_separator));
+                                   పరిమాణం(evt_separator));
 }
 
-static void
-tpm_smbios_measure(void)
+స్థిర శూన్య
+tpm_smbios_measure(శూన్య)
 {
-    struct pcctes pcctes = {
+    నిర్మాణం pcctes pcctes = {
         .eventid = 1,
         .eventdatasize = SHA1_BUFSIZE,
     };
     u32 smbios_len;
-    void *smbios_tables = smbios_get_tables(&smbios_len);
+    శూన్య *smbios_tables = smbios_get_tables(&smbios_len);
 
     dprintf(DEBUG_tcg, "TCGBIOS: SMBIOS tables at %p\n", smbios_tables);
 
-    if (!smbios_tables)
-        return;
+    ఒకవేళ (!smbios_tables)
+        తిరిగి;
 
-    sha1((const u8 *)smbios_tables, smbios_len, pcctes.digest);
-    tpm_add_measurement_to_log(1,
-                               EV_EVENT_TAG,
-                               (const char *)&pcctes, sizeof(pcctes),
-                               (u8 *)&pcctes, sizeof(pcctes));
+    sha1((స్థిరరాశి u8 *)smbios_tables, smbios_len, pcctes.digest);
+    tpm_కూడు_measurement_గమ్యం_log(1,
+                               EV_EVENT_ట్యాగ్,
+                               (స్థిరరాశి అక్షరం *)&pcctes, పరిమాణం(pcctes),
+                               (u8 *)&pcctes, పరిమాణం(pcctes));
 }
 
-static int
-tpm12_assert_physical_presence(void)
+స్థిర పూర్ణాంకం
+tpm12_assert_physical_presence(శూన్య)
 {
-    int ret = tpm_simple_cmd(0, TPM_ORD_PhysicalPresence,
+    పూర్ణాంకం ret = tpm_simple_cmd(0, TPM_ORD_PhysicalPresence,
                              2, TPM_PP_PRESENT, TPM_DURATION_TYPE_SHORT);
-    if (!ret)
-        return 0;
+    ఒకవేళ (!ret)
+        తిరిగి 0;
 
-    struct tpm_permanent_flags pf;
-    ret = tpm12_read_permanent_flags((char *)&pf, sizeof(pf));
-    if (ret)
-        return -1;
+    నిర్మాణం tpm_permanent_flags pf;
+    ret = tpm12_read_permanent_flags((అక్షరం *)&pf, పరిమాణం(pf));
+    ఒకవేళ (ret)
+        తిరిగి -1;
 
     /* check if hardware physical presence is supported */
-    if (pf.flags[PERM_FLAG_IDX_PHYSICAL_PRESENCE_HW_ENABLE]) {
+    ఒకవేళ (pf.flags[PERM_FLAG_IDX_PHYSICAL_PRESENCE_HW_ENABLE]) {
         /* HW phys. presence may not be asserted... */
-        return 0;
+        తిరిగి 0;
     }
 
-    if (!pf.flags[PERM_FLAG_IDX_PHYSICAL_PRESENCE_LIFETIME_LOCK]
+    ఒకవేళ (!pf.flags[PERM_FLAG_IDX_PHYSICAL_PRESENCE_LIFETIME_తాళం]
         && !pf.flags[PERM_FLAG_IDX_PHYSICAL_PRESENCE_CMD_ENABLE]) {
         tpm_simple_cmd(0, TPM_ORD_PhysicalPresence,
                        2, TPM_PP_CMD_ENABLE, TPM_DURATION_TYPE_SHORT);
 
-        return tpm_simple_cmd(0, TPM_ORD_PhysicalPresence,
+        తిరిగి tpm_simple_cmd(0, TPM_ORD_PhysicalPresence,
                               2, TPM_PP_PRESENT, TPM_DURATION_TYPE_SHORT);
     }
-    return -1;
+    తిరిగి -1;
 }
 
-static int
-tpm12_startup(void)
+స్థిర పూర్ణాంకం
+tpm12_startup(శూన్య)
 {
     dprintf(DEBUG_tcg, "TCGBIOS: Starting with TPM_Startup(ST_CLEAR)\n");
-    int ret = tpm_simple_cmd(0, TPM_ORD_Startup,
+    పూర్ణాంకం ret = tpm_simple_cmd(0, TPM_ORD_Startup,
                              2, TPM_ST_CLEAR, TPM_DURATION_TYPE_SHORT);
-    if (CONFIG_COREBOOT && ret == TPM_INVALID_POSTINIT)
+    ఒకవేళ (CONFIG_COREBOOT && ret == TPM_INVALID_POSTINIT)
         /* with other firmware on the system the TPM may already have been
          * initialized
          */
         ret = 0;
-    if (ret)
-        goto err_exit;
+    ఒకవేళ (ret)
+        వెళ్ళు err_exit;
 
     /* assertion of physical presence is only possible after startup */
     ret = tpm12_assert_physical_presence();
-    if (!ret)
+    ఒకవేళ (!ret)
         TPM_has_physical_presence = 1;
 
     ret = tpm12_determine_timeouts();
-    if (ret)
-        goto err_exit;
+    ఒకవేళ (ret)
+        వెళ్ళు err_exit;
 
-    ret = tpm_simple_cmd(0, TPM_ORD_SelfTestFull,
+    ret = tpm_simple_cmd(0, TPM_ORD_Self_Test_నిండిన,
                          0, 0, TPM_DURATION_TYPE_LONG);
-    if (ret)
-        goto err_exit;
+    ఒకవేళ (ret)
+        వెళ్ళు err_exit;
 
-    ret = tpm_simple_cmd(3, TSC_ORD_ResetEstablishmentBit,
+    ret = tpm_simple_cmd(3, TSC_ORD_Reset_Establishment_బిట్టు,
                          0, 0, TPM_DURATION_TYPE_SHORT);
-    if (ret && ret != TPM_BAD_LOCALITY)
-        goto err_exit;
+    ఒకవేళ (ret && ret != TPM_BAD_LOCALITY)
+        వెళ్ళు err_exit;
 
-    return 0;
+    తిరిగి 0;
 
 err_exit:
     dprintf(DEBUG_tcg, "TCGBIOS: TPM malfunctioning (line %d).\n", __LINE__);
 
-    tpm_set_failure();
-    return -1;
+    tpm_సమితి_failure();
+    తిరిగి -1;
 }
 
-static int
-tpm20_startup(void)
+స్థిర పూర్ణాంకం
+tpm20_startup(శూన్య)
 {
-    tpm20_set_timeouts();
+    tpm20_సమితి_timeouts();
 
-    int ret = tpm_simple_cmd(0, TPM2_CC_Startup,
+    పూర్ణాంకం ret = tpm_simple_cmd(0, TPM2_CC_Startup,
                              2, TPM2_SU_CLEAR, TPM_DURATION_TYPE_SHORT);
 
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_Startup(SU_CLEAR) = 0x%08x\n",
             ret);
 
-    if (CONFIG_COREBOOT && ret == TPM2_RC_INITIALIZE)
+    ఒకవేళ (CONFIG_COREBOOT && ret == TPM2_RC_INITIALIZE)
         /* with other firmware on the system the TPM may already have been
          * initialized
          */
         ret = 0;
 
-    if (ret)
-        goto err_exit;
+    ఒకవేళ (ret)
+        వెళ్ళు err_exit;
 
     ret = tpm_simple_cmd(0, TPM2_CC_SelfTest,
                          1, TPM2_YES, TPM_DURATION_TYPE_LONG);
@@ -1171,219 +1171,219 @@ tpm20_startup(void)
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_SelfTest = 0x%08x\n",
             ret);
 
-    if (ret)
-        goto err_exit;
+    ఒకవేళ (ret)
+        వెళ్ళు err_exit;
 
     ret = tpm20_get_pcrbanks();
-    if (ret)
-        goto err_exit;
+    ఒకవేళ (ret)
+        వెళ్ళు err_exit;
 
     ret = tpm20_write_EfiSpecIdEventStruct();
-    if (ret)
-        goto err_exit;
+    ఒకవేళ (ret)
+        వెళ్ళు err_exit;
 
-    return 0;
+    తిరిగి 0;
 
 err_exit:
     dprintf(DEBUG_tcg, "TCGBIOS: TPM malfunctioning (line %d).\n", __LINE__);
 
-    tpm_set_failure();
-    return -1;
+    tpm_సమితి_failure();
+    తిరిగి -1;
 }
 
-static int
-tpm_startup(void)
+స్థిర పూర్ణాంకం
+tpm_startup(శూన్య)
 {
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
-        return tpm12_startup();
-    case TPM_VERSION_2:
-        return tpm20_startup();
+    ఎంపిక (TPM_సంస్కరణ) {
+    స్థితి TPM_సంస్కరణ_1_2:
+        తిరిగి tpm12_startup();
+    స్థితి TPM_సంస్కరణ_2:
+        తిరిగి tpm20_startup();
     }
-    return -1;
+    తిరిగి -1;
 }
 
-void
-tpm_setup(void)
+శూన్య
+tpm_అమరిక(శూన్య)
 {
-    if (!CONFIG_TCGBIOS)
-        return;
+    ఒకవేళ (!CONFIG_TCGBIOS)
+        తిరిగి;
 
-    int ret = tpm_tpm2_probe();
-    if (ret) {
+    పూర్ణాంకం ret = tpm_tpm2_probe();
+    ఒకవేళ (ret) {
         ret = tpm_tcpa_probe();
-        if (ret)
-            return;
+        ఒకవేళ (ret)
+            తిరిగి;
     }
 
-    TPM_version = tpmhw_probe();
-    if (TPM_version == TPM_VERSION_NONE)
-        return;
+    TPM_సంస్కరణ = tpmhw_probe();
+    ఒకవేళ (TPM_సంస్కరణ == TPM_సంస్కరణ_NONE)
+        తిరిగి;
 
     dprintf(DEBUG_tcg,
             "TCGBIOS: Detected a TPM %s.\n",
-             (TPM_version == TPM_VERSION_1_2) ? "1.2" : "2");
+             (TPM_సంస్కరణ == TPM_సంస్కరణ_1_2) ? "1.2" : "2");
 
     TPM_working = 1;
 
-    if (runningOnXen())
-        return;
+    ఒకవేళ (runningOnXen())
+        తిరిగి;
 
     ret = tpm_startup();
-    if (ret)
-        return;
+    ఒకవేళ (ret)
+        తిరిగి;
 
     tpm_smbios_measure();
-    tpm_add_action(2, "Start Option ROM Scan");
+    tpm_కూడు_action(2, "Start Option ROM Scan");
 }
 
-static void
-tpm20_prepboot(void)
+స్థిర శూన్య
+tpm20_prepboot(శూన్య)
 {
-    int ret = tpm20_stirrandom();
-    if (ret)
-         goto err_exit;
+    పూర్ణాంకం ret = tpm20_stirrandom();
+    ఒకవేళ (ret)
+         వెళ్ళు err_exit;
 
     u8 auth[20];
-    ret = tpm20_getrandom(&auth[0], sizeof(auth));
-    if (ret)
-        goto err_exit;
+    ret = tpm20_getrandom(&auth[0], పరిమాణం(auth));
+    ఒకవేళ (ret)
+        వెళ్ళు err_exit;
 
     ret = tpm20_hierarchychangeauth(auth);
-    if (ret)
-        goto err_exit;
+    ఒకవేళ (ret)
+        వెళ్ళు err_exit;
 
-    return;
+    తిరిగి;
 
 err_exit:
     dprintf(DEBUG_tcg, "TCGBIOS: TPM malfunctioning (line %d).\n", __LINE__);
 
-    tpm_set_failure();
+    tpm_సమితి_failure();
 }
 
-void
-tpm_prepboot(void)
+శూన్య
+tpm_prepboot(శూన్య)
 {
-    if (!CONFIG_TCGBIOS)
-        return;
+    ఒకవేళ (!CONFIG_TCGBIOS)
+        తిరిగి;
 
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
-        if (TPM_has_physical_presence)
+    ఎంపిక (TPM_సంస్కరణ) {
+    స్థితి TPM_సంస్కరణ_1_2:
+        ఒకవేళ (TPM_has_physical_presence)
             tpm_simple_cmd(0, TPM_ORD_PhysicalPresence,
-                           2, TPM_PP_NOT_PRESENT_LOCK, TPM_DURATION_TYPE_SHORT);
-        break;
-    case TPM_VERSION_2:
+                           2, TPM_PP_NOT_PRESENT_తాళం, TPM_DURATION_TYPE_SHORT);
+        ఆపు;
+    స్థితి TPM_సంస్కరణ_2:
         tpm20_prepboot();
-        break;
+        ఆపు;
     }
 
-    tpm_add_action(4, "Calling INT 19h");
-    tpm_add_event_separators();
+    tpm_కూడు_action(4, "Calling INT 19h");
+    tpm_కూడు_event_separators();
 }
 
 /*
  * Add measurement to the log about an option rom
  */
-void
-tpm_option_rom(const void *addr, u32 len)
+శూన్య
+tpm_option_rom(స్థిరరాశి శూన్య *addr, u32 len)
 {
-    if (!tpm_is_working())
-        return;
+    ఒకవేళ (!tpm_is_working())
+        తిరిగి;
 
-    struct pcctes_romex pcctes = {
+    నిర్మాణం pcctes_romex pcctes = {
         .eventid = 7,
-        .eventdatasize = sizeof(u16) + sizeof(u16) + SHA1_BUFSIZE,
+        .eventdatasize = పరిమాణం(u16) + పరిమాణం(u16) + SHA1_BUFSIZE,
     };
-    sha1((const u8 *)addr, len, pcctes.digest);
-    tpm_add_measurement_to_log(2,
-                               EV_EVENT_TAG,
-                               (const char *)&pcctes, sizeof(pcctes),
-                               (u8 *)&pcctes, sizeof(pcctes));
+    sha1((స్థిరరాశి u8 *)addr, len, pcctes.digest);
+    tpm_కూడు_measurement_గమ్యం_log(2,
+                               EV_EVENT_ట్యాగ్,
+                               (స్థిరరాశి అక్షరం *)&pcctes, పరిమాణం(pcctes),
+                               (u8 *)&pcctes, పరిమాణం(pcctes));
 }
 
-void
-tpm_add_bcv(u32 bootdrv, const u8 *addr, u32 length)
+శూన్య
+tpm_కూడు_bcv(u32 bootdrv, స్థిరరాశి u8 *addr, u32 నిడివి)
 {
-    if (!tpm_is_working())
-        return;
+    ఒకవేళ (!tpm_is_working())
+        తిరిగి;
 
-    if (length < 0x200)
-        return;
+    ఒకవేళ (నిడివి < 0x200)
+        తిరిగి;
 
-    const char *string = "Booting BCV device 00h (Floppy)";
-    if (bootdrv == 0x80)
+    స్థిరరాశి అక్షరం *string = "Booting BCV device 00h (Floppy)";
+    ఒకవేళ (bootdrv == 0x80)
         string = "Booting BCV device 80h (HDD)";
-    tpm_add_action(4, string);
+    tpm_కూడు_action(4, string);
 
     /* specs: see section 'Hard Disk Device or Hard Disk-Like Devices' */
     /* equivalent to: dd if=/dev/hda ibs=1 count=440 | sha1sum */
     string = "MBR";
-    tpm_add_measurement_to_log(4, EV_IPL,
-                               string, strlen(string),
+    tpm_కూడు_measurement_గమ్యం_log(4, EV_IPL,
+                               string, అక్షరశ్రేణి_పొడవు(string),
                                addr, 0x1b8);
 
     /* equivalent to: dd if=/dev/hda ibs=1 count=72 skip=440 | sha1sum */
     string = "MBR PARTITION_TABLE";
-    tpm_add_measurement_to_log(5, EV_IPL_PARTITION_DATA,
-                               string, strlen(string),
+    tpm_కూడు_measurement_గమ్యం_log(5, EV_IPL_విభజన_దత్తాంశం,
+                               string, అక్షరశ్రేణి_పొడవు(string),
                                addr + 0x1b8, 0x48);
 }
 
-void
-tpm_add_cdrom(u32 bootdrv, const u8 *addr, u32 length)
+శూన్య
+tpm_కూడు_cdrom(u32 bootdrv, స్థిరరాశి u8 *addr, u32 నిడివి)
 {
-    if (!tpm_is_working())
-        return;
+    ఒకవేళ (!tpm_is_working())
+        తిరిగి;
 
-    tpm_add_action(4, "Booting from CD ROM device");
+    tpm_కూడు_action(4, "Booting from CD ROM device");
 
     /* specs: see section 'El Torito' */
-    const char *string = "EL TORITO IPL";
-    tpm_add_measurement_to_log(4, EV_IPL,
-                               string, strlen(string),
-                               addr, length);
+    స్థిరరాశి అక్షరం *string = "EL TORITO IPL";
+    tpm_కూడు_measurement_గమ్యం_log(4, EV_IPL,
+                               string, అక్షరశ్రేణి_పొడవు(string),
+                               addr, నిడివి);
 }
 
-void
-tpm_add_cdrom_catalog(const u8 *addr, u32 length)
+శూన్య
+tpm_కూడు_cdrom_catalog(స్థిరరాశి u8 *addr, u32 నిడివి)
 {
-    if (!tpm_is_working())
-        return;
+    ఒకవేళ (!tpm_is_working())
+        తిరిగి;
 
-    tpm_add_action(4, "Booting from CD ROM device");
+    tpm_కూడు_action(4, "Booting from CD ROM device");
 
     /* specs: see section 'El Torito' */
-    const char *string = "BOOT CATALOG";
-    tpm_add_measurement_to_log(5, EV_IPL_PARTITION_DATA,
-                               string, strlen(string),
-                               addr, length);
+    స్థిరరాశి అక్షరం *string = "BOOT CATALOG";
+    tpm_కూడు_measurement_గమ్యం_log(5, EV_IPL_విభజన_దత్తాంశం,
+                               string, అక్షరశ్రేణి_పొడవు(string),
+                               addr, నిడివి);
 }
 
-void
-tpm_s3_resume(void)
+శూన్య
+tpm_s3_resume(శూన్య)
 {
-    if (!tpm_is_working())
-        return;
+    ఒకవేళ (!tpm_is_working())
+        తిరిగి;
 
     dprintf(DEBUG_tcg, "TCGBIOS: Resuming with TPM_Startup(ST_STATE)\n");
 
-    int ret = -1;
+    పూర్ణాంకం ret = -1;
 
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
+    ఎంపిక (TPM_సంస్కరణ) {
+    స్థితి TPM_సంస్కరణ_1_2:
         ret = tpm_simple_cmd(0, TPM_ORD_Startup,
                              2, TPM_ST_STATE, TPM_DURATION_TYPE_SHORT);
-        break;
-    case TPM_VERSION_2:
+        ఆపు;
+    స్థితి TPM_సంస్కరణ_2:
         ret = tpm_simple_cmd(0, TPM2_CC_Startup,
                              2, TPM2_SU_STATE, TPM_DURATION_TYPE_SHORT);
 
         dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_Startup(SU_STATE) = 0x%08x\n",
                 ret);
 
-        if (ret)
-            goto err_exit;
+        ఒకవేళ (ret)
+            వెళ్ళు err_exit;
 
 
         ret = tpm_simple_cmd(0, TPM2_CC_SelfTest,
@@ -1392,18 +1392,18 @@ tpm_s3_resume(void)
         dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_SelfTest() = 0x%08x\n",
                 ret);
 
-        break;
+        ఆపు;
     }
 
-    if (ret)
-        goto err_exit;
+    ఒకవేళ (ret)
+        వెళ్ళు err_exit;
 
-    return;
+    తిరిగి;
 
 err_exit:
     dprintf(DEBUG_tcg, "TCGBIOS: TPM malfunctioning (line %d).\n", __LINE__);
 
-    tpm_set_failure();
+    tpm_సమితి_failure();
 }
 
 
@@ -1413,319 +1413,319 @@ err_exit:
 
 u8 TPM_interface_shutdown VARLOW;
 
-static inline void *input_buf32(struct bregs *regs)
+స్థిర అంతఃవరుస శూన్య *ఆదానం_buf32(నిర్మాణం bregs *regs)
 {
-    return MAKE_FLATPTR(regs->es, regs->di);
+    తిరిగి MAKE_FLATPTR(regs->es, regs->di);
 }
 
-static inline void *output_buf32(struct bregs *regs)
+స్థిర అంతఃవరుస శూన్య *output_buf32(నిర్మాణం bregs *regs)
 {
-    return MAKE_FLATPTR(regs->ds, regs->si);
+    తిరిగి MAKE_FLATPTR(regs->ds, regs->si);
 }
 
-static u32
-hash_log_extend(struct pcpes *pcpes, const void *hashdata, u32 hashdata_length
-                , void *event, int extend)
+స్థిర u32
+hash_log_extend(నిర్మాణం pcpes *pcpes, స్థిరరాశి శూన్య *hashdata, u32 hashdata_నిడివి
+                , శూన్య *event, పూర్ణాంకం extend)
 {
-    if (pcpes->pcrindex >= 24)
-        return TCG_INVALID_INPUT_PARA;
-    if (hashdata)
-        sha1(hashdata, hashdata_length, pcpes->digest);
+    ఒకవేళ (pcpes->pcrindex >= 24)
+        తిరిగి TCG_INVALID_ఆదానం_PARA;
+    ఒకవేళ (hashdata)
+        sha1(hashdata, hashdata_నిడివి, pcpes->digest);
 
-    struct tpm_log_entry le = {
+    నిర్మాణం tpm_log_నమోదు le = {
         .hdr.pcrindex = pcpes->pcrindex,
         .hdr.eventtype = pcpes->eventtype,
     };
-    int digest_len = tpm12_build_digest_direct(&le, pcpes->digest);
-    if (digest_len < 0)
-        return TCG_GENERAL_ERROR;
-    if (extend) {
-        int ret = tpm_extend(&le, digest_len);
-        if (ret)
-            return TCG_TCG_COMMAND_ERROR;
+    పూర్ణాంకం digest_len = tpm12_build_digest_ప్రత్యక్ష(&le, pcpes->digest);
+    ఒకవేళ (digest_len < 0)
+        తిరిగి TCG_GENERAL_ERROR;
+    ఒకవేళ (extend) {
+        పూర్ణాంకం ret = tpm_extend(&le, digest_len);
+        ఒకవేళ (ret)
+            తిరిగి TCG_TCG_COMMAND_ERROR;
     }
-    tpm12_build_digest_direct(&le, pcpes->digest);
-    int ret = tpm_log_event(&le.hdr, digest_len
+    tpm12_build_digest_ప్రత్యక్ష(&le, pcpes->digest);
+    పూర్ణాంకం ret = tpm_log_event(&le.hdr, digest_len
                             , pcpes->event, pcpes->eventdatasize);
-    if (ret)
-        return TCG_PC_LOGOVERFLOW;
-    return 0;
+    ఒకవేళ (ret)
+        తిరిగి TCG_PC_LOGOVERFLOW;
+    తిరిగి 0;
 }
 
-static u32
-hash_log_extend_event_int(const struct hleei_short *hleei_s,
-                          struct hleeo *hleeo)
+స్థిర u32
+hash_log_extend_event_int(స్థిరరాశి నిర్మాణం hleei_short *hleei_s,
+                          నిర్మాణం hleeo *hleeo)
 {
     u32 rc = 0;
-    struct hleei_long *hleei_l = (struct hleei_long *)hleei_s;
-    const void *logdataptr;
+    నిర్మాణం hleei_long *hleei_l = (నిర్మాణం hleei_long *)hleei_s;
+    స్థిరరాశి శూన్య *logdataptr;
     u32 logdatalen;
-    struct pcpes *pcpes;
+    నిర్మాణం pcpes *pcpes;
     u32 pcrindex;
 
     /* short or long version? */
-    switch (hleei_s->ipblength) {
-    case sizeof(struct hleei_short):
+    ఎంపిక (hleei_s->ipblength) {
+    స్థితి పరిమాణం(నిర్మాణం hleei_short):
         /* short */
         logdataptr = hleei_s->logdataptr;
         logdatalen = hleei_s->logdatalen;
         pcrindex = hleei_s->pcrindex;
-    break;
+    ఆపు;
 
-    case sizeof(struct hleei_long):
+    స్థితి పరిమాణం(నిర్మాణం hleei_long):
         /* long */
         logdataptr = hleei_l->logdataptr;
         logdatalen = hleei_l->logdatalen;
         pcrindex = hleei_l->pcrindex;
-    break;
+    ఆపు;
 
-    default:
+    అప్రమేయ:
         /* bad input block */
-        rc = TCG_INVALID_INPUT_PARA;
-        goto err_exit;
+        rc = TCG_INVALID_ఆదానం_PARA;
+        వెళ్ళు err_exit;
     }
 
-    pcpes = (struct pcpes *)logdataptr;
+    pcpes = (నిర్మాణం pcpes *)logdataptr;
 
-    if (pcpes->pcrindex != pcrindex
-        || logdatalen != sizeof(*pcpes) + pcpes->eventdatasize) {
-        rc = TCG_INVALID_INPUT_PARA;
-        goto err_exit;
+    ఒకవేళ (pcpes->pcrindex != pcrindex
+        || logdatalen != పరిమాణం(*pcpes) + pcpes->eventdatasize) {
+        rc = TCG_INVALID_ఆదానం_PARA;
+        వెళ్ళు err_exit;
     }
     rc = hash_log_extend(pcpes, hleei_s->hashdataptr, hleei_s->hashdatalen
                          , pcpes->event, 1);
-    if (rc)
-        goto err_exit;
+    ఒకవేళ (rc)
+        వెళ్ళు err_exit;
 
-    hleeo->opblength = sizeof(struct hleeo);
+    hleeo->opblength = పరిమాణం(నిర్మాణం hleeo);
     hleeo->reserved  = 0;
-    hleeo->eventnumber = tpm_state.entry_count;
-    memcpy(hleeo->digest, pcpes->digest, sizeof(hleeo->digest));
+    hleeo->eventnumber = tpm_state.నమోదు_లెక్క;
+    జ్ఞాపకం_నకలు(hleeo->digest, pcpes->digest, పరిమాణం(hleeo->digest));
 
 err_exit:
-    if (rc != 0) {
+    ఒకవేళ (rc != 0) {
         hleeo->opblength = 4;
         hleeo->reserved  = 0;
     }
 
-    return rc;
+    తిరిగి rc;
 }
 
-static u32
-pass_through_to_tpm_int(struct pttti *pttti, struct pttto *pttto)
+స్థిర u32
+pass_through_గమ్యం_tpm_int(నిర్మాణం pttti *pttti, నిర్మాణం pttto *pttto)
 {
     u32 rc = 0;
-    struct tpm_req_header *trh = (void*)pttti->tpmopin;
+    నిర్మాణం tpm_req_శీర్షిక *trh = (శూన్య*)pttti->tpmopin;
 
-    if (pttti->ipblength < sizeof(struct pttti) + sizeof(*trh)
-        || pttti->ipblength != sizeof(struct pttti) + be32_to_cpu(trh->totlen)
-        || pttti->opblength < sizeof(struct pttto)) {
-        rc = TCG_INVALID_INPUT_PARA;
-        goto err_exit;
+    ఒకవేళ (pttti->ipblength < పరిమాణం(నిర్మాణం pttti) + పరిమాణం(*trh)
+        || pttti->ipblength != పరిమాణం(నిర్మాణం pttti) + be32_గమ్యం_cpu(trh->totlen)
+        || pttti->opblength < పరిమాణం(నిర్మాణం pttto)) {
+        rc = TCG_INVALID_ఆదానం_PARA;
+        వెళ్ళు err_exit;
     }
 
-    u16 tag = be16_to_cpu(trh->tag);
+    u16 ట్యాగ్ = be16_గమ్యం_cpu(trh->ట్యాగ్);
 
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
-        if (tag != TPM_TAG_RQU_CMD && tag != TPM_TAG_RQU_AUTH1_CMD
-            && tag != TPM_TAG_RQU_AUTH2_CMD) {
-            rc = TCG_INVALID_INPUT_PARA;
-            goto err_exit;
+    ఎంపిక (TPM_సంస్కరణ) {
+    స్థితి TPM_సంస్కరణ_1_2:
+        ఒకవేళ (ట్యాగ్ != TPM_ట్యాగ్_RQU_CMD && ట్యాగ్ != TPM_ట్యాగ్_RQU_AUTH1_CMD
+            && ట్యాగ్ != TPM_ట్యాగ్_RQU_AUTH2_CMD) {
+            rc = TCG_INVALID_ఆదానం_PARA;
+            వెళ్ళు err_exit;
         }
-        break;
-    case TPM_VERSION_2:
-        if (tag != TPM2_ST_NO_SESSIONS && tag != TPM2_ST_SESSIONS) {
-            rc = TCG_INVALID_INPUT_PARA;
-            goto err_exit;
+        ఆపు;
+    స్థితి TPM_సంస్కరణ_2:
+        ఒకవేళ (ట్యాగ్ != TPM2_ST_NO_SESSIONS && ట్యాగ్ != TPM2_ST_SESSIONS) {
+            rc = TCG_INVALID_ఆదానం_PARA;
+            వెళ్ళు err_exit;
         }
     }
 
-    u32 resbuflen = pttti->opblength - offsetof(struct pttto, tpmopout);
-    int ret = tpmhw_transmit(0, trh, pttto->tpmopout, &resbuflen,
+    u32 resbuflen = pttti->opblength - offsetof(నిర్మాణం pttto, tpmopout);
+    పూర్ణాంకం ret = tpmhw_transmit(0, trh, pttto->tpmopout, &resbuflen,
                              TPM_DURATION_TYPE_LONG /* worst case */);
-    if (ret) {
+    ఒకవేళ (ret) {
         rc = TCG_FATAL_COM_ERROR;
-        goto err_exit;
+        వెళ్ళు err_exit;
     }
 
-    pttto->opblength = offsetof(struct pttto, tpmopout) + resbuflen;
+    pttto->opblength = offsetof(నిర్మాణం pttto, tpmopout) + resbuflen;
     pttto->reserved  = 0;
 
 err_exit:
-    if (rc != 0) {
+    ఒకవేళ (rc != 0) {
         pttto->opblength = 4;
         pttto->reserved = 0;
     }
 
-    return rc;
+    తిరిగి rc;
 }
 
-static u32
-shutdown_preboot_interface(void)
+స్థిర u32
+shutdown_preboot_interface(శూన్య)
 {
     TPM_interface_shutdown = 1;
-    return 0;
+    తిరిగి 0;
 }
 
-static u32
-hash_log_event_int(const struct hlei *hlei, struct hleo *hleo)
+స్థిర u32
+hash_log_event_int(స్థిరరాశి నిర్మాణం hlei *hlei, నిర్మాణం hleo *hleo)
 {
     u32 rc = 0;
-    u16 size;
-    struct pcpes *pcpes;
+    u16 కొలత;
+    నిర్మాణం pcpes *pcpes;
 
-    size = hlei->ipblength;
-    if (size != sizeof(*hlei)) {
-        rc = TCG_INVALID_INPUT_PARA;
-        goto err_exit;
+    కొలత = hlei->ipblength;
+    ఒకవేళ (కొలత != పరిమాణం(*hlei)) {
+        rc = TCG_INVALID_ఆదానం_PARA;
+        వెళ్ళు err_exit;
     }
 
-    pcpes = (struct pcpes *)hlei->logdataptr;
+    pcpes = (నిర్మాణం pcpes *)hlei->logdataptr;
 
-    if (pcpes->pcrindex != hlei->pcrindex
+    ఒకవేళ (pcpes->pcrindex != hlei->pcrindex
         || pcpes->eventtype != hlei->logeventtype
-        || hlei->logdatalen != sizeof(*pcpes) + pcpes->eventdatasize) {
-        rc = TCG_INVALID_INPUT_PARA;
-        goto err_exit;
+        || hlei->logdatalen != పరిమాణం(*pcpes) + pcpes->eventdatasize) {
+        rc = TCG_INVALID_ఆదానం_PARA;
+        వెళ్ళు err_exit;
     }
     rc = hash_log_extend(pcpes, hlei->hashdataptr, hlei->hashdatalen
                          , pcpes->event, 0);
-    if (rc)
-        goto err_exit;
+    ఒకవేళ (rc)
+        వెళ్ళు err_exit;
 
     /* updating the log was fine */
-    hleo->opblength = sizeof(struct hleo);
+    hleo->opblength = పరిమాణం(నిర్మాణం hleo);
     hleo->reserved  = 0;
-    hleo->eventnumber = tpm_state.entry_count;
+    hleo->eventnumber = tpm_state.నమోదు_లెక్క;
 
 err_exit:
-    if (rc != 0) {
+    ఒకవేళ (rc != 0) {
         hleo->opblength = 2;
         hleo->reserved = 0;
     }
 
-    return rc;
+    తిరిగి rc;
 }
 
-static u32
-hash_all_int(const struct hai *hai, u8 *hash)
+స్థిర u32
+hash_all_int(స్థిరరాశి నిర్మాణం hai *hai, u8 *hash)
 {
-    if (hai->ipblength != sizeof(struct hai) ||
+    ఒకవేళ (hai->ipblength != పరిమాణం(నిర్మాణం hai) ||
         hai->hashdataptr == 0 ||
         hai->hashdatalen == 0 ||
         hai->algorithmid != TPM_ALG_SHA)
-        return TCG_INVALID_INPUT_PARA;
+        తిరిగి TCG_INVALID_ఆదానం_PARA;
 
-    sha1((const u8 *)hai->hashdataptr, hai->hashdatalen, hash);
-    return 0;
+    sha1((స్థిరరాశి u8 *)hai->hashdataptr, hai->hashdatalen, hash);
+    తిరిగి 0;
 }
 
-static u32
-tss_int(struct ti *ti, struct to *to)
+స్థిర u32
+tss_int(నిర్మాణం ti *ti, నిర్మాణం గమ్యం *గమ్యం)
 {
-    to->opblength = sizeof(struct to);
-    to->reserved  = 0;
+    గమ్యం->opblength = పరిమాణం(నిర్మాణం గమ్యం);
+    గమ్యం->reserved  = 0;
 
-    return TCG_PC_UNSUPPORTED;
+    తిరిగి TCG_PC_UNSUPPORTED;
 }
 
-static u32
-compact_hash_log_extend_event_int(u8 *buffer,
+స్థిర u32
+compact_hash_log_extend_event_int(u8 *బఫరు,
                                   u32 info,
-                                  u32 length,
+                                  u32 నిడివి,
                                   u32 pcrindex,
                                   u32 *edx_ptr)
 {
-    struct pcpes pcpes = {
+    నిర్మాణం pcpes pcpes = {
         .pcrindex      = pcrindex,
         .eventtype     = EV_COMPACT_HASH,
-        .eventdatasize = sizeof(info),
+        .eventdatasize = పరిమాణం(info),
     };
-    u32 rc = hash_log_extend(&pcpes, buffer, length, &info, 1);
-    if (rc)
-        return rc;
+    u32 rc = hash_log_extend(&pcpes, బఫరు, నిడివి, &info, 1);
+    ఒకవేళ (rc)
+        తిరిగి rc;
 
-    *edx_ptr = tpm_state.entry_count;
-    return 0;
+    *edx_ptr = tpm_state.నమోదు_లెక్క;
+    తిరిగి 0;
 }
 
-void VISIBLE32FLAT
-tpm_interrupt_handler32(struct bregs *regs)
+శూన్య VISIBLE32FLAT
+tpm_అంతరాయం_handler32(నిర్మాణం bregs *regs)
 {
-    if (!CONFIG_TCGBIOS)
-        return;
+    ఒకవేళ (!CONFIG_TCGBIOS)
+        తిరిగి;
 
-    set_cf(regs, 0);
+    సమితి_cf(regs, 0);
 
-    if (TPM_interface_shutdown && regs->al) {
+    ఒకవేళ (TPM_interface_shutdown && regs->al) {
         regs->eax = TCG_INTERFACE_SHUTDOWN;
-        return;
+        తిరిగి;
     }
 
-    switch ((enum irq_ids)regs->al) {
-    case TCG_StatusCheck:
-        if (!tpmhw_is_present()) {
+    ఎంపిక ((గణన irq_ids)regs->al) {
+    స్థితి TCG_స్థితి_Check:
+        ఒకవేళ (!tpmhw_is_present()) {
             /* no TPM available */
             regs->eax = TCG_PC_TPM_NOT_PRESENT;
-        } else {
+        } లేకపోతే {
             regs->eax = 0;
             regs->ebx = TCG_MAGIC;
-            regs->ch = TCG_VERSION_MAJOR;
-            regs->cl = TCG_VERSION_MINOR;
+            regs->ch = TCG_సంస్కరణ_MAJOR;
+            regs->cl = TCG_సంస్కరణ_MINOR;
             regs->edx = 0x0;
-            regs->esi = (u32)tpm_state.log_area_start_address;
-            regs->edi = (u32)tpm_state.log_area_last_entry;
+            regs->esi = (u32)tpm_state.log_area_ప్రారంభం_చిరునామా;
+            regs->edi = (u32)tpm_state.log_area_చివరి_నమోదు;
         }
-        break;
+        ఆపు;
 
-    case TCG_HashLogExtendEvent:
+    స్థితి TCG_HashLogExtendEvent:
         regs->eax =
             hash_log_extend_event_int(
-                  (struct hleei_short *)input_buf32(regs),
-                  (struct hleeo *)output_buf32(regs));
-        break;
+                  (నిర్మాణం hleei_short *)ఆదానం_buf32(regs),
+                  (నిర్మాణం hleeo *)output_buf32(regs));
+        ఆపు;
 
-    case TCG_PassThroughToTPM:
+    స్థితి TCG_Pass_Through_గమ్యం_TPM:
         regs->eax =
-            pass_through_to_tpm_int((struct pttti *)input_buf32(regs),
-                                    (struct pttto *)output_buf32(regs));
-        break;
+            pass_through_గమ్యం_tpm_int((నిర్మాణం pttti *)ఆదానం_buf32(regs),
+                                    (నిర్మాణం pttto *)output_buf32(regs));
+        ఆపు;
 
-    case TCG_ShutdownPreBootInterface:
+    స్థితి TCG_ShutdownPreBootInterface:
         regs->eax = shutdown_preboot_interface();
-        break;
+        ఆపు;
 
-    case TCG_HashLogEvent:
-        regs->eax = hash_log_event_int((struct hlei*)input_buf32(regs),
-                                       (struct hleo*)output_buf32(regs));
-        break;
+    స్థితి TCG_HashLogEvent:
+        regs->eax = hash_log_event_int((నిర్మాణం hlei*)ఆదానం_buf32(regs),
+                                       (నిర్మాణం hleo*)output_buf32(regs));
+        ఆపు;
 
-    case TCG_HashAll:
+    స్థితి TCG_HashAll:
         regs->eax =
-            hash_all_int((struct hai*)input_buf32(regs),
+            hash_all_int((నిర్మాణం hai*)ఆదానం_buf32(regs),
                           (u8 *)output_buf32(regs));
-        break;
+        ఆపు;
 
-    case TCG_TSS:
-        regs->eax = tss_int((struct ti*)input_buf32(regs),
-                            (struct to*)output_buf32(regs));
-        break;
+    స్థితి TCG_TSS:
+        regs->eax = tss_int((నిర్మాణం ti*)ఆదానం_buf32(regs),
+                            (నిర్మాణం గమ్యం*)output_buf32(regs));
+        ఆపు;
 
-    case TCG_CompactHashLogExtendEvent:
+    స్థితి TCG_CompactHashLogExtendEvent:
         regs->eax =
-          compact_hash_log_extend_event_int((u8 *)input_buf32(regs),
+          compact_hash_log_extend_event_int((u8 *)ఆదానం_buf32(regs),
                                             regs->esi,
                                             regs->ecx,
                                             regs->edx,
                                             &regs->edx);
-        break;
+        ఆపు;
 
-    default:
-        set_cf(regs, 1);
+    అప్రమేయ:
+        సమితి_cf(regs, 1);
     }
 
-    return;
+    తిరిగి;
 }
 
 
@@ -1733,589 +1733,589 @@ tpm_interrupt_handler32(struct bregs *regs)
  * TPM Configuration Menu
  ****************************************************************/
 
-typedef u8 tpm_ppi_code;
+రకనిర్వచనం u8 tpm_ppi_సంకేతం;
 
-static int
-tpm12_read_has_owner(int *has_owner)
+స్థిర పూర్ణాంకం
+tpm12_read_has_owner(పూర్ణాంకం *has_owner)
 {
-    struct tpm_res_getcap_ownerauth oauth;
-    int ret = tpm12_get_capability(TPM_CAP_PROPERTY, TPM_CAP_PROP_OWNER
-                                   , &oauth.hdr, sizeof(oauth));
-    if (ret)
-        return -1;
+    నిర్మాణం tpm_res_getcap_ownerauth oauth;
+    పూర్ణాంకం ret = tpm12_get_capability(TPM_CAP_PROPERTY, TPM_CAP_PROP_OWNER
+                                   , &oauth.hdr, పరిమాణం(oauth));
+    ఒకవేళ (ret)
+        తిరిగి -1;
 
     *has_owner = oauth.flag;
 
-    return 0;
+    తిరిగి 0;
 }
 
-static int
-tpm12_enable_tpm(int enable, int verbose)
+స్థిర పూర్ణాంకం
+tpm12_enable_tpm(పూర్ణాంకం enable, పూర్ణాంకం verbose)
 {
-    struct tpm_permanent_flags pf;
-    int ret = tpm12_read_permanent_flags((char *)&pf, sizeof(pf));
-    if (ret)
-        return -1;
+    నిర్మాణం tpm_permanent_flags pf;
+    పూర్ణాంకం ret = tpm12_read_permanent_flags((అక్షరం *)&pf, పరిమాణం(pf));
+    ఒకవేళ (ret)
+        తిరిగి -1;
 
-    if (pf.flags[PERM_FLAG_IDX_DISABLE] && !enable)
-        return 0;
+    ఒకవేళ (pf.flags[PERM_FLAG_IDX_DISABLE] && !enable)
+        తిరిగి 0;
 
     ret = tpm_simple_cmd(0, enable ? TPM_ORD_PhysicalEnable
                                    : TPM_ORD_PhysicalDisable,
                          0, 0, TPM_DURATION_TYPE_SHORT);
-    if (ret) {
-        if (enable)
+    ఒకవేళ (ret) {
+        ఒకవేళ (enable)
             dprintf(DEBUG_tcg, "TCGBIOS: Enabling the TPM failed.\n");
-        else
+        లేకపోతే
             dprintf(DEBUG_tcg, "TCGBIOS: Disabling the TPM failed.\n");
     }
-    return ret;
+    తిరిగి ret;
 }
 
-static int
-tpm12_activate_tpm(int activate, int allow_reset, int verbose)
+స్థిర పూర్ణాంకం
+tpm12_activate_tpm(పూర్ణాంకం activate, పూర్ణాంకం allow_reset, పూర్ణాంకం verbose)
 {
-    struct tpm_permanent_flags pf;
-    int ret = tpm12_read_permanent_flags((char *)&pf, sizeof(pf));
-    if (ret)
-        return -1;
+    నిర్మాణం tpm_permanent_flags pf;
+    పూర్ణాంకం ret = tpm12_read_permanent_flags((అక్షరం *)&pf, పరిమాణం(pf));
+    ఒకవేళ (ret)
+        తిరిగి -1;
 
-    if (pf.flags[PERM_FLAG_IDX_DEACTIVATED] && !activate)
-        return 0;
+    ఒకవేళ (pf.flags[PERM_FLAG_IDX_DEACTIVATED] && !activate)
+        తిరిగి 0;
 
-    if (pf.flags[PERM_FLAG_IDX_DISABLE])
-        return 0;
+    ఒకవేళ (pf.flags[PERM_FLAG_IDX_DISABLE])
+        తిరిగి 0;
 
-    ret = tpm_simple_cmd(0, TPM_ORD_PhysicalSetDeactivated,
+    ret = tpm_simple_cmd(0, TPM_ORD_Physical_సమితి_Deactivated,
                          1, activate ? 0x00 : 0x01, TPM_DURATION_TYPE_SHORT);
-    if (ret)
-        return ret;
+    ఒకవేళ (ret)
+        తిరిగి ret;
 
-    if (activate && allow_reset) {
-        if (verbose) {
-            printf("Requiring a reboot to activate the TPM.\n");
+    ఒకవేళ (activate && allow_reset) {
+        ఒకవేళ (verbose) {
+            రాయి("Requiring a reboot to activate the TPM.\n");
 
             msleep(2000);
         }
         reset();
     }
 
-    return 0;
+    తిరిగి 0;
 }
 
-static int
-tpm12_enable_activate(int allow_reset, int verbose)
+స్థిర పూర్ణాంకం
+tpm12_enable_activate(పూర్ణాంకం allow_reset, పూర్ణాంకం verbose)
 {
-    int ret = tpm12_enable_tpm(1, verbose);
-    if (ret)
-        return ret;
+    పూర్ణాంకం ret = tpm12_enable_tpm(1, verbose);
+    ఒకవేళ (ret)
+        తిరిగి ret;
 
-    return tpm12_activate_tpm(1, allow_reset, verbose);
+    తిరిగి tpm12_activate_tpm(1, allow_reset, verbose);
 }
 
-static int
-tpm12_force_clear(int enable_activate_before, int enable_activate_after,
-                  int verbose)
+స్థిర పూర్ణాంకం
+tpm12_force_clear(పూర్ణాంకం enable_activate_before, పూర్ణాంకం enable_activate_after,
+                  పూర్ణాంకం verbose)
 {
-    int has_owner;
-    int ret = tpm12_read_has_owner(&has_owner);
-    if (ret)
-        return -1;
-    if (!has_owner) {
-        if (verbose)
-            printf("TPM does not have an owner.\n");
-        return 0;
+    పూర్ణాంకం has_owner;
+    పూర్ణాంకం ret = tpm12_read_has_owner(&has_owner);
+    ఒకవేళ (ret)
+        తిరిగి -1;
+    ఒకవేళ (!has_owner) {
+        ఒకవేళ (verbose)
+            రాయి("TPM does not have an owner.\n");
+        తిరిగి 0;
     }
 
-    if (enable_activate_before) {
+    ఒకవేళ (enable_activate_before) {
         ret = tpm12_enable_activate(0, verbose);
-        if (ret) {
+        ఒకవేళ (ret) {
             dprintf(DEBUG_tcg,
                     "TCGBIOS: Enabling/activating the TPM failed.\n");
-            return ret;
+            తిరిగి ret;
         }
     }
 
     ret = tpm_simple_cmd(0, TPM_ORD_ForceClear,
                          0, 0, TPM_DURATION_TYPE_SHORT);
-    if (ret)
-        return ret;
+    ఒకవేళ (ret)
+        తిరిగి ret;
 
-    if (!enable_activate_after) {
-        if (verbose)
-            printf("Owner successfully cleared.\n"
+    ఒకవేళ (!enable_activate_after) {
+        ఒకవేళ (verbose)
+            రాయి("Owner successfully cleared.\n"
                    "You will need to enable/activate the TPM again.\n\n");
-        return 0;
+        తిరిగి 0;
     }
 
-    return tpm12_enable_activate(1, verbose);
+    తిరిగి tpm12_enable_activate(1, verbose);
 }
 
-static int
-tpm12_set_owner_install(int allow, int verbose)
+స్థిర పూర్ణాంకం
+tpm12_సమితి_owner_install(పూర్ణాంకం allow, పూర్ణాంకం verbose)
 {
-    int has_owner;
-    int ret = tpm12_read_has_owner(&has_owner);
-    if (ret)
-        return -1;
-    if (has_owner) {
-        if (verbose)
-            printf("Must first remove owner.\n");
-        return 0;
+    పూర్ణాంకం has_owner;
+    పూర్ణాంకం ret = tpm12_read_has_owner(&has_owner);
+    ఒకవేళ (ret)
+        తిరిగి -1;
+    ఒకవేళ (has_owner) {
+        ఒకవేళ (verbose)
+            రాయి("Must first remove owner.\n");
+        తిరిగి 0;
     }
 
-    struct tpm_permanent_flags pf;
-    ret = tpm12_read_permanent_flags((char *)&pf, sizeof(pf));
-    if (ret)
-        return -1;
+    నిర్మాణం tpm_permanent_flags pf;
+    ret = tpm12_read_permanent_flags((అక్షరం *)&pf, పరిమాణం(pf));
+    ఒకవేళ (ret)
+        తిరిగి -1;
 
-    if (pf.flags[PERM_FLAG_IDX_DISABLE]) {
-        if (verbose)
-            printf("TPM must first be enable.\n");
-        return 0;
+    ఒకవేళ (pf.flags[PERM_FLAG_IDX_DISABLE]) {
+        ఒకవేళ (verbose)
+            రాయి("TPM must first be enable.\n");
+        తిరిగి 0;
     }
 
-    ret = tpm_simple_cmd(0, TPM_ORD_SetOwnerInstall,
+    ret = tpm_simple_cmd(0, TPM_ORD_సమితి_Owner_Install,
                          1, allow ? 0x01 : 0x00, TPM_DURATION_TYPE_SHORT);
-    if (ret)
-        return ret;
+    ఒకవేళ (ret)
+        తిరిగి ret;
 
-    if (verbose)
-        printf("Installation of owner %s.\n", allow ? "enabled" : "disabled");
+    ఒకవేళ (verbose)
+        రాయి("Installation of owner %s.\n", allow ? "enabled" : "disabled");
 
-    return 0;
+    తిరిగి 0;
 }
 
-static int
-tpm12_process_cfg(tpm_ppi_code msgCode, int verbose)
+స్థిర పూర్ణాంకం
+tpm12_process_cfg(tpm_ppi_సంకేతం సందేశం_సంకేతం, పూర్ణాంకం verbose)
 {
-    int ret = 0;
+    పూర్ణాంకం ret = 0;
 
-    switch (msgCode) {
-        case TPM_PPI_OP_NOOP: /* no-op */
-            break;
+    ఎంపిక (సందేశం_సంకేతం) {
+        స్థితి TPM_PPI_OP_NOOP: /* no-op */
+            ఆపు;
 
-        case TPM_PPI_OP_ENABLE:
+        స్థితి TPM_PPI_OP_ENABLE:
             ret = tpm12_enable_tpm(1, verbose);
-            break;
+            ఆపు;
 
-        case TPM_PPI_OP_DISABLE:
+        స్థితి TPM_PPI_OP_DISABLE:
             ret = tpm12_enable_tpm(0, verbose);
-            break;
+            ఆపు;
 
-        case TPM_PPI_OP_ACTIVATE:
+        స్థితి TPM_PPI_OP_ACTIVATE:
             ret = tpm12_activate_tpm(1, 1, verbose);
-            break;
+            ఆపు;
 
-        case TPM_PPI_OP_DEACTIVATE:
+        స్థితి TPM_PPI_OP_DEACTIVATE:
             ret = tpm12_activate_tpm(0, 1, verbose);
-            break;
+            ఆపు;
 
-        case TPM_PPI_OP_CLEAR:
+        స్థితి TPM_PPI_OP_CLEAR:
             ret = tpm12_force_clear(1, 0, verbose);
-            break;
+            ఆపు;
 
-        case TPM_PPI_OP_SET_OWNERINSTALL_TRUE:
-            ret = tpm12_set_owner_install(1, verbose);
-            break;
+        స్థితి TPM_PPI_OP_సమితి_OWNERINSTALL_TRUE:
+            ret = tpm12_సమితి_owner_install(1, verbose);
+            ఆపు;
 
-        case TPM_PPI_OP_SET_OWNERINSTALL_FALSE:
-            ret = tpm12_set_owner_install(0, verbose);
-            break;
+        స్థితి TPM_PPI_OP_సమితి_OWNERINSTALL_FALSE:
+            ret = tpm12_సమితి_owner_install(0, verbose);
+            ఆపు;
 
-        default:
-            break;
+        అప్రమేయ:
+            ఆపు;
     }
 
-    if (ret)
-        printf("Op %d: An error occurred: 0x%x\n", msgCode, ret);
+    ఒకవేళ (ret)
+        రాయి("Op %d: An error occurred: 0x%x\n", సందేశం_సంకేతం, ret);
 
-    return ret;
+    తిరిగి ret;
 }
 
-static int
-tpm20_clearcontrol(u8 disable, int verbose)
+స్థిర పూర్ణాంకం
+tpm20_clearcontrol(u8 disable, పూర్ణాంకం verbose)
 {
-    struct tpm2_req_clearcontrol trc = {
-        .hdr.tag     = cpu_to_be16(TPM2_ST_SESSIONS),
-        .hdr.totlen  = cpu_to_be32(sizeof(trc)),
-        .hdr.ordinal = cpu_to_be32(TPM2_CC_ClearControl),
-        .authhandle = cpu_to_be32(TPM2_RH_PLATFORM),
-        .authblocksize = cpu_to_be32(sizeof(trc.authblock)),
+    నిర్మాణం tpm2_req_clearcontrol trc = {
+        .hdr.ట్యాగ్     = cpu_గమ్యం_be16(TPM2_ST_SESSIONS),
+        .hdr.totlen  = cpu_గమ్యం_be32(పరిమాణం(trc)),
+        .hdr.ordinal = cpu_గమ్యం_be32(TPM2_CC_ClearControl),
+        .authhandle = cpu_గమ్యం_be32(TPM2_RH_PLATFORM),
+        .authblocksize = cpu_గమ్యం_be32(పరిమాణం(trc.authblock)),
         .authblock = {
-            .handle = cpu_to_be32(TPM2_RS_PW),
-            .noncesize = cpu_to_be16(0),
+            .handle = cpu_గమ్యం_be32(TPM2_RS_PW),
+            .noncesize = cpu_గమ్యం_be16(0),
             .contsession = TPM2_YES,
-            .pwdsize = cpu_to_be16(0),
+            .pwdsize = cpu_గమ్యం_be16(0),
         },
         .disable = disable,
     };
-    struct tpm_rsp_header rsp;
-    u32 resp_length = sizeof(rsp);
-    int ret = tpmhw_transmit(0, &trc.hdr, &rsp, &resp_length,
+    నిర్మాణం tpm_rsp_శీర్షిక rsp;
+    u32 resp_నిడివి = పరిమాణం(rsp);
+    పూర్ణాంకం ret = tpmhw_transmit(0, &trc.hdr, &rsp, &resp_నిడివి,
                              TPM_DURATION_TYPE_SHORT);
-    if (ret || resp_length != sizeof(rsp) || rsp.errcode)
+    ఒకవేళ (ret || resp_నిడివి != పరిమాణం(rsp) || rsp.errcode)
         ret = -1;
 
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_ClearControl = 0x%08x\n",
             ret);
 
-    return ret;
+    తిరిగి ret;
 }
 
-static int
-tpm20_clear(void)
+స్థిర పూర్ణాంకం
+tpm20_clear(శూన్య)
 {
-    struct tpm2_req_clear trq = {
-        .hdr.tag     = cpu_to_be16(TPM2_ST_SESSIONS),
-        .hdr.totlen  = cpu_to_be32(sizeof(trq)),
-        .hdr.ordinal = cpu_to_be32(TPM2_CC_Clear),
-        .authhandle = cpu_to_be32(TPM2_RH_PLATFORM),
-        .authblocksize = cpu_to_be32(sizeof(trq.authblock)),
+    నిర్మాణం tpm2_req_clear trq = {
+        .hdr.ట్యాగ్     = cpu_గమ్యం_be16(TPM2_ST_SESSIONS),
+        .hdr.totlen  = cpu_గమ్యం_be32(పరిమాణం(trq)),
+        .hdr.ordinal = cpu_గమ్యం_be32(TPM2_CC_Clear),
+        .authhandle = cpu_గమ్యం_be32(TPM2_RH_PLATFORM),
+        .authblocksize = cpu_గమ్యం_be32(పరిమాణం(trq.authblock)),
         .authblock = {
-            .handle = cpu_to_be32(TPM2_RS_PW),
-            .noncesize = cpu_to_be16(0),
+            .handle = cpu_గమ్యం_be32(TPM2_RS_PW),
+            .noncesize = cpu_గమ్యం_be16(0),
             .contsession = TPM2_YES,
-            .pwdsize = cpu_to_be16(0),
+            .pwdsize = cpu_గమ్యం_be16(0),
         },
     };
-    struct tpm_rsp_header rsp;
-    u32 resp_length = sizeof(rsp);
-    int ret = tpmhw_transmit(0, &trq.hdr, &rsp, &resp_length,
+    నిర్మాణం tpm_rsp_శీర్షిక rsp;
+    u32 resp_నిడివి = పరిమాణం(rsp);
+    పూర్ణాంకం ret = tpmhw_transmit(0, &trq.hdr, &rsp, &resp_నిడివి,
                              TPM_DURATION_TYPE_MEDIUM);
-    if (ret || resp_length != sizeof(rsp) || rsp.errcode)
+    ఒకవేళ (ret || resp_నిడివి != పరిమాణం(rsp) || rsp.errcode)
         ret = -1;
 
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_Clear = 0x%08x\n",
             ret);
 
-    return ret;
+    తిరిగి ret;
 }
 
-static int
-tpm20_process_cfg(tpm_ppi_code msgCode, int verbose)
+స్థిర పూర్ణాంకం
+tpm20_process_cfg(tpm_ppi_సంకేతం సందేశం_సంకేతం, పూర్ణాంకం verbose)
 {
-    int ret = 0;
+    పూర్ణాంకం ret = 0;
 
-    switch (msgCode) {
-        case TPM_PPI_OP_NOOP: /* no-op */
-            break;
+    ఎంపిక (సందేశం_సంకేతం) {
+        స్థితి TPM_PPI_OP_NOOP: /* no-op */
+            ఆపు;
 
-        case TPM_PPI_OP_CLEAR:
+        స్థితి TPM_PPI_OP_CLEAR:
             ret = tpm20_clearcontrol(0, verbose);
-            if (!ret)
+            ఒకవేళ (!ret)
                  ret = tpm20_clear();
-            break;
+            ఆపు;
     }
 
-    if (ret)
-        printf("Op %d: An error occurred: 0x%x\n", msgCode, ret);
+    ఒకవేళ (ret)
+        రాయి("Op %d: An error occurred: 0x%x\n", సందేశం_సంకేతం, ret);
 
-    return ret;
+    తిరిగి ret;
 }
 
-static int
-tpm12_get_tpm_state(void)
+స్థిర పూర్ణాంకం
+tpm12_get_tpm_state(శూన్య)
 {
-    int state = 0;
-    struct tpm_permanent_flags pf;
-    int has_owner;
+    పూర్ణాంకం state = 0;
+    నిర్మాణం tpm_permanent_flags pf;
+    పూర్ణాంకం has_owner;
 
-    if (tpm12_read_permanent_flags((char *)&pf, sizeof(pf)) ||
+    ఒకవేళ (tpm12_read_permanent_flags((అక్షరం *)&pf, పరిమాణం(pf)) ||
         tpm12_read_has_owner(&has_owner))
-        return ~0;
+        తిరిగి ~0;
 
-    if (!pf.flags[PERM_FLAG_IDX_DISABLE])
+    ఒకవేళ (!pf.flags[PERM_FLAG_IDX_DISABLE])
         state |= TPM_STATE_ENABLED;
 
-    if (!pf.flags[PERM_FLAG_IDX_DEACTIVATED])
-        state |= TPM_STATE_ACTIVE;
+    ఒకవేళ (!pf.flags[PERM_FLAG_IDX_DEACTIVATED])
+        state |= TPM_STATE_చురుకైన;
 
-    if (has_owner) {
+    ఒకవేళ (has_owner) {
         state |= TPM_STATE_OWNED;
-    } else {
-        if (pf.flags[PERM_FLAG_IDX_OWNERSHIP])
+    } లేకపోతే {
+        ఒకవేళ (pf.flags[PERM_FLAG_IDX_OWNERSHIP])
             state |= TPM_STATE_OWNERINSTALL;
     }
 
-    return state;
+    తిరిగి state;
 }
 
-static void
-tpm12_show_tpm_menu(int state, int next_scancodes[7])
+స్థిర శూన్య
+tpm12_show_tpm_menu(పూర్ణాంకం state, పూర్ణాంకం తదుపరి_scancodes[7])
 {
-    int i = 0;
+    పూర్ణాంకం i = 0;
 
-    printf("\nThe current state of the TPM is:\n");
+    రాయి("\nThe current state of the TPM is:\n");
 
-    if (state & TPM_STATE_ENABLED)
-        printf("  Enabled");
-    else
-        printf("  Disabled");
+    ఒకవేళ (state & TPM_STATE_ENABLED)
+        రాయి("  Enabled");
+    లేకపోతే
+        రాయి("  Disabled");
 
-    if (state & TPM_STATE_ACTIVE)
-        printf(" and active\n");
-    else
-        printf(" and deactivated\n");
+    ఒకవేళ (state & TPM_STATE_చురుకైన)
+        రాయి(" and active\n");
+    లేకపోతే
+        రాయి(" and deactivated\n");
 
-    if (state & TPM_STATE_OWNED)
-        printf("  Ownership has been taken\n");
-    else {
-        printf("  Ownership has not been taken\n");
-        if (state & TPM_STATE_OWNERINSTALL)
-            printf("  A user can take ownership of the TPM\n");
-        else
-            printf("  Taking ownership of the TPM has been disabled\n");
+    ఒకవేళ (state & TPM_STATE_OWNED)
+        రాయి("  Ownership has been taken\n");
+    లేకపోతే {
+        రాయి("  Ownership has not been taken\n");
+        ఒకవేళ (state & TPM_STATE_OWNERINSTALL)
+            రాయి("  A user can take ownership of the TPM\n");
+        లేకపోతే
+            రాయి("  Taking ownership of the TPM has been disabled\n");
     }
 
-    if ((state & (TPM_STATE_ENABLED | TPM_STATE_ACTIVE)) !=
-        (TPM_STATE_ENABLED | TPM_STATE_ACTIVE)) {
-        printf("\nNote: To make use of all functionality, the TPM must be "
+    ఒకవేళ ((state & (TPM_STATE_ENABLED | TPM_STATE_చురుకైన)) !=
+        (TPM_STATE_ENABLED | TPM_STATE_చురుకైన)) {
+        రాయి("\nNote: To make use of all functionality, the TPM must be "
                "enabled and active.\n");
     }
 
-    printf("\nAvailable options are:\n");
-    if (state & TPM_STATE_ENABLED) {
-        printf(" d. Disable the TPM\n");
-        next_scancodes[i++] = 32;
+    రాయి("\nAvailable options are:\n");
+    ఒకవేళ (state & TPM_STATE_ENABLED) {
+        రాయి(" d. Disable the TPM\n");
+        తదుపరి_scancodes[i++] = 32;
 
-        if (state & TPM_STATE_ACTIVE) {
-            printf(" v. Deactivate the TPM\n");
-            next_scancodes[i++] = 47;
+        ఒకవేళ (state & TPM_STATE_చురుకైన) {
+            రాయి(" v. Deactivate the TPM\n");
+            తదుపరి_scancodes[i++] = 47;
 
-            if (state & TPM_STATE_OWNERINSTALL) {
-                printf(" p. Prevent installation of an owner\n");
-                next_scancodes[i++] = 25;
-            } else {
-                printf(" s. Allow installation of an owner\n");
-                next_scancodes[i++] = 31;
+            ఒకవేళ (state & TPM_STATE_OWNERINSTALL) {
+                రాయి(" p. Prevent installation of an owner\n");
+                తదుపరి_scancodes[i++] = 25;
+            } లేకపోతే {
+                రాయి(" s. Allow installation of an owner\n");
+                తదుపరి_scancodes[i++] = 31;
             }
-        } else {
-            printf(" a. Activate the TPM\n");
-            next_scancodes[i++] = 30;
+        } లేకపోతే {
+            రాయి(" a. Activate the TPM\n");
+            తదుపరి_scancodes[i++] = 30;
         }
 
-    } else {
-        printf(" e. Enable the TPM\n");
-        next_scancodes[i++] = 18;
+    } లేకపోతే {
+        రాయి(" e. Enable the TPM\n");
+        తదుపరి_scancodes[i++] = 18;
     }
 
-    if (state & TPM_STATE_OWNED) {
-        printf(" c. Clear ownership\n");
-        next_scancodes[i++] = 46;
+    ఒకవేళ (state & TPM_STATE_OWNED) {
+        రాయి(" c. Clear ownership\n");
+        తదుపరి_scancodes[i++] = 46;
     }
 
-    next_scancodes[i++] = 0;
+    తదుపరి_scancodes[i++] = 0;
 }
 
-static void
-tpm12_menu(void)
+స్థిర శూన్య
+tpm12_menu(శూన్య)
 {
-    int scancode, next_scancodes[7];
-    tpm_ppi_code msgCode;
-    int state = 0, i;
-    int waitkey;
+    పూర్ణాంకం scancode, తదుపరి_scancodes[7];
+    tpm_ppi_సంకేతం సందేశం_సంకేతం;
+    పూర్ణాంకం state = 0, i;
+    పూర్ణాంకం waitkey;
 
-    printf("The Trusted Platform Module (TPM) is a hardware device in "
+    రాయి("The Trusted Platform Module (TPM) is a hardware device in "
            "this machine.\n"
            "It can help verify the integrity of system software.\n\n");
 
-    for (;;) {
-        if ((state = tpm12_get_tpm_state()) != ~0) {
-            tpm12_show_tpm_menu(state, next_scancodes);
-        } else {
-            printf("TPM is not working correctly.\n");
-            return;
+    కొరకు (;;) {
+        ఒకవేళ ((state = tpm12_get_tpm_state()) != ~0) {
+            tpm12_show_tpm_menu(state, తదుపరి_scancodes);
+        } లేకపోతే {
+            రాయి("TPM is not working correctly.\n");
+            తిరిగి;
         }
 
-        printf("\nIf no change is desired or if this menu was reached by "
+        రాయి("\nIf no change is desired or if this menu was reached by "
                "mistake, press ESC to\n"
                "reboot the machine.\n");
 
-        msgCode = TPM_PPI_OP_NOOP;
+        సందేశం_సంకేతం = TPM_PPI_OP_NOOP;
 
         waitkey = 1;
 
-        while (waitkey) {
-            while ((scancode = get_keystroke(1000)) == ~0)
+        అయితే (waitkey) {
+            అయితే ((scancode = get_keystroke(1000)) == ~0)
                 ;
 
-            switch (scancode) {
-            case 1:
+            ఎంపిక (scancode) {
+            స్థితి 1:
                 // ESC
                 reset();
-                break;
-            case 18: /* e. enable */
-                msgCode = TPM_PPI_OP_ENABLE;
-                break;
-            case 32: /* d. disable */
-                msgCode = TPM_PPI_OP_DISABLE;
-                break;
-            case 30: /* a. activate */
-                msgCode = TPM_PPI_OP_ACTIVATE;
-                break;
-            case 47: /* v. deactivate */
-                msgCode = TPM_PPI_OP_DEACTIVATE;
-                break;
-            case 46: /* c. clear owner */
-                msgCode = TPM_PPI_OP_CLEAR;
-                break;
-            case 25: /* p. prevent ownerinstall */
-                msgCode = TPM_PPI_OP_SET_OWNERINSTALL_FALSE;
-                break;
-            case 31: /* s. allow ownerinstall */
-                msgCode = TPM_PPI_OP_SET_OWNERINSTALL_TRUE;
-                break;
-            default:
-                continue;
+                ఆపు;
+            స్థితి 18: /* e. enable */
+                సందేశం_సంకేతం = TPM_PPI_OP_ENABLE;
+                ఆపు;
+            స్థితి 32: /* d. disable */
+                సందేశం_సంకేతం = TPM_PPI_OP_DISABLE;
+                ఆపు;
+            స్థితి 30: /* a. activate */
+                సందేశం_సంకేతం = TPM_PPI_OP_ACTIVATE;
+                ఆపు;
+            స్థితి 47: /* v. deactivate */
+                సందేశం_సంకేతం = TPM_PPI_OP_DEACTIVATE;
+                ఆపు;
+            స్థితి 46: /* c. clear owner */
+                సందేశం_సంకేతం = TPM_PPI_OP_CLEAR;
+                ఆపు;
+            స్థితి 25: /* p. prevent ownerinstall */
+                సందేశం_సంకేతం = TPM_PPI_OP_సమితి_OWNERINSTALL_FALSE;
+                ఆపు;
+            స్థితి 31: /* s. allow ownerinstall */
+                సందేశం_సంకేతం = TPM_PPI_OP_సమితి_OWNERINSTALL_TRUE;
+                ఆపు;
+            అప్రమేయ:
+                కొనసాగు;
             }
 
             /*
              * Using the next_scancodes array, check whether the
              * pressed key is currently a valid option.
              */
-            for (i = 0; i < sizeof(next_scancodes); i++) {
-                if (next_scancodes[i] == 0)
-                    break;
+            కొరకు (i = 0; i < పరిమాణం(తదుపరి_scancodes); i++) {
+                ఒకవేళ (తదుపరి_scancodes[i] == 0)
+                    ఆపు;
 
-                if (next_scancodes[i] == scancode) {
-                    tpm12_process_cfg(msgCode, 1);
+                ఒకవేళ (తదుపరి_scancodes[i] == scancode) {
+                    tpm12_process_cfg(సందేశం_సంకేతం, 1);
                     waitkey = 0;
-                    break;
+                    ఆపు;
                 }
             }
         }
     }
 }
 
-static int
-tpm20_menu_change_active_pcrbanks(void)
+స్థిర పూర్ణాంకం
+tpm20_menu_change_చురుకైన_pcrbanks(శూన్య)
 {
-    u8 active_banks, suppt_banks;
+    u8 చురుకైన_banks, suppt_banks;
 
-    tpm20_get_suppt_pcrbanks(&suppt_banks, &active_banks);
+    tpm20_get_suppt_pcrbanks(&suppt_banks, &చురుకైన_banks);
 
-    u8 activate_banks = active_banks;
+    u8 activate_banks = చురుకైన_banks;
 
-    while (1) {
+    అయితే (1) {
         u8 hashalg_flag = TPM2_ALG_SHA1_FLAG;
         u8 i = 0;
 
-        printf("\nToggle active PCR banks by pressing number key\n\n");
+        రాయి("\nToggle active PCR banks by pressing number key\n\n");
 
-        while (hashalg_flag) {
+        అయితే (hashalg_flag) {
             u8 flag = hashalg_flag & suppt_banks;
-            const char *hashname = tpm20_hashalg_flag_to_name(flag);
+            స్థిరరాశి అక్షరం *hashname = tpm20_hashalg_flag_గమ్యం_name(flag);
 
             i++;
-            if (hashname) {
-                printf("  %d: %s", i, hashname);
-                if (activate_banks & hashalg_flag)
-                    printf(" (enabled)");
-                printf("\n");
+            ఒకవేళ (hashname) {
+                రాయి("  %d: %s", i, hashname);
+                ఒకవేళ (activate_banks & hashalg_flag)
+                    రాయి(" (enabled)");
+                రాయి("\n");
             }
 
             hashalg_flag <<= 1;
         }
-        printf("\n"
+        రాయి("\n"
                "ESC: return to previous menu without changes\n");
-        if (activate_banks)
-            printf("A  : activate selection\n");
+        ఒకవేళ (activate_banks)
+            రాయి("A  : activate selection\n");
 
         u8 flagnum;
-        int show = 0;
-        while (!show) {
-            int scancode = get_keystroke(1000);
+        పూర్ణాంకం show = 0;
+        అయితే (!show) {
+            పూర్ణాంకం scancode = get_keystroke(1000);
 
-            switch (scancode) {
-            case ~0:
-                continue;
-            case 1: /* ESC */
-                printf("\n");
-                return -1;
-            case 2 ... 6: /* keys 1 .. 5 */
+            ఎంపిక (scancode) {
+            స్థితి ~0:
+                కొనసాగు;
+            స్థితి 1: /* ESC */
+                రాయి("\n");
+                తిరిగి -1;
+            స్థితి 2 ... 6: /* keys 1 .. 5 */
                 flagnum = scancode - 1;
-                if (flagnum > i)
-                    continue;
-                if (suppt_banks & (1 << (flagnum - 1))) {
+                ఒకవేళ (flagnum > i)
+                    కొనసాగు;
+                ఒకవేళ (suppt_banks & (1 << (flagnum - 1))) {
                     activate_banks ^= 1 << (flagnum - 1);
                     show = 1;
                 }
-                break;
-            case 30: /* a */
-                if (activate_banks)
+                ఆపు;
+            స్థితి 30: /* a */
+                ఒకవేళ (activate_banks)
                     tpm20_activate_pcrbanks(activate_banks);
             }
         }
     }
 }
 
-static void
-tpm20_menu(void)
+స్థిర శూన్య
+tpm20_menu(శూన్య)
 {
-    int scan_code;
-    tpm_ppi_code msgCode;
+    పూర్ణాంకం పరిశీలన_సంకేతం;
+    tpm_ppi_సంకేతం సందేశం_సంకేతం;
 
-    for (;;) {
-        printf("1. Clear TPM\n");
-        printf("2. Change active PCR banks\n");
+    కొరకు (;;) {
+        రాయి("1. Clear TPM\n");
+        రాయి("2. Change active PCR banks\n");
 
-        printf("\nIf no change is desired or if this menu was reached by "
+        రాయి("\nIf no change is desired or if this menu was reached by "
                "mistake, press ESC to\n"
                "reboot the machine.\n");
 
-        msgCode = TPM_PPI_OP_NOOP;
+        సందేశం_సంకేతం = TPM_PPI_OP_NOOP;
 
-        while ((scan_code = get_keystroke(1000)) == ~0)
+        అయితే ((పరిశీలన_సంకేతం = get_keystroke(1000)) == ~0)
             ;
 
-        switch (scan_code) {
-        case 1:
+        ఎంపిక (పరిశీలన_సంకేతం) {
+        స్థితి 1:
             // ESC
             reset();
-            break;
-        case 2:
-            msgCode = TPM_PPI_OP_CLEAR;
-            break;
-        case 3:
-            tpm20_menu_change_active_pcrbanks();
-            continue;
-        default:
-            continue;
+            ఆపు;
+        స్థితి 2:
+            సందేశం_సంకేతం = TPM_PPI_OP_CLEAR;
+            ఆపు;
+        స్థితి 3:
+            tpm20_menu_change_చురుకైన_pcrbanks();
+            కొనసాగు;
+        అప్రమేయ:
+            కొనసాగు;
         }
 
-        tpm20_process_cfg(msgCode, 0);
+        tpm20_process_cfg(సందేశం_సంకేతం, 0);
     }
 }
 
-void
-tpm_menu(void)
+శూన్య
+tpm_menu(శూన్య)
 {
-    if (!CONFIG_TCGBIOS)
-        return;
+    ఒకవేళ (!CONFIG_TCGBIOS)
+        తిరిగి;
 
-    while (get_keystroke(0) >= 0)
+    అయితే (get_keystroke(0) >= 0)
         ;
-    wait_threads();
+    wait_దారాలు();
 
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
+    ఎంపిక (TPM_సంస్కరణ) {
+    స్థితి TPM_సంస్కరణ_1_2:
         tpm12_menu();
-        break;
-    case TPM_VERSION_2:
+        ఆపు;
+    స్థితి TPM_సంస్కరణ_2:
         tpm20_menu();
-        break;
+        ఆపు;
     }
 }
 
-int
-tpm_can_show_menu(void)
+పూర్ణాంకం
+tpm_can_show_menu(శూన్య)
 {
-    switch (TPM_version) {
-    case TPM_VERSION_1_2:
-        return tpm_is_working() && TPM_has_physical_presence;
-    case TPM_VERSION_2:
-        return tpm_is_working();
+    ఎంపిక (TPM_సంస్కరణ) {
+    స్థితి TPM_సంస్కరణ_1_2:
+        తిరిగి tpm_is_working() && TPM_has_physical_presence;
+    స్థితి TPM_సంస్కరణ_2:
+        తిరిగి tpm_is_working();
     }
-    return 0;
+    తిరిగి 0;
 }

@@ -4,116 +4,116 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "ahci.h" // CDB_CMD_READ_10
-#include "ata.h" // ATA_CB_STAT
-#include "biosvar.h" // GET_GLOBAL
-#include "blockcmd.h" // CDB_CMD_READ_10
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "pci.h" // pci_config_readb
-#include "pcidevice.h" // foreachpci
-#include "pci_ids.h" // PCI_CLASS_STORAGE_OTHER
-#include "pci_regs.h" // PCI_INTERRUPT_LINE
-#include "stacks.h" // yield
-#include "std/disk.h" // DISK_RET_SUCCESS
-#include "string.h" // memset
-#include "util.h" // timer_calc
-#include "x86.h" // inb
+#అన్తర్భావ "ahci.h" // CDB_CMD_READ_10
+#అన్తర్భావ "ata.h" // ATA_CB_STAT
+#అన్తర్భావ "biosvar.h" // GET_GLOBAL
+#అన్తర్భావ "blockcmd.h" // CDB_CMD_READ_10
+#అన్తర్భావ "malloc.h" // free
+#అన్తర్భావ "output.h" // dprintf
+#అన్తర్భావ "pci.h" // pci_config_readb
+#అన్తర్భావ "pcidevice.h" // foreachpci
+#అన్తర్భావ "pci_ids.h" // PCI_CLASS_STORAGE_OTHER
+#అన్తర్భావ "pci_regs.h" // PCI_INTERRUPT_LINE
+#అన్తర్భావ "stacks.h" // yield
+#అన్తర్భావ "std/disk.h" // DISK_RET_SUCCESS
+#అన్తర్భావ "string.h" // memset
+#అన్తర్భావ "util.h" // timer_calc
+#అన్తర్భావ "x86.h" // inb
 
-#define AHCI_REQUEST_TIMEOUT 32000 // 32 seconds max for IDE ops
-#define AHCI_RESET_TIMEOUT     500 // 500 miliseconds
-#define AHCI_LINK_TIMEOUT       10 // 10 miliseconds
+#నిర్వచించు AHCI_REQUEST_TIMEOUT 32000 // 32 seconds max for IDE ops
+#నిర్వచించు AHCI_RESET_TIMEOUT     500 // 500 miliseconds
+#నిర్వచించు AHCI_LINK_TIMEOUT       10 // 10 miliseconds
 
 // prepare sata command fis
-static void sata_prep_simple(struct sata_cmd_fis *fis, u8 command)
+స్థిర శూన్య sata_prep_simple(నిర్మాణం sata_cmd_fis *fis, u8 command)
 {
-    memset_fl(fis, 0, sizeof(*fis));
+    memset_fl(fis, 0, పరిమాణం(*fis));
     fis->command = command;
 }
 
-static void sata_prep_readwrite(struct sata_cmd_fis *fis,
-                                struct disk_op_s *op, int iswrite)
+స్థిర శూన్య sata_prep_readwrite(నిర్మాణం sata_cmd_fis *fis,
+                                నిర్మాణం disk_op_s *op, పూర్ణాంకం iswrite)
 {
     u64 lba = op->lba;
     u8 command;
 
-    memset_fl(fis, 0, sizeof(*fis));
+    memset_fl(fis, 0, పరిమాణం(*fis));
 
-    if (op->count >= (1<<8) || lba + op->count >= (1<<28)) {
-        fis->sector_count2 = op->count >> 8;
+    ఒకవేళ (op->లెక్క >= (1<<8) || lba + op->లెక్క >= (1<<28)) {
+        fis->sector_count2 = op->లెక్క >> 8;
         fis->lba_low2      = lba >> 24;
         fis->lba_mid2      = lba >> 32;
         fis->lba_high2     = lba >> 40;
         lba &= 0xffffff;
         command = (iswrite ? ATA_CMD_WRITE_DMA_EXT
                    : ATA_CMD_READ_DMA_EXT);
-    } else {
+    } లేకపోతే {
         command = (iswrite ? ATA_CMD_WRITE_DMA
                    : ATA_CMD_READ_DMA);
     }
     fis->feature      = 1; /* dma */
     fis->command      = command;
-    fis->sector_count = op->count;
-    fis->lba_low      = lba;
+    fis->sector_లెక్క = op->లెక్క;
+    fis->lba_దిగువ      = lba;
     fis->lba_mid      = lba >> 8;
-    fis->lba_high     = lba >> 16;
+    fis->lba_ఎగువ     = lba >> 16;
     fis->device       = ((lba >> 24) & 0xf) | ATA_CB_DH_LBA;
 }
 
-static void sata_prep_atapi(struct sata_cmd_fis *fis, u16 blocksize)
+స్థిర శూన్య sata_prep_atapi(నిర్మాణం sata_cmd_fis *fis, u16 blocksize)
 {
-    memset_fl(fis, 0, sizeof(*fis));
+    memset_fl(fis, 0, పరిమాణం(*fis));
     fis->command  = ATA_CMD_PACKET;
     fis->feature  = 1; /* dma */
     fis->lba_mid  = blocksize;
-    fis->lba_high = blocksize >> 8;
+    fis->lba_ఎగువ = blocksize >> 8;
 }
 
 // ahci register access helpers
-static u32 ahci_ctrl_readl(struct ahci_ctrl_s *ctrl, u32 reg)
+స్థిర u32 ahci_ctrl_readl(నిర్మాణం ahci_ctrl_s *ctrl, u32 reg)
 {
-    return readl(ctrl->iobase + reg);
+    తిరిగి readl(ctrl->iobase + reg);
 }
 
-static void ahci_ctrl_writel(struct ahci_ctrl_s *ctrl, u32 reg, u32 val)
+స్థిర శూన్య ahci_ctrl_writel(నిర్మాణం ahci_ctrl_s *ctrl, u32 reg, u32 val)
 {
     writel(ctrl->iobase + reg, val);
 }
 
-static u32 ahci_port_to_ctrl(u32 pnr, u32 port_reg)
+స్థిర u32 ahci_పోర్టు_గమ్యం_ctrl(u32 pnr, u32 పోర్టు_reg)
 {
     u32 ctrl_reg = 0x100;
     ctrl_reg += pnr * 0x80;
-    ctrl_reg += port_reg;
-    return ctrl_reg;
+    ctrl_reg += పోర్టు_reg;
+    తిరిగి ctrl_reg;
 }
 
-static u32 ahci_port_readl(struct ahci_ctrl_s *ctrl, u32 pnr, u32 reg)
+స్థిర u32 ahci_పోర్టు_readl(నిర్మాణం ahci_ctrl_s *ctrl, u32 pnr, u32 reg)
 {
-    u32 ctrl_reg = ahci_port_to_ctrl(pnr, reg);
-    return ahci_ctrl_readl(ctrl, ctrl_reg);
+    u32 ctrl_reg = ahci_పోర్టు_గమ్యం_ctrl(pnr, reg);
+    తిరిగి ahci_ctrl_readl(ctrl, ctrl_reg);
 }
 
-static void ahci_port_writel(struct ahci_ctrl_s *ctrl, u32 pnr, u32 reg, u32 val)
+స్థిర శూన్య ahci_పోర్టు_writel(నిర్మాణం ahci_ctrl_s *ctrl, u32 pnr, u32 reg, u32 val)
 {
-    u32 ctrl_reg = ahci_port_to_ctrl(pnr, reg);
+    u32 ctrl_reg = ahci_పోర్టు_గమ్యం_ctrl(pnr, reg);
     ahci_ctrl_writel(ctrl, ctrl_reg, val);
 }
 
 // submit ahci command + wait for result
-static int ahci_command(struct ahci_port_s *port_gf, int iswrite, int isatapi,
-                        void *buffer, u32 bsize)
+స్థిర పూర్ణాంకం ahci_command(నిర్మాణం ahci_పోర్టు_s *పోర్టు_gf, పూర్ణాంకం iswrite, పూర్ణాంకం isatapi,
+                        శూన్య *బఫరు, u32 bsize)
 {
-    u32 val, status, success, flags, intbits, error;
-    struct ahci_ctrl_s *ctrl = port_gf->ctrl;
-    struct ahci_cmd_s  *cmd  = port_gf->cmd;
-    struct ahci_fis_s  *fis  = port_gf->fis;
-    struct ahci_list_s *list = port_gf->list;
-    u32 pnr                  = port_gf->pnr;
+    u32 val, స్థితి_2, success, flags, intbits, error;
+    నిర్మాణం ahci_ctrl_s *ctrl = పోర్టు_gf->ctrl;
+    నిర్మాణం ahci_cmd_s  *cmd  = పోర్టు_gf->cmd;
+    నిర్మాణం ahci_fis_s  *fis  = పోర్టు_gf->fis;
+    నిర్మాణం ahci_list_s *list = పోర్టు_gf->list;
+    u32 pnr                  = పోర్టు_gf->pnr;
 
     cmd->fis.reg       = 0x27;
     cmd->fis.pmp_type  = 1 << 7; /* cmd fis */
-    cmd->prdt[0].base  = (u32)buffer;
+    cmd->prdt[0].పునాది  = (u32)బఫరు;
     cmd->prdt[0].baseu = 0;
     cmd->prdt[0].flags = bsize-1;
 
@@ -122,539 +122,539 @@ static int ahci_command(struct ahci_port_s *port_gf, int iswrite, int isatapi,
              (isatapi ? (1 << 5) : 0) |
              (5 << 0)); /* fis length (dwords) */
     list[0].flags  = flags;
-    list[0].bytes  = 0;
-    list[0].base   = (u32)(cmd);
+    list[0].బైట్లు  = 0;
+    list[0].పునాది   = (u32)(cmd);
     list[0].baseu  = 0;
 
     dprintf(8, "AHCI/%d: send cmd ...\n", pnr);
-    intbits = ahci_port_readl(ctrl, pnr, PORT_IRQ_STAT);
-    if (intbits)
-        ahci_port_writel(ctrl, pnr, PORT_IRQ_STAT, intbits);
-    ahci_port_writel(ctrl, pnr, PORT_CMD_ISSUE, 1);
+    intbits = ahci_పోర్టు_readl(ctrl, pnr, పోర్టు_IRQ_STAT);
+    ఒకవేళ (intbits)
+        ahci_పోర్టు_writel(ctrl, pnr, పోర్టు_IRQ_STAT, intbits);
+    ahci_పోర్టు_writel(ctrl, pnr, పోర్టు_CMD_ISSUE, 1);
 
-    u32 end = timer_calc(AHCI_REQUEST_TIMEOUT);
-    do {
-        for (;;) {
-            intbits = ahci_port_readl(ctrl, pnr, PORT_IRQ_STAT);
-            if (intbits) {
-                ahci_port_writel(ctrl, pnr, PORT_IRQ_STAT, intbits);
-                if (intbits & 0x40000000) {
-                    u32 tf = ahci_port_readl(ctrl, pnr, PORT_TFDATA);
-                    status = tf & 0xff;
+    u32 చివర = timer_calc(AHCI_REQUEST_TIMEOUT);
+    చేయి {
+        కొరకు (;;) {
+            intbits = ahci_పోర్టు_readl(ctrl, pnr, పోర్టు_IRQ_STAT);
+            ఒకవేళ (intbits) {
+                ahci_పోర్టు_writel(ctrl, pnr, పోర్టు_IRQ_STAT, intbits);
+                ఒకవేళ (intbits & 0x40000000) {
+                    u32 tf = ahci_పోర్టు_readl(ctrl, pnr, పోర్టు_TFDATA);
+                    స్థితి_2 = tf & 0xff;
                     error = (tf & 0xff00) >> 8;
-                    break;
+                    ఆపు;
                 }
-                if (intbits & 0x02) {
-                    status = GET_LOWFLAT(fis->psfis[2]);
+                ఒకవేళ (intbits & 0x02) {
+                    స్థితి_2 = GET_LOWFLAT(fis->psfis[2]);
                     error  = GET_LOWFLAT(fis->psfis[3]);
-                    break;
+                    ఆపు;
                 }
-                if (intbits & 0x01) {
-                    status = GET_LOWFLAT(fis->rfis[2]);
+                ఒకవేళ (intbits & 0x01) {
+                    స్థితి_2 = GET_LOWFLAT(fis->rfis[2]);
                     error  = GET_LOWFLAT(fis->rfis[3]);
-                    break;
+                    ఆపు;
                 }
             }
-            if (timer_check(end)) {
+            ఒకవేళ (timer_check(చివర)) {
                 warn_timeout();
-                return -1;
+                తిరిగి -1;
             }
             yield();
         }
         dprintf(8, "AHCI/%d: ... intbits 0x%x, status 0x%x ...\n",
-                pnr, intbits, status);
-    } while (status & ATA_CB_STAT_BSY);
+                pnr, intbits, స్థితి_2);
+    } అయితే (స్థితి_2 & ATA_CB_STAT_BSY);
 
-    success = (0x00 == (status & (ATA_CB_STAT_BSY | ATA_CB_STAT_DF |
+    success = (0x00 == (స్థితి_2 & (ATA_CB_STAT_BSY | ATA_CB_STAT_DF |
                                   ATA_CB_STAT_ERR)) &&
-               ATA_CB_STAT_RDY == (status & (ATA_CB_STAT_RDY)));
-    if (success) {
+               ATA_CB_STAT_RDY == (స్థితి_2 & (ATA_CB_STAT_RDY)));
+    ఒకవేళ (success) {
         dprintf(8, "AHCI/%d: ... finished, status 0x%x, OK\n", pnr,
-                status);
-    } else {
+                స్థితి_2);
+    } లేకపోతే {
         dprintf(2, "AHCI/%d: ... finished, status 0x%x, ERROR 0x%x\n", pnr,
-                status, error);
+                స్థితి_2, error);
 
         // non-queued error recovery (AHCI 1.3 section 6.2.2.1)
         // Clears PxCMD.ST to 0 to reset the PxCI register
-        val = ahci_port_readl(ctrl, pnr, PORT_CMD);
-        ahci_port_writel(ctrl, pnr, PORT_CMD, val & ~PORT_CMD_START);
+        val = ahci_పోర్టు_readl(ctrl, pnr, పోర్టు_CMD);
+        ahci_పోర్టు_writel(ctrl, pnr, పోర్టు_CMD, val & ~పోర్టు_CMD_ప్రారంభం);
 
         // waits for PxCMD.CR to clear to 0
-        while (1) {
-            val = ahci_port_readl(ctrl, pnr, PORT_CMD);
-            if ((val & PORT_CMD_LIST_ON) == 0)
-                break;
+        అయితే (1) {
+            val = ahci_పోర్టు_readl(ctrl, pnr, పోర్టు_CMD);
+            ఒకవేళ ((val & పోర్టు_CMD_LIST_ON) == 0)
+                ఆపు;
             yield();
         }
 
         // Clears any error bits in PxSERR to enable capturing new errors
-        val = ahci_port_readl(ctrl, pnr, PORT_SCR_ERR);
-        ahci_port_writel(ctrl, pnr, PORT_SCR_ERR, val);
+        val = ahci_పోర్టు_readl(ctrl, pnr, పోర్టు_SCR_ERR);
+        ahci_పోర్టు_writel(ctrl, pnr, పోర్టు_SCR_ERR, val);
 
         // Clears status bits in PxIS as appropriate
-        val = ahci_port_readl(ctrl, pnr, PORT_IRQ_STAT);
-        ahci_port_writel(ctrl, pnr, PORT_IRQ_STAT, val);
+        val = ahci_పోర్టు_readl(ctrl, pnr, పోర్టు_IRQ_STAT);
+        ahci_పోర్టు_writel(ctrl, pnr, పోర్టు_IRQ_STAT, val);
 
         // If PxTFD.STS.BSY or PxTFD.STS.DRQ is set to 1, issue
         // a COMRESET to the device to put it in an idle state
-        val = ahci_port_readl(ctrl, pnr, PORT_TFDATA);
-        if (val & (ATA_CB_STAT_BSY | ATA_CB_STAT_DRQ)) {
+        val = ahci_పోర్టు_readl(ctrl, pnr, పోర్టు_TFDATA);
+        ఒకవేళ (val & (ATA_CB_STAT_BSY | ATA_CB_STAT_DRQ)) {
             dprintf(2, "AHCI/%d: issue comreset\n", pnr);
-            val = ahci_port_readl(ctrl, pnr, PORT_SCR_CTL);
+            val = ahci_పోర్టు_readl(ctrl, pnr, పోర్టు_SCR_CTL);
             // set Device Detection Initialization (DET) to 1 for 1 ms for comreset
-            ahci_port_writel(ctrl, pnr, PORT_SCR_CTL, val | 1);
+            ahci_పోర్టు_writel(ctrl, pnr, పోర్టు_SCR_CTL, val | 1);
             mdelay (1);
-            ahci_port_writel(ctrl, pnr, PORT_SCR_CTL, val);
+            ahci_పోర్టు_writel(ctrl, pnr, పోర్టు_SCR_CTL, val);
         }
 
         // Sets PxCMD.ST to 1 to enable issuing new commands
-        val = ahci_port_readl(ctrl, pnr, PORT_CMD);
-        ahci_port_writel(ctrl, pnr, PORT_CMD, val | PORT_CMD_START);
+        val = ahci_పోర్టు_readl(ctrl, pnr, పోర్టు_CMD);
+        ahci_పోర్టు_writel(ctrl, pnr, పోర్టు_CMD, val | పోర్టు_CMD_ప్రారంభం);
     }
-    return success ? 0 : -1;
+    తిరిగి success ? 0 : -1;
 }
 
-#define CDROM_CDB_SIZE 12
+#నిర్వచించు CDROM_CDB_కొలత 12
 
-int ahci_atapi_process_op(struct disk_op_s *op)
+పూర్ణాంకం ahci_atapi_process_op(నిర్మాణం disk_op_s *op)
 {
-    if (! CONFIG_AHCI)
-        return 0;
+    ఒకవేళ (! CONFIG_AHCI)
+        తిరిగి 0;
 
-    struct ahci_port_s *port_gf = container_of(
-        op->drive_fl, struct ahci_port_s, drive);
-    struct ahci_cmd_s *cmd = port_gf->cmd;
+    నిర్మాణం ahci_పోర్టు_s *పోర్టు_gf = container_యొక్క(
+        op->drive_fl, నిర్మాణం ahci_పోర్టు_s, drive);
+    నిర్మాణం ahci_cmd_s *cmd = పోర్టు_gf->cmd;
 
-    if (op->command == CMD_WRITE || op->command == CMD_FORMAT)
-        return DISK_RET_EWRITEPROTECT;
-    int blocksize = scsi_fill_cmd(op, cmd->atapi, CDROM_CDB_SIZE);
-    if (blocksize < 0)
-        return default_process_op(op);
+    ఒకవేళ (op->command == CMD_WRITE || op->command == CMD_FORMAT)
+        తిరిగి DISK_RET_EWRITEPROTECT;
+    పూర్ణాంకం blocksize = scsi_fill_cmd(op, cmd->atapi, CDROM_CDB_కొలత);
+    ఒకవేళ (blocksize < 0)
+        తిరిగి default_process_op(op);
     sata_prep_atapi(&cmd->fis, blocksize);
-    int rc = ahci_command(port_gf, 0, 1, op->buf_fl, op->count * blocksize);
-    if (rc < 0)
-        return DISK_RET_EBADTRACK;
-    return DISK_RET_SUCCESS;
+    పూర్ణాంకం rc = ahci_command(పోర్టు_gf, 0, 1, op->buf_fl, op->లెక్క * blocksize);
+    ఒకవేళ (rc < 0)
+        తిరిగి DISK_RET_EBADTRACK;
+    తిరిగి DISK_RET_SUCCESS;
 }
 
 // read/write count blocks from a harddrive, op->buf_fl must be word aligned
-static int
-ahci_disk_readwrite_aligned(struct disk_op_s *op, int iswrite)
+స్థిర పూర్ణాంకం
+ahci_disk_readwrite_aligned(నిర్మాణం disk_op_s *op, పూర్ణాంకం iswrite)
 {
-    struct ahci_port_s *port_gf = container_of(
-        op->drive_fl, struct ahci_port_s, drive);
-    struct ahci_cmd_s *cmd = port_gf->cmd;
-    int rc;
+    నిర్మాణం ahci_పోర్టు_s *పోర్టు_gf = container_యొక్క(
+        op->drive_fl, నిర్మాణం ahci_పోర్టు_s, drive);
+    నిర్మాణం ahci_cmd_s *cmd = పోర్టు_gf->cmd;
+    పూర్ణాంకం rc;
 
     sata_prep_readwrite(&cmd->fis, op, iswrite);
-    rc = ahci_command(port_gf, iswrite, 0, op->buf_fl,
-                      op->count * DISK_SECTOR_SIZE);
+    rc = ahci_command(పోర్టు_gf, iswrite, 0, op->buf_fl,
+                      op->లెక్క * DISK_SECTOR_కొలత);
     dprintf(8, "ahci disk %s, lba %6x, count %3x, buf %p, rc %d\n",
-            iswrite ? "write" : "read", (u32)op->lba, op->count, op->buf_fl, rc);
-    if (rc < 0)
-        return DISK_RET_EBADTRACK;
-    return DISK_RET_SUCCESS;
+            iswrite ? "write" : "read", (u32)op->lba, op->లెక్క, op->buf_fl, rc);
+    ఒకవేళ (rc < 0)
+        తిరిగి DISK_RET_EBADTRACK;
+    తిరిగి DISK_RET_SUCCESS;
 }
 
 // read/write count blocks from a harddrive.
-static int
-ahci_disk_readwrite(struct disk_op_s *op, int iswrite)
+స్థిర పూర్ణాంకం
+ahci_disk_readwrite(నిర్మాణం disk_op_s *op, పూర్ణాంకం iswrite)
 {
     // if caller's buffer is word aligned, use it directly
-    if (((u32) op->buf_fl & 1) == 0)
-        return ahci_disk_readwrite_aligned(op, iswrite);
+    ఒకవేళ (((u32) op->buf_fl & 1) == 0)
+        తిరిగి ahci_disk_readwrite_aligned(op, iswrite);
 
     // Use a word aligned buffer for AHCI I/O
-    int rc;
-    struct disk_op_s localop = *op;
+    పూర్ణాంకం rc;
+    నిర్మాణం disk_op_s localop = *op;
     u8 *alignedbuf_fl = bounce_buf_fl;
     u8 *position = op->buf_fl;
 
     localop.buf_fl = alignedbuf_fl;
-    localop.count = 1;
+    localop.లెక్క = 1;
 
-    if (iswrite) {
-        u16 block;
-        for (block = 0; block < op->count; block++) {
-            memcpy_fl (alignedbuf_fl, position, DISK_SECTOR_SIZE);
+    ఒకవేళ (iswrite) {
+        u16 ఖండం;
+        కొరకు (ఖండం = 0; ఖండం < op->లెక్క; ఖండం++) {
+            memcpy_fl (alignedbuf_fl, position, DISK_SECTOR_కొలత);
             rc = ahci_disk_readwrite_aligned (&localop, 1);
-            if (rc)
-                return rc;
-            position += DISK_SECTOR_SIZE;
+            ఒకవేళ (rc)
+                తిరిగి rc;
+            position += DISK_SECTOR_కొలత;
             localop.lba++;
         }
-    } else { // read
-        u16 block;
-        for (block = 0; block < op->count; block++) {
+    } లేకపోతే { // read
+        u16 ఖండం;
+        కొరకు (ఖండం = 0; ఖండం < op->లెక్క; ఖండం++) {
             rc = ahci_disk_readwrite_aligned (&localop, 0);
-            if (rc)
-                return rc;
-            memcpy_fl (position, alignedbuf_fl, DISK_SECTOR_SIZE);
-            position += DISK_SECTOR_SIZE;
+            ఒకవేళ (rc)
+                తిరిగి rc;
+            memcpy_fl (position, alignedbuf_fl, DISK_SECTOR_కొలత);
+            position += DISK_SECTOR_కొలత;
             localop.lba++;
         }
     }
-    return DISK_RET_SUCCESS;
+    తిరిగి DISK_RET_SUCCESS;
 }
 
 // command demuxer
-int
-ahci_process_op(struct disk_op_s *op)
+పూర్ణాంకం
+ahci_process_op(నిర్మాణం disk_op_s *op)
 {
-    if (!CONFIG_AHCI)
-        return 0;
-    switch (op->command) {
-    case CMD_READ:
-        return ahci_disk_readwrite(op, 0);
-    case CMD_WRITE:
-        return ahci_disk_readwrite(op, 1);
-    default:
-        return default_process_op(op);
+    ఒకవేళ (!CONFIG_AHCI)
+        తిరిగి 0;
+    ఎంపిక (op->command) {
+    స్థితి CMD_READ:
+        తిరిగి ahci_disk_readwrite(op, 0);
+    స్థితి CMD_WRITE:
+        తిరిగి ahci_disk_readwrite(op, 1);
+    అప్రమేయ:
+        తిరిగి default_process_op(op);
     }
 }
 
-static void
-ahci_port_reset(struct ahci_ctrl_s *ctrl, u32 pnr)
+స్థిర శూన్య
+ahci_పోర్టు_reset(నిర్మాణం ahci_ctrl_s *ctrl, u32 pnr)
 {
     u32 val;
 
     /* disable FIS + CMD */
-    u32 end = timer_calc(AHCI_RESET_TIMEOUT);
-    for (;;) {
-        val = ahci_port_readl(ctrl, pnr, PORT_CMD);
-        if (!(val & (PORT_CMD_FIS_RX | PORT_CMD_START |
-                     PORT_CMD_FIS_ON | PORT_CMD_LIST_ON)))
-            break;
-        val &= ~(PORT_CMD_FIS_RX | PORT_CMD_START);
-        ahci_port_writel(ctrl, pnr, PORT_CMD, val);
-        if (timer_check(end)) {
+    u32 చివర = timer_calc(AHCI_RESET_TIMEOUT);
+    కొరకు (;;) {
+        val = ahci_పోర్టు_readl(ctrl, pnr, పోర్టు_CMD);
+        ఒకవేళ (!(val & (పోర్టు_CMD_FIS_RX | పోర్టు_CMD_ప్రారంభం |
+                     పోర్టు_CMD_FIS_ON | పోర్టు_CMD_LIST_ON)))
+            ఆపు;
+        val &= ~(పోర్టు_CMD_FIS_RX | పోర్టు_CMD_ప్రారంభం);
+        ahci_పోర్టు_writel(ctrl, pnr, పోర్టు_CMD, val);
+        ఒకవేళ (timer_check(చివర)) {
             warn_timeout();
-            break;
+            ఆపు;
         }
         yield();
     }
 
     /* disable + clear IRQs */
-    ahci_port_writel(ctrl, pnr, PORT_IRQ_MASK, 0);
-    val = ahci_port_readl(ctrl, pnr, PORT_IRQ_STAT);
-    if (val)
-        ahci_port_writel(ctrl, pnr, PORT_IRQ_STAT, val);
+    ahci_పోర్టు_writel(ctrl, pnr, పోర్టు_IRQ_ముసుగు, 0);
+    val = ahci_పోర్టు_readl(ctrl, pnr, పోర్టు_IRQ_STAT);
+    ఒకవేళ (val)
+        ahci_పోర్టు_writel(ctrl, pnr, పోర్టు_IRQ_STAT, val);
 }
 
-static struct ahci_port_s*
-ahci_port_alloc(struct ahci_ctrl_s *ctrl, u32 pnr)
+స్థిర నిర్మాణం ahci_పోర్టు_s*
+ahci_పోర్టు_alloc(నిర్మాణం ahci_ctrl_s *ctrl, u32 pnr)
 {
-    struct ahci_port_s *port = malloc_tmp(sizeof(*port));
+    నిర్మాణం ahci_పోర్టు_s *పోర్టు = malloc_tmp(పరిమాణం(*పోర్టు));
 
-    if (!port) {
+    ఒకవేళ (!పోర్టు) {
         warn_noalloc();
-        return NULL;
+        తిరిగి ఖాళీ;
     }
-    memset(port, 0, sizeof(*port));
-    port->pnr = pnr;
-    port->ctrl = ctrl;
-    port->list = memalign_tmp(1024, 1024);
-    port->fis = memalign_tmp(256, 256);
-    port->cmd = memalign_tmp(256, 256);
-    if (port->list == NULL || port->fis == NULL || port->cmd == NULL) {
+    memset(పోర్టు, 0, పరిమాణం(*పోర్టు));
+    పోర్టు->pnr = pnr;
+    పోర్టు->ctrl = ctrl;
+    పోర్టు->list = memalign_tmp(1024, 1024);
+    పోర్టు->fis = memalign_tmp(256, 256);
+    పోర్టు->cmd = memalign_tmp(256, 256);
+    ఒకవేళ (పోర్టు->list == ఖాళీ || పోర్టు->fis == ఖాళీ || పోర్టు->cmd == ఖాళీ) {
         warn_noalloc();
-        return NULL;
+        తిరిగి ఖాళీ;
     }
-    memset(port->list, 0, 1024);
-    memset(port->fis, 0, 256);
-    memset(port->cmd, 0, 256);
+    memset(పోర్టు->list, 0, 1024);
+    memset(పోర్టు->fis, 0, 256);
+    memset(పోర్టు->cmd, 0, 256);
 
-    ahci_port_writel(ctrl, pnr, PORT_LST_ADDR, (u32)port->list);
-    ahci_port_writel(ctrl, pnr, PORT_FIS_ADDR, (u32)port->fis);
-    if (ctrl->caps & HOST_CAP_64) {
-        ahci_port_writel(ctrl, pnr, PORT_LST_ADDR_HI, 0);
-        ahci_port_writel(ctrl, pnr, PORT_FIS_ADDR_HI, 0);
+    ahci_పోర్టు_writel(ctrl, pnr, పోర్టు_LST_ADDR, (u32)పోర్టు->list);
+    ahci_పోర్టు_writel(ctrl, pnr, పోర్టు_FIS_ADDR, (u32)పోర్టు->fis);
+    ఒకవేళ (ctrl->caps & HOST_CAP_64) {
+        ahci_పోర్టు_writel(ctrl, pnr, పోర్టు_LST_ADDR_HI, 0);
+        ahci_పోర్టు_writel(ctrl, pnr, పోర్టు_FIS_ADDR_HI, 0);
     }
 
-    return port;
+    తిరిగి పోర్టు;
 }
 
-static void ahci_port_release(struct ahci_port_s *port)
+స్థిర శూన్య ahci_పోర్టు_release(నిర్మాణం ahci_పోర్టు_s *పోర్టు)
 {
-    ahci_port_reset(port->ctrl, port->pnr);
-    free(port->list);
-    free(port->fis);
-    free(port->cmd);
-    free(port);
+    ahci_పోర్టు_reset(పోర్టు->ctrl, పోర్టు->pnr);
+    విడుదల(పోర్టు->list);
+    విడుదల(పోర్టు->fis);
+    విడుదల(పోర్టు->cmd);
+    విడుదల(పోర్టు);
 }
 
-static struct ahci_port_s* ahci_port_realloc(struct ahci_port_s *port)
+స్థిర నిర్మాణం ahci_పోర్టు_s* ahci_పోర్టు_realloc(నిర్మాణం ahci_పోర్టు_s *పోర్టు)
 {
-    struct ahci_port_s *tmp;
+    నిర్మాణం ahci_పోర్టు_s *tmp;
     u32 cmd;
 
-    tmp = malloc_fseg(sizeof(*port));
-    if (!tmp) {
+    tmp = malloc_fseg(పరిమాణం(*పోర్టు));
+    ఒకవేళ (!tmp) {
         warn_noalloc();
-        ahci_port_release(port);
-        return NULL;
+        ahci_పోర్టు_release(పోర్టు);
+        తిరిగి ఖాళీ;
     }
-    *tmp = *port;
-    free(port);
-    port = tmp;
+    *tmp = *పోర్టు;
+    విడుదల(పోర్టు);
+    పోర్టు = tmp;
 
-    ahci_port_reset(port->ctrl, port->pnr);
+    ahci_పోర్టు_reset(పోర్టు->ctrl, పోర్టు->pnr);
 
-    free(port->list);
-    free(port->fis);
-    free(port->cmd);
-    port->list = memalign_high(1024, 1024);
-    port->fis = memalign_high(256, 256);
-    port->cmd = memalign_high(256, 256);
-    if (!port->list || !port->fis || !port->cmd) {
+    విడుదల(పోర్టు->list);
+    విడుదల(పోర్టు->fis);
+    విడుదల(పోర్టు->cmd);
+    పోర్టు->list = memalign_ఎగువ(1024, 1024);
+    పోర్టు->fis = memalign_ఎగువ(256, 256);
+    పోర్టు->cmd = memalign_ఎగువ(256, 256);
+    ఒకవేళ (!పోర్టు->list || !పోర్టు->fis || !పోర్టు->cmd) {
         warn_noalloc();
-        free(port->list);
-        free(port->fis);
-        free(port->cmd);
-        free(port);
-        return NULL;
+        విడుదల(పోర్టు->list);
+        విడుదల(పోర్టు->fis);
+        విడుదల(పోర్టు->cmd);
+        విడుదల(పోర్టు);
+        తిరిగి ఖాళీ;
     }
 
-    ahci_port_writel(port->ctrl, port->pnr, PORT_LST_ADDR, (u32)port->list);
-    ahci_port_writel(port->ctrl, port->pnr, PORT_FIS_ADDR, (u32)port->fis);
+    ahci_పోర్టు_writel(పోర్టు->ctrl, పోర్టు->pnr, పోర్టు_LST_ADDR, (u32)పోర్టు->list);
+    ahci_పోర్టు_writel(పోర్టు->ctrl, పోర్టు->pnr, పోర్టు_FIS_ADDR, (u32)పోర్టు->fis);
 
-    cmd = ahci_port_readl(port->ctrl, port->pnr, PORT_CMD);
-    cmd |= (PORT_CMD_FIS_RX|PORT_CMD_START);
-    ahci_port_writel(port->ctrl, port->pnr, PORT_CMD, cmd);
+    cmd = ahci_పోర్టు_readl(పోర్టు->ctrl, పోర్టు->pnr, పోర్టు_CMD);
+    cmd |= (పోర్టు_CMD_FIS_RX|పోర్టు_CMD_ప్రారంభం);
+    ahci_పోర్టు_writel(పోర్టు->ctrl, పోర్టు->pnr, పోర్టు_CMD, cmd);
 
-    return port;
+    తిరిగి పోర్టు;
 }
 
-#define MAXMODEL 40
+#నిర్వచించు MAXMODEL 40
 
 /* See ahci spec chapter 10.1 "Software Initialization of HBA" */
-static int ahci_port_setup(struct ahci_port_s *port)
+స్థిర పూర్ణాంకం ahci_పోర్టు_అమరిక(నిర్మాణం ahci_పోర్టు_s *పోర్టు)
 {
-    struct ahci_ctrl_s *ctrl = port->ctrl;
-    u32 pnr = port->pnr;
-    char model[MAXMODEL+1];
-    u16 buffer[256];
+    నిర్మాణం ahci_ctrl_s *ctrl = పోర్టు->ctrl;
+    u32 pnr = పోర్టు->pnr;
+    అక్షరం model[MAXMODEL+1];
+    u16 బఫరు[256];
     u32 cmd, stat, err, tf;
-    int rc;
+    పూర్ణాంకం rc;
 
     /* enable FIS recv */
-    cmd = ahci_port_readl(ctrl, pnr, PORT_CMD);
-    cmd |= PORT_CMD_FIS_RX;
-    ahci_port_writel(ctrl, pnr, PORT_CMD, cmd);
+    cmd = ahci_పోర్టు_readl(ctrl, pnr, పోర్టు_CMD);
+    cmd |= పోర్టు_CMD_FIS_RX;
+    ahci_పోర్టు_writel(ctrl, pnr, పోర్టు_CMD, cmd);
 
     /* spin up */
-    cmd &= ~PORT_CMD_ICC_MASK;
-    cmd |= PORT_CMD_SPIN_UP | PORT_CMD_POWER_ON | PORT_CMD_ICC_ACTIVE;
-    ahci_port_writel(ctrl, pnr, PORT_CMD, cmd);
-    u32 end = timer_calc(AHCI_LINK_TIMEOUT);
-    for (;;) {
-        stat = ahci_port_readl(ctrl, pnr, PORT_SCR_STAT);
-        if ((stat & 0x07) == 0x03) {
-            dprintf(2, "AHCI/%d: link up\n", port->pnr);
-            break;
+    cmd &= ~పోర్టు_CMD_ICC_ముసుగు;
+    cmd |= పోర్టు_CMD_SPIN_పైకి | పోర్టు_CMD_POWER_ON | పోర్టు_CMD_ICC_చురుకైన;
+    ahci_పోర్టు_writel(ctrl, pnr, పోర్టు_CMD, cmd);
+    u32 చివర = timer_calc(AHCI_LINK_TIMEOUT);
+    కొరకు (;;) {
+        stat = ahci_పోర్టు_readl(ctrl, pnr, పోర్టు_SCR_STAT);
+        ఒకవేళ ((stat & 0x07) == 0x03) {
+            dprintf(2, "AHCI/%d: link up\n", పోర్టు->pnr);
+            ఆపు;
         }
-        if (timer_check(end)) {
-            dprintf(2, "AHCI/%d: link down\n", port->pnr);
-            return -1;
+        ఒకవేళ (timer_check(చివర)) {
+            dprintf(2, "AHCI/%d: link down\n", పోర్టు->pnr);
+            తిరిగి -1;
         }
         yield();
     }
 
     /* clear error status */
-    err = ahci_port_readl(ctrl, pnr, PORT_SCR_ERR);
-    if (err)
-        ahci_port_writel(ctrl, pnr, PORT_SCR_ERR, err);
+    err = ahci_పోర్టు_readl(ctrl, pnr, పోర్టు_SCR_ERR);
+    ఒకవేళ (err)
+        ahci_పోర్టు_writel(ctrl, pnr, పోర్టు_SCR_ERR, err);
 
     /* wait for device becoming ready */
-    end = timer_calc(AHCI_REQUEST_TIMEOUT);
-    for (;;) {
-        tf = ahci_port_readl(ctrl, pnr, PORT_TFDATA);
-        if (!(tf & (ATA_CB_STAT_BSY |
+    చివర = timer_calc(AHCI_REQUEST_TIMEOUT);
+    కొరకు (;;) {
+        tf = ahci_పోర్టు_readl(ctrl, pnr, పోర్టు_TFDATA);
+        ఒకవేళ (!(tf & (ATA_CB_STAT_BSY |
                     ATA_CB_STAT_DRQ)))
-            break;
-        if (timer_check(end)) {
+            ఆపు;
+        ఒకవేళ (timer_check(చివర)) {
             warn_timeout();
-            dprintf(1, "AHCI/%d: device not ready (tf 0x%x)\n", port->pnr, tf);
-            return -1;
+            dprintf(1, "AHCI/%d: device not ready (tf 0x%x)\n", పోర్టు->pnr, tf);
+            తిరిగి -1;
         }
         yield();
     }
 
     /* start device */
-    cmd |= PORT_CMD_START;
-    ahci_port_writel(ctrl, pnr, PORT_CMD, cmd);
+    cmd |= పోర్టు_CMD_ప్రారంభం;
+    ahci_పోర్టు_writel(ctrl, pnr, పోర్టు_CMD, cmd);
 
-    sata_prep_simple(&port->cmd->fis, ATA_CMD_IDENTIFY_PACKET_DEVICE);
-    rc = ahci_command(port, 0, 0, buffer, sizeof(buffer));
-    if (rc == 0) {
-        port->atapi = 1;
-    } else {
-        port->atapi = 0;
-        sata_prep_simple(&port->cmd->fis, ATA_CMD_IDENTIFY_DEVICE);
-        rc = ahci_command(port, 0, 0, buffer, sizeof(buffer));
-        if (rc < 0)
-            return -1;
+    sata_prep_simple(&పోర్టు->cmd->fis, ATA_CMD_IDENTIFY_PACKET_DEVICE);
+    rc = ahci_command(పోర్టు, 0, 0, బఫరు, పరిమాణం(బఫరు));
+    ఒకవేళ (rc == 0) {
+        పోర్టు->atapi = 1;
+    } లేకపోతే {
+        పోర్టు->atapi = 0;
+        sata_prep_simple(&పోర్టు->cmd->fis, ATA_CMD_IDENTIFY_DEVICE);
+        rc = ahci_command(పోర్టు, 0, 0, బఫరు, పరిమాణం(బఫరు));
+        ఒకవేళ (rc < 0)
+            తిరిగి -1;
     }
 
-    port->drive.cntl_id = pnr;
-    port->drive.removable = (buffer[0] & 0x80) ? 1 : 0;
+    పోర్టు->drive.cntl_id = pnr;
+    పోర్టు->drive.removable = (బఫరు[0] & 0x80) ? 1 : 0;
 
-    if (!port->atapi) {
+    ఒకవేళ (!పోర్టు->atapi) {
         // found disk (ata)
-        port->drive.type = DTYPE_AHCI;
-        port->drive.blksize = DISK_SECTOR_SIZE;
-        port->drive.pchs.cylinder = buffer[1];
-        port->drive.pchs.head = buffer[3];
-        port->drive.pchs.sector = buffer[6];
+        పోర్టు->drive.type = DTYPE_AHCI;
+        పోర్టు->drive.blksize = DISK_SECTOR_కొలత;
+        పోర్టు->drive.pchs.cylinder = బఫరు[1];
+        పోర్టు->drive.pchs.తల = బఫరు[3];
+        పోర్టు->drive.pchs.sector = బఫరు[6];
 
         u64 sectors;
-        if (buffer[83] & (1 << 10)) // word 83 - lba48 support
-            sectors = *(u64*)&buffer[100]; // word 100-103
-        else
-            sectors = *(u32*)&buffer[60]; // word 60 and word 61
-        port->drive.sectors = sectors;
+        ఒకవేళ (బఫరు[83] & (1 << 10)) // word 83 - lba48 support
+            sectors = *(u64*)&బఫరు[100]; // word 100-103
+        లేకపోతే
+            sectors = *(u32*)&బఫరు[60]; // word 60 and word 61
+        పోర్టు->drive.sectors = sectors;
         u64 adjsize = sectors >> 11;
-        char adjprefix = 'M';
-        if (adjsize >= (1 << 16)) {
+        అక్షరం adjprefix = 'M';
+        ఒకవేళ (adjsize >= (1 << 16)) {
             adjsize >>= 10;
             adjprefix = 'G';
         }
-        port->desc = znprintf(MAXDESCSIZE
+        పోర్టు->desc = znprintf(MAXDESCSIZE
                               , "AHCI/%d: %s ATA-%d Hard-Disk (%u %ciBytes)"
-                              , port->pnr
-                              , ata_extract_model(model, MAXMODEL, buffer)
-                              , ata_extract_version(buffer)
+                              , పోర్టు->pnr
+                              , ata_వెలికితీయి_model(model, MAXMODEL, బఫరు)
+                              , ata_వెలికితీయి_సంస్కరణ(బఫరు)
                               , (u32)adjsize, adjprefix);
-        port->prio = bootprio_find_ata_device(ctrl->pci_tmp, pnr, 0);
+        పోర్టు->prio = bootprio_కనుగొను_ata_device(ctrl->pci_tmp, pnr, 0);
 
         s8 multi_dma = -1;
-        s8 pio_mode = -1;
-        s8 udma_mode = -1;
+        s8 pio_బహుళకం = -1;
+        s8 udma_బహుళకం = -1;
         // If bit 2 in word 53 is set, udma information is valid in word 88.
-        if (buffer[53] & 0x04) {
-            udma_mode = 6;
-            while ((udma_mode >= 0) &&
-                   !((buffer[88] & 0x7f) & ( 1 << udma_mode ))) {
-                udma_mode--;
+        ఒకవేళ (బఫరు[53] & 0x04) {
+            udma_బహుళకం = 6;
+            అయితే ((udma_బహుళకం >= 0) &&
+                   !((బఫరు[88] & 0x7f) & ( 1 << udma_బహుళకం ))) {
+                udma_బహుళకం--;
             }
         }
         // If bit 1 in word 53 is set, multiword-dma and advanced pio modes
         // are available in words 63 and 64.
-        if (buffer[53] & 0x02) {
-            pio_mode = 4;
+        ఒకవేళ (బఫరు[53] & 0x02) {
+            pio_బహుళకం = 4;
             multi_dma = 3;
-            while ((multi_dma >= 0) &&
-                   !((buffer[63] & 0x7) & ( 1 << multi_dma ))) {
+            అయితే ((multi_dma >= 0) &&
+                   !((బఫరు[63] & 0x7) & ( 1 << multi_dma ))) {
                 multi_dma--;
             }
-            while ((pio_mode >= 3) &&
-                   !((buffer[64] & 0x3) & ( 1 << ( pio_mode - 3 ) ))) {
-                pio_mode--;
+            అయితే ((pio_బహుళకం >= 3) &&
+                   !((బఫరు[64] & 0x3) & ( 1 << ( pio_బహుళకం - 3 ) ))) {
+                pio_బహుళకం--;
             }
         }
         dprintf(2, "AHCI/%d: supported modes: udma %d, multi-dma %d, pio %d\n",
-                port->pnr, udma_mode, multi_dma, pio_mode);
+                పోర్టు->pnr, udma_బహుళకం, multi_dma, pio_బహుళకం);
 
-        sata_prep_simple(&port->cmd->fis, ATA_CMD_SET_FEATURES);
-        port->cmd->fis.feature = ATA_SET_FEATRUE_TRANSFER_MODE;
+        sata_prep_simple(&పోర్టు->cmd->fis, ATA_CMD_సమితి_FEATURES);
+        పోర్టు->cmd->fis.feature = ATA_సమితి_FEATRUE_TRANSFER_బహుళకం;
         // Select used mode. UDMA first, then Multi-DMA followed by
         // advanced PIO modes 3 or 4. If non, set default PIO.
-        if (udma_mode >= 0) {
+        ఒకవేళ (udma_బహుళకం >= 0) {
             dprintf(1, "AHCI/%d: Set transfer mode to UDMA-%d\n",
-                    port->pnr, udma_mode);
-            port->cmd->fis.sector_count = ATA_TRANSFER_MODE_ULTRA_DMA
-                                          | udma_mode;
-        } else if (multi_dma >= 0) {
+                    పోర్టు->pnr, udma_బహుళకం);
+            పోర్టు->cmd->fis.sector_లెక్క = ATA_TRANSFER_బహుళకం_ULTRA_DMA
+                                          | udma_బహుళకం;
+        } లేకపోతే ఒకవేళ (multi_dma >= 0) {
             dprintf(1, "AHCI/%d: Set transfer mode to Multi-DMA-%d\n",
-                    port->pnr, multi_dma);
-            port->cmd->fis.sector_count = ATA_TRANSFER_MODE_MULTIWORD_DMA
+                    పోర్టు->pnr, multi_dma);
+            పోర్టు->cmd->fis.sector_లెక్క = ATA_TRANSFER_బహుళకం_MULTIWORD_DMA
                                           | multi_dma;
-        } else if (pio_mode >= 3) {
+        } లేకపోతే ఒకవేళ (pio_బహుళకం >= 3) {
             dprintf(1, "AHCI/%d: Set transfer mode to PIO-%d\n",
-                    port->pnr, pio_mode);
-            port->cmd->fis.sector_count = ATA_TRANSFER_MODE_PIO_FLOW_CTRL
-                                          | pio_mode;
-        } else {
+                    పోర్టు->pnr, pio_బహుళకం);
+            పోర్టు->cmd->fis.sector_లెక్క = ATA_TRANSFER_బహుళకం_PIO_FLOW_CTRL
+                                          | pio_బహుళకం;
+        } లేకపోతే {
             dprintf(1, "AHCI/%d: Set transfer mode to default PIO\n",
-                    port->pnr);
-            port->cmd->fis.sector_count = ATA_TRANSFER_MODE_DEFAULT_PIO;
+                    పోర్టు->pnr);
+            పోర్టు->cmd->fis.sector_లెక్క = ATA_TRANSFER_బహుళకం_DEFAULT_PIO;
         }
-        rc = ahci_command(port, 1, 0, 0, 0);
-        if (rc < 0) {
-            dprintf(1, "AHCI/%d: Set transfer mode failed.\n", port->pnr);
+        rc = ahci_command(పోర్టు, 1, 0, 0, 0);
+        ఒకవేళ (rc < 0) {
+            dprintf(1, "AHCI/%d: Set transfer mode failed.\n", పోర్టు->pnr);
         }
-    } else {
+    } లేకపోతే {
         // found cdrom (atapi)
-        port->drive.type = DTYPE_AHCI_ATAPI;
-        port->drive.blksize = CDROM_SECTOR_SIZE;
-        port->drive.sectors = (u64)-1;
-        u8 iscd = ((buffer[0] >> 8) & 0x1f) == 0x05;
-        if (!iscd) {
-            dprintf(1, "AHCI/%d: atapi device isn't a cdrom\n", port->pnr);
-            return -1;
+        పోర్టు->drive.type = DTYPE_AHCI_ATAPI;
+        పోర్టు->drive.blksize = CDROM_SECTOR_కొలత;
+        పోర్టు->drive.sectors = (u64)-1;
+        u8 iscd = ((బఫరు[0] >> 8) & 0x1f) == 0x05;
+        ఒకవేళ (!iscd) {
+            dprintf(1, "AHCI/%d: atapi device isn't a cdrom\n", పోర్టు->pnr);
+            తిరిగి -1;
         }
-        port->desc = znprintf(MAXDESCSIZE
+        పోర్టు->desc = znprintf(MAXDESCSIZE
                               , "DVD/CD [AHCI/%d: %s ATAPI-%d DVD/CD]"
-                              , port->pnr
-                              , ata_extract_model(model, MAXMODEL, buffer)
-                              , ata_extract_version(buffer));
-        port->prio = bootprio_find_ata_device(ctrl->pci_tmp, pnr, 0);
+                              , పోర్టు->pnr
+                              , ata_వెలికితీయి_model(model, MAXMODEL, బఫరు)
+                              , ata_వెలికితీయి_సంస్కరణ(బఫరు));
+        పోర్టు->prio = bootprio_కనుగొను_ata_device(ctrl->pci_tmp, pnr, 0);
     }
-    boot_lchs_find_ata_device(ctrl->pci_tmp, pnr, 0, &(port->drive.lchs));
-    return 0;
+    boot_lchs_కనుగొను_ata_device(ctrl->pci_tmp, pnr, 0, &(పోర్టు->drive.lchs));
+    తిరిగి 0;
 }
 
 // Detect any drives attached to a given controller.
-static void
-ahci_port_detect(void *data)
+స్థిర శూన్య
+ahci_పోర్టు_detect(శూన్య *దత్తాంశం)
 {
-    struct ahci_port_s *port = data;
-    int rc;
+    నిర్మాణం ahci_పోర్టు_s *పోర్టు = దత్తాంశం;
+    పూర్ణాంకం rc;
 
-    dprintf(2, "AHCI/%d: probing\n", port->pnr);
-    ahci_port_reset(port->ctrl, port->pnr);
-    rc = ahci_port_setup(port);
-    if (rc < 0)
-        ahci_port_release(port);
-    else {
-        port = ahci_port_realloc(port);
-        if (port == NULL)
-            return;
-        dprintf(1, "AHCI/%d: registering: \"%s\"\n", port->pnr, port->desc);
-        if (!port->atapi) {
+    dprintf(2, "AHCI/%d: probing\n", పోర్టు->pnr);
+    ahci_పోర్టు_reset(పోర్టు->ctrl, పోర్టు->pnr);
+    rc = ahci_పోర్టు_అమరిక(పోర్టు);
+    ఒకవేళ (rc < 0)
+        ahci_పోర్టు_release(పోర్టు);
+    లేకపోతే {
+        పోర్టు = ahci_పోర్టు_realloc(పోర్టు);
+        ఒకవేళ (పోర్టు == ఖాళీ)
+            తిరిగి;
+        dprintf(1, "AHCI/%d: registering: \"%s\"\n", పోర్టు->pnr, పోర్టు->desc);
+        ఒకవేళ (!పోర్టు->atapi) {
             // Register with bcv system.
-            boot_add_hd(&port->drive, port->desc, port->prio);
-        } else {
+            boot_కూడు_hd(&పోర్టు->drive, పోర్టు->desc, పోర్టు->prio);
+        } లేకపోతే {
             // fill cdidmap
-            boot_add_cd(&port->drive, port->desc, port->prio);
+            boot_కూడు_cd(&పోర్టు->drive, పోర్టు->desc, పోర్టు->prio);
         }
     }
 }
 
 // Initialize an ata controller and detect its drives.
-static void
-ahci_controller_setup(struct pci_device *pci)
+స్థిర శూన్య
+ahci_controller_అమరిక(నిర్మాణం pci_device *pci)
 {
-    struct ahci_port_s *port;
+    నిర్మాణం ahci_పోర్టు_s *పోర్టు;
     u32 pnr, max;
 
-    if (create_bounce_buf() < 0)
-        return;
+    ఒకవేళ (create_bounce_buf() < 0)
+        తిరిగి;
 
-    void *iobase = pci_enable_membar(pci, PCI_BASE_ADDRESS_5);
-    if (!iobase)
-        return;
+    శూన్య *iobase = pci_enable_membar(pci, PCI_పునాది_చిరునామా_5);
+    ఒకవేళ (!iobase)
+        తిరిగి;
 
-    struct ahci_ctrl_s *ctrl = malloc_fseg(sizeof(*ctrl));
-    if (!ctrl) {
+    నిర్మాణం ahci_ctrl_s *ctrl = malloc_fseg(పరిమాణం(*ctrl));
+    ఒకవేళ (!ctrl) {
         warn_noalloc();
-        return;
+        తిరిగి;
     }
 
     ctrl->pci_tmp = pci;
     ctrl->iobase = iobase;
-    ctrl->irq = pci_config_readb(pci->bdf, PCI_INTERRUPT_LINE);
+    ctrl->irq = pci_config_readb(pci->bdf, PCI_అంతరాయం_పంక్తి);
     dprintf(1, "AHCI controller at %pP, iobase %p, irq %d\n"
             , pci, ctrl->iobase, ctrl->irq);
 
@@ -662,21 +662,21 @@ ahci_controller_setup(struct pci_device *pci)
 
     u32 val = ahci_ctrl_readl(ctrl, HOST_CTL);
     ahci_ctrl_writel(ctrl, HOST_CTL, val | HOST_CTL_RESET);
-    u32 end = timer_calc(AHCI_RESET_TIMEOUT);
-    for (;;) {
+    u32 చివర = timer_calc(AHCI_RESET_TIMEOUT);
+    కొరకు (;;) {
         val = ahci_ctrl_readl(ctrl, HOST_CTL);
-        if (!(val & HOST_CTL_RESET))
-            break;
-        if (timer_check(end)) {
+        ఒకవేళ (!(val & HOST_CTL_RESET))
+            ఆపు;
+        ఒకవేళ (timer_check(చివర)) {
             warn_timeout();
             dprintf(1, "AHCI: controller reset failed\n");
-            free(ctrl);
-            return;
+            విడుదల(ctrl);
+            తిరిగి;
         }
         yield();
     }
     ahci_ctrl_writel(ctrl, HOST_CTL, val | HOST_CTL_AHCI_EN);
-    (void)ahci_ctrl_readl(ctrl, HOST_CTL); /* Flush */
+    (శూన్య)ahci_ctrl_readl(ctrl, HOST_CTL); /* Flush */
 
     ctrl->caps = ahci_ctrl_readl(ctrl, HOST_CAP);
     ctrl->ports = ahci_ctrl_readl(ctrl, HOST_PORTS_IMPL);
@@ -684,38 +684,38 @@ ahci_controller_setup(struct pci_device *pci)
             ctrl->caps, ctrl->ports);
 
     max = 0x1f;
-    for (pnr = 0; pnr <= max; pnr++) {
-        if (!(ctrl->ports & (1 << pnr)))
-            continue;
-        port = ahci_port_alloc(ctrl, pnr);
-        if (port == NULL)
-            continue;
-        run_thread(ahci_port_detect, port);
+    కొరకు (pnr = 0; pnr <= max; pnr++) {
+        ఒకవేళ (!(ctrl->ports & (1 << pnr)))
+            కొనసాగు;
+        పోర్టు = ahci_పోర్టు_alloc(ctrl, pnr);
+        ఒకవేళ (పోర్టు == ఖాళీ)
+            కొనసాగు;
+        నిరంతరం_thread(ahci_పోర్టు_detect, పోర్టు);
     }
 }
 
 // Locate and init ahci controllers.
-static void
-ahci_scan(void)
+స్థిర శూన్య
+ahci_పరిశీలన(శూన్య)
 {
     // Scan PCI bus for ATA adapters
-    struct pci_device *pci;
+    నిర్మాణం pci_device *pci;
     foreachpci(pci) {
-        if (pci->class != PCI_CLASS_STORAGE_SATA)
-            continue;
-        if (pci->prog_if != 1 /* AHCI rev 1 */)
-            continue;
-        ahci_controller_setup(pci);
+        ఒకవేళ (pci->class != PCI_CLASS_STORAGE_SATA)
+            కొనసాగు;
+        ఒకవేళ (pci->prog_if != 1 /* AHCI rev 1 */)
+            కొనసాగు;
+        ahci_controller_అమరిక(pci);
     }
 }
 
-void
-ahci_setup(void)
+శూన్య
+ahci_అమరిక(శూన్య)
 {
     ASSERT32FLAT();
-    if (!CONFIG_AHCI)
-        return;
+    ఒకవేళ (!CONFIG_AHCI)
+        తిరిగి;
 
     dprintf(3, "init ahci\n");
-    ahci_scan();
+    ahci_పరిశీలన();
 }

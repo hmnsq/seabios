@@ -4,137 +4,137 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_LOWFLAT
-#include "config.h" // CONFIG_*
-#include "output.h" // dprintf
-#include "malloc.h" // free
-#include "memmap.h" // PAGE_SIZE
-#include "pcidevice.h" // foreachpci
-#include "pci_ids.h" // PCI_CLASS_SERIAL_USB_UHCI
-#include "pci_regs.h" // PCI_BASE_ADDRESS_0
-#include "string.h" // memset
-#include "usb.h" // struct usb_s
-#include "usb-ehci.h" // struct ehci_qh
-#include "util.h" // msleep
-#include "x86.h" // readl
+#అన్తర్భావ "biosvar.h" // GET_LOWFLAT
+#అన్తర్భావ "config.h" // CONFIG_*
+#అన్తర్భావ "output.h" // dprintf
+#అన్తర్భావ "malloc.h" // free
+#అన్తర్భావ "memmap.h" // PAGE_SIZE
+#అన్తర్భావ "pcidevice.h" // foreachpci
+#అన్తర్భావ "pci_ids.h" // PCI_CLASS_SERIAL_USB_UHCI
+#అన్తర్భావ "pci_regs.h" // PCI_BASE_ADDRESS_0
+#అన్తర్భావ "string.h" // memset
+#అన్తర్భావ "usb.h" // struct usb_s
+#అన్తర్భావ "usb-ehci.h" // struct ehci_qh
+#అన్తర్భావ "util.h" // msleep
+#అన్తర్భావ "x86.h" // readl
 
-struct usb_ehci_s {
-    struct usb_s usb;
-    struct ehci_caps *caps;
-    struct ehci_regs *regs;
-    struct ehci_qh *async_qh;
-    int checkports;
+నిర్మాణం usb_ehci_s {
+    నిర్మాణం usb_s usb;
+    నిర్మాణం ehci_caps *caps;
+    నిర్మాణం ehci_regs *regs;
+    నిర్మాణం ehci_qh *async_qh;
+    పూర్ణాంకం checkports;
 };
 
-struct ehci_pipe {
-    struct ehci_qh qh;
-    struct ehci_qtd *next_td, *tds;
-    void *data;
-    struct usb_pipe pipe;
+నిర్మాణం ehci_pipe {
+    నిర్మాణం ehci_qh qh;
+    నిర్మాణం ehci_qtd *తదుపరి_td, *tds;
+    శూన్య *దత్తాంశం;
+    నిర్మాణం usb_pipe pipe;
 };
 
-static int PendingEHCI;
+స్థిర పూర్ణాంకం PendingEHCI;
 
 
 /****************************************************************
  * Root hub
  ****************************************************************/
 
-#define EHCI_TIME_POSTPOWER 20
-#define EHCI_TIME_POSTRESET 2
+#నిర్వచించు EHCI_సమయం_POSTPOWER 20
+#నిర్వచించు EHCI_సమయం_POSTRESET 2
 
 // Check if device attached to port
-static int
-ehci_hub_detect(struct usbhub_s *hub, u32 port)
+స్థిర పూర్ణాంకం
+ehci_hub_detect(నిర్మాణం usbhub_s *hub, u32 పోర్టు)
 {
-    struct usb_ehci_s *cntl = container_of(hub->cntl, struct usb_ehci_s, usb);
-    u32 *portreg = &cntl->regs->portsc[port];
+    నిర్మాణం usb_ehci_s *cntl = container_యొక్క(hub->cntl, నిర్మాణం usb_ehci_s, usb);
+    u32 *portreg = &cntl->regs->portsc[పోర్టు];
     u32 portsc = readl(portreg);
 
-    if (!(portsc & PORT_CONNECT))
+    ఒకవేళ (!(portsc & పోర్టు_CONNECT))
         // No device present
-        return 0;
+        తిరిగి 0;
 
-    if ((portsc & PORT_LINESTATUS_MASK) == PORT_LINESTATUS_KSTATE) {
+    ఒకవేళ ((portsc & పోర్టు_LINESTATUS_ముసుగు) == పోర్టు_LINESTATUS_KSTATE) {
         // low speed device
-        writel(portreg, portsc | PORT_OWNER);
-        return -1;
+        writel(portreg, portsc | పోర్టు_OWNER);
+        తిరిగి -1;
     }
 
     // XXX - if just powered up, need to wait for USB_TIME_ATTDB?
 
     // Begin reset on port
-    portsc = (portsc & ~PORT_PE) | PORT_RESET;
+    portsc = (portsc & ~పోర్టు_PE) | పోర్టు_RESET;
     writel(portreg, portsc);
-    msleep(USB_TIME_DRSTR);
-    return 1;
+    msleep(USB_సమయం_DRSTR);
+    తిరిగి 1;
 }
 
 // Reset device on port
-static int
-ehci_hub_reset(struct usbhub_s *hub, u32 port)
+స్థిర పూర్ణాంకం
+ehci_hub_reset(నిర్మాణం usbhub_s *hub, u32 పోర్టు)
 {
-    struct usb_ehci_s *cntl = container_of(hub->cntl, struct usb_ehci_s, usb);
-    u32 *portreg = &cntl->regs->portsc[port];
+    నిర్మాణం usb_ehci_s *cntl = container_యొక్క(hub->cntl, నిర్మాణం usb_ehci_s, usb);
+    u32 *portreg = &cntl->regs->portsc[పోర్టు];
     u32 portsc = readl(portreg);
 
     // Finish reset on port
-    portsc &= ~PORT_RESET;
+    portsc &= ~పోర్టు_RESET;
     writel(portreg, portsc);
-    msleep(EHCI_TIME_POSTRESET);
+    msleep(EHCI_సమయం_POSTRESET);
 
     portsc = readl(portreg);
-    if (!(portsc & PORT_CONNECT))
+    ఒకవేళ (!(portsc & పోర్టు_CONNECT))
         // No longer connected
-        return -1;
-    if (!(portsc & PORT_PE)) {
+        తిరిగి -1;
+    ఒకవేళ (!(portsc & పోర్టు_PE)) {
         // full speed device
-        writel(portreg, portsc | PORT_OWNER);
-        return -1;
+        writel(portreg, portsc | పోర్టు_OWNER);
+        తిరిగి -1;
     }
 
-    return USB_HIGHSPEED;
+    తిరిగి USB_HIGHSPEED;
 }
 
 // Disable port
-static void
-ehci_hub_disconnect(struct usbhub_s *hub, u32 port)
+స్థిర శూన్య
+ehci_hub_disconnect(నిర్మాణం usbhub_s *hub, u32 పోర్టు)
 {
-    struct usb_ehci_s *cntl = container_of(hub->cntl, struct usb_ehci_s, usb);
-    u32 *portreg = &cntl->regs->portsc[port];
+    నిర్మాణం usb_ehci_s *cntl = container_యొక్క(hub->cntl, నిర్మాణం usb_ehci_s, usb);
+    u32 *portreg = &cntl->regs->portsc[పోర్టు];
     u32 portsc = readl(portreg);
-    writel(portreg, portsc & ~PORT_PE);
+    writel(portreg, portsc & ~పోర్టు_PE);
 }
 
-static struct usbhub_op_s ehci_HubOp = {
+స్థిర నిర్మాణం usbhub_op_s ehci_HubOp = {
     .detect = ehci_hub_detect,
     .reset = ehci_hub_reset,
     .disconnect = ehci_hub_disconnect,
 };
 
 // Find any devices connected to the root hub.
-static int
-check_ehci_ports(struct usb_ehci_s *cntl)
+స్థిర పూర్ణాంకం
+check_ehci_ports(నిర్మాణం usb_ehci_s *cntl)
 {
     // Power up ports.
-    int i;
-    for (i=0; i<cntl->checkports; i++) {
+    పూర్ణాంకం i;
+    కొరకు (i=0; i<cntl->checkports; i++) {
         u32 *portreg = &cntl->regs->portsc[i];
         u32 portsc = readl(portreg);
-        if (!(portsc & PORT_POWER)) {
-            portsc |= PORT_POWER;
+        ఒకవేళ (!(portsc & పోర్టు_POWER)) {
+            portsc |= పోర్టు_POWER;
             writel(portreg, portsc);
         }
     }
-    msleep(EHCI_TIME_POSTPOWER);
+    msleep(EHCI_సమయం_POSTPOWER);
 
-    struct usbhub_s hub;
-    memset(&hub, 0, sizeof(hub));
+    నిర్మాణం usbhub_s hub;
+    memset(&hub, 0, పరిమాణం(hub));
     hub.cntl = &cntl->usb;
     hub.portcount = cntl->checkports;
     hub.op = &ehci_HubOp;
     usb_enumerate(&hub);
-    return hub.devcount;
+    తిరిగి hub.devcount;
 }
 
 
@@ -143,40 +143,40 @@ check_ehci_ports(struct usb_ehci_s *cntl)
  ****************************************************************/
 
 // Wait for next USB async frame to start - for ensuring safe memory release.
-static void
-ehci_waittick(struct usb_ehci_s *cntl)
+స్థిర శూన్య
+ehci_waittick(నిర్మాణం usb_ehci_s *cntl)
 {
-    if (MODE16) {
+    ఒకవేళ (MODE16) {
         msleep(10);
-        return;
+        తిరిగి;
     }
     // Wait for access to "doorbell"
     barrier();
     u32 cmd, sts;
-    u32 end = timer_calc(100);
-    for (;;) {
+    u32 చివర = timer_calc(100);
+    కొరకు (;;) {
         sts = readl(&cntl->regs->usbsts);
-        if (!(sts & STS_IAA)) {
+        ఒకవేళ (!(sts & STS_IAA)) {
             cmd = readl(&cntl->regs->usbcmd);
-            if (!(cmd & CMD_IAAD))
-                break;
+            ఒకవేళ (!(cmd & CMD_IAAD))
+                ఆపు;
         }
-        if (timer_check(end)) {
+        ఒకవేళ (timer_check(చివర)) {
             warn_timeout();
-            return;
+            తిరిగి;
         }
         yield();
     }
     // Ring "doorbell"
     writel(&cntl->regs->usbcmd, cmd | CMD_IAAD);
     // Wait for completion
-    for (;;) {
+    కొరకు (;;) {
         sts = readl(&cntl->regs->usbsts);
-        if (sts & STS_IAA)
-            break;
-        if (timer_check(end)) {
+        ఒకవేళ (sts & STS_IAA)
+            ఆపు;
+        ఒకవేళ (timer_check(చివర)) {
             warn_timeout();
-            return;
+            తిరిగి;
         }
         yield();
     }
@@ -184,47 +184,47 @@ ehci_waittick(struct usb_ehci_s *cntl)
     writel(&cntl->regs->usbsts, STS_IAA);
 }
 
-static void
-ehci_free_pipes(struct usb_ehci_s *cntl)
+స్థిర శూన్య
+ehci_free_pipes(నిర్మాణం usb_ehci_s *cntl)
 {
     dprintf(7, "ehci_free_pipes %p\n", cntl);
 
-    struct ehci_qh *start = cntl->async_qh;
-    struct ehci_qh *pos = start;
-    for (;;) {
-        struct ehci_qh *next = (void*)(pos->next & ~EHCI_PTR_BITS);
-        if (next == start)
-            break;
-        struct ehci_pipe *pipe = container_of(next, struct ehci_pipe, qh);
-        if (usb_is_freelist(&cntl->usb, &pipe->pipe))
-            pos->next = next->next;
-        else
-            pos = next;
+    నిర్మాణం ehci_qh *ప్రారంభం = cntl->async_qh;
+    నిర్మాణం ehci_qh *pos = ప్రారంభం;
+    కొరకు (;;) {
+        నిర్మాణం ehci_qh *తదుపరి = (శూన్య*)(pos->తదుపరి & ~EHCI_PTR_బిట్లు);
+        ఒకవేళ (తదుపరి == ప్రారంభం)
+            ఆపు;
+        నిర్మాణం ehci_pipe *pipe = container_యొక్క(తదుపరి, నిర్మాణం ehci_pipe, qh);
+        ఒకవేళ (usb_is_freelist(&cntl->usb, &pipe->pipe))
+            pos->తదుపరి = తదుపరి->తదుపరి;
+        లేకపోతే
+            pos = తదుపరి;
     }
     ehci_waittick(cntl);
-    for (;;) {
-        struct usb_pipe *usbpipe = cntl->usb.freelist;
-        if (!usbpipe)
-            break;
+    కొరకు (;;) {
+        నిర్మాణం usb_pipe *usbpipe = cntl->usb.freelist;
+        ఒకవేళ (!usbpipe)
+            ఆపు;
         cntl->usb.freelist = usbpipe->freenext;
-        struct ehci_pipe *pipe = container_of(usbpipe, struct ehci_pipe, pipe);
-        free(pipe);
+        నిర్మాణం ehci_pipe *pipe = container_యొక్క(usbpipe, నిర్మాణం ehci_pipe, pipe);
+        విడుదల(pipe);
     }
 }
 
-static void
-configure_ehci(void *data)
+స్థిర శూన్య
+configure_ehci(శూన్య *దత్తాంశం)
 {
-    struct usb_ehci_s *cntl = data;
+    నిర్మాణం usb_ehci_s *cntl = దత్తాంశం;
 
     // Allocate ram for schedule storage
-    struct ehci_framelist *fl = memalign_high(sizeof(*fl), sizeof(*fl));
-    struct ehci_qh *intr_qh = memalign_high(EHCI_QH_ALIGN, sizeof(*intr_qh));
-    struct ehci_qh *async_qh = memalign_high(EHCI_QH_ALIGN, sizeof(*async_qh));
-    if (!fl || !intr_qh || !async_qh) {
+    నిర్మాణం ehci_framelist *fl = memalign_ఎగువ(పరిమాణం(*fl), పరిమాణం(*fl));
+    నిర్మాణం ehci_qh *intr_qh = memalign_ఎగువ(EHCI_QH_ALIGN, పరిమాణం(*intr_qh));
+    నిర్మాణం ehci_qh *async_qh = memalign_ఎగువ(EHCI_QH_ALIGN, పరిమాణం(*async_qh));
+    ఒకవేళ (!fl || !intr_qh || !async_qh) {
         warn_noalloc();
         PendingEHCI--;
-        goto fail;
+        వెళ్ళు fail;
     }
 
     // XXX - check for halted?
@@ -232,15 +232,15 @@ configure_ehci(void *data)
     // Reset the HC
     u32 cmd = readl(&cntl->regs->usbcmd);
     writel(&cntl->regs->usbcmd, (cmd & ~(CMD_ASE | CMD_PSE)) | CMD_HCRESET);
-    u32 end = timer_calc(250);
-    for (;;) {
+    u32 చివర = timer_calc(250);
+    కొరకు (;;) {
         cmd = readl(&cntl->regs->usbcmd);
-        if (!(cmd & CMD_HCRESET))
-            break;
-        if (timer_check(end)) {
+        ఒకవేళ (!(cmd & CMD_HCRESET))
+            ఆపు;
+        ఒకవేళ (timer_check(చివర)) {
             warn_timeout();
             PendingEHCI--;
-            goto fail;
+            వెళ్ళు fail;
         }
         yield();
     }
@@ -249,69 +249,69 @@ configure_ehci(void *data)
     writel(&cntl->regs->usbintr, 0);
 
     // Set schedule to point to primary intr queue head
-    memset(intr_qh, 0, sizeof(*intr_qh));
-    intr_qh->next = EHCI_PTR_TERM;
-    intr_qh->info2 = (0x01 << QH_SMASK_SHIFT);
+    memset(intr_qh, 0, పరిమాణం(*intr_qh));
+    intr_qh->తదుపరి = EHCI_PTR_పదం;
+    intr_qh->info2 = (0x01 << QH_SMASK_జరుపు);
     intr_qh->token = QTD_STS_HALT;
-    intr_qh->qtd_next = intr_qh->alt_next = EHCI_PTR_TERM;
-    int i;
-    for (i=0; i<ARRAY_SIZE(fl->links); i++)
+    intr_qh->qtd_తదుపరి = intr_qh->alt_తదుపరి = EHCI_PTR_పదం;
+    పూర్ణాంకం i;
+    కొరకు (i=0; i<ARRAY_కొలత(fl->links); i++)
         fl->links[i] = (u32)intr_qh | EHCI_PTR_QH;
     writel(&cntl->regs->periodiclistbase, (u32)fl);
 
     // Set async list to point to primary async queue head
-    memset(async_qh, 0, sizeof(*async_qh));
-    async_qh->next = (u32)async_qh | EHCI_PTR_QH;
-    async_qh->info1 = QH_HEAD;
+    memset(async_qh, 0, పరిమాణం(*async_qh));
+    async_qh->తదుపరి = (u32)async_qh | EHCI_PTR_QH;
+    async_qh->info1 = QH_తల;
     async_qh->token = QTD_STS_HALT;
-    async_qh->qtd_next = async_qh->alt_next = EHCI_PTR_TERM;
+    async_qh->qtd_తదుపరి = async_qh->alt_తదుపరి = EHCI_PTR_పదం;
     cntl->async_qh = async_qh;
     writel(&cntl->regs->asynclistbase, (u32)async_qh);
 
     // Enable queues
-    writel(&cntl->regs->usbcmd, cmd | CMD_ASE | CMD_PSE | CMD_RUN);
+    writel(&cntl->regs->usbcmd, cmd | CMD_ASE | CMD_PSE | CMD_నిరంతరం);
 
     // Set default of high speed for root hub.
     writel(&cntl->regs->configflag, 1);
     PendingEHCI--;
 
     // Find devices
-    int count = check_ehci_ports(cntl);
+    పూర్ణాంకం లెక్క = check_ehci_ports(cntl);
     ehci_free_pipes(cntl);
-    if (count)
+    ఒకవేళ (లెక్క)
         // Success
-        return;
+        తిరిగి;
 
     // No devices found - shutdown and free controller.
-    writel(&cntl->regs->usbcmd, cmd & ~CMD_RUN);
+    writel(&cntl->regs->usbcmd, cmd & ~CMD_నిరంతరం);
     msleep(4);  // 2ms to stop reading memory - XXX
 fail:
-    free(fl);
-    free(intr_qh);
-    free(async_qh);
-    free(cntl);
+    విడుదల(fl);
+    విడుదల(intr_qh);
+    విడుదల(async_qh);
+    విడుదల(cntl);
 }
 
-static void
-ehci_controller_setup(struct pci_device *pci)
+స్థిర శూన్య
+ehci_controller_అమరిక(నిర్మాణం pci_device *pci)
 {
-    struct ehci_caps *caps = pci_enable_membar(pci, PCI_BASE_ADDRESS_0);
-    if (!caps)
-        return;
+    నిర్మాణం ehci_caps *caps = pci_enable_membar(pci, PCI_పునాది_చిరునామా_0);
+    ఒకవేళ (!caps)
+        తిరిగి;
     u32 hcc_params = readl(&caps->hccparams);
 
-    struct usb_ehci_s *cntl = malloc_tmphigh(sizeof(*cntl));
-    if (!cntl) {
+    నిర్మాణం usb_ehci_s *cntl = malloc_tmphigh(పరిమాణం(*cntl));
+    ఒకవేళ (!cntl) {
         warn_noalloc();
-        return;
+        తిరిగి;
     }
-    memset(cntl, 0, sizeof(*cntl));
+    memset(cntl, 0, పరిమాణం(*cntl));
     cntl->usb.pci = pci;
     cntl->usb.type = USB_TYPE_EHCI;
     cntl->caps = caps;
-    cntl->checkports = readl(&cntl->caps->hcsparams) & HCS_N_PORTS_MASK;
-    cntl->regs = (void*)caps + readb(&caps->caplength);
-    if (hcc_params & HCC_64BIT_ADDR)
+    cntl->checkports = readl(&cntl->caps->hcsparams) & HCS_N_PORTS_ముసుగు;
+    cntl->regs = (శూన్య*)caps + readb(&caps->caplength);
+    ఒకవేళ (hcc_params & HCC_64_బిట్టు_ADDR)
         cntl->regs->ctrldssegment = 0;
     PendingEHCI++;
 
@@ -321,27 +321,27 @@ ehci_controller_setup(struct pci_device *pci)
 
     // XXX - check for and disable SMM control?
 
-    run_thread(configure_ehci, cntl);
+    నిరంతరం_thread(configure_ehci, cntl);
 }
 
-void
-ehci_setup(void)
+శూన్య
+ehci_అమరిక(శూన్య)
 {
-    if (! CONFIG_USB_EHCI)
-        return;
-    struct pci_device *pci;
+    ఒకవేళ (! CONFIG_USB_EHCI)
+        తిరిగి;
+    నిర్మాణం pci_device *pci;
     foreachpci(pci) {
-        if (pci_classprog(pci) == PCI_CLASS_SERIAL_USB_EHCI)
-            ehci_controller_setup(pci);
+        ఒకవేళ (pci_classprog(pci) == PCI_CLASS_SERIAL_USB_EHCI)
+            ehci_controller_అమరిక(pci);
     }
 }
 
 // Wait for all EHCI controllers to initialize.  This forces OHCI/UHCI
 // setup to always be after any EHCI ports are routed to EHCI.
-void
-ehci_wait_controllers(void)
+శూన్య
+ehci_wait_controllers(శూన్య)
 {
-    while (CONFIG_USB_EHCI && CONFIG_THREADS && PendingEHCI)
+    అయితే (CONFIG_USB_EHCI && CONFIG_దారాలు && PendingEHCI)
         yield();
 }
 
@@ -351,300 +351,300 @@ ehci_wait_controllers(void)
  ****************************************************************/
 
 // Setup fields in qh
-static void
-ehci_desc2pipe(struct ehci_pipe *pipe, struct usbdevice_s *usbdev
-               , struct usb_endpoint_descriptor *epdesc)
+స్థిర శూన్య
+ehci_desc2pipe(నిర్మాణం ehci_pipe *pipe, నిర్మాణం usbdevice_s *usbdev
+               , నిర్మాణం usb_endpoint_descriptor *epdesc)
 {
     usb_desc2pipe(&pipe->pipe, usbdev, epdesc);
 
-    pipe->qh.info1 = ((pipe->pipe.maxpacket << QH_MAXPACKET_SHIFT)
-                      | (pipe->pipe.speed << QH_SPEED_SHIFT)
-                      | (pipe->pipe.ep << QH_EP_SHIFT)
-                      | (pipe->pipe.devaddr << QH_DEVADDR_SHIFT));
+    pipe->qh.info1 = ((pipe->pipe.maxpacket << QH_MAXPACKET_జరుపు)
+                      | (pipe->pipe.వేగం << QH_వేగం_జరుపు)
+                      | (pipe->pipe.ep << QH_EP_జరుపు)
+                      | (pipe->pipe.devaddr << QH_DEVADDR_జరుపు));
 
-    pipe->qh.info2 = (1 << QH_MULT_SHIFT);
-    struct usbdevice_s *hubdev = usbdev->hub->usbdev;
-    if (hubdev) {
-        struct ehci_pipe *hpipe = container_of(
-            hubdev->defpipe, struct ehci_pipe, pipe);
-        if (hpipe->pipe.speed == USB_HIGHSPEED)
-            pipe->qh.info2 |= (((usbdev->port+1) << QH_HUBPORT_SHIFT)
-                               | (hpipe->pipe.devaddr << QH_HUBADDR_SHIFT));
-        else
+    pipe->qh.info2 = (1 << QH_MULT_జరుపు);
+    నిర్మాణం usbdevice_s *hubdev = usbdev->hub->usbdev;
+    ఒకవేళ (hubdev) {
+        నిర్మాణం ehci_pipe *hpipe = container_యొక్క(
+            hubdev->defpipe, నిర్మాణం ehci_pipe, pipe);
+        ఒకవేళ (hpipe->pipe.వేగం == USB_HIGHSPEED)
+            pipe->qh.info2 |= (((usbdev->పోర్టు+1) << QH_HUBPORT_జరుపు)
+                               | (hpipe->pipe.devaddr << QH_HUBADDR_జరుపు));
+        లేకపోతే
             pipe->qh.info2 = hpipe->qh.info2;
     }
 
-    u8 eptype = epdesc->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK;
-    if (eptype == USB_ENDPOINT_XFER_CONTROL)
-        pipe->qh.info1 |= ((pipe->pipe.speed != USB_HIGHSPEED ? QH_CONTROL : 0)
+    u8 eptype = epdesc->bm_లక్షణాలు & USB_ENDPOINT_XFERTYPE_ముసుగు;
+    ఒకవేళ (eptype == USB_ENDPOINT_XFER_CONTROL)
+        pipe->qh.info1 |= ((pipe->pipe.వేగం != USB_HIGHSPEED ? QH_CONTROL : 0)
                            | QH_TOGGLECONTROL);
-    else if (eptype == USB_ENDPOINT_XFER_INT)
-        pipe->qh.info2 |= (0x01 << QH_SMASK_SHIFT) | (0x1c << QH_CMASK_SHIFT);
+    లేకపోతే ఒకవేళ (eptype == USB_ENDPOINT_XFER_INT)
+        pipe->qh.info2 |= (0x01 << QH_SMASK_జరుపు) | (0x1c << QH_CMASK_జరుపు);
 }
 
-static struct usb_pipe *
-ehci_alloc_intr_pipe(struct usbdevice_s *usbdev
-                     , struct usb_endpoint_descriptor *epdesc)
+స్థిర నిర్మాణం usb_pipe *
+ehci_alloc_intr_pipe(నిర్మాణం usbdevice_s *usbdev
+                     , నిర్మాణం usb_endpoint_descriptor *epdesc)
 {
-    struct usb_ehci_s *cntl = container_of(
-        usbdev->hub->cntl, struct usb_ehci_s, usb);
-    int frameexp = usb_get_period(usbdev, epdesc);
+    నిర్మాణం usb_ehci_s *cntl = container_యొక్క(
+        usbdev->hub->cntl, నిర్మాణం usb_ehci_s, usb);
+    పూర్ణాంకం frameexp = usb_get_period(usbdev, epdesc);
     dprintf(7, "ehci_alloc_intr_pipe %p %d\n", &cntl->usb, frameexp);
 
-    if (frameexp > 10)
+    ఒకవేళ (frameexp > 10)
         frameexp = 10;
-    int maxpacket = epdesc->wMaxPacketSize;
+    పూర్ణాంకం maxpacket = epdesc->w_Max_Packet_కొలత;
     // Determine number of entries needed for 2 timer ticks.
-    int ms = 1<<frameexp;
-    int count = DIV_ROUND_UP(ticks_to_ms(2), ms);
-    struct ehci_pipe *pipe = memalign_low(EHCI_QH_ALIGN, sizeof(*pipe));
-    struct ehci_qtd *tds = memalign_low(EHCI_QTD_ALIGN, sizeof(*tds) * count);
-    void *data = malloc_low(maxpacket * count);
-    if (!pipe || !tds || !data) {
+    పూర్ణాంకం ms = 1<<frameexp;
+    పూర్ణాంకం లెక్క = DIV_విడత_పైకి(ticks_గమ్యం_ms(2), ms);
+    నిర్మాణం ehci_pipe *pipe = memalign_దిగువ(EHCI_QH_ALIGN, పరిమాణం(*pipe));
+    నిర్మాణం ehci_qtd *tds = memalign_దిగువ(EHCI_QTD_ALIGN, పరిమాణం(*tds) * లెక్క);
+    శూన్య *దత్తాంశం = malloc_దిగువ(maxpacket * లెక్క);
+    ఒకవేళ (!pipe || !tds || !దత్తాంశం) {
         warn_noalloc();
-        goto fail;
+        వెళ్ళు fail;
     }
-    memset(pipe, 0, sizeof(*pipe));
-    memset(tds, 0, sizeof(*tds) * count);
-    memset(data, 0, maxpacket * count);
+    memset(pipe, 0, పరిమాణం(*pipe));
+    memset(tds, 0, పరిమాణం(*tds) * లెక్క);
+    memset(దత్తాంశం, 0, maxpacket * లెక్క);
     ehci_desc2pipe(pipe, usbdev, epdesc);
-    pipe->next_td = pipe->tds = tds;
-    pipe->data = data;
-    pipe->qh.qtd_next = (u32)tds;
+    pipe->తదుపరి_td = pipe->tds = tds;
+    pipe->దత్తాంశం = దత్తాంశం;
+    pipe->qh.qtd_తదుపరి = (u32)tds;
 
-    int i;
-    for (i=0; i<count; i++) {
-        struct ehci_qtd *td = &tds[i];
-        td->qtd_next = (i==count-1 ? (u32)tds : (u32)&td[1]);
-        td->alt_next = EHCI_PTR_TERM;
-        td->token = (ehci_explen(maxpacket) | QTD_STS_ACTIVE
-                     | QTD_PID_IN | ehci_maxerr(3));
-        td->buf[0] = (u32)data + maxpacket * i;
+    పూర్ణాంకం i;
+    కొరకు (i=0; i<లెక్క; i++) {
+        నిర్మాణం ehci_qtd *td = &tds[i];
+        td->qtd_తదుపరి = (i==లెక్క-1 ? (u32)tds : (u32)&td[1]);
+        td->alt_తదుపరి = EHCI_PTR_పదం;
+        td->token = (ehci_explen(maxpacket) | QTD_STS_చురుకైన
+                     | QTD_PID_లోపల | ehci_maxerr(3));
+        td->buf[0] = (u32)దత్తాంశం + maxpacket * i;
     }
 
     // Add to interrupt schedule.
-    struct ehci_framelist *fl = (void*)readl(&cntl->regs->periodiclistbase);
-    if (frameexp == 0) {
+    నిర్మాణం ehci_framelist *fl = (శూన్య*)readl(&cntl->regs->periodiclistbase);
+    ఒకవేళ (frameexp == 0) {
         // Add to existing interrupt entry.
-        struct ehci_qh *intr_qh = (void*)(fl->links[0] & ~EHCI_PTR_BITS);
-        pipe->qh.next = intr_qh->next;
+        నిర్మాణం ehci_qh *intr_qh = (శూన్య*)(fl->links[0] & ~EHCI_PTR_బిట్లు);
+        pipe->qh.తదుపరి = intr_qh->తదుపరి;
         barrier();
-        intr_qh->next = (u32)&pipe->qh | EHCI_PTR_QH;
-    } else {
-        int startpos = 1<<(frameexp-1);
-        pipe->qh.next = fl->links[startpos];
+        intr_qh->తదుపరి = (u32)&pipe->qh | EHCI_PTR_QH;
+    } లేకపోతే {
+        పూర్ణాంకం startpos = 1<<(frameexp-1);
+        pipe->qh.తదుపరి = fl->links[startpos];
         barrier();
-        for (i=startpos; i<ARRAY_SIZE(fl->links); i+=ms)
+        కొరకు (i=startpos; i<ARRAY_కొలత(fl->links); i+=ms)
             fl->links[i] = (u32)&pipe->qh | EHCI_PTR_QH;
     }
 
-    return &pipe->pipe;
+    తిరిగి &pipe->pipe;
 fail:
-    free(pipe);
-    free(tds);
-    free(data);
-    return NULL;
+    విడుదల(pipe);
+    విడుదల(tds);
+    విడుదల(దత్తాంశం);
+    తిరిగి ఖాళీ;
 }
 
-struct usb_pipe *
-ehci_realloc_pipe(struct usbdevice_s *usbdev, struct usb_pipe *upipe
-                  , struct usb_endpoint_descriptor *epdesc)
+నిర్మాణం usb_pipe *
+ehci_realloc_pipe(నిర్మాణం usbdevice_s *usbdev, నిర్మాణం usb_pipe *upipe
+                  , నిర్మాణం usb_endpoint_descriptor *epdesc)
 {
-    if (! CONFIG_USB_EHCI)
-        return NULL;
-    usb_add_freelist(upipe);
-    if (!epdesc)
-        return NULL;
-    u8 eptype = epdesc->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK;
-    if (eptype == USB_ENDPOINT_XFER_INT)
-        return ehci_alloc_intr_pipe(usbdev, epdesc);
-    struct usb_ehci_s *cntl = container_of(
-        usbdev->hub->cntl, struct usb_ehci_s, usb);
+    ఒకవేళ (! CONFIG_USB_EHCI)
+        తిరిగి ఖాళీ;
+    usb_కూడు_freelist(upipe);
+    ఒకవేళ (!epdesc)
+        తిరిగి ఖాళీ;
+    u8 eptype = epdesc->bm_లక్షణాలు & USB_ENDPOINT_XFERTYPE_ముసుగు;
+    ఒకవేళ (eptype == USB_ENDPOINT_XFER_INT)
+        తిరిగి ehci_alloc_intr_pipe(usbdev, epdesc);
+    నిర్మాణం usb_ehci_s *cntl = container_యొక్క(
+        usbdev->hub->cntl, నిర్మాణం usb_ehci_s, usb);
     dprintf(7, "ehci_alloc_async_pipe %p %d\n", &cntl->usb, eptype);
 
-    struct usb_pipe *usbpipe = usb_get_freelist(&cntl->usb, eptype);
-    if (usbpipe) {
+    నిర్మాణం usb_pipe *usbpipe = usb_get_freelist(&cntl->usb, eptype);
+    ఒకవేళ (usbpipe) {
         // Use previously allocated pipe.
-        struct ehci_pipe *pipe = container_of(usbpipe, struct ehci_pipe, pipe);
+        నిర్మాణం ehci_pipe *pipe = container_యొక్క(usbpipe, నిర్మాణం ehci_pipe, pipe);
         ehci_desc2pipe(pipe, usbdev, epdesc);
         pipe->qh.token = 0;
-        return usbpipe;
+        తిరిగి usbpipe;
     }
 
     // Allocate a new queue head.
-    struct ehci_pipe *pipe;
-    if (eptype == USB_ENDPOINT_XFER_CONTROL)
-        pipe = memalign_tmphigh(EHCI_QH_ALIGN, sizeof(*pipe));
-    else
-        pipe = memalign_low(EHCI_QH_ALIGN, sizeof(*pipe));
-    if (!pipe) {
+    నిర్మాణం ehci_pipe *pipe;
+    ఒకవేళ (eptype == USB_ENDPOINT_XFER_CONTROL)
+        pipe = memalign_tmphigh(EHCI_QH_ALIGN, పరిమాణం(*pipe));
+    లేకపోతే
+        pipe = memalign_దిగువ(EHCI_QH_ALIGN, పరిమాణం(*pipe));
+    ఒకవేళ (!pipe) {
         warn_noalloc();
-        return NULL;
+        తిరిగి ఖాళీ;
     }
-    memset(pipe, 0, sizeof(*pipe));
+    memset(pipe, 0, పరిమాణం(*pipe));
     ehci_desc2pipe(pipe, usbdev, epdesc);
-    pipe->qh.qtd_next = pipe->qh.alt_next = EHCI_PTR_TERM;
+    pipe->qh.qtd_తదుపరి = pipe->qh.alt_తదుపరి = EHCI_PTR_పదం;
 
     // Add queue head to controller list.
-    struct ehci_qh *async_qh = cntl->async_qh;
-    pipe->qh.next = async_qh->next;
+    నిర్మాణం ehci_qh *async_qh = cntl->async_qh;
+    pipe->qh.తదుపరి = async_qh->తదుపరి;
     barrier();
-    async_qh->next = (u32)&pipe->qh | EHCI_PTR_QH;
-    return &pipe->pipe;
+    async_qh->తదుపరి = (u32)&pipe->qh | EHCI_PTR_QH;
+    తిరిగి &pipe->pipe;
 }
 
-static void
-ehci_reset_pipe(struct ehci_pipe *pipe)
+స్థిర శూన్య
+ehci_reset_pipe(నిర్మాణం ehci_pipe *pipe)
 {
-    SET_LOWFLAT(pipe->qh.qtd_next, EHCI_PTR_TERM);
-    SET_LOWFLAT(pipe->qh.alt_next, EHCI_PTR_TERM);
+    సమితి_LOWFLAT(pipe->qh.qtd_తదుపరి, EHCI_PTR_పదం);
+    సమితి_LOWFLAT(pipe->qh.alt_తదుపరి, EHCI_PTR_పదం);
     barrier();
-    SET_LOWFLAT(pipe->qh.token, GET_LOWFLAT(pipe->qh.token) & QTD_TOGGLE);
+    సమితి_LOWFLAT(pipe->qh.token, GET_LOWFLAT(pipe->qh.token) & QTD_TOGGLE);
 }
 
-static int
-ehci_wait_td(struct ehci_pipe *pipe, struct ehci_qtd *td, u32 end)
+స్థిర పూర్ణాంకం
+ehci_wait_td(నిర్మాణం ehci_pipe *pipe, నిర్మాణం ehci_qtd *td, u32 చివర)
 {
-    u32 status;
-    for (;;) {
-        status = td->token;
-        if (!(status & QTD_STS_ACTIVE))
-            break;
-        if (timer_check(end)) {
+    u32 స్థితి_2;
+    కొరకు (;;) {
+        స్థితి_2 = td->token;
+        ఒకవేళ (!(స్థితి_2 & QTD_STS_చురుకైన))
+            ఆపు;
+        ఒకవేళ (timer_check(చివర)) {
             u32 cur = GET_LOWFLAT(pipe->qh.current);
             u32 tok = GET_LOWFLAT(pipe->qh.token);
-            u32 next = GET_LOWFLAT(pipe->qh.qtd_next);
+            u32 తదుపరి = GET_LOWFLAT(pipe->qh.qtd_తదుపరి);
             warn_timeout();
             dprintf(1, "ehci pipe=%p cur=%08x tok=%08x next=%x td=%p status=%x\n"
-                    , pipe, cur, tok, next, td, status);
+                    , pipe, cur, tok, తదుపరి, td, స్థితి_2);
             ehci_reset_pipe(pipe);
-            struct usb_ehci_s *cntl = container_of(
-                GET_LOWFLAT(pipe->pipe.cntl), struct usb_ehci_s, usb);
+            నిర్మాణం usb_ehci_s *cntl = container_యొక్క(
+                GET_LOWFLAT(pipe->pipe.cntl), నిర్మాణం usb_ehci_s, usb);
             ehci_waittick(cntl);
-            return -1;
+            తిరిగి -1;
         }
         yield();
     }
-    if (status & QTD_STS_HALT) {
-        dprintf(1, "ehci_wait_td error - status=%x\n", status);
+    ఒకవేళ (స్థితి_2 & QTD_STS_HALT) {
+        dprintf(1, "ehci_wait_td error - status=%x\n", స్థితి_2);
         ehci_reset_pipe(pipe);
-        return -2;
+        తిరిగి -2;
     }
-    return 0;
+    తిరిగి 0;
 }
 
-static void
-ehci_fill_tdbuf(struct ehci_qtd *td, u32 dest, int transfer)
+స్థిర శూన్య
+ehci_fill_tdbuf(నిర్మాణం ehci_qtd *td, u32 dest, పూర్ణాంకం transfer)
 {
-    u32 *pos = td->buf, end = dest + transfer;
-    for (; dest < end; dest = ALIGN_DOWN(dest + PAGE_SIZE, PAGE_SIZE))
+    u32 *pos = td->buf, చివర = dest + transfer;
+    కొరకు (; dest < చివర; dest = ALIGN_కిందికి(dest + పుట_కొలత, పుట_కొలత))
         *pos++ = dest;
 }
 
-#define STACKQTDS 6
+#నిర్వచించు STACKQTDS 6
 
-int
-ehci_send_pipe(struct usb_pipe *p, int dir, const void *cmd
-               , void *data, int datasize)
+పూర్ణాంకం
+ehci_send_pipe(నిర్మాణం usb_pipe *p, పూర్ణాంకం dir, స్థిరరాశి శూన్య *cmd
+               , శూన్య *దత్తాంశం, పూర్ణాంకం datasize)
 {
-    if (! CONFIG_USB_EHCI)
-        return -1;
-    struct ehci_pipe *pipe = container_of(p, struct ehci_pipe, pipe);
+    ఒకవేళ (! CONFIG_USB_EHCI)
+        తిరిగి -1;
+    నిర్మాణం ehci_pipe *pipe = container_యొక్క(p, నిర్మాణం ehci_pipe, pipe);
     dprintf(7, "ehci_send_pipe qh=%p dir=%d data=%p size=%d\n"
-            , &pipe->qh, dir, data, datasize);
+            , &pipe->qh, dir, దత్తాంశం, datasize);
 
     // Allocate tds on stack (with required alignment)
-    u8 tdsbuf[sizeof(struct ehci_qtd) * STACKQTDS + EHCI_QTD_ALIGN - 1];
-    struct ehci_qtd *tds = (void*)ALIGN((u32)tdsbuf, EHCI_QTD_ALIGN), *td = tds;
-    memset(tds, 0, sizeof(*tds) * STACKQTDS);
+    u8 tdsbuf[పరిమాణం(నిర్మాణం ehci_qtd) * STACKQTDS + EHCI_QTD_ALIGN - 1];
+    నిర్మాణం ehci_qtd *tds = (శూన్య*)ALIGN((u32)tdsbuf, EHCI_QTD_ALIGN), *td = tds;
+    memset(tds, 0, పరిమాణం(*tds) * STACKQTDS);
 
     // Setup transfer descriptors
     u16 maxpacket = GET_LOWFLAT(pipe->pipe.maxpacket);
     u32 toggle = 0;
-    if (cmd) {
+    ఒకవేళ (cmd) {
         // Send setup pid on control transfers
-        td->qtd_next = (u32)MAKE_FLATPTR(GET_SEG(SS), td+1);
-        td->alt_next = EHCI_PTR_TERM;
-        td->token = (ehci_explen(USB_CONTROL_SETUP_SIZE) | QTD_STS_ACTIVE
-                     | QTD_PID_SETUP | ehci_maxerr(3));
-        ehci_fill_tdbuf(td, (u32)cmd, USB_CONTROL_SETUP_SIZE);
+        td->qtd_తదుపరి = (u32)MAKE_FLATPTR(GET_SEG(SS), td+1);
+        td->alt_తదుపరి = EHCI_PTR_పదం;
+        td->token = (ehci_explen(USB_CONTROL_అమరిక_కొలత) | QTD_STS_చురుకైన
+                     | QTD_PID_అమరిక | ehci_maxerr(3));
+        ehci_fill_tdbuf(td, (u32)cmd, USB_CONTROL_అమరిక_కొలత);
         td++;
         toggle = QTD_TOGGLE;
     }
-    u32 dest = (u32)data, dataend = dest + datasize;
-    while (dest < dataend) {
+    u32 dest = (u32)దత్తాంశం, dataend = dest + datasize;
+    అయితే (dest < dataend) {
         // Send data pids
-        if (td >= &tds[STACKQTDS]) {
+        ఒకవేళ (td >= &tds[STACKQTDS]) {
             warn_noalloc();
-            return -1;
+            తిరిగి -1;
         }
-        int maxtransfer = 5*PAGE_SIZE - (dest & (PAGE_SIZE-1));
-        int transfer = dataend - dest;
-        if (transfer > maxtransfer)
-            transfer = ALIGN_DOWN(maxtransfer, maxpacket);
-        td->qtd_next = (u32)MAKE_FLATPTR(GET_SEG(SS), td+1);
-        td->alt_next = EHCI_PTR_TERM;
-        td->token = (ehci_explen(transfer) | toggle | QTD_STS_ACTIVE
-                     | (dir ? QTD_PID_IN : QTD_PID_OUT) | ehci_maxerr(3));
+        పూర్ణాంకం maxtransfer = 5*పుట_కొలత - (dest & (పుట_కొలత-1));
+        పూర్ణాంకం transfer = dataend - dest;
+        ఒకవేళ (transfer > maxtransfer)
+            transfer = ALIGN_కిందికి(maxtransfer, maxpacket);
+        td->qtd_తదుపరి = (u32)MAKE_FLATPTR(GET_SEG(SS), td+1);
+        td->alt_తదుపరి = EHCI_PTR_పదం;
+        td->token = (ehci_explen(transfer) | toggle | QTD_STS_చురుకైన
+                     | (dir ? QTD_PID_లోపల : QTD_PID_బహిర్గతం) | ehci_maxerr(3));
         ehci_fill_tdbuf(td, dest, transfer);
         td++;
         dest += transfer;
     }
-    if (cmd) {
+    ఒకవేళ (cmd) {
         // Send status pid on control transfers
-        if (td >= &tds[STACKQTDS]) {
+        ఒకవేళ (td >= &tds[STACKQTDS]) {
             warn_noalloc();
-            return -1;
+            తిరిగి -1;
         }
-        td->qtd_next = EHCI_PTR_TERM;
-        td->alt_next = EHCI_PTR_TERM;
-        td->token = (QTD_TOGGLE | QTD_STS_ACTIVE
-                     | (dir ? QTD_PID_OUT : QTD_PID_IN) | ehci_maxerr(3));
+        td->qtd_తదుపరి = EHCI_PTR_పదం;
+        td->alt_తదుపరి = EHCI_PTR_పదం;
+        td->token = (QTD_TOGGLE | QTD_STS_చురుకైన
+                     | (dir ? QTD_PID_బహిర్గతం : QTD_PID_లోపల) | ehci_maxerr(3));
         td++;
     }
 
     // Transfer data
-    (td-1)->qtd_next = EHCI_PTR_TERM;
+    (td-1)->qtd_తదుపరి = EHCI_PTR_పదం;
     barrier();
-    SET_LOWFLAT(pipe->qh.qtd_next, (u32)MAKE_FLATPTR(GET_SEG(SS), tds));
-    u32 end = timer_calc(usb_xfer_time(p, datasize));
-    int i;
-    for (i=0, td=tds; i<STACKQTDS; i++, td++) {
-        int ret = ehci_wait_td(pipe, td, end);
-        if (ret)
-            return -1;
+    సమితి_LOWFLAT(pipe->qh.qtd_తదుపరి, (u32)MAKE_FLATPTR(GET_SEG(SS), tds));
+    u32 చివర = timer_calc(usb_xfer_సమయం(p, datasize));
+    పూర్ణాంకం i;
+    కొరకు (i=0, td=tds; i<STACKQTDS; i++, td++) {
+        పూర్ణాంకం ret = ehci_wait_td(pipe, td, చివర);
+        ఒకవేళ (ret)
+            తిరిగి -1;
     }
 
-    return 0;
+    తిరిగి 0;
 }
 
-int
-ehci_poll_intr(struct usb_pipe *p, void *data)
+పూర్ణాంకం
+ehci_poll_intr(నిర్మాణం usb_pipe *p, శూన్య *దత్తాంశం)
 {
     ASSERT16();
-    if (! CONFIG_USB_EHCI)
-        return -1;
-    struct ehci_pipe *pipe = container_of(p, struct ehci_pipe, pipe);
-    struct ehci_qtd *td = GET_LOWFLAT(pipe->next_td);
+    ఒకవేళ (! CONFIG_USB_EHCI)
+        తిరిగి -1;
+    నిర్మాణం ehci_pipe *pipe = container_యొక్క(p, నిర్మాణం ehci_pipe, pipe);
+    నిర్మాణం ehci_qtd *td = GET_LOWFLAT(pipe->తదుపరి_td);
     u32 token = GET_LOWFLAT(td->token);
-    if (token & QTD_STS_ACTIVE)
+    ఒకవేళ (token & QTD_STS_చురుకైన)
         // No intrs found.
-        return -1;
+        తిరిగి -1;
     // XXX - check for errors.
 
     // Copy data.
-    int maxpacket = GET_LOWFLAT(pipe->pipe.maxpacket);
-    int pos = td - GET_LOWFLAT(pipe->tds);
-    void *tddata = GET_LOWFLAT(pipe->data) + maxpacket * pos;
-    memcpy_far(GET_SEG(SS), data, SEG_LOW, LOWFLAT2LOW(tddata), maxpacket);
+    పూర్ణాంకం maxpacket = GET_LOWFLAT(pipe->pipe.maxpacket);
+    పూర్ణాంకం pos = td - GET_LOWFLAT(pipe->tds);
+    శూన్య *tddata = GET_LOWFLAT(pipe->దత్తాంశం) + maxpacket * pos;
+    memcpy_far(GET_SEG(SS), దత్తాంశం, SEG_దిగువ, LOWFLAT2_దిగువ(tddata), maxpacket);
 
     // Reenable this td.
-    struct ehci_qtd *next = (void*)(GET_LOWFLAT(td->qtd_next) & ~EHCI_PTR_BITS);
-    SET_LOWFLAT(pipe->next_td, next);
-    SET_LOWFLAT(td->buf[0], (u32)tddata);
+    నిర్మాణం ehci_qtd *తదుపరి = (శూన్య*)(GET_LOWFLAT(td->qtd_తదుపరి) & ~EHCI_PTR_బిట్లు);
+    సమితి_LOWFLAT(pipe->తదుపరి_td, తదుపరి);
+    సమితి_LOWFLAT(td->buf[0], (u32)tddata);
     barrier();
-    SET_LOWFLAT(td->token, (ehci_explen(maxpacket) | QTD_STS_ACTIVE
-                            | QTD_PID_IN | ehci_maxerr(3)));
+    సమితి_LOWFLAT(td->token, (ehci_explen(maxpacket) | QTD_STS_చురుకైన
+                            | QTD_PID_లోపల | ehci_maxerr(3)));
 
-    return 0;
+    తిరిగి 0;
 }

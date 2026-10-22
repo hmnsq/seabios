@@ -7,298 +7,298 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "block.h" // struct drive_s
-#include "blockcmd.h" // scsi_drive_setup
-#include "config.h" // CONFIG_*
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "pcidevice.h" // foreachpci
-#include "pci_ids.h" // PCI_DEVICE_ID_VIRTIO_BLK
-#include "pci_regs.h" // PCI_VENDOR_ID
-#include "stacks.h" // run_thread
-#include "std/disk.h" // DISK_RET_SUCCESS
-#include "string.h" // memset
-#include "util.h" // usleep, bootprio_find_pci_device, is_bootprio_strict
-#include "virtio-pci.h"
-#include "virtio-ring.h"
-#include "virtio-scsi.h"
-#include "virtio-mmio.h"
+#అన్తర్భావ "block.h" // struct drive_s
+#అన్తర్భావ "blockcmd.h" // scsi_drive_setup
+#అన్తర్భావ "config.h" // CONFIG_*
+#అన్తర్భావ "malloc.h" // free
+#అన్తర్భావ "output.h" // dprintf
+#అన్తర్భావ "pcidevice.h" // foreachpci
+#అన్తర్భావ "pci_ids.h" // PCI_DEVICE_ID_VIRTIO_BLK
+#అన్తర్భావ "pci_regs.h" // PCI_VENDOR_ID
+#అన్తర్భావ "stacks.h" // run_thread
+#అన్తర్భావ "std/disk.h" // DISK_RET_SUCCESS
+#అన్తర్భావ "string.h" // memset
+#అన్తర్భావ "util.h" // usleep, bootprio_find_pci_device, is_bootprio_strict
+#అన్తర్భావ "virtio-pci.h"
+#అన్తర్భావ "virtio-ring.h"
+#అన్తర్భావ "virtio-scsi.h"
+#అన్తర్భావ "virtio-mmio.h"
 
-struct virtio_lun_s {
-    struct drive_s drive;
-    struct pci_device *pci;
-    void *mmio;
-    char name[16];
-    struct vring_virtqueue *vq;
-    struct vp_device *vp;
-    u16 target;
+నిర్మాణం virtio_lun_s {
+    నిర్మాణం drive_s drive;
+    నిర్మాణం pci_device *pci;
+    శూన్య *mmio;
+    అక్షరం name[16];
+    నిర్మాణం vring_virtqueue *vq;
+    నిర్మాణం vp_device *vp;
+    u16 లక్ష్యం;
     u16 lun;
 };
 
-int
-virtio_scsi_process_op(struct disk_op_s *op)
+పూర్ణాంకం
+virtio_scsi_process_op(నిర్మాణం disk_op_s *op)
 {
-    if (! CONFIG_VIRTIO_SCSI)
-        return 0;
-    struct virtio_lun_s *vlun =
-        container_of(op->drive_fl, struct virtio_lun_s, drive);
-    struct vp_device *vp = vlun->vp;
-    struct vring_virtqueue *vq = vlun->vq;
-    struct virtio_scsi_req_cmd req;
-    struct virtio_scsi_resp_cmd resp;
-    struct vring_list sg[3];
+    ఒకవేళ (! CONFIG_VIRTIO_SCSI)
+        తిరిగి 0;
+    నిర్మాణం virtio_lun_s *vlun =
+        container_యొక్క(op->drive_fl, నిర్మాణం virtio_lun_s, drive);
+    నిర్మాణం vp_device *vp = vlun->vp;
+    నిర్మాణం vring_virtqueue *vq = vlun->vq;
+    నిర్మాణం virtio_scsi_req_cmd req;
+    నిర్మాణం virtio_scsi_resp_cmd resp;
+    నిర్మాణం vring_list sg[3];
 
-    memset(&req, 0, sizeof(req));
-    int blocksize = scsi_fill_cmd(op, req.cdb, 16);
-    if (blocksize < 0)
-        return default_process_op(op);
+    memset(&req, 0, పరిమాణం(req));
+    పూర్ణాంకం blocksize = scsi_fill_cmd(op, req.cdb, 16);
+    ఒకవేళ (blocksize < 0)
+        తిరిగి default_process_op(op);
     req.lun[0] = 1;
-    req.lun[1] = vlun->target;
+    req.lun[1] = vlun->లక్ష్యం;
     req.lun[2] = (vlun->lun >> 8) | 0x40;
     req.lun[3] = (vlun->lun & 0xff);
 
-    u32 len = op->count * blocksize;
-    int datain = scsi_is_read(op);
-    int in_num = (datain ? 2 : 1);
-    int out_num = (len ? 3 : 2) - in_num;
+    u32 len = op->లెక్క * blocksize;
+    పూర్ణాంకం datain = scsi_is_read(op);
+    పూర్ణాంకం లోపల_అంకె = (datain ? 2 : 1);
+    పూర్ణాంకం బహిర్గతం_అంకె = (len ? 3 : 2) - లోపల_అంకె;
 
-    sg[0].addr   = (void*)(&req);
-    sg[0].length = sizeof(req);
+    sg[0].addr   = (శూన్య*)(&req);
+    sg[0].నిడివి = పరిమాణం(req);
 
-    sg[out_num].addr   = (void*)(&resp);
-    sg[out_num].length = sizeof(resp);
+    sg[బహిర్గతం_అంకె].addr   = (శూన్య*)(&resp);
+    sg[బహిర్గతం_అంకె].నిడివి = పరిమాణం(resp);
 
-    if (len) {
-        int data_idx = (datain ? 2 : 1);
-        sg[data_idx].addr   = op->buf_fl;
-        sg[data_idx].length = len;
+    ఒకవేళ (len) {
+        పూర్ణాంకం దత్తాంశం_idx = (datain ? 2 : 1);
+        sg[దత్తాంశం_idx].addr   = op->buf_fl;
+        sg[దత్తాంశం_idx].నిడివి = len;
     }
 
     /* Add to virtqueue and kick host */
-    vring_add_buf(vq, sg, out_num, in_num, 0, 0);
+    vring_కూడు_buf(vq, sg, బహిర్గతం_అంకె, లోపల_అంకె, 0, 0);
     vring_kick(vp, vq, 1);
 
     /* Wait for reply */
-    while (!vring_more_used(vq))
+    అయితే (!vring_మరిన్ని_వాడిన(vq))
         usleep(5);
 
     /* Reclaim virtqueue element */
-    vring_get_buf(vq, NULL);
+    vring_get_buf(vq, ఖాళీ);
 
     /* Clear interrupt status register.  Avoid leaving interrupts stuck if
      * VRING_AVAIL_F_NO_INTERRUPT was ignored and interrupts were raised.
      */
     vp_get_isr(vp);
 
-    if (resp.response == VIRTIO_SCSI_S_OK && resp.status == 0) {
-        return DISK_RET_SUCCESS;
+    ఒకవేళ (resp.response == VIRTIO_SCSI_S_OK && resp.స్థితి_2 == 0) {
+        తిరిగి DISK_RET_SUCCESS;
     }
-    return DISK_RET_EBADTRACK;
+    తిరిగి DISK_RET_EBADTRACK;
 }
 
-static void
-virtio_scsi_init_lun(struct virtio_lun_s *vlun,
-                     struct pci_device *pci, void *mmio,
-                     struct vp_device *vp, struct vring_virtqueue *vq,
-                     u16 target, u16 lun)
+స్థిర శూన్య
+virtio_scsi_init_lun(నిర్మాణం virtio_lun_s *vlun,
+                     నిర్మాణం pci_device *pci, శూన్య *mmio,
+                     నిర్మాణం vp_device *vp, నిర్మాణం vring_virtqueue *vq,
+                     u16 లక్ష్యం, u16 lun)
 {
-    memset(vlun, 0, sizeof(*vlun));
+    memset(vlun, 0, పరిమాణం(*vlun));
     vlun->drive.type = DTYPE_VIRTIO_SCSI;
     vlun->drive.cntl_id = pci->bdf;
     vlun->pci = pci;
     vlun->mmio = mmio;
     vlun->vp = vp;
     vlun->vq = vq;
-    vlun->target = target;
+    vlun->లక్ష్యం = లక్ష్యం;
     vlun->lun = lun;
-    if (vlun->pci)
-        snprintf(vlun->name, sizeof(vlun->name), "pci:%pP", vlun->pci);
-    if (vlun->mmio)
-        snprintf(vlun->name, sizeof(vlun->name), "mmio:%08x", (u32)vlun->mmio);
+    ఒకవేళ (vlun->pci)
+        snprintf(vlun->name, పరిమాణం(vlun->name), "pci:%pP", vlun->pci);
+    ఒకవేళ (vlun->mmio)
+        snprintf(vlun->name, పరిమాణం(vlun->name), "mmio:%08x", (u32)vlun->mmio);
 }
 
-static int
-virtio_scsi_add_lun(u32 lun, struct drive_s *tmpl_drv)
+స్థిర పూర్ణాంకం
+virtio_scsi_కూడు_lun(u32 lun, నిర్మాణం drive_s *tmpl_drv)
 {
     u8 skip_nonbootable = is_bootprio_strict();
-    struct virtio_lun_s *tmpl_vlun =
-        container_of(tmpl_drv, struct virtio_lun_s, drive);
-    int prio = -1;
+    నిర్మాణం virtio_lun_s *tmpl_vlun =
+        container_యొక్క(tmpl_drv, నిర్మాణం virtio_lun_s, drive);
+    పూర్ణాంకం prio = -1;
 
-    if (tmpl_vlun->pci)
-        prio = bootprio_find_scsi_device(tmpl_vlun->pci, tmpl_vlun->target, lun);
-    if (tmpl_vlun->mmio)
-        prio = bootprio_find_scsi_mmio_device(tmpl_vlun->mmio, tmpl_vlun->target, lun);
+    ఒకవేళ (tmpl_vlun->pci)
+        prio = bootprio_కనుగొను_scsi_device(tmpl_vlun->pci, tmpl_vlun->లక్ష్యం, lun);
+    ఒకవేళ (tmpl_vlun->mmio)
+        prio = bootprio_కనుగొను_scsi_mmio_device(tmpl_vlun->mmio, tmpl_vlun->లక్ష్యం, lun);
 
-    if (skip_nonbootable && prio < 0) {
+    ఒకవేళ (skip_nonbootable && prio < 0) {
         dprintf(1, "skipping init of a non-bootable virtio-scsi dev at %s,"
                 " target %d, lun %d\n",
-                tmpl_vlun->name, tmpl_vlun->target, lun);
-        return -1;
+                tmpl_vlun->name, tmpl_vlun->లక్ష్యం, lun);
+        తిరిగి -1;
     }
 
-    struct virtio_lun_s *vlun = malloc_low(sizeof(*vlun));
-    if (!vlun) {
+    నిర్మాణం virtio_lun_s *vlun = malloc_దిగువ(పరిమాణం(*vlun));
+    ఒకవేళ (!vlun) {
         warn_noalloc();
-        return -1;
+        తిరిగి -1;
     }
     virtio_scsi_init_lun(vlun, tmpl_vlun->pci, tmpl_vlun->mmio,tmpl_vlun->vp,
-                         tmpl_vlun->vq, tmpl_vlun->target, lun);
+                         tmpl_vlun->vq, tmpl_vlun->లక్ష్యం, lun);
 
-    if (vlun->pci)
-        boot_lchs_find_scsi_device(vlun->pci, vlun->target, vlun->lun,
+    ఒకవేళ (vlun->pci)
+        boot_lchs_కనుగొను_scsi_device(vlun->pci, vlun->లక్ష్యం, vlun->lun,
                                    &(vlun->drive.lchs));
-    int ret = scsi_drive_setup(&vlun->drive, "virtio-scsi", prio);
-    if (ret)
-        goto fail;
-    return 0;
+    పూర్ణాంకం ret = scsi_drive_అమరిక(&vlun->drive, "virtio-scsi", prio);
+    ఒకవేళ (ret)
+        వెళ్ళు fail;
+    తిరిగి 0;
 
 fail:
-    free(vlun);
-    return -1;
+    విడుదల(vlun);
+    తిరిగి -1;
 }
 
-static int
-virtio_scsi_scan_target(struct pci_device *pci, void *mmio, struct vp_device *vp,
-                        struct vring_virtqueue *vq, u16 target)
+స్థిర పూర్ణాంకం
+virtio_scsi_పరిశీలన_లక్ష్యం(నిర్మాణం pci_device *pci, శూన్య *mmio, నిర్మాణం vp_device *vp,
+                        నిర్మాణం vring_virtqueue *vq, u16 లక్ష్యం)
 {
 
-    struct virtio_lun_s vlun0;
+    నిర్మాణం virtio_lun_s vlun0;
 
-    virtio_scsi_init_lun(&vlun0, pci, mmio, vp, vq, target, 0);
+    virtio_scsi_init_lun(&vlun0, pci, mmio, vp, vq, లక్ష్యం, 0);
 
-    int ret = scsi_rep_luns_scan(&vlun0.drive, virtio_scsi_add_lun);
-    return ret < 0 ? 0 : ret;
+    పూర్ణాంకం ret = scsi_rep_luns_పరిశీలన(&vlun0.drive, virtio_scsi_కూడు_lun);
+    తిరిగి ret < 0 ? 0 : ret;
 }
 
-static void
-init_virtio_scsi(void *data)
+స్థిర శూన్య
+init_virtio_scsi(శూన్య *దత్తాంశం)
 {
-    struct pci_device *pci = data;
+    నిర్మాణం pci_device *pci = దత్తాంశం;
     dprintf(1, "found virtio-scsi at %pP\n", pci);
-    struct vring_virtqueue *vq = NULL;
-    struct vp_device *vp = malloc_high(sizeof(*vp));
-    if (!vp) {
+    నిర్మాణం vring_virtqueue *vq = ఖాళీ;
+    నిర్మాణం vp_device *vp = malloc_ఎగువ(పరిమాణం(*vp));
+    ఒకవేళ (!vp) {
         warn_noalloc();
-        return;
+        తిరిగి;
     }
     vp_init_simple(vp, pci);
-    u8 status = VIRTIO_CONFIG_S_ACKNOWLEDGE | VIRTIO_CONFIG_S_DRIVER;
+    u8 స్థితి_2 = VIRTIO_CONFIG_S_ACKNOWLEDGE | VIRTIO_CONFIG_S_DRIVER;
 
-    if (vp->use_modern) {
+    ఒకవేళ (vp->use_modern) {
         u64 features = vp_get_features(vp);
-        u64 version1 = 1ull << VIRTIO_F_VERSION_1;
+        u64 version1 = 1ull << VIRTIO_F_సంస్కరణ_1;
         u64 iommu_platform = 1ull << VIRTIO_F_IOMMU_PLATFORM;
-        if (!(features & version1)) {
+        ఒకవేళ (!(features & version1)) {
             dprintf(1, "modern device without virtio_1 feature bit: %pP\n", pci);
-            goto fail;
+            వెళ్ళు fail;
         }
 
-        vp_set_features(vp, features & (version1 | iommu_platform));
-        status |= VIRTIO_CONFIG_S_FEATURES_OK;
-        vp_set_status(vp, status);
-        if (!(vp_get_status(vp) & VIRTIO_CONFIG_S_FEATURES_OK)) {
+        vp_సమితి_features(vp, features & (version1 | iommu_platform));
+        స్థితి_2 |= VIRTIO_CONFIG_S_FEATURES_OK;
+        vp_సమితి_స్థితి(vp, స్థితి_2);
+        ఒకవేళ (!(vp_get_స్థితి(vp) & VIRTIO_CONFIG_S_FEATURES_OK)) {
             dprintf(1, "device didn't accept features: %pP\n", pci);
-            goto fail;
+            వెళ్ళు fail;
         }
     }
 
-    if (vp_find_vq(vp, 2, &vq) < 0 ) {
+    ఒకవేళ (vp_కనుగొను_vq(vp, 2, &vq) < 0 ) {
         dprintf(1, "fail to find vq for virtio-scsi %pP\n", pci);
-        goto fail;
+        వెళ్ళు fail;
     }
 
-    status |= VIRTIO_CONFIG_S_DRIVER_OK;
-    vp_set_status(vp, status);
+    స్థితి_2 |= VIRTIO_CONFIG_S_DRIVER_OK;
+    vp_సమితి_స్థితి(vp, స్థితి_2);
 
-    int i, tot;
-    for (tot = 0, i = 0; i < 256; i++)
-        tot += virtio_scsi_scan_target(pci, NULL, vp, vq, i);
+    పూర్ణాంకం i, tot;
+    కొరకు (tot = 0, i = 0; i < 256; i++)
+        tot += virtio_scsi_పరిశీలన_లక్ష్యం(pci, ఖాళీ, vp, vq, i);
 
-    if (!tot)
-        goto fail;
+    ఒకవేళ (!tot)
+        వెళ్ళు fail;
 
-    return;
+    తిరిగి;
 
 fail:
     vp_reset(vp);
-    free(vp);
-    free(vq);
+    విడుదల(vp);
+    విడుదల(vq);
 }
 
-void
-init_virtio_scsi_mmio(void *mmio)
+శూన్య
+init_virtio_scsi_mmio(శూన్య *mmio)
 {
     dprintf(1, "found virtio-scsi-mmio at %p\n", mmio);
-    struct vring_virtqueue *vq = NULL;
-    struct vp_device *vp = malloc_high(sizeof(*vp));
-    if (!vp) {
+    నిర్మాణం vring_virtqueue *vq = ఖాళీ;
+    నిర్మాణం vp_device *vp = malloc_ఎగువ(పరిమాణం(*vp));
+    ఒకవేళ (!vp) {
         warn_noalloc();
-        return;
+        తిరిగి;
     }
     vp_init_mmio(vp, mmio);
-    u8 status = VIRTIO_CONFIG_S_ACKNOWLEDGE | VIRTIO_CONFIG_S_DRIVER;
+    u8 స్థితి_2 = VIRTIO_CONFIG_S_ACKNOWLEDGE | VIRTIO_CONFIG_S_DRIVER;
 
     u64 features = vp_get_features(vp);
-    u64 version1 = 1ull << VIRTIO_F_VERSION_1;
-    if (features & version1) {
+    u64 version1 = 1ull << VIRTIO_F_సంస్కరణ_1;
+    ఒకవేళ (features & version1) {
         u64 iommu_platform = 1ull << VIRTIO_F_IOMMU_PLATFORM;
 
-        vp_set_features(vp, features & (version1 | iommu_platform));
-        vp_set_status(vp, VIRTIO_CONFIG_S_FEATURES_OK);
-        if (!(vp_get_status(vp) & VIRTIO_CONFIG_S_FEATURES_OK)) {
+        vp_సమితి_features(vp, features & (version1 | iommu_platform));
+        vp_సమితి_స్థితి(vp, VIRTIO_CONFIG_S_FEATURES_OK);
+        ఒకవేళ (!(vp_get_స్థితి(vp) & VIRTIO_CONFIG_S_FEATURES_OK)) {
             dprintf(1, "device didn't accept features: %pP\n", mmio);
-            goto fail;
+            వెళ్ళు fail;
         }
     }
 
-    if (vp_find_vq(vp, 2, &vq) < 0 ) {
+    ఒకవేళ (vp_కనుగొను_vq(vp, 2, &vq) < 0 ) {
         dprintf(1, "fail to find vq for virtio-scsi-mmio %p\n", mmio);
-        goto fail;
+        వెళ్ళు fail;
     }
 
-    status |= VIRTIO_CONFIG_S_DRIVER_OK;
-    vp_set_status(vp, status);
+    స్థితి_2 |= VIRTIO_CONFIG_S_DRIVER_OK;
+    vp_సమితి_స్థితి(vp, స్థితి_2);
 
-    int i, tot;
-    for (tot = 0, i = 0; i < 256; i++)
-        tot += virtio_scsi_scan_target(NULL, mmio, vp, vq, i);
+    పూర్ణాంకం i, tot;
+    కొరకు (tot = 0, i = 0; i < 256; i++)
+        tot += virtio_scsi_పరిశీలన_లక్ష్యం(ఖాళీ, mmio, vp, vq, i);
 
-    if (!tot)
-        goto fail;
+    ఒకవేళ (!tot)
+        వెళ్ళు fail;
 
-    return;
+    తిరిగి;
 
 fail:
     vp_reset(vp);
-    free(vp);
-    free(vq);
+    విడుదల(vp);
+    విడుదల(vq);
 }
 
-void
-virtio_scsi_setup(void)
+శూన్య
+virtio_scsi_అమరిక(శూన్య)
 {
     u8 skip_nonbootable = is_bootprio_strict();
 
     ASSERT32FLAT();
-    if (! CONFIG_VIRTIO_SCSI)
-        return;
+    ఒకవేళ (! CONFIG_VIRTIO_SCSI)
+        తిరిగి;
 
     dprintf(3, "init virtio-scsi\n");
 
-    struct pci_device *pci;
+    నిర్మాణం pci_device *pci;
     foreachpci(pci) {
-        if (pci->vendor != PCI_VENDOR_ID_REDHAT_QUMRANET ||
+        ఒకవేళ (pci->vendor != PCI_VENDOR_ID_REDHAT_QUMRANET ||
             (pci->device != PCI_DEVICE_ID_VIRTIO_SCSI_09 &&
              pci->device != PCI_DEVICE_ID_VIRTIO_SCSI_10))
-            continue;
+            కొనసాగు;
 
-        if (skip_nonbootable && bootprio_find_pci_device(pci) < 0) {
+        ఒకవేళ (skip_nonbootable && bootprio_కనుగొను_pci_device(pci) < 0) {
             dprintf(1, "skipping init of a non-bootable virtio-scsi at %pP\n",
                     pci);
-            continue;
+            కొనసాగు;
         }
 
-        run_thread(init_virtio_scsi, pci);
+        నిరంతరం_thread(init_virtio_scsi, pci);
     }
 }

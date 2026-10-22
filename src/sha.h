@@ -1,11 +1,11 @@
-#ifndef __SHA_H
-#define __SHA_H
+#నిర్వచితం_కాకపోతే __SHA_H
+#నిర్వచించు __SHA_H
 
-#include "types.h" // u32
+#అన్తర్భావ "types.h" // u32
 
-void sha1(const u8 *data, u32 length, u8 *hash);
-void sha256(const u8 *data, u32 length, u8 *hash);
-void sha384(const u8 *data, u32 length, u8 *hash);
-void sha512(const u8 *data, u32 length, u8 *hash);
+శూన్య sha1(స్థిరరాశి u8 *దత్తాంశం, u32 నిడివి, u8 *hash);
+శూన్య sha256(స్థిరరాశి u8 *దత్తాంశం, u32 నిడివి, u8 *hash);
+శూన్య sha384(స్థిరరాశి u8 *దత్తాంశం, u32 నిడివి, u8 *hash);
+శూన్య sha512(స్థిరరాశి u8 *దత్తాంశం, u32 నిడివి, u8 *hash);
 
-#endif // sha.h
+#అయితే_ముగింపు // sha.h

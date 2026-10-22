@@ -7,129 +7,129 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "byteorder.h" // be32_to_cpu
-#include "config.h" // CONFIG_TPM_TIS_SHA1THRESHOLD
-#include "hw/tpm_drivers.h" // struct tpm_driver
-#include "std/tcg.h" // TCG_RESPONSE_TIMEOUT
-#include "output.h" // warn_timeout
-#include "stacks.h" // yield
-#include "string.h" // memcpy
-#include "util.h" // timer_calc_usec
-#include "x86.h" // readl
+#అన్తర్భావ "byteorder.h" // be32_to_cpu
+#అన్తర్భావ "config.h" // CONFIG_TPM_TIS_SHA1THRESHOLD
+#అన్తర్భావ "hw/tpm_drivers.h" // struct tpm_driver
+#అన్తర్భావ "std/tcg.h" // TCG_RESPONSE_TIMEOUT
+#అన్తర్భావ "output.h" // warn_timeout
+#అన్తర్భావ "stacks.h" // yield
+#అన్తర్భావ "string.h" // memcpy
+#అన్తర్భావ "util.h" // timer_calc_usec
+#అన్తర్భావ "x86.h" // readl
 
 /* low level driver implementation */
-struct tpm_driver {
+నిర్మాణం tpm_driver {
     u32 *timeouts;
     u32 *durations;
-    void (*set_timeouts)(u32 timeouts[4], u32 durations[3]);
-    u32 (*probe)(void);
-    TPMVersion (*get_tpm_version)(void);
-    u32 (*init)(void);
+    శూన్య (*సమితి_timeouts)(u32 timeouts[4], u32 durations[3]);
+    u32 (*probe)(శూన్య);
+    TPMVersion (*get_tpm_సంస్కరణ)(శూన్య);
+    u32 (*init)(శూన్య);
     u32 (*activate)(u8 locty);
-    u32 (*ready)(void);
-    u32 (*senddata)(const u8 *const data, u32 len);
-    u32 (*readresp)(u8 *buffer, u32 *len);
-    u32 (*waitdatavalid)(void);
-    u32 (*waitrespready)(enum tpmDurationType to_t);
+    u32 (*ready)(శూన్య);
+    u32 (*senddata)(స్థిరరాశి u8 *స్థిరరాశి దత్తాంశం, u32 len);
+    u32 (*readresp)(u8 *బఫరు, u32 *len);
+    u32 (*waitdatavalid)(శూన్య);
+    u32 (*waitrespready)(గణన tpmDurationType గమ్యం_t);
 };
 
-extern struct tpm_driver tpm_drivers[];
+బాహ్య నిర్మాణం tpm_driver tpm_drivers[];
 
-#define TIS_DRIVER_IDX       0
-#define CRB_DRIVER_IDX       1
-#define TPM_NUM_DRIVERS      2
+#నిర్వచించు TIS_DRIVER_IDX       0
+#నిర్వచించు CRB_DRIVER_IDX       1
+#నిర్వచించు TPM_అంకె_DRIVERS      2
 
-#define TPM_INVALID_DRIVER   0xf
+#నిర్వచించు TPM_INVALID_DRIVER   0xf
 
-static const u32 tis_default_timeouts[4] = {
+స్థిర స్థిరరాశి u32 tis_default_timeouts[4] = {
     TIS_DEFAULT_TIMEOUT_A,
     TIS_DEFAULT_TIMEOUT_B,
     TIS_DEFAULT_TIMEOUT_C,
     TIS_DEFAULT_TIMEOUT_D,
 };
 
-static const u32 tpm_default_durations[3] = {
+స్థిర స్థిరరాశి u32 tpm_default_durations[3] = {
     TPM_DEFAULT_DURATION_SHORT,
     TPM_DEFAULT_DURATION_MEDIUM,
     TPM_DEFAULT_DURATION_LONG,
 };
 
 /* determined values */
-static u32 tpm_default_dur[3];
-static u32 tpm_default_to[4];
+స్థిర u32 tpm_default_dur[3];
+స్థిర u32 tpm_default_గమ్యం[4];
 
-static u32 crb_cmd_size;
-static void *crb_cmd;
-static u32 crb_resp_size;
-static void *crb_resp;
+స్థిర u32 crb_cmd_కొలత;
+స్థిర శూన్య *crb_cmd;
+స్థిర u32 crb_resp_కొలత;
+స్థిర శూన్య *crb_resp;
 
-static u32 wait_reg8(u8* reg, u32 time, u8 mask, u8 expect)
+స్థిర u32 wait_reg8(u8* reg, u32 సమయం, u8 ముసుగు, u8 expect)
 {
-    if (!CONFIG_TCGBIOS)
-        return 0;
+    ఒకవేళ (!CONFIG_TCGBIOS)
+        తిరిగి 0;
 
     u32 rc = 1;
-    u32 end = timer_calc_usec(time);
+    u32 చివర = timer_calc_usec(సమయం);
 
-    for (;;) {
-        u8 value = readl(reg);
-        if ((value & mask) == expect) {
+    కొరకు (;;) {
+        u8 విలువ = readl(reg);
+        ఒకవేళ ((విలువ & ముసుగు) == expect) {
             rc = 0;
-            break;
+            ఆపు;
         }
-        if (timer_check(end)) {
+        ఒకవేళ (timer_check(చివర)) {
             warn_timeout();
-            break;
+            ఆపు;
         }
         yield();
     }
-    return rc;
+    తిరిగి rc;
 }
 
-static u32 tis_wait_access(u8 locty, u32 time, u8 mask, u8 expect)
+స్థిర u32 tis_wait_access(u8 locty, u32 సమయం, u8 ముసుగు, u8 expect)
 {
-    return wait_reg8(TIS_REG(locty, TIS_REG_ACCESS), time, mask, expect);
+    తిరిగి wait_reg8(TIS_REG(locty, TIS_REG_ACCESS), సమయం, ముసుగు, expect);
 }
 
-static u32 tis_wait_sts(u8 locty, u32 time, u8 mask, u8 expect)
+స్థిర u32 tis_wait_sts(u8 locty, u32 సమయం, u8 ముసుగు, u8 expect)
 {
-    return wait_reg8(TIS_REG(locty, TIS_REG_STS), time, mask, expect);
+    తిరిగి wait_reg8(TIS_REG(locty, TIS_REG_STS), సమయం, ముసుగు, expect);
 }
 
-static u32 crb_wait_reg(u8 locty, u16 reg, u32 time, u8 mask, u8 expect)
+స్థిర u32 crb_wait_reg(u8 locty, u16 reg, u32 సమయం, u8 ముసుగు, u8 expect)
 {
-    return wait_reg8(CRB_REG(locty, reg), time, mask, expect);
+    తిరిగి wait_reg8(CRB_REG(locty, reg), సమయం, ముసుగు, expect);
 }
 
 /* if device is not there, return '0', '1' otherwise */
-static u32 tis_probe(void)
+స్థిర u32 tis_probe(శూన్య)
 {
-    if (!CONFIG_TCGBIOS)
-        return 0;
+    ఒకవేళ (!CONFIG_TCGBIOS)
+        తిరిగి 0;
 
     /* Wait for the interface to report it's ready */
     u32 rc = tis_wait_access(0, TIS_DEFAULT_TIMEOUT_A,
                              TIS_ACCESS_TPM_REG_VALID_STS,
                              TIS_ACCESS_TPM_REG_VALID_STS);
-    if (rc)
-        return 0;
+    ఒకవేళ (rc)
+        తిరిగి 0;
 
     u32 didvid = readl(TIS_REG(0, TIS_REG_DID_VID));
 
-    if ((didvid != 0) && (didvid != 0xffffffff))
+    ఒకవేళ ((didvid != 0) && (didvid != 0xffffffff))
         rc = 1;
 
     /* TPM 2 has an interface register */
     u32 ifaceid = readl(TIS_REG(0, TIS_REG_IFACE_ID));
 
-    if ((ifaceid & 0xf) != 0xf) {
-        if ((ifaceid & 0xf) == 1) {
+    ఒకవేళ ((ifaceid & 0xf) != 0xf) {
+        ఒకవేళ ((ifaceid & 0xf) == 1) {
             /* CRB is active; no TIS */
-            return 0;
+            తిరిగి 0;
         }
-        if ((ifaceid & (1 << 13)) == 0) {
+        ఒకవేళ ((ifaceid & (1 << 13)) == 0) {
             /* TIS cannot be selected */
-            return 0;
+            తిరిగి 0;
         }
         /* write of 0 to bits 17-18 selects TIS */
         writel(TIS_REG(0, TIS_REG_IFACE_ID), 0);
@@ -137,10 +137,10 @@ static u32 tis_probe(void)
         writel(TIS_REG(0, TIS_REG_IFACE_ID), (1 << 19));
     }
 
-    return rc;
+    తిరిగి rc;
 }
 
-static TPMVersion tis_get_tpm_version(void)
+స్థిర TPMVersion tis_get_tpm_సంస్కరణ(శూన్య)
 {
     u32 reg = readl(TIS_REG(0, TIS_REG_IFACE_ID));
 
@@ -148,256 +148,256 @@ static TPMVersion tis_get_tpm_version(void)
      * FIFO interface as defined in TIS1.3 is active
      * Interface capabilities are defined in TIS_REG_INTF_CAPABILITY
      */
-    if ((reg & 0xf) == 0xf) {
+    ఒకవేళ ((reg & 0xf) == 0xf) {
         reg = readl(TIS_REG(0, TIS_REG_INTF_CAPABILITY));
         /* Interface 1.3 for TPM 2.0 */
-        if (((reg >> 28) & 0x7) == 3)
-            return TPM_VERSION_2;
+        ఒకవేళ (((reg >> 28) & 0x7) == 3)
+            తిరిగి TPM_సంస్కరణ_2;
     }
     /* FIFO interface as defined in PTP for TPM 2.0 is active */
-    else if ((reg & 0xf) == 0) {
-        return TPM_VERSION_2;
+    లేకపోతే ఒకవేళ ((reg & 0xf) == 0) {
+        తిరిగి TPM_సంస్కరణ_2;
     }
 
-    return TPM_VERSION_1_2;
+    తిరిగి TPM_సంస్కరణ_1_2;
 }
 
-static void init_timeout(int driver)
+స్థిర శూన్య init_timeout(పూర్ణాంకం driver)
 {
-    if (tpm_drivers[driver].durations == NULL) {
+    ఒకవేళ (tpm_drivers[driver].durations == ఖాళీ) {
         u32 *durations = tpm_default_dur;
-        memcpy(durations, tpm_default_durations,
-               sizeof(tpm_default_durations));
+        జ్ఞాపకం_నకలు(durations, tpm_default_durations,
+               పరిమాణం(tpm_default_durations));
         tpm_drivers[driver].durations = durations;
     }
 
-    if (tpm_drivers[driver].timeouts == NULL) {
-        u32 *timeouts = tpm_default_to;
-        memcpy(timeouts, tis_default_timeouts,
-               sizeof(tis_default_timeouts));
+    ఒకవేళ (tpm_drivers[driver].timeouts == ఖాళీ) {
+        u32 *timeouts = tpm_default_గమ్యం;
+        జ్ఞాపకం_నకలు(timeouts, tis_default_timeouts,
+               పరిమాణం(tis_default_timeouts));
         tpm_drivers[driver].timeouts = timeouts;
     }
 }
 
-static u32 tis_init(void)
+స్థిర u32 tis_init(శూన్య)
 {
-    if (!CONFIG_TCGBIOS)
-        return 1;
+    ఒకవేళ (!CONFIG_TCGBIOS)
+        తిరిగి 1;
 
     writeb(TIS_REG(0, TIS_REG_INT_ENABLE), 0);
 
     init_timeout(TIS_DRIVER_IDX);
 
-    return 1;
+    తిరిగి 1;
 }
 
 
-static void set_timeouts(u32 timeouts[4], u32 durations[3])
+స్థిర శూన్య సమితి_timeouts(u32 timeouts[4], u32 durations[3])
 {
-    if (!CONFIG_TCGBIOS)
-        return;
+    ఒకవేళ (!CONFIG_TCGBIOS)
+        తిరిగి;
 
     u32 *tos = tpm_drivers[TIS_DRIVER_IDX].timeouts;
     u32 *dus = tpm_drivers[TIS_DRIVER_IDX].durations;
 
-    if (tos && tos != tis_default_timeouts && timeouts)
-        memcpy(tos, timeouts, 4 * sizeof(u32));
-    if (dus && dus != tpm_default_durations && durations)
-        memcpy(dus, durations, 3 * sizeof(u32));
+    ఒకవేళ (tos && tos != tis_default_timeouts && timeouts)
+        జ్ఞాపకం_నకలు(tos, timeouts, 4 * పరిమాణం(u32));
+    ఒకవేళ (dus && dus != tpm_default_durations && durations)
+        జ్ఞాపకం_నకలు(dus, durations, 3 * పరిమాణం(u32));
 }
 
-static u32 tis_activate(u8 locty)
+స్థిర u32 tis_activate(u8 locty)
 {
-    if (!CONFIG_TCGBIOS)
-        return 0;
+    ఒకవేళ (!CONFIG_TCGBIOS)
+        తిరిగి 0;
 
     u32 rc = 0;
     u8 acc;
-    int l;
+    పూర్ణాంకం l;
     u32 timeout_a = tpm_drivers[TIS_DRIVER_IDX].timeouts[TIS_TIMEOUT_TYPE_A];
 
-    if (!(readb(TIS_REG(locty, TIS_REG_ACCESS)) &
-          TIS_ACCESS_ACTIVE_LOCALITY)) {
+    ఒకవేళ (!(readb(TIS_REG(locty, TIS_REG_ACCESS)) &
+          TIS_ACCESS_చురుకైన_LOCALITY)) {
         /* release locality in use top-downwards */
-        for (l = 4; l >= 0; l--)
+        కొరకు (l = 4; l >= 0; l--)
             writeb(TIS_REG(l, TIS_REG_ACCESS),
-                   TIS_ACCESS_ACTIVE_LOCALITY);
+                   TIS_ACCESS_చురుకైన_LOCALITY);
     }
 
     /* request access to locality */
     writeb(TIS_REG(locty, TIS_REG_ACCESS), TIS_ACCESS_REQUEST_USE);
 
     acc = readb(TIS_REG(locty, TIS_REG_ACCESS));
-    if ((acc & TIS_ACCESS_ACTIVE_LOCALITY)) {
+    ఒకవేళ ((acc & TIS_ACCESS_చురుకైన_LOCALITY)) {
         writeb(TIS_REG(locty, TIS_REG_STS), TIS_STS_COMMAND_READY);
         rc = tis_wait_sts(locty, timeout_a,
                           TIS_STS_COMMAND_READY, TIS_STS_COMMAND_READY);
     }
 
-    return rc;
+    తిరిగి rc;
 }
 
-static u32 tis_find_active_locality(void)
+స్థిర u32 tis_కనుగొను_చురుకైన_locality(శూన్య)
 {
-    if (!CONFIG_TCGBIOS)
-        return 0;
+    ఒకవేళ (!CONFIG_TCGBIOS)
+        తిరిగి 0;
 
     u8 locty;
 
-    for (locty = 0; locty <= 4; locty++) {
-        if ((readb(TIS_REG(locty, TIS_REG_ACCESS)) &
-             TIS_ACCESS_ACTIVE_LOCALITY))
-            return locty;
+    కొరకు (locty = 0; locty <= 4; locty++) {
+        ఒకవేళ ((readb(TIS_REG(locty, TIS_REG_ACCESS)) &
+             TIS_ACCESS_చురుకైన_LOCALITY))
+            తిరిగి locty;
     }
 
     tis_activate(0);
 
-    return 0;
+    తిరిగి 0;
 }
 
-static u32 tis_ready(void)
+స్థిర u32 tis_ready(శూన్య)
 {
-    if (!CONFIG_TCGBIOS)
-        return 0;
+    ఒకవేళ (!CONFIG_TCGBIOS)
+        తిరిగి 0;
 
     u32 rc = 0;
-    u8 locty = tis_find_active_locality();
+    u8 locty = tis_కనుగొను_చురుకైన_locality();
     u32 timeout_b = tpm_drivers[TIS_DRIVER_IDX].timeouts[TIS_TIMEOUT_TYPE_B];
 
     writeb(TIS_REG(locty, TIS_REG_STS), TIS_STS_COMMAND_READY);
     rc = tis_wait_sts(locty, timeout_b,
                       TIS_STS_COMMAND_READY, TIS_STS_COMMAND_READY);
 
-    return rc;
+    తిరిగి rc;
 }
 
-static u32 tis_senddata(const u8 *const data, u32 len)
+స్థిర u32 tis_senddata(స్థిరరాశి u8 *స్థిరరాశి దత్తాంశం, u32 len)
 {
-    if (!CONFIG_TCGBIOS)
-        return 0;
+    ఒకవేళ (!CONFIG_TCGBIOS)
+        తిరిగి 0;
 
     u32 rc = 0;
-    u32 offset = 0;
-    u32 end_loop = 0;
-    u16 burst = 0;
-    u8 locty = tis_find_active_locality();
+    u32 స్థానభ్రంశం_2 = 0;
+    u32 చివర_loop = 0;
+    u16 వ్యవధి = 0;
+    u8 locty = tis_కనుగొను_చురుకైన_locality();
     u32 timeout_d = tpm_drivers[TIS_DRIVER_IDX].timeouts[TIS_TIMEOUT_TYPE_D];
-    u32 end = timer_calc_usec(timeout_d);
+    u32 చివర = timer_calc_usec(timeout_d);
 
-    do {
-        while (burst == 0) {
-               burst = readl(TIS_REG(locty, TIS_REG_STS)) >> 8;
-            if (burst == 0) {
-                if (timer_check(end)) {
+    చేయి {
+        అయితే (వ్యవధి == 0) {
+               వ్యవధి = readl(TIS_REG(locty, TIS_REG_STS)) >> 8;
+            ఒకవేళ (వ్యవధి == 0) {
+                ఒకవేళ (timer_check(చివర)) {
                     warn_timeout();
-                    break;
+                    ఆపు;
                 }
                 yield();
             }
         }
 
-        if (burst == 0) {
+        ఒకవేళ (వ్యవధి == 0) {
             rc = TCG_RESPONSE_TIMEOUT;
-            break;
+            ఆపు;
         }
 
-        while (1) {
-            writeb(TIS_REG(locty, TIS_REG_DATA_FIFO), data[offset++]);
-            burst--;
+        అయితే (1) {
+            writeb(TIS_REG(locty, TIS_REG_దత్తాంశం_FIFO), దత్తాంశం[స్థానభ్రంశం_2++]);
+            వ్యవధి--;
 
-            if (burst == 0 || offset == len)
-                break;
+            ఒకవేళ (వ్యవధి == 0 || స్థానభ్రంశం_2 == len)
+                ఆపు;
         }
 
-        if (offset == len)
-            end_loop = 1;
-    } while (end_loop == 0);
+        ఒకవేళ (స్థానభ్రంశం_2 == len)
+            చివర_loop = 1;
+    } అయితే (చివర_loop == 0);
 
-    return rc;
+    తిరిగి rc;
 }
 
-static u32 tis_readresp(u8 *buffer, u32 *len)
+స్థిర u32 tis_readresp(u8 *బఫరు, u32 *len)
 {
-    if (!CONFIG_TCGBIOS)
-        return 0;
+    ఒకవేళ (!CONFIG_TCGBIOS)
+        తిరిగి 0;
 
     u32 rc = 0;
-    u32 offset = 0;
+    u32 స్థానభ్రంశం_2 = 0;
     u32 sts;
-    u8 locty = tis_find_active_locality();
+    u8 locty = tis_కనుగొను_చురుకైన_locality();
 
-    while (offset < *len) {
-        buffer[offset] = readb(TIS_REG(locty, TIS_REG_DATA_FIFO));
-        offset++;
+    అయితే (స్థానభ్రంశం_2 < *len) {
+        బఫరు[స్థానభ్రంశం_2] = readb(TIS_REG(locty, TIS_REG_దత్తాంశం_FIFO));
+        స్థానభ్రంశం_2++;
         sts = readb(TIS_REG(locty, TIS_REG_STS));
         /* data left ? */
-        if ((sts & TIS_STS_DATA_AVAILABLE) == 0)
-            break;
+        ఒకవేళ ((sts & TIS_STS_దత్తాంశం_అందుబాటు) == 0)
+            ఆపు;
     }
 
-    *len = offset;
+    *len = స్థానభ్రంశం_2;
 
-    return rc;
+    తిరిగి rc;
 }
 
 
-static u32 tis_waitdatavalid(void)
+స్థిర u32 tis_waitdatavalid(శూన్య)
 {
-    if (!CONFIG_TCGBIOS)
-        return 0;
+    ఒకవేళ (!CONFIG_TCGBIOS)
+        తిరిగి 0;
 
     u32 rc = 0;
-    u8 locty = tis_find_active_locality();
+    u8 locty = tis_కనుగొను_చురుకైన_locality();
     u32 timeout_c = tpm_drivers[TIS_DRIVER_IDX].timeouts[TIS_TIMEOUT_TYPE_C];
 
-    if (tis_wait_sts(locty, timeout_c, TIS_STS_VALID, TIS_STS_VALID) != 0)
+    ఒకవేళ (tis_wait_sts(locty, timeout_c, TIS_STS_VALID, TIS_STS_VALID) != 0)
         rc = 1;
 
-    return rc;
+    తిరిగి rc;
 }
 
-static u32 tis_waitrespready(enum tpmDurationType to_t)
+స్థిర u32 tis_waitrespready(గణన tpmDurationType గమ్యం_t)
 {
-    if (!CONFIG_TCGBIOS)
-        return 0;
+    ఒకవేళ (!CONFIG_TCGBIOS)
+        తిరిగి 0;
 
     u32 rc = 0;
-    u8 locty = tis_find_active_locality();
-    u32 timeout = tpm_drivers[TIS_DRIVER_IDX].durations[to_t];
+    u8 locty = tis_కనుగొను_చురుకైన_locality();
+    u32 timeout = tpm_drivers[TIS_DRIVER_IDX].durations[గమ్యం_t];
 
     writeb(TIS_REG(locty ,TIS_REG_STS), TIS_STS_TPM_GO);
 
-    if (tis_wait_sts(locty, timeout,
-                     TIS_STS_DATA_AVAILABLE, TIS_STS_DATA_AVAILABLE) != 0)
+    ఒకవేళ (tis_wait_sts(locty, timeout,
+                     TIS_STS_దత్తాంశం_అందుబాటు, TIS_STS_దత్తాంశం_అందుబాటు) != 0)
         rc = 1;
 
-    return rc;
+    తిరిగి rc;
 }
 
-#define CRB_STATE_VALID_STS 0b10000000
-#define CRB_STATE_LOC_ASSIGNED 0x00000010
-#define CRB_STATE_READY_MASK (CRB_STATE_VALID_STS | CRB_STATE_LOC_ASSIGNED)
+#నిర్వచించు CRB_STATE_VALID_STS 0b10000000
+#నిర్వచించు CRB_STATE_LOC_ASSIGNED 0x00000010
+#నిర్వచించు CRB_STATE_READY_ముసుగు (CRB_STATE_VALID_STS | CRB_STATE_LOC_ASSIGNED)
 
 /* if device is not there, return '0', '1' otherwise */
-static u32 crb_probe(void)
+స్థిర u32 crb_probe(శూన్య)
 {
-    if (!CONFIG_TCGBIOS)
-        return 0;
+    ఒకవేళ (!CONFIG_TCGBIOS)
+        తిరిగి 0;
 
     /* Wait for the interface to report it's ready */
     u32 rc = crb_wait_reg(0, CRB_REG_LOC_STATE, TIS2_DEFAULT_TIMEOUT_D,
-                          CRB_STATE_READY_MASK, CRB_STATE_VALID_STS);
-    if (rc)
-        return 0;
+                          CRB_STATE_READY_ముసుగు, CRB_STATE_VALID_STS);
+    ఒకవేళ (rc)
+        తిరిగి 0;
 
     u32 ifaceid = readl(CRB_REG(0, CRB_REG_INTF_ID));
 
-    if ((ifaceid & 0xf) != 0xf) {
-        if ((ifaceid & 0xf) == 1) {
+    ఒకవేళ ((ifaceid & 0xf) != 0xf) {
+        ఒకవేళ ((ifaceid & 0xf) == 1) {
             /* CRB is active */
-        } else if ((ifaceid & (1 << 14)) == 0) {
+        } లేకపోతే ఒకవేళ ((ifaceid & (1 << 14)) == 0) {
             /* CRB cannot be selected */
-            return 0;
+            తిరిగి 0;
         }
         /* write of 1 to bits 17-18 selects CRB */
         writel(CRB_REG(0, CRB_REG_INTF_ID), (1 << 17));
@@ -406,143 +406,143 @@ static u32 crb_probe(void)
     }
 
     /* no support for 64 bit addressing yet */
-    if (readl(CRB_REG(0, CRB_REG_CTRL_CMD_HADDR)))
-        return 0;
+    ఒకవేళ (readl(CRB_REG(0, CRB_REG_CTRL_CMD_HADDR)))
+        తిరిగి 0;
 
     u64 addr = readq(CRB_REG(0, CRB_REG_CTRL_RSP_ADDR));
-    if (addr > 0xffffffff)
-        return 0;
+    ఒకవేళ (addr > 0xffffffff)
+        తిరిగి 0;
 
-    return 1;
+    తిరిగి 1;
 }
 
-static TPMVersion crb_get_tpm_version(void)
+స్థిర TPMVersion crb_get_tpm_సంస్కరణ(శూన్య)
 {
     /* CRB is supposed to be TPM 2.0 only */
-    return TPM_VERSION_2;
+    తిరిగి TPM_సంస్కరణ_2;
 }
 
-static u32 crb_init(void)
+స్థిర u32 crb_init(శూన్య)
 {
-    if (!CONFIG_TCGBIOS)
-        return 1;
+    ఒకవేళ (!CONFIG_TCGBIOS)
+        తిరిగి 1;
 
-    crb_cmd = (void*)readl(CRB_REG(0, CRB_REG_CTRL_CMD_LADDR));
-    crb_cmd_size = readl(CRB_REG(0, CRB_REG_CTRL_CMD_SIZE));
-    crb_resp = (void*)readl(CRB_REG(0, CRB_REG_CTRL_RSP_ADDR));
-    crb_resp_size = readl(CRB_REG(0, CRB_REG_CTRL_RSP_SIZE));
+    crb_cmd = (శూన్య*)readl(CRB_REG(0, CRB_REG_CTRL_CMD_LADDR));
+    crb_cmd_కొలత = readl(CRB_REG(0, CRB_REG_CTRL_CMD_కొలత));
+    crb_resp = (శూన్య*)readl(CRB_REG(0, CRB_REG_CTRL_RSP_ADDR));
+    crb_resp_కొలత = readl(CRB_REG(0, CRB_REG_CTRL_RSP_కొలత));
 
     init_timeout(CRB_DRIVER_IDX);
 
-    return 0;
+    తిరిగి 0;
 }
 
-static u32 crb_activate(u8 locty)
+స్థిర u32 crb_activate(u8 locty)
 {
-    if (!CONFIG_TCGBIOS)
-        return 0;
+    ఒకవేళ (!CONFIG_TCGBIOS)
+        తిరిగి 0;
 
     writeb(CRB_REG(locty, CRB_REG_LOC_CTRL), 1);
 
-    return 0;
+    తిరిగి 0;
 }
 
-static u32 crb_find_active_locality(void)
+స్థిర u32 crb_కనుగొను_చురుకైన_locality(శూన్య)
 {
-    if (!CONFIG_TCGBIOS)
-        return 0;
+    ఒకవేళ (!CONFIG_TCGBIOS)
+        తిరిగి 0;
 
-    return 0;
+    తిరిగి 0;
 }
 
-#define CRB_CTRL_REQ_CMD_READY 0b1
-#define CRB_START_INVOKE 0b1
-#define CRB_CTRL_STS_ERROR 0b1
+#నిర్వచించు CRB_CTRL_REQ_CMD_READY 0b1
+#నిర్వచించు CRB_ప్రారంభం_INVOKE 0b1
+#నిర్వచించు CRB_CTRL_STS_ERROR 0b1
 
-static u32 crb_ready(void)
+స్థిర u32 crb_ready(శూన్య)
 {
-    if (!CONFIG_TCGBIOS)
-        return 0;
+    ఒకవేళ (!CONFIG_TCGBIOS)
+        తిరిగి 0;
 
     u32 rc = 0;
-    u8 locty = crb_find_active_locality();
+    u8 locty = crb_కనుగొను_చురుకైన_locality();
     u32 timeout_c = tpm_drivers[CRB_DRIVER_IDX].timeouts[TIS_TIMEOUT_TYPE_C];
 
     writel(CRB_REG(locty, CRB_REG_CTRL_REQ), CRB_CTRL_REQ_CMD_READY);
     rc = crb_wait_reg(locty, CRB_REG_CTRL_REQ, timeout_c,
                       CRB_CTRL_REQ_CMD_READY, 0);
 
-    return rc;
+    తిరిగి rc;
 }
 
-static u32 crb_senddata(const u8 *const data, u32 len)
+స్థిర u32 crb_senddata(స్థిరరాశి u8 *స్థిరరాశి దత్తాంశం, u32 len)
 {
-    if (!CONFIG_TCGBIOS)
-        return 0;
+    ఒకవేళ (!CONFIG_TCGBIOS)
+        తిరిగి 0;
 
-    if (len > crb_cmd_size)
-        return 1;
+    ఒకవేళ (len > crb_cmd_కొలత)
+        తిరిగి 1;
 
-    u8 locty = crb_find_active_locality();
-    memcpy(crb_cmd, data, len);
-    writel(CRB_REG(locty, CRB_REG_CTRL_START), CRB_START_INVOKE);
+    u8 locty = crb_కనుగొను_చురుకైన_locality();
+    జ్ఞాపకం_నకలు(crb_cmd, దత్తాంశం, len);
+    writel(CRB_REG(locty, CRB_REG_CTRL_ప్రారంభం), CRB_ప్రారంభం_INVOKE);
 
-    return 0;
+    తిరిగి 0;
 }
 
-static u32 crb_readresp(u8 *buffer, u32 *len)
+స్థిర u32 crb_readresp(u8 *బఫరు, u32 *len)
 {
-    if (!CONFIG_TCGBIOS)
-        return 0;
+    ఒకవేళ (!CONFIG_TCGBIOS)
+        తిరిగి 0;
 
-    u8 locty = crb_find_active_locality();
-    if (readl(CRB_REG(locty, CRB_REG_CTRL_STS)) & CRB_CTRL_STS_ERROR)
-        return 1;
+    u8 locty = crb_కనుగొను_చురుకైన_locality();
+    ఒకవేళ (readl(CRB_REG(locty, CRB_REG_CTRL_STS)) & CRB_CTRL_STS_ERROR)
+        తిరిగి 1;
 
-    if (*len < 6)
-        return 1;
+    ఒకవేళ (*len < 6)
+        తిరిగి 1;
 
-    memcpy(buffer, crb_resp, 6);
-    u32 expected = be32_to_cpu(*(u32 *) &buffer[2]);
-    if (expected < 6)
-        return 1;
+    జ్ఞాపకం_నకలు(బఫరు, crb_resp, 6);
+    u32 expected = be32_గమ్యం_cpu(*(u32 *) &బఫరు[2]);
+    ఒకవేళ (expected < 6)
+        తిరిగి 1;
 
     *len = (*len < expected) ? *len : expected;
 
-    memcpy(buffer + 6, crb_resp + 6, *len - 6);
+    జ్ఞాపకం_నకలు(బఫరు + 6, crb_resp + 6, *len - 6);
 
-    return 0;
+    తిరిగి 0;
 }
 
 
-static u32 crb_waitdatavalid(void)
+స్థిర u32 crb_waitdatavalid(శూన్య)
 {
-    return 0;
+    తిరిగి 0;
 }
 
-static u32 crb_waitrespready(enum tpmDurationType to_t)
+స్థిర u32 crb_waitrespready(గణన tpmDurationType గమ్యం_t)
 {
-    if (!CONFIG_TCGBIOS)
-        return 0;
+    ఒకవేళ (!CONFIG_TCGBIOS)
+        తిరిగి 0;
 
     u32 rc = 0;
-    u8 locty = crb_find_active_locality();
-    u32 timeout = tpm_drivers[CRB_DRIVER_IDX].durations[to_t];
+    u8 locty = crb_కనుగొను_చురుకైన_locality();
+    u32 timeout = tpm_drivers[CRB_DRIVER_IDX].durations[గమ్యం_t];
 
-    rc = crb_wait_reg(locty, CRB_REG_CTRL_START, timeout,
-                      CRB_START_INVOKE, 0);
+    rc = crb_wait_reg(locty, CRB_REG_CTRL_ప్రారంభం, timeout,
+                      CRB_ప్రారంభం_INVOKE, 0);
 
-    return rc;
+    తిరిగి rc;
 }
 
-struct tpm_driver tpm_drivers[TPM_NUM_DRIVERS] = {
+నిర్మాణం tpm_driver tpm_drivers[TPM_అంకె_DRIVERS] = {
     [TIS_DRIVER_IDX] =
         {
-            .timeouts      = NULL,
-            .durations     = NULL,
-            .set_timeouts  = set_timeouts,
+            .timeouts      = ఖాళీ,
+            .durations     = ఖాళీ,
+            .సమితి_timeouts  = సమితి_timeouts,
             .probe         = tis_probe,
-            .get_tpm_version = tis_get_tpm_version,
+            .get_tpm_సంస్కరణ = tis_get_tpm_సంస్కరణ,
             .init          = tis_init,
             .activate      = tis_activate,
             .ready         = tis_ready,
@@ -553,11 +553,11 @@ struct tpm_driver tpm_drivers[TPM_NUM_DRIVERS] = {
         },
     [CRB_DRIVER_IDX] =
         {
-            .timeouts      = NULL,
-            .durations     = NULL,
-            .set_timeouts  = set_timeouts,
+            .timeouts      = ఖాళీ,
+            .durations     = ఖాళీ,
+            .సమితి_timeouts  = సమితి_timeouts,
             .probe         = crb_probe,
-            .get_tpm_version = crb_get_tpm_version,
+            .get_tpm_సంస్కరణ = crb_get_tpm_సంస్కరణ,
             .init          = crb_init,
             .activate      = crb_activate,
             .ready         = crb_ready,
@@ -568,70 +568,70 @@ struct tpm_driver tpm_drivers[TPM_NUM_DRIVERS] = {
         },
 };
 
-static u8 TPMHW_driver_to_use = TPM_INVALID_DRIVER;
+స్థిర u8 TPMHW_driver_గమ్యం_use = TPM_INVALID_DRIVER;
 
 TPMVersion
-tpmhw_probe(void)
+tpmhw_probe(శూన్య)
 {
-    unsigned int i;
-    for (i = 0; i < TPM_NUM_DRIVERS; i++) {
-        struct tpm_driver *td = &tpm_drivers[i];
-        if (td->probe() != 0) {
+    గుర్తులేని పూర్ణాంకం i;
+    కొరకు (i = 0; i < TPM_అంకె_DRIVERS; i++) {
+        నిర్మాణం tpm_driver *td = &tpm_drivers[i];
+        ఒకవేళ (td->probe() != 0) {
             td->init();
-            TPMHW_driver_to_use = i;
-            return td->get_tpm_version();
+            TPMHW_driver_గమ్యం_use = i;
+            తిరిగి td->get_tpm_సంస్కరణ();
         }
     }
-    return TPM_VERSION_NONE;
+    తిరిగి TPM_సంస్కరణ_NONE;
 }
 
-int
-tpmhw_is_present(void)
+పూర్ణాంకం
+tpmhw_is_present(శూన్య)
 {
-    return TPMHW_driver_to_use != TPM_INVALID_DRIVER;
+    తిరిగి TPMHW_driver_గమ్యం_use != TPM_INVALID_DRIVER;
 }
 
-int
-tpmhw_transmit(u8 locty, struct tpm_req_header *req,
-               void *respbuffer, u32 *respbufferlen,
-               enum tpmDurationType to_t)
+పూర్ణాంకం
+tpmhw_transmit(u8 locty, నిర్మాణం tpm_req_శీర్షిక *req,
+               శూన్య *respbuffer, u32 *respbufferlen,
+               గణన tpmDurationType గమ్యం_t)
 {
-    if (TPMHW_driver_to_use == TPM_INVALID_DRIVER)
-        return -1;
+    ఒకవేళ (TPMHW_driver_గమ్యం_use == TPM_INVALID_DRIVER)
+        తిరిగి -1;
 
-    struct tpm_driver *td = &tpm_drivers[TPMHW_driver_to_use];
+    నిర్మాణం tpm_driver *td = &tpm_drivers[TPMHW_driver_గమ్యం_use];
 
     u32 irc = td->activate(locty);
-    if (irc != 0) {
+    ఒకవేళ (irc != 0) {
         /* tpm could not be activated */
-        return -1;
+        తిరిగి -1;
     }
 
-    irc = td->senddata((void*)req, be32_to_cpu(req->totlen));
-    if (irc != 0)
-        return -1;
+    irc = td->senddata((శూన్య*)req, be32_గమ్యం_cpu(req->totlen));
+    ఒకవేళ (irc != 0)
+        తిరిగి -1;
 
     irc = td->waitdatavalid();
-    if (irc != 0)
-        return -1;
+    ఒకవేళ (irc != 0)
+        తిరిగి -1;
 
-    irc = td->waitrespready(to_t);
-    if (irc != 0)
-        return -1;
+    irc = td->waitrespready(గమ్యం_t);
+    ఒకవేళ (irc != 0)
+        తిరిగి -1;
 
     irc = td->readresp(respbuffer, respbufferlen);
-    if (irc != 0 ||
-        *respbufferlen < sizeof(struct tpm_rsp_header))
-        return -1;
+    ఒకవేళ (irc != 0 ||
+        *respbufferlen < పరిమాణం(నిర్మాణం tpm_rsp_శీర్షిక))
+        తిరిగి -1;
 
     td->ready();
 
-    return 0;
+    తిరిగి 0;
 }
 
-void
-tpmhw_set_timeouts(u32 timeouts[4], u32 durations[3])
+శూన్య
+tpmhw_సమితి_timeouts(u32 timeouts[4], u32 durations[3])
 {
-    struct tpm_driver *td = &tpm_drivers[TPMHW_driver_to_use];
-    td->set_timeouts(timeouts, durations);
+    నిర్మాణం tpm_driver *td = &tpm_drivers[TPMHW_driver_గమ్యం_use];
+    td->సమితి_timeouts(timeouts, durations);
 }

@@ -4,194 +4,194 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_USB_HUB
-#include "output.h" // dprintf
-#include "string.h" // memset
-#include "usb.h" // struct usb_s
-#include "usb-hub.h" // struct usb_hub_descriptor
-#include "util.h" // timer_calc
+#అన్తర్భావ "config.h" // CONFIG_USB_HUB
+#అన్తర్భావ "output.h" // dprintf
+#అన్తర్భావ "string.h" // memset
+#అన్తర్భావ "usb.h" // struct usb_s
+#అన్తర్భావ "usb-hub.h" // struct usb_hub_descriptor
+#అన్తర్భావ "util.h" // timer_calc
 
-static int
-get_hub_desc(struct usb_pipe *pipe, struct usb_hub_descriptor *desc)
+స్థిర పూర్ణాంకం
+get_hub_desc(నిర్మాణం usb_pipe *pipe, నిర్మాణం usb_hub_descriptor *desc)
 {
-    struct usb_ctrlrequest req;
-    req.bRequestType = USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_DEVICE;
+    నిర్మాణం usb_ctrlrequest req;
+    req.bRequestType = USB_DIR_లోపల | USB_TYPE_CLASS | USB_RECIP_DEVICE;
     req.bRequest = USB_REQ_GET_DESCRIPTOR;
-    if (pipe->speed == USB_SUPERSPEED)
-        req.wValue = USB_DT_HUB3<<8;
-    else
-        req.wValue = USB_DT_HUB<<8;
-    req.wIndex = 0;
-    req.wLength = sizeof(*desc);
-    return usb_send_default_control(pipe, &req, desc);
+    ఒకవేళ (pipe->వేగం == USB_SUPERSPEED)
+        req.w_విలువ = USB_DT_HUB3<<8;
+    లేకపోతే
+        req.w_విలువ = USB_DT_HUB<<8;
+    req.w_సూచీ = 0;
+    req.w_నిడివి = పరిమాణం(*desc);
+    తిరిగి usb_send_default_control(pipe, &req, desc);
 }
 
-static int
-set_hub_depth(struct usb_pipe *pipe, u16 depth)
+స్థిర పూర్ణాంకం
+సమితి_hub_లోతు(నిర్మాణం usb_pipe *pipe, u16 లోతు)
 {
-    struct usb_ctrlrequest req;
-    req.bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_DEVICE;
-    req.bRequest = HUB_REQ_SET_HUB_DEPTH;
-    req.wValue = depth;
-    req.wIndex = 0;
-    req.wLength = 0;
-    return usb_send_default_control(pipe, &req, NULL);
+    నిర్మాణం usb_ctrlrequest req;
+    req.bRequestType = USB_DIR_బహిర్గతం | USB_TYPE_CLASS | USB_RECIP_DEVICE;
+    req.bRequest = HUB_REQ_సమితి_HUB_లోతు;
+    req.w_విలువ = లోతు;
+    req.w_సూచీ = 0;
+    req.w_నిడివి = 0;
+    తిరిగి usb_send_default_control(pipe, &req, ఖాళీ);
 }
 
-static int
-set_port_feature(struct usbhub_s *hub, int port, int feature)
+స్థిర పూర్ణాంకం
+సమితి_పోర్టు_feature(నిర్మాణం usbhub_s *hub, పూర్ణాంకం పోర్టు, పూర్ణాంకం feature)
 {
-    struct usb_ctrlrequest req;
-    req.bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_OTHER;
-    req.bRequest = USB_REQ_SET_FEATURE;
-    req.wValue = feature;
-    req.wIndex = port + 1;
-    req.wLength = 0;
-    mutex_lock(&hub->lock);
-    int ret = usb_send_default_control(hub->usbdev->defpipe, &req, NULL);
-    mutex_unlock(&hub->lock);
-    return ret;
+    నిర్మాణం usb_ctrlrequest req;
+    req.bRequestType = USB_DIR_బహిర్గతం | USB_TYPE_CLASS | USB_RECIP_OTHER;
+    req.bRequest = USB_REQ_సమితి_FEATURE;
+    req.w_విలువ = feature;
+    req.w_సూచీ = పోర్టు + 1;
+    req.w_నిడివి = 0;
+    mutex_తాళం(&hub->తాళం_2);
+    పూర్ణాంకం ret = usb_send_default_control(hub->usbdev->defpipe, &req, ఖాళీ);
+    mutex_unlock(&hub->తాళం_2);
+    తిరిగి ret;
 }
 
-static int
-clear_port_feature(struct usbhub_s *hub, int port, int feature)
+స్థిర పూర్ణాంకం
+clear_పోర్టు_feature(నిర్మాణం usbhub_s *hub, పూర్ణాంకం పోర్టు, పూర్ణాంకం feature)
 {
-    struct usb_ctrlrequest req;
-    req.bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_OTHER;
+    నిర్మాణం usb_ctrlrequest req;
+    req.bRequestType = USB_DIR_బహిర్గతం | USB_TYPE_CLASS | USB_RECIP_OTHER;
     req.bRequest = USB_REQ_CLEAR_FEATURE;
-    req.wValue = feature;
-    req.wIndex = port + 1;
-    req.wLength = 0;
-    mutex_lock(&hub->lock);
-    int ret = usb_send_default_control(hub->usbdev->defpipe, &req, NULL);
-    mutex_unlock(&hub->lock);
-    return ret;
+    req.w_విలువ = feature;
+    req.w_సూచీ = పోర్టు + 1;
+    req.w_నిడివి = 0;
+    mutex_తాళం(&hub->తాళం_2);
+    పూర్ణాంకం ret = usb_send_default_control(hub->usbdev->defpipe, &req, ఖాళీ);
+    mutex_unlock(&hub->తాళం_2);
+    తిరిగి ret;
 }
 
-static int
-get_port_status(struct usbhub_s *hub, int port, struct usb_port_status *sts)
+స్థిర పూర్ణాంకం
+get_పోర్టు_స్థితి(నిర్మాణం usbhub_s *hub, పూర్ణాంకం పోర్టు, నిర్మాణం usb_పోర్టు_స్థితి *sts)
 {
-    struct usb_ctrlrequest req;
-    req.bRequestType = USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_OTHER;
-    req.bRequest = USB_REQ_GET_STATUS;
-    req.wValue = 0;
-    req.wIndex = port + 1;
-    req.wLength = sizeof(*sts);
-    mutex_lock(&hub->lock);
-    int ret = usb_send_default_control(hub->usbdev->defpipe, &req, sts);
-    mutex_unlock(&hub->lock);
-    return ret;
+    నిర్మాణం usb_ctrlrequest req;
+    req.bRequestType = USB_DIR_లోపల | USB_TYPE_CLASS | USB_RECIP_OTHER;
+    req.bRequest = USB_REQ_GET_స్థితి;
+    req.w_విలువ = 0;
+    req.w_సూచీ = పోర్టు + 1;
+    req.w_నిడివి = పరిమాణం(*sts);
+    mutex_తాళం(&hub->తాళం_2);
+    పూర్ణాంకం ret = usb_send_default_control(hub->usbdev->defpipe, &req, sts);
+    mutex_unlock(&hub->తాళం_2);
+    తిరిగి ret;
 }
 
 // Check if device attached to port
-static int
-usb_hub_detect(struct usbhub_s *hub, u32 port)
+స్థిర పూర్ణాంకం
+usb_hub_detect(నిర్మాణం usbhub_s *hub, u32 పోర్టు)
 {
-    struct usb_port_status sts;
-    int ret = get_port_status(hub, port, &sts);
-    if (ret) {
-        dprintf(1, "Failure on hub port %d detect\n", port);
-        return -1;
+    నిర్మాణం usb_పోర్టు_స్థితి sts;
+    పూర్ణాంకం ret = get_పోర్టు_స్థితి(hub, పోర్టు, &sts);
+    ఒకవేళ (ret) {
+        dprintf(1, "Failure on hub port %d detect\n", పోర్టు);
+        తిరిగి -1;
     }
-    return (sts.wPortStatus & USB_PORT_STAT_CONNECTION) ? 1 : 0;
+    తిరిగి (sts.w_పోర్టు_స్థితి & USB_పోర్టు_STAT_CONNECTION) ? 1 : 0;
 }
 
 // Disable port
-static void
-usb_hub_disconnect(struct usbhub_s *hub, u32 port)
+స్థిర శూన్య
+usb_hub_disconnect(నిర్మాణం usbhub_s *hub, u32 పోర్టు)
 {
-    int ret = clear_port_feature(hub, port, USB_PORT_FEAT_ENABLE);
-    if (ret)
-        dprintf(1, "Failure on hub port %d disconnect\n", port);
+    పూర్ణాంకం ret = clear_పోర్టు_feature(hub, పోర్టు, USB_పోర్టు_FEAT_ENABLE);
+    ఒకవేళ (ret)
+        dprintf(1, "Failure on hub port %d disconnect\n", పోర్టు);
 }
 
 // Reset device on port
-static int
-usb_hub_reset(struct usbhub_s *hub, u32 port)
+స్థిర పూర్ణాంకం
+usb_hub_reset(నిర్మాణం usbhub_s *hub, u32 పోర్టు)
 {
-    int ret = set_port_feature(hub, port, USB_PORT_FEAT_RESET);
-    if (ret)
-        goto fail;
+    పూర్ణాంకం ret = సమితి_పోర్టు_feature(hub, పోర్టు, USB_పోర్టు_FEAT_RESET);
+    ఒకవేళ (ret)
+        వెళ్ళు fail;
 
     // Wait for reset to complete.
-    struct usb_port_status sts;
-    u32 end = timer_calc(USB_TIME_DRST * 2);
-    for (;;) {
-        ret = get_port_status(hub, port, &sts);
-        if (ret)
-            goto fail;
-        if (!(sts.wPortStatus & USB_PORT_STAT_RESET)
-            && (hub->usbdev->speed != USB_SUPERSPEED
-                || !(sts.wPortStatus & USB_PORT_STAT_LINK_MASK)))
-            break;
-        if (timer_check(end)) {
+    నిర్మాణం usb_పోర్టు_స్థితి sts;
+    u32 చివర = timer_calc(USB_సమయం_DRST * 2);
+    కొరకు (;;) {
+        ret = get_పోర్టు_స్థితి(hub, పోర్టు, &sts);
+        ఒకవేళ (ret)
+            వెళ్ళు fail;
+        ఒకవేళ (!(sts.w_పోర్టు_స్థితి & USB_పోర్టు_STAT_RESET)
+            && (hub->usbdev->వేగం != USB_SUPERSPEED
+                || !(sts.w_పోర్టు_స్థితి & USB_పోర్టు_STAT_LINK_ముసుగు)))
+            ఆపు;
+        ఒకవేళ (timer_check(చివర)) {
             warn_timeout();
-            goto fail;
+            వెళ్ళు fail;
         }
         msleep(5);
     }
 
     // Reset complete.
-    if (!(sts.wPortStatus & USB_PORT_STAT_CONNECTION))
+    ఒకవేళ (!(sts.w_పోర్టు_స్థితి & USB_పోర్టు_STAT_CONNECTION))
         // Device no longer present
-        return -1;
+        తిరిగి -1;
 
-    if (hub->usbdev->speed == USB_SUPERSPEED)
-        return USB_SUPERSPEED;
-    return ((sts.wPortStatus & USB_PORT_STAT_SPEED_MASK)
-            >> USB_PORT_STAT_SPEED_SHIFT);
+    ఒకవేళ (hub->usbdev->వేగం == USB_SUPERSPEED)
+        తిరిగి USB_SUPERSPEED;
+    తిరిగి ((sts.w_పోర్టు_స్థితి & USB_పోర్టు_STAT_వేగం_ముసుగు)
+            >> USB_పోర్టు_STAT_వేగం_జరుపు);
 
 fail:
-    dprintf(1, "Failure on hub port %d reset\n", port);
-    usb_hub_disconnect(hub, port);
-    return -1;
+    dprintf(1, "Failure on hub port %d reset\n", పోర్టు);
+    usb_hub_disconnect(hub, పోర్టు);
+    తిరిగి -1;
 }
 
-static struct usbhub_op_s HubOp = {
+స్థిర నిర్మాణం usbhub_op_s HubOp = {
     .detect = usb_hub_detect,
     .reset = usb_hub_reset,
     .disconnect = usb_hub_disconnect,
 };
 
 // Configure a usb hub and then find devices connected to it.
-int
-usb_hub_setup(struct usbdevice_s *usbdev)
+పూర్ణాంకం
+usb_hub_అమరిక(నిర్మాణం usbdevice_s *usbdev)
 {
     ASSERT32FLAT();
-    if (!CONFIG_USB_HUB)
-        return -1;
+    ఒకవేళ (!CONFIG_USB_HUB)
+        తిరిగి -1;
 
-    struct usb_hub_descriptor desc;
-    int ret = get_hub_desc(usbdev->defpipe, &desc);
-    if (ret)
-        return ret;
+    నిర్మాణం usb_hub_descriptor desc;
+    పూర్ణాంకం ret = get_hub_desc(usbdev->defpipe, &desc);
+    ఒకవేళ (ret)
+        తిరిగి ret;
 
-    struct usbhub_s hub;
-    memset(&hub, 0, sizeof(hub));
+    నిర్మాణం usbhub_s hub;
+    memset(&hub, 0, పరిమాణం(hub));
     hub.usbdev = usbdev;
     hub.cntl = usbdev->defpipe->cntl;
     hub.portcount = desc.bNbrPorts;
     hub.op = &HubOp;
 
-    if (usbdev->speed == USB_SUPERSPEED) {
-        int depth = 0;
-        struct usbdevice_s *parent = usbdev->hub->usbdev;
-        while (parent) {
-            depth++;
-            parent = parent->hub->usbdev;
+    ఒకవేళ (usbdev->వేగం == USB_SUPERSPEED) {
+        పూర్ణాంకం లోతు = 0;
+        నిర్మాణం usbdevice_s *మాతృ = usbdev->hub->usbdev;
+        అయితే (మాతృ) {
+            లోతు++;
+            మాతృ = మాతృ->hub->usbdev;
         }
 
-        ret = set_hub_depth(usbdev->defpipe, depth);
-        if (ret)
-            return ret;
+        ret = సమితి_hub_లోతు(usbdev->defpipe, లోతు);
+        ఒకవేళ (ret)
+            తిరిగి ret;
     }
 
     // Turn on power to ports.
-    int port;
-    for (port=0; port<desc.bNbrPorts; port++) {
-        ret = set_port_feature(&hub, port, USB_PORT_FEAT_POWER);
-        if (ret)
-            return ret;
+    పూర్ణాంకం పోర్టు;
+    కొరకు (పోర్టు=0; పోర్టు<desc.bNbrPorts; పోర్టు++) {
+        ret = సమితి_పోర్టు_feature(&hub, పోర్టు, USB_పోర్టు_FEAT_POWER);
+        ఒకవేళ (ret)
+            తిరిగి ret;
     }
     // Wait for port power to stabilize.
     msleep(desc.bPwrOn2PwrGood * 2);
@@ -199,7 +199,7 @@ usb_hub_setup(struct usbdevice_s *usbdev)
     usb_enumerate(&hub);
 
     dprintf(1, "Initialized USB HUB (%d ports used)\n", hub.devcount);
-    if (hub.devcount)
-        return 0;
-    return -1;
+    ఒకవేళ (hub.devcount)
+        తిరిగి 0;
+    తిరిగి -1;
 }

@@ -1,67 +1,67 @@
 // Basic ps2 port (keyboard/mouse) command handling.
-#ifndef __PS2PORT_H
-#define __PS2PORT_H
+#నిర్వచితం_కాకపోతే __PS2PORT_H
+#నిర్వచించు __PS2PORT_H
 
-#include "types.h" // u8
+#అన్తర్భావ "types.h" // u8
 
-#define PORT_PS2_DATA          0x0060
-#define PORT_PS2_STATUS        0x0064
+#నిర్వచించు పోర్టు_PS2_దత్తాంశం          0x0060
+#నిర్వచించు పోర్టు_PS2_స్థితి        0x0064
 
 // Standard commands.
-#define I8042_CMD_CTL_RCTR      0x0120
-#define I8042_CMD_CTL_WCTR      0x1060
-#define I8042_CMD_CTL_TEST      0x01aa
+#నిర్వచించు I8042_CMD_CTL_RCTR      0x0120
+#నిర్వచించు I8042_CMD_CTL_WCTR      0x1060
+#నిర్వచించు I8042_CMD_CTL_TEST      0x01aa
 
-#define I8042_CMD_KBD_TEST      0x01ab
-#define I8042_CMD_KBD_DISABLE   0x00ad
-#define I8042_CMD_KBD_ENABLE    0x00ae
+#నిర్వచించు I8042_CMD_KBD_TEST      0x01ab
+#నిర్వచించు I8042_CMD_KBD_DISABLE   0x00ad
+#నిర్వచించు I8042_CMD_KBD_ENABLE    0x00ae
 
-#define I8042_CMD_AUX_DISABLE   0x00a7
-#define I8042_CMD_AUX_ENABLE    0x00a8
-#define I8042_CMD_AUX_SEND      0x10d4
+#నిర్వచించు I8042_CMD_AUX_DISABLE   0x00a7
+#నిర్వచించు I8042_CMD_AUX_ENABLE    0x00a8
+#నిర్వచించు I8042_CMD_AUX_SEND      0x10d4
 
 // Keyboard commands
-#define ATKBD_CMD_SETLEDS       0x10ed
-#define ATKBD_CMD_SSCANSET      0x10f0
-#define ATKBD_CMD_GETID         0x02f2
-#define ATKBD_CMD_ENABLE        0x00f4
-#define ATKBD_CMD_RESET_DIS     0x00f5
-#define ATKBD_CMD_RESET_BAT     0x01ff
+#నిర్వచించు ATKBD_CMD_SETLEDS       0x10ed
+#నిర్వచించు ATKBD_CMD_SSCANSET      0x10f0
+#నిర్వచించు ATKBD_CMD_GETID         0x02f2
+#నిర్వచించు ATKBD_CMD_ENABLE        0x00f4
+#నిర్వచించు ATKBD_CMD_RESET_DIS     0x00f5
+#నిర్వచించు ATKBD_CMD_RESET_BAT     0x01ff
 
 // Mouse commands
-#define PSMOUSE_CMD_SETSCALE11  0x00e6
-#define PSMOUSE_CMD_SETSCALE21  0x00e7
-#define PSMOUSE_CMD_SETRES      0x10e8
-#define PSMOUSE_CMD_GETINFO     0x03e9
-#define PSMOUSE_CMD_GETID       0x02f2
-#define PSMOUSE_CMD_SETRATE     0x10f3
-#define PSMOUSE_CMD_ENABLE      0x00f4
-#define PSMOUSE_CMD_DISABLE     0x00f5
-#define PSMOUSE_CMD_RESET_BAT   0x02ff
+#నిర్వచించు PSMOUSE_CMD_SETSCALE11  0x00e6
+#నిర్వచించు PSMOUSE_CMD_SETSCALE21  0x00e7
+#నిర్వచించు PSMOUSE_CMD_SETRES      0x10e8
+#నిర్వచించు PSMOUSE_CMD_GETINFO     0x03e9
+#నిర్వచించు PSMOUSE_CMD_GETID       0x02f2
+#నిర్వచించు PSMOUSE_CMD_SETRATE     0x10f3
+#నిర్వచించు PSMOUSE_CMD_ENABLE      0x00f4
+#నిర్వచించు PSMOUSE_CMD_DISABLE     0x00f5
+#నిర్వచించు PSMOUSE_CMD_RESET_BAT   0x02ff
 
 // Status register bits.
-#define I8042_STR_PARITY        0x80
-#define I8042_STR_TIMEOUT       0x40
-#define I8042_STR_AUXDATA       0x20
-#define I8042_STR_KEYLOCK       0x10
-#define I8042_STR_CMDDAT        0x08
-#define I8042_STR_MUXERR        0x04
-#define I8042_STR_IBF           0x02
-#define I8042_STR_OBF           0x01
+#నిర్వచించు I8042_STR_PARITY        0x80
+#నిర్వచించు I8042_STR_TIMEOUT       0x40
+#నిర్వచించు I8042_STR_AUXDATA       0x20
+#నిర్వచించు I8042_STR_KEYLOCK       0x10
+#నిర్వచించు I8042_STR_CMDDAT        0x08
+#నిర్వచించు I8042_STR_MUXERR        0x04
+#నిర్వచించు I8042_STR_IBF           0x02
+#నిర్వచించు I8042_STR_OBF           0x01
 
 // Control register bits.
-#define I8042_CTR_KBDINT        0x01
-#define I8042_CTR_AUXINT        0x02
-#define I8042_CTR_IGNKEYLOCK    0x08
-#define I8042_CTR_KBDDIS        0x10
-#define I8042_CTR_AUXDIS        0x20
-#define I8042_CTR_XLATE         0x40
+#నిర్వచించు I8042_CTR_KBDINT        0x01
+#నిర్వచించు I8042_CTR_AUXINT        0x02
+#నిర్వచించు I8042_CTR_IGNKEYLOCK    0x08
+#నిర్వచించు I8042_CTR_KBDDIS        0x10
+#నిర్వచించు I8042_CTR_AUXDIS        0x20
+#నిర్వచించు I8042_CTR_XLATE         0x40
 
 // ps2port.c
-void i8042_reboot(void);
-int ps2_kbd_command(int command, u8 *param);
-int ps2_mouse_command(int command, u8 *param);
-void ps2_check_event(void);
-void ps2port_setup(void);
+శూన్య i8042_reboot(శూన్య);
+పూర్ణాంకం ps2_kbd_command(పూర్ణాంకం command, u8 *param);
+పూర్ణాంకం ps2_mouse_command(పూర్ణాంకం command, u8 *param);
+శూన్య ps2_check_event(శూన్య);
+శూన్య ps2port_అమరిక(శూన్య);
 
-#endif // ps2port.h
+#అయితే_ముగింపు // ps2port.h
