@@ -10,20 +10,20 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_GLOBALFLAT
-#include "block.h" // struct drive_s
-#include "blockcmd.h" // scsi_drive_setup
-#include "config.h" // CONFIG_*
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "pci.h" // pci_config_readl
-#include "pcidevice.h" // foreachpci
-#include "pci_ids.h" // PCI_DEVICE_ID_XXX
-#include "pci_regs.h" // PCI_VENDOR_ID
-#include "stacks.h" // yield
-#include "std/disk.h" // DISK_RET_SUCCESS
-#include "string.h" // memset
-#include "util.h" // timer_calc
+#अन्तर्भाव "biosvar.h" // GET_GLOBALFLAT
+#अन्तर्भाव "block.h" // struct drive_s
+#अन्तर्भाव "blockcmd.h" // scsi_drive_setup
+#अन्तर्भाव "config.h" // CONFIG_*
+#अन्तर्भाव "malloc.h" // free
+#अन्तर्भाव "output.h" // dprintf
+#अन्तर्भाव "pci.h" // pci_config_readl
+#अन्तर्भाव "pcidevice.h" // foreachpci
+#अन्तर्भाव "pci_ids.h" // PCI_DEVICE_ID_XXX
+#अन्तर्भाव "pci_regs.h" // PCI_VENDOR_ID
+#अन्तर्भाव "stacks.h" // yield
+#अन्तर्भाव "std/disk.h" // DISK_RET_SUCCESS
+#अन्तर्भाव "string.h" // memset
+#अन्तर्भाव "util.h" // timer_calc
 
 #define MFI_DB 0x0 // Doorbell
 #define MFI_OMSG0 0x18 // Outbound message 0
@@ -42,7 +42,7 @@
 #define MFI_STATE_FAULT               0xf0000000
 
 /* MFI Commands */
-typedef enum {
+प्रकारनिर्देश गणना {
     MFI_CMD_INIT = 0x00,
     MFI_CMD_LD_READ,
     MFI_CMD_LD_WRITE,
@@ -54,7 +54,7 @@ typedef enum {
     MFI_CMD_STP
 } mfi_cmd_t;
 
-struct megasas_cmd_frame {
+संरचना megasas_cmd_frame {
     u8 cmd;             /*00h */
     u8 sense_len;       /*01h */
     u8 cmd_status;      /*02h */
@@ -63,7 +63,7 @@ struct megasas_cmd_frame {
     u8 target_id;       /*04h */
     u8 lun;             /*05h */
     u8 cdb_len;         /*06h */
-    u8 sge_count;       /*07h */
+    u8 sge_गिनती;       /*07h */
 
     u32 context;        /*08h */
     u32 context_64;     /*0Ch */
@@ -72,31 +72,31 @@ struct megasas_cmd_frame {
     u16 timeout;        /*12h */
     u32 data_xfer_len;   /*14h */
 
-    union {
-        struct {
+    सङ्घ {
+        संरचना {
             u32 opcode;       /*18h */
             u8 mbox[12];      /*1Ch */
             u32 sgl_addr;     /*28h */
             u32 sgl_len;      /*32h */
             u32 pad;          /*34h */
         } dcmd;
-        struct {
+        संरचना {
             u32 sense_buf_lo; /*18h */
             u32 sense_buf_hi; /*1Ch */
             u8 cdb[16];       /*20h */
             u32 sgl_addr;     /*30h */
             u32 sgl_len;      /*34h */
         } pthru;
-        struct {
+        संरचना {
             u8 pad[22];       /*18h */
         } gen;
     };
 } __attribute__ ((packed));
 
-struct mfi_ld_list_s {
-    u32     count;
+संरचना mfi_ld_list_s {
+    u32     गिनती;
     u32     reserved_0;
-    struct {
+    संरचना {
         u8          target;
         u8          lun;
         u16         seq;
@@ -108,168 +108,168 @@ struct mfi_ld_list_s {
 
 #define MEGASAS_POLL_TIMEOUT 60000 // 60 seconds polling timeout
 
-struct megasas_lun_s {
-    struct drive_s drive;
-    struct megasas_cmd_frame *frame;
+संरचना megasas_lun_s {
+    संरचना drive_s drive;
+    संरचना megasas_cmd_frame *frame;
     u32 iobase;
     u16 pci_id;
     u8 target;
     u8 lun;
 };
 
-static int megasas_fire_cmd(u16 pci_id, u32 ioaddr,
-                            struct megasas_cmd_frame *frame)
+स्थिर पूर्णाङ्क megasas_fire_cmd(u16 pci_id, u32 ioaddr,
+                            संरचना megasas_cmd_frame *frame)
 {
     u32 frame_addr = (u32)frame;
-    int frame_count = 1;
+    पूर्णाङ्क frame_गिनती = 1;
     u8 cmd_state;
 
     dprintf(2, "Frame 0x%x\n", frame_addr);
-    if (pci_id == PCI_DEVICE_ID_LSI_SAS2004 ||
+    यदि (pci_id == PCI_DEVICE_ID_LSI_SAS2004 ||
         pci_id == PCI_DEVICE_ID_LSI_SAS2008) {
         outl(0, ioaddr + MFI_IQPH);
-        outl(frame_addr | frame_count << 1 | 1, ioaddr + MFI_IQPL);
-    } else if (pci_id == PCI_DEVICE_ID_DELL_PERC5 ||
+        outl(frame_addr | frame_गिनती << 1 | 1, ioaddr + MFI_IQPL);
+    } अन्यथा यदि (pci_id == PCI_DEVICE_ID_DELL_PERC5 ||
                pci_id == PCI_DEVICE_ID_LSI_SAS1064R ||
                pci_id == PCI_DEVICE_ID_LSI_VERDE_ZCR) {
-        outl(frame_addr >> 3 | frame_count, ioaddr + MFI_IQP);
-    } else {
-        outl(frame_addr | frame_count << 1 | 1, ioaddr + MFI_IQP);
+        outl(frame_addr >> 3 | frame_गिनती, ioaddr + MFI_IQP);
+    } अन्यथा {
+        outl(frame_addr | frame_गिनती << 1 | 1, ioaddr + MFI_IQP);
     }
 
     u32 end = timer_calc(MEGASAS_POLL_TIMEOUT);
-    do {
-        for (;;) {
+    कुरु {
+        प्रति (;;) {
             cmd_state = GET_LOWFLAT(frame->cmd_status);
-            if (cmd_state != 0xff)
-                break;
-            if (timer_check(end)) {
+            यदि (cmd_state != 0xff)
+                भङ्ग;
+            यदि (timer_check(end)) {
                 warn_timeout();
-                return -1;
+                प्रत्यागम -1;
             }
             yield();
         }
-    } while (cmd_state == 0xff);
+    } यावत् (cmd_state == 0xff);
 
-    if (cmd_state == 0 || cmd_state == 0x2d)
-        return 0;
+    यदि (cmd_state == 0 || cmd_state == 0x2d)
+        प्रत्यागम 0;
     dprintf(1, "ERROR: Frame 0x%x, status 0x%x\n", frame_addr, cmd_state);
-    return -1;
+    प्रत्यागम -1;
 }
 
-int
-megasas_process_op(struct disk_op_s *op)
+पूर्णाङ्क
+megasas_process_op(संरचना disk_op_s *op)
 {
-    if (!CONFIG_MEGASAS)
-        return DISK_RET_EBADTRACK;
+    यदि (!CONFIG_MEGASAS)
+        प्रत्यागम DISK_RET_EBADTRACK;
     u8 cdb[16];
-    int blocksize = scsi_fill_cmd(op, cdb, sizeof(cdb));
-    if (blocksize < 0)
-        return default_process_op(op);
-    struct megasas_lun_s *mlun_gf =
-        container_of(op->drive_fl, struct megasas_lun_s, drive);
-    struct megasas_cmd_frame *frame = GET_GLOBALFLAT(mlun_gf->frame);
+    पूर्णाङ्क blocksize = scsi_fill_cmd(op, cdb, परिमाण(cdb));
+    यदि (blocksize < 0)
+        प्रत्यागम default_process_op(op);
+    संरचना megasas_lun_s *mlun_gf =
+        container_of(op->drive_fl, संरचना megasas_lun_s, drive);
+    संरचना megasas_cmd_frame *frame = GET_GLOBALFLAT(mlun_gf->frame);
     u16 pci_id = GET_GLOBALFLAT(mlun_gf->pci_id);
-    int i;
+    पूर्णाङ्क i;
 
-    memset_fl(frame, 0, sizeof(*frame));
+    memset_fl(frame, 0, परिमाण(*frame));
     SET_LOWFLAT(frame->cmd, MFI_CMD_LD_SCSI_IO);
     SET_LOWFLAT(frame->cmd_status, 0xFF);
     SET_LOWFLAT(frame->target_id, GET_GLOBALFLAT(mlun_gf->target));
     SET_LOWFLAT(frame->lun, GET_GLOBALFLAT(mlun_gf->lun));
     SET_LOWFLAT(frame->flags, 0x0001);
-    SET_LOWFLAT(frame->data_xfer_len, op->count * blocksize);
+    SET_LOWFLAT(frame->data_xfer_len, op->गिनती * blocksize);
     SET_LOWFLAT(frame->cdb_len, 16);
 
-    for (i = 0; i < 16; i++) {
+    प्रति (i = 0; i < 16; i++) {
         SET_LOWFLAT(frame->pthru.cdb[i], cdb[i]);
     }
     dprintf(2, "pthru cmd 0x%x count %d bs %d\n",
-            cdb[0], op->count, blocksize);
+            cdb[0], op->गिनती, blocksize);
 
-    if (op->count) {
+    यदि (op->गिनती) {
         SET_LOWFLAT(frame->pthru.sgl_addr, (u32)op->buf_fl);
-        SET_LOWFLAT(frame->pthru.sgl_len, op->count * blocksize);
-        SET_LOWFLAT(frame->sge_count, 1);
+        SET_LOWFLAT(frame->pthru.sgl_len, op->गिनती * blocksize);
+        SET_LOWFLAT(frame->sge_गिनती, 1);
     }
     SET_LOWFLAT(frame->context, (u32)frame);
 
-    if (megasas_fire_cmd(pci_id, GET_GLOBALFLAT(mlun_gf->iobase), frame) == 0)
-        return DISK_RET_SUCCESS;
+    यदि (megasas_fire_cmd(pci_id, GET_GLOBALFLAT(mlun_gf->iobase), frame) == 0)
+        प्रत्यागम DISK_RET_SUCCESS;
 
     dprintf(2, "pthru cmd 0x%x failed\n", cdb[0]);
-    return DISK_RET_EBADTRACK;
+    प्रत्यागम DISK_RET_EBADTRACK;
 }
 
-static int
-megasas_add_lun(struct pci_device *pci, u32 iobase, u8 target, u8 lun)
+स्थिर पूर्णाङ्क
+megasas_add_lun(संरचना pci_device *pci, u32 iobase, u8 target, u8 lun)
 {
-    struct megasas_lun_s *mlun = malloc_fseg(sizeof(*mlun));
-    char *name;
-    int prio, ret = 0;
+    संरचना megasas_lun_s *mlun = malloc_fseg(परिमाण(*mlun));
+    वर्ण *name;
+    पूर्णाङ्क prio, ret = 0;
 
-    if (!mlun) {
+    यदि (!mlun) {
         warn_noalloc();
-        return -1;
+        प्रत्यागम -1;
     }
-    memset(mlun, 0, sizeof(*mlun));
+    memset(mlun, 0, परिमाण(*mlun));
     mlun->drive.type = DTYPE_MEGASAS;
     mlun->drive.cntl_id = pci->bdf;
     mlun->pci_id = pci->device;
     mlun->target = target;
     mlun->lun = lun;
     mlun->iobase = iobase;
-    mlun->frame = memalign_low(256, sizeof(struct megasas_cmd_frame));
-    if (!mlun->frame) {
+    mlun->frame = memalign_निचला(256, परिमाण(संरचना megasas_cmd_frame));
+    यदि (!mlun->frame) {
         warn_noalloc();
-        free(mlun);
-        return -1;
+        मुक्त(mlun);
+        प्रत्यागम -1;
     }
     boot_lchs_find_scsi_device(pci, target, lun, &(mlun->drive.lchs));
     name = znprintf(MAXDESCSIZE, "MegaRAID SAS (PCI %pP) LD %d:%d"
                     , pci, target, lun);
     prio = bootprio_find_scsi_device(pci, target, lun);
     ret = scsi_drive_setup(&mlun->drive, name, prio);
-    free(name);
-    if (ret) {
-        free(mlun->frame);
-        free(mlun);
+    मुक्त(name);
+    यदि (ret) {
+        मुक्त(mlun->frame);
+        मुक्त(mlun);
         ret = -1;
     }
 
-    return ret;
+    प्रत्यागम ret;
 }
 
-static void megasas_scan_target(struct pci_device *pci, u32 iobase)
+स्थिर शून्य megasas_scan_target(संरचना pci_device *pci, u32 iobase)
 {
-    struct mfi_ld_list_s ld_list;
-    struct megasas_cmd_frame *frame = memalign_tmp(256, sizeof(*frame));
-    if (!frame) {
+    संरचना mfi_ld_list_s ld_list;
+    संरचना megasas_cmd_frame *frame = memalign_tmp(256, परिमाण(*frame));
+    यदि (!frame) {
         warn_noalloc();
-        return;
+        प्रत्यागम;
     }
 
-    memset(&ld_list, 0, sizeof(ld_list));
-    memset_fl(frame, 0, sizeof(*frame));
+    memset(&ld_list, 0, परिमाण(ld_list));
+    memset_fl(frame, 0, परिमाण(*frame));
 
     frame->cmd = MFI_CMD_DCMD;
     frame->cmd_status = 0xFF;
-    frame->sge_count = 1;
+    frame->sge_गिनती = 1;
     frame->flags = 0x0011;
-    frame->data_xfer_len = sizeof(ld_list);
+    frame->data_xfer_len = परिमाण(ld_list);
     frame->dcmd.opcode = 0x03010000;
     frame->dcmd.sgl_addr = (u32)MAKE_FLATPTR(GET_SEG(SS), &ld_list);
-    frame->dcmd.sgl_len = sizeof(ld_list);
+    frame->dcmd.sgl_len = परिमाण(ld_list);
     frame->context = (u32)frame;
 
-    if (megasas_fire_cmd(pci->device, iobase, frame) == 0) {
-        dprintf(2, "%d LD found\n", ld_list.count);
-        int i;
-        for (i = 0; i < ld_list.count; i++) {
+    यदि (megasas_fire_cmd(pci->device, iobase, frame) == 0) {
+        dprintf(2, "%d LD found\n", ld_list.गिनती);
+        पूर्णाङ्क i;
+        प्रति (i = 0; i < ld_list.गिनती; i++) {
             dprintf(2, "LD %d:%d state 0x%x\n",
                     ld_list.lds[i].target, ld_list.lds[i].lun,
                     ld_list.lds[i].state);
-            if (ld_list.lds[i].state != 0) {
+            यदि (ld_list.lds[i].state != 0) {
                 megasas_add_lun(pci, iobase,
                                 ld_list.lds[i].target, ld_list.lds[i].lun);
             }
@@ -277,120 +277,120 @@ static void megasas_scan_target(struct pci_device *pci, u32 iobase)
     }
 }
 
-static int megasas_transition_to_ready(struct pci_device *pci, u32 ioaddr)
+स्थिर पूर्णाङ्क megasas_transition_to_ready(संरचना pci_device *pci, u32 ioaddr)
 {
     u32 fw_state = 0, new_state, mfi_flags = 0;
 
-    if (pci->device == PCI_DEVICE_ID_LSI_SAS1064R ||
+    यदि (pci->device == PCI_DEVICE_ID_LSI_SAS1064R ||
         pci->device == PCI_DEVICE_ID_DELL_PERC5)
         new_state = inl(ioaddr + MFI_OMSG0) & MFI_STATE_MASK;
-    else
+    अन्यथा
         new_state = inl(ioaddr + MFI_OSP0) & MFI_STATE_MASK;
 
-    while (fw_state != new_state) {
-        switch (new_state) {
-        case MFI_STATE_FAULT:
+    यावत् (fw_state != new_state) {
+        विकल्प (new_state) {
+        पक्ष MFI_STATE_FAULT:
             dprintf(1, "ERROR: fw in fault state\n");
-            return -1;
-            break;
-        case MFI_STATE_WAIT_HANDSHAKE:
+            प्रत्यागम -1;
+            भङ्ग;
+        पक्ष MFI_STATE_WAIT_HANDSHAKE:
             mfi_flags = 0x08;
             /* fallthrough */
-        case MFI_STATE_BOOT_MESSAGE_PENDING:
+        पक्ष MFI_STATE_BOOT_MESSAGE_PENDING:
             mfi_flags |= 0x10;
-            if (pci->device == PCI_DEVICE_ID_LSI_SAS2004 ||
+            यदि (pci->device == PCI_DEVICE_ID_LSI_SAS2004 ||
                 pci->device == PCI_DEVICE_ID_LSI_SAS2008 ||
                 pci->device == PCI_DEVICE_ID_LSI_SAS2208 ||
                 pci->device == PCI_DEVICE_ID_LSI_SAS3108) {
                 outl(mfi_flags, ioaddr + MFI_DB);
-            } else {
+            } अन्यथा {
                 outl(mfi_flags, ioaddr + MFI_IDB);
             }
-            break;
-        case MFI_STATE_OPERATIONAL:
+            भङ्ग;
+        पक्ष MFI_STATE_OPERATIONAL:
             mfi_flags = 0x07;
-            if (pci->device == PCI_DEVICE_ID_LSI_SAS2004 ||
+            यदि (pci->device == PCI_DEVICE_ID_LSI_SAS2004 ||
                 pci->device == PCI_DEVICE_ID_LSI_SAS2008 ||
                 pci->device == PCI_DEVICE_ID_LSI_SAS2208 ||
                 pci->device == PCI_DEVICE_ID_LSI_SAS3108) {
                 outl(mfi_flags, ioaddr + MFI_DB);
-                if (pci->device == PCI_DEVICE_ID_LSI_SAS2208 ||
+                यदि (pci->device == PCI_DEVICE_ID_LSI_SAS2208 ||
                     pci->device == PCI_DEVICE_ID_LSI_SAS3108) {
-                    int j = 0;
+                    पूर्णाङ्क j = 0;
                     u32 doorbell;
 
-                    while (j < MEGASAS_POLL_TIMEOUT) {
+                    यावत् (j < MEGASAS_POLL_TIMEOUT) {
                         doorbell = inl(ioaddr + MFI_DB) & 1;
-                        if (!doorbell)
-                            break;
+                        यदि (!doorbell)
+                            भङ्ग;
                         msleep(20);
                         j++;
                     }
                 }
-            } else {
+            } अन्यथा {
                 outl(mfi_flags, ioaddr + MFI_IDB);
             }
-            break;
-        case MFI_STATE_READY:
+            भङ्ग;
+        पक्ष MFI_STATE_READY:
             dprintf(2, "MegaRAID SAS fw ready\n");
-            return 0;
+            प्रत्यागम 0;
         }
         // The current state should not last longer than poll timeout
         u32 end = timer_calc(MEGASAS_POLL_TIMEOUT);
-        for (;;) {
-            if (timer_check(end)) {
-                break;
+        प्रति (;;) {
+            यदि (timer_check(end)) {
+                भङ्ग;
             }
             yield();
             fw_state = new_state;
-            if (pci->device == PCI_DEVICE_ID_LSI_SAS1064R ||
+            यदि (pci->device == PCI_DEVICE_ID_LSI_SAS1064R ||
                 pci->device == PCI_DEVICE_ID_DELL_PERC5)
                 new_state = inl(ioaddr + MFI_OMSG0) & MFI_STATE_MASK;
-            else
+            अन्यथा
                 new_state = inl(ioaddr + MFI_OSP0) & MFI_STATE_MASK;
-            if (new_state != fw_state) {
-                break;
+            यदि (new_state != fw_state) {
+                भङ्ग;
             }
         }
     }
     dprintf(1, "ERROR: fw in state %x\n", new_state & MFI_STATE_MASK);
-    return -1;
+    प्रत्यागम -1;
 }
 
-static void
-init_megasas(void *data)
+स्थिर शून्य
+init_megasas(शून्य *data)
 {
-    struct pci_device *pci = data;
+    संरचना pci_device *pci = data;
     u32 bar = PCI_BASE_ADDRESS_2;
-    if (!(pci_config_readl(pci->bdf, bar) & PCI_BASE_ADDRESS_IO_MASK))
+    यदि (!(pci_config_readl(pci->bdf, bar) & PCI_BASE_ADDRESS_IO_MASK))
         bar = PCI_BASE_ADDRESS_0;
     u32 iobase = pci_enable_iobar(pci, bar);
-    if (!iobase)
-        return;
+    यदि (!iobase)
+        प्रत्यागम;
     pci_enable_busmaster(pci);
 
     dprintf(1, "found MegaRAID SAS at %pP, io @ %x\n", pci, iobase);
 
     // reset
-    if (megasas_transition_to_ready(pci, iobase) == 0)
+    यदि (megasas_transition_to_ready(pci, iobase) == 0)
         megasas_scan_target(pci, iobase);
 }
 
-void
-megasas_setup(void)
+शून्य
+megasas_setup(शून्य)
 {
     ASSERT32FLAT();
-    if (!CONFIG_MEGASAS)
-        return;
+    यदि (!CONFIG_MEGASAS)
+        प्रत्यागम;
 
     dprintf(3, "init megasas\n");
 
-    struct pci_device *pci;
+    संरचना pci_device *pci;
     foreachpci(pci) {
-        if (pci->vendor != PCI_VENDOR_ID_LSI_LOGIC &&
+        यदि (pci->vendor != PCI_VENDOR_ID_LSI_LOGIC &&
             pci->vendor != PCI_VENDOR_ID_DELL)
-            continue;
-        if (pci->device == PCI_DEVICE_ID_LSI_SAS1064R ||
+            अनुवर्त;
+        यदि (pci->device == PCI_DEVICE_ID_LSI_SAS1064R ||
             pci->device == PCI_DEVICE_ID_LSI_SAS1078 ||
             pci->device == PCI_DEVICE_ID_LSI_SAS1078DE ||
             pci->device == PCI_DEVICE_ID_LSI_SAS2108 ||
