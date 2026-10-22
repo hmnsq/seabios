@@ -4,23 +4,23 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include <stdarg.h> // va_list
+#अन्तर्भाव <stdarg.h> // va_list
 
-#include "farptr.h" // GET_VAR
-#include "bregs.h" // struct bregs
-#include "config.h" // CONFIG_*
-#include "biosvar.h" // GET_GLOBAL
-#include "hw/pci.h" // pci_bdf_to_bus
-#include "hw/pcidevice.h" // pci_device
-#include "hw/serialio.h" // serial_debug_putc
-#include "malloc.h" // malloc_tmp
-#include "output.h" // dprintf
-#include "stacks.h" // call16_int
-#include "string.h" // memset
-#include "util.h" // ScreenAndDebug
+#अन्तर्भाव "farptr.h" // GET_VAR
+#अन्तर्भाव "bregs.h" // struct bregs
+#अन्तर्भाव "config.h" // CONFIG_*
+#अन्तर्भाव "biosvar.h" // GET_GLOBAL
+#अन्तर्भाव "hw/pci.h" // pci_bdf_to_bus
+#अन्तर्भाव "hw/pcidevice.h" // pci_device
+#अन्तर्भाव "hw/serialio.h" // serial_debug_putc
+#अन्तर्भाव "malloc.h" // malloc_tmp
+#अन्तर्भाव "output.h" // dprintf
+#अन्तर्भाव "stacks.h" // call16_int
+#अन्तर्भाव "string.h" // memset
+#अन्तर्भाव "util.h" // ScreenAndDebug
 
-struct putcinfo {
-    void (*func)(struct putcinfo *info, char c);
+संरचना putcinfo {
+    शून्य (*func)(संरचना putcinfo *info, वर्ण c);
 };
 
 
@@ -28,28 +28,28 @@ struct putcinfo {
  * Debug output
  ****************************************************************/
 
-void
-debug_banner(void)
+शून्य
+debug_banner(शून्य)
 {
     dprintf(1, "SeaBIOS (version %s)\n", VERSION);
     dprintf(1, "BUILD: %s\n", BUILDINFO);
 }
 
 // Write a character to debug port(s).
-static void
-debug_putc(struct putcinfo *action, char c)
+स्थिर शून्य
+debug_putc(संरचना putcinfo *action, वर्ण c)
 {
-    if (! CONFIG_DEBUG_LEVEL)
-        return;
+    यदि (! CONFIG_DEBUG_LEVEL)
+        प्रत्यागम;
     qemu_debug_putc(c);
-    if (!MODESEGMENT)
+    यदि (!MODESEGMENT)
         coreboot_debug_putc(c);
     serial_debug_putc(c);
 }
 
 // Flush any pending output to debug port(s).
-static void
-debug_flush(void)
+स्थिर शून्य
+debug_flush(शून्य)
 {
     serial_debug_flush();
 }
@@ -57,12 +57,12 @@ debug_flush(void)
 // In segmented mode just need a dummy variable (debug_putc is always
 // used anyway), and in 32bit flat mode need a pointer to the 32bit
 // instance of debug_putc().
-#if MODE16
-static struct putcinfo debuginfo VAR16;
-#elif MODESEGMENT
-static struct putcinfo debuginfo VAR32SEG;
-#else
-static struct putcinfo debuginfo = { debug_putc };
+#यदि MODE16
+स्थिर संरचना putcinfo debuginfo VAR16;
+#नोचेद्यदि MODESEGMENT
+स्थिर संरचना putcinfo debuginfo VAR32SEG;
+#अन्यथा
+स्थिर संरचना putcinfo debuginfo = { debug_putc };
 #endif
 
 
@@ -71,14 +71,14 @@ static struct putcinfo debuginfo = { debug_putc };
  ****************************************************************/
 
 // Show a character on the screen.
-static void
-screenc(char c)
+स्थिर शून्य
+screenc(वर्ण c)
 {
-    if (!MODESEGMENT && GET_IVT(0x10).segoff == FUNC16(entry_10).segoff)
+    यदि (!MODESEGMENT && GET_IVT(0x10).segoff == FUNC16(entry_10).segoff)
         // No need to thunk to 16bit mode if vgabios is not present
-        return;
-    struct bregs br;
-    memset(&br, 0, sizeof(br));
+        प्रत्यागम;
+    संरचना bregs br;
+    स_रखो(&br, 0, परिमाण(br));
     br.flags = F_IF;
     br.ah = 0x0e;
     br.al = c;
@@ -87,17 +87,17 @@ screenc(char c)
 }
 
 // Handle a character from a printf request.
-static void
-screen_putc(struct putcinfo *action, char c)
+स्थिर शून्य
+screen_putc(संरचना putcinfo *action, वर्ण c)
 {
-    if (ScreenAndDebug)
+    यदि (ScreenAndDebug)
         debug_putc(&debuginfo, c);
-    if (c == '\n')
+    यदि (c == '\n')
         screenc('\r');
     screenc(c);
 }
 
-static struct putcinfo screeninfo = { screen_putc };
+स्थिर संरचना putcinfo screeninfo = { screen_putc };
 
 
 /****************************************************************
@@ -105,252 +105,252 @@ static struct putcinfo screeninfo = { screen_putc };
  ****************************************************************/
 
 // Output a character.
-static void
-putc(struct putcinfo *action, char c)
+स्थिर शून्य
+अ_दो(संरचना putcinfo *action, वर्ण c)
 {
-    if (MODESEGMENT) {
+    यदि (MODESEGMENT) {
         // Only debugging output supported in segmented mode.
         debug_putc(action, c);
-        return;
+        प्रत्यागम;
     }
 
-    void (*func)(struct putcinfo *info, char c) = GET_GLOBAL(action->func);
+    शून्य (*func)(संरचना putcinfo *info, वर्ण c) = GET_GLOBAL(action->func);
     func(action, c);
 }
 
 // Ouptut a string.
-static void
-puts(struct putcinfo *action, const char *s)
+स्थिर शून्य
+माला_दो(संरचना putcinfo *action, ध्रुव वर्ण *s)
 {
-    if (!MODESEGMENT && !s)
+    यदि (!MODESEGMENT && !s)
         s = "(NULL)";
-    for (; *s; s++)
-        putc(action, *s);
+    प्रति (; *s; s++)
+        अ_दो(action, *s);
 }
 
 // Output a string that is in the CS segment.
-static void
-puts_cs(struct putcinfo *action, const char *s)
+स्थिर शून्य
+puts_cs(संरचना putcinfo *action, ध्रुव वर्ण *s)
 {
-    char *vs = (char*)s;
-    for (;; vs++) {
-        char c = GET_GLOBAL(*vs);
-        if (!c)
-            break;
-        putc(action, c);
+    वर्ण *vs = (वर्ण*)s;
+    प्रति (;; vs++) {
+        वर्ण c = GET_GLOBAL(*vs);
+        यदि (!c)
+            भङ्ग;
+        अ_दो(action, c);
     }
 }
 
 // Output an unsigned integer.
-static void
-putuint(struct putcinfo *action, u32 val)
+स्थिर शून्य
+putuint(संरचना putcinfo *action, u32 val)
 {
-    char buf[12];
-    char *d = &buf[sizeof(buf) - 1];
+    वर्ण buf[12];
+    वर्ण *d = &buf[परिमाण(buf) - 1];
     *d-- = '\0';
-    for (;;) {
+    प्रति (;;) {
         *d = (val % 10) + '0';
         val /= 10;
-        if (!val)
-            break;
+        यदि (!val)
+            भङ्ग;
         d--;
     }
-    puts(action, d);
+    माला_दो(action, d);
 }
 
 // Output a single digit hex character.
-static inline void
-putsinglehex(struct putcinfo *action, u32 val, int uc)
+स्थिर अन्तःस्थ शून्य
+putsinglehex(संरचना putcinfo *action, u32 val, पूर्णाङ्क uc)
 {
-    if (val <= 9)
+    यदि (val <= 9)
         val = '0' + val;
-    else if (uc)
+    अन्यथा यदि (uc)
         val = 'A' + val - 10;
-    else
+    अन्यथा
         val = 'a' + val - 10;
-    putc(action, val);
+    अ_दो(action, val);
 }
 
 // Output an integer in hexadecimal with a specified width.
-static void
-puthex(struct putcinfo *action, u32 val, int width, int uc)
+स्थिर शून्य
+puthex(संरचना putcinfo *action, u32 val, पूर्णाङ्क width, पूर्णाङ्क uc)
 {
-    switch (width) {
-    default: putsinglehex(action, (val >> 28) & 0xf, uc);
-    case 7:  putsinglehex(action, (val >> 24) & 0xf, uc);
-    case 6:  putsinglehex(action, (val >> 20) & 0xf, uc);
-    case 5:  putsinglehex(action, (val >> 16) & 0xf, uc);
-    case 4:  putsinglehex(action, (val >> 12) & 0xf, uc);
-    case 3:  putsinglehex(action, (val >> 8) & 0xf, uc);
-    case 2:  putsinglehex(action, (val >> 4) & 0xf, uc);
-    case 1:  putsinglehex(action, (val >> 0) & 0xf, uc);
+    विकल्प (width) {
+    स्वभाव: putsinglehex(action, (val >> 28) & 0xf, uc);
+    पक्ष 7:  putsinglehex(action, (val >> 24) & 0xf, uc);
+    पक्ष 6:  putsinglehex(action, (val >> 20) & 0xf, uc);
+    पक्ष 5:  putsinglehex(action, (val >> 16) & 0xf, uc);
+    पक्ष 4:  putsinglehex(action, (val >> 12) & 0xf, uc);
+    पक्ष 3:  putsinglehex(action, (val >> 8) & 0xf, uc);
+    पक्ष 2:  putsinglehex(action, (val >> 4) & 0xf, uc);
+    पक्ष 1:  putsinglehex(action, (val >> 0) & 0xf, uc);
     }
 }
 
 // Output an integer in hexadecimal with a minimum width.
-static void
-putprettyhex(struct putcinfo *action, u32 val, int width, char padchar, int uc)
+स्थिर शून्य
+putprettyhex(संरचना putcinfo *action, u32 val, पूर्णाङ्क width, वर्ण padchar, पूर्णाङ्क uc)
 {
     u32 tmp = val;
-    int count = 1;
-    while (tmp >>= 4)
-        count++;
-    width -= count;
-    while (width-- > 0)
-        putc(action, padchar);
-    puthex(action, val, count, uc);
+    पूर्णाङ्क गिनती = 1;
+    यावत् (tmp >>= 4)
+        गिनती++;
+    width -= गिनती;
+    यावत् (width-- > 0)
+        अ_दो(action, padchar);
+    puthex(action, val, गिनती, uc);
 }
 
 // Output 'struct pci_device' BDF as %02x:%02x.%x
-static void
-put_pci_device(struct putcinfo *action, struct pci_device *pci)
+स्थिर शून्य
+put_pci_device(संरचना putcinfo *action, संरचना pci_device *pci)
 {
     puthex(action, pci_bdf_to_bus(pci->bdf), 2, 0);
-    putc(action, ':');
+    अ_दो(action, ':');
     puthex(action, pci_bdf_to_dev(pci->bdf), 2, 0);
-    putc(action, '.');
+    अ_दो(action, '.');
     puthex(action, pci_bdf_to_fn(pci->bdf), 1, 0);
 }
 
-static inline int
-isdigit(u8 c)
+स्थिर अन्तःस्थ पूर्णाङ्क
+है_अंक(u8 c)
 {
-    return ((u8)(c - '0')) < 10;
+    प्रत्यागम ((u8)(c - '0')) < 10;
 }
 
-static void
-bvprintf(struct putcinfo *action, const char *fmt, va_list args)
+स्थिर शून्य
+bvprintf(संरचना putcinfo *action, ध्रुव वर्ण *fmt, बहु_सूची args)
 {
-    const char *s = fmt;
-    int uc;
-    for (;; s++) {
-        char c = GET_GLOBAL(*(u8*)s);
-        if (!c)
-            break;
-        if (c != '%') {
-            putc(action, c);
-            continue;
+    ध्रुव वर्ण *s = fmt;
+    पूर्णाङ्क uc;
+    प्रति (;; s++) {
+        वर्ण c = GET_GLOBAL(*(u8*)s);
+        यदि (!c)
+            भङ्ग;
+        यदि (c != '%') {
+            अ_दो(action, c);
+            अनुवर्त;
         }
-        const char *n = s+1;
-        int field_width = 0;
-        char padchar = ' ';
+        ध्रुव वर्ण *n = s+1;
+        पूर्णाङ्क field_width = 0;
+        वर्ण padchar = ' ';
         u8 is64 = 0;
-        for (;;) {
+        प्रति (;;) {
             c = GET_GLOBAL(*(u8*)n);
-            if (!isdigit(c))
-                break;
-            if (!field_width && (c == '0'))
+            यदि (!है_अंक(c))
+                भङ्ग;
+            यदि (!field_width && (c == '0'))
                 padchar = '0';
-            else
+            अन्यथा
                 field_width = field_width * 10 + c - '0';
             n++;
         }
-        if (c == 'l') {
+        यदि (c == 'l') {
             // Ignore long format indicator
             n++;
             c = GET_GLOBAL(*(u8*)n);
         }
-        if (c == 'l') {
+        यदि (c == 'l') {
             is64 = 1;
             n++;
             c = GET_GLOBAL(*(u8*)n);
         }
         s32 val;
-        const char *sarg;
-        switch (c) {
-        case '%':
-            putc(action, '%');
-            break;
-        case 'd':
-            val = va_arg(args, s32);
-            if (is64)
-                va_arg(args, s32);
-            if (val < 0) {
-                putc(action, '-');
+        ध्रुव वर्ण *sarg;
+        विकल्प (c) {
+        पक्ष '%':
+            अ_दो(action, '%');
+            भङ्ग;
+        पक्ष 'd':
+            val = बहु_तर्क(args, s32);
+            यदि (is64)
+                बहु_तर्क(args, s32);
+            यदि (val < 0) {
+                अ_दो(action, '-');
                 val = -val;
             }
             putuint(action, val);
-            break;
-        case 'u':
-            val = va_arg(args, s32);
-            if (is64)
-                va_arg(args, s32);
+            भङ्ग;
+        पक्ष 'u':
+            val = बहु_तर्क(args, s32);
+            यदि (is64)
+                बहु_तर्क(args, s32);
             putuint(action, val);
-            break;
-        case 'p':
-            val = va_arg(args, s32);
-            if (!MODESEGMENT && GET_GLOBAL(*(u8*)(n+1)) == 'P') {
+            भङ्ग;
+        पक्ष 'p':
+            val = बहु_तर्क(args, s32);
+            यदि (!MODESEGMENT && GET_GLOBAL(*(u8*)(n+1)) == 'P') {
                 // %pP is 'struct pci_device' printer
-                put_pci_device(action, (void*)val);
+                put_pci_device(action, (शून्य*)val);
                 n++;
-                break;
+                भङ्ग;
             }
-            putc(action, '0');
-            putc(action, 'x');
+            अ_दो(action, '0');
+            अ_दो(action, 'x');
             puthex(action, val, 8, 0);
-            break;
-        case 'X':
-        case 'x':
+            भङ्ग;
+        पक्ष 'X':
+        पक्ष 'x':
             uc = (c == 'X');
-            val = va_arg(args, s32);
-            if (is64) {
-                u32 upper = va_arg(args, s32);
-                if (upper) {
+            val = बहु_तर्क(args, s32);
+            यदि (is64) {
+                u32 upper = बहु_तर्क(args, s32);
+                यदि (upper) {
                     putprettyhex(action, upper, field_width - 8, padchar, uc);
                     puthex(action, val, 8, uc);
-                    break;
+                    भङ्ग;
                 }
             }
             putprettyhex(action, val, field_width, padchar, uc);
-            break;
-        case 'c':
-            val = va_arg(args, int);
-            putc(action, val);
-            break;
-        case '.':
+            भङ्ग;
+        पक्ष 'c':
+            val = बहु_तर्क(args, पूर्णाङ्क);
+            अ_दो(action, val);
+            भङ्ग;
+        पक्ष '.':
             // Hack to support "%.s" - meaning string on stack.
-            if (GET_GLOBAL(*(u8*)(n+1)) != 's')
-                break;
+            यदि (GET_GLOBAL(*(u8*)(n+1)) != 's')
+                भङ्ग;
             n++;
-            sarg = va_arg(args, const char *);
-            puts(action, sarg);
-            break;
-        case 's':
-            sarg = va_arg(args, const char *);
+            sarg = बहु_तर्क(args, ध्रुव वर्ण *);
+            माला_दो(action, sarg);
+            भङ्ग;
+        पक्ष 's':
+            sarg = बहु_तर्क(args, ध्रुव वर्ण *);
             puts_cs(action, sarg);
-            break;
-        default:
-            putc(action, '%');
+            भङ्ग;
+        स्वभाव:
+            अ_दो(action, '%');
             n = s;
         }
         s = n;
     }
 }
 
-void
-panic(const char *fmt, ...)
+शून्य
+panic(ध्रुव वर्ण *fmt, ...)
 {
-    if (CONFIG_DEBUG_LEVEL) {
-        va_list args;
-        va_start(args, fmt);
+    यदि (CONFIG_DEBUG_LEVEL) {
+        बहु_सूची args;
+        बहु_शुरू(args, fmt);
         bvprintf(&debuginfo, fmt, args);
-        va_end(args);
+        बहु_पूर्ण(args);
         debug_flush();
     }
 
     // XXX - use PANIC PORT.
     irq_disable();
-    for (;;)
+    प्रति (;;)
         hlt();
 }
 
-void
-__dprintf(const char *fmt, ...)
+शून्य
+__dprintf(ध्रुव वर्ण *fmt, ...)
 {
-    if (!MODESEGMENT && CONFIG_THREADS && CONFIG_DEBUG_LEVEL >= DEBUG_thread
+    यदि (!MODESEGMENT && CONFIG_THREADS && CONFIG_DEBUG_LEVEL >= DEBUG_thread
         && *fmt != '\\' && *fmt != '/') {
-        struct thread_info *cur = getCurThread();
-        if (cur != &MainThread) {
+        संरचना thread_info *cur = getCurThread();
+        यदि (cur != &MainThread) {
             // Show "thread id" for this debug message.
             debug_putc(&debuginfo, '|');
             puthex(&debuginfo, (u32)cur, 8, 0);
@@ -359,22 +359,22 @@ __dprintf(const char *fmt, ...)
         }
     }
 
-    va_list args;
-    va_start(args, fmt);
+    बहु_सूची args;
+    बहु_शुरू(args, fmt);
     bvprintf(&debuginfo, fmt, args);
-    va_end(args);
+    बहु_पूर्ण(args);
     debug_flush();
 }
 
-void
-printf(const char *fmt, ...)
+शून्य
+म_लिखो(ध्रुव वर्ण *fmt, ...)
 {
     ASSERT32FLAT();
-    va_list args;
-    va_start(args, fmt);
+    बहु_सूची args;
+    बहु_शुरू(args, fmt);
     bvprintf(&screeninfo, fmt, args);
-    va_end(args);
-    if (ScreenAndDebug)
+    बहु_पूर्ण(args);
+    यदि (ScreenAndDebug)
         debug_flush();
 }
 
@@ -383,17 +383,17 @@ printf(const char *fmt, ...)
  * snprintf
  ****************************************************************/
 
-struct snprintfinfo {
-    struct putcinfo info;
-    char *str, *end;
+संरचना snprintfinfo {
+    संरचना putcinfo info;
+    वर्ण *str, *end;
 };
 
-static void
-putc_str(struct putcinfo *info, char c)
+स्थिर शून्य
+putc_str(संरचना putcinfo *info, वर्ण c)
 {
-    struct snprintfinfo *sinfo = container_of(info, struct snprintfinfo, info);
-    if (sinfo->str >= sinfo->end)
-        return;
+    संरचना snprintfinfo *sinfo = container_of(info, संरचना snprintfinfo, info);
+    यदि (sinfo->str >= sinfo->end)
+        प्रत्यागम;
     *sinfo->str = c;
     sinfo->str++;
 }
@@ -401,46 +401,46 @@ putc_str(struct putcinfo *info, char c)
 // Build a formatted string.  Note, this function returns the actual
 // number of bytes used (not including null) even in the overflow
 // case.
-int
-snprintf(char *str, size_t size, const char *fmt, ...)
+पूर्णाङ्क
+snprintf(वर्ण *str, माप_प्रकार size, ध्रुव वर्ण *fmt, ...)
 {
     ASSERT32FLAT();
-    if (!size)
-        return 0;
-    struct snprintfinfo sinfo = { { putc_str }, str, str + size };
-    va_list args;
-    va_start(args, fmt);
+    यदि (!size)
+        प्रत्यागम 0;
+    संरचना snprintfinfo sinfo = { { putc_str }, str, str + size };
+    बहु_सूची args;
+    बहु_शुरू(args, fmt);
     bvprintf(&sinfo.info, fmt, args);
-    va_end(args);
-    char *end = sinfo.str;
-    if (end >= sinfo.end)
+    बहु_पूर्ण(args);
+    वर्ण *end = sinfo.str;
+    यदि (end >= sinfo.end)
         end = sinfo.end - 1;
     *end = '\0';
-    return end - str;
+    प्रत्यागम end - str;
 }
 
 // Build a formatted string - malloc'ing the memory.
-char *
-znprintf(size_t size, const char *fmt, ...)
+वर्ण *
+znprintf(माप_प्रकार size, ध्रुव वर्ण *fmt, ...)
 {
     ASSERT32FLAT();
-    if (!size)
-        return NULL;
-    char *str = malloc_tmp(size);
-    if (!str) {
+    यदि (!size)
+        प्रत्यागम रिक्त;
+    वर्ण *str = malloc_tmp(size);
+    यदि (!str) {
         warn_noalloc();
-        return NULL;
+        प्रत्यागम रिक्त;
     }
-    struct snprintfinfo sinfo = { { putc_str }, str, str + size };
-    va_list args;
-    va_start(args, fmt);
+    संरचना snprintfinfo sinfo = { { putc_str }, str, str + size };
+    बहु_सूची args;
+    बहु_शुरू(args, fmt);
     bvprintf(&sinfo.info, fmt, args);
-    va_end(args);
-    char *end = sinfo.str;
-    if (end >= sinfo.end)
+    बहु_पूर्ण(args);
+    वर्ण *end = sinfo.str;
+    यदि (end >= sinfo.end)
         end = sinfo.end - 1;
     *end = '\0';
-    return str;
+    प्रत्यागम str;
 }
 
 
@@ -448,33 +448,33 @@ znprintf(size_t size, const char *fmt, ...)
  * Misc helpers
  ****************************************************************/
 
-void
-hexdump(const void *d, int len)
+शून्य
+hexdump(ध्रुव शून्य *d, पूर्णाङ्क len)
 {
-    int count=0;
-    while (len > 0) {
-        if (count % 8 == 0) {
-            putc(&debuginfo, '\n');
-            puthex(&debuginfo, count*4, 8, 0);
-            putc(&debuginfo, ':');
-        } else {
-            putc(&debuginfo, ' ');
+    पूर्णाङ्क गिनती=0;
+    यावत् (len > 0) {
+        यदि (गिनती % 8 == 0) {
+            अ_दो(&debuginfo, '\n');
+            puthex(&debuginfo, गिनती*4, 8, 0);
+            अ_दो(&debuginfo, ':');
+        } अन्यथा {
+            अ_दो(&debuginfo, ' ');
         }
         puthex(&debuginfo, *(u32*)d, 8, 0);
-        count++;
+        गिनती++;
         len-=4;
         d+=4;
     }
-    putc(&debuginfo, '\n');
+    अ_दो(&debuginfo, '\n');
     debug_flush();
 }
 
-static void
-dump_regs(struct bregs *regs)
+स्थिर शून्य
+dump_regs(संरचना bregs *regs)
 {
-    if (!regs) {
+    यदि (!regs) {
         dprintf(1, "  NULL\n");
-        return;
+        प्रत्यागम;
     }
     dprintf(1, "   a=%08x  b=%08x  c=%08x  d=%08x ds=%04x es=%04x ss=%04x\n"
             , regs->eax, regs->ebx, regs->ecx, regs->edx
@@ -485,84 +485,84 @@ dump_regs(struct bregs *regs)
 }
 
 // Report entry to an Interrupt Service Routine (ISR).
-void
-__debug_isr(const char *fname)
+शून्य
+__debug_isr(ध्रुव वर्ण *fname)
 {
     puts_cs(&debuginfo, fname);
-    putc(&debuginfo, '\n');
+    अ_दो(&debuginfo, '\n');
     debug_flush();
 }
 
 // Function called on handler startup.
-void
-__debug_enter(struct bregs *regs, const char *fname)
+शून्य
+__debug_enter(संरचना bregs *regs, ध्रुव वर्ण *fname)
 {
     dprintf(1, "enter %s:\n", fname);
     dump_regs(regs);
 }
 
 // Send debugging output info.
-void
-__debug_stub(struct bregs *regs, int lineno, const char *fname)
+शून्य
+__debug_stub(संरचना bregs *regs, पूर्णाङ्क lineno, ध्रुव वर्ण *fname)
 {
     dprintf(1, "stub %s:%d:\n", fname, lineno);
     dump_regs(regs);
 }
 
 // Report on an invalid parameter.
-void
-__warn_invalid(struct bregs *regs, int lineno, const char *fname)
+शून्य
+__warn_invalid(संरचना bregs *regs, पूर्णाङ्क lineno, ध्रुव वर्ण *fname)
 {
-    if (CONFIG_DEBUG_LEVEL >= DEBUG_invalid) {
+    यदि (CONFIG_DEBUG_LEVEL >= DEBUG_invalid) {
         dprintf(1, "invalid %s:%d:\n", fname, lineno);
         dump_regs(regs);
     }
 }
 
 // Report on an unimplemented feature.
-void
-__warn_unimplemented(struct bregs *regs, int lineno, const char *fname)
+शून्य
+__warn_unimplemented(संरचना bregs *regs, पूर्णाङ्क lineno, ध्रुव वर्ण *fname)
 {
-    if (CONFIG_DEBUG_LEVEL >= DEBUG_unimplemented) {
+    यदि (CONFIG_DEBUG_LEVEL >= DEBUG_unimplemented) {
         dprintf(1, "unimplemented %s:%d:\n", fname, lineno);
         dump_regs(regs);
     }
 }
 
 // Report a detected internal inconsistency.
-void
-__warn_internalerror(int lineno, const char *fname)
+शून्य
+__warn_internalerror(पूर्णाङ्क lineno, ध्रुव वर्ण *fname)
 {
     dprintf(1, "WARNING - internal error detected at %s:%d!\n"
             , fname, lineno);
 }
 
 // Report on an allocation failure.
-void
-__warn_noalloc(int lineno, const char *fname)
+शून्य
+__warn_noalloc(पूर्णाङ्क lineno, ध्रुव वर्ण *fname)
 {
     dprintf(1, "WARNING - Unable to allocate resource at %s:%d!\n"
             , fname, lineno);
 }
 
 // Report on a timeout exceeded.
-void
-__warn_timeout(int lineno, const char *fname)
+शून्य
+__warn_timeout(पूर्णाङ्क lineno, ध्रुव वर्ण *fname)
 {
     dprintf(1, "WARNING - Timeout at %s:%d!\n", fname, lineno);
 }
 
 // Report a handler reporting an invalid parameter to the caller.
-void
-__set_invalid(struct bregs *regs, int lineno, const char *fname)
+शून्य
+__set_invalid(संरचना bregs *regs, पूर्णाङ्क lineno, ध्रुव वर्ण *fname)
 {
     __warn_invalid(regs, lineno, fname);
     set_invalid_silent(regs);
 }
 
 // Report a call of an unimplemented function.
-void
-__set_unimplemented(struct bregs *regs, int lineno, const char *fname)
+शून्य
+__set_unimplemented(संरचना bregs *regs, पूर्णाङ्क lineno, ध्रुव वर्ण *fname)
 {
     __warn_unimplemented(regs, lineno, fname);
     set_invalid_silent(regs);
@@ -572,8 +572,8 @@ __set_unimplemented(struct bregs *regs, int lineno, const char *fname)
 // caller.  Note, the lineno and return code are encoded in the same
 // parameter as gcc does a better job of scheduling function calls
 // when there are 3 or less parameters.
-void
-__set_code_invalid(struct bregs *regs, u32 linecode, const char *fname)
+शून्य
+__set_code_invalid(संरचना bregs *regs, u32 linecode, ध्रुव वर्ण *fname)
 {
     u8 code = linecode;
     u32 lineno = linecode >> 8;
@@ -582,8 +582,8 @@ __set_code_invalid(struct bregs *regs, u32 linecode, const char *fname)
 }
 
 // Report a call of an unimplemented function.
-void
-__set_code_unimplemented(struct bregs *regs, u32 linecode, const char *fname)
+शून्य
+__set_code_unimplemented(संरचना bregs *regs, u32 linecode, ध्रुव वर्ण *fname)
 {
     u8 code = linecode;
     u32 lineno = linecode >> 8;

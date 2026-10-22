@@ -1,49 +1,49 @@
 #ifndef __OUTPUT_H
 #define __OUTPUT_H
 
-#include "config.h" // CONFIG_DEBUG_LEVEL
-#include "types.h" // u32
+#अन्तर्भाव "config.h" // CONFIG_DEBUG_LEVEL
+#अन्तर्भाव "types.h" // u32
 
 // output.c
-void debug_banner(void);
-void panic(const char *fmt, ...)
-    __attribute__ ((format (printf, 1, 2))) __noreturn;
-void printf(const char *fmt, ...)
-    __attribute__ ((format (printf, 1, 2)));
-int snprintf(char *str, size_t size, const char *fmt, ...)
-    __attribute__ ((format (printf, 3, 4)));
-char * znprintf(size_t size, const char *fmt, ...)
-    __attribute__ ((format (printf, 2, 3)));
-void __dprintf(const char *fmt, ...)
-    __attribute__ ((format (printf, 1, 2)));
-struct bregs;
-void __debug_enter(struct bregs *regs, const char *fname);
-void __debug_isr(const char *fname);
-void __debug_stub(struct bregs *regs, int lineno, const char *fname);
-void __warn_invalid(struct bregs *regs, int lineno, const char *fname);
-void __warn_unimplemented(struct bregs *regs, int lineno, const char *fname);
-void __warn_internalerror(int lineno, const char *fname);
-void __warn_noalloc(int lineno, const char *fname);
-void __warn_timeout(int lineno, const char *fname);
-void __set_invalid(struct bregs *regs, int lineno, const char *fname);
-void __set_unimplemented(struct bregs *regs, int lineno, const char *fname);
-void __set_code_invalid(struct bregs *regs, u32 linecode, const char *fname);
-void __set_code_unimplemented(struct bregs *regs, u32 linecode
-                              , const char *fname);
-void hexdump(const void *d, int len);
+शून्य debug_banner(शून्य);
+शून्य panic(ध्रुव वर्ण *fmt, ...)
+    __attribute__ ((format (म_लिखो, 1, 2))) __noreturn;
+शून्य म_लिखो(ध्रुव वर्ण *fmt, ...)
+    __attribute__ ((format (म_लिखो, 1, 2)));
+पूर्णाङ्क snprintf(वर्ण *str, माप_प्रकार size, ध्रुव वर्ण *fmt, ...)
+    __attribute__ ((format (म_लिखो, 3, 4)));
+वर्ण * znprintf(माप_प्रकार size, ध्रुव वर्ण *fmt, ...)
+    __attribute__ ((format (म_लिखो, 2, 3)));
+शून्य __dprintf(ध्रुव वर्ण *fmt, ...)
+    __attribute__ ((format (म_लिखो, 1, 2)));
+संरचना bregs;
+शून्य __debug_enter(संरचना bregs *regs, ध्रुव वर्ण *fname);
+शून्य __debug_isr(ध्रुव वर्ण *fname);
+शून्य __debug_stub(संरचना bregs *regs, पूर्णाङ्क lineno, ध्रुव वर्ण *fname);
+शून्य __warn_invalid(संरचना bregs *regs, पूर्णाङ्क lineno, ध्रुव वर्ण *fname);
+शून्य __warn_unimplemented(संरचना bregs *regs, पूर्णाङ्क lineno, ध्रुव वर्ण *fname);
+शून्य __warn_internalerror(पूर्णाङ्क lineno, ध्रुव वर्ण *fname);
+शून्य __warn_noalloc(पूर्णाङ्क lineno, ध्रुव वर्ण *fname);
+शून्य __warn_timeout(पूर्णाङ्क lineno, ध्रुव वर्ण *fname);
+शून्य __set_invalid(संरचना bregs *regs, पूर्णाङ्क lineno, ध्रुव वर्ण *fname);
+शून्य __set_unimplemented(संरचना bregs *regs, पूर्णाङ्क lineno, ध्रुव वर्ण *fname);
+शून्य __set_code_invalid(संरचना bregs *regs, u32 linecode, ध्रुव वर्ण *fname);
+शून्य __set_code_unimplemented(संरचना bregs *regs, u32 linecode
+                              , ध्रुव वर्ण *fname);
+शून्य hexdump(ध्रुव शून्य *d, पूर्णाङ्क len);
 
-#define dprintf(lvl, fmt, args...) do {                         \
-        if (CONFIG_DEBUG_LEVEL && (lvl) <= CONFIG_DEBUG_LEVEL)  \
+#define dprintf(lvl, fmt, args...) कुरु {                         \
+        यदि (CONFIG_DEBUG_LEVEL && (lvl) <= CONFIG_DEBUG_LEVEL)  \
             __dprintf((fmt) , ##args );                         \
-    } while (0)
-#define debug_enter(regs, lvl) do {                     \
-        if ((lvl) && (lvl) <= CONFIG_DEBUG_LEVEL)       \
+    } यावत् (0)
+#define debug_enter(regs, lvl) कुरु {                     \
+        यदि ((lvl) && (lvl) <= CONFIG_DEBUG_LEVEL)       \
             __debug_enter((regs), __func__);            \
-    } while (0)
-#define debug_isr(lvl) do {                             \
-        if ((lvl) && (lvl) <= CONFIG_DEBUG_LEVEL)       \
+    } यावत् (0)
+#define debug_isr(lvl) कुरु {                             \
+        यदि ((lvl) && (lvl) <= CONFIG_DEBUG_LEVEL)       \
             __debug_isr(__func__);                      \
-    } while (0)
+    } यावत् (0)
 #define debug_stub(regs)                        \
     __debug_stub((regs), __LINE__, __func__)
 #define warn_invalid(regs)                      \
