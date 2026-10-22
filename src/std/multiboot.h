@@ -23,7 +23,7 @@
 #define MULTIBOOT_HEADER 1
 
 /* How many bytes from the start of the file we search for the header.  */
-#define MULTIBOOT_SEARCH			8192
+#define MULTIBOOT_खोज			8192
 #define MULTIBOOT_HEADER_ALIGN			4
 
 /* The magic field should contain this.  */
@@ -91,12 +91,12 @@
 
 #ifndef ASM_FILE
 
-typedef unsigned char		multiboot_uint8_t;
-typedef unsigned short		multiboot_uint16_t;
-typedef unsigned int		multiboot_uint32_t;
-typedef unsigned long long	multiboot_uint64_t;
+प्रकारनिर्देश unsigned वर्ण		multiboot_uint8_t;
+प्रकारनिर्देश unsigned short		multiboot_uint16_t;
+प्रकारनिर्देश unsigned पूर्णाङ्क		multiboot_uint32_t;
+प्रकारनिर्देश unsigned long long	multiboot_uint64_t;
 
-struct multiboot_header
+संरचना multiboot_header
 {
   /* Must be MULTIBOOT_MAGIC - see above.  */
   multiboot_uint32_t magic;
@@ -122,26 +122,26 @@ struct multiboot_header
 };
 
 /* The symbol table for a.out.  */
-struct multiboot_aout_symbol_table
+संरचना multiboot_aout_प्रतीक_table
 {
   multiboot_uint32_t tabsize;
   multiboot_uint32_t strsize;
   multiboot_uint32_t addr;
   multiboot_uint32_t reserved;
 };
-typedef struct multiboot_aout_symbol_table multiboot_aout_symbol_table_t;
+प्रकारनिर्देश संरचना multiboot_aout_प्रतीक_table multiboot_aout_प्रतीक_table_t;
 
 /* The section header table for ELF.  */
-struct multiboot_elf_section_header_table
+संरचना multiboot_elf_section_header_table
 {
-  multiboot_uint32_t num;
+  multiboot_uint32_t अंक;
   multiboot_uint32_t size;
   multiboot_uint32_t addr;
   multiboot_uint32_t shndx;
 };
-typedef struct multiboot_elf_section_header_table multiboot_elf_section_header_table_t;
+प्रकारनिर्देश संरचना multiboot_elf_section_header_table multiboot_elf_section_header_table_t;
 
-struct multiboot_info
+संरचना multiboot_info
 {
   /* Multiboot info version number */
   multiboot_uint32_t flags;
@@ -157,12 +157,12 @@ struct multiboot_info
   multiboot_uint32_t cmdline;
 
   /* Boot-Module list */
-  multiboot_uint32_t mods_count;
+  multiboot_uint32_t mods_गिनती;
   multiboot_uint32_t mods_addr;
 
-  union
+  सङ्घ
   {
-    multiboot_aout_symbol_table_t aout_sym;
+    multiboot_aout_प्रतीक_table_t aout_sym;
     multiboot_elf_section_header_table_t elf_sec;
   } u;
 
@@ -200,14 +200,14 @@ struct multiboot_info
 #define MULTIBOOT_FRAMEBUFFER_TYPE_RGB     1
 #define MULTIBOOT_FRAMEBUFFER_TYPE_EGA_TEXT	2
   multiboot_uint8_t framebuffer_type;
-  union
+  सङ्घ
   {
-    struct
+    संरचना
     {
       multiboot_uint32_t framebuffer_palette_addr;
-      multiboot_uint16_t framebuffer_palette_num_colors;
+      multiboot_uint16_t framebuffer_palette_अंक_colors;
     };
-    struct
+    संरचना
     {
       multiboot_uint8_t framebuffer_red_field_position;
       multiboot_uint8_t framebuffer_red_mask_size;
@@ -218,16 +218,16 @@ struct multiboot_info
     };
   };
 };
-typedef struct multiboot_info multiboot_info_t;
+प्रकारनिर्देश संरचना multiboot_info multiboot_info_t;
 
-struct multiboot_color
+संरचना multiboot_color
 {
   multiboot_uint8_t red;
   multiboot_uint8_t green;
   multiboot_uint8_t blue;
 };
 
-struct multiboot_mmap_entry
+संरचना multiboot_mmap_entry
 {
   multiboot_uint32_t size;
   multiboot_uint64_t addr;
@@ -239,9 +239,9 @@ struct multiboot_mmap_entry
 #define MULTIBOOT_MEMORY_BADRAM                 5
   multiboot_uint32_t type;
 } __attribute__((packed));
-typedef struct multiboot_mmap_entry multiboot_memory_map_t;
+प्रकारनिर्देश संरचना multiboot_mmap_entry multiboot_memory_map_t;
 
-struct multiboot_mod_list
+संरचना multiboot_mod_list
 {
   /* the memory used goes from bytes 'mod_start' to 'mod_end-1' inclusive */
   multiboot_uint32_t mod_start;
@@ -253,7 +253,7 @@ struct multiboot_mod_list
   /* padding to take it to 16 bytes (must be zero) */
   multiboot_uint32_t pad;
 };
-typedef struct multiboot_mod_list multiboot_module_t;
+प्रकारनिर्देश संरचना multiboot_mod_list multiboot_module_t;
 
 #endif /* ! ASM_FILE */
 
