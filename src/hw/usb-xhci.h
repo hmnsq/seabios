@@ -12,9 +12,9 @@ void xhci_setup(void);
 struct usb_pipe *xhci_realloc_pipe(struct usbdevice_s *usbdev
                                    , struct usb_pipe *upipe
                                    , struct usb_endpoint_descriptor *epdesc);
-int xhci_send_pipe(struct usb_pipe *p, int dir, const void *cmd
-                   , void *data, int datasize);
-int xhci_poll_intr(struct usb_pipe *p, void *data);
+ціле xhci_send_pipe(struct usb_pipe *p, ціле dir, const void *cmd
+                   , void *data, ціле datasize);
+ціле xhci_poll_intr(struct usb_pipe *p, void *data);
 
 // --------------------------------------------------------------
 // register interface

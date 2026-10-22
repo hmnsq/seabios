@@ -22,60 +22,60 @@ romfile_add(struct romfile_s *file)
 
 // Search for the specified file.
 static struct romfile_s *
-__romfile_findprefix(const char *prefix, int prefixlen, struct romfile_s *prev)
+__romfile_findprefix(const char *prefix, ціле prefixlen, struct romfile_s *prev)
 {
     struct romfile_s *cur = RomfileRoot;
-    if (prev)
+    якщо (prev)
         cur = prev->next;
-    while (cur) {
-        if (memcmp(prefix, cur->name, prefixlen) == 0)
-            return cur;
+    поки (cur) {
+        якщо (memcmp(prefix, cur->name, prefixlen) == 0)
+            повернути cur;
         cur = cur->next;
     }
-    return NULL;
+    повернути NULL;
 }
 
 struct romfile_s *
 romfile_findprefix(const char *prefix, struct romfile_s *prev)
 {
-    return __romfile_findprefix(prefix, strlen(prefix), prev);
+    повернути __romfile_findprefix(prefix, strlen(prefix), prev);
 }
 
 struct romfile_s *
 romfile_find(const char *name)
 {
-    return __romfile_findprefix(name, strlen(name) + 1, NULL);
+    повернути __romfile_findprefix(name, strlen(name) + 1, NULL);
 }
 
 // Helper function to find, malloc_tmphigh, and copy a romfile.  This
 // function adds a trailing zero to the malloc'd copy.
 void *
-romfile_loadfile(const char *name, int *psize)
+romfile_loadfile(const char *name, ціле *psize)
 {
     struct romfile_s *file = romfile_find(name);
-    if (!file)
-        return NULL;
+    якщо (!file)
+        повернути NULL;
 
-    int filesize = file->size;
-    if (!filesize)
-        return NULL;
+    ціле filesize = file->size;
+    якщо (!filesize)
+        повернути NULL;
 
     char *data = malloc_tmphigh(filesize+1);
-    if (!data) {
+    якщо (!data) {
         warn_noalloc();
-        return NULL;
+        повернути NULL;
     }
 
     dprintf(5, "Copying romfile '%s' (len %d)\n", name, filesize);
-    int ret = file->copy(file, data, filesize);
-    if (ret < 0) {
+    ціле ret = file->copy(file, data, filesize);
+    якщо (ret < 0) {
         free(data);
-        return NULL;
+        повернути NULL;
     }
-    if (psize)
+    якщо (psize)
         *psize = filesize;
     data[filesize] = '\0';
-    return data;
+    повернути data;
 }
 
 // Attempt to load an integer from the given file - return 'defval'
@@ -84,19 +84,19 @@ u64
 romfile_loadint(const char *name, u64 defval)
 {
     struct romfile_s *file = romfile_find(name);
-    if (!file)
-        return defval;
+    якщо (!file)
+        повернути defval;
 
-    int filesize = file->size;
-    if (!filesize || filesize > sizeof(u64) || (filesize & (filesize-1)))
+    ціле filesize = file->size;
+    якщо (!filesize || filesize > sizeof(u64) || (filesize & (filesize-1)))
         // Doesn't look like a valid integer.
-        return defval;
+        повернути defval;
 
     u64 val = 0;
-    int ret = file->copy(file, &val, sizeof(val));
-    if (ret < 0)
-        return defval;
-    return val;
+    ціле ret = file->copy(file, &val, sizeof(val));
+    якщо (ret < 0)
+        повернути defval;
+    повернути val;
 }
 
 u32
@@ -105,21 +105,21 @@ romfile_loadbool(const char *name, u32 defval)
     static const char *true_strings[] = { "1", "on", "yes" };
     static const char *false_strings[] = { "0", "off", "no" };
     char *str = romfile_loadfile(name, NULL);
-    int i;
+    ціле i;
 
-    if (!str)
-        return defval;
+    якщо (!str)
+        повернути defval;
 
-    for (i = 0; i < ARRAY_SIZE(true_strings); i++)
-        if (0 == strcmp(str, true_strings[i]))
-            return 1;
+    для (i = 0; i < ARRAY_SIZE(true_strings); i++)
+        якщо (0 == strcmp(str, true_strings[i]))
+            повернути 1;
 
-    for (i = 0; i < ARRAY_SIZE(false_strings); i++)
-        if (0 == strcmp(str, false_strings[i]))
-            return 0;
+    для (i = 0; i < ARRAY_SIZE(false_strings); i++)
+        якщо (0 == strcmp(str, false_strings[i]))
+            повернути 0;
 
     dprintf(1, "%s: unknown bool string: %s\n", __func__, str);
-    return defval;
+    повернути defval;
 }
 
 struct const_romfile_s {
@@ -127,26 +127,26 @@ struct const_romfile_s {
     void *data;
 };
 
-static int
+static ціле
 const_read_file(struct romfile_s *file, void *dst, u32 maxlen)
 {
-    if (file->size > maxlen)
-        return -1;
+    якщо (file->size > maxlen)
+        повернути -1;
     struct const_romfile_s *cfile;
     cfile = container_of(file, struct const_romfile_s, file);
-    if (maxlen > file->size)
+    якщо (maxlen > file->size)
         maxlen = file->size;
     memcpy(dst, cfile->data, maxlen);
-    return file->size;
+    повернути file->size;
 }
 
 static void
-const_romfile_add(char *name, void *data, int size)
+const_romfile_add(char *name, void *data, ціле size)
 {
     struct const_romfile_s *cfile = malloc_tmp(sizeof(*cfile));
-    if (!cfile) {
+    якщо (!cfile) {
         warn_noalloc();
-        return;
+        повернути;
     }
     memset(cfile, 0, sizeof(*cfile));
     strtcpy(cfile->file.name, name, sizeof(cfile->file.name));
@@ -160,9 +160,9 @@ void
 const_romfile_add_int(char *name, u32 value)
 {
     u32 *data = malloc_tmp(sizeof(*data));
-    if (!data) {
+    якщо (!data) {
         warn_noalloc();
-        return;
+        повернути;
     }
     *data = value;
     const_romfile_add(name, data, sizeof(*data));

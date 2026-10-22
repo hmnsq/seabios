@@ -89,42 +89,42 @@ struct cbmem_console {
 static struct cbmem_console *cbcon = NULL;
 
 static u16
-ipchksum(char *buf, int count)
+ipchksum(char *buf, ціле count)
 {
     u16 *p = (u16*)buf;
     u32 sum = 0;
-    while (count > 1) {
+    поки (count > 1) {
         sum += GET_FARVAR(0, *p);
         p++;
         count -= 2;
     }
-    if (count)
+    якщо (count)
         sum += GET_FARVAR(0, *(u8*)p);
     sum = (sum >> 16) + (sum & 0xffff);
     sum += (sum >> 16);
-    return ~sum;
+    повернути ~sum;
 }
 
 // Try to locate the coreboot header in a given address range.
 static struct cb_header *
-find_cb_header(u32 addr, int len)
+find_cb_header(u32 addr, ціле len)
 {
     u32 end = addr + len;
-    for (; addr < end; addr += 16) {
+    для (; addr < end; addr += 16) {
         struct cb_header *cbh = (void*)addr;
-        if (GET_FARVAR(0, cbh->signature) != CB_SIGNATURE)
+        якщо (GET_FARVAR(0, cbh->signature) != CB_SIGNATURE)
             continue;
         u32 tsize = GET_FARVAR(0, cbh->table_bytes);
-        if (! tsize)
+        якщо (! tsize)
             continue;
-        if (ipchksum((void*)addr, sizeof(*cbh)) != 0)
+        якщо (ipchksum((void*)addr, sizeof(*cbh)) != 0)
             continue;
-        if (ipchksum((void*)addr + sizeof(*cbh), tsize)
+        якщо (ipchksum((void*)addr + sizeof(*cbh), tsize)
             != GET_FARVAR(0, cbh->table_checksum))
             continue;
-        return cbh;
+        повернути cbh;
     }
-    return NULL;
+    повернути NULL;
 }
 
 // Try to find the coreboot memory table in the given coreboot table.
@@ -133,30 +133,30 @@ find_cb_subtable(struct cb_header *cbh, u32 tag)
 {
     char *tbl = (char *)cbh + sizeof(*cbh);
     u32 count = GET_FARVAR(0, cbh->table_entries);
-    int i;
-    for (i=0; i<count; i++) {
+    ціле i;
+    для (i=0; i<count; i++) {
         struct cb_memory *cbm = (void*)tbl;
         tbl += GET_FARVAR(0, cbm->size);
-        if (GET_FARVAR(0, cbm->tag) == tag)
-            return cbm;
+        якщо (GET_FARVAR(0, cbm->tag) == tag)
+            повернути cbm;
     }
-    return NULL;
+    повернути NULL;
 }
 
 struct cb_header *
 find_cb_table(void)
 {
     struct cb_header *cbh = find_cb_header(0, 0x1000);
-    if (!cbh)
-        return NULL;
+    якщо (!cbh)
+        повернути NULL;
     struct cb_forward *cbf = find_cb_subtable(cbh, CB_TAG_FORWARD);
-    if (cbf) {
+    якщо (cbf) {
         dprintf(3, "Found coreboot table forwarder.\n");
         cbh = find_cb_header(GET_FARVAR(0, cbf->forward), 0x100);
-        if (!cbh)
-            return NULL;
+        якщо (!cbh)
+            повернути NULL;
     }
-    return cbh;
+    повернути cbh;
 }
 
 static struct cb_memory *CBMemTable;
@@ -166,25 +166,25 @@ const char *CBvendor = "", *CBpart = "";
 void
 coreboot_preinit(void)
 {
-    if (!CONFIG_COREBOOT)
-        return;
+    якщо (!CONFIG_COREBOOT)
+        повернути;
 
     dprintf(3, "Attempting to find coreboot table\n");
 
     // Find coreboot table.
     struct cb_header *cbh = find_cb_table();
-    if (!cbh)
+    якщо (!cbh)
         goto fail;
     dprintf(3, "Now attempting to find coreboot memory map\n");
     struct cb_memory *cbm = CBMemTable = find_cb_subtable(cbh, CB_TAG_MEMORY);
-    if (!cbm)
+    якщо (!cbm)
         goto fail;
 
-    int i, count = MEM_RANGE_COUNT(cbm);
-    for (i=0; i<count; i++) {
+    ціле i, count = MEM_RANGE_COUNT(cbm);
+    для (i=0; i<count; i++) {
         struct cb_memory_range *m = &cbm->map[i];
         u32 type = m->type;
-        if (type == CB_MEM_TABLE)
+        якщо (type == CB_MEM_TABLE)
             type = E820_RESERVED;
         e820_add(m->start, m->size, type);
     }
@@ -194,40 +194,40 @@ coreboot_preinit(void)
     e820_add(0, 16*1024, E820_RAM);
 
     struct cb_cbmem_ref *cbref = find_cb_subtable(cbh, CB_TAG_CBMEM_CONSOLE);
-    if (cbref) {
+    якщо (cbref) {
         cbcon = (void*)(u32)cbref->cbmem_addr;
         debug_banner();
         dprintf(1, "Found coreboot cbmem console @ %llx\n", cbref->cbmem_addr);
     }
 
     struct cb_mainboard *cbmb = find_cb_subtable(cbh, CB_TAG_MAINBOARD);
-    if (cbmb) {
+    якщо (cbmb) {
         CBvendor = &cbmb->strings[cbmb->vendor_idx];
         CBpart = &cbmb->strings[cbmb->part_idx];
         dprintf(1, "Found mainboard %s %s\n", CBvendor, CBpart);
     }
 
-    return;
+    повернути;
 
 fail:
     // No table found..  Use 16Megs as a dummy value.
     dprintf(1, "Unable to find coreboot table!\n");
     e820_add(0, 16*1024*1024, E820_RAM);
-    return;
+    повернути;
 }
 
 void coreboot_debug_putc(char c)
 {
-    if (!CONFIG_DEBUG_COREBOOT)
-        return;
-    if (!cbcon)
-        return;
+    якщо (!CONFIG_DEBUG_COREBOOT)
+        повернути;
+    якщо (!cbcon)
+        повернути;
     u32 cursor = cbcon->cursor & CBMC_CURSOR_MASK;
     u32 flags = cbcon->cursor & ~CBMC_CURSOR_MASK;
-    if (cursor >= cbcon->size)
-        return; // Old coreboot version with legacy overflow mechanism.
+    якщо (cursor >= cbcon->size)
+        повернути; // Old coreboot version with legacy overflow mechanism.
     cbcon->body[cursor++] = c;
-    if (cursor >= cbcon->size) {
+    якщо (cursor >= cbcon->size) {
         cursor = 0;
         flags |= CBMC_OVERFLOW;
     }
@@ -245,28 +245,28 @@ scan_tables(u32 start, u32 size)
 {
     void *p = (void*)ALIGN(start, 16);
     void *end = (void*)start + size;
-    for (; p<end; p += 16)
+    для (; p<end; p += 16)
         copy_table(p);
 }
 
 void
 coreboot_platform_setup(void)
 {
-    if (!CONFIG_COREBOOT)
-        return;
+    якщо (!CONFIG_COREBOOT)
+        повернути;
     pci_probe_devices();
 
     struct cb_memory *cbm = CBMemTable;
-    if (!cbm)
-        return;
+    якщо (!cbm)
+        повернути;
 
     dprintf(3, "Relocating coreboot bios tables\n");
 
     // Scan CB_MEM_TABLE areas for bios tables.
-    int i, count = MEM_RANGE_COUNT(cbm);
-    for (i=0; i<count; i++) {
+    ціле i, count = MEM_RANGE_COUNT(cbm);
+    для (i=0; i<count; i++) {
         struct cb_memory_range *m = &cbm->map[i];
-        if (m->type == CB_MEM_TABLE)
+        якщо (m->type == CB_MEM_TABLE)
             scan_tables(m->start, m->size);
     }
 
@@ -279,37 +279,37 @@ coreboot_platform_setup(void)
  ****************************************************************/
 
 // Uncompress data in flash to an area of memory.
-static int
+static ціле
 ulzma(u8 *dst, u32 maxlen, const u8 *src, u32 srclen)
 {
     dprintf(3, "Uncompressing data %d@%p to %d@%p\n", srclen, src, maxlen, dst);
     CLzmaDecoderState state;
-    int ret = LzmaDecodeProperties(&state.Properties, src, LZMA_PROPERTIES_SIZE);
-    if (ret != LZMA_RESULT_OK) {
+    ціле ret = LzmaDecodeProperties(&state.Properties, src, LZMA_PROPERTIES_SIZE);
+    якщо (ret != LZMA_RESULT_OK) {
         dprintf(1, "LzmaDecodeProperties error - %d\n", ret);
-        return -1;
+        повернути -1;
     }
     u8 scratch[15980];
-    int need = (LzmaGetNumProbs(&state.Properties) * sizeof(CProb));
-    if (need > sizeof(scratch)) {
-        dprintf(1, "LzmaDecode need %d have %d\n", need, (unsigned int)sizeof(scratch));
-        return -1;
+    ціле need = (LzmaGetNumProbs(&state.Properties) * sizeof(CProb));
+    якщо (need > sizeof(scratch)) {
+        dprintf(1, "LzmaDecode need %d have %d\n", need, (unsigned ціле)sizeof(scratch));
+        повернути -1;
     }
     state.Probs = (CProb *)scratch;
 
     u32 dstlen = *(u32*)(src + LZMA_PROPERTIES_SIZE);
-    if (dstlen > maxlen) {
+    якщо (dstlen > maxlen) {
         dprintf(1, "LzmaDecode too large (max %d need %d)\n", maxlen, dstlen);
-        return -1;
+        повернути -1;
     }
     u32 inProcessed, outProcessed;
     ret = LzmaDecode(&state, src + LZMA_PROPERTIES_SIZE + 8, srclen
                      , &inProcessed, dst, dstlen, &outProcessed);
-    if (ret) {
+    якщо (ret) {
         dprintf(1, "LzmaDecode returned %d\n", ret);
-        return -1;
+        повернути -1;
     }
-    return dstlen;
+    повернути dstlen;
 }
 
 
@@ -349,38 +349,38 @@ struct cbfs_romfile_s {
 };
 
 // Copy a file to memory (uncompressing if necessary)
-static int
+static ціле
 cbfs_copyfile(struct romfile_s *file, void *dst, u32 maxlen)
 {
-    if (!CONFIG_COREBOOT_FLASH)
-        return -1;
+    якщо (!CONFIG_COREBOOT_FLASH)
+        повернути -1;
 
     struct cbfs_romfile_s *cfile;
     cfile = container_of(file, struct cbfs_romfile_s, file);
     u32 size = cfile->rawsize;
     void *src = cfile->data;
-    if (cfile->flags) {
+    якщо (cfile->flags) {
         // Compressed - copy to temp ram and uncompress it.
         void *temp = malloc_tmphigh(size);
-        if (!temp) {
+        якщо (!temp) {
             warn_noalloc();
-            return -1;
+            повернути -1;
         }
         iomemcpy(temp, src, size);
-        int ret = ulzma(dst, maxlen, temp, size);
+        ціле ret = ulzma(dst, maxlen, temp, size);
         yield();
         free(temp);
-        return ret;
+        повернути ret;
     }
 
     // Not compressed.
     dprintf(3, "Copying data %d@%p to %d@%p\n", size, src, maxlen, dst);
-    if (size > maxlen) {
+    якщо (size > maxlen) {
         warn_noalloc();
-        return -1;
+        повернути -1;
     }
     iomemcpy(dst, src, size);
-    return size;
+    повернути size;
 }
 
 // Process CBFS links file.  The links file is a newline separated
@@ -390,29 +390,29 @@ static void
 process_links_file(void)
 {
     char *links = romfile_loadfile("links", NULL), *next = links;
-    while (next) {
+    поки (next) {
         // Parse out linkname and destname
         char *linkname = next;
         next = strchr(linkname, '\n');
-        if (next)
+        якщо (next)
             *next++ = '\0';
         char *comment = strchr(linkname, '#');
-        if (comment)
+        якщо (comment)
             *comment = '\0';
         linkname = nullTrailingSpace(linkname);
         char *destname = strchr(linkname, ' ');
-        if (!destname)
+        якщо (!destname)
             continue;
         *destname++ = '\0';
         destname = nullTrailingSpace(destname);
         // Lookup destname and create new romfile entry for linkname
         struct romfile_s *ufile = romfile_find(destname);
-        if (!ufile)
+        якщо (!ufile)
             continue;
         struct cbfs_romfile_s *cufile
             = container_of(ufile, struct cbfs_romfile_s, file);
         struct cbfs_romfile_s *cfile = malloc_tmp(sizeof(*cfile));
-        if (!cfile) {
+        якщо (!cfile) {
             warn_noalloc();
             break;
         }
@@ -426,35 +426,35 @@ process_links_file(void)
 void
 coreboot_cbfs_init(void)
 {
-    if (!CONFIG_COREBOOT_FLASH)
-        return;
+    якщо (!CONFIG_COREBOOT_FLASH)
+        повернути;
 
     struct cbfs_header *hdr = *(void **)(CONFIG_CBFS_LOCATION - 4);
-    if ((u32)hdr & 0x03) {
+    якщо ((u32)hdr & 0x03) {
         dprintf(1, "Invalid CBFS pointer %p\n", hdr);
-        return;
+        повернути;
     }
-    if (CONFIG_CBFS_LOCATION && (u32)hdr > CONFIG_CBFS_LOCATION)
+    якщо (CONFIG_CBFS_LOCATION && (u32)hdr > CONFIG_CBFS_LOCATION)
         // Looks like the pointer is relative to CONFIG_CBFS_LOCATION
         hdr = (void*)hdr + CONFIG_CBFS_LOCATION;
-    if (hdr->magic != cpu_to_be32(CBFS_HEADER_MAGIC)) {
+    якщо (hdr->magic != cpu_to_be32(CBFS_HEADER_MAGIC)) {
         dprintf(1, "Unable to find CBFS (ptr=%p; got %x not %x)\n"
                 , hdr, hdr->magic, cpu_to_be32(CBFS_HEADER_MAGIC));
-        return;
+        повернути;
     }
     dprintf(1, "Found CBFS header at %p\n", hdr);
 
     u32 romsize = be32_to_cpu(hdr->romsize);
     u32 romstart = CONFIG_CBFS_LOCATION - romsize;
     struct cbfs_file *fhdr = (void*)romstart + be32_to_cpu(hdr->offset);
-    for (;;) {
-        if ((u32)fhdr - romstart > romsize)
+    для (;;) {
+        якщо ((u32)fhdr - romstart > romsize)
             break;
         u64 magic = fhdr->magic;
-        if (magic != CBFS_FILE_MAGIC)
+        якщо (magic != CBFS_FILE_MAGIC)
             break;
         struct cbfs_romfile_s *cfile = malloc_tmp(sizeof(*cfile));
-        if (!cfile) {
+        якщо (!cfile) {
             warn_noalloc();
             break;
         }
@@ -464,8 +464,8 @@ coreboot_cbfs_init(void)
         cfile->fhdr = fhdr;
         cfile->file.copy = cbfs_copyfile;
         cfile->data = (void*)fhdr + be32_to_cpu(fhdr->offset);
-        int len = strlen(cfile->file.name);
-        if (len > 5 && strcmp(&cfile->file.name[len-5], ".lzma") == 0) {
+        ціле len = strlen(cfile->file.name);
+        якщо (len > 5 && strcmp(&cfile->file.name[len-5], ".lzma") == 0) {
             // Using compression.
             cfile->flags = 1;
             cfile->file.name[len-5] = '\0';
@@ -502,12 +502,12 @@ struct cbfs_payload {
 void
 cbfs_run_payload(struct cbfs_file *fhdr)
 {
-    if (!CONFIG_COREBOOT_FLASH || !fhdr)
-        return;
+    якщо (!CONFIG_COREBOOT_FLASH || !fhdr)
+        повернути;
     dprintf(1, "Run %s\n", fhdr->filename);
     struct cbfs_payload *pay = (void*)fhdr + be32_to_cpu(fhdr->offset);
     struct cbfs_payload_segment *seg = pay->segments;
-    for (;;) {
+    для (;;) {
         void *src = (void*)pay + be32_to_cpu(seg->offset);
         void *dest = (void*)(u32)be64_to_cpu(seg->load_addr);
         u32 src_len = be32_to_cpu(seg->len);
@@ -521,27 +521,27 @@ cbfs_run_payload(struct cbfs_file *fhdr)
             dprintf(1, "Calling addr %p\n", dest);
             void (*func)(void) = dest;
             func();
-            return;
+            повернути;
         }
         default:
             dprintf(3, "Segment %x %d@%p -> %d@%p\n"
                     , seg->type, src_len, src, dest_len, dest);
-            if (seg->compression == cpu_to_be32(CBFS_COMPRESS_NONE)) {
-                if (src_len > dest_len)
+            якщо (seg->compression == cpu_to_be32(CBFS_COMPRESS_NONE)) {
+                якщо (src_len > dest_len)
                     src_len = dest_len;
                 memcpy(dest, src, src_len);
-            } else if (CONFIG_LZMA
+            } інакше якщо (CONFIG_LZMA
                        && seg->compression == cpu_to_be32(CBFS_COMPRESS_LZMA)) {
-                int ret = ulzma(dest, dest_len, src, src_len);
-                if (ret < 0)
-                    return;
+                ціле ret = ulzma(dest, dest_len, src, src_len);
+                якщо (ret < 0)
+                    повернути;
                 src_len = ret;
-            } else {
+            } інакше {
                 dprintf(1, "No support for compression type %x\n"
                         , seg->compression);
-                return;
+                повернути;
             }
-            if (dest_len > src_len)
+            якщо (dest_len > src_len)
                 memset(dest + src_len, 0, dest_len - src_len);
             break;
         }
@@ -553,12 +553,12 @@ cbfs_run_payload(struct cbfs_file *fhdr)
 void
 cbfs_payload_setup(void)
 {
-    if (!CONFIG_COREBOOT_FLASH)
-        return;
+    якщо (!CONFIG_COREBOOT_FLASH)
+        повернути;
     struct romfile_s *file = NULL;
-    for (;;) {
+    для (;;) {
         file = romfile_findprefix("img/", file);
-        if (!file)
+        якщо (!file)
             break;
         struct cbfs_romfile_s *cfile;
         cfile = container_of(file, struct cbfs_romfile_s, file);

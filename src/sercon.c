@@ -16,24 +16,24 @@
 
 static u8 video_rows(void)
 {
-    return GET_BDA(video_rows)+1;
+    повернути GET_BDA(video_rows)+1;
 }
 
 static u8 video_cols(void)
 {
-    return GET_BDA(video_cols);
+    повернути GET_BDA(video_cols);
 }
 
 static u8 cursor_pos_col(void)
 {
     u16 pos = GET_BDA(cursor_pos[0]);
-    return pos & 0xff;
+    повернути pos & 0xff;
 }
 
 static u8 cursor_pos_row(void)
 {
     u16 pos = GET_BDA(cursor_pos[0]);
-    return (pos >> 8) & 0xff;
+    повернути (pos >> 8) & 0xff;
 }
 
 static void cursor_pos_set(u8 row, u8 col)
@@ -69,9 +69,9 @@ VARLOW u8 sercon_attr = 0x07;
 
 static VAR16 u8 sercon_cmap[8] = { '0', '4', '2', '6', '1', '5', '3', '7' };
 
-static int sercon_splitmode(void)
+static ціле sercon_splitmode(void)
 {
-    return GET_LOW(sercon_split);
+    повернути GET_LOW(sercon_split);
 }
 
 static void sercon_putchar(u8 chr)
@@ -79,20 +79,20 @@ static void sercon_putchar(u8 chr)
     u16 addr = GET_LOW(sercon_port);
     u32 end = irqtimer_calc_ticks(0x0a);
 
-#if 0
+#якщо 0
     /* for visual control sequence debugging */
-    if (chr == '\x1b')
+    якщо (chr == '\x1b')
         chr = '*';
 #endif
 
-    for (;;) {
+    для (;;) {
         u8 lsr = inb(addr+SEROFF_LSR);
-        if ((lsr & 0x60) == 0x60) {
+        якщо ((lsr & 0x60) == 0x60) {
             // Success - can write data
             outb(chr, addr+SEROFF_DATA);
             break;
         }
-        if (irqtimer_check(end)) {
+        якщо (irqtimer_check(end)) {
             break;
         }
         yield();
@@ -140,17 +140,17 @@ static void sercon_term_set_color(u8 fg, u8 bg, u8 bold)
     sercon_putchar('\x1b');
     sercon_putchar('[');
     sercon_putchar('0');
-    if (fg != 7) {
+    якщо (fg != 7) {
         sercon_putchar(';');
         sercon_putchar('3');
         sercon_putchar(GET_GLOBAL(sercon_cmap[fg & 7]));
     }
-    if (bg != 0) {
+    якщо (bg != 0) {
         sercon_putchar(';');
         sercon_putchar('4');
         sercon_putchar(GET_GLOBAL(sercon_cmap[bg & 7]));
     }
-    if (bold) {
+    якщо (bold) {
         sercon_putchar(';');
         sercon_putchar('1');
     }
@@ -159,8 +159,8 @@ static void sercon_term_set_color(u8 fg, u8 bg, u8 bold)
 
 static void sercon_set_attr(u8 attr)
 {
-    if (attr == GET_LOW(sercon_attr_last))
-        return;
+    якщо (attr == GET_LOW(sercon_attr_last))
+        повернути;
 
     SET_LOW(sercon_attr_last, attr);
     sercon_term_set_color((attr >> 0) & 7,
@@ -172,12 +172,12 @@ static void sercon_print_utf8(u8 chr)
 {
     u16 unicode = cp437_to_unicode(chr);
 
-    if (unicode < 0x7f) {
+    якщо (unicode < 0x7f) {
         sercon_putchar(unicode);
-    } else if (unicode < 0x7ff) {
+    } інакше якщо (unicode < 0x7ff) {
         sercon_putchar(0xc0 | ((unicode >>  6) & 0x1f));
         sercon_putchar(0x80 | ((unicode >>  0) & 0x3f));
-    } else {
+    } інакше {
         sercon_putchar(0xe0 | ((unicode >> 12) & 0x0f));
         sercon_putchar(0x80 | ((unicode >>  6) & 0x3f));
         sercon_putchar(0x80 | ((unicode >>  0) & 0x3f));
@@ -186,9 +186,9 @@ static void sercon_print_utf8(u8 chr)
 
 static void sercon_cursor_pos_set(u8 row, u8 col)
 {
-    if (!sercon_splitmode()) {
+    якщо (!sercon_splitmode()) {
         cursor_pos_set(row, col);
-    } else {
+    } інакше {
         /* let vgabios update cursor */
     }
 }
@@ -198,22 +198,22 @@ static void sercon_lazy_cursor_sync(void)
     u8 row = cursor_pos_row();
     u8 col = cursor_pos_col();
 
-    if (GET_LOW(sercon_row_last) == row &&
+    якщо (GET_LOW(sercon_row_last) == row &&
         GET_LOW(sercon_col_last) == col)
-        return;
+        повернути;
 
-    if (col == 0 && GET_LOW(sercon_row_last) <= row) {
-        if (GET_LOW(sercon_col_last) != 0) {
+    якщо (col == 0 && GET_LOW(sercon_row_last) <= row) {
+        якщо (GET_LOW(sercon_col_last) != 0) {
             sercon_putchar('\r');
             SET_LOW(sercon_col_last, 0);
         }
-        while (GET_LOW(sercon_row_last) < row) {
+        поки (GET_LOW(sercon_row_last) < row) {
             sercon_putchar('\n');
             SET_LOW(sercon_row_last, GET_LOW(sercon_row_last)+1);
         }
-        if (GET_LOW(sercon_row_last) == row &&
+        якщо (GET_LOW(sercon_row_last) == row &&
             GET_LOW(sercon_col_last) == col)
-            return;
+            повернути;
     }
 
     sercon_term_cursor_goto(row, col);
@@ -227,7 +227,7 @@ static void sercon_lazy_flush(void)
 
     chr = GET_LOW(sercon_char);
     attr = GET_LOW(sercon_attr);
-    if (chr) {
+    якщо (chr) {
         sercon_set_attr(attr);
         sercon_print_utf8(chr);
         SET_LOW(sercon_col_last, GET_LOW(sercon_col_last) + 1);
@@ -252,7 +252,7 @@ static void sercon_lazy_backspace(void)
 
     sercon_lazy_flush();
     col = cursor_pos_col();
-    if (col > 0) {
+    якщо (col > 0) {
         sercon_putchar(8);
         sercon_lazy_cursor_update(cursor_pos_row(), col-1);
     }
@@ -268,10 +268,10 @@ static void sercon_lazy_lf(void)
     u8 row;
 
     row = cursor_pos_row() + 1;
-    if (row >= video_rows()) {
+    якщо (row >= video_rows()) {
         /* scrolling up */
         row = video_rows()-1;
-        if (GET_LOW(sercon_row_last) > 0) {
+        якщо (GET_LOW(sercon_row_last) > 0) {
             SET_LOW(sercon_row_last, GET_LOW(sercon_row_last) - 1);
         }
     }
@@ -283,25 +283,25 @@ static void sercon_lazy_move_cursor(void)
     u8 col;
 
     col = cursor_pos_col() + 1;
-    if (col >= video_cols()) {
+    якщо (col >= video_cols()) {
         sercon_lazy_cr();
         sercon_lazy_lf();
-    } else {
+    } інакше {
         sercon_cursor_pos_set(cursor_pos_row(), col);
     }
 }
 
 static void sercon_lazy_putchar(u8 chr, u8 attr, u8 teletype)
 {
-    if (cursor_pos_row() != GET_LOW(sercon_row_last) ||
+    якщо (cursor_pos_row() != GET_LOW(sercon_row_last) ||
         cursor_pos_col() != GET_LOW(sercon_col_last)) {
         sercon_lazy_flush();
     }
 
     SET_LOW(sercon_char, chr);
-    if (teletype)
+    якщо (teletype)
         sercon_lazy_move_cursor();
-    else
+    інакше
         SET_LOW(sercon_attr, attr);
 }
 
@@ -312,7 +312,7 @@ static void sercon_1000(struct bregs *regs)
     u8 mode = regs->al & 0x7f;
     u8 rows, cols;
 
-    if (!sercon_splitmode()) {
+    якщо (!sercon_splitmode()) {
         switch (mode) {
         case 0x00:
         case 0x01:
@@ -337,7 +337,7 @@ static void sercon_1000(struct bregs *regs)
         SET_BDA(video_cols, cols);
         SET_BDA(video_rows, rows-1);
         SET_BDA(cursor_type, 0x0007);
-    } else {
+    } інакше {
         /* let vgabios handle mode init */
     }
 
@@ -348,7 +348,7 @@ static void sercon_1000(struct bregs *regs)
 
     sercon_term_reset();
     sercon_term_no_linewrap();
-    if (clearscreen)
+    якщо (clearscreen)
         sercon_term_clear_screen();
 }
 
@@ -377,16 +377,16 @@ static void sercon_1003(struct bregs *regs)
 static void sercon_1006(struct bregs *regs)
 {
     sercon_lazy_flush();
-    if (regs->al == 0) {
+    якщо (regs->al == 0) {
         /* clear rect, do only in case this looks like a fullscreen clear */
-        if (regs->ch == 0 &&
+        якщо (regs->ch == 0 &&
             regs->cl == 0 &&
             regs->dh == video_rows()-1 &&
             regs->dl == video_cols()-1) {
             sercon_set_attr(regs->bh);
             sercon_term_clear_screen();
         }
-    } else {
+    } інакше {
         sercon_putchar('\r');
         sercon_putchar('\n');
     }
@@ -404,10 +404,10 @@ static void sercon_1009(struct bregs *regs)
 {
     u16 count = regs->cx;
 
-    if (count == 1) {
+    якщо (count == 1) {
         sercon_lazy_putchar(regs->al, regs->bl, 0);
 
-    } else if (regs->al == 0x20 &&
+    } інакше якщо (regs->al == 0x20 &&
                video_rows() * video_cols() == count &&
                cursor_pos_row() == 0 &&
                cursor_pos_col() == 0) {
@@ -416,10 +416,10 @@ static void sercon_1009(struct bregs *regs)
         sercon_set_attr(regs->bl);
         sercon_term_clear_screen();
 
-    } else {
+    } інакше {
         sercon_lazy_flush();
         sercon_set_attr(regs->bl);
-        while (count) {
+        поки (count) {
             sercon_print_utf8(regs->al);
             count--;
         }
@@ -460,11 +460,11 @@ static void sercon_100f(struct bregs *regs)
 /* VBE 2.0 */
 static void sercon_104f(struct bregs *regs)
 {
-    if (!sercon_splitmode()) {
+    якщо (!sercon_splitmode()) {
         regs->ax = 0x0100;
-    } else {
+    } інакше {
         // Disable sercon entry point on any vesa modeset
-        if (regs->al == 0x02)
+        якщо (regs->al == 0x02)
             SET_LOW(sercon_enable, 0);
     }
 }
@@ -477,10 +477,10 @@ static void sercon_10XX(struct bregs *regs)
 void VISIBLE16
 handle_sercon(struct bregs *regs)
 {
-    if (!CONFIG_SERCON)
-        return;
-    if (!GET_LOW(sercon_port))
-        return;
+    якщо (!CONFIG_SERCON)
+        повернути;
+    якщо (!GET_LOW(sercon_port))
+        повернути;
 
     switch (regs->ah) {
     case 0x01:
@@ -488,9 +488,9 @@ handle_sercon(struct bregs *regs)
     case 0x03:
     case 0x08:
     case 0x0f:
-        if (sercon_splitmode())
+        якщо (sercon_splitmode())
             /* nothing, vgabios handles it */
-            return;
+            повернути;
     }
 
     switch (regs->ah) {
@@ -510,30 +510,30 @@ handle_sercon(struct bregs *regs)
 
 void sercon_setup(void)
 {
-    if (!CONFIG_SERCON)
-        return;
+    якщо (!CONFIG_SERCON)
+        повернути;
 
     struct segoff_s seabios, vgabios;
     u16 addr;
 
     addr = romfile_loadint("etc/sercon-port", 0);
-    if (!addr)
-        return;
+    якщо (!addr)
+        повернути;
     dprintf(1, "sercon: using ioport 0x%x\n", addr);
 
-    if (CONFIG_DEBUG_SERIAL)
-        if (addr == CONFIG_DEBUG_SERIAL_PORT)
+    якщо (CONFIG_DEBUG_SERIAL)
+        якщо (addr == CONFIG_DEBUG_SERIAL_PORT)
             ScreenAndDebug = 0;
 
     vgabios = GET_IVT(0x10);
     seabios = FUNC16(entry_10);
-    if (vgabios.seg != seabios.seg ||
+    якщо (vgabios.seg != seabios.seg ||
         vgabios.offset != seabios.offset) {
         dprintf(1, "sercon: configuring in splitmode (vgabios %04x:%04x)\n",
                 vgabios.seg, vgabios.offset);
         sercon_real_vga_handler = vgabios;
         SET_LOW(sercon_split, 1);
-    } else {
+    } інакше {
         dprintf(1, "sercon: configuring as primary display\n");
         sercon_real_vga_handler = seabios;
     }
@@ -584,81 +584,81 @@ static VAR16 struct {
     { .seq = "[F",   .len = 2, .keycode = 0x4fe0 },    // end
 };
 
-static void shiftbuf(int remove)
+static void shiftbuf(ціле remove)
 {
-    int i, remaining;
+    ціле i, remaining;
 
     remaining = GET_LOW(rx_bytes) - remove;
     SET_LOW(rx_bytes, remaining);
-    for (i = 0; i < remaining; i++)
+    для (i = 0; i < remaining; i++)
         SET_LOW(rx_buf[i], GET_LOW(rx_buf[i + remove]));
 }
 
-static int cmpbuf(int seq)
+static ціле cmpbuf(ціле seq)
 {
-    int chr, len;
+    ціле chr, len;
 
     len = GET_GLOBAL(termseq[seq].len);
-    if (GET_LOW(rx_bytes) < len + 1)
-        return 0;
-    for (chr = 0; chr < len; chr++)
-        if (GET_GLOBAL(termseq[seq].seq[chr]) != GET_LOW(rx_buf[chr + 1]))
-            return 0;
-    return 1;
+    якщо (GET_LOW(rx_bytes) < len + 1)
+        повернути 0;
+    для (chr = 0; chr < len; chr++)
+        якщо (GET_GLOBAL(termseq[seq].seq[chr]) != GET_LOW(rx_buf[chr + 1]))
+            повернути 0;
+    повернути 1;
 }
 
-static int findseq(void)
+static ціле findseq(void)
 {
-    int seq;
+    ціле seq;
 
-    for (seq = 0; seq < ARRAY_SIZE(termseq); seq++)
-        if (cmpbuf(seq))
-            return seq;
-    return -1;
+    для (seq = 0; seq < ARRAY_SIZE(termseq); seq++)
+        якщо (cmpbuf(seq))
+            повернути seq;
+    повернути -1;
 }
 
 void
 sercon_check_event(void)
 {
-    if (!CONFIG_SERCON)
-        return;
+    якщо (!CONFIG_SERCON)
+        повернути;
 
     u16 addr = GET_LOW(sercon_port);
     u16 keycode;
     u8 byte, count = 0;
-    int seq;
+    ціле seq;
 
     // check to see if there is a active serial port
-    if (!addr)
-        return;
-    if (inb(addr + SEROFF_LSR) == 0xFF)
-        return;
+    якщо (!addr)
+        повернути;
+    якщо (inb(addr + SEROFF_LSR) == 0xFF)
+        повернути;
 
     // flush pending output
     sercon_lazy_flush();
 
     // read all available data
-    while (inb(addr + SEROFF_LSR) & 0x01) {
+    поки (inb(addr + SEROFF_LSR) & 0x01) {
         byte = inb(addr + SEROFF_DATA);
         u8 rb = GET_LOW(rx_bytes);
-        if (rb < sizeof(rx_buf)) {
+        якщо (rb < sizeof(rx_buf)) {
             SET_LOW(rx_buf[rb], byte);
             SET_LOW(rx_bytes, rb + 1);
             count++;
         }
     }
 
-    for (;;) {
+    для (;;) {
         // no (more) input data
         u8 rb = GET_LOW(rx_bytes);
-        if (!rb)
-            return;
+        якщо (!rb)
+            повернути;
 
         // lookup escape sequences
         u8 next_char = GET_LOW(rx_buf[0]);
-        if (rb > 1 && next_char == 0x1b) {
+        якщо (rb > 1 && next_char == 0x1b) {
             seq = findseq();
-            if (seq >= 0) {
+            якщо (seq >= 0) {
                 enqueue_key(GET_GLOBAL(termseq[seq].keycode));
                 shiftbuf(GET_GLOBAL(termseq[seq].len) + 1);
                 continue;
@@ -667,12 +667,12 @@ sercon_check_event(void)
 
         // Seems we got a escape sequence we didn't recognise.
         //  -> If we received data wait for more, maybe it is just incomplete.
-        if (next_char == 0x1b && count)
-            return;
+        якщо (next_char == 0x1b && count)
+            повернути;
 
         // Handle input as individual char.
         keycode = ascii_to_keycode(next_char);
-        if (keycode)
+        якщо (keycode)
             enqueue_key(keycode);
         shiftbuf(1);
     }

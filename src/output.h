@@ -10,7 +10,7 @@ void panic(const char *fmt, ...)
     __attribute__ ((format (printf, 1, 2))) __noreturn;
 void printf(const char *fmt, ...)
     __attribute__ ((format (printf, 1, 2)));
-int snprintf(char *str, size_t size, const char *fmt, ...)
+ціле snprintf(char *str, size_t size, const char *fmt, ...)
     __attribute__ ((format (printf, 3, 4)));
 char * znprintf(size_t size, const char *fmt, ...)
     __attribute__ ((format (printf, 2, 3)));
@@ -19,31 +19,31 @@ void __dprintf(const char *fmt, ...)
 struct bregs;
 void __debug_enter(struct bregs *regs, const char *fname);
 void __debug_isr(const char *fname);
-void __debug_stub(struct bregs *regs, int lineno, const char *fname);
-void __warn_invalid(struct bregs *regs, int lineno, const char *fname);
-void __warn_unimplemented(struct bregs *regs, int lineno, const char *fname);
-void __warn_internalerror(int lineno, const char *fname);
-void __warn_noalloc(int lineno, const char *fname);
-void __warn_timeout(int lineno, const char *fname);
-void __set_invalid(struct bregs *regs, int lineno, const char *fname);
-void __set_unimplemented(struct bregs *regs, int lineno, const char *fname);
+void __debug_stub(struct bregs *regs, ціле lineno, const char *fname);
+void __warn_invalid(struct bregs *regs, ціле lineno, const char *fname);
+void __warn_unimplemented(struct bregs *regs, ціле lineno, const char *fname);
+void __warn_internalerror(ціле lineno, const char *fname);
+void __warn_noalloc(ціле lineno, const char *fname);
+void __warn_timeout(ціле lineno, const char *fname);
+void __set_invalid(struct bregs *regs, ціле lineno, const char *fname);
+void __set_unimplemented(struct bregs *regs, ціле lineno, const char *fname);
 void __set_code_invalid(struct bregs *regs, u32 linecode, const char *fname);
 void __set_code_unimplemented(struct bregs *regs, u32 linecode
                               , const char *fname);
-void hexdump(const void *d, int len);
+void hexdump(const void *d, ціле len);
 
 #define dprintf(lvl, fmt, args...) do {                         \
-        if (CONFIG_DEBUG_LEVEL && (lvl) <= CONFIG_DEBUG_LEVEL)  \
+        якщо (CONFIG_DEBUG_LEVEL && (lvl) <= CONFIG_DEBUG_LEVEL)  \
             __dprintf((fmt) , ##args );                         \
-    } while (0)
+    } поки (0)
 #define debug_enter(regs, lvl) do {                     \
-        if ((lvl) && (lvl) <= CONFIG_DEBUG_LEVEL)       \
+        якщо ((lvl) && (lvl) <= CONFIG_DEBUG_LEVEL)       \
             __debug_enter((regs), __func__);            \
-    } while (0)
+    } поки (0)
 #define debug_isr(lvl) do {                             \
-        if ((lvl) && (lvl) <= CONFIG_DEBUG_LEVEL)       \
+        якщо ((lvl) && (lvl) <= CONFIG_DEBUG_LEVEL)       \
             __debug_isr(__func__);                      \
-    } while (0)
+    } поки (0)
 #define debug_stub(regs)                        \
     __debug_stub((regs), __LINE__, __func__)
 #define warn_invalid(regs)                      \

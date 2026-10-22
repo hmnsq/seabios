@@ -11,22 +11,22 @@
 #include "usb-hub.h" // struct usb_hub_descriptor
 #include "util.h" // timer_calc
 
-static int
+static ціле
 get_hub_desc(struct usb_pipe *pipe, struct usb_hub_descriptor *desc)
 {
     struct usb_ctrlrequest req;
     req.bRequestType = USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_DEVICE;
     req.bRequest = USB_REQ_GET_DESCRIPTOR;
-    if (pipe->speed == USB_SUPERSPEED)
+    якщо (pipe->speed == USB_SUPERSPEED)
         req.wValue = USB_DT_HUB3<<8;
-    else
+    інакше
         req.wValue = USB_DT_HUB<<8;
     req.wIndex = 0;
     req.wLength = sizeof(*desc);
-    return usb_send_default_control(pipe, &req, desc);
+    повернути usb_send_default_control(pipe, &req, desc);
 }
 
-static int
+static ціле
 set_hub_depth(struct usb_pipe *pipe, u16 depth)
 {
     struct usb_ctrlrequest req;
@@ -35,11 +35,11 @@ set_hub_depth(struct usb_pipe *pipe, u16 depth)
     req.wValue = depth;
     req.wIndex = 0;
     req.wLength = 0;
-    return usb_send_default_control(pipe, &req, NULL);
+    повернути usb_send_default_control(pipe, &req, NULL);
 }
 
-static int
-set_port_feature(struct usbhub_s *hub, int port, int feature)
+static ціле
+set_port_feature(struct usbhub_s *hub, ціле port, ціле feature)
 {
     struct usb_ctrlrequest req;
     req.bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_OTHER;
@@ -48,13 +48,13 @@ set_port_feature(struct usbhub_s *hub, int port, int feature)
     req.wIndex = port + 1;
     req.wLength = 0;
     mutex_lock(&hub->lock);
-    int ret = usb_send_default_control(hub->usbdev->defpipe, &req, NULL);
+    ціле ret = usb_send_default_control(hub->usbdev->defpipe, &req, NULL);
     mutex_unlock(&hub->lock);
-    return ret;
+    повернути ret;
 }
 
-static int
-clear_port_feature(struct usbhub_s *hub, int port, int feature)
+static ціле
+clear_port_feature(struct usbhub_s *hub, ціле port, ціле feature)
 {
     struct usb_ctrlrequest req;
     req.bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_OTHER;
@@ -63,13 +63,13 @@ clear_port_feature(struct usbhub_s *hub, int port, int feature)
     req.wIndex = port + 1;
     req.wLength = 0;
     mutex_lock(&hub->lock);
-    int ret = usb_send_default_control(hub->usbdev->defpipe, &req, NULL);
+    ціле ret = usb_send_default_control(hub->usbdev->defpipe, &req, NULL);
     mutex_unlock(&hub->lock);
-    return ret;
+    повернути ret;
 }
 
-static int
-get_port_status(struct usbhub_s *hub, int port, struct usb_port_status *sts)
+static ціле
+get_port_status(struct usbhub_s *hub, ціле port, struct usb_port_status *sts)
 {
     struct usb_ctrlrequest req;
     req.bRequestType = USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_OTHER;
@@ -78,53 +78,53 @@ get_port_status(struct usbhub_s *hub, int port, struct usb_port_status *sts)
     req.wIndex = port + 1;
     req.wLength = sizeof(*sts);
     mutex_lock(&hub->lock);
-    int ret = usb_send_default_control(hub->usbdev->defpipe, &req, sts);
+    ціле ret = usb_send_default_control(hub->usbdev->defpipe, &req, sts);
     mutex_unlock(&hub->lock);
-    return ret;
+    повернути ret;
 }
 
 // Check if device attached to port
-static int
+static ціле
 usb_hub_detect(struct usbhub_s *hub, u32 port)
 {
     struct usb_port_status sts;
-    int ret = get_port_status(hub, port, &sts);
-    if (ret) {
+    ціле ret = get_port_status(hub, port, &sts);
+    якщо (ret) {
         dprintf(1, "Failure on hub port %d detect\n", port);
-        return -1;
+        повернути -1;
     }
-    return (sts.wPortStatus & USB_PORT_STAT_CONNECTION) ? 1 : 0;
+    повернути (sts.wPortStatus & USB_PORT_STAT_CONNECTION) ? 1 : 0;
 }
 
 // Disable port
 static void
 usb_hub_disconnect(struct usbhub_s *hub, u32 port)
 {
-    int ret = clear_port_feature(hub, port, USB_PORT_FEAT_ENABLE);
-    if (ret)
+    ціле ret = clear_port_feature(hub, port, USB_PORT_FEAT_ENABLE);
+    якщо (ret)
         dprintf(1, "Failure on hub port %d disconnect\n", port);
 }
 
 // Reset device on port
-static int
+static ціле
 usb_hub_reset(struct usbhub_s *hub, u32 port)
 {
-    int ret = set_port_feature(hub, port, USB_PORT_FEAT_RESET);
-    if (ret)
+    ціле ret = set_port_feature(hub, port, USB_PORT_FEAT_RESET);
+    якщо (ret)
         goto fail;
 
     // Wait for reset to complete.
     struct usb_port_status sts;
     u32 end = timer_calc(USB_TIME_DRST * 2);
-    for (;;) {
+    для (;;) {
         ret = get_port_status(hub, port, &sts);
-        if (ret)
+        якщо (ret)
             goto fail;
-        if (!(sts.wPortStatus & USB_PORT_STAT_RESET)
+        якщо (!(sts.wPortStatus & USB_PORT_STAT_RESET)
             && (hub->usbdev->speed != USB_SUPERSPEED
                 || !(sts.wPortStatus & USB_PORT_STAT_LINK_MASK)))
             break;
-        if (timer_check(end)) {
+        якщо (timer_check(end)) {
             warn_timeout();
             goto fail;
         }
@@ -132,19 +132,19 @@ usb_hub_reset(struct usbhub_s *hub, u32 port)
     }
 
     // Reset complete.
-    if (!(sts.wPortStatus & USB_PORT_STAT_CONNECTION))
+    якщо (!(sts.wPortStatus & USB_PORT_STAT_CONNECTION))
         // Device no longer present
-        return -1;
+        повернути -1;
 
-    if (hub->usbdev->speed == USB_SUPERSPEED)
-        return USB_SUPERSPEED;
-    return ((sts.wPortStatus & USB_PORT_STAT_SPEED_MASK)
+    якщо (hub->usbdev->speed == USB_SUPERSPEED)
+        повернути USB_SUPERSPEED;
+    повернути ((sts.wPortStatus & USB_PORT_STAT_SPEED_MASK)
             >> USB_PORT_STAT_SPEED_SHIFT);
 
 fail:
     dprintf(1, "Failure on hub port %d reset\n", port);
     usb_hub_disconnect(hub, port);
-    return -1;
+    повернути -1;
 }
 
 static struct usbhub_op_s HubOp = {
@@ -154,17 +154,17 @@ static struct usbhub_op_s HubOp = {
 };
 
 // Configure a usb hub and then find devices connected to it.
-int
+ціле
 usb_hub_setup(struct usbdevice_s *usbdev)
 {
     ASSERT32FLAT();
-    if (!CONFIG_USB_HUB)
-        return -1;
+    якщо (!CONFIG_USB_HUB)
+        повернути -1;
 
     struct usb_hub_descriptor desc;
-    int ret = get_hub_desc(usbdev->defpipe, &desc);
-    if (ret)
-        return ret;
+    ціле ret = get_hub_desc(usbdev->defpipe, &desc);
+    якщо (ret)
+        повернути ret;
 
     struct usbhub_s hub;
     memset(&hub, 0, sizeof(hub));
@@ -173,25 +173,25 @@ usb_hub_setup(struct usbdevice_s *usbdev)
     hub.portcount = desc.bNbrPorts;
     hub.op = &HubOp;
 
-    if (usbdev->speed == USB_SUPERSPEED) {
-        int depth = 0;
+    якщо (usbdev->speed == USB_SUPERSPEED) {
+        ціле depth = 0;
         struct usbdevice_s *parent = usbdev->hub->usbdev;
-        while (parent) {
+        поки (parent) {
             depth++;
             parent = parent->hub->usbdev;
         }
 
         ret = set_hub_depth(usbdev->defpipe, depth);
-        if (ret)
-            return ret;
+        якщо (ret)
+            повернути ret;
     }
 
     // Turn on power to ports.
-    int port;
-    for (port=0; port<desc.bNbrPorts; port++) {
+    ціле port;
+    для (port=0; port<desc.bNbrPorts; port++) {
         ret = set_port_feature(&hub, port, USB_PORT_FEAT_POWER);
-        if (ret)
-            return ret;
+        якщо (ret)
+            повернути ret;
     }
     // Wait for port power to stabilize.
     msleep(desc.bPwrOn2PwrGood * 2);
@@ -199,7 +199,7 @@ usb_hub_setup(struct usbdevice_s *usbdev)
     usb_enumerate(&hub);
 
     dprintf(1, "Initialized USB HUB (%d ports used)\n", hub.devcount);
-    if (hub.devcount)
-        return 0;
-    return -1;
+    якщо (hub.devcount)
+        повернути 0;
+    повернути -1;
 }

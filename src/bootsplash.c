@@ -52,18 +52,18 @@ enable_vga_console(void)
     display_uuid();
 }
 
-static int
+static ціле
 find_videomode(struct vbe_info *vesa_info, struct vbe_mode_info *mode_info
-               , int width, int height, int bpp_req)
+               , ціле width, ціле height, ціле bpp_req)
 {
     dprintf(3, "Finding vesa mode with dimensions %d/%d\n", width, height);
     u16 *videomodes = SEGOFF_TO_FLATPTR(vesa_info->video_mode);
-    for (;; videomodes++) {
+    для (;; videomodes++) {
         u16 videomode = *videomodes;
-        if (videomode == 0xffff) {
+        якщо (videomode == 0xffff) {
             dprintf(1, "Unable to find vesa video mode dimensions %d/%d\n"
                     , width, height);
-            return -1;
+            повернути -1;
         }
         struct bregs br;
         memset(&br, 0, sizeof(br));
@@ -72,42 +72,42 @@ find_videomode(struct vbe_info *vesa_info, struct vbe_mode_info *mode_info
         br.di = FLATPTR_TO_OFFSET(mode_info);
         br.es = FLATPTR_TO_SEG(mode_info);
         call16_int10(&br);
-        if (br.ax != 0x4f) {
+        якщо (br.ax != 0x4f) {
             dprintf(1, "get_mode failed.\n");
             continue;
         }
-        if (mode_info->xres != width
+        якщо (mode_info->xres != width
             || mode_info->yres != height)
             continue;
         u8 depth = mode_info->bits_per_pixel;
-        if (bpp_req == 0) {
-            if ((depth != 16 && depth != 24 && depth != 32)
+        якщо (bpp_req == 0) {
+            якщо ((depth != 16 && depth != 24 && depth != 32)
                 || mode_info->green_size == 5)
                 continue;
-        } else {
-            if (depth != bpp_req)
+        } інакше {
+            якщо (depth != bpp_req)
                 continue;
         }
-        return videomode;
+        повернути videomode;
     }
 }
 
-static int BootsplashActive;
+static ціле BootsplashActive;
 
 void
 enable_bootsplash(void)
 {
-    if (!CONFIG_BOOTSPLASH)
-        return;
+    якщо (!CONFIG_BOOTSPLASH)
+        повернути;
     /* splash picture can be bmp or jpeg file */
     dprintf(3, "Checking for bootsplash\n");
     u8 type = 0; /* 0 means jpg, 1 means bmp, default is 0=jpg */
-    int filesize;
+    ціле filesize;
     u8 *filedata = romfile_loadfile("bootsplash.jpg", &filesize);
-    if (!filedata) {
+    якщо (!filedata) {
         filedata = romfile_loadfile("bootsplash.bmp", &filesize);
-        if (!filedata)
-            return;
+        якщо (!filedata)
+            повернути;
         type = 1;
     }
     dprintf(3, "start showing bootsplash\n");
@@ -117,7 +117,7 @@ enable_bootsplash(void)
     struct bmp_decdata *bmp = NULL;
     struct vbe_info *vesa_info = malloc_tmplow(sizeof(*vesa_info));
     struct vbe_mode_info *mode_info = malloc_tmplow(sizeof(*mode_info));
-    if (!vesa_info || !mode_info) {
+    якщо (!vesa_info || !mode_info) {
         warn_noalloc();
         goto done;
     }
@@ -131,7 +131,7 @@ enable_bootsplash(void)
     br.di = FLATPTR_TO_OFFSET(vesa_info);
     br.es = FLATPTR_TO_SEG(vesa_info);
     call16_int10(&br);
-    if (vesa_info->signature != VESA_SIGNATURE) {
+    якщо (vesa_info->signature != VESA_SIGNATURE) {
         dprintf(1,"No VBE2 found.\n");
         goto done;
     }
@@ -143,32 +143,32 @@ enable_bootsplash(void)
             vesa_info->version>>8, vesa_info->version&0xff,
             vendor, product);
 
-    int ret, width, height;
-    int bpp_require = 0;
-    if (type == 0) {
+    ціле ret, width, height;
+    ціле bpp_require = 0;
+    якщо (type == 0) {
         jpeg = jpeg_alloc();
-        if (!jpeg) {
+        якщо (!jpeg) {
             warn_noalloc();
             goto done;
         }
         /* Parse jpeg and get image size. */
         dprintf(5, "Decoding bootsplash.jpg\n");
         ret = jpeg_decode(jpeg, filedata);
-        if (ret) {
+        якщо (ret) {
             dprintf(1, "jpeg_decode failed with return code %d...\n", ret);
             goto done;
         }
         jpeg_get_size(jpeg, &width, &height);
-    } else {
+    } інакше {
         bmp = bmp_alloc();
-        if (!bmp) {
+        якщо (!bmp) {
             warn_noalloc();
             goto done;
         }
         /* Parse bmp and get image size. */
         dprintf(5, "Decoding bootsplash.bmp\n");
         ret = bmp_decode(bmp, filedata, filesize);
-        if (ret) {
+        якщо (ret) {
             dprintf(1, "bmp_decode failed with return code %d...\n", ret);
             goto done;
         }
@@ -178,41 +178,41 @@ enable_bootsplash(void)
     // jpeg would use 16 or 24 bpp video mode, BMP uses 16/24/32 bpp mode.
 
     // Try to find a graphics mode with the corresponding dimensions.
-    int videomode = find_videomode(vesa_info, mode_info, width, height,
+    ціле videomode = find_videomode(vesa_info, mode_info, width, height,
                                        bpp_require);
-    if (videomode < 0) {
+    якщо (videomode < 0) {
         dprintf(1, "failed to find a videomode with %dx%d %dbpp (0=any).\n",
                     width, height, bpp_require);
         goto done;
     }
     void *framebuffer = (void *)mode_info->phys_base;
-    int depth = mode_info->bits_per_pixel;
+    ціле depth = mode_info->bits_per_pixel;
     dprintf(3, "mode: %04x\n", videomode);
     dprintf(3, "framebuffer: %p\n", framebuffer);
     dprintf(3, "bytes per scanline: %d\n", mode_info->bytes_per_scanline);
     dprintf(3, "bits per pixel: %d\n", depth);
 
     // Allocate space for image and decompress it.
-    int imagesize = height * mode_info->bytes_per_scanline;
+    ціле imagesize = height * mode_info->bytes_per_scanline;
     picture = malloc_tmphigh(imagesize);
-    if (!picture) {
+    якщо (!picture) {
         warn_noalloc();
         goto done;
     }
 
-    if (type == 0) {
+    якщо (type == 0) {
         dprintf(5, "Decompressing bootsplash.jpg\n");
         ret = jpeg_show(jpeg, picture, width, height, depth,
                             mode_info->bytes_per_scanline);
-        if (ret) {
+        якщо (ret) {
             dprintf(1, "jpeg_show failed with return code %d...\n", ret);
             goto done;
         }
-    } else {
+    } інакше {
         dprintf(5, "Decompressing bootsplash.bmp\n");
         ret = bmp_show(bmp, picture, width, height, depth,
                            mode_info->bytes_per_scanline);
-        if (ret) {
+        якщо (ret) {
             dprintf(1, "bmp_show failed with return code %d...\n", ret);
             goto done;
         }
@@ -224,7 +224,7 @@ enable_bootsplash(void)
     br.ax = 0x4f02;
     br.bx = videomode | VBE_MODE_LINEAR_FRAME_BUFFER;
     call16_int10(&br);
-    if (br.ax != 0x4f) {
+    якщо (br.ax != 0x4f) {
         dprintf(1, "set_mode failed.\n");
         goto done;
     }
@@ -242,14 +242,14 @@ done:
     free(mode_info);
     free(jpeg);
     free(bmp);
-    return;
+    повернути;
 }
 
 void
 disable_bootsplash(void)
 {
-    if (!CONFIG_BOOTSPLASH || !BootsplashActive)
-        return;
+    якщо (!CONFIG_BOOTSPLASH || !BootsplashActive)
+        повернути;
     BootsplashActive = 0;
     enable_vga_console();
 }

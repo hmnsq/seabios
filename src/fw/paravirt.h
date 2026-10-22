@@ -30,19 +30,19 @@ typedef struct QemuCfgDmaAccess {
 
 extern u32 RamSize;
 extern u64 RamSizeOver4G;
-extern int PlatformRunningOn;
+extern ціле PlatformRunningOn;
 extern u8 CPUPhysBits;
 extern u8 CPULongMode;
 
-static inline int runningOnQEMU(void) {
-    return CONFIG_QEMU || (
+static inline ціле runningOnQEMU(void) {
+    повернути CONFIG_QEMU || (
         CONFIG_QEMU_HARDWARE && GET_GLOBAL(PlatformRunningOn) & PF_QEMU);
 }
-static inline int runningOnXen(void) {
-    return CONFIG_XEN && GET_GLOBAL(PlatformRunningOn) & PF_XEN;
+static inline ціле runningOnXen(void) {
+    повернути CONFIG_XEN && GET_GLOBAL(PlatformRunningOn) & PF_XEN;
 }
-static inline int runningOnKVM(void) {
-    return CONFIG_QEMU && GET_GLOBAL(PlatformRunningOn) & PF_KVM;
+static inline ціле runningOnKVM(void) {
+    повернути CONFIG_QEMU && GET_GLOBAL(PlatformRunningOn) & PF_KVM;
 }
 
 // Common paravirt ports.
@@ -66,15 +66,15 @@ static inline int runningOnKVM(void) {
 // QEMU debugcon read value
 #define QEMU_DEBUGCON_READBACK  0xe9
 
-int qemu_cfg_enabled(void);
-int qemu_cfg_dma_enabled(void);
+ціле qemu_cfg_enabled(void);
+ціле qemu_cfg_dma_enabled(void);
 void qemu_preinit(void);
 void qemu_platform_setup(void);
 void qemu_cfg_init(void);
 
 u16 qemu_get_present_cpus_count(void);
-int qemu_cfg_write_file(void *src, struct romfile_s *file, u32 offset, u32 len);
-int qemu_cfg_write_file_simple(void *src, u16 key, u32 offset, u32 len);
+ціле qemu_cfg_write_file(void *src, struct romfile_s *file, u32 offset, u32 len);
+ціле qemu_cfg_write_file_simple(void *src, u16 key, u32 offset, u32 len);
 u16 qemu_get_romfile_key(struct romfile_s *file);
 
 #endif

@@ -40,46 +40,46 @@ enqueue_key(u16 keycode)
 
     u16 temp_tail = buffer_tail;
     buffer_tail += 2;
-    if (buffer_tail >= buffer_end)
+    якщо (buffer_tail >= buffer_end)
         buffer_tail = buffer_start;
 
-    if (buffer_tail == buffer_head)
-        return 0;
+    якщо (buffer_tail == buffer_head)
+        повернути 0;
 
     SET_FARVAR(SEG_BDA, *(u16*)(temp_tail+0), keycode);
     SET_BDA(kbd_buf_tail, buffer_tail);
-    return 1;
+    повернути 1;
 }
 
 static void
-dequeue_key(struct bregs *regs, int incr, int extended)
+dequeue_key(struct bregs *regs, ціле incr, ціле extended)
 {
     yield();
     u16 buffer_head;
     u16 buffer_tail;
-    for (;;) {
+    для (;;) {
         buffer_head = GET_BDA(kbd_buf_head);
         buffer_tail = GET_BDA(kbd_buf_tail);
 
-        if (buffer_head != buffer_tail)
+        якщо (buffer_head != buffer_tail)
             break;
-        if (!incr) {
+        якщо (!incr) {
             regs->flags |= F_ZF;
-            return;
+            повернути;
         }
         yield_toirq();
     }
 
     u16 keycode = GET_FARVAR(SEG_BDA, *(u16*)(buffer_head+0));
     u8 ascii = keycode & 0xff;
-    if (!extended) {
+    якщо (!extended) {
         // Translate extended keys
-        if (ascii == 0xe0 && keycode & 0xff00)
+        якщо (ascii == 0xe0 && keycode & 0xff00)
             keycode &= 0xff00;
-        else if (keycode == 0xe00d || keycode == 0xe00a)
+        інакше якщо (keycode == 0xe00d || keycode == 0xe00a)
             // Extended enter key
             keycode = 0x1c00 | ascii;
-        else if (keycode == 0xe02f)
+        інакше якщо (keycode == 0xe02f)
             // Extended '/' key
             keycode = 0x352f;
         // Technically, if the ascii value is 0xf0 or if the
@@ -87,29 +87,29 @@ dequeue_key(struct bregs *regs, int incr, int extended)
         // discarded.  However, there seems no harm in passing on the
         // extended values in these cases.
     }
-    if (ascii == 0xf0 && keycode & 0xff00)
+    якщо (ascii == 0xf0 && keycode & 0xff00)
         keycode &= 0xff00;
     regs->ax = keycode;
 
-    if (!incr) {
+    якщо (!incr) {
         regs->flags &= ~F_ZF;
-        return;
+        повернути;
     }
     u16 buffer_start = GET_BDA(kbd_buf_start_offset);
     u16 buffer_end   = GET_BDA(kbd_buf_end_offset);
 
     buffer_head += 2;
-    if (buffer_head >= buffer_end)
+    якщо (buffer_head >= buffer_end)
         buffer_head = buffer_start;
     SET_BDA(kbd_buf_head, buffer_head);
 }
 
-static int
-kbd_command(int command, u8 *param)
+static ціле
+kbd_command(ціле command, u8 *param)
 {
-    if (usb_kbd_active())
-        return usb_kbd_command(command, param);
-    return ps2_kbd_command(command, param);
+    якщо (usb_kbd_active())
+        повернути usb_kbd_command(command, param);
+    повернути ps2_kbd_command(command, param);
 }
 
 // read keyboard input
@@ -163,10 +163,10 @@ static void noinline
 handle_160a(struct bregs *regs)
 {
     u8 param[2];
-    int ret = kbd_command(ATKBD_CMD_GETID, param);
-    if (ret) {
+    ціле ret = kbd_command(ATKBD_CMD_GETID, param);
+    якщо (ret) {
         regs->bx = 0;
-        return;
+        повернути;
     }
     regs->bx = (param[1] << 8) | param[0];
 }
@@ -198,7 +198,7 @@ handle_1612(struct bregs *regs)
 static void
 handle_166f(struct bregs *regs)
 {
-    if (regs->al == 0x08)
+    якщо (regs->al == 0x08)
         // unsupported, aka normal keyboard
         regs->ah = 2;
 }
@@ -230,13 +230,13 @@ set_leds(void)
     u8 shift_flags = (GET_BDA(kbd_flag0) >> 4) & 0x07;
     u8 kbd_led = GET_BDA(kbd_led);
     u8 led_flags = kbd_led & 0x07;
-    if (shift_flags == led_flags)
-        return;
+    якщо (shift_flags == led_flags)
+        повернути;
 
-    int ret = kbd_command(ATKBD_CMD_SETLEDS, &shift_flags);
-    if (ret)
+    ціле ret = kbd_command(ATKBD_CMD_SETLEDS, &shift_flags);
+    якщо (ret)
         // Error
-        return;
+        повернути;
     kbd_led = (kbd_led & ~0x07) | shift_flags;
     SET_BDA(kbd_led, kbd_led);
 }
@@ -246,8 +246,8 @@ void VISIBLE16
 handle_16(struct bregs *regs)
 {
     debug_enter(regs, DEBUG_HDL_16);
-    if (! CONFIG_KEYBOARD)
-        return;
+    якщо (! CONFIG_KEYBOARD)
+        повернути;
 
     // XXX - set_leds should be called from irq handler
     set_leds();
@@ -377,29 +377,29 @@ struct scaninfo key_ext_slash VAR16 = {
 
 u16 ascii_to_keycode(u8 ascii)
 {
-    int i;
+    ціле i;
 
-    for (i = 0; i < ARRAY_SIZE(scan_to_keycode); i++) {
-        if ((GET_GLOBAL(scan_to_keycode[i].normal) & 0xff) == ascii)
-            return GET_GLOBAL(scan_to_keycode[i].normal);
-        if ((GET_GLOBAL(scan_to_keycode[i].shift) & 0xff) == ascii)
-            return GET_GLOBAL(scan_to_keycode[i].shift);
-        if ((GET_GLOBAL(scan_to_keycode[i].control) & 0xff) == ascii)
-            return GET_GLOBAL(scan_to_keycode[i].control);
+    для (i = 0; i < ARRAY_SIZE(scan_to_keycode); i++) {
+        якщо ((GET_GLOBAL(scan_to_keycode[i].normal) & 0xff) == ascii)
+            повернути GET_GLOBAL(scan_to_keycode[i].normal);
+        якщо ((GET_GLOBAL(scan_to_keycode[i].shift) & 0xff) == ascii)
+            повернути GET_GLOBAL(scan_to_keycode[i].shift);
+        якщо ((GET_GLOBAL(scan_to_keycode[i].control) & 0xff) == ascii)
+            повернути GET_GLOBAL(scan_to_keycode[i].control);
     }
-    return 0;
+    повернути 0;
 }
 
 // Handle a ps2 style scancode read from the keyboard.
 static void
-kbd_set_flag(int key_release, u16 set_bit0, u8 set_bit1, u16 toggle_bit)
+kbd_set_flag(ціле key_release, u16 set_bit0, u8 set_bit1, u16 toggle_bit)
 {
     u16 flags0 = GET_BDA(kbd_flag0);
     u8 flags1 = GET_BDA(kbd_flag1);
-    if (key_release) {
+    якщо (key_release) {
         flags0 &= ~set_bit0;
         flags1 &= ~set_bit1;
-    } else {
+    } інакше {
         flags0 ^= toggle_bit;
         flags0 |= set_bit0;
         flags1 |= set_bit1;
@@ -409,10 +409,10 @@ kbd_set_flag(int key_release, u16 set_bit0, u8 set_bit1, u16 toggle_bit)
 }
 
 static void
-kbd_ctrl_break(int key_release)
+kbd_ctrl_break(ціле key_release)
 {
-    if (!key_release)
-        return;
+    якщо (!key_release)
+        повернути;
     // Clear keyboard buffer and place 0x0000 in buffer
     u16 buffer_start = GET_BDA(kbd_buf_start_offset);
     SET_BDA(kbd_buf_head, buffer_start);
@@ -428,7 +428,7 @@ kbd_ctrl_break(int key_release)
 }
 
 static void
-kbd_sysreq(int key_release)
+kbd_sysreq(ціле key_release)
 {
     // SysReq generates int 0x15/0x85
     struct bregs br;
@@ -440,10 +440,10 @@ kbd_sysreq(int key_release)
 }
 
 static void
-kbd_prtscr(int key_release)
+kbd_prtscr(ціле key_release)
 {
-    if (key_release)
-        return;
+    якщо (key_release)
+        повернути;
     // PrtScr generates int 0x05 (ctrl-prtscr has keycode 0x7200?)
     struct bregs br;
     memset(&br, 0, sizeof(br));
@@ -457,18 +457,18 @@ __process_key(u8 scancode)
 {
     // Check for multi-scancode key sequences
     u8 flags1 = GET_BDA(kbd_flag1);
-    if (scancode == 0xe0 || scancode == 0xe1) {
+    якщо (scancode == 0xe0 || scancode == 0xe1) {
         // Start of two byte extended (e0) or three byte pause key (e1) sequence
         u8 eflag = scancode == 0xe0 ? KF1_LAST_E0 : KF1_LAST_E1;
         SET_BDA(kbd_flag1, flags1 | eflag);
-        return;
+        повернути;
     }
-    int key_release = scancode & 0x80;
+    ціле key_release = scancode & 0x80;
     scancode &= ~0x80;
-    if (flags1 & (KF1_LAST_E0|KF1_LAST_E1)) {
-        if (flags1 & KF1_LAST_E1 && scancode == 0x1d)
+    якщо (flags1 & (KF1_LAST_E0|KF1_LAST_E1)) {
+        якщо (flags1 & KF1_LAST_E1 && scancode == 0x1d)
             // Ignore second byte of pause key (e1 1d 45 / e1 9d c5)
-            return;
+            повернути;
         // Clear E0/E1 flag in memory for next key event
         SET_BDA(kbd_flag1, flags1 & ~(KF1_LAST_E0|KF1_LAST_E1));
     }
@@ -477,56 +477,56 @@ __process_key(u8 scancode)
     switch (scancode) {
     case 0x3a: /* Caps Lock */
         kbd_set_flag(key_release, KF0_CAPS, 0, KF0_CAPSACTIVE);
-        return;
+        повернути;
     case 0x2a: /* L Shift */
-        if (flags1 & KF1_LAST_E0)
+        якщо (flags1 & KF1_LAST_E0)
             // Ignore fake shifts
-            return;
+            повернути;
         kbd_set_flag(key_release, KF0_LSHIFT, 0, 0);
-        return;
+        повернути;
     case 0x36: /* R Shift */
-        if (flags1 & KF1_LAST_E0)
+        якщо (flags1 & KF1_LAST_E0)
             // Ignore fake shifts
-            return;
+            повернути;
         kbd_set_flag(key_release, KF0_RSHIFT, 0, 0);
-        return;
+        повернути;
     case 0x1d: /* Ctrl */
-        if (flags1 & KF1_LAST_E0)
+        якщо (flags1 & KF1_LAST_E0)
             kbd_set_flag(key_release, KF0_CTRLACTIVE, KF1_RCTRL, 0);
-        else
+        інакше
             kbd_set_flag(key_release, KF0_CTRLACTIVE | KF0_LCTRL, 0, 0);
-        return;
+        повернути;
     case 0x38: /* Alt */
-        if (flags1 & KF1_LAST_E0)
+        якщо (flags1 & KF1_LAST_E0)
             kbd_set_flag(key_release, KF0_ALTACTIVE, KF1_RALT, 0);
-        else
+        інакше
             kbd_set_flag(key_release, KF0_ALTACTIVE | KF0_LALT, 0, 0);
-        return;
+        повернути;
     case 0x45: /* Num Lock */
-        if (flags1 & KF1_LAST_E1)
+        якщо (flags1 & KF1_LAST_E1)
             // XXX - pause key.
-            return;
+            повернути;
         kbd_set_flag(key_release, KF0_NUM, 0, KF0_NUMACTIVE);
-        return;
+        повернути;
     case 0x46: /* Scroll Lock */
-        if (flags1 & KF1_LAST_E0) {
+        якщо (flags1 & KF1_LAST_E0) {
             kbd_ctrl_break(key_release);
-            return;
+            повернути;
         }
         kbd_set_flag(key_release, KF0_SCROLL, 0, KF0_SCROLLACTIVE);
-        return;
+        повернути;
 
     case 0x37: /* * */
-        if (flags1 & KF1_LAST_E0) {
+        якщо (flags1 & KF1_LAST_E0) {
             kbd_prtscr(key_release);
-            return;
+            повернути;
         }
         break;
     case 0x54: /* SysReq */
         kbd_sysreq(key_release);
-        return;
+        повернути;
     case 0x53: /* Del */
-        if ((GET_BDA(kbd_flag0) & (KF0_CTRLACTIVE|KF0_ALTACTIVE))
+        якщо ((GET_BDA(kbd_flag0) & (KF0_CTRLACTIVE|KF0_ALTACTIVE))
             == (KF0_CTRLACTIVE|KF0_ALTACTIVE) && !key_release) {
             // Ctrl+alt+del - reset machine.
             SET_BDA(soft_reset_flag, 0x1234);
@@ -539,60 +539,60 @@ __process_key(u8 scancode)
     }
 
     // Handle generic keys
-    if (key_release)
+    якщо (key_release)
         // ignore key releases
-        return;
-    if (!scancode || scancode >= ARRAY_SIZE(scan_to_keycode)) {
+        повернути;
+    якщо (!scancode || scancode >= ARRAY_SIZE(scan_to_keycode)) {
         dprintf(1, "__process_key unknown scancode read: 0x%02x!\n", scancode);
-        return;
+        повернути;
     }
     struct scaninfo *info = &scan_to_keycode[scancode];
-    if (flags1 & KF1_LAST_E0 && (scancode == 0x1c || scancode == 0x35))
+    якщо (flags1 & KF1_LAST_E0 && (scancode == 0x1c || scancode == 0x35))
         info = (scancode == 0x1c ? &key_ext_enter : &key_ext_slash);
     u16 flags0 = GET_BDA(kbd_flag0);
     u16 keycode;
-    if (flags0 & KF0_ALTACTIVE) {
+    якщо (flags0 & KF0_ALTACTIVE) {
         keycode = GET_GLOBAL(info->alt);
-    } else if (flags0 & KF0_CTRLACTIVE) {
+    } інакше якщо (flags0 & KF0_CTRLACTIVE) {
         keycode = GET_GLOBAL(info->control);
-    } else {
+    } інакше {
         u8 useshift = flags0 & (KF0_RSHIFT|KF0_LSHIFT) ? 1 : 0;
         u8 ascii = GET_GLOBAL(info->normal) & 0xff;
-        if ((flags0 & KF0_NUMACTIVE && scancode >= 0x47 && scancode <= 0x53)
+        якщо ((flags0 & KF0_NUMACTIVE && scancode >= 0x47 && scancode <= 0x53)
             || (flags0 & KF0_CAPSACTIVE && ascii >= 'a' && ascii <= 'z'))
             // Numlock/capslock toggles shift on certain keys
             useshift ^= 1;
-        if (useshift)
+        якщо (useshift)
             keycode = GET_GLOBAL(info->shift);
-        else
+        інакше
             keycode = GET_GLOBAL(info->normal);
     }
-    if (flags1 & KF1_LAST_E0 && scancode >= 0x47 && scancode <= 0x53) {
+    якщо (flags1 & KF1_LAST_E0 && scancode >= 0x47 && scancode <= 0x53) {
         /* extended keys handling */
-        if (flags0 & KF0_ALTACTIVE)
+        якщо (flags0 & KF0_ALTACTIVE)
             keycode = (scancode + 0x50) << 8;
-        else
+        інакше
             keycode = (keycode & 0xff00) | 0xe0;
     }
-    if (keycode)
+    якщо (keycode)
         enqueue_key(keycode);
 }
 
 void
 process_key(u8 key)
 {
-    if (!CONFIG_KEYBOARD)
-        return;
+    якщо (!CONFIG_KEYBOARD)
+        повернути;
 
-    if (CONFIG_KBD_CALL_INT15_4F) {
+    якщо (CONFIG_KBD_CALL_INT15_4F) {
         // allow for keyboard intercept
         struct bregs br;
         memset(&br, 0, sizeof(br));
         br.eax = (0x4f << 8) | key;
         br.flags = F_IF|F_CF;
         call16_int(0x15, &br);
-        if (!(br.flags & F_CF))
-            return;
+        якщо (!(br.flags & F_CF))
+            повернути;
         key = br.eax;
     }
     __process_key(key);

@@ -24,7 +24,7 @@
 static u32
 bcd2bin(u8 val)
 {
-    return (val & 0xf) + ((val >> 4) * 10);
+    повернути (val & 0xf) + ((val >> 4) * 10);
 }
 
 u8 Century VARLOW;
@@ -44,19 +44,19 @@ clock_setup(void)
     SET_BDA(timer_counter, ticks % TICKS_PER_DAY);
 
     // Setup Century storage
-    if (CONFIG_QEMU) {
+    якщо (CONFIG_QEMU) {
         Century = rtc_read(CMOS_CENTURY);
-    } else {
+    } інакше {
         // Infer current century from the year.
         u8 year = rtc_read(CMOS_RTC_YEAR);
-        if (year > 0x80)
+        якщо (year > 0x80)
             Century = 0x19;
-        else
+        інакше
             Century = 0x20;
     }
 
     enable_hwirq(0, FUNC16(entry_08));
-    if (CONFIG_RTC_TIMER)
+    якщо (CONFIG_RTC_TIMER)
         enable_hwirq(8, FUNC16(entry_70));
 }
 
@@ -94,9 +94,9 @@ handle_1a01(struct bregs *regs)
 static void
 handle_1a02(struct bregs *regs)
 {
-    if (rtc_updating()) {
+    якщо (rtc_updating()) {
         set_invalid(regs);
-        return;
+        повернути;
     }
 
     regs->dh = rtc_read(CMOS_RTC_SECONDS);
@@ -122,7 +122,7 @@ handle_1a03(struct bregs *regs)
     //
     // Bit4 in try#1 flipped in hardware (forced low) due to bit7=1
     // My assumption: RegB = ((RegB & 01100000b) | 00000010b)
-    if (rtc_updating()) {
+    якщо (rtc_updating()) {
         rtc_setup();
         // fall through as if an update were not in progress
     }
@@ -143,9 +143,9 @@ static void
 handle_1a04(struct bregs *regs)
 {
     regs->ah = 0;
-    if (rtc_updating()) {
+    якщо (rtc_updating()) {
         set_invalid(regs);
-        return;
+        повернути;
     }
     regs->cl = rtc_read(CMOS_RTC_YEAR);
     regs->dh = rtc_read(CMOS_RTC_MONTH);
@@ -169,10 +169,10 @@ handle_1a05(struct bregs *regs)
     //
     // Bit4 in try#1 flipped in hardware (forced low) due to bit7=1
     // My assumption: RegB = (RegB & 01111111b)
-    if (rtc_updating()) {
+    якщо (rtc_updating()) {
         rtc_setup();
         set_invalid(regs);
-        return;
+        повернути;
     }
     rtc_write(CMOS_RTC_YEAR, regs->cl);
     rtc_write(CMOS_RTC_MONTH, regs->dh);
@@ -202,12 +202,12 @@ handle_1a06(struct bregs *regs)
     // My assumption: RegB = ((RegB & 01111111b) | 00100000b)
     u8 val8 = rtc_read(CMOS_STATUS_B); // Get Status Reg B
     regs->ax = 0;
-    if (val8 & RTC_B_AIE) {
+    якщо (val8 & RTC_B_AIE) {
         // Alarm interrupt enabled already
         set_invalid(regs);
-        return;
+        повернути;
     }
-    if (rtc_updating()) {
+    якщо (rtc_updating()) {
         rtc_setup();
         // fall through as if an update were not in progress
     }
@@ -244,8 +244,8 @@ handle_1a07(struct bregs *regs)
 static void
 handle_1abb(struct bregs *regs)
 {
-    if (!CONFIG_TCGBIOS)
-        return;
+    якщо (!CONFIG_TCGBIOS)
+        повернути;
 
     dprintf(DEBUG_tcg, "16: Calling tpm_interrupt_handler\n");
     call32(tpm_interrupt_handler32, MAKE_FLATPTR(GET_SEG(SS), regs), 0);
@@ -284,7 +284,7 @@ clock_update(void)
     u32 counter = GET_BDA(timer_counter);
     counter++;
     // compare to one days worth of timer ticks at 18.2 hz
-    if (counter >= TICKS_PER_DAY) {
+    якщо (counter >= TICKS_PER_DAY) {
         // there has been a midnight rollover at this point
         counter = 0;
         SET_BDA(timer_rollover, GET_BDA(timer_rollover) + 1);
@@ -320,10 +320,10 @@ u32 last_timer_check VARLOW;
 void
 clock_poll_irq(void)
 {
-    if (CONFIG_HARDWARE_IRQ)
-        return;
-    if (!timer_check(GET_LOW(last_timer_check)))
-        return;
+    якщо (CONFIG_HARDWARE_IRQ)
+        повернути;
+    якщо (!timer_check(GET_LOW(last_timer_check)))
+        повернути;
     SET_LOW(last_timer_check, timer_calc(ticks_to_ms(1)));
     clock_update();
 }
@@ -338,23 +338,23 @@ clock_poll_irq(void)
 u32
 irqtimer_calc_ticks(u32 count)
 {
-    return (GET_BDA(timer_counter) + count + 1) % TICKS_PER_DAY;
+    повернути (GET_BDA(timer_counter) + count + 1) % TICKS_PER_DAY;
 }
 
 // Return the timer value that is 'msecs' time in the future.
 u32
 irqtimer_calc(u32 msecs)
 {
-    if (!msecs)
-        return GET_BDA(timer_counter);
-    return irqtimer_calc_ticks(ticks_from_ms(msecs));
+    якщо (!msecs)
+        повернути GET_BDA(timer_counter);
+    повернути irqtimer_calc_ticks(ticks_from_ms(msecs));
 }
 
 // Check if the given timer value has passed.
-int
+ціле
 irqtimer_check(u32 end)
 {
-    return (((GET_BDA(timer_counter) + TICKS_PER_DAY - end) % TICKS_PER_DAY)
+    повернути (((GET_BDA(timer_counter) + TICKS_PER_DAY - end) % TICKS_PER_DAY)
             < (TICKS_PER_DAY/2));
 }
 
@@ -363,25 +363,25 @@ irqtimer_check(u32 end)
  * Periodic timer
  ****************************************************************/
 
-static int
+static ціле
 set_usertimer(u32 usecs, u16 seg, u16 offset)
 {
-    if (GET_BDA(rtc_wait_flag) & RWS_WAIT_PENDING)
-        return -1;
+    якщо (GET_BDA(rtc_wait_flag) & RWS_WAIT_PENDING)
+        повернути -1;
 
     // Interval not already set.
     SET_BDA(rtc_wait_flag, RWS_WAIT_PENDING);  // Set status byte.
     SET_BDA(user_wait_complete_flag, SEGOFF(seg, offset));
     SET_BDA(user_wait_timeout, usecs);
     rtc_use();
-    return 0;
+    повернути 0;
 }
 
 static void
 clear_usertimer(void)
 {
-    if (!(GET_BDA(rtc_wait_flag) & RWS_WAIT_PENDING))
-        return;
+    якщо (!(GET_BDA(rtc_wait_flag) & RWS_WAIT_PENDING))
+        повернути;
     // Turn off status byte.
     SET_BDA(rtc_wait_flag, 0);
     rtc_release();
@@ -393,19 +393,19 @@ clear_usertimer(void)
 void
 handle_1586(struct bregs *regs)
 {
-    if (!CONFIG_RTC_TIMER) {
+    якщо (!CONFIG_RTC_TIMER) {
         set_code_unimplemented(regs, RET_EUNSUPPORTED);
-        return;
+        повернути;
     }
     // Use the rtc to wait for the specified time.
     u8 statusflag = 0;
     u32 count = (regs->cx << 16) | regs->dx;
-    int ret = set_usertimer(count, GET_SEG(SS), (u32)&statusflag);
-    if (ret) {
+    ціле ret = set_usertimer(count, GET_SEG(SS), (u32)&statusflag);
+    якщо (ret) {
         set_code_invalid(regs, RET_ECLOCKINUSE);
-        return;
+        повернути;
     }
-    while (!statusflag)
+    поки (!statusflag)
         yield_toirq();
     set_success(regs);
 }
@@ -414,11 +414,11 @@ handle_1586(struct bregs *regs)
 static void
 handle_158300(struct bregs *regs)
 {
-    int ret = set_usertimer((regs->cx << 16) | regs->dx, regs->es, regs->bx);
-    if (ret)
+    ціле ret = set_usertimer((regs->cx << 16) | regs->dx, regs->es, regs->bx);
+    якщо (ret)
         // Interval already set.
         set_code_invalid(regs, RET_EUNSUPPORTED);
-    else
+    інакше
         set_success(regs);
 }
 
@@ -440,9 +440,9 @@ handle_1583XX(struct bregs *regs)
 void
 handle_1583(struct bregs *regs)
 {
-    if (!CONFIG_RTC_TIMER) {
+    якщо (!CONFIG_RTC_TIMER) {
         handle_1583XX(regs);
-        return;
+        повернути;
     }
     switch (regs->al) {
     case 0x00: handle_158300(regs); break;
@@ -457,36 +457,36 @@ handle_1583(struct bregs *regs)
 void VISIBLE16
 handle_70(void)
 {
-    if (!CONFIG_RTC_TIMER)
-        return;
+    якщо (!CONFIG_RTC_TIMER)
+        повернути;
     debug_isr(DEBUG_ISR_70);
 
     // Check which modes are enabled and have occurred.
     u8 registerB = rtc_read(CMOS_STATUS_B);
     u8 registerC = rtc_read(CMOS_STATUS_C);
 
-    if (!(registerB & (RTC_B_PIE|RTC_B_AIE)))
+    якщо (!(registerB & (RTC_B_PIE|RTC_B_AIE)))
         goto done;
-    if (registerC & RTC_B_AIE) {
+    якщо (registerC & RTC_B_AIE) {
         // Handle Alarm Interrupt.
         struct bregs br;
         memset(&br, 0, sizeof(br));
         br.flags = F_IF;
         call16_int(0x4a, &br);
     }
-    if (!(registerC & RTC_B_PIE))
+    якщо (!(registerC & RTC_B_PIE))
         goto done;
 
     // Handle Periodic Interrupt.
 
     check_preempt();
 
-    if (!GET_BDA(rtc_wait_flag))
+    якщо (!GET_BDA(rtc_wait_flag))
         goto done;
 
     // Wait Interval (Int 15, AH=83) active.
     u32 time = GET_BDA(user_wait_timeout);  // Time left in microseconds.
-    if (time < USEC_PER_RTC) {
+    якщо (time < USEC_PER_RTC) {
         // Done waiting - write to specified flag byte.
         struct segoff_s segoff = GET_BDA(user_wait_complete_flag);
         u16 ptr_seg = segoff.seg;
@@ -495,7 +495,7 @@ handle_70(void)
         SET_FARVAR(ptr_seg, *ptr_far, oldval | 0x80);
 
         clear_usertimer();
-    } else {
+    } інакше {
         // Continue waiting.
         time -= USEC_PER_RTC;
         SET_BDA(user_wait_timeout, time);

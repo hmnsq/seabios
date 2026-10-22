@@ -110,15 +110,15 @@ struct drive_s {
 extern u8 FloppyCount, CDCount;
 extern u8 *bounce_buf_fl;
 struct drive_s *getDrive(u8 exttype, u8 extdriveoffset);
-int getDriveId(u8 exttype, struct drive_s *drive);
+ціле getDriveId(u8 exttype, struct drive_s *drive);
 void map_floppy_drive(struct drive_s *drive);
 void map_hd_drive(struct drive_s *drive);
 void map_cd_drive(struct drive_s *drive);
 struct int13dpt_s;
-int fill_edd(struct segoff_s edd, struct drive_s *drive_fl);
+ціле fill_edd(struct segoff_s edd, struct drive_s *drive_fl);
 void block_setup(void);
-int default_process_op(struct disk_op_s *op);
-int process_op(struct disk_op_s *op);
-int create_bounce_buf(void);
+ціле default_process_op(struct disk_op_s *op);
+ціле process_op(struct disk_op_s *op);
+ціле create_bounce_buf(void);
 
 #endif // block.h
