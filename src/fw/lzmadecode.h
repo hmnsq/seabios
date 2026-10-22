@@ -19,39 +19,39 @@
   to this file, however, are subject to the LGPL or CPL terms.
 */
 
-#ifndef __LZMADECODE_H
-#define __LZMADECODE_H
+#اگر_تعریف_نشده __LZMADECODE_H
+#تعریف_کن __LZMADECODE_H
 
-typedef unsigned char Byte;
-typedef unsigned short UInt16;
-typedef unsigned int UInt32;
-typedef UInt32 SizeT;
+تعريفنوع بیعلامت حرف Byte;
+تعريفنوع بیعلامت کوتاه UInt16;
+تعريفنوع بیعلامت صحيح UInt32;
+تعريفنوع UInt32 اندازه_T;
 
-#define CProb UInt16
+#تعریف_کن CProb UInt16
 
-#define LZMA_RESULT_OK 0
-#define LZMA_RESULT_DATA_ERROR 1
+#تعریف_کن LZMA_نتیجه_OK 0
+#تعریف_کن LZMA_نتیجه_داده_ERROR 1
 
 
-#define LZMA_BASE_SIZE 1846
-#define LZMA_LIT_SIZE 768
+#تعریف_کن LZMA_پایه_اندازه 1846
+#تعریف_کن LZMA_LIT_اندازه 768
 
-#define LZMA_PROPERTIES_SIZE 5
+#تعریف_کن LZMA_PROPERTIES_اندازه 5
 
-typedef struct _CLzmaProperties
+تعريفنوع بنية _CLzmaProperties
 {
-  int lc;
-  int lp;
-  int pb;
+  صحيح lc;
+  صحيح lp;
+  صحيح pb;
 }CLzmaProperties;
 
-int LzmaDecodeProperties(CLzmaProperties *propsRes, const unsigned char *propsData, int size);
+صحيح LzmaDecodeProperties(CLzmaProperties *propsRes, ثابت بیعلامت حرف *props_داده, صحيح اندازه);
 
-#define LzmaGetNumProbs(Properties) (LZMA_BASE_SIZE + (LZMA_LIT_SIZE << ((Properties)->lc + (Properties)->lp)))
+#تعریف_کن Lzma_Get_رقم_Probs(Properties) (LZMA_پایه_اندازه + (LZMA_LIT_اندازه << ((Properties)->lc + (Properties)->lp)))
 
-#define kLzmaNeedInitId (-2)
+#تعریف_کن kLzmaNeedInitId (-2)
 
-typedef struct _CLzmaDecoderState
+تعريفنوع بنية _CLzmaDecoderState
 {
   CLzmaProperties Properties;
   CProb *Probs;
@@ -60,8 +60,8 @@ typedef struct _CLzmaDecoderState
 } CLzmaDecoderState;
 
 
-int LzmaDecode(CLzmaDecoderState *vs,
-    const unsigned char *inStream, SizeT inSize, SizeT *inSizeProcessed,
-    unsigned char *outStream, SizeT outSize, SizeT *outSizeProcessed);
+صحيح LzmaDecode(CLzmaDecoderState *vs,
+    ثابت بیعلامت حرف *درون_جریان, اندازه_T درون_اندازه, اندازه_T *درون_اندازه_Processed,
+    بیعلامت حرف *بیرون_جریان, اندازه_T بیرون_اندازه, اندازه_T *بیرون_اندازه_Processed);
 
-#endif
+#پایان_اگر

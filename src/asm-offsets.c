@@ -1,23 +1,23 @@
 // Generate assembler offsets.
 
-#include "gen-defs.h" // OFFSET
-#include "bregs.h" // struct bregs
+#ضمن "gen-defs.h" //جابه_جایی
+#ضمن "bregs.h" // struct bregs
 
 /* workaround for a warning with -Wmissing-prototypes */
-void foo(void) VISIBLE16;
+فراغ foo(فراغ) VISIBLE16;
 
-void foo(void)
+فراغ foo(فراغ)
 {
     COMMENT("BREGS");
-    OFFSET(BREGS_es, bregs, es);
-    OFFSET(BREGS_ds, bregs, ds);
-    OFFSET(BREGS_eax, bregs, eax);
-    OFFSET(BREGS_ebx, bregs, ebx);
-    OFFSET(BREGS_ecx, bregs, ecx);
-    OFFSET(BREGS_edx, bregs, edx);
-    OFFSET(BREGS_ebp, bregs, ebp);
-    OFFSET(BREGS_esi, bregs, esi);
-    OFFSET(BREGS_edi, bregs, edi);
-    OFFSET(BREGS_flags, bregs, flags);
-    OFFSET(BREGS_code, bregs, code);
+    جابه_جایی(BREGS_es, bregs, es);
+    جابه_جایی(BREGS_ds, bregs, ds);
+    جابه_جایی(BREGS_eax, bregs, eax);
+    جابه_جایی(BREGS_ebx, bregs, ebx);
+    جابه_جایی(BREGS_ecx, bregs, ecx);
+    جابه_جایی(BREGS_edx, bregs, edx);
+    جابه_جایی(BREGS_ebp, bregs, ebp);
+    جابه_جایی(BREGS_esi, bregs, esi);
+    جابه_جایی(BREGS_edi, bregs, edi);
+    جابه_جایی(BREGS_flags, bregs, flags);
+    جابه_جایی(BREGS_کد, bregs, کد);
 }

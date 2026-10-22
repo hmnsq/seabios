@@ -1,73 +1,73 @@
-#ifndef __USB_OHCI_H
-#define __USB_OHCI_H
+#اگر_تعریف_نشده __USB_OHCI_H
+#تعریف_کن __USB_OHCI_H
 
 // usb-ohci.c
-void ohci_setup(void);
-struct usbdevice_s;
-struct usb_endpoint_descriptor;
-struct usb_pipe;
-struct usb_pipe *ohci_realloc_pipe(struct usbdevice_s *usbdev
-                                   , struct usb_pipe *upipe
-                                   , struct usb_endpoint_descriptor *epdesc);
-int ohci_send_pipe(struct usb_pipe *p, int dir, const void *cmd
-                   , void *data, int datasize);
-int ohci_poll_intr(struct usb_pipe *p, void *data);
+فراغ ohci_راهاندازی(فراغ);
+بنية usbdevice_s;
+بنية usb_endpoint_descriptor;
+بنية usb_pipe;
+بنية usb_pipe *ohci_realloc_pipe(بنية usbdevice_s *usbdev
+                                   , بنية usb_pipe *upipe
+                                   , بنية usb_endpoint_descriptor *epdesc);
+صحيح ohci_send_pipe(بنية usb_pipe *p, صحيح dir, ثابت فراغ *cmd
+                   , فراغ *داده, صحيح datasize);
+صحيح ohci_poll_intr(بنية usb_pipe *p, فراغ *داده);
 
 
 /****************************************************************
  * ohci structs and flags
  ****************************************************************/
 
-struct ohci_ed {
+بنية ohci_ed {
     u32 hwINFO;
-    u32 hwTailP;
-    u32 hwHeadP;
-    u32 hwNextED;
+    u32 hw_دم_P;
+    u32 hw_سر_P;
+    u32 hw_بعدی_ED;
 } PACKED;
 
-#define ED_ISO          (1 << 15)
-#define ED_SKIP         (1 << 14)
-#define ED_LOWSPEED     (1 << 13)
-#define ED_OUT          (0x01 << 11)
-#define ED_IN           (0x02 << 11)
+#تعریف_کن ED_ISO          (1 << 15)
+#تعریف_کن ED_SKIP         (1 << 14)
+#تعریف_کن ED_LOWSPEED     (1 << 13)
+#تعریف_کن ED_بیرون          (0x01 << 11)
+#تعریف_کن ED_درون           (0x02 << 11)
 
-#define ED_C            (0x02)
-#define ED_H            (0x01)
+#تعریف_کن ED_C            (0x02)
+#تعریف_کن ED_H            (0x01)
 
-struct ohci_td {
+بنية ohci_td {
     u32 hwINFO;
     u32 hwCBP;
-    u32 hwNextTD;
+    u32 hw_بعدی_TD;
     u32 hwBE;
 } PACKED;
 
-#define TD_CC       0xf0000000
-#define TD_CC_GET(td_p) ((td_p >>28) & 0x0f)
-#define TD_DI       0x00E00000
+#تعریف_کن TD_CC       0xf0000000
+#تعریف_کن TD_CC_GET(td_p) ((td_p >>28) & 0x0f)
+#تعریف_کن TD_DI       0x00E00000
 
-#define TD_DONE     0x00020000
-#define TD_ISO      0x00010000
+#تعریف_کن TD_انجامشده     0x00020000
+#تعریف_کن TD_ISO      0x00010000
 
-#define TD_EC       0x0C000000
-#define TD_T        0x03000000
-#define TD_T_DATA0  0x02000000
-#define TD_T_DATA1  0x03000000
-#define TD_T_TOGGLE 0x00000000
-#define TD_DP       0x00180000
-#define TD_DP_SETUP 0x00000000
-#define TD_DP_IN    0x00100000
-#define TD_DP_OUT   0x00080000
+#تعریف_کن TD_EC       0x0C000000
+#تعریف_کن TD_T        0x03000000
+#تعریف_کن TD_T_DATA0  0x02000000
+#تعریف_کن TD_T_DATA1  0x03000000
+#تعریف_کن TD_T_TOGGLE 0x00000000
+#تعریف_کن TD_DP       0x00180000
+#تعریف_کن TD_DP_راهاندازی 0x00000000
+#تعریف_کن TD_DP_درون    0x00100000
+#تعریف_کن TD_DP_بیرون   0x00080000
 
-#define TD_R        0x00040000
+#تعریف_کن TD_R        0x00040000
 
-struct ohci_hcca {
-    u32  int_table[32];
-    u32  frame_no;
-    u32  done_head;
+بنية ohci_hcca {
+    u32  int_جدول[32];
+    u32  قاب_no;
+    u32  انجامشده_سر;
     u8   reserved[120];
 } PACKED;
 
-struct ohci_regs {
+بنية ohci_regs {
     u32  revision;
     u32  control;
     u32  cmdstatus;
@@ -91,54 +91,54 @@ struct ohci_regs {
 
     u32  roothub_a;
     u32  roothub_b;
-    u32  roothub_status;
+    u32  roothub_وضعیت;
     u32  roothub_portstatus[15];
 } PACKED;
 
-#define OHCI_CTRL_CBSR  (3 << 0)
-#define OHCI_CTRL_PLE   (1 << 2)
-#define OHCI_CTRL_CLE   (1 << 4)
-#define OHCI_CTRL_BLE   (1 << 5)
-#define OHCI_CTRL_HCFS  (3 << 6)
+#تعریف_کن OHCI_CTRL_CBSR  (3 << 0)
+#تعریف_کن OHCI_CTRL_PLE   (1 << 2)
+#تعریف_کن OHCI_CTRL_CLE   (1 << 4)
+#تعریف_کن OHCI_CTRL_BLE   (1 << 5)
+#تعریف_کن OHCI_CTRL_HCFS  (3 << 6)
 #       define OHCI_USB_RESET   (0 << 6)
 #       define OHCI_USB_OPER    (2 << 6)
-#define OHCI_CTRL_RWC   (1 << 9)
+#تعریف_کن OHCI_CTRL_RWC   (1 << 9)
 
-#define OHCI_HCR        (1 << 0)
-#define OHCI_CLF        (1 << 1)
-#define OHCI_BLF        (1 << 2)
+#تعریف_کن OHCI_HCR        (1 << 0)
+#تعریف_کن OHCI_CLF        (1 << 1)
+#تعریف_کن OHCI_BLF        (1 << 2)
 
-#define OHCI_INTR_MIE   (1 << 31)
+#تعریف_کن OHCI_INTR_MIE   (1 << 31)
 
-#define RH_PS_CCS            0x00000001
-#define RH_PS_PES            0x00000002
-#define RH_PS_PSS            0x00000004
-#define RH_PS_POCI           0x00000008
-#define RH_PS_PRS            0x00000010
-#define RH_PS_PPS            0x00000100
-#define RH_PS_LSDA           0x00000200
-#define RH_PS_CSC            0x00010000
-#define RH_PS_PESC           0x00020000
-#define RH_PS_PSSC           0x00040000
-#define RH_PS_OCIC           0x00080000
-#define RH_PS_PRSC           0x00100000
+#تعریف_کن RH_PS_CCS            0x00000001
+#تعریف_کن RH_PS_PES            0x00000002
+#تعریف_کن RH_PS_PSS            0x00000004
+#تعریف_کن RH_PS_POCI           0x00000008
+#تعریف_کن RH_PS_PRS            0x00000010
+#تعریف_کن RH_PS_PPS            0x00000100
+#تعریف_کن RH_PS_LSDA           0x00000200
+#تعریف_کن RH_PS_CSC            0x00010000
+#تعریف_کن RH_PS_PESC           0x00020000
+#تعریف_کن RH_PS_PSSC           0x00040000
+#تعریف_کن RH_PS_OCIC           0x00080000
+#تعریف_کن RH_PS_PRSC           0x00100000
 
-#define RH_HS_LPS            0x00000001
-#define RH_HS_OCI            0x00000002
-#define RH_HS_DRWE           0x00008000
-#define RH_HS_LPSC           0x00010000
-#define RH_HS_OCIC           0x00020000
-#define RH_HS_CRWE           0x80000000
+#تعریف_کن RH_HS_LPS            0x00000001
+#تعریف_کن RH_HS_OCI            0x00000002
+#تعریف_کن RH_HS_DRWE           0x00008000
+#تعریف_کن RH_HS_LPSC           0x00010000
+#تعریف_کن RH_HS_OCIC           0x00020000
+#تعریف_کن RH_HS_CRWE           0x80000000
 
-#define RH_B_DR         0x0000ffff
-#define RH_B_PPCM       0xffff0000
+#تعریف_کن RH_B_DR         0x0000ffff
+#تعریف_کن RH_B_PPCM       0xffff0000
 
-#define RH_A_NDP        (0xff << 0)
-#define RH_A_PSM        (1 << 8)
-#define RH_A_NPS        (1 << 9)
-#define RH_A_DT         (1 << 10)
-#define RH_A_OCPM       (1 << 11)
-#define RH_A_NOCP       (1 << 12)
-#define RH_A_POTPGT     (0xff << 24)
+#تعریف_کن RH_A_NDP        (0xff << 0)
+#تعریف_کن RH_A_PSM        (1 << 8)
+#تعریف_کن RH_A_NPS        (1 << 9)
+#تعریف_کن RH_A_DT         (1 << 10)
+#تعریف_کن RH_A_OCPM       (1 << 11)
+#تعریف_کن RH_A_NOCP       (1 << 12)
+#تعریف_کن RH_A_POTPGT     (0xff << 24)
 
-#endif // usb-ohci.h
+#پایان_اگر // usb-ohci.h

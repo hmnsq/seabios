@@ -1,15 +1,15 @@
-#ifndef __ROMFILE_LOADER_H
-#define __ROMFILE_LOADER_H
+#اگر_تعریف_نشده __ROMFILE_LOADER_H
+#تعریف_کن __ROMFILE_LOADER_H
 
-#include "types.h" // u8
-#include "util.h" // romfile_s
+#ضمن "types.h" // u8
+#ضمن "util.h" // romfile_s
 
-#define ROMFILE_LOADER_FILESZ 56
+#تعریف_کن ROMFILE_LOADER_FILESZ 56
 
 /* ROM file linker/loader interface. Linker uses little endian format */
-struct romfile_loader_entry_s {
+بنية romfile_loader_مدخل_s {
     u32 command;
-    union {
+    اتحاد {
         /*
          * COMMAND_ALLOCATE - allocate a table from @alloc.file
          * subject to @alloc.align alignment (must be power of 2)
@@ -18,8 +18,8 @@ struct romfile_loader_entry_s {
          * Must appear exactly once for each file, and before
          * this file is referenced by any other command.
          */
-        struct {
-            char file[ROMFILE_LOADER_FILESZ];
+        بنية {
+            حرف file[ROMFILE_LOADER_FILESZ];
             u32 align;
             u8 zone;
         } alloc;
@@ -30,12 +30,12 @@ struct romfile_loader_entry_s {
          * originating from @src_file. 1,2,4 or 8 byte unsigned
          * addition is used depending on @pointer.size.
          */
-        struct {
-            char dest_file[ROMFILE_LOADER_FILESZ];
-            char src_file[ROMFILE_LOADER_FILESZ];
-            u32 offset;
-            u8 size;
-        } pointer;
+        بنية {
+            حرف dest_file[ROMFILE_LOADER_FILESZ];
+            حرف src_file[ROMFILE_LOADER_FILESZ];
+            u32 جابه_جایی_2;
+            u8 اندازه;
+        } اشاره_گر;
 
         /*
          * COMMAND_ADD_CHECKSUM - calculate checksum of the range specified by
@@ -44,11 +44,11 @@ struct romfile_loader_entry_s {
          * Checksum simply sums -X for each byte X in the range
          * using 8-bit math.
          */
-        struct {
-            char file[ROMFILE_LOADER_FILESZ];
-            u32 offset;
-            u32 start;
-            u32 length;
+        بنية {
+            حرف file[ROMFILE_LOADER_FILESZ];
+            u32 جابه_جایی_2;
+            u32 شروع;
+            u32 درازی;
         } cksum;
 
         /*
@@ -59,33 +59,33 @@ struct romfile_loader_entry_s {
          * 1,2,4 or 8 byte unsigned addition is used depending on
          * @wr_pointer.size.
          */
-        struct {
-            char dest_file[ROMFILE_LOADER_FILESZ];
-            char src_file[ROMFILE_LOADER_FILESZ];
-            u32 dst_offset;
-            u32 src_offset;
-            u8 size;
-        } wr_pointer;
+        بنية {
+            حرف dest_file[ROMFILE_LOADER_FILESZ];
+            حرف src_file[ROMFILE_LOADER_FILESZ];
+            u32 dst_جابه_جایی;
+            u32 src_جابه_جایی;
+            u8 اندازه;
+        } wr_اشاره_گر;
 
         /* padding */
-        char pad[124];
+        حرف pad[124];
     };
 };
 
-enum {
+تعداد {
     ROMFILE_LOADER_COMMAND_ALLOCATE      = 0x1,
-    ROMFILE_LOADER_COMMAND_ADD_POINTER   = 0x2,
-    ROMFILE_LOADER_COMMAND_ADD_CHECKSUM  = 0x3,
-    ROMFILE_LOADER_COMMAND_WRITE_POINTER = 0x4,
+    ROMFILE_LOADER_COMMAND_جمع_کن_اشاره_گر   = 0x2,
+    ROMFILE_LOADER_COMMAND_جمع_کن_CHECKSUM  = 0x3,
+    ROMFILE_LOADER_COMMAND_WRITE_اشاره_گر = 0x4,
 };
 
-enum {
-    ROMFILE_LOADER_ALLOC_ZONE_HIGH = 0x1,
+تعداد {
+    ROMFILE_LOADER_ALLOC_ZONE_بالا = 0x1,
     ROMFILE_LOADER_ALLOC_ZONE_FSEG = 0x2,
 };
 
-int romfile_loader_execute(const char *name);
+صحيح romfile_loader_execute(ثابت حرف *name);
 
-void romfile_fw_cfg_resume(void);
+فراغ romfile_fw_cfg_resume(فراغ);
 
-#endif
+#پایان_اگر

@@ -4,52 +4,52 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // SET_BDA
-#include "bregs.h" // struct bregs
-#include "stacks.h" // yield
-#include "output.h" // dprintf
-#include "util.h" // irqtimer_calc_ticks
-#include "string.h" // memcpy
-#include "romfile.h" // romfile_loadint
-#include "hw/serialio.h" // SEROFF_IER
-#include "cp437.h"
+#ضمن "biosvar.h" // SET_BDA
+#ضمن "bregs.h" // struct bregs
+#ضمن "stacks.h" // yield
+#ضمن "output.h" // dprintf
+#ضمن "util.h" // irqtimer_calc_ticks
+#ضمن "string.h" // memcpy
+#ضمن "romfile.h" // romfile_loadint
+#ضمن "hw/serialio.h" // SEROFF_IER
+#ضمن "cp437.h"
 
-static u8 video_rows(void)
+ساكن u8 video_ردیفها(فراغ)
 {
-    return GET_BDA(video_rows)+1;
+    أرجع GET_BDA(video_ردیفها)+1;
 }
 
-static u8 video_cols(void)
+ساكن u8 video_تعداد_ستون(فراغ)
 {
-    return GET_BDA(video_cols);
+    أرجع GET_BDA(video_تعداد_ستون);
 }
 
-static u8 cursor_pos_col(void)
+ساكن u8 cursor_pos_ستون(فراغ)
 {
     u16 pos = GET_BDA(cursor_pos[0]);
-    return pos & 0xff;
+    أرجع pos & 0xff;
 }
 
-static u8 cursor_pos_row(void)
+ساكن u8 cursor_pos_ردیف(فراغ)
 {
     u16 pos = GET_BDA(cursor_pos[0]);
-    return (pos >> 8) & 0xff;
+    أرجع (pos >> 8) & 0xff;
 }
 
-static void cursor_pos_set(u8 row, u8 col)
+ساكن فراغ cursor_pos_مجموعه(u8 ردیف, u8 ستون)
 {
-    u16 pos = ((u16)row << 8) | col;
-    SET_BDA(cursor_pos[0], pos);
+    u16 pos = ((u16)ردیف << 8) | ستون;
+    مجموعه_BDA(cursor_pos[0], pos);
 }
 
 /****************************************************************
  * serial console output
  ****************************************************************/
 
-VARLOW u16 sercon_port;
-VARLOW u8 sercon_split;
+VARLOW u16 sercon_پورت;
+VARLOW u8 sercon_تقسیم;
 VARLOW u8 sercon_enable;
-VARFSEG struct segoff_s sercon_real_vga_handler;
+VARFSEG بنية segoff_s sercon_real_vga_handler;
 
 /*
  * We have a small output buffer here, for lazy output.  That allows
@@ -61,51 +61,51 @@ VARFSEG struct segoff_s sercon_real_vga_handler;
  * sercon_col_last   is the most recent column sent to the terminal.
  * sercon_row_last   is the most recent row sent to the terminal.
  */
-VARLOW u8 sercon_attr_last;
-VARLOW u8 sercon_col_last;
-VARLOW u8 sercon_row_last;
+VARLOW u8 sercon_attr_آخرین;
+VARLOW u8 sercon_ستون_آخرین;
+VARLOW u8 sercon_ردیف_آخرین;
 VARLOW u8 sercon_char;
 VARLOW u8 sercon_attr = 0x07;
 
-static VAR16 u8 sercon_cmap[8] = { '0', '4', '2', '6', '1', '5', '3', '7' };
+ساكن VAR16 u8 sercon_cmap[8] = { '0', '4', '2', '6', '1', '5', '3', '7' };
 
-static int sercon_splitmode(void)
+ساكن صحيح sercon_splitmode(فراغ)
 {
-    return GET_LOW(sercon_split);
+    أرجع GET_کم(sercon_تقسیم);
 }
 
-static void sercon_putchar(u8 chr)
+ساكن فراغ sercon_putchar(u8 chr)
 {
-    u16 addr = GET_LOW(sercon_port);
-    u32 end = irqtimer_calc_ticks(0x0a);
+    u16 addr = GET_کم(sercon_پورت);
+    u32 انتها = irqtimer_calc_ticks(0x0a);
 
-#if 0
+#إذا 0
     /* for visual control sequence debugging */
-    if (chr == '\x1b')
+    إذا (chr == '\x1b')
         chr = '*';
-#endif
+#پایان_اگر
 
-    for (;;) {
+    لكل (;;) {
         u8 lsr = inb(addr+SEROFF_LSR);
-        if ((lsr & 0x60) == 0x60) {
+        إذا ((lsr & 0x60) == 0x60) {
             // Success - can write data
-            outb(chr, addr+SEROFF_DATA);
-            break;
+            outb(chr, addr+SEROFF_داده);
+            اكسر;
         }
-        if (irqtimer_check(end)) {
-            break;
+        إذا (irqtimer_check(انتها)) {
+            اكسر;
         }
         yield();
     }
 }
 
-static void sercon_term_reset(void)
+ساكن فراغ sercon_جمله_reset(فراغ)
 {
     sercon_putchar('\x1b');
     sercon_putchar('c');
 }
 
-static void sercon_term_clear_screen(void)
+ساكن فراغ sercon_جمله_clear_screen(فراغ)
 {
     sercon_putchar('\x1b');
     sercon_putchar('[');
@@ -113,7 +113,7 @@ static void sercon_term_clear_screen(void)
     sercon_putchar('J');
 }
 
-static void sercon_term_no_linewrap(void)
+ساكن فراغ sercon_جمله_no_linewrap(فراغ)
 {
     sercon_putchar('\x1b');
     sercon_putchar('[');
@@ -122,424 +122,424 @@ static void sercon_term_no_linewrap(void)
     sercon_putchar('l');
 }
 
-static void sercon_term_cursor_goto(u8 row, u8 col)
+ساكن فراغ sercon_جمله_cursor_goto(u8 ردیف, u8 ستون)
 {
-    row++; col++;
+    ردیف++; ستون++;
     sercon_putchar('\x1b');
     sercon_putchar('[');
-    sercon_putchar('0' + row / 10);
-    sercon_putchar('0' + row % 10);
+    sercon_putchar('0' + ردیف / 10);
+    sercon_putchar('0' + ردیف % 10);
     sercon_putchar(';');
-    sercon_putchar('0' + col / 10);
-    sercon_putchar('0' + col % 10);
+    sercon_putchar('0' + ستون / 10);
+    sercon_putchar('0' + ستون % 10);
     sercon_putchar('H');
 }
 
-static void sercon_term_set_color(u8 fg, u8 bg, u8 bold)
+ساكن فراغ sercon_جمله_مجموعه_color(u8 fg, u8 bg, u8 bold)
 {
     sercon_putchar('\x1b');
     sercon_putchar('[');
     sercon_putchar('0');
-    if (fg != 7) {
+    إذا (fg != 7) {
         sercon_putchar(';');
         sercon_putchar('3');
         sercon_putchar(GET_GLOBAL(sercon_cmap[fg & 7]));
     }
-    if (bg != 0) {
+    إذا (bg != 0) {
         sercon_putchar(';');
         sercon_putchar('4');
         sercon_putchar(GET_GLOBAL(sercon_cmap[bg & 7]));
     }
-    if (bold) {
+    إذا (bold) {
         sercon_putchar(';');
         sercon_putchar('1');
     }
     sercon_putchar('m');
 }
 
-static void sercon_set_attr(u8 attr)
+ساكن فراغ sercon_مجموعه_attr(u8 attr)
 {
-    if (attr == GET_LOW(sercon_attr_last))
-        return;
+    إذا (attr == GET_کم(sercon_attr_آخرین))
+        أرجع;
 
-    SET_LOW(sercon_attr_last, attr);
-    sercon_term_set_color((attr >> 0) & 7,
+    مجموعه_کم(sercon_attr_آخرین, attr);
+    sercon_جمله_مجموعه_color((attr >> 0) & 7,
                           (attr >> 4) & 7,
                           attr & 0x08);
 }
 
-static void sercon_print_utf8(u8 chr)
+ساكن فراغ sercon_print_utf8(u8 chr)
 {
-    u16 unicode = cp437_to_unicode(chr);
+    u16 unicode = cp437_مقصد_unicode(chr);
 
-    if (unicode < 0x7f) {
+    إذا (unicode < 0x7f) {
         sercon_putchar(unicode);
-    } else if (unicode < 0x7ff) {
+    } وإلا إذا (unicode < 0x7ff) {
         sercon_putchar(0xc0 | ((unicode >>  6) & 0x1f));
         sercon_putchar(0x80 | ((unicode >>  0) & 0x3f));
-    } else {
+    } وإلا {
         sercon_putchar(0xe0 | ((unicode >> 12) & 0x0f));
         sercon_putchar(0x80 | ((unicode >>  6) & 0x3f));
         sercon_putchar(0x80 | ((unicode >>  0) & 0x3f));
     }
 }
 
-static void sercon_cursor_pos_set(u8 row, u8 col)
+ساكن فراغ sercon_cursor_pos_مجموعه(u8 ردیف, u8 ستون)
 {
-    if (!sercon_splitmode()) {
-        cursor_pos_set(row, col);
-    } else {
+    إذا (!sercon_splitmode()) {
+        cursor_pos_مجموعه(ردیف, ستون);
+    } وإلا {
         /* let vgabios update cursor */
     }
 }
 
-static void sercon_lazy_cursor_sync(void)
+ساكن فراغ sercon_lazy_cursor_sync(فراغ)
 {
-    u8 row = cursor_pos_row();
-    u8 col = cursor_pos_col();
+    u8 ردیف = cursor_pos_ردیف();
+    u8 ستون = cursor_pos_ستون();
 
-    if (GET_LOW(sercon_row_last) == row &&
-        GET_LOW(sercon_col_last) == col)
-        return;
+    إذا (GET_کم(sercon_ردیف_آخرین) == ردیف &&
+        GET_کم(sercon_ستون_آخرین) == ستون)
+        أرجع;
 
-    if (col == 0 && GET_LOW(sercon_row_last) <= row) {
-        if (GET_LOW(sercon_col_last) != 0) {
+    إذا (ستون == 0 && GET_کم(sercon_ردیف_آخرین) <= ردیف) {
+        إذا (GET_کم(sercon_ستون_آخرین) != 0) {
             sercon_putchar('\r');
-            SET_LOW(sercon_col_last, 0);
+            مجموعه_کم(sercon_ستون_آخرین, 0);
         }
-        while (GET_LOW(sercon_row_last) < row) {
+        طالما (GET_کم(sercon_ردیف_آخرین) < ردیف) {
             sercon_putchar('\n');
-            SET_LOW(sercon_row_last, GET_LOW(sercon_row_last)+1);
+            مجموعه_کم(sercon_ردیف_آخرین, GET_کم(sercon_ردیف_آخرین)+1);
         }
-        if (GET_LOW(sercon_row_last) == row &&
-            GET_LOW(sercon_col_last) == col)
-            return;
+        إذا (GET_کم(sercon_ردیف_آخرین) == ردیف &&
+            GET_کم(sercon_ستون_آخرین) == ستون)
+            أرجع;
     }
 
-    sercon_term_cursor_goto(row, col);
-    SET_LOW(sercon_row_last, row);
-    SET_LOW(sercon_col_last, col);
+    sercon_جمله_cursor_goto(ردیف, ستون);
+    مجموعه_کم(sercon_ردیف_آخرین, ردیف);
+    مجموعه_کم(sercon_ستون_آخرین, ستون);
 }
 
-static void sercon_lazy_flush(void)
+ساكن فراغ sercon_lazy_flush(فراغ)
 {
     u8 chr, attr;
 
-    chr = GET_LOW(sercon_char);
-    attr = GET_LOW(sercon_attr);
-    if (chr) {
-        sercon_set_attr(attr);
+    chr = GET_کم(sercon_char);
+    attr = GET_کم(sercon_attr);
+    إذا (chr) {
+        sercon_مجموعه_attr(attr);
         sercon_print_utf8(chr);
-        SET_LOW(sercon_col_last, GET_LOW(sercon_col_last) + 1);
+        مجموعه_کم(sercon_ستون_آخرین, GET_کم(sercon_ستون_آخرین) + 1);
     }
 
     sercon_lazy_cursor_sync();
 
-    SET_LOW(sercon_attr, 0x07);
-    SET_LOW(sercon_char, 0x00);
+    مجموعه_کم(sercon_attr, 0x07);
+    مجموعه_کم(sercon_char, 0x00);
 }
 
-static void sercon_lazy_cursor_update(u8 row, u8 col)
+ساكن فراغ sercon_lazy_cursor_update(u8 ردیف, u8 ستون)
 {
-    sercon_cursor_pos_set(row, col);
-    SET_LOW(sercon_row_last, row);
-    SET_LOW(sercon_col_last, col);
+    sercon_cursor_pos_مجموعه(ردیف, ستون);
+    مجموعه_کم(sercon_ردیف_آخرین, ردیف);
+    مجموعه_کم(sercon_ستون_آخرین, ستون);
 }
 
-static void sercon_lazy_backspace(void)
+ساكن فراغ sercon_lazy_backspace(فراغ)
 {
-    u8 col;
+    u8 ستون;
 
     sercon_lazy_flush();
-    col = cursor_pos_col();
-    if (col > 0) {
+    ستون = cursor_pos_ستون();
+    إذا (ستون > 0) {
         sercon_putchar(8);
-        sercon_lazy_cursor_update(cursor_pos_row(), col-1);
+        sercon_lazy_cursor_update(cursor_pos_ردیف(), ستون-1);
     }
 }
 
-static void sercon_lazy_cr(void)
+ساكن فراغ sercon_lazy_cr(فراغ)
 {
-    sercon_cursor_pos_set(cursor_pos_row(), 0);
+    sercon_cursor_pos_مجموعه(cursor_pos_ردیف(), 0);
 }
 
-static void sercon_lazy_lf(void)
+ساكن فراغ sercon_lazy_lf(فراغ)
 {
-    u8 row;
+    u8 ردیف;
 
-    row = cursor_pos_row() + 1;
-    if (row >= video_rows()) {
+    ردیف = cursor_pos_ردیف() + 1;
+    إذا (ردیف >= video_ردیفها()) {
         /* scrolling up */
-        row = video_rows()-1;
-        if (GET_LOW(sercon_row_last) > 0) {
-            SET_LOW(sercon_row_last, GET_LOW(sercon_row_last) - 1);
+        ردیف = video_ردیفها()-1;
+        إذا (GET_کم(sercon_ردیف_آخرین) > 0) {
+            مجموعه_کم(sercon_ردیف_آخرین, GET_کم(sercon_ردیف_آخرین) - 1);
         }
     }
-    sercon_cursor_pos_set(row, cursor_pos_col());
+    sercon_cursor_pos_مجموعه(ردیف, cursor_pos_ستون());
 }
 
-static void sercon_lazy_move_cursor(void)
+ساكن فراغ sercon_lazy_move_cursor(فراغ)
 {
-    u8 col;
+    u8 ستون;
 
-    col = cursor_pos_col() + 1;
-    if (col >= video_cols()) {
+    ستون = cursor_pos_ستون() + 1;
+    إذا (ستون >= video_تعداد_ستون()) {
         sercon_lazy_cr();
         sercon_lazy_lf();
-    } else {
-        sercon_cursor_pos_set(cursor_pos_row(), col);
+    } وإلا {
+        sercon_cursor_pos_مجموعه(cursor_pos_ردیف(), ستون);
     }
 }
 
-static void sercon_lazy_putchar(u8 chr, u8 attr, u8 teletype)
+ساكن فراغ sercon_lazy_putchar(u8 chr, u8 attr, u8 teletype)
 {
-    if (cursor_pos_row() != GET_LOW(sercon_row_last) ||
-        cursor_pos_col() != GET_LOW(sercon_col_last)) {
+    إذا (cursor_pos_ردیف() != GET_کم(sercon_ردیف_آخرین) ||
+        cursor_pos_ستون() != GET_کم(sercon_ستون_آخرین)) {
         sercon_lazy_flush();
     }
 
-    SET_LOW(sercon_char, chr);
-    if (teletype)
+    مجموعه_کم(sercon_char, chr);
+    إذا (teletype)
         sercon_lazy_move_cursor();
-    else
-        SET_LOW(sercon_attr, attr);
+    وإلا
+        مجموعه_کم(sercon_attr, attr);
 }
 
 /* Set video mode */
-static void sercon_1000(struct bregs *regs)
+ساكن فراغ sercon_1000(بنية bregs *regs)
 {
     u8 clearscreen = !(regs->al & 0x80);
-    u8 mode = regs->al & 0x7f;
-    u8 rows, cols;
+    u8 نما = regs->al & 0x7f;
+    u8 ردیفها, تعداد_ستون;
 
-    if (!sercon_splitmode()) {
-        switch (mode) {
-        case 0x00:
-        case 0x01:
-        case 0x04: /* 320x200 */
-        case 0x05: /* 320x200 */
-            cols = 40;
-            rows = 25;
+    إذا (!sercon_splitmode()) {
+        بدل (نما) {
+        حالة 0x00:
+        حالة 0x01:
+        حالة 0x04: /* 320x200 */
+        حالة 0x05: /* 320x200 */
+            تعداد_ستون = 40;
+            ردیفها = 25;
             regs->al = 0x30;
-            break;
-        case 0x02:
-        case 0x03:
-        case 0x06: /* 640x200 */
-        case 0x07:
-        default:
-            cols = 80;
-            rows = 25;
+            اكسر;
+        حالة 0x02:
+        حالة 0x03:
+        حالة 0x06: /* 640x200 */
+        حالة 0x07:
+        افتراضي:
+            تعداد_ستون = 80;
+            ردیفها = 25;
             regs->al = 0x30;
-            break;
+            اكسر;
         }
-        cursor_pos_set(0, 0);
-        SET_BDA(video_mode, mode);
-        SET_BDA(video_cols, cols);
-        SET_BDA(video_rows, rows-1);
-        SET_BDA(cursor_type, 0x0007);
-    } else {
+        cursor_pos_مجموعه(0, 0);
+        مجموعه_BDA(video_نما, نما);
+        مجموعه_BDA(video_تعداد_ستون, تعداد_ستون);
+        مجموعه_BDA(video_ردیفها, ردیفها-1);
+        مجموعه_BDA(cursor_type, 0x0007);
+    } وإلا {
         /* let vgabios handle mode init */
     }
 
-    SET_LOW(sercon_enable, mode <= 0x07);
-    SET_LOW(sercon_col_last, 0);
-    SET_LOW(sercon_row_last, 0);
-    SET_LOW(sercon_attr_last, 0);
+    مجموعه_کم(sercon_enable, نما <= 0x07);
+    مجموعه_کم(sercon_ستون_آخرین, 0);
+    مجموعه_کم(sercon_ردیف_آخرین, 0);
+    مجموعه_کم(sercon_attr_آخرین, 0);
 
-    sercon_term_reset();
-    sercon_term_no_linewrap();
-    if (clearscreen)
-        sercon_term_clear_screen();
+    sercon_جمله_reset();
+    sercon_جمله_no_linewrap();
+    إذا (clearscreen)
+        sercon_جمله_clear_screen();
 }
 
 /* Set text-mode cursor shape */
-static void sercon_1001(struct bregs *regs)
+ساكن فراغ sercon_1001(بنية bregs *regs)
 {
     /* show/hide cursor? */
-    SET_BDA(cursor_type, regs->cx);
+    مجموعه_BDA(cursor_type, regs->cx);
 }
 
 /* Set cursor position */
-static void sercon_1002(struct bregs *regs)
+ساكن فراغ sercon_1002(بنية bregs *regs)
 {
-    sercon_cursor_pos_set(regs->dh, regs->dl);
+    sercon_cursor_pos_مجموعه(regs->dh, regs->dl);
 }
 
 /* Get cursor position */
-static void sercon_1003(struct bregs *regs)
+ساكن فراغ sercon_1003(بنية bregs *regs)
 {
     regs->cx = GET_BDA(cursor_type);
-    regs->dh = cursor_pos_row();
-    regs->dl = cursor_pos_col();
+    regs->dh = cursor_pos_ردیف();
+    regs->dl = cursor_pos_ستون();
 }
 
 /* Scroll up window */
-static void sercon_1006(struct bregs *regs)
+ساكن فراغ sercon_1006(بنية bregs *regs)
 {
     sercon_lazy_flush();
-    if (regs->al == 0) {
+    إذا (regs->al == 0) {
         /* clear rect, do only in case this looks like a fullscreen clear */
-        if (regs->ch == 0 &&
+        إذا (regs->ch == 0 &&
             regs->cl == 0 &&
-            regs->dh == video_rows()-1 &&
-            regs->dl == video_cols()-1) {
-            sercon_set_attr(regs->bh);
-            sercon_term_clear_screen();
+            regs->dh == video_ردیفها()-1 &&
+            regs->dl == video_تعداد_ستون()-1) {
+            sercon_مجموعه_attr(regs->bh);
+            sercon_جمله_clear_screen();
         }
-    } else {
+    } وإلا {
         sercon_putchar('\r');
         sercon_putchar('\n');
     }
 }
 
 /* Read character and attribute at cursor position */
-static void sercon_1008(struct bregs *regs)
+ساكن فراغ sercon_1008(بنية bregs *regs)
 {
     regs->ah = 0x07;
     regs->bh = ' ';
 }
 
 /* Write character and attribute at cursor position */
-static void sercon_1009(struct bregs *regs)
+ساكن فراغ sercon_1009(بنية bregs *regs)
 {
-    u16 count = regs->cx;
+    u16 شمار = regs->cx;
 
-    if (count == 1) {
+    إذا (شمار == 1) {
         sercon_lazy_putchar(regs->al, regs->bl, 0);
 
-    } else if (regs->al == 0x20 &&
-               video_rows() * video_cols() == count &&
-               cursor_pos_row() == 0 &&
-               cursor_pos_col() == 0) {
+    } وإلا إذا (regs->al == 0x20 &&
+               video_ردیفها() * video_تعداد_ستون() == شمار &&
+               cursor_pos_ردیف() == 0 &&
+               cursor_pos_ستون() == 0) {
         /* override everything with spaces -> this is clear screen */
         sercon_lazy_flush();
-        sercon_set_attr(regs->bl);
-        sercon_term_clear_screen();
+        sercon_مجموعه_attr(regs->bl);
+        sercon_جمله_clear_screen();
 
-    } else {
+    } وإلا {
         sercon_lazy_flush();
-        sercon_set_attr(regs->bl);
-        while (count) {
+        sercon_مجموعه_attr(regs->bl);
+        طالما (شمار) {
             sercon_print_utf8(regs->al);
-            count--;
+            شمار--;
         }
-        sercon_term_cursor_goto(cursor_pos_row(),
-                                cursor_pos_col());
+        sercon_جمله_cursor_goto(cursor_pos_ردیف(),
+                                cursor_pos_ستون());
     }
 }
 
 /* Teletype output */
-static void sercon_100e(struct bregs *regs)
+ساكن فراغ sercon_100e(بنية bregs *regs)
 {
-    switch (regs->al) {
-    case 7:
+    بدل (regs->al) {
+    حالة 7:
         sercon_putchar(0x07);
-        break;
-    case 8:
+        اكسر;
+    حالة 8:
         sercon_lazy_backspace();
-        break;
-    case '\r':
+        اكسر;
+    حالة '\r':
         sercon_lazy_cr();
-        break;
-    case '\n':
+        اكسر;
+    حالة '\n':
         sercon_lazy_lf();
-        break;
-    default:
+        اكسر;
+    افتراضي:
         sercon_lazy_putchar(regs->al, 0, 1);
-        break;
+        اكسر;
     }
 }
 
 /* Get current video mode */
-static void sercon_100f(struct bregs *regs)
+ساكن فراغ sercon_100f(بنية bregs *regs)
 {
-    regs->al = GET_BDA(video_mode);
-    regs->ah = GET_BDA(video_cols);
+    regs->al = GET_BDA(video_نما);
+    regs->ah = GET_BDA(video_تعداد_ستون);
 }
 
 /* VBE 2.0 */
-static void sercon_104f(struct bregs *regs)
+ساكن فراغ sercon_104f(بنية bregs *regs)
 {
-    if (!sercon_splitmode()) {
+    إذا (!sercon_splitmode()) {
         regs->ax = 0x0100;
-    } else {
+    } وإلا {
         // Disable sercon entry point on any vesa modeset
-        if (regs->al == 0x02)
-            SET_LOW(sercon_enable, 0);
+        إذا (regs->al == 0x02)
+            مجموعه_کم(sercon_enable, 0);
     }
 }
 
-static void sercon_10XX(struct bregs *regs)
+ساكن فراغ sercon_10XX(بنية bregs *regs)
 {
     warn_unimplemented(regs);
 }
 
-void VISIBLE16
-handle_sercon(struct bregs *regs)
+فراغ VISIBLE16
+handle_sercon(بنية bregs *regs)
 {
-    if (!CONFIG_SERCON)
-        return;
-    if (!GET_LOW(sercon_port))
-        return;
+    إذا (!CONFIG_SERCON)
+        أرجع;
+    إذا (!GET_کم(sercon_پورت))
+        أرجع;
 
-    switch (regs->ah) {
-    case 0x01:
-    case 0x02:
-    case 0x03:
-    case 0x08:
-    case 0x0f:
-        if (sercon_splitmode())
+    بدل (regs->ah) {
+    حالة 0x01:
+    حالة 0x02:
+    حالة 0x03:
+    حالة 0x08:
+    حالة 0x0f:
+        إذا (sercon_splitmode())
             /* nothing, vgabios handles it */
-            return;
+            أرجع;
     }
 
-    switch (regs->ah) {
-    case 0x00: sercon_1000(regs); break;
-    case 0x01: sercon_1001(regs); break;
-    case 0x02: sercon_1002(regs); break;
-    case 0x03: sercon_1003(regs); break;
-    case 0x06: sercon_1006(regs); break;
-    case 0x08: sercon_1008(regs); break;
-    case 0x09: sercon_1009(regs); break;
-    case 0x0e: sercon_100e(regs); break;
-    case 0x0f: sercon_100f(regs); break;
-    case 0x4f: sercon_104f(regs); break;
-    default:   sercon_10XX(regs); break;
+    بدل (regs->ah) {
+    حالة 0x00: sercon_1000(regs); اكسر;
+    حالة 0x01: sercon_1001(regs); اكسر;
+    حالة 0x02: sercon_1002(regs); اكسر;
+    حالة 0x03: sercon_1003(regs); اكسر;
+    حالة 0x06: sercon_1006(regs); اكسر;
+    حالة 0x08: sercon_1008(regs); اكسر;
+    حالة 0x09: sercon_1009(regs); اكسر;
+    حالة 0x0e: sercon_100e(regs); اكسر;
+    حالة 0x0f: sercon_100f(regs); اكسر;
+    حالة 0x4f: sercon_104f(regs); اكسر;
+    افتراضي:   sercon_10XX(regs); اكسر;
     }
 }
 
-void sercon_setup(void)
+فراغ sercon_راهاندازی(فراغ)
 {
-    if (!CONFIG_SERCON)
-        return;
+    إذا (!CONFIG_SERCON)
+        أرجع;
 
-    struct segoff_s seabios, vgabios;
+    بنية segoff_s seabios, vgabios;
     u16 addr;
 
     addr = romfile_loadint("etc/sercon-port", 0);
-    if (!addr)
-        return;
+    إذا (!addr)
+        أرجع;
     dprintf(1, "sercon: using ioport 0x%x\n", addr);
 
-    if (CONFIG_DEBUG_SERIAL)
-        if (addr == CONFIG_DEBUG_SERIAL_PORT)
+    إذا (CONFIG_DEBUG_SERIAL)
+        إذا (addr == CONFIG_DEBUG_SERIAL_پورت)
             ScreenAndDebug = 0;
 
     vgabios = GET_IVT(0x10);
-    seabios = FUNC16(entry_10);
-    if (vgabios.seg != seabios.seg ||
-        vgabios.offset != seabios.offset) {
+    seabios = FUNC16(مدخل_10);
+    إذا (vgabios.seg != seabios.seg ||
+        vgabios.جابه_جایی_2 != seabios.جابه_جایی_2) {
         dprintf(1, "sercon: configuring in splitmode (vgabios %04x:%04x)\n",
-                vgabios.seg, vgabios.offset);
+                vgabios.seg, vgabios.جابه_جایی_2);
         sercon_real_vga_handler = vgabios;
-        SET_LOW(sercon_split, 1);
-    } else {
+        مجموعه_کم(sercon_تقسیم, 1);
+    } وإلا {
         dprintf(1, "sercon: configuring as primary display\n");
         sercon_real_vga_handler = seabios;
     }
 
-    SET_IVT(0x10, FUNC16(entry_sercon));
-    SET_LOW(sercon_port, addr);
+    مجموعه_IVT(0x10, FUNC16(مدخل_sercon));
+    مجموعه_کم(sercon_پورت, addr);
     outb(0x03, addr + SEROFF_LCR); // 8N1
     outb(0x01, addr + 0x02);       // enable fifo
 }
@@ -549,10 +549,10 @@ void sercon_setup(void)
  ****************************************************************/
 
 VARLOW u8 rx_buf[16];
-VARLOW u8 rx_bytes;
+VARLOW u8 rx_بایتها;
 
-static VAR16 struct {
-    char seq[4];
+ساكن VAR16 بنية {
+    حرف seq[4];
     u8   len;
     u16  keycode;
 } termseq[] = {
@@ -570,110 +570,110 @@ static VAR16 struct {
     { .seq = "[23~", .len = 4, .keycode = 0x8500 },    // F11
     { .seq = "[24~", .len = 4, .keycode = 0x8600 },    // F12
 
-    { .seq = "[2~",  .len = 3, .keycode = 0x52e0 },    // insert
+    { .seq = "[2~",  .len = 3, .keycode = 0x52e0 },    //درج
     { .seq = "[3~",  .len = 3, .keycode = 0x53e0 },    // delete
     { .seq = "[5~",  .len = 3, .keycode = 0x49e0 },    // page up
     { .seq = "[6~",  .len = 3, .keycode = 0x51e0 },    // page down
 
-    { .seq = "[A",   .len = 2, .keycode = 0x48e0 },    // up
-    { .seq = "[B",   .len = 2, .keycode = 0x50e0 },    // down
-    { .seq = "[C",   .len = 2, .keycode = 0x4de0 },    // right
-    { .seq = "[D",   .len = 2, .keycode = 0x4be0 },    // left
+    { .seq = "[A",   .len = 2, .keycode = 0x48e0 },    //به_بالا
+    { .seq = "[B",   .len = 2, .keycode = 0x50e0 },    //پایین
+    { .seq = "[C",   .len = 2, .keycode = 0x4de0 },    //راست
+    { .seq = "[D",   .len = 2, .keycode = 0x4be0 },    //چپ
 
     { .seq = "[H",   .len = 2, .keycode = 0x47e0 },    // home
-    { .seq = "[F",   .len = 2, .keycode = 0x4fe0 },    // end
+    { .seq = "[F",   .len = 2, .keycode = 0x4fe0 },    //انتها
 };
 
-static void shiftbuf(int remove)
+ساكن فراغ shiftbuf(صحيح remove)
 {
-    int i, remaining;
+    صحيح i, مانده;
 
-    remaining = GET_LOW(rx_bytes) - remove;
-    SET_LOW(rx_bytes, remaining);
-    for (i = 0; i < remaining; i++)
-        SET_LOW(rx_buf[i], GET_LOW(rx_buf[i + remove]));
+    مانده = GET_کم(rx_بایتها) - remove;
+    مجموعه_کم(rx_بایتها, مانده);
+    لكل (i = 0; i < مانده; i++)
+        مجموعه_کم(rx_buf[i], GET_کم(rx_buf[i + remove]));
 }
 
-static int cmpbuf(int seq)
+ساكن صحيح cmpbuf(صحيح seq)
 {
-    int chr, len;
+    صحيح chr, len;
 
     len = GET_GLOBAL(termseq[seq].len);
-    if (GET_LOW(rx_bytes) < len + 1)
-        return 0;
-    for (chr = 0; chr < len; chr++)
-        if (GET_GLOBAL(termseq[seq].seq[chr]) != GET_LOW(rx_buf[chr + 1]))
-            return 0;
-    return 1;
+    إذا (GET_کم(rx_بایتها) < len + 1)
+        أرجع 0;
+    لكل (chr = 0; chr < len; chr++)
+        إذا (GET_GLOBAL(termseq[seq].seq[chr]) != GET_کم(rx_buf[chr + 1]))
+            أرجع 0;
+    أرجع 1;
 }
 
-static int findseq(void)
+ساكن صحيح findseq(فراغ)
 {
-    int seq;
+    صحيح seq;
 
-    for (seq = 0; seq < ARRAY_SIZE(termseq); seq++)
-        if (cmpbuf(seq))
-            return seq;
-    return -1;
+    لكل (seq = 0; seq < ARRAY_اندازه(termseq); seq++)
+        إذا (cmpbuf(seq))
+            أرجع seq;
+    أرجع -1;
 }
 
-void
-sercon_check_event(void)
+فراغ
+sercon_check_event(فراغ)
 {
-    if (!CONFIG_SERCON)
-        return;
+    إذا (!CONFIG_SERCON)
+        أرجع;
 
-    u16 addr = GET_LOW(sercon_port);
+    u16 addr = GET_کم(sercon_پورت);
     u16 keycode;
-    u8 byte, count = 0;
-    int seq;
+    u8 byte, شمار = 0;
+    صحيح seq;
 
     // check to see if there is a active serial port
-    if (!addr)
-        return;
-    if (inb(addr + SEROFF_LSR) == 0xFF)
-        return;
+    إذا (!addr)
+        أرجع;
+    إذا (inb(addr + SEROFF_LSR) == 0xFF)
+        أرجع;
 
     // flush pending output
     sercon_lazy_flush();
 
     // read all available data
-    while (inb(addr + SEROFF_LSR) & 0x01) {
-        byte = inb(addr + SEROFF_DATA);
-        u8 rb = GET_LOW(rx_bytes);
-        if (rb < sizeof(rx_buf)) {
-            SET_LOW(rx_buf[rb], byte);
-            SET_LOW(rx_bytes, rb + 1);
-            count++;
+    طالما (inb(addr + SEROFF_LSR) & 0x01) {
+        byte = inb(addr + SEROFF_داده);
+        u8 rb = GET_کم(rx_بایتها);
+        إذا (rb < حجم(rx_buf)) {
+            مجموعه_کم(rx_buf[rb], byte);
+            مجموعه_کم(rx_بایتها, rb + 1);
+            شمار++;
         }
     }
 
-    for (;;) {
+    لكل (;;) {
         // no (more) input data
-        u8 rb = GET_LOW(rx_bytes);
-        if (!rb)
-            return;
+        u8 rb = GET_کم(rx_بایتها);
+        إذا (!rb)
+            أرجع;
 
         // lookup escape sequences
-        u8 next_char = GET_LOW(rx_buf[0]);
-        if (rb > 1 && next_char == 0x1b) {
+        u8 بعدی_char = GET_کم(rx_buf[0]);
+        إذا (rb > 1 && بعدی_char == 0x1b) {
             seq = findseq();
-            if (seq >= 0) {
-                enqueue_key(GET_GLOBAL(termseq[seq].keycode));
+            إذا (seq >= 0) {
+                افزودن_به_صف_کلید(GET_GLOBAL(termseq[seq].keycode));
                 shiftbuf(GET_GLOBAL(termseq[seq].len) + 1);
-                continue;
+                استمر;
             }
         }
 
         // Seems we got a escape sequence we didn't recognise.
         //  -> If we received data wait for more, maybe it is just incomplete.
-        if (next_char == 0x1b && count)
-            return;
+        إذا (بعدی_char == 0x1b && شمار)
+            أرجع;
 
         // Handle input as individual char.
-        keycode = ascii_to_keycode(next_char);
-        if (keycode)
-            enqueue_key(keycode);
+        keycode = ascii_مقصد_keycode(بعدی_char);
+        إذا (keycode)
+            افزودن_به_صف_کلید(keycode);
         shiftbuf(1);
     }
 }

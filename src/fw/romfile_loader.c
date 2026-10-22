@@ -1,259 +1,259 @@
-#include "romfile_loader.h"
-#include "byteorder.h" // leXX_to_cpu/cpu_to_leXX
-#include "util.h" // checksum
-#include "string.h" // strcmp
-#include "romfile.h" // struct romfile_s
-#include "malloc.h" // Zone*, _malloc
-#include "list.h" // struct hlist_node
-#include "output.h" // warn_*
-#include "paravirt.h" // qemu_cfg_write_file
+#ضمن "romfile_loader.h"
+#ضمن "byteorder.h" // leXX_to_cpu/cpu_to_leXX
+#ضمن "util.h" // checksum
+#ضمن "string.h" // strcmp
+#ضمن "romfile.h" // struct romfile_s
+#ضمن "malloc.h" // Zone*, _malloc
+#ضمن "list.h" // struct hlist_node
+#ضمن "output.h" // warn_*
+#ضمن "paravirt.h" // qemu_cfg_write_file
 
-struct romfile_loader_file {
-    struct romfile_s *file;
-    void *data;
+بنية romfile_loader_file {
+    بنية romfile_s *file;
+    فراغ *داده;
 };
-struct romfile_loader_files {
-    int nfiles;
-    struct romfile_loader_file files[];
+بنية romfile_loader_files {
+    صحيح nfiles;
+    بنية romfile_loader_file files[];
 };
 
 // Data structures for storing "write pointer" entries for possible replay
-struct romfile_wr_pointer_entry {
-    u64 pointer;
-    u32 offset;
-    u16 key;
-    u8 ptr_size;
-    struct hlist_node node;
+بنية romfile_wr_اشاره_گر_مدخل {
+    u64 اشاره_گر;
+    u32 جابه_جایی_2;
+    u16 کلید;
+    u8 ptr_اندازه;
+    بنية hlist_گره گره;
 };
-static struct hlist_head romfile_pointer_list;
+ساكن بنية hlist_سر romfile_اشاره_گر_list;
 
-static struct romfile_loader_file *
-romfile_loader_find(const char *name,
-                    struct romfile_loader_files *files)
+ساكن بنية romfile_loader_file *
+romfile_loader_پیدا_کن(ثابت حرف *name,
+                    بنية romfile_loader_files *files)
 {
-    int i;
-    if (name[ROMFILE_LOADER_FILESZ - 1])
-        return NULL;
-    for (i = 0; i < files->nfiles; ++i)
-        if (!strcmp(files->files[i].file->name, name))
-            return &files->files[i];
-    return NULL;
+    صحيح i;
+    إذا (name[ROMFILE_LOADER_FILESZ - 1])
+        أرجع عدم;
+    لكل (i = 0; i < files->nfiles; ++i)
+        إذا (!strcmp(files->files[i].file->name, name))
+            أرجع &files->files[i];
+    أرجع عدم;
 }
 
 // Replay "write pointer" entries back to QEMU
-void romfile_fw_cfg_resume(void)
+فراغ romfile_fw_cfg_resume(فراغ)
 {
-    if (!CONFIG_QEMU)
-        return;
+    إذا (!CONFIG_QEMU)
+        أرجع;
 
-    struct romfile_wr_pointer_entry *entry;
-    hlist_for_each_entry(entry, &romfile_pointer_list, node) {
-        qemu_cfg_write_file_simple(&entry->pointer, entry->key,
-                                   entry->offset, entry->ptr_size);
+    بنية romfile_wr_اشاره_گر_مدخل *مدخل;
+    hlist_for_each_مدخل(مدخل, &romfile_اشاره_گر_list, گره) {
+        qemu_cfg_write_file_simple(&مدخل->اشاره_گر, مدخل->کلید,
+                                   مدخل->جابه_جایی_2, مدخل->ptr_اندازه);
     }
 }
 
-static void romfile_loader_allocate(struct romfile_loader_entry_s *entry,
-                                    struct romfile_loader_files *files)
+ساكن فراغ romfile_loader_allocate(بنية romfile_loader_مدخل_s *مدخل,
+                                    بنية romfile_loader_files *files)
 {
-    struct zone_s *zone;
-    struct romfile_loader_file *file = &files->files[files->nfiles];
-    void *data;
-    int ret;
-    unsigned alloc_align = le32_to_cpu(entry->alloc.align);
+    بنية zone_s *zone;
+    بنية romfile_loader_file *file = &files->files[files->nfiles];
+    فراغ *داده;
+    صحيح ret;
+    بیعلامت alloc_align = le32_مقصد_cpu(مدخل->alloc.align);
 
-    if (alloc_align & (alloc_align - 1))
-        goto err;
+    إذا (alloc_align & (alloc_align - 1))
+        اذهب err;
 
-    switch (entry->alloc.zone) {
-        case ROMFILE_LOADER_ALLOC_ZONE_HIGH:
-            zone = &ZoneHigh;
-            break;
-        case ROMFILE_LOADER_ALLOC_ZONE_FSEG:
+    بدل (مدخل->alloc.zone) {
+        حالة ROMFILE_LOADER_ALLOC_ZONE_بالا:
+            zone = &Zone_بالا;
+            اكسر;
+        حالة ROMFILE_LOADER_ALLOC_ZONE_FSEG:
             zone = &ZoneFSeg;
-            break;
-        default:
-            goto err;
+            اكسر;
+        افتراضي:
+            اذهب err;
     }
-    if (alloc_align < MALLOC_MIN_ALIGN)
+    إذا (alloc_align < MALLOC_MIN_ALIGN)
         alloc_align = MALLOC_MIN_ALIGN;
-    if (entry->alloc.file[ROMFILE_LOADER_FILESZ - 1])
-        goto err;
-    file->file = romfile_find(entry->alloc.file);
-    if (!file->file || !file->file->size)
-        return;
-    data = _malloc(zone, file->file->size, alloc_align);
-    if (!data) {
+    إذا (مدخل->alloc.file[ROMFILE_LOADER_FILESZ - 1])
+        اذهب err;
+    file->file = romfile_پیدا_کن(مدخل->alloc.file);
+    إذا (!file->file || !file->file->اندازه)
+        أرجع;
+    داده = _malloc(zone, file->file->اندازه, alloc_align);
+    إذا (!داده) {
         warn_noalloc();
-        return;
+        أرجع;
     }
-    ret = file->file->copy(file->file, data, file->file->size);
-    if (ret != file->file->size)
-        goto file_err;
-    file->data = data;
+    ret = file->file->copy(file->file, داده, file->file->اندازه);
+    إذا (ret != file->file->اندازه)
+        اذهب file_err;
+    file->داده = داده;
     files->nfiles++;
-    return;
+    أرجع;
 
 file_err:
-    free(data);
+    حرر(داده);
 err:
     warn_internalerror();
 }
 
-static void romfile_loader_add_pointer(struct romfile_loader_entry_s *entry,
-                                       struct romfile_loader_files *files)
+ساكن فراغ romfile_loader_جمع_کن_اشاره_گر(بنية romfile_loader_مدخل_s *مدخل,
+                                       بنية romfile_loader_files *files)
 {
-    struct romfile_loader_file *dest_file;
-    struct romfile_loader_file *src_file;
-    unsigned offset = le32_to_cpu(entry->pointer.offset);
-    u64 pointer = 0;
+    بنية romfile_loader_file *dest_file;
+    بنية romfile_loader_file *src_file;
+    بیعلامت جابه_جایی_2 = le32_مقصد_cpu(مدخل->اشاره_گر.جابه_جایی_2);
+    u64 اشاره_گر = 0;
 
-    dest_file = romfile_loader_find(entry->pointer.dest_file, files);
-    src_file = romfile_loader_find(entry->pointer.src_file, files);
+    dest_file = romfile_loader_پیدا_کن(مدخل->اشاره_گر.dest_file, files);
+    src_file = romfile_loader_پیدا_کن(مدخل->اشاره_گر.src_file, files);
 
-    if (!dest_file || !src_file || !dest_file->data || !src_file->data ||
-        offset + entry->pointer.size < offset ||
-        offset + entry->pointer.size > dest_file->file->size ||
-        entry->pointer.size < 1 || entry->pointer.size > 8 ||
-        entry->pointer.size & (entry->pointer.size - 1))
-        goto err;
+    إذا (!dest_file || !src_file || !dest_file->داده || !src_file->داده ||
+        جابه_جایی_2 + مدخل->اشاره_گر.اندازه < جابه_جایی_2 ||
+        جابه_جایی_2 + مدخل->اشاره_گر.اندازه > dest_file->file->اندازه ||
+        مدخل->اشاره_گر.اندازه < 1 || مدخل->اشاره_گر.اندازه > 8 ||
+        مدخل->اشاره_گر.اندازه & (مدخل->اشاره_گر.اندازه - 1))
+        اذهب err;
 
-    memcpy(&pointer, dest_file->data + offset, entry->pointer.size);
-    pointer = le64_to_cpu(pointer);
-    pointer += (unsigned long)src_file->data;
-    pointer = cpu_to_le64(pointer);
-    memcpy(dest_file->data + offset, &pointer, entry->pointer.size);
+    کپی_حافظه(&اشاره_گر, dest_file->داده + جابه_جایی_2, مدخل->اشاره_گر.اندازه);
+    اشاره_گر = le64_مقصد_cpu(اشاره_گر);
+    اشاره_گر += (بیعلامت دراز)src_file->داده;
+    اشاره_گر = cpu_مقصد_le64(اشاره_گر);
+    کپی_حافظه(dest_file->داده + جابه_جایی_2, &اشاره_گر, مدخل->اشاره_گر.اندازه);
 
-    return;
+    أرجع;
 err:
     warn_internalerror();
 }
 
-static void romfile_loader_add_checksum(struct romfile_loader_entry_s *entry,
-                                        struct romfile_loader_files *files)
+ساكن فراغ romfile_loader_جمع_کن_checksum(بنية romfile_loader_مدخل_s *مدخل,
+                                        بنية romfile_loader_files *files)
 {
-    struct romfile_loader_file *file;
-    unsigned offset = le32_to_cpu(entry->cksum.offset);
-    unsigned start = le32_to_cpu(entry->cksum.start);
-    unsigned len = le32_to_cpu(entry->cksum.length);
-    u8 *data;
+    بنية romfile_loader_file *file;
+    بیعلامت جابه_جایی_2 = le32_مقصد_cpu(مدخل->cksum.جابه_جایی_2);
+    بیعلامت شروع = le32_مقصد_cpu(مدخل->cksum.شروع);
+    بیعلامت len = le32_مقصد_cpu(مدخل->cksum.درازی);
+    u8 *داده;
 
-    file = romfile_loader_find(entry->cksum.file, files);
+    file = romfile_loader_پیدا_کن(مدخل->cksum.file, files);
 
-    if (!file || !file->data || offset >= file->file->size ||
-        start + len < start || start + len > file->file->size)
-        goto err;
+    إذا (!file || !file->داده || جابه_جایی_2 >= file->file->اندازه ||
+        شروع + len < شروع || شروع + len > file->file->اندازه)
+        اذهب err;
 
-    data = file->data + offset;
-    *data -= checksum(file->data + start, len);
+    داده = file->داده + جابه_جایی_2;
+    *داده -= checksum(file->داده + شروع, len);
 
-    return;
+    أرجع;
 err:
     warn_internalerror();
 }
 
-static void romfile_loader_write_pointer(struct romfile_loader_entry_s *entry,
-                                         struct romfile_loader_files *files)
+ساكن فراغ romfile_loader_write_اشاره_گر(بنية romfile_loader_مدخل_s *مدخل,
+                                         بنية romfile_loader_files *files)
 {
-    struct romfile_s *dest_file;
-    struct romfile_loader_file *src_file;
-    unsigned dst_offset = le32_to_cpu(entry->wr_pointer.dst_offset);
-    unsigned src_offset = le32_to_cpu(entry->wr_pointer.src_offset);
-    u64 pointer = 0;
+    بنية romfile_s *dest_file;
+    بنية romfile_loader_file *src_file;
+    بیعلامت dst_جابه_جایی = le32_مقصد_cpu(مدخل->wr_اشاره_گر.dst_جابه_جایی);
+    بیعلامت src_جابه_جایی = le32_مقصد_cpu(مدخل->wr_اشاره_گر.src_جابه_جایی);
+    u64 اشاره_گر = 0;
 
     /* Writing back to a file that may not be loaded in RAM */
-    dest_file = romfile_find(entry->wr_pointer.dest_file);
-    src_file = romfile_loader_find(entry->wr_pointer.src_file, files);
+    dest_file = romfile_پیدا_کن(مدخل->wr_اشاره_گر.dest_file);
+    src_file = romfile_loader_پیدا_کن(مدخل->wr_اشاره_گر.src_file, files);
 
-    if (!dest_file || !src_file || !src_file->data ||
-        dst_offset + entry->wr_pointer.size < dst_offset ||
-        dst_offset + entry->wr_pointer.size > dest_file->size ||
-        src_offset >= src_file->file->size ||
-        entry->wr_pointer.size < 1 || entry->wr_pointer.size > 8 ||
-        entry->wr_pointer.size & (entry->wr_pointer.size - 1)) {
-        goto err;
+    إذا (!dest_file || !src_file || !src_file->داده ||
+        dst_جابه_جایی + مدخل->wr_اشاره_گر.اندازه < dst_جابه_جایی ||
+        dst_جابه_جایی + مدخل->wr_اشاره_گر.اندازه > dest_file->اندازه ||
+        src_جابه_جایی >= src_file->file->اندازه ||
+        مدخل->wr_اشاره_گر.اندازه < 1 || مدخل->wr_اشاره_گر.اندازه > 8 ||
+        مدخل->wr_اشاره_گر.اندازه & (مدخل->wr_اشاره_گر.اندازه - 1)) {
+        اذهب err;
     }
 
-    pointer = (unsigned long)src_file->data + src_offset;
+    اشاره_گر = (بیعلامت دراز)src_file->داده + src_جابه_جایی;
     /* Make sure the pointer fits within wr_pointer.size */
-    if ((entry->wr_pointer.size != sizeof(u64)) &&
-        ((pointer >> (entry->wr_pointer.size * 8)) > 0)) {
-        goto err;
+    إذا ((مدخل->wr_اشاره_گر.اندازه != حجم(u64)) &&
+        ((اشاره_گر >> (مدخل->wr_اشاره_گر.اندازه * 8)) > 0)) {
+        اذهب err;
     }
-    pointer = cpu_to_le64(pointer);
+    اشاره_گر = cpu_مقصد_le64(اشاره_گر);
 
     /* Only supported on QEMU */
-    if (qemu_cfg_write_file(&pointer, dest_file, dst_offset,
-                            entry->wr_pointer.size) != entry->wr_pointer.size) {
-        goto err;
+    إذا (qemu_cfg_write_file(&اشاره_گر, dest_file, dst_جابه_جایی,
+                            مدخل->wr_اشاره_گر.اندازه) != مدخل->wr_اشاره_گر.اندازه) {
+        اذهب err;
     }
 
     /* Store the info so it can replayed later if necessary */
-    struct romfile_wr_pointer_entry *store = malloc_high(sizeof(*store));
-    if (!store) {
+    بنية romfile_wr_اشاره_گر_مدخل *store = malloc_بالا(حجم(*store));
+    إذا (!store) {
         warn_noalloc();
-        return;
+        أرجع;
     }
-    store->pointer = pointer;
-    store->key = qemu_get_romfile_key(dest_file);
-    store->offset = dst_offset;
-    store->ptr_size = entry->wr_pointer.size;
-    hlist_add_head(&store->node, &romfile_pointer_list);
+    store->اشاره_گر = اشاره_گر;
+    store->کلید = qemu_get_romfile_کلید(dest_file);
+    store->جابه_جایی_2 = dst_جابه_جایی;
+    store->ptr_اندازه = مدخل->wr_اشاره_گر.اندازه;
+    hlist_جمع_کن_سر(&store->گره, &romfile_اشاره_گر_list);
 
-    return;
+    أرجع;
  err:
     warn_internalerror();
 }
 
-int romfile_loader_execute(const char *name)
+صحيح romfile_loader_execute(ثابت حرف *name)
 {
-    struct romfile_loader_entry_s *entry;
-    int size, offset = 0, nfiles;
-    struct romfile_loader_files *files;
-    void *data = romfile_loadfile(name, &size);
-    if (!data)
-        return -1;
+    بنية romfile_loader_مدخل_s *مدخل;
+    صحيح اندازه, جابه_جایی_2 = 0, nfiles;
+    بنية romfile_loader_files *files;
+    فراغ *داده = romfile_loadfile(name, &اندازه);
+    إذا (!داده)
+        أرجع -1;
 
-    if (size % sizeof(*entry)) {
+    إذا (اندازه % حجم(*مدخل)) {
         warn_internalerror();
-        goto err;
+        اذهب err;
     }
 
     /* (over)estimate the number of files to load. */
-    nfiles = size / sizeof(*entry);
-    files = malloc_tmp(sizeof(*files) + nfiles * sizeof(files->files[0]));
-    if (!files) {
+    nfiles = اندازه / حجم(*مدخل);
+    files = malloc_tmp(حجم(*files) + nfiles * حجم(files->files[0]));
+    إذا (!files) {
         warn_noalloc();
-        goto err;
+        اذهب err;
     }
     files->nfiles = 0;
 
-    for (offset = 0; offset < size; offset += sizeof(*entry)) {
-        entry = data + offset;
-        switch (le32_to_cpu(entry->command)) {
-                case ROMFILE_LOADER_COMMAND_ALLOCATE:
-                        romfile_loader_allocate(entry, files);
-                        break;
-                case ROMFILE_LOADER_COMMAND_ADD_POINTER:
-                        romfile_loader_add_pointer(entry, files);
-                        break;
-                case ROMFILE_LOADER_COMMAND_ADD_CHECKSUM:
-                        romfile_loader_add_checksum(entry, files);
-                        break;
-                case ROMFILE_LOADER_COMMAND_WRITE_POINTER:
-                        romfile_loader_write_pointer(entry, files);
-                        break;
-                default:
+    لكل (جابه_جایی_2 = 0; جابه_جایی_2 < اندازه; جابه_جایی_2 += حجم(*مدخل)) {
+        مدخل = داده + جابه_جایی_2;
+        بدل (le32_مقصد_cpu(مدخل->command)) {
+                حالة ROMFILE_LOADER_COMMAND_ALLOCATE:
+                        romfile_loader_allocate(مدخل, files);
+                        اكسر;
+                حالة ROMFILE_LOADER_COMMAND_جمع_کن_اشاره_گر:
+                        romfile_loader_جمع_کن_اشاره_گر(مدخل, files);
+                        اكسر;
+                حالة ROMFILE_LOADER_COMMAND_جمع_کن_CHECKSUM:
+                        romfile_loader_جمع_کن_checksum(مدخل, files);
+                        اكسر;
+                حالة ROMFILE_LOADER_COMMAND_WRITE_اشاره_گر:
+                        romfile_loader_write_اشاره_گر(مدخل, files);
+                        اكسر;
+                افتراضي:
                         /* Skip commands that we don't recognize. */
-                        break;
+                        اكسر;
         }
     }
 
-    free(files);
-    free(data);
-    return 0;
+    حرر(files);
+    حرر(داده);
+    أرجع 0;
 
 err:
-    free(data);
-    return -1;
+    حرر(داده);
+    أرجع -1;
 }

@@ -1,19 +1,19 @@
-#ifndef TCGBIOS_H
-#define TCGBIOS_H
+#اگر_تعریف_نشده TCGBIOS_H
+#تعریف_کن TCGBIOS_H
 
-#include "types.h"
+#ضمن "types.h"
 
-struct bregs;
-void tpm_interrupt_handler32(struct bregs *regs);
+بنية bregs;
+فراغ tpm_وقفه_handler32(بنية bregs *regs);
 
-void tpm_setup(void);
-void tpm_prepboot(void);
-void tpm_s3_resume(void);
-void tpm_add_bcv(u32 bootdrv, const u8 *addr, u32 length);
-void tpm_add_cdrom(u32 bootdrv, const u8 *addr, u32 length);
-void tpm_add_cdrom_catalog(const u8 *addr, u32 length);
-void tpm_option_rom(const void *addr, u32 len);
-int tpm_can_show_menu(void);
-void tpm_menu(void);
+فراغ tpm_راهاندازی(فراغ);
+فراغ tpm_prepboot(فراغ);
+فراغ tpm_s3_resume(فراغ);
+فراغ tpm_جمع_کن_bcv(u32 bootdrv, ثابت u8 *addr, u32 درازی);
+فراغ tpm_جمع_کن_cdrom(u32 bootdrv, ثابت u8 *addr, u32 درازی);
+فراغ tpm_جمع_کن_cdrom_catalog(ثابت u8 *addr, u32 درازی);
+فراغ tpm_option_rom(ثابت فراغ *addr, u32 len);
+صحيح tpm_can_show_menu(فراغ);
+فراغ tpm_menu(فراغ);
 
-#endif /* TCGBIOS_H */
+#پایان_اگر /* TCGBIOS_H */
