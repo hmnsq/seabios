@@ -22,36 +22,36 @@
 #ifndef __LZMADECODE_H
 #define __LZMADECODE_H
 
-typedef unsigned char Byte;
-typedef unsigned short UInt16;
-typedef unsigned int UInt32;
-typedef UInt32 SizeT;
+প্রকারলেখ unsigned অক্ষর Byte;
+প্রকারলেখ unsigned short UInt16;
+প্রকারলেখ unsigned পূর্ণসংখ্যা UInt32;
+প্রকারলেখ UInt32 আকার_T;
 
 #define CProb UInt16
 
-#define LZMA_RESULT_OK 0
-#define LZMA_RESULT_DATA_ERROR 1
+#define LZMA_ফলাফল_OK 0
+#define LZMA_ফলাফল_তথ্য_ERROR 1
 
 
-#define LZMA_BASE_SIZE 1846
-#define LZMA_LIT_SIZE 768
+#define LZMA_BASE_আকার 1846
+#define LZMA_LIT_আকার 768
 
-#define LZMA_PROPERTIES_SIZE 5
+#define LZMA_PROPERTIES_আকার 5
 
-typedef struct _CLzmaProperties
+প্রকারলেখ কাঠামো _CLzmaProperties
 {
-  int lc;
-  int lp;
-  int pb;
+  পূর্ণসংখ্যা lc;
+  পূর্ণসংখ্যা lp;
+  পূর্ণসংখ্যা pb;
 }CLzmaProperties;
 
-int LzmaDecodeProperties(CLzmaProperties *propsRes, const unsigned char *propsData, int size);
+পূর্ণসংখ্যা LzmaDecodeProperties(CLzmaProperties *propsRes, ধ্রুবক unsigned অক্ষর *props_তথ্য, পূর্ণসংখ্যা আকার_2);
 
-#define LzmaGetNumProbs(Properties) (LZMA_BASE_SIZE + (LZMA_LIT_SIZE << ((Properties)->lc + (Properties)->lp)))
+#define Lzma_Get_অঙ্ক_Probs(Properties) (LZMA_BASE_আকার + (LZMA_LIT_আকার << ((Properties)->lc + (Properties)->lp)))
 
 #define kLzmaNeedInitId (-2)
 
-typedef struct _CLzmaDecoderState
+প্রকারলেখ কাঠামো _CLzmaDecoderState
 {
   CLzmaProperties Properties;
   CProb *Probs;
@@ -60,8 +60,8 @@ typedef struct _CLzmaDecoderState
 } CLzmaDecoderState;
 
 
-int LzmaDecode(CLzmaDecoderState *vs,
-    const unsigned char *inStream, SizeT inSize, SizeT *inSizeProcessed,
-    unsigned char *outStream, SizeT outSize, SizeT *outSizeProcessed);
+পূর্ণসংখ্যা LzmaDecode(CLzmaDecoderState *vs,
+    ধ্রুবক unsigned অক্ষর *inStream, আকার_T in_আকার, আকার_T *in_আকার_Processed,
+    unsigned অক্ষর *outStream, আকার_T out_আকার, আকার_T *out_আকার_Processed);
 
 #endif

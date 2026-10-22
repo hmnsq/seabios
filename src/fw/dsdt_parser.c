@@ -4,674 +4,674 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_*
-#include "list.h"   // hlist_*
-#include "malloc.h" // malloc_*
-#include "output.h" // dprintf
-#include "string.h" // memcpy
-#include "util.h"
-#include "std/acpi.h" // struct rsdp_descriptor
+#অন্তর্ভাব "config.h" // CONFIG_*
+#অন্তর্ভাব "list.h"   // hlist_*
+#অন্তর্ভাব "malloc.h" // malloc_*
+#অন্তর্ভাব "output.h" // dprintf
+#অন্তর্ভাব "string.h" // memcpy
+#অন্তর্ভাব "util.h"
+#অন্তর্ভাব "std/acpi.h" // struct rsdp_descriptor
 
 /****************************************************************
  * DSDT parser
  ****************************************************************/
 
-struct acpi_device {
-    struct hlist_node node;
-    char name[16];
+কাঠামো acpi_device {
+    কাঠামো hlist_গ্রন্থি গ্রন্থি;
+    অক্ষর name[16];
     u8 *hid_aml;
     u8 *sta_aml;
-    u8 *crs_data;
-    int crs_size;
+    u8 *crs_তথ্য;
+    পূর্ণসংখ্যা crs_আকার;
 };
-static struct hlist_head acpi_devices VARVERIFY32INIT;
-static const int parse_dumpdevs = 0;
+স্থির কাঠামো hlist_শীর্ষ acpi_devices VARVERIFY32INIT;
+স্থির ধ্রুবক পূর্ণসংখ্যা parse_dumpdevs = 0;
 
-struct parse_state {
-    char name[32];
-    struct acpi_device *dev;
-    int error;
-    int depth;
+কাঠামো parse_state {
+    অক্ষর name[32];
+    কাঠামো acpi_device *dev;
+    পূর্ণসংখ্যা error;
+    পূর্ণসংখ্যা depth;
 };
 
-static void parse_termlist(struct parse_state *s,
-                           u8 *ptr, int offset, int pkglength);
+স্থির শূন্য parse_termlist(কাঠামো parse_state *s,
+                           u8 *ptr, পূর্ণসংখ্যা offset, পূর্ণসংখ্যা pkglength);
 
-static void hex(const u8 *ptr, int count, int lvl, const char *item)
+স্থির শূন্য hex(ধ্রুবক u8 *ptr, পূর্ণসংখ্যা গুনতি, পূর্ণসংখ্যা lvl, ধ্রুবক অক্ষর *item)
 {
-    int l = 0, i;
+    পূর্ণসংখ্যা l = 0, i;
 
-    do {
+    করো {
         dprintf(lvl, "%s: %04x:  ", item, l);
-        for (i = l; i < l+16; i += 4)
+        জন্য (i = l; i < l+16; i += 4)
             dprintf(lvl, "%02x %02x %02x %02x  ",
                     ptr[i+0], ptr[i+1], ptr[i+2], ptr[i+3]);
-        for (i = l; i < l+16; i++)
+        জন্য (i = l; i < l+16; i++)
             dprintf(lvl, "%c", (ptr[i] > 0x20 && ptr[i] < 0x80)
                     ? ptr[i] : '.');
         dprintf(lvl, "\n");
         l += 16;
-    } while (l < count);
+    } যখন (l < গুনতি);
 }
 
-static u64 parse_resource_int(u8 *ptr, int count)
+স্থির u64 parse_resource_int(u8 *ptr, পূর্ণসংখ্যা গুনতি)
 {
-    u64 value = 0;
-    int index = 0;
+    u64 মান = 0;
+    পূর্ণসংখ্যা সূচক = 0;
 
-    for (index = 0; index < count; index++)
-        value |= (u64)ptr[index] << (index * 8);
-    return value;
+    জন্য (সূচক = 0; সূচক < গুনতি; সূচক++)
+        মান |= (u64)ptr[সূচক] << (সূচক * 8);
+    ফেরত মান;
 }
 
-static int parse_resource_bit(u8 *ptr, int count)
+স্থির পূর্ণসংখ্যা parse_resource_bit(u8 *ptr, পূর্ণসংখ্যা গুনতি)
 {
-    int bit;
+    পূর্ণসংখ্যা bit;
 
-    for (bit = 0; bit < count*8; bit++)
-        if (ptr[bit/8] & (1 << (bit%8)))
-            return bit;
-    return 0;
+    জন্য (bit = 0; bit < গুনতি*8; bit++)
+        যদি (ptr[bit/8] & (1 << (bit%8)))
+            ফেরত bit;
+    ফেরত 0;
 }
 
-static int parse_resource(u8 *ptr, int length, int *type, u64 *min, u64 *max)
+স্থির পূর্ণসংখ্যা parse_resource(u8 *ptr, পূর্ণসংখ্যা দৈর্ঘ্য, পূর্ণসংখ্যা *type, u64 *min, u64 *max)
 {
-    int rname, rsize;
+    পূর্ণসংখ্যা rname, rsize;
     u64 len;
 
     *type = -1;
     *min = 0;
     *max = 0;
     len = 0;
-    if (!(ptr[0] & 0x80)) {
+    যদি (!(ptr[0] & 0x80)) {
         /* small resource */
         rname = (ptr[0] >> 3) & 0x0f;
         rsize = ptr[0] & 0x07;
         rsize++;
-        switch (rname) {
-        case 0x04: /* irq */
+        নির্বাচন (rname) {
+        ক্ষেত্র 0x04: /* irq */
             *min = parse_resource_bit(ptr + 1, rsize);
             *max = *min;
             *type = 3;
-            break;
-        case 0x0f: /* end marker */
-            return 0;
-        case 0x08: /* io */
+            বিরতি;
+        ক্ষেত্র 0x0f: /* end marker */
+            ফেরত 0;
+        ক্ষেত্র 0x08: /* io */
             *min = parse_resource_int(ptr + 2, 2);
             *max = parse_resource_int(ptr + 4, 2);
-            if (*min == *max) {
+            যদি (*min == *max) {
                 *max = *min + ptr[7] - 1;
                 *type = 1;
             }
-            break;
-        case 0x09: /* fixed io */
+            বিরতি;
+        ক্ষেত্র 0x09: /* fixed io */
             *min = parse_resource_int(ptr + 2, 2);
             *max = *min + ptr[4] - 1;
             *type = 1;
-            break;
-        default:
+            বিরতি;
+        পূর্বনির্ধারিত:
             dprintf(3, "%s: small: 0x%x (len %d)\n",
                     __func__, rname, rsize);
-            break;
+            বিরতি;
         }
-    } else {
+    } অন্যথা {
         /* large resource */
         rname = ptr[0] & 0x7f;
         rsize = ptr[2] << 8 | ptr[1];
         rsize += 3;
-        switch (rname) {
-        case 0x06: /* 32-bit Fixed Location Memory Range Descriptor */
+        নির্বাচন (rname) {
+        ক্ষেত্র 0x06: /* 32-bit Fixed Location Memory Range Descriptor */
             *min = parse_resource_int(ptr + 4, 4);
             len = parse_resource_int(ptr + 8, 4);
             *max = *min + len - 1;
             *type = 0;
-            break;
-        case 0x07: /* DWORD Address Space Descriptor */
+            বিরতি;
+        ক্ষেত্র 0x07: /* DWORD Address Space Descriptor */
             *min = parse_resource_int(ptr + 10, 4);
             *max = parse_resource_int(ptr + 14, 4);
             *type = ptr[3];
-            break;
-        case 0x08: /* WORD Address Space Descriptor */
+            বিরতি;
+        ক্ষেত্র 0x08: /* WORD Address Space Descriptor */
             *min = parse_resource_int(ptr +  8, 2);
             *max = parse_resource_int(ptr + 10, 2);
             *type = ptr[3];
-            break;
-        case 0x09: /* irq */
+            বিরতি;
+        ক্ষেত্র 0x09: /* irq */
             *min = parse_resource_int(ptr +  5, 4);
             *max = *min;
             *type = 3;
-            break;
-        case 0x0a: /* QWORD Address Space Descriptor */
+            বিরতি;
+        ক্ষেত্র 0x0a: /* QWORD Address Space Descriptor */
             *min = parse_resource_int(ptr + 14, 8);
             *max = parse_resource_int(ptr + 22, 8);
             *type = ptr[3];
-            break;
-        default:
+            বিরতি;
+        পূর্বনির্ধারিত:
             dprintf(3, "%s: large: 0x%x (len %d)\n", __func__, rname, rsize);
-            break;
+            বিরতি;
         }
     }
-    return rsize;
+    ফেরত rsize;
 }
 
-static int find_resource(u8 *ptr, int len, int kind, u64 *min, u64 *max)
+স্থির পূর্ণসংখ্যা find_resource(u8 *ptr, পূর্ণসংখ্যা len, পূর্ণসংখ্যা kind, u64 *min, u64 *max)
 {
-    int type, size, offset = 0;
+    পূর্ণসংখ্যা type, আকার_2, offset = 0;
 
-    do {
-        size = parse_resource(ptr + offset, len - offset,
+    করো {
+        আকার_2 = parse_resource(ptr + offset, len - offset,
                               &type, min, max);
-        if (kind == type)
-            return 0;
-        offset += size;
-    } while (size > 0 && offset < len);
-    return -1;
+        যদি (kind == type)
+            ফেরত 0;
+        offset += আকার_2;
+    } যখন (আকার_2 > 0 && offset < len);
+    ফেরত -1;
 }
 
-static int print_resources(const char *prefix, u8 *ptr, int len)
+স্থির পূর্ণসংখ্যা print_resources(ধ্রুবক অক্ষর *prefix, u8 *ptr, পূর্ণসংখ্যা len)
 {
-    static const char *typename[] = { "mem", "i/o", "bus" };
-    int type, size, offset = 0;
+    স্থির ধ্রুবক অক্ষর *typename[] = { "mem", "i/o", "bus" };
+    পূর্ণসংখ্যা type, আকার_2, offset = 0;
     u64 min, max;
 
-    do {
-        size = parse_resource(ptr + offset, len - offset,
+    করো {
+        আকার_2 = parse_resource(ptr + offset, len - offset,
                               &type, &min, &max);
-        switch (type) {
-        case 0:
-        case 1:
-        case 2:
+        নির্বাচন (type) {
+        ক্ষেত্র 0:
+        ক্ষেত্র 1:
+        ক্ষেত্র 2:
             dprintf(1, "%s%s 0x%llx -> 0x%llx\n",
                     prefix, typename[type], min, max);
-            break;
-        case 3:
+            বিরতি;
+        ক্ষেত্র 3:
             dprintf(1, "%sirq %lld\n", prefix, min);
-            break;
+            বিরতি;
         }
-        offset += size;
-    } while (size > 0 && offset < len);
-    return -1;
+        offset += আকার_2;
+    } যখন (আকার_2 > 0 && offset < len);
+    ফেরত -1;
 }
 
-static int parse_nameseg(u8 *ptr, char **dst)
+স্থির পূর্ণসংখ্যা parse_nameseg(u8 *ptr, অক্ষর **dst)
 {
-    if (dst && *dst) {
+    যদি (dst && *dst) {
         *(dst[0]++) = ptr[0];
-        if (ptr[1] != '_')
+        যদি (ptr[1] != '_')
             *(dst[0]++) = ptr[1];
-        if (ptr[2] != '_')
+        যদি (ptr[2] != '_')
             *(dst[0]++) = ptr[2];
-        if (ptr[3] != '_')
+        যদি (ptr[3] != '_')
             *(dst[0]++) = ptr[3];
         *(dst[0]) = 0;
     }
-    return 4;
+    ফেরত 4;
 }
 
-static int parse_namestring(struct parse_state *s,
-                            u8 *ptr, const char *item)
+স্থির পূর্ণসংখ্যা parse_namestring(কাঠামো parse_state *s,
+                            u8 *ptr, ধ্রুবক অক্ষর *item)
 {
-    char *dst = s->name;
-    int offset = 0;
-    int i, count;
+    অক্ষর *dst = s->name;
+    পূর্ণসংখ্যা offset = 0;
+    পূর্ণসংখ্যা i, গুনতি;
 
-    for (;;) {
-        switch (ptr[offset]) {
-        case 0: /* null name */
+    জন্য (;;) {
+        নির্বাচন (ptr[offset]) {
+        ক্ষেত্র 0: /* null name */
             offset++;
             *(dst++) = 0;
-            break;
-        case 0x2e:
+            বিরতি;
+        ক্ষেত্র 0x2e:
             offset++;
             offset += parse_nameseg(ptr + offset, &dst);
             *(dst++) = '.';
             offset += parse_nameseg(ptr + offset, &dst);
-            break;
-        case 0x2f:
+            বিরতি;
+        ক্ষেত্র 0x2f:
             offset++;
-            count = ptr[offset];
+            গুনতি = ptr[offset];
             offset++;
-            for (i = 0; i < count; i++) {
-                if (i)
+            জন্য (i = 0; i < গুনতি; i++) {
+                যদি (i)
                     *(dst++) = '.';
                 offset += parse_nameseg(ptr + offset, &dst);
             }
-            break;
-        case '\\':
+            বিরতি;
+        ক্ষেত্র '\\':
             *(dst++) = '\\';
             offset++;
-            continue;
-        case '^':
+            চালু;
+        ক্ষেত্র '^':
             *(dst++) = '^';
             offset++;
-            continue;
-        case 'A' ... 'Z':
-        case '_':
+            চালু;
+        ক্ষেত্র 'A' ... 'Z':
+        ক্ষেত্র '_':
             offset += parse_nameseg(ptr, &dst);
-            break;
-        default:
+            বিরতি;
+        পূর্বনির্ধারিত:
             hex(ptr, 16, 3, __func__);
             s->error = 1;
-            break;
+            বিরতি;
         }
-        break;
+        বিরতি;
     }
     dprintf(5, "%s: %d %s '%s'\n", __func__, s->depth,
             item, s->name);
-    return offset;
+    ফেরত offset;
 }
 
-static int parse_termarg_int(u8 *ptr, int *error, u64 *dst)
+স্থির পূর্ণসংখ্যা parse_termarg_int(u8 *ptr, পূর্ণসংখ্যা *error, u64 *dst)
 {
-    u64 value;
-    int offset = 1;
+    u64 মান;
+    পূর্ণসংখ্যা offset = 1;
 
-    switch (ptr[0]) {
-    case 0x00: /* zero */
-        value = 0;
-        break;
-    case 0x01: /* one */
-        value = 1;
-        break;
-    case 0x0a: /* byte prefix */
-        value = ptr[1];
+    নির্বাচন (ptr[0]) {
+    ক্ষেত্র 0x00: /* zero */
+        মান = 0;
+        বিরতি;
+    ক্ষেত্র 0x01: /* one */
+        মান = 1;
+        বিরতি;
+    ক্ষেত্র 0x0a: /* byte prefix */
+        মান = ptr[1];
         offset++;
-        break;
-    case 0x0b: /* word prefix */
-        value = ptr[1] |
+        বিরতি;
+    ক্ষেত্র 0x0b: /* word prefix */
+        মান = ptr[1] |
             ((unsigned long)ptr[2] << 8);
         offset += 2;
-        break;
-    case 0x0c: /* dword prefix */
-        value = ptr[1] |
+        বিরতি;
+    ক্ষেত্র 0x0c: /* dword prefix */
+        মান = ptr[1] |
             ((unsigned long)ptr[2] << 8) |
             ((unsigned long)ptr[3] << 16) |
             ((unsigned long)ptr[4] << 24);
         offset += 4;
-        break;
-    default:
-        value = 0;
+        বিরতি;
+    পূর্বনির্ধারিত:
+        মান = 0;
         hex(ptr, 16, 3, __func__);
-        if (error)
+        যদি (error)
             *error = 1;
-        break;
+        বিরতি;
     }
 
-    if (dst)
-        *dst = value;
-    dprintf(5, "%s: 0x%llx\n", __func__, value);
-    return offset;
+    যদি (dst)
+        *dst = মান;
+    dprintf(5, "%s: 0x%llx\n", __func__, মান);
+    ফেরত offset;
 }
 
-static int parse_pkglength(u8 *ptr, int *pkglength)
+স্থির পূর্ণসংখ্যা parse_pkglength(u8 *ptr, পূর্ণসংখ্যা *pkglength)
 {
-    int offset = 2;
+    পূর্ণসংখ্যা offset = 2;
 
     *pkglength = 0;
-    switch (ptr[0] >> 6) {
-    case 3:
+    নির্বাচন (ptr[0] >> 6) {
+    ক্ষেত্র 3:
         *pkglength |= ptr[3] << 20;
         offset++;
-    case 2:
+    ক্ষেত্র 2:
         *pkglength |= ptr[2] << 12;
         offset++;
-    case 1:
+    ক্ষেত্র 1:
         *pkglength |= ptr[1] << 4;
         *pkglength |= ptr[0] & 0x0f;
-        return offset;
-    case 0:
-    default:
+        ফেরত offset;
+    ক্ষেত্র 0:
+    পূর্বনির্ধারিত:
         *pkglength |= ptr[0] & 0x3f;
-        return 1;
+        ফেরত 1;
     }
 }
 
-static int parse_pkg_common(struct parse_state *s,
-                            u8 *ptr, const char *item, int *pkglength)
+স্থির পূর্ণসংখ্যা parse_pkg_common(কাঠামো parse_state *s,
+                            u8 *ptr, ধ্রুবক অক্ষর *item, পূর্ণসংখ্যা *pkglength)
 {
-    int offset;
+    পূর্ণসংখ্যা offset;
 
     offset = parse_pkglength(ptr, pkglength);
     offset += parse_namestring(s, ptr + offset, item);
-    return offset;
+    ফেরত offset;
 }
 
-static int parse_pkg_scope(struct parse_state *s,
+স্থির পূর্ণসংখ্যা parse_pkg_scope(কাঠামো parse_state *s,
                            u8 *ptr)
 {
-    int offset, pkglength;
+    পূর্ণসংখ্যা offset, pkglength;
 
     offset = parse_pkg_common(s, ptr, "scope", &pkglength);
     parse_termlist(s, ptr, offset, pkglength);
-    return pkglength;
+    ফেরত pkglength;
 }
 
-static int parse_pkg_device(struct parse_state *s,
+স্থির পূর্ণসংখ্যা parse_pkg_device(কাঠামো parse_state *s,
                             u8 *ptr)
 {
-    int offset, pkglength;
+    পূর্ণসংখ্যা offset, pkglength;
 
     offset = parse_pkg_common(s, ptr, "device", &pkglength);
 
-    s->dev = malloc_tmp(sizeof(struct acpi_device));
-    if (!s->dev) {
+    s->dev = malloc_tmp(আকার(কাঠামো acpi_device));
+    যদি (!s->dev) {
         warn_noalloc();
         s->error = 1;
-        return pkglength;
+        ফেরত pkglength;
     }
 
-    memset(s->dev, 0, sizeof(struct acpi_device));
-    hlist_add_head(&s->dev->node, &acpi_devices);
-    strtcpy(s->dev->name, s->name, sizeof(s->name));
+    memset(s->dev, 0, আকার(কাঠামো acpi_device));
+    hlist_add_শীর্ষ(&s->dev->গ্রন্থি, &acpi_devices);
+    strtcpy(s->dev->name, s->name, আকার(s->name));
     parse_termlist(s, ptr, offset, pkglength);
-    s->dev = NULL;
+    s->dev = ফাঁকা;
 
-    return pkglength;
+    ফেরত pkglength;
 }
 
-static int parse_pkg_buffer(struct parse_state *s,
+স্থির পূর্ণসংখ্যা parse_pkg_বাফার(কাঠামো parse_state *s,
                             u8 *ptr)
 {
     u64 blen;
-    int pkglength, offset;
+    পূর্ণসংখ্যা pkglength, offset;
 
     offset = parse_pkglength(ptr, &pkglength);
     offset += parse_termarg_int(ptr + offset, &s->error, &blen);
-    if (s->dev && strcmp(s->name, "_CRS") == 0) {
-        s->dev->crs_data = ptr + offset;
-        s->dev->crs_size = blen;
+    যদি (s->dev && strcmp(s->name, "_CRS") == 0) {
+        s->dev->crs_তথ্য = ptr + offset;
+        s->dev->crs_আকার = blen;
     }
-    return pkglength;
+    ফেরত pkglength;
 }
 
-static int parse_pkg_skip(struct parse_state *s,
-                          u8 *ptr, int op, int name)
+স্থির পূর্ণসংখ্যা parse_pkg_skip(কাঠামো parse_state *s,
+                          u8 *ptr, পূর্ণসংখ্যা op, পূর্ণসংখ্যা name)
 {
-    int pkglength, offset;
-    char item[8];
+    পূর্ণসংখ্যা pkglength, offset;
+    অক্ষর item[8];
 
-    snprintf(item, sizeof(item), "op %x", op);
+    snprintf(item, আকার(item), "op %x", op);
     offset = parse_pkglength(ptr, &pkglength);
-    if (name) {
+    যদি (name) {
         parse_namestring(s, ptr + offset, item);
-    } else {
+    } অন্যথা {
         dprintf(5, "%s: %s (%d)\n", __func__, item, pkglength);
     }
-    return pkglength;
+    ফেরত pkglength;
 }
 
-static int parse_termobj(struct parse_state *s,
+স্থির পূর্ণসংখ্যা parse_termobj(কাঠামো parse_state *s,
                          u8 *ptr)
 {
-    int offset = 1;
+    পূর্ণসংখ্যা offset = 1;
 
-    if (s->depth == 16) {
+    যদি (s->depth == 16) {
         dprintf(1, "%s: deep recursion\n", __func__);
         s->error = 1;
-        return offset;
+        ফেরত offset;
     }
 
     s->depth++;
-    switch (ptr[0]) {
-    case 0x00: /* zero */
-        break;
-    case 0x01: /* one */
-        break;
-    case 0x06: /* AliasOp */
+    নির্বাচন (ptr[0]) {
+    ক্ষেত্র 0x00: /* zero */
+        বিরতি;
+    ক্ষেত্র 0x01: /* one */
+        বিরতি;
+    ক্ষেত্র 0x06: /* AliasOp */
         offset += parse_namestring(s, ptr + offset, "SourceObject");
         offset += parse_namestring(s, ptr + offset, "AliasObject");
-        break;
-    case 0x08: /* name op */
+        বিরতি;
+    ক্ষেত্র 0x08: /* name op */
         offset += parse_namestring(s, ptr + offset, "name");
         offset += parse_termobj(s, ptr + offset);
-        if (s->dev && strcmp(s->name, "_HID") == 0)
+        যদি (s->dev && strcmp(s->name, "_HID") == 0)
             s->dev->hid_aml = ptr;
-        if (s->dev && strcmp(s->name, "_STA") == 0)
+        যদি (s->dev && strcmp(s->name, "_STA") == 0)
             s->dev->sta_aml = ptr;
-        break;
-    case 0x0a: /* byte prefix */
+        বিরতি;
+    ক্ষেত্র 0x0a: /* byte prefix */
         offset++;
-        break;
-    case 0x0b: /* word prefix */
+        বিরতি;
+    ক্ষেত্র 0x0b: /* word prefix */
         offset += 2;
-        break;
-    case 0x0c: /* dword prefix */
+        বিরতি;
+    ক্ষেত্র 0x0c: /* dword prefix */
         offset += 4;
-        break;
-    case 0x0d: /* string prefix */
-        while (ptr[offset])
+        বিরতি;
+    ক্ষেত্র 0x0d: /* string prefix */
+        যখন (ptr[offset])
             offset++;
         offset++;
-        break;
-    case 0x10: /* scope op */
+        বিরতি;
+    ক্ষেত্র 0x10: /* scope op */
         offset += parse_pkg_scope(s, ptr + offset);
-        break;
-    case 0x11: /* buffer op */
-        offset += parse_pkg_buffer(s, ptr + offset);
-        break;
-    case 0x12: /* package op */
-    case 0x13: /* var package op */
+        বিরতি;
+    ক্ষেত্র 0x11: /* buffer op */
+        offset += parse_pkg_বাফার(s, ptr + offset);
+        বিরতি;
+    ক্ষেত্র 0x12: /* package op */
+    ক্ষেত্র 0x13: /* var package op */
         offset += parse_pkg_skip(s, ptr + offset, ptr[0], 0);
-        break;
-    case 0x14: /* method op */
+        বিরতি;
+    ক্ষেত্র 0x14: /* method op */
         offset += parse_pkg_skip(s, ptr + offset, ptr[0], 1);
-        if (s->dev && strcmp(s->name, "_STA") == 0)
+        যদি (s->dev && strcmp(s->name, "_STA") == 0)
             s->dev->sta_aml = ptr;
-        break;
-    case 0x5b: /* ext op prefix */
+        বিরতি;
+    ক্ষেত্র 0x5b: /* ext op prefix */
         offset++;
-        switch (ptr[1]) {
-        case 0x01: /* mutex op */
+        নির্বাচন (ptr[1]) {
+        ক্ষেত্র 0x01: /* mutex op */
             offset += parse_namestring(s, ptr + offset, "mutex");
             offset++; /* sync flags */
-            break;
-        case 0x80: /* op region op */
+            বিরতি;
+        ক্ষেত্র 0x80: /* op region op */
             offset += parse_namestring(s, ptr + offset, "op region");
             offset++; /* region space */
-            offset += parse_termarg_int(ptr + offset, &s->error, NULL);
-            offset += parse_termarg_int(ptr + offset, &s->error, NULL);
-            break;
-        case 0x81: /* field op */
-        case 0x83: /* processor op */
-        case 0x84: /* power resource op */
-        case 0x85: /* thermal zone op */
+            offset += parse_termarg_int(ptr + offset, &s->error, ফাঁকা);
+            offset += parse_termarg_int(ptr + offset, &s->error, ফাঁকা);
+            বিরতি;
+        ক্ষেত্র 0x81: /* field op */
+        ক্ষেত্র 0x83: /* processor op */
+        ক্ষেত্র 0x84: /* power resource op */
+        ক্ষেত্র 0x85: /* thermal zone op */
             offset += parse_pkg_skip(s, ptr + offset, 0x5b00 | ptr[1], 1);
-            break;
-        case 0x82: /* device op */
+            বিরতি;
+        ক্ষেত্র 0x82: /* device op */
             offset += parse_pkg_device(s, ptr + offset);
-            break;
-        default:
+            বিরতি;
+        পূর্বনির্ধারিত:
             hex(ptr, 16, 3, __func__);
             s->error = 1;
-            break;
+            বিরতি;
         }
-        break;
-    default:
+        বিরতি;
+    পূর্বনির্ধারিত:
         hex(ptr, 16, 3, __func__);
         s->error = 1;
-        break;
+        বিরতি;
     }
     s->depth--;
 
-    return offset;
+    ফেরত offset;
 }
 
-static void parse_termlist(struct parse_state *s,
-                           u8 *ptr, int offset, int pkglength)
+স্থির শূন্য parse_termlist(কাঠামো parse_state *s,
+                           u8 *ptr, পূর্ণসংখ্যা offset, পূর্ণসংখ্যা pkglength)
 {
-    for (;;) {
+    জন্য (;;) {
         offset += parse_termobj(s, ptr + offset);
-        if (offset == pkglength)
-            return;
-        if (offset > pkglength) {
+        যদি (offset == pkglength)
+            ফেরত;
+        যদি (offset > pkglength) {
             dprintf(1, "%s: overrun: %d/%d\n", __func__,
                     offset, pkglength);
             s->error = 1;
-            return;
+            ফেরত;
         }
-        if (s->error) {
+        যদি (s->error) {
             dprintf(1, "%s: parse error, skip from %d/%d\n", __func__,
                     offset, pkglength);
             s->error = 0;
-            return;
+            ফেরত;
         }
     }
 }
 
-static struct acpi_device *acpi_dsdt_find(struct acpi_device *prev,
-                                          const u8 *aml1, int size1,
-                                          const u8 *aml2, int size2)
+স্থির কাঠামো acpi_device *acpi_dsdt_find(কাঠামো acpi_device *পূর্ব,
+                                          ধ্রুবক u8 *aml1, পূর্ণসংখ্যা size1,
+                                          ধ্রুবক u8 *aml2, পূর্ণসংখ্যা size2)
 {
-    struct acpi_device *dev;
-    struct hlist_node *node;
+    কাঠামো acpi_device *dev;
+    কাঠামো hlist_গ্রন্থি *গ্রন্থি;
 
-    if (!prev)
-        node = acpi_devices.first;
-    else
-        node = prev->node.next;
+    যদি (!পূর্ব)
+        গ্রন্থি = acpi_devices.first;
+    অন্যথা
+        গ্রন্থি = পূর্ব->গ্রন্থি.পরবর্তী;
 
-    for (; node != NULL; node = dev->node.next) {
-        dev = container_of(node, struct acpi_device, node);
-        if (!aml1 && !aml2)
-            return dev;
-        if (!dev->hid_aml)
-            continue;
-        if (aml1 && memcmp(dev->hid_aml + 5, aml1, size1) == 0)
-            return dev;
-        if (aml2 && memcmp(dev->hid_aml + 5, aml2, size2) == 0)
-            return dev;
+    জন্য (; গ্রন্থি != ফাঁকা; গ্রন্থি = dev->গ্রন্থি.পরবর্তী) {
+        dev = container_of(গ্রন্থি, কাঠামো acpi_device, গ্রন্থি);
+        যদি (!aml1 && !aml2)
+            ফেরত dev;
+        যদি (!dev->hid_aml)
+            চালু;
+        যদি (aml1 && memcmp(dev->hid_aml + 5, aml1, size1) == 0)
+            ফেরত dev;
+        যদি (aml2 && memcmp(dev->hid_aml + 5, aml2, size2) == 0)
+            ফেরত dev;
     }
-    return NULL;
+    ফেরত ফাঁকা;
 }
 
-static int acpi_dsdt_present(struct acpi_device *dev)
+স্থির পূর্ণসংখ্যা acpi_dsdt_present(কাঠামো acpi_device *dev)
 {
-    if (!dev)
-        return 0; /* no */
-    if (!dev->sta_aml)
-        return 1; /* yes */
-    if (dev->sta_aml[0] == 0x14)
-        return -1; /* unknown (can't evaluate method) */
-    if (dev->sta_aml[0] == 0x08) {
-        u64 value = 0;
-        parse_termarg_int(dev->sta_aml + 5, NULL, &value);
-        if (value == 0)
-            return 0; /* no */
-        else
-            return 1; /* yes */
+    যদি (!dev)
+        ফেরত 0; /* no */
+    যদি (!dev->sta_aml)
+        ফেরত 1; /* yes */
+    যদি (dev->sta_aml[0] == 0x14)
+        ফেরত -1; /* unknown (can't evaluate method) */
+    যদি (dev->sta_aml[0] == 0x08) {
+        u64 মান = 0;
+        parse_termarg_int(dev->sta_aml + 5, ফাঁকা, &মান);
+        যদি (মান == 0)
+            ফেরত 0; /* no */
+        অন্যথা
+            ফেরত 1; /* yes */
     }
-    return -1; /* unknown (should not happen) */
+    ফেরত -1; /* unknown (should not happen) */
 }
 
 /****************************************************************
  * DSDT parser, public interface
  ****************************************************************/
 
-struct acpi_device *acpi_dsdt_find_string(struct acpi_device *prev,
-                                          const char *hid)
+কাঠামো acpi_device *acpi_dsdt_find_string(কাঠামো acpi_device *পূর্ব,
+                                          ধ্রুবক অক্ষর *hid)
 {
-    if (!CONFIG_ACPI_PARSE)
-        return NULL;
+    যদি (!CONFIG_ACPI_PARSE)
+        ফেরত ফাঁকা;
 
     u8 aml[10];
-    int len = snprintf((char*)aml, sizeof(aml), "\x0d%s", hid);
-    return acpi_dsdt_find(prev, aml, len, NULL, 0);
+    পূর্ণসংখ্যা len = snprintf((অক্ষর*)aml, আকার(aml), "\x0d%s", hid);
+    ফেরত acpi_dsdt_find(পূর্ব, aml, len, ফাঁকা, 0);
 }
 
-struct acpi_device *acpi_dsdt_find_eisaid(struct acpi_device *prev, u16 eisaid)
+কাঠামো acpi_device *acpi_dsdt_find_eisaid(কাঠামো acpi_device *পূর্ব, u16 eisaid)
 {
-    if (!CONFIG_ACPI_PARSE)
-        return NULL;
+    যদি (!CONFIG_ACPI_PARSE)
+        ফেরত ফাঁকা;
     u8 aml1[] = {
         0x0c, 0x41, 0xd0,
         eisaid >> 8,
         eisaid & 0xff
     };
     u8 aml2[10];
-    int len2 = snprintf((char*)aml2, sizeof(aml2), "\x0dPNP%04X", eisaid);
-    return acpi_dsdt_find(prev, aml1, 5, aml2, len2);
+    পূর্ণসংখ্যা len2 = snprintf((অক্ষর*)aml2, আকার(aml2), "\x0dPNP%04X", eisaid);
+    ফেরত acpi_dsdt_find(পূর্ব, aml1, 5, aml2, len2);
 }
 
-char *acpi_dsdt_name(struct acpi_device *dev)
+অক্ষর *acpi_dsdt_name(কাঠামো acpi_device *dev)
 {
-    if (!CONFIG_ACPI_PARSE || !dev)
-        return NULL;
-    return dev->name;
+    যদি (!CONFIG_ACPI_PARSE || !dev)
+        ফেরত ফাঁকা;
+    ফেরত dev->name;
 }
 
-int acpi_dsdt_find_io(struct acpi_device *dev, u64 *min, u64 *max)
+পূর্ণসংখ্যা acpi_dsdt_find_io(কাঠামো acpi_device *dev, u64 *min, u64 *max)
 {
-    if (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
-        return -1;
-    return find_resource(dev->crs_data, dev->crs_size,
+    যদি (!CONFIG_ACPI_PARSE || !dev || !dev->crs_তথ্য)
+        ফেরত -1;
+    ফেরত find_resource(dev->crs_তথ্য, dev->crs_আকার,
                          1 /* I/O */, min, max);
 }
 
-int acpi_dsdt_find_mem(struct acpi_device *dev, u64 *min, u64 *max)
+পূর্ণসংখ্যা acpi_dsdt_find_mem(কাঠামো acpi_device *dev, u64 *min, u64 *max)
 {
-    if (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
-        return -1;
-    return find_resource(dev->crs_data, dev->crs_size,
+    যদি (!CONFIG_ACPI_PARSE || !dev || !dev->crs_তথ্য)
+        ফেরত -1;
+    ফেরত find_resource(dev->crs_তথ্য, dev->crs_আকার,
                          0 /* mem */, min, max);
 }
 
-int acpi_dsdt_find_irq(struct acpi_device *dev, u64 *irq)
+পূর্ণসংখ্যা acpi_dsdt_find_irq(কাঠামো acpi_device *dev, u64 *irq)
 {
     u64 max;
-    if (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
-        return -1;
-    return find_resource(dev->crs_data, dev->crs_size,
+    যদি (!CONFIG_ACPI_PARSE || !dev || !dev->crs_তথ্য)
+        ফেরত -1;
+    ফেরত find_resource(dev->crs_তথ্য, dev->crs_আকার,
                          3 /* irq */, irq, &max);
 }
 
-int acpi_dsdt_present_eisaid(u16 eisaid)
+পূর্ণসংখ্যা acpi_dsdt_present_eisaid(u16 eisaid)
 {
-    if (!CONFIG_ACPI_PARSE)
-        return -1; /* unknown */
-    if (hlist_empty(&acpi_devices))
-        return -1; /* unknown (no dsdt table) */
+    যদি (!CONFIG_ACPI_PARSE)
+        ফেরত -1; /* unknown */
+    যদি (hlist_empty(&acpi_devices))
+        ফেরত -1; /* unknown (no dsdt table) */
 
-    struct acpi_device *dev = acpi_dsdt_find_eisaid(NULL, eisaid);
-    return acpi_dsdt_present(dev);
+    কাঠামো acpi_device *dev = acpi_dsdt_find_eisaid(ফাঁকা, eisaid);
+    ফেরত acpi_dsdt_present(dev);
 }
 
-void acpi_dsdt_parse(void)
+শূন্য acpi_dsdt_parse(শূন্য)
 {
-    if (!CONFIG_ACPI_PARSE)
-        return;
+    যদি (!CONFIG_ACPI_PARSE)
+        ফেরত;
 
-    struct fadt_descriptor_rev1 *fadt = find_acpi_table(FACP_SIGNATURE);
-    if (!fadt)
-        return;
-    u8 *dsdt = (void*)(fadt->dsdt);
-    if (!dsdt)
-        return;
+    কাঠামো fadt_descriptor_rev1 *fadt = find_acpi_table(FACP_SIGNATURE);
+    যদি (!fadt)
+        ফেরত;
+    u8 *dsdt = (শূন্য*)(fadt->dsdt);
+    যদি (!dsdt)
+        ফেরত;
 
-    u32 length = *(u32*)(dsdt + 4);
+    u32 দৈর্ঘ্য = *(u32*)(dsdt + 4);
     u32 offset = 0x24;
-    dprintf(1, "ACPI: parse DSDT at %p (len %d)\n", dsdt, length);
+    dprintf(1, "ACPI: parse DSDT at %p (len %d)\n", dsdt, দৈর্ঘ্য);
 
-    struct parse_state s;
-    memset(&s, 0, sizeof(s));
-    parse_termlist(&s, dsdt, offset, length);
+    কাঠামো parse_state s;
+    memset(&s, 0, আকার(s));
+    parse_termlist(&s, dsdt, offset, দৈর্ঘ্য);
 
-    if (!parse_dumpdevs)
-        return;
+    যদি (!parse_dumpdevs)
+        ফেরত;
 
-    struct acpi_device *dev;
+    কাঠামো acpi_device *dev;
     dprintf(1, "ACPI: dumping dsdt devices\n");
-    for (dev = acpi_dsdt_find(NULL, NULL, 0, NULL, 0);
-         dev != NULL;
-         dev = acpi_dsdt_find(dev, NULL, 0, NULL, 0)) {
+    জন্য (dev = acpi_dsdt_find(ফাঁকা, ফাঁকা, 0, ফাঁকা, 0);
+         dev != ফাঁকা;
+         dev = acpi_dsdt_find(dev, ফাঁকা, 0, ফাঁকা, 0)) {
         dprintf(1, "    %s", acpi_dsdt_name(dev));
-        if (dev->hid_aml)
+        যদি (dev->hid_aml)
             dprintf(1, ", hid");
-        if (dev->sta_aml)
+        যদি (dev->sta_aml)
             dprintf(1, ", sta (0x%x)", dev->sta_aml[0]);
-        if (dev->crs_data)
+        যদি (dev->crs_তথ্য)
             dprintf(1, ", crs");
         dprintf(1, "\n");
-        if (dev->crs_data)
-            print_resources("        ", dev->crs_data, dev->crs_size);
+        যদি (dev->crs_তথ্য)
+            print_resources("        ", dev->crs_তথ্য, dev->crs_আকার);
     }
 }

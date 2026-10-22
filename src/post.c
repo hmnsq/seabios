@@ -5,44 +5,44 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // SET_BDA
-#include "block.h" // block_setup
-#include "bregs.h" // struct bregs
-#include "config.h" // CONFIG_*
-#include "e820map.h" // e820_add
-#include "fw/paravirt.h" // qemu_cfg_preinit
-#include "fw/xen.h" // xen_preinit
-#include "hw/pic.h" // pic_setup
-#include "hw/ps2port.h" // ps2port_setup
-#include "hw/rtc.h" // rtc_write
-#include "hw/serialio.h" // serial_debug_preinit
-#include "hw/usb.h" // usb_setup
-#include "malloc.h" // malloc_init
-#include "memmap.h" // SYMBOL
-#include "output.h" // dprintf
-#include "string.h" // memset
-#include "util.h" // kbd_init
-#include "tcgbios.h" // tpm_*
+#অন্তর্ভাব "biosvar.h" // SET_BDA
+#অন্তর্ভাব "block.h" // block_setup
+#অন্তর্ভাব "bregs.h" // struct bregs
+#অন্তর্ভাব "config.h" // CONFIG_*
+#অন্তর্ভাব "e820map.h" // e820_add
+#অন্তর্ভাব "fw/paravirt.h" // qemu_cfg_preinit
+#অন্তর্ভাব "fw/xen.h" // xen_preinit
+#অন্তর্ভাব "hw/pic.h" // pic_setup
+#অন্তর্ভাব "hw/ps2port.h" // ps2port_setup
+#অন্তর্ভাব "hw/rtc.h" // rtc_write
+#অন্তর্ভাব "hw/serialio.h" // serial_debug_preinit
+#অন্তর্ভাব "hw/usb.h" // usb_setup
+#অন্তর্ভাব "malloc.h" // malloc_init
+#অন্তর্ভাব "memmap.h" //প্রতীক
+#অন্তর্ভাব "output.h" // dprintf
+#অন্তর্ভাব "string.h" // memset
+#অন্তর্ভাব "util.h" // kbd_init
+#অন্তর্ভাব "tcgbios.h" // tpm_*
 
 
 /****************************************************************
  * BIOS initialization and hardware setup
  ****************************************************************/
 
-static void
-ivt_init(void)
+স্থির শূন্য
+ivt_init(শূন্য)
 {
     dprintf(3, "init ivt\n");
 
     // Initialize all vectors to the default handler.
-    int i;
-    for (i=0; i<256; i++)
+    পূর্ণসংখ্যা i;
+    জন্য (i=0; i<256; i++)
         SET_IVT(i, FUNC16(entry_iret_official));
 
     // Initialize all hw vectors to a default hw handler.
-    for (i=BIOS_HWIRQ0_VECTOR; i<BIOS_HWIRQ0_VECTOR+8; i++)
+    জন্য (i=BIOS_HWIRQ0_VECTOR; i<BIOS_HWIRQ0_VECTOR+8; i++)
         SET_IVT(i, FUNC16(entry_hwpic1));
-    for (i=BIOS_HWIRQ8_VECTOR; i<BIOS_HWIRQ8_VECTOR+8; i++)
+    জন্য (i=BIOS_HWIRQ8_VECTOR; i<BIOS_HWIRQ8_VECTOR+8; i++)
         SET_IVT(i, FUNC16(entry_hwpic2));
 
     // Initialize software handlers.
@@ -62,7 +62,7 @@ ivt_init(void)
     SET_IVT(0x40, FUNC16(entry_40));
 
     // INT 60h-66h reserved for user interrupt
-    for (i=0x60; i<=0x66; i++)
+    জন্য (i=0x60; i<=0x66; i++)
         SET_IVT(i, SEGOFF(0, 0));
 
     // set vector 0x79 to zero
@@ -70,36 +70,36 @@ ivt_init(void)
     SET_IVT(0x79, SEGOFF(0, 0));
 }
 
-static void
-bda_init(void)
+স্থির শূন্য
+bda_init(শূন্য)
 {
     dprintf(3, "init bda\n");
 
-    struct bios_data_area_s *bda = MAKE_FLATPTR(SEG_BDA, 0);
-    memset(bda, 0, sizeof(*bda));
+    কাঠামো bios_তথ্য_area_s *bda = MAKE_FLATPTR(SEG_BDA, 0);
+    memset(bda, 0, আকার(*bda));
 
-    int esize = EBDA_SIZE_START;
+    পূর্ণসংখ্যা esize = EBDA_আকার_START;
     u16 ebda_seg = EBDA_SEGMENT_START;
-    if (!CONFIG_MALLOC_UPPERMEMORY)
-        ebda_seg = FLATPTR_TO_SEG(ALIGN_DOWN(SYMBOL(final_varlow_start), 1024)
-                                  - EBDA_SIZE_START*1024);
+    যদি (!CONFIG_MALLOC_UPPERMEMORY)
+        ebda_seg = FLATPTR_TO_SEG(ALIGN_DOWN(প্রতীক(final_varlow_start), 1024)
+                                  - EBDA_আকার_START*1024);
     SET_BDA(ebda_seg, ebda_seg);
 
-    SET_BDA(mem_size_kb, ebda_seg / (1024/16));
+    SET_BDA(mem_আকার_kb, ebda_seg / (1024/16));
 
     // Init ebda
-    struct extended_bios_data_area_s *ebda = get_ebda_ptr();
-    memset(ebda, 0, sizeof(*ebda));
-    ebda->size = esize;
+    কাঠামো extended_bios_তথ্য_area_s *ebda = get_ebda_ptr();
+    memset(ebda, 0, আকার(*ebda));
+    ebda->আকার_2 = esize;
 
     e820_add((u32)ebda, BUILD_LOWRAM_END-(u32)ebda, E820_RESERVED);
 
     // Init extra stack
-    StackPos = &ExtraStack[BUILD_EXTRA_STACK_SIZE] - SYMBOL(zonelow_base);
+    স্তূপ_Pos = &Extra_স্তূপ[BUILD_EXTRA_স্তূপ_আকার] - প্রতীক(zonelow_base);
 }
 
-void
-interface_init(void)
+শূন্য
+interface_init(শূন্য)
 {
     // Running at new code address - do code relocation fixups
     malloc_init();
@@ -123,8 +123,8 @@ interface_init(void)
 }
 
 // Initialize hardware devices
-void
-device_hardware_setup(void)
+শূন্য
+device_hardware_setup(শূন্য)
 {
     usb_setup();
     ps2port_setup();
@@ -134,8 +134,8 @@ device_hardware_setup(void)
     cbfs_payload_setup();
 }
 
-static void
-platform_hardware_setup(void)
+স্থির শূন্য
+platform_hardware_setup(শূন্য)
 {
     // Make sure legacy DMA isn't running.
     dma_setup();
@@ -157,8 +157,8 @@ platform_hardware_setup(void)
     tpm_setup();
 }
 
-void
-prepareboot(void)
+শূন্য
+prepareboot(শূন্য)
 {
     // Change TPM phys. presence state befor leaving BIOS
     tpm_prepboot();
@@ -175,26 +175,26 @@ prepareboot(void)
     HaveRunPost = 2;
 
     // Setup bios checksum.
-    BiosChecksum -= checksum((u8*)BUILD_BIOS_ADDR, BUILD_BIOS_SIZE);
+    BiosChecksum -= checksum((u8*)BUILD_BIOS_ADDR, BUILD_BIOS_আকার);
 }
 
 // Begin the boot process by invoking an int0x19 in 16bit mode.
-void VISIBLE32FLAT
-startBoot(void)
+শূন্য VISIBLE32FLAT
+startBoot(শূন্য)
 {
     // Clear low-memory allocations (required by PMM spec).
-    memset((void*)BUILD_STACK_ADDR, 0, BUILD_EBDA_MINIMUM - BUILD_STACK_ADDR);
+    memset((শূন্য*)BUILD_স্তূপ_ADDR, 0, BUILD_EBDA_MINIMUM - BUILD_স্তূপ_ADDR);
 
     dprintf(3, "Jump to int19\n");
-    struct bregs br;
-    memset(&br, 0, sizeof(br));
+    কাঠামো bregs br;
+    memset(&br, 0, আকার(br));
     br.flags = F_IF;
     call16_int(0x19, &br);
 }
 
 // Main setup code.
-static void
-maininit(void)
+স্থির শূন্য
+maininit(শূন্য)
 {
     // Initialize internal interfaces.
     interface_init();
@@ -203,7 +203,7 @@ maininit(void)
     platform_hardware_setup();
 
     // Start hardware initialization (if threads allowed during optionroms)
-    if (threads_during_optionroms())
+    যদি (threads_during_optionroms())
         device_hardware_setup();
 
     // Run vga option rom
@@ -212,7 +212,7 @@ maininit(void)
     enable_vga_console();
 
     // Do hardware initialization (if running synchronously)
-    if (!threads_during_optionroms()) {
+    যদি (!threads_during_optionroms()) {
         device_hardware_setup();
         wait_threads();
     }
@@ -240,30 +240,30 @@ maininit(void)
  ****************************************************************/
 
 // Update given relocs for the code at 'dest' with a given 'delta'
-static void
-updateRelocs(void *dest, u32 *rstart, u32 *rend, u32 delta)
+স্থির শূন্য
+updateRelocs(শূন্য *dest, u32 *rstart, u32 *rend, u32 delta)
 {
     u32 *reloc;
-    for (reloc = rstart; reloc < rend; reloc++)
+    জন্য (reloc = rstart; reloc < rend; reloc++)
         *((u32*)(dest + *reloc)) += delta;
 }
 
 // Relocate init code and then call a function at its new address.
 // The passed function should be in the "init" section and must not
 // return.
-void __noreturn
-reloc_preinit(void *f, void *arg)
+শূন্য __noreturn
+reloc_preinit(শূন্য *f, শূন্য *arg)
 {
-    void (*func)(void *) __noreturn = f;
-    if (!CONFIG_RELOCATE_INIT)
+    শূন্য (*func)(শূন্য *) __noreturn = f;
+    যদি (!CONFIG_RELOCATE_INIT)
         func(arg);
 
     // Allocate space for init code.
-    u32 initsize = SYMBOL(code32init_end) - SYMBOL(code32init_start);
-    u32 codealign = SYMBOL(_reloc_min_align);
-    void *codedest = memalign_tmp(codealign, initsize);
-    void *codesrc = VSYMBOL(code32init_start);
-    if (!codedest)
+    u32 initsize = প্রতীক(code32init_end) - প্রতীক(code32init_start);
+    u32 codealign = প্রতীক(_reloc_min_align);
+    শূন্য *codedest = memalign_tmp(codealign, initsize);
+    শূন্য *codesrc = VSYMBOL(code32init_start);
+    যদি (!codedest)
         panic("No space for init relocation.\n");
 
     // Copy code and update relocs (init absolute, init relative, and runtime)
@@ -277,7 +277,7 @@ reloc_preinit(void *f, void *arg)
                  , -delta);
     updateRelocs(VSYMBOL(code32flat_start), VSYMBOL(_reloc_init_start)
                  , VSYMBOL(_reloc_init_end), delta);
-    if (f >= codesrc && f < VSYMBOL(code32init_end))
+    যদি (f >= codesrc && f < VSYMBOL(code32init_end))
         func = f + delta;
 
     // Call function in relocated code.
@@ -286,12 +286,12 @@ reloc_preinit(void *f, void *arg)
 }
 
 // Runs after all code is present and prior to any modifications
-void
-code_mutable_preinit(void)
+শূন্য
+code_mutable_preinit(শূন্য)
 {
-    if (HaveRunPost)
+    যদি (HaveRunPost)
         // Already run
-        return;
+        ফেরত;
     // Setup reset-vector entry point (controls legacy reboots).
     rtc_write(CMOS_RESET_CODE, 0);
     barrier();
@@ -300,8 +300,8 @@ code_mutable_preinit(void)
 }
 
 // Setup for code relocation and then relocate.
-void VISIBLE32INIT
-dopost(void)
+শূন্য VISIBLE32INIT
+dopost(শূন্য)
 {
     code_mutable_preinit();
 
@@ -311,17 +311,17 @@ dopost(void)
     malloc_preinit();
 
     // Relocate initialization code and call maininit().
-    reloc_preinit(maininit, NULL);
+    reloc_preinit(maininit, ফাঁকা);
 }
 
 // Entry point for Power On Self Test (POST) - the BIOS initilization
 // phase.  This function makes the memory at 0xc0000-0xfffff
 // read/writable and then calls dopost().
-void VISIBLE32FLAT
-handle_post(void)
+শূন্য VISIBLE32FLAT
+handle_post(শূন্য)
 {
-    if (!CONFIG_QEMU && !CONFIG_COREBOOT)
-        return;
+    যদি (!CONFIG_QEMU && !CONFIG_COREBOOT)
+        ফেরত;
 
     serial_debug_preinit();
     debug_banner();

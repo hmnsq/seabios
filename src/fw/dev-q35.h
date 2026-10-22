@@ -1,18 +1,18 @@
 #ifndef __DEV_Q35_H
 #define __DEV_Q35_H
 
-#include "types.h"      // u16
+#অন্তর্ভাব "types.h"      // u16
 
 #define PCI_DEVICE_ID_INTEL_Q35_MCH     0x29c0
 #define Q35_HOST_BRIDGE_PAM0            0x90
 #define Q35_HOST_BRIDGE_SMRAM           0x9d
 #define Q35_HOST_BRIDGE_PCIEXBAR        0x60
-#define Q35_HOST_BRIDGE_PCIEXBAR_SIZE   (256 * 1024 * 1024)
+#define Q35_HOST_BRIDGE_PCIEXBAR_আকার   (256 * 1024 * 1024)
 #define Q35_HOST_BRIDGE_PCIEXBAR_ADDR   0xb0000000
 #define Q35_HOST_BRIDGE_PCIEXBAREN      ((u64)1)
 #define Q35_HOST_PCIE_PCI_SEGMENT       0
-#define Q35_HOST_PCIE_START_BUS_NUMBER  0
-#define Q35_HOST_PCIE_END_BUS_NUMBER    255
+#define Q35_HOST_PCIE_START_BUS_সংখ্যা  0
+#define Q35_HOST_PCIE_END_BUS_সংখ্যা    255
 
 #define PCI_DEVICE_ID_INTEL_ICH9_LPC    0x2918
 #define ICH9_LPC_PMBASE                 0x40

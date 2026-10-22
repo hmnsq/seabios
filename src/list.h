@@ -1,91 +1,91 @@
 #ifndef __LIST_H
 #define __LIST_H
 
-#include "types.h" // container_of
+#অন্তর্ভাব "types.h" // container_of
 
 
 /****************************************************************
  * hlist - Double linked lists with a single pointer list head
  ****************************************************************/
 
-struct hlist_node {
-    struct hlist_node *next, **pprev;
+কাঠামো hlist_গ্রন্থি {
+    কাঠামো hlist_গ্রন্থি *পরবর্তী, **pprev;
 };
 
-struct hlist_head {
-    struct hlist_node *first;
+কাঠামো hlist_শীর্ষ {
+    কাঠামো hlist_গ্রন্থি *first;
 };
 
-static inline int
-hlist_empty(const struct hlist_head *h)
+স্থির অন্তঃরেখ পূর্ণসংখ্যা
+hlist_empty(ধ্রুবক কাঠামো hlist_শীর্ষ *h)
 {
-    return !h->first;
+    ফেরত !h->first;
 }
 
-static inline void
-hlist_del(struct hlist_node *n)
+স্থির অন্তঃরেখ শূন্য
+hlist_del(কাঠামো hlist_গ্রন্থি *n)
 {
-    struct hlist_node *next = n->next;
-    struct hlist_node **pprev = n->pprev;
-    *pprev = next;
-    if (next)
-        next->pprev = pprev;
+    কাঠামো hlist_গ্রন্থি *পরবর্তী = n->পরবর্তী;
+    কাঠামো hlist_গ্রন্থি **pprev = n->pprev;
+    *pprev = পরবর্তী;
+    যদি (পরবর্তী)
+        পরবর্তী->pprev = pprev;
 }
 
-static inline void
-hlist_add(struct hlist_node *n, struct hlist_node **pprev)
+স্থির অন্তঃরেখ শূন্য
+hlist_add(কাঠামো hlist_গ্রন্থি *n, কাঠামো hlist_গ্রন্থি **pprev)
 {
-    struct hlist_node *next = *pprev;
+    কাঠামো hlist_গ্রন্থি *পরবর্তী = *pprev;
     n->pprev = pprev;
-    n->next = next;
-    if (next)
-        next->pprev = &n->next;
+    n->পরবর্তী = পরবর্তী;
+    যদি (পরবর্তী)
+        পরবর্তী->pprev = &n->পরবর্তী;
     *pprev = n;
 }
 
-static inline void
-hlist_add_head(struct hlist_node *n, struct hlist_head *h)
+স্থির অন্তঃরেখ শূন্য
+hlist_add_শীর্ষ(কাঠামো hlist_গ্রন্থি *n, কাঠামো hlist_শীর্ষ *h)
 {
     hlist_add(n, &h->first);
 }
 
-static inline void
-hlist_add_before(struct hlist_node *n, struct hlist_node *next)
+স্থির অন্তঃরেখ শূন্য
+hlist_add_before(কাঠামো hlist_গ্রন্থি *n, কাঠামো hlist_গ্রন্থি *পরবর্তী)
 {
-    hlist_add(n, next->pprev);
+    hlist_add(n, পরবর্তী->pprev);
 }
 
-static inline void
-hlist_add_after(struct hlist_node *n, struct hlist_node *prev)
+স্থির অন্তঃরেখ শূন্য
+hlist_add_after(কাঠামো hlist_গ্রন্থি *n, কাঠামো hlist_গ্রন্থি *পূর্ব)
 {
-    hlist_add(n, &prev->next);
+    hlist_add(n, &পূর্ব->পরবর্তী);
 }
 
-static inline void
-hlist_replace(struct hlist_node *old, struct hlist_node *new)
+স্থির অন্তঃরেখ শূন্য
+hlist_replace(কাঠামো hlist_গ্রন্থি *old, কাঠামো hlist_গ্রন্থি *new)
 {
-    new->next = old->next;
-    if (new->next)
-        new->next->pprev = &new->next;
+    new->পরবর্তী = old->পরবর্তী;
+    যদি (new->পরবর্তী)
+        new->পরবর্তী->pprev = &new->পরবর্তী;
     new->pprev = old->pprev;
     *new->pprev = new;
 }
 
-#define hlist_for_each_entry(pos, head, member)                         \
-    for (pos = container_of((head)->first, typeof(*pos), member)        \
-         ; pos != container_of(NULL, typeof(*pos), member)              \
-         ; pos = container_of(pos->member.next, typeof(*pos), member))
+#define hlist_for_each_entry(pos, শীর্ষ, member)                         \
+    জন্য (pos = container_of((শীর্ষ)->first, typeof(*pos), member)        \
+         ; pos != container_of(ফাঁকা, typeof(*pos), member)              \
+         ; pos = container_of(pos->member.পরবর্তী, typeof(*pos), member))
 
-#define hlist_for_each_entry_safe(pos, n, head, member)                 \
-    for (pos = container_of((head)->first, typeof(*pos), member)        \
-         ; pos != container_of(NULL, typeof(*pos), member)              \
-             && ({ n = pos->member.next; 1; })                          \
+#define hlist_for_each_entry_safe(pos, n, শীর্ষ, member)                 \
+    জন্য (pos = container_of((শীর্ষ)->first, typeof(*pos), member)        \
+         ; pos != container_of(ফাঁকা, typeof(*pos), member)              \
+             && ({ n = pos->member.পরবর্তী; 1; })                          \
          ; pos = container_of(n, typeof(*pos), member))
 
-#define hlist_for_each_entry_pprev(pos, pprev, head, member)            \
-    for (pprev = &(head)->first                                         \
+#define hlist_for_each_entry_pprev(pos, pprev, শীর্ষ, member)            \
+    জন্য (pprev = &(শীর্ষ)->first                                         \
          ; *pprev && ({ pos=container_of(*pprev, typeof(*pos), member); 1; }) \
-         ; pprev = &(*pprev)->next)
+         ; pprev = &(*pprev)->পরবর্তী)
 
 
 #endif // list.h

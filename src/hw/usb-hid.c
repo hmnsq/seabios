@@ -5,44 +5,44 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_GLOBAL
-#include "config.h" // CONFIG_*
-#include "output.h" // dprintf, warn_noalloc
-#include "malloc.h" // malloc_fseg
-#include "ps2port.h" // ATKBD_CMD_GETID
-#include "usb.h" // usb_ctrlrequest
-#include "usb-hid.h" // usb_keyboard_setup
-#include "util.h" // process_key
+#অন্তর্ভাব "biosvar.h" // GET_GLOBAL
+#অন্তর্ভাব "config.h" // CONFIG_*
+#অন্তর্ভাব "output.h" // dprintf, warn_noalloc
+#অন্তর্ভাব "malloc.h" // malloc_fseg
+#অন্তর্ভাব "ps2port.h" // ATKBD_CMD_GETID
+#অন্তর্ভাব "usb.h" // usb_ctrlrequest
+#অন্তর্ভাব "usb-hid.h" // usb_keyboard_setup
+#অন্তর্ভাব "util.h" // process_key
 
-struct pipe_node {
-    struct usb_pipe *pipe;
-    struct pipe_node *next;
+কাঠামো pipe_গ্রন্থি {
+    কাঠামো usb_pipe *pipe;
+    কাঠামো pipe_গ্রন্থি *পরবর্তী;
 };
 
-struct pipe_node *keyboards VARFSEG = NULL;
-struct pipe_node *mice VARFSEG = NULL;
+কাঠামো pipe_গ্রন্থি *keyboards VARFSEG = ফাঁকা;
+কাঠামো pipe_গ্রন্থি *mice VARFSEG = ফাঁকা;
 
-static int
-add_pipe_node(struct pipe_node **list
-              , struct usbdevice_s *usbdev
-              , struct usb_endpoint_descriptor *epdesc)
+স্থির পূর্ণসংখ্যা
+add_pipe_গ্রন্থি(কাঠামো pipe_গ্রন্থি **list
+              , কাঠামো usbdevice_s *usbdev
+              , কাঠামো usb_endpoint_descriptor *epdesc)
 {
-    struct usb_pipe *pipe = usb_alloc_pipe(usbdev, epdesc);
-    if (!pipe)
-        return -1;
+    কাঠামো usb_pipe *pipe = usb_alloc_pipe(usbdev, epdesc);
+    যদি (!pipe)
+        ফেরত -1;
 
-    struct pipe_node *new_node = malloc_fseg(sizeof(struct pipe_node));
-    if (!new_node) {
+    কাঠামো pipe_গ্রন্থি *new_গ্রন্থি = malloc_fseg(আকার(কাঠামো pipe_গ্রন্থি));
+    যদি (!new_গ্রন্থি) {
         warn_noalloc();
-        return -1;
+        ফেরত -1;
     }
 
-    new_node->pipe = pipe;
+    new_গ্রন্থি->pipe = pipe;
 
-    new_node->next = *list;
-    *list = new_node;
+    new_গ্রন্থি->পরবর্তী = *list;
+    *list = new_গ্রন্থি;
 
-    return 0;
+    ফেরত 0;
 }
 
 /****************************************************************
@@ -50,133 +50,133 @@ add_pipe_node(struct pipe_node **list
  ****************************************************************/
 
 // Send USB HID protocol message.
-static int
-set_protocol(struct usb_pipe *pipe, u16 val, u16 inferface)
+স্থির পূর্ণসংখ্যা
+set_protocol(কাঠামো usb_pipe *pipe, u16 val, u16 inferface)
 {
-    struct usb_ctrlrequest req;
+    কাঠামো usb_ctrlrequest req;
     req.bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE;
     req.bRequest = HID_REQ_SET_PROTOCOL;
-    req.wValue = val;
-    req.wIndex = inferface;
-    req.wLength = 0;
-    return usb_send_default_control(pipe, &req, NULL);
+    req.w_মান = val;
+    req.w_সূচক = inferface;
+    req.w_দৈর্ঘ্য = 0;
+    ফেরত usb_send_default_control(pipe, &req, ফাঁকা);
 }
 
 // Send USB HID SetIdle request.
-static int
-set_idle(struct usb_pipe *pipe, int ms)
+স্থির পূর্ণসংখ্যা
+set_idle(কাঠামো usb_pipe *pipe, পূর্ণসংখ্যা ms)
 {
-    struct usb_ctrlrequest req;
+    কাঠামো usb_ctrlrequest req;
     req.bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE;
     req.bRequest = HID_REQ_SET_IDLE;
-    req.wValue = (ms/4)<<8;
-    req.wIndex = 0;
-    req.wLength = 0;
-    return usb_send_default_control(pipe, &req, NULL);
+    req.w_মান = (ms/4)<<8;
+    req.w_সূচক = 0;
+    req.w_দৈর্ঘ্য = 0;
+    ফেরত usb_send_default_control(pipe, &req, ফাঁকা);
 }
 
 #define KEYREPEATWAITMS 500
 #define KEYREPEATMS 33
 
 // Format of USB keyboard event data
-struct keyevent {
+কাঠামো keyevent {
     u8 modifiers;
     u8 reserved;
-    u8 keys[6];
+    u8 চাবিগুলি[6];
 };
 
 #define MAX_KBD_EVENT 16
 
-static int
-usb_kbd_setup(struct usbdevice_s *usbdev
-              , struct usb_endpoint_descriptor *epdesc)
+স্থির পূর্ণসংখ্যা
+usb_kbd_setup(কাঠামো usbdevice_s *usbdev
+              , কাঠামো usb_endpoint_descriptor *epdesc)
 {
-    if (! CONFIG_USB_KEYBOARD)
-        return -1;
+    যদি (! CONFIG_USB_KEYBOARD)
+        ফেরত -1;
 
-    if (epdesc->wMaxPacketSize < sizeof(struct keyevent)
-        || epdesc->wMaxPacketSize > MAX_KBD_EVENT) {
+    যদি (epdesc->w_Max_Packet_আকার < আকার(কাঠামো keyevent)
+        || epdesc->w_Max_Packet_আকার > MAX_KBD_EVENT) {
         dprintf(1, "USB keyboard wMaxPacketSize=%d; aborting\n"
-                , epdesc->wMaxPacketSize);
-        return -1;
+                , epdesc->w_Max_Packet_আকার);
+        ফেরত -1;
     }
 
     // Enable "boot" protocol.
-    if (set_protocol(usbdev->defpipe, 0, usbdev->iface->bInterfaceNumber)) {
+    যদি (set_protocol(usbdev->defpipe, 0, usbdev->iface->b_Interface_সংখ্যা)) {
         dprintf(3, "Failed to set boot protocol\n");
-        return -1;
+        ফেরত -1;
     }
 
     // Periodically send reports to enable key repeat.
-    if (set_idle(usbdev->defpipe, KEYREPEATMS))
+    যদি (set_idle(usbdev->defpipe, KEYREPEATMS))
         dprintf(3, "Warning: Failed to set key repeat rate\n");
 
-    if (add_pipe_node(&keyboards, usbdev, epdesc))
-        return -1;
+    যদি (add_pipe_গ্রন্থি(&keyboards, usbdev, epdesc))
+        ফেরত -1;
 
     dprintf(1, "USB keyboard initialized\n");
-    return 0;
+    ফেরত 0;
 }
 
 // Format of USB mouse event data
-struct mouseevent {
+কাঠামো mouseevent {
     u8 buttons;
     u8 x, y;
 };
 
 #define MAX_MOUSE_EVENT 8
 
-static int
-usb_mouse_setup(struct usbdevice_s *usbdev
-                , struct usb_endpoint_descriptor *epdesc)
+স্থির পূর্ণসংখ্যা
+usb_mouse_setup(কাঠামো usbdevice_s *usbdev
+                , কাঠামো usb_endpoint_descriptor *epdesc)
 {
-    if (! CONFIG_USB_MOUSE)
-        return -1;
+    যদি (! CONFIG_USB_MOUSE)
+        ফেরত -1;
 
-    if (epdesc->wMaxPacketSize < sizeof(struct mouseevent)
-        || epdesc->wMaxPacketSize > MAX_MOUSE_EVENT) {
+    যদি (epdesc->w_Max_Packet_আকার < আকার(কাঠামো mouseevent)
+        || epdesc->w_Max_Packet_আকার > MAX_MOUSE_EVENT) {
         dprintf(1, "USB mouse wMaxPacketSize=%d; aborting\n"
-                , epdesc->wMaxPacketSize);
-        return -1;
+                , epdesc->w_Max_Packet_আকার);
+        ফেরত -1;
     }
 
     // Enable "boot" protocol.
-    if (set_protocol(usbdev->defpipe, 0, usbdev->iface->bInterfaceNumber))
-        return -1;
+    যদি (set_protocol(usbdev->defpipe, 0, usbdev->iface->b_Interface_সংখ্যা))
+        ফেরত -1;
 
-    if (add_pipe_node(&mice, usbdev, epdesc))
-        return -1;
+    যদি (add_pipe_গ্রন্থি(&mice, usbdev, epdesc))
+        ফেরত -1;
 
     dprintf(1, "USB mouse initialized\n");
-    return 0;
+    ফেরত 0;
 }
 
 // Initialize a found USB HID device (if applicable).
-int
-usb_hid_setup(struct usbdevice_s *usbdev)
+পূর্ণসংখ্যা
+usb_hid_setup(কাঠামো usbdevice_s *usbdev)
 {
-    if (! CONFIG_USB_KEYBOARD && ! CONFIG_USB_MOUSE)
-        return -1;
+    যদি (! CONFIG_USB_KEYBOARD && ! CONFIG_USB_MOUSE)
+        ফেরত -1;
     dprintf(2, "usb_hid_setup %p\n", usbdev->defpipe);
 
-    struct usb_interface_descriptor *iface = usbdev->iface;
-    if (iface->bInterfaceSubClass != USB_INTERFACE_SUBCLASS_BOOT)
+    কাঠামো usb_interface_descriptor *iface = usbdev->iface;
+    যদি (iface->bInterfaceSubClass != USB_INTERFACE_SUBCLASS_BOOT)
         // Doesn't support boot protocol.
-        return -1;
+        ফেরত -1;
 
     // Find intr in endpoint.
-    struct usb_endpoint_descriptor *epdesc = usb_find_desc(
+    কাঠামো usb_endpoint_descriptor *epdesc = usb_find_desc(
         usbdev, USB_ENDPOINT_XFER_INT, USB_DIR_IN);
-    if (!epdesc) {
+    যদি (!epdesc) {
         dprintf(1, "No usb hid intr in?\n");
-        return -1;
+        ফেরত -1;
     }
 
-    if (iface->bInterfaceProtocol == USB_INTERFACE_PROTOCOL_KEYBOARD)
-        return usb_kbd_setup(usbdev, epdesc);
-    if (iface->bInterfaceProtocol == USB_INTERFACE_PROTOCOL_MOUSE)
-        return usb_mouse_setup(usbdev, epdesc);
-    return -1;
+    যদি (iface->bInterfaceProtocol == USB_INTERFACE_PROTOCOL_KEYBOARD)
+        ফেরত usb_kbd_setup(usbdev, epdesc);
+    যদি (iface->bInterfaceProtocol == USB_INTERFACE_PROTOCOL_MOUSE)
+        ফেরত usb_mouse_setup(usbdev, epdesc);
+    ফেরত -1;
 }
 
 
@@ -185,7 +185,7 @@ usb_hid_setup(struct usbdevice_s *usbdev)
  ****************************************************************/
 
 // Mapping from USB key id to ps2 key sequence.
-static u16 KeyToScanCode[] VAR16 = {
+স্থির u16 চাবি_To_Scan_Code[] VAR16 = {
     0x0000, 0x0000, 0x0000, 0x0000, 0x001e, 0x0030, 0x002e, 0x0020,
     0x0012, 0x0021, 0x0022, 0x0023, 0x0017, 0x0024, 0x0025, 0x0026,
     0x0032, 0x0031, 0x0018, 0x0019, 0x0010, 0x0013, 0x001f, 0x0014,
@@ -202,7 +202,7 @@ static u16 KeyToScanCode[] VAR16 = {
 };
 
 // Mapping from USB modifier id to ps2 key sequence.
-static u16 ModifierToScanCode[] VAR16 = {
+স্থির u16 ModifierToScanCode[] VAR16 = {
     //lcntl, lshift, lalt, lgui, rcntl, rshift, ralt, rgui
     0x001d, 0x002a, 0x0038, 0xe05b, 0xe01d, 0x0036, 0xe038, 0xe05c
 };
@@ -210,180 +210,180 @@ static u16 ModifierToScanCode[] VAR16 = {
 #define RELEASEBIT 0x80
 
 // Translate data from KeyToScanCode[] to calls to process_key().
-static void
-prockeys(u16 scancode, u8 key_release, u8 mods)
+স্থির শূন্য
+prockeys(u16 scancode, u8 চাবি_release, u8 mods)
 {
-    if (scancode > 0xff) {
-        if (scancode == 0xe145) {
+    যদি (scancode > 0xff) {
+        যদি (scancode == 0xe145) {
             // XXX - a real AT keyboard would immediately send the key release
-            if (mods & ((1<<0) | (1<<4))) {
+            যদি (mods & ((1<<0) | (1<<4))) {
                 // Cntr+Break key
-                process_key(0xe0);
-                process_key(0x46 | key_release);
-            } else {
+                process_চাবি(0xe0);
+                process_চাবি(0x46 | চাবি_release);
+            } অন্যথা {
                 // Pause key
-                process_key(0xe1);
-                process_key(0x1d | key_release);
-                process_key(0x45 | key_release);
+                process_চাবি(0xe1);
+                process_চাবি(0x1d | চাবি_release);
+                process_চাবি(0x45 | চাবি_release);
             }
-            return;
-        } else if (scancode == 0xe037 && mods & ((1<<2) | (1<<6))) {
+            ফেরত;
+        } অন্যথা যদি (scancode == 0xe037 && mods & ((1<<2) | (1<<6))) {
             // Alt+SysReq key
-            process_key(0x54 | key_release);
-            return;
+            process_চাবি(0x54 | চাবি_release);
+            ফেরত;
         }
-        process_key(0xe0);
+        process_চাবি(0xe0);
     }
-    process_key(scancode | key_release);
+    process_চাবি(scancode | চাবি_release);
 }
 
 // Handle a USB key press/release event.
-static void
-procscankey(u8 key, u8 key_release, u8 mods)
+স্থির শূন্য
+procscankey(u8 চাবি, u8 চাবি_release, u8 mods)
 {
-    if (key >= ARRAY_SIZE(KeyToScanCode))
-        return;
-    u16 scancode = GET_GLOBAL(KeyToScanCode[key]);
-    if (scancode)
-        prockeys(scancode, key_release, mods);
+    যদি (চাবি >= ARRAY_আকার(চাবি_To_Scan_Code))
+        ফেরত;
+    u16 scancode = GET_GLOBAL(চাবি_To_Scan_Code[চাবি]);
+    যদি (scancode)
+        prockeys(scancode, চাবি_release, mods);
 }
 
 // Handle a USB modifier press/release event.
-static void
-procmodkey(u8 mods, u8 key_release)
+স্থির শূন্য
+procmodkey(u8 mods, u8 চাবি_release)
 {
-    int i;
-    for (i=0; mods; i++)
-        if (mods & (1<<i)) {
+    পূর্ণসংখ্যা i;
+    জন্য (i=0; mods; i++)
+        যদি (mods & (1<<i)) {
             // Modifier key change.
-            prockeys(GET_GLOBAL(ModifierToScanCode[i]), key_release, 0);
+            prockeys(GET_GLOBAL(ModifierToScanCode[i]), চাবি_release, 0);
             mods &= ~(1<<i);
         }
 }
 
-struct usbkeyinfo {
-    union {
-        struct {
+কাঠামো usbkeyinfo {
+    সংঘ {
+        কাঠামো {
             u8 modifiers;
             u8 repeatcount;
-            u8 keys[6];
+            u8 চাবিগুলি[6];
         };
-        u64 data;
+        u64 তথ্য;
     };
 };
-struct usbkeyinfo LastUSBkey VARLOW;
+কাঠামো usbkeyinfo LastUSBkey VARLOW;
 
 // Process USB keyboard data.
-static void
-handle_key(struct keyevent *data)
+স্থির শূন্য
+handle_চাবি(কাঠামো keyevent *তথ্য)
 {
-    dprintf(9, "Got key %x %x\n", data->modifiers, data->keys[0]);
+    dprintf(9, "Got key %x %x\n", তথ্য->modifiers, তথ্য->চাবিগুলি[0]);
 
     // Load old keys.
-    struct usbkeyinfo old;
-    old.data = GET_LOW(LastUSBkey.data);
+    কাঠামো usbkeyinfo old;
+    old.তথ্য = GET_নিচের(LastUSBkey.তথ্য);
 
     // Check for keys no longer pressed.
-    int addpos = 0;
-    int i;
-    for (i=0; i<ARRAY_SIZE(old.keys); i++) {
-        u8 key = old.keys[i];
-        if (!key)
-            break;
-        int j;
-        for (j=0;; j++) {
-            if (j>=ARRAY_SIZE(data->keys)) {
+    পূর্ণসংখ্যা addpos = 0;
+    পূর্ণসংখ্যা i;
+    জন্য (i=0; i<ARRAY_আকার(old.চাবিগুলি); i++) {
+        u8 চাবি = old.চাবিগুলি[i];
+        যদি (!চাবি)
+            বিরতি;
+        পূর্ণসংখ্যা j;
+        জন্য (j=0;; j++) {
+            যদি (j>=ARRAY_আকার(তথ্য->চাবিগুলি)) {
                 // Key released.
-                procscankey(key, RELEASEBIT, data->modifiers);
-                if (i+1 >= ARRAY_SIZE(old.keys) || !old.keys[i+1])
+                procscankey(চাবি, RELEASEBIT, তথ্য->modifiers);
+                যদি (i+1 >= ARRAY_আকার(old.চাবিগুলি) || !old.চাবিগুলি[i+1])
                     // Last pressed key released - disable repeat.
                     old.repeatcount = 0xff;
-                break;
+                বিরতি;
             }
-            if (data->keys[j] == key) {
+            যদি (তথ্য->চাবিগুলি[j] == চাবি) {
                 // Key still pressed.
-                data->keys[j] = 0;
-                old.keys[addpos++] = key;
-                break;
+                তথ্য->চাবিগুলি[j] = 0;
+                old.চাবিগুলি[addpos++] = চাবি;
+                বিরতি;
             }
         }
     }
-    procmodkey(old.modifiers & ~data->modifiers, RELEASEBIT);
+    procmodkey(old.modifiers & ~তথ্য->modifiers, RELEASEBIT);
 
     // Process new keys
-    procmodkey(data->modifiers & ~old.modifiers, 0);
-    old.modifiers = data->modifiers;
-    for (i=0; i<ARRAY_SIZE(data->keys); i++) {
-        u8 key = data->keys[i];
-        if (!key)
-            continue;
+    procmodkey(তথ্য->modifiers & ~old.modifiers, 0);
+    old.modifiers = তথ্য->modifiers;
+    জন্য (i=0; i<ARRAY_আকার(তথ্য->চাবিগুলি); i++) {
+        u8 চাবি = তথ্য->চাবিগুলি[i];
+        যদি (!চাবি)
+            চালু;
         // New key pressed.
-        procscankey(key, 0, data->modifiers);
-        old.keys[addpos++] = key;
+        procscankey(চাবি, 0, তথ্য->modifiers);
+        old.চাবিগুলি[addpos++] = চাবি;
         old.repeatcount = KEYREPEATWAITMS / KEYREPEATMS + 1;
     }
-    if (addpos < ARRAY_SIZE(old.keys))
-        old.keys[addpos] = 0;
+    যদি (addpos < ARRAY_আকার(old.চাবিগুলি))
+        old.চাবিগুলি[addpos] = 0;
 
     // Check for key repeat event.
-    if (addpos) {
-        if (!old.repeatcount)
-            procscankey(old.keys[addpos-1], 0, data->modifiers);
-        else if (old.repeatcount != 0xff)
+    যদি (addpos) {
+        যদি (!old.repeatcount)
+            procscankey(old.চাবিগুলি[addpos-1], 0, তথ্য->modifiers);
+        অন্যথা যদি (old.repeatcount != 0xff)
             old.repeatcount--;
     }
 
     // Update old keys
-    SET_LOW(LastUSBkey.data, old.data);
+    SET_নিচের(LastUSBkey.তথ্য, old.তথ্য);
 }
 
 // Check if a USB keyboard event is pending and process it if so.
-static void
-usb_check_key(void)
+স্থির শূন্য
+usb_check_চাবি(শূন্য)
 {
-    if (! CONFIG_USB_KEYBOARD)
-        return;
+    যদি (! CONFIG_USB_KEYBOARD)
+        ফেরত;
 
-    for (struct pipe_node *node = GET_GLOBAL(keyboards);
-         node;
-         node = GET_GLOBALFLAT(node->next)) {
-        struct usb_pipe *pipe = GET_GLOBALFLAT(node->pipe);
+    জন্য (কাঠামো pipe_গ্রন্থি *গ্রন্থি = GET_GLOBAL(keyboards);
+         গ্রন্থি;
+         গ্রন্থি = GET_GLOBALFLAT(গ্রন্থি->পরবর্তী)) {
+        কাঠামো usb_pipe *pipe = GET_GLOBALFLAT(গ্রন্থি->pipe);
 
-        for (;;) {
-            u8 data[MAX_KBD_EVENT];
-            int ret = usb_poll_intr(pipe, data);
-            if (ret)
-                break;
-            handle_key((void*)data);
+        জন্য (;;) {
+            u8 তথ্য[MAX_KBD_EVENT];
+            পূর্ণসংখ্যা ret = usb_poll_intr(pipe, তথ্য);
+            যদি (ret)
+                বিরতি;
+            handle_চাবি((শূন্য*)তথ্য);
         }
     }
 }
 
 // Test if USB keyboard is active.
-inline int
-usb_kbd_active(void)
+অন্তঃরেখ পূর্ণসংখ্যা
+usb_kbd_active(শূন্য)
 {
-    if (! CONFIG_USB_KEYBOARD)
-        return 0;
+    যদি (! CONFIG_USB_KEYBOARD)
+        ফেরত 0;
 
-    return GET_GLOBAL(keyboards) != NULL;
+    ফেরত GET_GLOBAL(keyboards) != ফাঁকা;
 }
 
 // Handle a ps2 style keyboard command.
-inline int
-usb_kbd_command(int command, u8 *param)
+অন্তঃরেখ পূর্ণসংখ্যা
+usb_kbd_command(পূর্ণসংখ্যা command, u8 *param)
 {
-    if (! CONFIG_USB_KEYBOARD)
-        return -1;
+    যদি (! CONFIG_USB_KEYBOARD)
+        ফেরত -1;
     dprintf(9, "usb keyboard cmd=%x\n", command);
-    switch (command) {
-    case ATKBD_CMD_GETID:
+    নির্বাচন (command) {
+    ক্ষেত্র ATKBD_CMD_GETID:
         // Return the id of a standard AT keyboard.
         param[0] = 0xab;
         param[1] = 0x83;
-        return 0;
-    default:
-        return -1;
+        ফেরত 0;
+    পূর্বনির্ধারিত:
+        ফেরত -1;
     }
 }
 
@@ -393,13 +393,13 @@ usb_kbd_command(int command, u8 *param)
  ****************************************************************/
 
 // Process USB mouse data.
-static void
-handle_mouse(struct mouseevent *data)
+স্থির শূন্য
+handle_mouse(কাঠামো mouseevent *তথ্য)
 {
-    dprintf(9, "Got mouse b=%x x=%x y=%x\n", data->buttons, data->x, data->y);
+    dprintf(9, "Got mouse b=%x x=%x y=%x\n", তথ্য->buttons, তথ্য->x, তথ্য->y);
 
-    s8 x = data->x, y = -data->y;
-    u8 flag = ((data->buttons & 0x7) | (1<<3)
+    s8 x = তথ্য->x, y = -তথ্য->y;
+    u8 flag = ((তথ্য->buttons & 0x7) | (1<<3)
                | (x & 0x80 ? (1<<4) : 0) | (y & 0x80 ? (1<<5) : 0));
     process_mouse(flag);
     process_mouse(x);
@@ -407,76 +407,76 @@ handle_mouse(struct mouseevent *data)
 }
 
 // Check if a USB mouse event is pending and process it if so.
-static void
-usb_check_mouse(void)
+স্থির শূন্য
+usb_check_mouse(শূন্য)
 {
-    if (! CONFIG_USB_MOUSE)
-        return;
+    যদি (! CONFIG_USB_MOUSE)
+        ফেরত;
 
-    for (struct pipe_node *node = GET_GLOBAL(mice);
-         node;
-         node = GET_GLOBALFLAT(node->next)) {
-        struct usb_pipe *pipe = GET_GLOBALFLAT(node->pipe);
+    জন্য (কাঠামো pipe_গ্রন্থি *গ্রন্থি = GET_GLOBAL(mice);
+         গ্রন্থি;
+         গ্রন্থি = GET_GLOBALFLAT(গ্রন্থি->পরবর্তী)) {
+        কাঠামো usb_pipe *pipe = GET_GLOBALFLAT(গ্রন্থি->pipe);
 
-        for (;;) {
-            u8 data[MAX_MOUSE_EVENT];
-            int ret = usb_poll_intr(pipe, data);
-            if (ret)
-                break;
-            handle_mouse((void*)data);
+        জন্য (;;) {
+            u8 তথ্য[MAX_MOUSE_EVENT];
+            পূর্ণসংখ্যা ret = usb_poll_intr(pipe, তথ্য);
+            যদি (ret)
+                বিরতি;
+            handle_mouse((শূন্য*)তথ্য);
         }
     }
 }
 
 // Test if USB mouse is active.
-inline int
-usb_mouse_active(void)
+অন্তঃরেখ পূর্ণসংখ্যা
+usb_mouse_active(শূন্য)
 {
-    if (! CONFIG_USB_MOUSE)
-        return 0;
+    যদি (! CONFIG_USB_MOUSE)
+        ফেরত 0;
 
-    return GET_GLOBAL(mice) != NULL;
+    ফেরত GET_GLOBAL(mice) != ফাঁকা;
 }
 
 // Handle a ps2 style mouse command.
-inline int
-usb_mouse_command(int command, u8 *param)
+অন্তঃরেখ পূর্ণসংখ্যা
+usb_mouse_command(পূর্ণসংখ্যা command, u8 *param)
 {
-    if (! CONFIG_USB_MOUSE)
-        return -1;
+    যদি (! CONFIG_USB_MOUSE)
+        ফেরত -1;
     dprintf(9, "usb mouse cmd=%x\n", command);
-    switch (command) {
-    case PSMOUSE_CMD_ENABLE:
-    case PSMOUSE_CMD_DISABLE:
-    case PSMOUSE_CMD_SETSCALE11:
-        return 0;
-    case PSMOUSE_CMD_SETSCALE21:
-    case PSMOUSE_CMD_SETRATE:
-    case PSMOUSE_CMD_SETRES:
+    নির্বাচন (command) {
+    ক্ষেত্র PSMOUSE_CMD_ENABLE:
+    ক্ষেত্র PSMOUSE_CMD_DISABLE:
+    ক্ষেত্র PSMOUSE_CMD_SETSCALE11:
+        ফেরত 0;
+    ক্ষেত্র PSMOUSE_CMD_SETSCALE21:
+    ক্ষেত্র PSMOUSE_CMD_SETRATE:
+    ক্ষেত্র PSMOUSE_CMD_SETRES:
         // XXX
-        return 0;
-    case PSMOUSE_CMD_RESET_BAT:
-    case PSMOUSE_CMD_GETID:
+        ফেরত 0;
+    ক্ষেত্র PSMOUSE_CMD_RESET_BAT:
+    ক্ষেত্র PSMOUSE_CMD_GETID:
         // Return the id of a standard AT mouse.
         param[0] = 0xaa;
         param[1] = 0x00;
-        return 0;
+        ফেরত 0;
 
-    case PSMOUSE_CMD_GETINFO:
+    ক্ষেত্র PSMOUSE_CMD_GETINFO:
         param[0] = 0x00;
         param[1] = 4;
         param[2] = 100;
-        return 0;
+        ফেরত 0;
 
-    default:
-        return -1;
+    পূর্বনির্ধারিত:
+        ফেরত -1;
     }
 }
 
 // Check for USB events pending - called periodically from timer interrupt.
-void
-usb_check_event(void)
+শূন্য
+usb_check_event(শূন্য)
 {
-    usb_check_key();
+    usb_check_চাবি();
     usb_check_mouse();
 }

@@ -2,13 +2,13 @@
 #ifndef __USB_H
 #define __USB_H
 
-#include "stacks.h" // struct mutex_s
+#অন্তর্ভাব "stacks.h" // struct mutex_s
 
 // Information on a USB end point.
-struct usb_pipe {
-    union {
-        struct usb_s *cntl;
-        struct usb_pipe *freenext;
+কাঠামো usb_pipe {
+    সংঘ {
+        কাঠামো usb_s *cntl;
+        কাঠামো usb_pipe *freenext;
     };
     u8 type;
     u8 ep;
@@ -19,33 +19,33 @@ struct usb_pipe {
 };
 
 // Common information for usb devices.
-struct usbdevice_s {
-    struct usbhub_s *hub;
-    struct usb_pipe *defpipe;
+কাঠামো usbdevice_s {
+    কাঠামো usbhub_s *hub;
+    কাঠামো usb_pipe *defpipe;
     u32 port;
-    struct usb_config_descriptor *config;
-    struct usb_interface_descriptor *iface;
-    int imax;
+    কাঠামো usb_config_descriptor *config;
+    কাঠামো usb_interface_descriptor *iface;
+    পূর্ণসংখ্যা imax;
     u8 speed;
     u8 devaddr;
 };
 
 // Common information for usb controllers.
-struct usb_s {
-    struct usb_pipe *freelist;
-    struct mutex_s resetlock;
-    struct pci_device *pci;
-    void *mmio;
+কাঠামো usb_s {
+    কাঠামো usb_pipe *freelist;
+    কাঠামো mutex_s resetlock;
+    কাঠামো pci_device *pci;
+    শূন্য *mmio;
     u8 type;
     u8 maxaddr;
 };
 
 // Information for enumerating USB hubs
-struct usbhub_s {
-    struct usbhub_op_s *op;
-    struct usbdevice_s *usbdev;
-    struct usb_s *cntl;
-    struct mutex_s lock;
+কাঠামো usbhub_s {
+    কাঠামো usbhub_op_s *op;
+    কাঠামো usbdevice_s *usbdev;
+    কাঠামো usb_s *cntl;
+    কাঠামো mutex_s lock;
     u32 detectend;
     u32 port;
     u32 threads;
@@ -54,11 +54,11 @@ struct usbhub_s {
 };
 
 // Hub callback (32bit) info
-struct usbhub_op_s {
-    int (*detect)(struct usbhub_s *hub, u32 port);
-    int (*reset)(struct usbhub_s *hub, u32 port);
-    int (*portmap)(struct usbhub_s *hub, u32 port);
-    void (*disconnect)(struct usbhub_s *hub, u32 port);
+কাঠামো usbhub_op_s {
+    পূর্ণসংখ্যা (*detect)(কাঠামো usbhub_s *hub, u32 port);
+    পূর্ণসংখ্যা (*reset)(কাঠামো usbhub_s *hub, u32 port);
+    পূর্ণসংখ্যা (*portmap)(কাঠামো usbhub_s *hub, u32 port);
+    শূন্য (*disconnect)(কাঠামো usbhub_s *hub, u32 port);
 };
 
 #define USB_TYPE_UHCI  1
@@ -122,12 +122,12 @@ struct usbhub_op_s {
 #define USB_REQ_SET_INTERFACE           0x0B
 #define USB_REQ_SYNCH_FRAME             0x0C
 
-struct usb_ctrlrequest {
+কাঠামো usb_ctrlrequest {
     u8 bRequestType;
     u8 bRequest;
-    u16 wValue;
-    u16 wIndex;
-    u16 wLength;
+    u16 w_মান;
+    u16 w_সূচক;
+    u16 w_দৈর্ঘ্য;
 } PACKED;
 
 #define USB_DT_DEVICE                   0x01
@@ -139,8 +139,8 @@ struct usb_ctrlrequest {
 #define USB_DT_OTHER_SPEED_CONFIG       0x07
 #define USB_DT_ENDPOINT_COMPANION       0x30
 
-struct usb_device_descriptor {
-    u8  bLength;
+কাঠামো usb_device_descriptor {
+    u8  b_দৈর্ঘ্য;
     u8  bDescriptorType;
 
     u16 bcdUSB;
@@ -153,8 +153,8 @@ struct usb_device_descriptor {
     u16 bcdDevice;
     u8  iManufacturer;
     u8  iProduct;
-    u8  iSerialNumber;
-    u8  bNumConfigurations;
+    u8  i_Serial_সংখ্যা;
+    u8  b_অঙ্ক_Configurations;
 } PACKED;
 
 #define USB_CLASS_PER_INTERFACE         0       /* for DeviceClass */
@@ -167,42 +167,42 @@ struct usb_device_descriptor {
 #define USB_CLASS_MASS_STORAGE          8
 #define USB_CLASS_HUB                   9
 
-struct usb_config_descriptor {
-    u8  bLength;
+কাঠামো usb_config_descriptor {
+    u8  b_দৈর্ঘ্য;
     u8  bDescriptorType;
 
-    u16 wTotalLength;
-    u8  bNumInterfaces;
-    u8  bConfigurationValue;
+    u16 w_যোগ_দৈর্ঘ্য;
+    u8  b_অঙ্ক_Interfaces;
+    u8  b_Configuration_মান;
     u8  iConfiguration;
     u8  bmAttributes;
     u8  bMaxPower;
 } PACKED;
 
-struct usb_interface_descriptor {
-    u8  bLength;
+কাঠামো usb_interface_descriptor {
+    u8  b_দৈর্ঘ্য;
     u8  bDescriptorType;
 
-    u8  bInterfaceNumber;
+    u8  b_Interface_সংখ্যা;
     u8  bAlternateSetting;
-    u8  bNumEndpoints;
+    u8  b_অঙ্ক_Endpoints;
     u8  bInterfaceClass;
     u8  bInterfaceSubClass;
     u8  bInterfaceProtocol;
     u8  iInterface;
 } PACKED;
 
-struct usb_endpoint_descriptor {
-    u8  bLength;
+কাঠামো usb_endpoint_descriptor {
+    u8  b_দৈর্ঘ্য;
     u8  bDescriptorType;
 
     u8  bEndpointAddress;
     u8  bmAttributes;
-    u16 wMaxPacketSize;
+    u16 w_Max_Packet_আকার;
     u8  bInterval;
 } PACKED;
 
-#define USB_ENDPOINT_NUMBER_MASK        0x0f    /* in bEndpointAddress */
+#define USB_ENDPOINT_সংখ্যা_MASK        0x0f    /* in bEndpointAddress */
 #define USB_ENDPOINT_DIR_MASK           0x80
 
 #define USB_ENDPOINT_XFERTYPE_MASK      0x03    /* in bmAttributes */
@@ -212,7 +212,7 @@ struct usb_endpoint_descriptor {
 #define USB_ENDPOINT_XFER_INT           3
 #define USB_ENDPOINT_MAX_ADJUSTABLE     0x80
 
-#define USB_CONTROL_SETUP_SIZE          8
+#define USB_CONTROL_SETUP_আকার          8
 
 
 /****************************************************************
@@ -231,25 +231,25 @@ struct usb_endpoint_descriptor {
  ****************************************************************/
 
 // usb.c
-int usb_send_bulk(struct usb_pipe *pipe, int dir, void *data, int datasize);
-int usb_poll_intr(struct usb_pipe *pipe, void *data);
-int usb_32bit_pipe(struct usb_pipe *pipe_fl);
-struct usb_pipe *usb_alloc_pipe(struct usbdevice_s *usbdev
-                                , struct usb_endpoint_descriptor *epdesc);
-void usb_free_pipe(struct usbdevice_s *usbdev, struct usb_pipe *pipe);
-int usb_send_default_control(struct usb_pipe *pipe
-                             , const struct usb_ctrlrequest *req, void *data);
-int usb_is_freelist(struct usb_s *cntl, struct usb_pipe *pipe);
-void usb_add_freelist(struct usb_pipe *pipe);
-struct usb_pipe *usb_get_freelist(struct usb_s *cntl, u8 eptype);
-void usb_desc2pipe(struct usb_pipe *pipe, struct usbdevice_s *usbdev
-                   , struct usb_endpoint_descriptor *epdesc);
-int usb_get_period(struct usbdevice_s *usbdev
-                   , struct usb_endpoint_descriptor *epdesc);
-int usb_xfer_time(struct usb_pipe *pipe, int datalen);
-struct usb_endpoint_descriptor *usb_find_desc(struct usbdevice_s *usbdev
-                                              , int type, int dir);
-void usb_enumerate(struct usbhub_s *hub);
-void usb_setup(void);
+পূর্ণসংখ্যা usb_send_bulk(কাঠামো usb_pipe *pipe, পূর্ণসংখ্যা dir, শূন্য *তথ্য, পূর্ণসংখ্যা datasize);
+পূর্ণসংখ্যা usb_poll_intr(কাঠামো usb_pipe *pipe, শূন্য *তথ্য);
+পূর্ণসংখ্যা usb_32bit_pipe(কাঠামো usb_pipe *pipe_fl);
+কাঠামো usb_pipe *usb_alloc_pipe(কাঠামো usbdevice_s *usbdev
+                                , কাঠামো usb_endpoint_descriptor *epdesc);
+শূন্য usb_free_pipe(কাঠামো usbdevice_s *usbdev, কাঠামো usb_pipe *pipe);
+পূর্ণসংখ্যা usb_send_default_control(কাঠামো usb_pipe *pipe
+                             , ধ্রুবক কাঠামো usb_ctrlrequest *req, শূন্য *তথ্য);
+পূর্ণসংখ্যা usb_is_freelist(কাঠামো usb_s *cntl, কাঠামো usb_pipe *pipe);
+শূন্য usb_add_freelist(কাঠামো usb_pipe *pipe);
+কাঠামো usb_pipe *usb_get_freelist(কাঠামো usb_s *cntl, u8 eptype);
+শূন্য usb_desc2pipe(কাঠামো usb_pipe *pipe, কাঠামো usbdevice_s *usbdev
+                   , কাঠামো usb_endpoint_descriptor *epdesc);
+পূর্ণসংখ্যা usb_get_period(কাঠামো usbdevice_s *usbdev
+                   , কাঠামো usb_endpoint_descriptor *epdesc);
+পূর্ণসংখ্যা usb_xfer_time(কাঠামো usb_pipe *pipe, পূর্ণসংখ্যা datalen);
+কাঠামো usb_endpoint_descriptor *usb_find_desc(কাঠামো usbdevice_s *usbdev
+                                              , পূর্ণসংখ্যা type, পূর্ণসংখ্যা dir);
+শূন্য usb_enumerate(কাঠামো usbhub_s *hub);
+শূন্য usb_setup(শূন্য);
 
 #endif // usb.h

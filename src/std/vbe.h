@@ -1,37 +1,37 @@
 #ifndef __VBE_H
 #define __VBE_H
 
-#include "types.h" // u8
+#অন্তর্ভাব "types.h" // u8
 
 #define VESA_SIGNATURE 0x41534556 // VESA
 #define VBE2_SIGNATURE 0x32454256 // VBE2
 
-struct vbe_info {
+কাঠামো vbe_info {
     u32 signature;
     u16 version;
-    struct segoff_s oem_string;
+    কাঠামো segoff_s oem_string;
     u32 capabilities;
-    struct segoff_s video_mode;
-    u16 total_memory;
+    কাঠামো segoff_s video_mode;
+    u16 যোগ_memory;
     u16 oem_revision;
-    struct segoff_s oem_vendor_string;
-    struct segoff_s oem_product_string;
-    struct segoff_s oem_revision_string;
+    কাঠামো segoff_s oem_vendor_string;
+    কাঠামো segoff_s oem_product_string;
+    কাঠামো segoff_s oem_revision_string;
     u8 reserved[222];
     /* VBE 2.0 */
-    u8 oem_data[256];
+    u8 oem_তথ্য[256];
 } PACKED;
 
-struct vbe_mode_info {
+কাঠামো vbe_mode_info {
     /* VBE */
     u16 mode_attributes;
     u8 winA_attributes;
     u8 winB_attributes;
     u16 win_granularity;
-    u16 win_size;
+    u16 win_আকার;
     u16 winA_seg;
     u16 winB_seg;
-    struct segoff_s win_func_ptr;
+    কাঠামো segoff_s win_func_ptr;
     u16 bytes_per_scanline;
     /* VBE 1.2 */
     u16 xres;
@@ -42,17 +42,17 @@ struct vbe_mode_info {
     u8 bits_per_pixel;
     u8 banks;
     u8 mem_model;
-    u8 bank_size;
+    u8 bank_আকার;
     u8 pages;
     u8 reserved0;
     /* Direct Color */
-    u8 red_size;
+    u8 red_আকার;
     u8 red_pos;
-    u8 green_size;
+    u8 green_আকার;
     u8 green_pos;
-    u8 blue_size;
+    u8 blue_আকার;
     u8 blue_pos;
-    u8 alpha_size;
+    u8 alpha_আকার;
     u8 alpha_pos;
     u8 directcolor_info;
     /* VBE 2.0 */
@@ -63,23 +63,23 @@ struct vbe_mode_info {
     u16 linear_bytes_per_scanline;
     u8 bank_pages;
     u8 linear_pages;
-    u8 linear_red_size;
+    u8 linear_red_আকার;
     u8 linear_red_pos;
-    u8 linear_green_size;
+    u8 linear_green_আকার;
     u8 linear_green_pos;
-    u8 linear_blue_size;
+    u8 linear_blue_আকার;
     u8 linear_blue_pos;
-    u8 linear_alpha_size;
+    u8 linear_alpha_আকার;
     u8 linear_alpha_pos;
     u32 pixclock_max;
     u8 reserved[190];
 } PACKED;
 
-struct vbe_crtc_info {
-    u16 horiz_total;
+কাঠামো vbe_crtc_info {
+    u16 horiz_যোগ;
     u16 horiz_sync_start;
     u16 horiz_sync_end;
-    u16 vert_total;
+    u16 vert_যোগ;
     u16 vert_sync_start;
     u16 vert_sync_end;
     u8 flags;
@@ -88,7 +88,7 @@ struct vbe_crtc_info {
     u8 reserved[40];
 } PACKED;
 
-struct vbe_palette_entry {
+কাঠামো vbe_palette_entry {
     u8 blue;
     u8 green;
     u8 red;
@@ -109,7 +109,7 @@ struct vbe_palette_entry {
 
 #define VBE_MODE_VESA_DEFINED                            0x0100
 #define VBE_MODE_REFRESH_RATE_USE_CRTC                   0x0800
-#define VBE_MODE_LINEAR_FRAME_BUFFER                     0x4000
+#define VBE_MODE_LINEAR_FRAME_বাফার                     0x4000
 #define VBE_MODE_PRESERVE_DISPLAY_MEMORY                 0x8000
 
 #define VBE_VESA_MODE_END_OF_LIST                        0xFFFF
@@ -131,14 +131,14 @@ struct vbe_palette_entry {
 #define VBE_MODE_ATTRIBUTE_GRAPHICS_MODE                 0x0010
 #define VBE_MODE_ATTRIBUTE_NOT_VGA_COMPATIBLE            0x0020
 #define VBE_MODE_ATTRIBUTE_NO_VGA_COMPATIBLE_WINDOW      0x0040
-#define VBE_MODE_ATTRIBUTE_LINEAR_FRAME_BUFFER_MODE      0x0080
+#define VBE_MODE_ATTRIBUTE_LINEAR_FRAME_বাফার_MODE      0x0080
 #define VBE_MODE_ATTRIBUTE_DOUBLE_SCAN_MODE              0x0100
 #define VBE_MODE_ATTRIBUTE_INTERLACE_MODE                0x0200
-#define VBE_MODE_ATTRIBUTE_HARDWARE_TRIPLE_BUFFER        0x0400
+#define VBE_MODE_ATTRIBUTE_HARDWARE_TRIPLE_বাফার        0x0400
 #define VBE_MODE_ATTRIBUTE_HARDWARE_STEREOSCOPIC_DISPLAY 0x0800
 #define VBE_MODE_ATTRIBUTE_DUAL_DISPLAY_START_ADDRESS    0x1000
 
-#define VBE_MODE_ATTTRIBUTE_LFB_ONLY                     ( VBE_MODE_ATTRIBUTE_NO_VGA_COMPATIBLE_WINDOW | VBE_MODE_ATTRIBUTE_LINEAR_FRAME_BUFFER_MODE )
+#define VBE_MODE_ATTTRIBUTE_LFB_ONLY                     ( VBE_MODE_ATTRIBUTE_NO_VGA_COMPATIBLE_WINDOW | VBE_MODE_ATTRIBUTE_LINEAR_FRAME_বাফার_MODE )
 
 /* Window attributes */
 

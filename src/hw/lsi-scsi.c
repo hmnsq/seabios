@@ -10,20 +10,20 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_GLOBALFLAT
-#include "block.h" // struct drive_s
-#include "blockcmd.h" // scsi_drive_setup
-#include "config.h" // CONFIG_*
-#include "fw/paravirt.h" // runningOnQEMU
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "pcidevice.h" // foreachpci
-#include "pci_ids.h" // PCI_DEVICE_ID_VIRTIO_BLK
-#include "pci_regs.h" // PCI_VENDOR_ID
-#include "stacks.h" // run_thread
-#include "std/disk.h" // DISK_RET_SUCCESS
-#include "string.h" // memset
-#include "util.h" // usleep
+#অন্তর্ভাব "biosvar.h" // GET_GLOBALFLAT
+#অন্তর্ভাব "block.h" // struct drive_s
+#অন্তর্ভাব "blockcmd.h" // scsi_drive_setup
+#অন্তর্ভাব "config.h" // CONFIG_*
+#অন্তর্ভাব "fw/paravirt.h" // runningOnQEMU
+#অন্তর্ভাব "malloc.h" // free
+#অন্তর্ভাব "output.h" // dprintf
+#অন্তর্ভাব "pcidevice.h" // foreachpci
+#অন্তর্ভাব "pci_ids.h" // PCI_DEVICE_ID_VIRTIO_BLK
+#অন্তর্ভাব "pci_regs.h" // PCI_VENDOR_ID
+#অন্তর্ভাব "stacks.h" // run_thread
+#অন্তর্ভাব "std/disk.h" // DISK_RET_SUCCESS
+#অন্তর্ভাব "string.h" // memset
+#অন্তর্ভাব "util.h" // usleep
 
 #define LSI_REG_DSTAT     0x0c
 #define LSI_REG_ISTAT0    0x14
@@ -43,30 +43,30 @@
 #define LSI_ISTAT0_SRST   0x40
 #define LSI_ISTAT0_ABRT   0x80
 
-struct lsi_lun_s {
-    struct drive_s drive;
-    struct pci_device *pci;
+কাঠামো lsi_lun_s {
+    কাঠামো drive_s drive;
+    কাঠামো pci_device *pci;
     u32 iobase;
     u8 target;
     u8 lun;
 };
 
-int
-lsi_scsi_process_op(struct disk_op_s *op)
+পূর্ণসংখ্যা
+lsi_scsi_process_op(কাঠামো disk_op_s *op)
 {
-    if (!CONFIG_LSI_SCSI)
-        return DISK_RET_EBADTRACK;
-    struct lsi_lun_s *llun_gf =
-        container_of(op->drive_fl, struct lsi_lun_s, drive);
+    যদি (!CONFIG_LSI_SCSI)
+        ফেরত DISK_RET_EBADTRACK;
+    কাঠামো lsi_lun_s *llun_gf =
+        container_of(op->drive_fl, কাঠামো lsi_lun_s, drive);
     u16 target = GET_GLOBALFLAT(llun_gf->target);
     u16 lun = GET_GLOBALFLAT(llun_gf->lun);
     u8 cdbcmd[16];
-    int blocksize = scsi_fill_cmd(op, cdbcmd, sizeof(cdbcmd));
-    if (blocksize < 0)
-        return default_process_op(op);
+    পূর্ণসংখ্যা blocksize = scsi_fill_cmd(op, cdbcmd, আকার(cdbcmd));
+    যদি (blocksize < 0)
+        ফেরত default_process_op(op);
     u32 iobase = GET_GLOBALFLAT(llun_gf->iobase);
     u32 dma = ((scsi_is_read(op) ? 0x01000000 : 0x00000000) |
-               (op->count * blocksize));
+               (op->গুনতি * blocksize));
     u8 msgout[] = {
         0x80 | lun,                 // select lun
         0x08,
@@ -111,32 +111,32 @@ lsi_scsi_process_op(struct disk_op_s *op)
     outb((dsp >> 16) & 0xff, iobase + LSI_REG_DSP2);
     outb((dsp >> 24) & 0xff, iobase + LSI_REG_DSP3);
 
-    for (;;) {
+    জন্য (;;) {
         u8 dstat = inb(iobase + LSI_REG_DSTAT);
         u8 sist0 = inb(iobase + LSI_REG_SIST0);
         u8 sist1 = inb(iobase + LSI_REG_SIST1);
-        if (sist0 || sist1) {
-            goto fail;
+        যদি (sist0 || sist1) {
+            যাও fail;
         }
-        if (dstat & 0x04) {
-            break;
+        যদি (dstat & 0x04) {
+            বিরতি;
         }
         usleep(5);
     }
 
-    if (msgin == 0 && status == 0) {
-        return DISK_RET_SUCCESS;
+    যদি (msgin == 0 && status == 0) {
+        ফেরত DISK_RET_SUCCESS;
     }
 
 fail:
-    return DISK_RET_EBADTRACK;
+    ফেরত DISK_RET_EBADTRACK;
 }
 
-static void
-lsi_scsi_init_lun(struct lsi_lun_s *llun, struct pci_device *pci, u32 iobase,
+স্থির শূন্য
+lsi_scsi_init_lun(কাঠামো lsi_lun_s *llun, কাঠামো pci_device *pci, u32 iobase,
                   u8 target, u8 lun)
 {
-    memset(llun, 0, sizeof(*llun));
+    memset(llun, 0, আকার(*llun));
     llun->drive.type = DTYPE_LSI_SCSI;
     llun->drive.cntl_id = pci->bdf;
     llun->pci = pci;
@@ -145,53 +145,53 @@ lsi_scsi_init_lun(struct lsi_lun_s *llun, struct pci_device *pci, u32 iobase,
     llun->iobase = iobase;
 }
 
-static int
-lsi_scsi_add_lun(u32 lun, struct drive_s *tmpl_drv)
+স্থির পূর্ণসংখ্যা
+lsi_scsi_add_lun(u32 lun, কাঠামো drive_s *tmpl_drv)
 {
-    struct lsi_lun_s *tmpl_llun =
-        container_of(tmpl_drv, struct lsi_lun_s, drive);
-    struct lsi_lun_s *llun = malloc_fseg(sizeof(*llun));
-    if (!llun) {
+    কাঠামো lsi_lun_s *tmpl_llun =
+        container_of(tmpl_drv, কাঠামো lsi_lun_s, drive);
+    কাঠামো lsi_lun_s *llun = malloc_fseg(আকার(*llun));
+    যদি (!llun) {
         warn_noalloc();
-        return -1;
+        ফেরত -1;
     }
     lsi_scsi_init_lun(llun, tmpl_llun->pci, tmpl_llun->iobase,
                       tmpl_llun->target, lun);
 
     boot_lchs_find_scsi_device(llun->pci, llun->target, llun->lun,
                                &(llun->drive.lchs));
-    char *name = znprintf(MAXDESCSIZE, "lsi %pP %d:%d",
+    অক্ষর *name = znprintf(MAXDESCSIZE, "lsi %pP %d:%d",
                           llun->pci, llun->target, llun->lun);
-    int prio = bootprio_find_scsi_device(llun->pci, llun->target, llun->lun);
-    int ret = scsi_drive_setup(&llun->drive, name, prio);
-    free(name);
-    if (ret)
-        goto fail;
-    return 0;
+    পূর্ণসংখ্যা prio = bootprio_find_scsi_device(llun->pci, llun->target, llun->lun);
+    পূর্ণসংখ্যা ret = scsi_drive_setup(&llun->drive, name, prio);
+    মুক্ত(name);
+    যদি (ret)
+        যাও fail;
+    ফেরত 0;
 
 fail:
-    free(llun);
-    return -1;
+    মুক্ত(llun);
+    ফেরত -1;
 }
 
-static void
-lsi_scsi_scan_target(struct pci_device *pci, u32 iobase, u8 target)
+স্থির শূন্য
+lsi_scsi_scan_target(কাঠামো pci_device *pci, u32 iobase, u8 target)
 {
-    struct lsi_lun_s llun0;
+    কাঠামো lsi_lun_s llun0;
 
     lsi_scsi_init_lun(&llun0, pci, iobase, target, 0);
 
-    if (scsi_rep_luns_scan(&llun0.drive, lsi_scsi_add_lun) < 0)
+    যদি (scsi_rep_luns_scan(&llun0.drive, lsi_scsi_add_lun) < 0)
         scsi_sequential_scan(&llun0.drive, 8, lsi_scsi_add_lun);
 }
 
-static void
-init_lsi_scsi(void *data)
+স্থির শূন্য
+init_lsi_scsi(শূন্য *তথ্য)
 {
-    struct pci_device *pci = data;
+    কাঠামো pci_device *pci = তথ্য;
     u32 iobase = pci_enable_iobar(pci, PCI_BASE_ADDRESS_0);
-    if (!iobase)
-        return;
+    যদি (!iobase)
+        ফেরত;
     pci_enable_busmaster(pci);
 
     dprintf(1, "found lsi53c895a at %pP, io @ %x\n", pci, iobase);
@@ -199,25 +199,25 @@ init_lsi_scsi(void *data)
     // reset
     outb(LSI_ISTAT0_SRST, iobase + LSI_REG_ISTAT0);
 
-    int i;
-    for (i = 0; i < 7; i++)
+    পূর্ণসংখ্যা i;
+    জন্য (i = 0; i < 7; i++)
         lsi_scsi_scan_target(pci, iobase, i);
 }
 
-void
-lsi_scsi_setup(void)
+শূন্য
+lsi_scsi_setup(শূন্য)
 {
     ASSERT32FLAT();
-    if (!CONFIG_LSI_SCSI || !runningOnQEMU())
-        return;
+    যদি (!CONFIG_LSI_SCSI || !runningOnQEMU())
+        ফেরত;
 
     dprintf(3, "init lsi53c895a\n");
 
-    struct pci_device *pci;
+    কাঠামো pci_device *pci;
     foreachpci(pci) {
-        if (pci->vendor != PCI_VENDOR_ID_LSI_LOGIC
+        যদি (pci->vendor != PCI_VENDOR_ID_LSI_LOGIC
             || pci->device != PCI_DEVICE_ID_LSI_53C895A)
-            continue;
+            চালু;
         run_thread(init_lsi_scsi, pci);
     }
 }

@@ -7,14 +7,14 @@
 #ifndef __NVME_INT_H
 #define __NVME_INT_H
 
-#include "types.h" // u32
-#include "pcidevice.h" // struct pci_device
+#অন্তর্ভাব "types.h" // u32
+#অন্তর্ভাব "pcidevice.h" // struct pci_device
 
 /* Data structures */
 
 /* The register file of a NVMe host controller. This struct follows the naming
    scheme in the NVMe specification. */
-struct nvme_reg {
+কাঠামো nvme_reg {
     u64 cap;                    /* controller capabilities */
     u32 vs;                     /* version */
     u32 intms;                  /* interrupt mask set */
@@ -29,10 +29,10 @@ struct nvme_reg {
 };
 
 /* Submission queue entry */
-struct nvme_sqe {
-    union {
+কাঠামো nvme_sqe {
+    সংঘ {
         u32 dword[16];
-        struct {
+        কাঠামো {
             u32 cdw0;           /* Command DWORD 0 */
             u32 nsid;           /* Namespace ID */
             u64 _res0;
@@ -45,13 +45,13 @@ struct nvme_sqe {
 };
 
 /* Completion queue entry */
-struct nvme_cqe {
-    union {
+কাঠামো nvme_cqe {
+    সংঘ {
         u32 dword[4];
-        struct {
+        কাঠামো {
             u32 cdw0;
             u32 _res0;
-            u16 sq_head;
+            u16 sq_শীর্ষ;
             u16 sq_id;
             u16 cid;
             u16 status;
@@ -60,95 +60,95 @@ struct nvme_cqe {
 };
 
 /* The common part of every submission or completion queue. */
-struct nvme_queue {
+কাঠামো nvme_queue {
     u32 *dbl;                   /* doorbell */
     u16 mask;                   /* length - 1 */
 };
 
-struct nvme_cq {
-    struct nvme_queue common;
-    struct nvme_cqe *cqe;
+কাঠামো nvme_cq {
+    কাঠামো nvme_queue common;
+    কাঠামো nvme_cqe *cqe;
 
     /* We have read upto (but not including) this entry in the queue. */
-    u16 head;
+    u16 শীর্ষ;
 
     /* The current phase bit the controller uses to indicate that it has written
        a new entry. This is inverted after each wrap. */
     unsigned phase : 1;
 };
 
-struct nvme_sq {
-    struct nvme_queue common;
-    struct nvme_sqe *sqe;
+কাঠামো nvme_sq {
+    কাঠামো nvme_queue common;
+    কাঠামো nvme_sqe *sqe;
 
     /* Corresponding completion queue. We only support a single SQ per CQ. */
-    struct nvme_cq *cq;
+    কাঠামো nvme_cq *cq;
 
     /* The last entry the controller has fetched. */
-    u16 head;
+    u16 শীর্ষ;
 
     /* The last value we have written to the tail doorbell. */
-    u16 tail;
+    u16 লেজ;
 };
 
-struct nvme_ctrl {
-    struct pci_device *pci;
-    struct nvme_reg volatile *reg;
+কাঠামো nvme_ctrl {
+    কাঠামো pci_device *pci;
+    কাঠামো nvme_reg অস্থির *reg;
 
     u32 doorbell_stride;        /* in bytes */
 
-    struct nvme_sq admin_sq;
-    struct nvme_cq admin_cq;
+    কাঠামো nvme_sq admin_sq;
+    কাঠামো nvme_cq admin_cq;
 
-    u32 ns_count;
+    u32 ns_গুনতি;
 
-    struct nvme_sq io_sq;
-    struct nvme_cq io_cq;
+    কাঠামো nvme_sq io_sq;
+    কাঠামো nvme_cq io_cq;
 };
 
-struct nvme_namespace {
-    struct drive_s drive;
-    struct nvme_ctrl *ctrl;
+কাঠামো nvme_namespace {
+    কাঠামো drive_s drive;
+    কাঠামো nvme_ctrl *ctrl;
 
     u32 ns_id;
 
-    u64 lba_count;              /* The total amount of sectors. */
+    u64 lba_গুনতি;              /* The total amount of sectors. */
 
-    u32 block_size;
-    u32 metadata_size;
-    u32 max_req_size;
+    u32 block_আকার;
+    u32 metadata_আকার;
+    u32 max_req_আকার;
 };
 
 /* Data structures for NVMe admin identify commands */
 
-struct nvme_identify_ctrl {
+কাঠামো nvme_identify_ctrl {
     u16 vid;
     u16 ssvid;
-    char sn[20];
-    char mn[40];
-    char fr[8];
+    অক্ষর sn[20];
+    অক্ষর mn[40];
+    অক্ষর fr[8];
 
     u8 rab;
     u8 ieee[3];
     u8 cmic;
     u8 mdts;
 
-    char _boring[516 - 78];
+    অক্ষর _boring[516 - 78];
 
     u32 nn;                     /* number of namespaces */
 };
 
-struct nvme_identify_ns_list {
+কাঠামো nvme_identify_ns_list {
     u32 ns_id[1024];
 };
 
-struct nvme_lba_format {
+কাঠামো nvme_lba_format {
     u16 ms;
     u8  lbads;
     u8  rp;
 };
 
-struct nvme_identify_ns {
+কাঠামো nvme_identify_ns {
     u64 nsze;
     u64 ncap;
     u64 nuse;
@@ -156,15 +156,15 @@ struct nvme_identify_ns {
     u8  nlbaf;
     u8  flbas;
 
-    char _boring[128 - 27];
+    অক্ষর _boring[128 - 27];
 
-    struct nvme_lba_format lbaf[16];
+    কাঠামো nvme_lba_format lbaf[16];
 };
 
-union nvme_identify {
-    struct nvme_identify_ns      ns;
-    struct nvme_identify_ctrl    ctrl;
-    struct nvme_identify_ns_list ns_list;
+সংঘ nvme_identify {
+    কাঠামো nvme_identify_ns      ns;
+    কাঠামো nvme_identify_ctrl    ctrl;
+    কাঠামো nvme_identify_ns_list ns_list;
 };
 
 /* NVMe constants */
@@ -189,12 +189,12 @@ union nvme_identify {
 
 #define NVME_CQE_DW3_P (1U << 16)
 
-#define NVME_PAGE_SIZE 4096
-#define NVME_PAGE_MASK ~(NVME_PAGE_SIZE - 1)
+#define NVME_PAGE_আকার 4096
+#define NVME_PAGE_MASK ~(NVME_PAGE_আকার - 1)
 
 /* Length for the queue entries. */
-#define NVME_SQE_SIZE_LOG 6
-#define NVME_CQE_SIZE_LOG 4
+#define NVME_SQE_আকার_LOG 6
+#define NVME_CQE_আকার_LOG 4
 
 #endif
 

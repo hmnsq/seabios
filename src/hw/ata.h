@@ -1,33 +1,33 @@
 #ifndef __ATA_H
 #define __ATA_H
 
-#include "block.h" // struct drive_s
-#include "config.h" // CONFIG_MAX_ATA_INTERFACES
-#include "types.h" // u8
+#অন্তর্ভাব "block.h" // struct drive_s
+#অন্তর্ভাব "config.h" // CONFIG_MAX_ATA_INTERFACES
+#অন্তর্ভাব "types.h" // u8
 
-struct ata_channel_s {
+কাঠামো ata_channel_s {
     u16 iobase1;
     u16 iobase2;
     u16 iomaster;
     u8  irq;
     u8  chanid;
     u8  ataid;
-    int pci_bdf;
-    struct pci_device *pci_tmp;
+    পূর্ণসংখ্যা pci_bdf;
+    কাঠামো pci_device *pci_tmp;
 };
 
-struct atadrive_s {
-    struct drive_s drive;
-    struct ata_channel_s *chan_gf;
+কাঠামো atadrive_s {
+    কাঠামো drive_s drive;
+    কাঠামো ata_channel_s *chan_gf;
     u8 slave;
 };
 
 // ata.c
-char *ata_extract_model(char *model, u32 size, u16 *buffer);
-int ata_extract_version(u16 *buffer);
-int ata_process_op(struct disk_op_s *op);
-int ata_atapi_process_op(struct disk_op_s *op);
-void ata_setup(void);
+অক্ষর *ata_extract_model(অক্ষর *model, u32 আকার_2, u16 *বাফার);
+পূর্ণসংখ্যা ata_extract_version(u16 *বাফার);
+পূর্ণসংখ্যা ata_process_op(কাঠামো disk_op_s *op);
+পূর্ণসংখ্যা ata_atapi_process_op(কাঠামো disk_op_s *op);
+শূন্য ata_setup(শূন্য);
 
 #define PORT_ATA2_CMD_BASE     0x0170
 #define PORT_ATA1_CMD_BASE     0x01f0
@@ -36,7 +36,7 @@ void ata_setup(void);
 
 // Global defines -- ATA register and register bits.
 // command block & control block regs
-#define ATA_CB_DATA  0   // data reg         in/out pio_base_addr1+0
+#define ATA_CB_তথ্য  0   // data reg         in/out pio_base_addr1+0
 #define ATA_CB_ERR   1   // error            in     pio_base_addr1+1
 #define ATA_CB_FR    1   // feature reg         out pio_base_addr1+1
 #define ATA_CB_SC    2   // sector count     in/out pio_base_addr1+2
@@ -87,7 +87,7 @@ void ata_setup(void);
 #define ATA_CB_STAT_SERV 0x10  // service
 #define ATA_CB_STAT_DRQ  0x08  // data request
 #define ATA_CB_STAT_CORR 0x04  // corrected
-#define ATA_CB_STAT_IDX  0x02  // index
+#define ATA_CB_STAT_IDX  0x02  //সূচক
 #define ATA_CB_STAT_ERR  0x01  // error (ATA)
 #define ATA_CB_STAT_CHK  0x01  // check (ATAPI)
 
@@ -145,11 +145,11 @@ void ata_setup(void);
 #define ATA_CMD_IDLE_IMMEDIATE               0xE1
 #define ATA_CMD_STANDBY                      0xE2
 #define ATA_CMD_IDLE                         0xE3
-#define ATA_CMD_READ_BUFFER                  0xE4
+#define ATA_CMD_READ_বাফার                  0xE4
 #define ATA_CMD_CHECK_POWER_MODE             0xE5
 #define ATA_CMD_SLEEP                        0xE6
 #define ATA_CMD_FLUSH_CACHE                  0xE7
-#define ATA_CMD_WRITE_BUFFER                 0xE8
+#define ATA_CMD_WRITE_বাফার                 0xE8
 #define ATA_CMD_IDENTIFY_DEVICE              0xEC
 #define ATA_CMD_SET_FEATURES                 0xEF
 #define ATA_CMD_READ_NATIVE_MAX_ADDRESS      0xF8

@@ -62,7 +62,7 @@
 #define PCI_CLASS_PROG		0x09	/* Reg. Level Programming Interface */
 #define PCI_CLASS_DEVICE	0x0a	/* Device class */
 
-#define PCI_CACHE_LINE_SIZE	0x0c	/* 8 bits */
+#define PCI_CACHE_সারি_আকার	0x0c	/* 8 bits */
 #define PCI_LATENCY_TIMER	0x0d	/* 8 bits */
 #define PCI_HEADER_TYPE		0x0e	/* 8 bits */
 #define  PCI_HEADER_TYPE_NORMAL		0
@@ -109,7 +109,7 @@
 #define PCI_CAPABILITY_LIST	0x34	/* Offset of first capability list entry */
 
 /* 0x35-0x3b are reserved */
-#define PCI_INTERRUPT_LINE	0x3c	/* 8 bits */
+#define PCI_INTERRUPT_সারি	0x3c	/* 8 bits */
 #define PCI_INTERRUPT_PIN	0x3d	/* 8 bits */
 #define PCI_MIN_GNT		0x3e	/* 8 bits */
 #define PCI_MAX_LAT		0x3f	/* 8 bits */
@@ -210,7 +210,7 @@
 #define  PCI_CAP_ID_AGP3	0x0E	/* AGP Target PCI-PCI bridge */
 #define  PCI_CAP_ID_EXP 	0x10	/* PCI Express */
 #define  PCI_CAP_ID_MSIX	0x11	/* MSI-X */
-#define PCI_CAP_LIST_NEXT	1	/* Next capability in the list */
+#define PCI_CAP_LIST_পরবর্তী	1	/* Next capability in the list */
 #define PCI_CAP_FLAGS		2	/* Capability defined flags (16 bits) */
 #define PCI_CAP_SIZEOF		4
 
@@ -236,13 +236,13 @@
 #define  PCI_PM_CTRL_STATE_MASK	0x0003	/* Current power state (D0 to D3) */
 #define  PCI_PM_CTRL_NO_SOFT_RESET	0x0004	/* No reset for D3hot->D0 */
 #define  PCI_PM_CTRL_PME_ENABLE	0x0100	/* PME pin enable */
-#define  PCI_PM_CTRL_DATA_SEL_MASK	0x1e00	/* Data select (??) */
-#define  PCI_PM_CTRL_DATA_SCALE_MASK	0x6000	/* Data scale (??) */
+#define  PCI_PM_CTRL_তথ্য_SEL_MASK	0x1e00	/* Data select (??) */
+#define  PCI_PM_CTRL_তথ্য_SCALE_MASK	0x6000	/* Data scale (??) */
 #define  PCI_PM_CTRL_PME_STATUS	0x8000	/* PME pin status */
 #define PCI_PM_PPB_EXTENSIONS	6	/* PPB support extensions (??) */
 #define  PCI_PM_PPB_B2_B3	0x40	/* Stop clock when in D3hot (??) */
 #define  PCI_PM_BPCC_ENABLE	0x80	/* Bus power/clock control enable (??) */
-#define PCI_PM_DATA_REGISTER	7	/* (??) */
+#define PCI_PM_তথ্য_REGISTER	7	/* (??) */
 #define PCI_PM_SIZEOF		8
 
 /* AGP registers */
@@ -273,7 +273,7 @@
 #define PCI_VPD_ADDR		2	/* Address to access (15 bits!) */
 #define  PCI_VPD_ADDR_MASK	0x7fff	/* Address mask */
 #define  PCI_VPD_ADDR_F		0x8000	/* Write 0, 1 indicates completion */
-#define PCI_VPD_DATA		4	/* 32-bits of data returned here */
+#define PCI_VPD_তথ্য		4	/* 32-bits of data returned here */
 
 /* Slot Identification */
 
@@ -293,8 +293,8 @@
 #define PCI_MSI_RFU		3	/* Rest of capability flags */
 #define PCI_MSI_ADDRESS_LO	4	/* Lower 32 bits */
 #define PCI_MSI_ADDRESS_HI	8	/* Upper 32 bits (if PCI_MSI_FLAGS_64BIT set) */
-#define PCI_MSI_DATA_32		8	/* 16 bits of data for 32-bit devices */
-#define PCI_MSI_DATA_64		12	/* 16 bits of data for 64-bit devices */
+#define PCI_MSI_তথ্য_32		8	/* 16 bits of data for 32-bit devices */
+#define PCI_MSI_তথ্য_64		12	/* 16 bits of data for 64-bit devices */
 #define PCI_MSI_MASK_BIT	16	/* Mask bits register */
 
 /* MSI-X registers (these are at offset PCI_MSIX_FLAGS) */
@@ -359,7 +359,7 @@
 #define PCI_EXP_FLAGS_TYPE	0x00f0	/* Device/Port type */
 #define  PCI_EXP_TYPE_ENDPOINT	0x0	/* Express Endpoint */
 #define  PCI_EXP_TYPE_LEG_END	0x1	/* Legacy Endpoint */
-#define  PCI_EXP_TYPE_ROOT_PORT 0x4	/* Root Port */
+#define  PCI_EXP_TYPE_মূল_PORT 0x4	/* Root Port */
 #define  PCI_EXP_TYPE_UPSTREAM	0x5	/* Upstream Port */
 #define  PCI_EXP_TYPE_DOWNSTREAM 0x6	/* Downstream Port */
 #define  PCI_EXP_TYPE_PCI_BRIDGE 0x7	/* PCI/PCI-X Bridge */
@@ -429,7 +429,7 @@
 /* Extended Capabilities (PCI-X 2.0 and Express) */
 #define PCI_EXT_CAP_ID(header)		(header & 0x0000ffff)
 #define PCI_EXT_CAP_VER(header)		((header >> 16) & 0xf)
-#define PCI_EXT_CAP_NEXT(header)	((header >> 20) & 0xffc)
+#define PCI_EXT_CAP_পরবর্তী(header)	((header >> 20) & 0xffc)
 
 #define PCI_EXT_CAP_ID_ERR	1
 #define PCI_EXT_CAP_ID_VC	2
@@ -469,26 +469,26 @@
 #define  PCI_ERR_CAP_ECRC_CHKC	0x00000080	/* ECRC Check Capable */
 #define  PCI_ERR_CAP_ECRC_CHKE	0x00000100	/* ECRC Check Enable */
 #define PCI_ERR_HEADER_LOG	28	/* Header Log Register (16 bytes) */
-#define PCI_ERR_ROOT_COMMAND	44	/* Root Error Command */
+#define PCI_ERR_মূল_COMMAND	44	/* Root Error Command */
 /* Correctable Err Reporting Enable */
-#define PCI_ERR_ROOT_CMD_COR_EN		0x00000001
+#define PCI_ERR_মূল_CMD_COR_EN		0x00000001
 /* Non-fatal Err Reporting Enable */
-#define PCI_ERR_ROOT_CMD_NONFATAL_EN	0x00000002
+#define PCI_ERR_মূল_CMD_NONFATAL_EN	0x00000002
 /* Fatal Err Reporting Enable */
-#define PCI_ERR_ROOT_CMD_FATAL_EN	0x00000004
-#define PCI_ERR_ROOT_STATUS	48
-#define PCI_ERR_ROOT_COR_RCV		0x00000001	/* ERR_COR Received */
+#define PCI_ERR_মূল_CMD_FATAL_EN	0x00000004
+#define PCI_ERR_মূল_STATUS	48
+#define PCI_ERR_মূল_COR_RCV		0x00000001	/* ERR_COR Received */
 /* Multi ERR_COR Received */
-#define PCI_ERR_ROOT_MULTI_COR_RCV	0x00000002
+#define PCI_ERR_মূল_MULTI_COR_RCV	0x00000002
 /* ERR_FATAL/NONFATAL Recevied */
-#define PCI_ERR_ROOT_UNCOR_RCV		0x00000004
+#define PCI_ERR_মূল_UNCOR_RCV		0x00000004
 /* Multi ERR_FATAL/NONFATAL Recevied */
-#define PCI_ERR_ROOT_MULTI_UNCOR_RCV	0x00000008
-#define PCI_ERR_ROOT_FIRST_FATAL	0x00000010	/* First Fatal */
-#define PCI_ERR_ROOT_NONFATAL_RCV	0x00000020	/* Non-Fatal Received */
-#define PCI_ERR_ROOT_FATAL_RCV		0x00000040	/* Fatal Received */
-#define PCI_ERR_ROOT_COR_SRC	52
-#define PCI_ERR_ROOT_SRC	54
+#define PCI_ERR_মূল_MULTI_UNCOR_RCV	0x00000008
+#define PCI_ERR_মূল_FIRST_FATAL	0x00000010	/* First Fatal */
+#define PCI_ERR_মূল_NONFATAL_RCV	0x00000020	/* Non-Fatal Received */
+#define PCI_ERR_মূল_FATAL_RCV		0x00000040	/* Fatal Received */
+#define PCI_ERR_মূল_COR_SRC	52
+#define PCI_ERR_মূল_SRC	54
 
 /* Virtual Channel */
 #define PCI_VC_PORT_REG1	4
@@ -501,13 +501,13 @@
 
 /* Power Budgeting */
 #define PCI_PWR_DSR		4	/* Data Select Register */
-#define PCI_PWR_DATA		8	/* Data Register */
-#define  PCI_PWR_DATA_BASE(x)	((x) & 0xff)	    /* Base Power */
-#define  PCI_PWR_DATA_SCALE(x)	(((x) >> 8) & 3)    /* Data Scale */
-#define  PCI_PWR_DATA_PM_SUB(x)	(((x) >> 10) & 7)   /* PM Sub State */
-#define  PCI_PWR_DATA_PM_STATE(x) (((x) >> 13) & 3) /* PM State */
-#define  PCI_PWR_DATA_TYPE(x)	(((x) >> 15) & 7)   /* Type */
-#define  PCI_PWR_DATA_RAIL(x)	(((x) >> 18) & 7)   /* Power Rail */
+#define PCI_PWR_তথ্য		8	/* Data Register */
+#define  PCI_PWR_তথ্য_BASE(x)	((x) & 0xff)	    /* Base Power */
+#define  PCI_PWR_তথ্য_SCALE(x)	(((x) >> 8) & 3)    /* Data Scale */
+#define  PCI_PWR_তথ্য_PM_SUB(x)	(((x) >> 10) & 7)   /* PM Sub State */
+#define  PCI_PWR_তথ্য_PM_STATE(x) (((x) >> 13) & 3) /* PM State */
+#define  PCI_PWR_তথ্য_TYPE(x)	(((x) >> 15) & 7)   /* Type */
+#define  PCI_PWR_তথ্য_RAIL(x)	(((x) >> 18) & 7)   /* Power Rail */
 #define PCI_PWR_CAP		12	/* Capability */
 #define  PCI_PWR_CAP_BUDGET(x)	((x) & 1)	/* Included in system budget */
 

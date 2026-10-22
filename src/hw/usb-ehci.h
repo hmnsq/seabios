@@ -2,24 +2,24 @@
 #define __USB_EHCI_H
 
 // usb-ehci.c
-void ehci_setup(void);
-void ehci_wait_controllers(void);
-struct usbdevice_s;
-struct usb_endpoint_descriptor;
-struct usb_pipe;
-struct usb_pipe *ehci_realloc_pipe(struct usbdevice_s *usbdev
-                                   , struct usb_pipe *upipe
-                                   , struct usb_endpoint_descriptor *epdesc);
-int ehci_send_pipe(struct usb_pipe *p, int dir, const void *cmd
-                   , void *data, int datasize);
-int ehci_poll_intr(struct usb_pipe *p, void *data);
+শূন্য ehci_setup(শূন্য);
+শূন্য ehci_wait_controllers(শূন্য);
+কাঠামো usbdevice_s;
+কাঠামো usb_endpoint_descriptor;
+কাঠামো usb_pipe;
+কাঠামো usb_pipe *ehci_realloc_pipe(কাঠামো usbdevice_s *usbdev
+                                   , কাঠামো usb_pipe *upipe
+                                   , কাঠামো usb_endpoint_descriptor *epdesc);
+পূর্ণসংখ্যা ehci_send_pipe(কাঠামো usb_pipe *p, পূর্ণসংখ্যা dir, ধ্রুবক শূন্য *cmd
+                   , শূন্য *তথ্য, পূর্ণসংখ্যা datasize);
+পূর্ণসংখ্যা ehci_poll_intr(কাঠামো usb_pipe *p, শূন্য *তথ্য);
 
 
 /****************************************************************
  * ehci structs and flags
  ****************************************************************/
 
-struct ehci_caps {
+কাঠামো ehci_caps {
     u8 caplength;
     u8 reserved_01;
     u16 hciversion;
@@ -32,7 +32,7 @@ struct ehci_caps {
 
 #define HCS_N_PORTS_MASK 0xf
 
-struct ehci_regs {
+কাঠামো ehci_regs {
     u32 usbcmd;
     u32 usbsts;
     u32 usbintr;
@@ -93,14 +93,14 @@ struct ehci_regs {
 
 #define EHCI_QH_ALIGN 128 // Can't span a 4K boundary, so increase from 32
 
-struct ehci_qh {
-    u32 next;
+কাঠামো ehci_qh {
+    u32 পরবর্তী;
     u32 info1;
     u32 info2;
     u32 current;
 
-    u32 qtd_next;
-    u32 alt_next;
+    u32 qtd_পরবর্তী;
+    u32 alt_পরবর্তী;
     u32 token;
     u32 buf[5];
     u32 buf_hi[5];
@@ -109,7 +109,7 @@ struct ehci_qh {
 #define QH_CONTROL       (1 << 27)
 #define QH_MAXPACKET_SHIFT 16
 #define QH_MAXPACKET_MASK  (0x7ff << QH_MAXPACKET_SHIFT)
-#define QH_HEAD          (1 << 15)
+#define QH_শীর্ষ          (1 << 15)
 #define QH_TOGGLECONTROL (1 << 14)
 #define QH_SPEED_SHIFT   12
 #define QH_SPEED_MASK    (0x3 << QH_SPEED_SHIFT)
@@ -136,9 +136,9 @@ struct ehci_qh {
 
 #define EHCI_QTD_ALIGN 64 // Can't span a 4K boundary, so increase from 32
 
-struct ehci_qtd {
-    u32 qtd_next;
-    u32 alt_next;
+কাঠামো ehci_qtd {
+    u32 qtd_পরবর্তী;
+    u32 alt_পরবর্তী;
     u32 token;
     u32 buf[5];
     u32 buf_hi[5];
@@ -148,8 +148,8 @@ struct ehci_qtd {
 } PACKED __aligned(EHCI_QTD_ALIGN);
 
 #define QTD_TOGGLE      (1 << 31)
-#define QTD_LENGTH_SHIFT 16
-#define QTD_LENGTH_MASK (0x7fff << QTD_LENGTH_SHIFT)
+#define QTD_দৈর্ঘ্য_SHIFT 16
+#define QTD_দৈর্ঘ্য_MASK (0x7fff << QTD_দৈর্ঘ্য_SHIFT)
 #define QTD_CERR_SHIFT  10
 #define QTD_CERR_MASK   (0x3 << QTD_CERR_SHIFT)
 #define QTD_IOC         (1 << 15)
@@ -165,12 +165,12 @@ struct ehci_qtd {
 #define QTD_STS_STS     (1 << 1)
 #define QTD_STS_PING    (1 << 0)
 
-#define ehci_explen(len) (((len) << QTD_LENGTH_SHIFT) & QTD_LENGTH_MASK)
+#define ehci_explen(len) (((len) << QTD_দৈর্ঘ্য_SHIFT) & QTD_দৈর্ঘ্য_MASK)
 
 #define ehci_maxerr(err) (((err) << QTD_CERR_SHIFT) & QTD_CERR_MASK)
 
 
-struct ehci_framelist {
+কাঠামো ehci_framelist {
     u32 links[1024];
 } PACKED;
 

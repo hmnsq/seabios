@@ -4,166 +4,166 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_*
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "romfile.h" // struct romfile_s
-#include "string.h" // memcmp
+#অন্তর্ভাব "config.h" // CONFIG_*
+#অন্তর্ভাব "malloc.h" // free
+#অন্তর্ভাব "output.h" // dprintf
+#অন্তর্ভাব "romfile.h" // struct romfile_s
+#অন্তর্ভাব "string.h" // memcmp
 
-static struct romfile_s *RomfileRoot VARVERIFY32INIT;
+স্থির কাঠামো romfile_s *Romfile_মূল VARVERIFY32INIT;
 
-void
-romfile_add(struct romfile_s *file)
+শূন্য
+romfile_add(কাঠামো romfile_s *file)
 {
-    dprintf(3, "Add romfile: %s (size=%d)\n", file->name, file->size);
-    file->next = RomfileRoot;
-    RomfileRoot = file;
+    dprintf(3, "Add romfile: %s (size=%d)\n", file->name, file->আকার_2);
+    file->পরবর্তী = Romfile_মূল;
+    Romfile_মূল = file;
 }
 
 // Search for the specified file.
-static struct romfile_s *
-__romfile_findprefix(const char *prefix, int prefixlen, struct romfile_s *prev)
+স্থির কাঠামো romfile_s *
+__romfile_findprefix(ধ্রুবক অক্ষর *prefix, পূর্ণসংখ্যা prefixlen, কাঠামো romfile_s *পূর্ব)
 {
-    struct romfile_s *cur = RomfileRoot;
-    if (prev)
-        cur = prev->next;
-    while (cur) {
-        if (memcmp(prefix, cur->name, prefixlen) == 0)
-            return cur;
-        cur = cur->next;
+    কাঠামো romfile_s *cur = Romfile_মূল;
+    যদি (পূর্ব)
+        cur = পূর্ব->পরবর্তী;
+    যখন (cur) {
+        যদি (memcmp(prefix, cur->name, prefixlen) == 0)
+            ফেরত cur;
+        cur = cur->পরবর্তী;
     }
-    return NULL;
+    ফেরত ফাঁকা;
 }
 
-struct romfile_s *
-romfile_findprefix(const char *prefix, struct romfile_s *prev)
+কাঠামো romfile_s *
+romfile_findprefix(ধ্রুবক অক্ষর *prefix, কাঠামো romfile_s *পূর্ব)
 {
-    return __romfile_findprefix(prefix, strlen(prefix), prev);
+    ফেরত __romfile_findprefix(prefix, strlen(prefix), পূর্ব);
 }
 
-struct romfile_s *
-romfile_find(const char *name)
+কাঠামো romfile_s *
+romfile_find(ধ্রুবক অক্ষর *name)
 {
-    return __romfile_findprefix(name, strlen(name) + 1, NULL);
+    ফেরত __romfile_findprefix(name, strlen(name) + 1, ফাঁকা);
 }
 
 // Helper function to find, malloc_tmphigh, and copy a romfile.  This
 // function adds a trailing zero to the malloc'd copy.
-void *
-romfile_loadfile(const char *name, int *psize)
+শূন্য *
+romfile_loadfile(ধ্রুবক অক্ষর *name, পূর্ণসংখ্যা *psize)
 {
-    struct romfile_s *file = romfile_find(name);
-    if (!file)
-        return NULL;
+    কাঠামো romfile_s *file = romfile_find(name);
+    যদি (!file)
+        ফেরত ফাঁকা;
 
-    int filesize = file->size;
-    if (!filesize)
-        return NULL;
+    পূর্ণসংখ্যা filesize = file->আকার_2;
+    যদি (!filesize)
+        ফেরত ফাঁকা;
 
-    char *data = malloc_tmphigh(filesize+1);
-    if (!data) {
+    অক্ষর *তথ্য = malloc_tmphigh(filesize+1);
+    যদি (!তথ্য) {
         warn_noalloc();
-        return NULL;
+        ফেরত ফাঁকা;
     }
 
     dprintf(5, "Copying romfile '%s' (len %d)\n", name, filesize);
-    int ret = file->copy(file, data, filesize);
-    if (ret < 0) {
-        free(data);
-        return NULL;
+    পূর্ণসংখ্যা ret = file->copy(file, তথ্য, filesize);
+    যদি (ret < 0) {
+        মুক্ত(তথ্য);
+        ফেরত ফাঁকা;
     }
-    if (psize)
+    যদি (psize)
         *psize = filesize;
-    data[filesize] = '\0';
-    return data;
+    তথ্য[filesize] = '\0';
+    ফেরত তথ্য;
 }
 
 // Attempt to load an integer from the given file - return 'defval'
 // if unsuccessful.
 u64
-romfile_loadint(const char *name, u64 defval)
+romfile_loadint(ধ্রুবক অক্ষর *name, u64 defval)
 {
-    struct romfile_s *file = romfile_find(name);
-    if (!file)
-        return defval;
+    কাঠামো romfile_s *file = romfile_find(name);
+    যদি (!file)
+        ফেরত defval;
 
-    int filesize = file->size;
-    if (!filesize || filesize > sizeof(u64) || (filesize & (filesize-1)))
+    পূর্ণসংখ্যা filesize = file->আকার_2;
+    যদি (!filesize || filesize > আকার(u64) || (filesize & (filesize-1)))
         // Doesn't look like a valid integer.
-        return defval;
+        ফেরত defval;
 
     u64 val = 0;
-    int ret = file->copy(file, &val, sizeof(val));
-    if (ret < 0)
-        return defval;
-    return val;
+    পূর্ণসংখ্যা ret = file->copy(file, &val, আকার(val));
+    যদি (ret < 0)
+        ফেরত defval;
+    ফেরত val;
 }
 
 u32
-romfile_loadbool(const char *name, u32 defval)
+romfile_loadbool(ধ্রুবক অক্ষর *name, u32 defval)
 {
-    static const char *true_strings[] = { "1", "on", "yes" };
-    static const char *false_strings[] = { "0", "off", "no" };
-    char *str = romfile_loadfile(name, NULL);
-    int i;
+    স্থির ধ্রুবক অক্ষর *true_strings[] = { "1", "on", "yes" };
+    স্থির ধ্রুবক অক্ষর *false_strings[] = { "0", "off", "no" };
+    অক্ষর *str = romfile_loadfile(name, ফাঁকা);
+    পূর্ণসংখ্যা i;
 
-    if (!str)
-        return defval;
+    যদি (!str)
+        ফেরত defval;
 
-    for (i = 0; i < ARRAY_SIZE(true_strings); i++)
-        if (0 == strcmp(str, true_strings[i]))
-            return 1;
+    জন্য (i = 0; i < ARRAY_আকার(true_strings); i++)
+        যদি (0 == strcmp(str, true_strings[i]))
+            ফেরত 1;
 
-    for (i = 0; i < ARRAY_SIZE(false_strings); i++)
-        if (0 == strcmp(str, false_strings[i]))
-            return 0;
+    জন্য (i = 0; i < ARRAY_আকার(false_strings); i++)
+        যদি (0 == strcmp(str, false_strings[i]))
+            ফেরত 0;
 
     dprintf(1, "%s: unknown bool string: %s\n", __func__, str);
-    return defval;
+    ফেরত defval;
 }
 
-struct const_romfile_s {
-    struct romfile_s file;
-    void *data;
+কাঠামো const_romfile_s {
+    কাঠামো romfile_s file;
+    শূন্য *তথ্য;
 };
 
-static int
-const_read_file(struct romfile_s *file, void *dst, u32 maxlen)
+স্থির পূর্ণসংখ্যা
+const_read_file(কাঠামো romfile_s *file, শূন্য *dst, u32 maxlen)
 {
-    if (file->size > maxlen)
-        return -1;
-    struct const_romfile_s *cfile;
-    cfile = container_of(file, struct const_romfile_s, file);
-    if (maxlen > file->size)
-        maxlen = file->size;
-    memcpy(dst, cfile->data, maxlen);
-    return file->size;
+    যদি (file->আকার_2 > maxlen)
+        ফেরত -1;
+    কাঠামো const_romfile_s *cfile;
+    cfile = container_of(file, কাঠামো const_romfile_s, file);
+    যদি (maxlen > file->আকার_2)
+        maxlen = file->আকার_2;
+    memcpy(dst, cfile->তথ্য, maxlen);
+    ফেরত file->আকার_2;
 }
 
-static void
-const_romfile_add(char *name, void *data, int size)
+স্থির শূন্য
+const_romfile_add(অক্ষর *name, শূন্য *তথ্য, পূর্ণসংখ্যা আকার_2)
 {
-    struct const_romfile_s *cfile = malloc_tmp(sizeof(*cfile));
-    if (!cfile) {
+    কাঠামো const_romfile_s *cfile = malloc_tmp(আকার(*cfile));
+    যদি (!cfile) {
         warn_noalloc();
-        return;
+        ফেরত;
     }
-    memset(cfile, 0, sizeof(*cfile));
-    strtcpy(cfile->file.name, name, sizeof(cfile->file.name));
-    cfile->file.size = size;
+    memset(cfile, 0, আকার(*cfile));
+    strtcpy(cfile->file.name, name, আকার(cfile->file.name));
+    cfile->file.আকার_2 = আকার_2;
     cfile->file.copy = const_read_file;
-    cfile->data = data;
+    cfile->তথ্য = তথ্য;
     romfile_add(&cfile->file);
 }
 
-void
-const_romfile_add_int(char *name, u32 value)
+শূন্য
+const_romfile_add_int(অক্ষর *name, u32 মান)
 {
-    u32 *data = malloc_tmp(sizeof(*data));
-    if (!data) {
+    u32 *তথ্য = malloc_tmp(আকার(*তথ্য));
+    যদি (!তথ্য) {
         warn_noalloc();
-        return;
+        ফেরত;
     }
-    *data = value;
-    const_romfile_add(name, data, sizeof(*data));
+    *তথ্য = মান;
+    const_romfile_add(name, তথ্য, আকার(*তথ্য));
 }

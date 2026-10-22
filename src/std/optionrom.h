@@ -1,13 +1,13 @@
 #ifndef __OPTIONROMS_H
 #define __OPTIONROMS_H
 
-#include "types.h" // u32
+#অন্তর্ভাব "types.h" // u32
 
 #define OPTION_ROM_SIGNATURE 0xaa55
 
-struct rom_header {
+কাঠামো rom_header {
     u16 signature;
-    u8 size;
+    u8 আকার_2;
     u8 initVector[4];
     u8 reserved[17];
     u16 pcioffset;
@@ -16,7 +16,7 @@ struct rom_header {
 
 #define PCI_ROM_SIGNATURE 0x52494350 // "PCIR"
 
-struct pci_data {
+কাঠামো pci_তথ্য {
     u32 signature;
     u16 vendor;
     u16 device;
@@ -32,7 +32,7 @@ struct pci_data {
     u16 reserved;
 } PACKED;
 
-struct pnp_data {
+কাঠামো pnp_তথ্য {
     u32 signature;
     u8 revision;
     u8 len;
@@ -53,7 +53,7 @@ struct pnp_data {
 } PACKED;
 
 #define OPTION_ROM_ALIGN 2048
-#define OPTION_ROM_INITVECTOR offsetof(struct rom_header, initVector[0])
+#define OPTION_ROM_INITVECTOR offsetof(কাঠামো rom_header, initVector[0])
 #define PCIROM_CODETYPE_X86 0
 
 #endif

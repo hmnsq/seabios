@@ -40,12 +40,12 @@
  */
 
 #define __LITTLE_ENDIAN
-#include "malloc.h"
-#include "string.h"
-#include "util.h"
+#অন্তর্ভাব "malloc.h"
+#অন্তর্ভাব "string.h"
+#অন্তর্ভাব "util.h"
 #define ISHIFT 11
 
-#define IFIX(a) ((int)((a) * (1 << ISHIFT) + .5))
+#define IFIX(a) ((পূর্ণসংখ্যা)((a) * (1 << ISHIFT) + .5))
 #define IMULT(a, b) (((a) * (b)) >> ISHIFT)
 #define ITOINT(a) ((a) >> ISHIFT)
 
@@ -57,69 +57,69 @@
 #define M_BADHUFF        -1
 #define M_EOF                0x80
 
-struct in {
-    unsigned char *p;
-    unsigned int bits;
-    int left;
-    int marker;
+কাঠামো in {
+    unsigned অক্ষর *p;
+    unsigned পূর্ণসংখ্যা bits;
+    পূর্ণসংখ্যা বাম;
+    পূর্ণসংখ্যা marker;
 
-    int (*func) __P((void *));
-    void *data;
+    পূর্ণসংখ্যা (*func) __P((শূন্য *));
+    শূন্য *তথ্য;
 };
 
 /*********************************/
-struct dec_hufftbl;
-struct enc_hufftbl;
+কাঠামো dec_hufftbl;
+কাঠামো enc_hufftbl;
 
-union hufftblp {
-    struct dec_hufftbl *dhuff;
-    struct enc_hufftbl *ehuff;
+সংঘ hufftblp {
+    কাঠামো dec_hufftbl *dhuff;
+    কাঠামো enc_hufftbl *ehuff;
 };
 
-struct scan {
-    int dc;               /* old dc value */
+কাঠামো scan {
+    পূর্ণসংখ্যা dc;               /* old dc value */
 
-    union hufftblp hudc;
-    union hufftblp huac;
-    int next;             /* when to switch to next scan */
+    সংঘ hufftblp hudc;
+    সংঘ hufftblp huac;
+    পূর্ণসংখ্যা পরবর্তী;             /* when to switch to next scan */
 
-    int cid;              /* component id */
-    int hv;               /* horiz/vert, copied from comp */
-    int tq;               /* quant tbl, copied from comp */
+    পূর্ণসংখ্যা cid;              /* component id */
+    পূর্ণসংখ্যা hv;               /* horiz/vert, copied from comp */
+    পূর্ণসংখ্যা tq;               /* quant tbl, copied from comp */
 };
 
 /*********************************/
 
 #define DECBITS 10        /* seems to be the optimum */
 
-struct dec_hufftbl {
-    int maxcode[17];
-    int valptr[16];
-    unsigned char vals[256];
-    unsigned int llvals[1 << DECBITS];
+কাঠামো dec_hufftbl {
+    পূর্ণসংখ্যা maxcode[17];
+    পূর্ণসংখ্যা valptr[16];
+    unsigned অক্ষর vals[256];
+    unsigned পূর্ণসংখ্যা llvals[1 << DECBITS];
 };
 
-static void decode_mcus __P((struct in *, int *, int, struct scan *, int *));
-static int dec_readmarker __P((struct in *));
-static void dec_makehuff __P((struct dec_hufftbl *, int *, unsigned char *));
+স্থির শূন্য decode_mcus __P((কাঠামো in *, পূর্ণসংখ্যা *, পূর্ণসংখ্যা, কাঠামো scan *, পূর্ণসংখ্যা *));
+স্থির পূর্ণসংখ্যা dec_readmarker __P((কাঠামো in *));
+স্থির শূন্য dec_makehuff __P((কাঠামো dec_hufftbl *, পূর্ণসংখ্যা *, unsigned অক্ষর *));
 
-static void setinput __P((struct in *, unsigned char *));
+স্থির শূন্য setinput __P((কাঠামো in *, unsigned অক্ষর *));
 /*********************************/
 
 #undef PREC
-#define PREC int
+#define PREC পূর্ণসংখ্যা
 
-static void idctqtab __P((unsigned char *, PREC *));
-static void idct __P((int *, int *, PREC *, PREC, int));
-static void scaleidctqtab __P((PREC *, PREC));
+স্থির শূন্য idctqtab __P((unsigned অক্ষর *, PREC *));
+স্থির শূন্য idct __P((পূর্ণসংখ্যা *, পূর্ণসংখ্যা *, PREC *, PREC, পূর্ণসংখ্যা));
+স্থির শূন্য scaleidctqtab __P((PREC *, PREC));
 
 /*********************************/
 
-static void initcol __P((PREC[][64]));
+স্থির শূন্য initcol __P((PREC[][64]));
 
-static void col221111 __P((int *, unsigned char *, int));
-static void col221111_16 __P((int *, unsigned char *, int));
-static void col221111_32 __P((int *, unsigned char *, int));
+স্থির শূন্য col221111 __P((পূর্ণসংখ্যা *, unsigned অক্ষর *, পূর্ণসংখ্যা));
+স্থির শূন্য col221111_16 __P((পূর্ণসংখ্যা *, unsigned অক্ষর *, পূর্ণসংখ্যা));
+স্থির শূন্য col221111_32 __P((পূর্ণসংখ্যা *, unsigned অক্ষর *, পূর্ণসংখ্যা));
 
 /*********************************/
 
@@ -152,204 +152,204 @@ static void col221111_32 __P((int *, unsigned char *, int));
 #define M_EOI   0xd9
 #define M_COM   0xfe
 
-struct comp {
-    int cid;
-    int hv;
-    int tq;
+কাঠামো comp {
+    পূর্ণসংখ্যা cid;
+    পূর্ণসংখ্যা hv;
+    পূর্ণসংখ্যা tq;
 };
 
 #define MAXCOMP 4
-struct jpginfo {
-    int nc;   /* number of components */
-    int ns;   /* number of scans */
-    int dri;  /* restart interval */
-    int nm;   /* mcus til next marker */
-    int rm;   /* next restart marker */
+কাঠামো jpginfo {
+    পূর্ণসংখ্যা nc;   /* number of components */
+    পূর্ণসংখ্যা ns;   /* number of scans */
+    পূর্ণসংখ্যা dri;  /* restart interval */
+    পূর্ণসংখ্যা nm;   /* mcus til next marker */
+    পূর্ণসংখ্যা rm;   /* next restart marker */
 };
 
-struct jpeg_decdata {
-    int dcts[6 * 64 + 16];
-    int out[64 * 6];
-    int dquant[3][64];
+কাঠামো jpeg_decdata {
+    পূর্ণসংখ্যা dcts[6 * 64 + 16];
+    পূর্ণসংখ্যা out[64 * 6];
+    পূর্ণসংখ্যা dquant[3][64];
 
-    unsigned char *datap;
-    struct jpginfo info;
-    struct comp comps[MAXCOMP];
-    struct scan dscans[MAXCOMP];
-    unsigned char quant[4][64];
-    struct dec_hufftbl dhuff[4];
-    struct in in;
+    unsigned অক্ষর *datap;
+    কাঠামো jpginfo info;
+    কাঠামো comp comps[MAXCOMP];
+    কাঠামো scan dscans[MAXCOMP];
+    unsigned অক্ষর quant[4][64];
+    কাঠামো dec_hufftbl dhuff[4];
+    কাঠামো in in;
 
-    int height, width;
+    পূর্ণসংখ্যা height, width;
 };
 
-static int getbyte(struct jpeg_decdata *jpeg)
+স্থির পূর্ণসংখ্যা getbyte(কাঠামো jpeg_decdata *jpeg)
 {
-    return *jpeg->datap++;
+    ফেরত *jpeg->datap++;
 }
 
-static int getword(struct jpeg_decdata *jpeg)
+স্থির পূর্ণসংখ্যা getword(কাঠামো jpeg_decdata *jpeg)
 {
-    int c1, c2;
+    পূর্ণসংখ্যা c1, c2;
     c1 = *jpeg->datap++;
     c2 = *jpeg->datap++;
-    return c1 << 8 | c2;
+    ফেরত c1 << 8 | c2;
 }
 
-static int readtables(struct jpeg_decdata *jpeg, int till)
+স্থির পূর্ণসংখ্যা readtables(কাঠামো jpeg_decdata *jpeg, পূর্ণসংখ্যা till)
 {
-    int m, l, i, j, lq, pq, tq;
-    int tc, th, tt;
+    পূর্ণসংখ্যা m, l, i, j, lq, pq, tq;
+    পূর্ণসংখ্যা tc, th, tt;
 
-    for (;;) {
-        if (getbyte(jpeg) != 0xff)
-            return -1;
-        if ((m = getbyte(jpeg)) == till)
-            break;
+    জন্য (;;) {
+        যদি (getbyte(jpeg) != 0xff)
+            ফেরত -1;
+        যদি ((m = getbyte(jpeg)) == till)
+            বিরতি;
 
-        switch (m) {
-        case 0xc2:
-            return 0;
+        নির্বাচন (m) {
+        ক্ষেত্র 0xc2:
+            ফেরত 0;
 
-        case M_DQT:
+        ক্ষেত্র M_DQT:
             lq = getword(jpeg);
-            while (lq > 2) {
+            যখন (lq > 2) {
                 pq = getbyte(jpeg);
                 tq = pq & 15;
-                if (tq > 3)
-                    return -1;
+                যদি (tq > 3)
+                    ফেরত -1;
                 pq >>= 4;
-                if (pq != 0)
-                    return -1;
-                for (i = 0; i < 64; i++)
+                যদি (pq != 0)
+                    ফেরত -1;
+                জন্য (i = 0; i < 64; i++)
                     jpeg->quant[tq][i] = getbyte(jpeg);
                 lq -= 64 + 1;
             }
-            break;
+            বিরতি;
 
-        case M_DHT:
+        ক্ষেত্র M_DHT:
             l = getword(jpeg);
-            while (l > 2) {
-                int hufflen[16], k;
-                unsigned char huffvals[256];
+            যখন (l > 2) {
+                পূর্ণসংখ্যা hufflen[16], k;
+                unsigned অক্ষর huffvals[256];
 
                 tc = getbyte(jpeg);
                 th = tc & 15;
                 tc >>= 4;
                 tt = tc * 2 + th;
-                if (tc > 1 || th > 1)
-                    return -1;
-                for (i = 0; i < 16; i++)
+                যদি (tc > 1 || th > 1)
+                    ফেরত -1;
+                জন্য (i = 0; i < 16; i++)
                     hufflen[i] = getbyte(jpeg);
                 l -= 1 + 16;
                 k = 0;
-                for (i = 0; i < 16; i++) {
-                    for (j = 0; j < hufflen[i]; j++)
+                জন্য (i = 0; i < 16; i++) {
+                    জন্য (j = 0; j < hufflen[i]; j++)
                         huffvals[k++] = getbyte(jpeg);
                     l -= hufflen[i];
                 }
                 dec_makehuff(jpeg->dhuff + tt, hufflen, huffvals);
             }
-            break;
+            বিরতি;
 
-        case M_DRI:
+        ক্ষেত্র M_DRI:
             l = getword(jpeg);
             jpeg->info.dri = getword(jpeg);
-            break;
+            বিরতি;
 
-        default:
+        পূর্বনির্ধারিত:
             l = getword(jpeg);
-            while (l-- > 2)
+            যখন (l-- > 2)
                 getbyte(jpeg);
-            break;
+            বিরতি;
         }
     }
-    return 0;
+    ফেরত 0;
 }
 
-static void dec_initscans(struct jpeg_decdata *jpeg)
+স্থির শূন্য dec_initscans(কাঠামো jpeg_decdata *jpeg)
 {
-    int i;
+    পূর্ণসংখ্যা i;
 
     jpeg->info.nm = jpeg->info.dri + 1;
     jpeg->info.rm = M_RST0;
-    for (i = 0; i < jpeg->info.ns; i++)
+    জন্য (i = 0; i < jpeg->info.ns; i++)
         jpeg->dscans[i].dc = 0;
 }
 
-static int dec_checkmarker(struct jpeg_decdata *jpeg)
+স্থির পূর্ণসংখ্যা dec_checkmarker(কাঠামো jpeg_decdata *jpeg)
 {
-    int i;
+    পূর্ণসংখ্যা i;
 
-    if (dec_readmarker(&jpeg->in) != jpeg->info.rm)
-        return -1;
+    যদি (dec_readmarker(&jpeg->in) != jpeg->info.rm)
+        ফেরত -1;
     jpeg->info.nm = jpeg->info.dri;
     jpeg->info.rm = (jpeg->info.rm + 1) & ~0x08;
-    for (i = 0; i < jpeg->info.ns; i++)
+    জন্য (i = 0; i < jpeg->info.ns; i++)
         jpeg->dscans[i].dc = 0;
-    return 0;
+    ফেরত 0;
 }
 
-struct jpeg_decdata *jpeg_alloc(void)
+কাঠামো jpeg_decdata *jpeg_alloc(শূন্য)
 {
-    struct jpeg_decdata *jpeg = malloc_tmphigh(sizeof(*jpeg));
-    return jpeg;
+    কাঠামো jpeg_decdata *jpeg = malloc_tmphigh(আকার(*jpeg));
+    ফেরত jpeg;
 }
 
-int jpeg_decode(struct jpeg_decdata *jpeg, unsigned char *buf)
+পূর্ণসংখ্যা jpeg_decode(কাঠামো jpeg_decdata *jpeg, unsigned অক্ষর *buf)
 {
-    int i, j, m, tac, tdc;
+    পূর্ণসংখ্যা i, j, m, tac, tdc;
 
-    if (!jpeg || !buf)
-        return -1;
+    যদি (!jpeg || !buf)
+        ফেরত -1;
     jpeg->datap = buf;
-    if (getbyte(jpeg) != 0xff)
-        return ERR_NO_SOI;
-    if (getbyte(jpeg) != M_SOI)
-        return ERR_NO_SOI;
-    if (readtables(jpeg, M_SOF0))
-        return ERR_BAD_TABLES;
+    যদি (getbyte(jpeg) != 0xff)
+        ফেরত ERR_NO_SOI;
+    যদি (getbyte(jpeg) != M_SOI)
+        ফেরত ERR_NO_SOI;
+    যদি (readtables(jpeg, M_SOF0))
+        ফেরত ERR_BAD_TABLES;
     getword(jpeg);
     i = getbyte(jpeg);
-    if (i != 8)
-        return ERR_NOT_8BIT;
+    যদি (i != 8)
+        ফেরত ERR_NOT_8BIT;
     jpeg->height = getword(jpeg);
     jpeg->width = getword(jpeg);
-    if ((jpeg->height & 15) || (jpeg->width & 15))
-        return ERR_BAD_WIDTH_OR_HEIGHT;
+    যদি ((jpeg->height & 15) || (jpeg->width & 15))
+        ফেরত ERR_BAD_WIDTH_OR_HEIGHT;
     jpeg->info.nc = getbyte(jpeg);
-    if (jpeg->info.nc > MAXCOMP)
-        return ERR_TOO_MANY_COMPPS;
-    for (i = 0; i < jpeg->info.nc; i++) {
-        int h, v;
+    যদি (jpeg->info.nc > MAXCOMP)
+        ফেরত ERR_TOO_MANY_COMPPS;
+    জন্য (i = 0; i < jpeg->info.nc; i++) {
+        পূর্ণসংখ্যা h, v;
         jpeg->comps[i].cid = getbyte(jpeg);
         jpeg->comps[i].hv = getbyte(jpeg);
         v = jpeg->comps[i].hv & 15;
         h = jpeg->comps[i].hv >> 4;
         jpeg->comps[i].tq = getbyte(jpeg);
-        if (h > 3 || v > 3)
-            return ERR_ILLEGAL_HV;
-        if (jpeg->comps[i].tq > 3)
-            return ERR_QUANT_TABLE_SELECTOR;
+        যদি (h > 3 || v > 3)
+            ফেরত ERR_ILLEGAL_HV;
+        যদি (jpeg->comps[i].tq > 3)
+            ফেরত ERR_QUANT_TABLE_SELECTOR;
     }
-    if (readtables(jpeg, M_SOS))
-        return ERR_BAD_TABLES;
+    যদি (readtables(jpeg, M_SOS))
+        ফেরত ERR_BAD_TABLES;
     getword(jpeg);
     jpeg->info.ns = getbyte(jpeg);
-    if (jpeg->info.ns != 3)
-        return ERR_NOT_YCBCR_221111;
-    for (i = 0; i < 3; i++) {
+    যদি (jpeg->info.ns != 3)
+        ফেরত ERR_NOT_YCBCR_221111;
+    জন্য (i = 0; i < 3; i++) {
         jpeg->dscans[i].cid = getbyte(jpeg);
         tdc = getbyte(jpeg);
         tac = tdc & 15;
         tdc >>= 4;
-        if (tdc > 1 || tac > 1)
-            return ERR_QUANT_TABLE_SELECTOR;
-        for (j = 0; j < jpeg->info.nc; j++)
-            if (jpeg->comps[j].cid == jpeg->dscans[i].cid)
-                break;
-        if (j == jpeg->info.nc)
-            return ERR_UNKNOWN_CID_IN_SCAN;
+        যদি (tdc > 1 || tac > 1)
+            ফেরত ERR_QUANT_TABLE_SELECTOR;
+        জন্য (j = 0; j < jpeg->info.nc; j++)
+            যদি (jpeg->comps[j].cid == jpeg->dscans[i].cid)
+                বিরতি;
+        যদি (j == jpeg->info.nc)
+            ফেরত ERR_UNKNOWN_CID_IN_SCAN;
         jpeg->dscans[i].hv = jpeg->comps[j].hv;
         jpeg->dscans[i].tq = jpeg->comps[j].tq;
         jpeg->dscans[i].hudc.dhuff = &jpeg->dhuff[tdc];
@@ -360,16 +360,16 @@ int jpeg_decode(struct jpeg_decdata *jpeg, unsigned char *buf)
     j = getbyte(jpeg);
     m = getbyte(jpeg);
 
-    if (i != 0 || j != 63 || m != 0)
-        return ERR_NOT_SEQUENTIAL_DCT;
+    যদি (i != 0 || j != 63 || m != 0)
+        ফেরত ERR_NOT_SEQUENTIAL_DCT;
 
-    if (jpeg->dscans[0].cid != 1 || jpeg->dscans[1].cid != 2
+    যদি (jpeg->dscans[0].cid != 1 || jpeg->dscans[1].cid != 2
         || jpeg->dscans[2].cid != 3)
-        return ERR_NOT_YCBCR_221111;
+        ফেরত ERR_NOT_YCBCR_221111;
 
-    if (jpeg->dscans[0].hv != 0x22 || jpeg->dscans[1].hv != 0x11
+    যদি (jpeg->dscans[0].hv != 0x22 || jpeg->dscans[1].hv != 0x11
         || jpeg->dscans[2].hv != 0x11)
-        return ERR_NOT_YCBCR_221111;
+        ফেরত ERR_NOT_YCBCR_221111;
 
     idctqtab(jpeg->quant[jpeg->dscans[0].tq], jpeg->dquant[0]);
     idctqtab(jpeg->quant[jpeg->dscans[1].tq], jpeg->dquant[1]);
@@ -377,7 +377,7 @@ int jpeg_decode(struct jpeg_decdata *jpeg, unsigned char *buf)
     initcol(jpeg->dquant);
     setinput(&jpeg->in, jpeg->datap);
 
-#if 0
+#যদি 0
     /* landing zone */
     img[len] = 0;
     img[len + 1] = 0xff;
@@ -386,40 +386,40 @@ int jpeg_decode(struct jpeg_decdata *jpeg, unsigned char *buf)
 
     dec_initscans(jpeg);
 
-    return 0;
+    ফেরত 0;
 }
 
-void jpeg_get_size(struct jpeg_decdata *jpeg, int *width, int *height)
+শূন্য jpeg_get_আকার(কাঠামো jpeg_decdata *jpeg, পূর্ণসংখ্যা *width, পূর্ণসংখ্যা *height)
 {
     *width = jpeg->width;
     *height = jpeg->height;
 }
 
-int jpeg_show(struct jpeg_decdata *jpeg, unsigned char *pic, int width
-              , int height, int depth, int bytes_per_line_dest)
+পূর্ণসংখ্যা jpeg_show(কাঠামো jpeg_decdata *jpeg, unsigned অক্ষর *pic, পূর্ণসংখ্যা width
+              , পূর্ণসংখ্যা height, পূর্ণসংখ্যা depth, পূর্ণসংখ্যা bytes_per_সারি_dest)
 {
-    int m, mcusx, mcusy, mx, my, mloffset, jpgbpl;
-    int max[6];
+    পূর্ণসংখ্যা m, mcusx, mcusy, mx, my, mloffset, jpgbpl;
+    পূর্ণসংখ্যা max[6];
 
-    if (jpeg->height != height)
-        return ERR_HEIGHT_MISMATCH;
-    if (jpeg->width != width)
-        return ERR_WIDTH_MISMATCH;
+    যদি (jpeg->height != height)
+        ফেরত ERR_HEIGHT_MISMATCH;
+    যদি (jpeg->width != width)
+        ফেরত ERR_WIDTH_MISMATCH;
 
     jpgbpl = width * depth / 8;
-    mloffset = bytes_per_line_dest > jpgbpl ? bytes_per_line_dest : jpgbpl;
+    mloffset = bytes_per_সারি_dest > jpgbpl ? bytes_per_সারি_dest : jpgbpl;
 
     mcusx = jpeg->width >> 4;
     mcusy = jpeg->height >> 4;
 
-    jpeg->dscans[0].next = 6 - 4;
-    jpeg->dscans[1].next = 6 - 4 - 1;
-    jpeg->dscans[2].next = 6 - 4 - 1 - 1;        /* 411 encoding */
-    for (my = 0; my < mcusy; my++) {
-        for (mx = 0; mx < mcusx; mx++) {
-            if (jpeg->info.dri && !--jpeg->info.nm)
-                if (dec_checkmarker(jpeg))
-                    return ERR_WRONG_MARKER;
+    jpeg->dscans[0].পরবর্তী = 6 - 4;
+    jpeg->dscans[1].পরবর্তী = 6 - 4 - 1;
+    jpeg->dscans[2].পরবর্তী = 6 - 4 - 1 - 1;        /* 411 encoding */
+    জন্য (my = 0; my < mcusy; my++) {
+        জন্য (mx = 0; mx < mcusx; mx++) {
+            যদি (jpeg->info.dri && !--jpeg->info.nm)
+                যদি (dec_checkmarker(jpeg))
+                    ফেরত ERR_WRONG_MARKER;
 
             decode_mcus(&jpeg->in, jpeg->dcts, 6, jpeg->dscans, max);
             idct(jpeg->dcts, jpeg->out, jpeg->dquant[0],
@@ -435,94 +435,94 @@ int jpeg_show(struct jpeg_decdata *jpeg, unsigned char *pic, int width
             idct(jpeg->dcts + 320, jpeg->out + 320, jpeg->dquant[2],
                  IFIX(0.5), max[5]);
 
-            switch (depth) {
-            case 32:
+            নির্বাচন (depth) {
+            ক্ষেত্র 32:
                 col221111_32(jpeg->out,
                              pic + (my * 16 * mloffset + mx * 16 * 4),
                              mloffset);
-                break;
-            case 24:
+                বিরতি;
+            ক্ষেত্র 24:
                 col221111(jpeg->out,
                           pic + (my * 16 * mloffset + mx * 16 * 3),
                           mloffset);
-                break;
-            case 16:
+                বিরতি;
+            ক্ষেত্র 16:
                 col221111_16(jpeg->out,
                              pic + (my * 16 * mloffset + mx * 16 * 2),
                              mloffset);
-                break;
-            default:
-                return ERR_DEPTH_MISMATCH;
-                break;
+                বিরতি;
+            পূর্বনির্ধারিত:
+                ফেরত ERR_DEPTH_MISMATCH;
+                বিরতি;
             }
         }
     }
 
     m = dec_readmarker(&jpeg->in);
-    if (m != M_EOI)
-        return ERR_NO_EOI;
+    যদি (m != M_EOI)
+        ফেরত ERR_NO_EOI;
 
-    return 0;
+    ফেরত 0;
 }
 
 /****************************************************************/
 /**************       huffman decoder             ***************/
 /****************************************************************/
 
-static int fillbits __P((struct in *, int, unsigned int));
-static int dec_rec2 __P((struct in *, struct dec_hufftbl *, int *, int, int));
+স্থির পূর্ণসংখ্যা fillbits __P((কাঠামো in *, পূর্ণসংখ্যা, unsigned পূর্ণসংখ্যা));
+স্থির পূর্ণসংখ্যা dec_rec2 __P((কাঠামো in *, কাঠামো dec_hufftbl *, পূর্ণসংখ্যা *, পূর্ণসংখ্যা, পূর্ণসংখ্যা));
 
-static void setinput(struct in *in, unsigned char *p)
+স্থির শূন্য setinput(কাঠামো in *in, unsigned অক্ষর *p)
 {
     in->p = p;
-    in->left = 0;
+    in->বাম = 0;
     in->bits = 0;
     in->marker = 0;
 }
 
-static int fillbits(struct in *in, int le, unsigned int bi)
+স্থির পূর্ণসংখ্যা fillbits(কাঠামো in *in, পূর্ণসংখ্যা le, unsigned পূর্ণসংখ্যা bi)
 {
-    int b, m;
+    পূর্ণসংখ্যা b, m;
 
-    if (in->marker) {
-        if (le <= 16)
+    যদি (in->marker) {
+        যদি (le <= 16)
             in->bits = bi << 16, le += 16;
-        return le;
+        ফেরত le;
     }
-    while (le <= 24) {
+    যখন (le <= 24) {
         b = *in->p++;
-        if (b == 0xff && (m = *in->p++) != 0) {
-            if (m == M_EOF) {
-                if (in->func && (m = in->func(in->data)) == 0)
-                    continue;
+        যদি (b == 0xff && (m = *in->p++) != 0) {
+            যদি (m == M_EOF) {
+                যদি (in->func && (m = in->func(in->তথ্য)) == 0)
+                    চালু;
             }
             in->marker = m;
-            if (le <= 16)
+            যদি (le <= 16)
                 bi = bi << 16, le += 16;
-            break;
+            বিরতি;
         }
         bi = bi << 8 | b;
         le += 8;
     }
     in->bits = bi;                /* tmp... 2 return values needed */
-    return le;
+    ফেরত le;
 }
 
-static int dec_readmarker(struct in *in)
+স্থির পূর্ণসংখ্যা dec_readmarker(কাঠামো in *in)
 {
-    int m;
+    পূর্ণসংখ্যা m;
 
-    in->left = fillbits(in, in->left, in->bits);
-    if ((m = in->marker) == 0)
-        return 0;
-    in->left = 0;
+    in->বাম = fillbits(in, in->বাম, in->bits);
+    যদি ((m = in->marker) == 0)
+        ফেরত 0;
+    in->বাম = 0;
     in->marker = 0;
-    return m;
+    ফেরত m;
 }
 
-#define LEBI_DCL       int le, bi
-#define LEBI_GET(in)   (le = in->left, bi = in->bits)
-#define LEBI_PUT(in)   (in->left = le, in->bits = bi)
+#define LEBI_DCL       পূর্ণসংখ্যা le, bi
+#define LEBI_GET(in)   (le = in->বাম, bi = in->bits)
+#define LEBI_PUT(in)   (in->বাম = le, in->bits = bi)
 
 #define GETBITS(in, n) (                                     \
   (le < (n) ? le = fillbits(in, le, bi), bi = in->bits : 0), \
@@ -535,37 +535,37 @@ static int dec_readmarker(struct in *in)
 )
 
 
-static int dec_rec2(struct in *in, struct dec_hufftbl *hu, int *runp,
-                    int c, int i)
+স্থির পূর্ণসংখ্যা dec_rec2(কাঠামো in *in, কাঠামো dec_hufftbl *hu, পূর্ণসংখ্যা *runp,
+                    পূর্ণসংখ্যা c, পূর্ণসংখ্যা i)
 {
     LEBI_DCL;
 
     LEBI_GET(in);
-    if (i) {
+    যদি (i) {
         UNGETBITS(in, i & 127);
         *runp = i >> 8 & 15;
         i >>= 16;
-    } else {
-        for (i = DECBITS;
+    } অন্যথা {
+        জন্য (i = DECBITS;
              (c = ((c << 1) | GETBITS(in, 1))) >= (hu->maxcode[i]); i++);
-        if (i >= 16) {
+        যদি (i >= 16) {
             in->marker = M_BADHUFF;
-            return 0;
+            ফেরত 0;
         }
         i = hu->vals[hu->valptr[i] + c - hu->maxcode[i - 1] * 2];
         *runp = i >> 4;
         i &= 15;
     }
-    if (i == 0) {                /* sigh, 0xf0 is 11 bit */
+    যদি (i == 0) {                /* sigh, 0xf0 is 11 bit */
         LEBI_PUT(in);
-        return 0;
+        ফেরত 0;
     }
     /* receive part */
     c = GETBITS(in, i);
-    if (c < (1 << (i - 1)))
+    যদি (c < (1 << (i - 1)))
         c += (-1 << i) + 1;
     LEBI_PUT(in);
-    return c;
+    ফেরত c;
 }
 
 #define DEC_REC(in, hu, r, i)         (  \
@@ -586,43 +586,43 @@ static int dec_rec2(struct in *in, struct dec_hufftbl *hu, int *runp,
     )                                    \
 )
 
-static void decode_mcus(struct in *in, int *dct, int n, struct scan *sc,
-                        int *maxp)
+স্থির শূন্য decode_mcus(কাঠামো in *in, পূর্ণসংখ্যা *dct, পূর্ণসংখ্যা n, কাঠামো scan *sc,
+                        পূর্ণসংখ্যা *maxp)
 {
-    struct dec_hufftbl *hu;
-    int i, r, t;
+    কাঠামো dec_hufftbl *hu;
+    পূর্ণসংখ্যা i, r, t;
     LEBI_DCL;
 
-    memset(dct, 0, n * 64 * sizeof(*dct));
+    memset(dct, 0, n * 64 * আকার(*dct));
     LEBI_GET(in);
-    while (n-- > 0) {
+    যখন (n-- > 0) {
         hu = sc->hudc.dhuff;
         *dct++ = (sc->dc += DEC_REC(in, hu, r, t));
 
         hu = sc->huac.dhuff;
         i = 63;
-        while (i > 0) {
+        যখন (i > 0) {
             t = DEC_REC(in, hu, r, t);
-            if (t == 0 && r == 0) {
+            যদি (t == 0 && r == 0) {
                 dct += i;
-                break;
+                বিরতি;
             }
             dct += r;
             *dct++ = t;
             i -= r + 1;
         }
         *maxp++ = 64 - i;
-        if (n == sc->next)
+        যদি (n == sc->পরবর্তী)
             sc++;
     }
     LEBI_PUT(in);
 }
 
-static void dec_makehuff(struct dec_hufftbl *hu, int *hufflen,
-                         unsigned char *huffvals)
+স্থির শূন্য dec_makehuff(কাঠামো dec_hufftbl *hu, পূর্ণসংখ্যা *hufflen,
+                         unsigned অক্ষর *huffvals)
 {
-    int code, k, i, j, d, x, c, v;
-    for (i = 0; i < (1 << DECBITS); i++)
+    পূর্ণসংখ্যা code, k, i, j, d, x, c, v;
+    জন্য (i = 0; i < (1 << DECBITS); i++)
         hu->llvals[i] = 0;
 
     /*
@@ -638,21 +638,21 @@ static void dec_makehuff(struct dec_hufftbl *hu, int *hufflen,
 
     code = 0;
     k = 0;
-    for (i = 0; i < 16; i++, code <<= 1) {        /* sizes */
+    জন্য (i = 0; i < 16; i++, code <<= 1) {        /* sizes */
         hu->valptr[i] = k;
-        for (j = 0; j < hufflen[i]; j++) {
+        জন্য (j = 0; j < hufflen[i]; j++) {
             hu->vals[k] = *huffvals++;
-            if (i < DECBITS) {
+            যদি (i < DECBITS) {
                 c = code << (DECBITS - 1 - i);
-                v = hu->vals[k] & 0x0f;        /* size */
-                for (d = 1 << (DECBITS - 1 - i); --d >= 0;) {
-                    if (v + i < DECBITS) {        /* both fit in table */
+                v = hu->vals[k] & 0x0f;        /*আকার*/
+                জন্য (d = 1 << (DECBITS - 1 - i); --d >= 0;) {
+                    যদি (v + i < DECBITS) {        /* both fit in table */
                         x = d >> (DECBITS - 1 - v - i);
-                        if (v && x < (1 << (v - 1)))
+                        যদি (v && x < (1 << (v - 1)))
                             x += (-1 << v) + 1;
                         x = x << 16 | (hu->vals[k] & 0xf0) << 4 |
                             (DECBITS - (i + 1 + v)) | 128;
-                    } else
+                    } অন্যথা
                         x = v << 16 | (hu->vals[k] & 0xf0) << 4 |
                             (DECBITS - (i + 1));
                     hu->llvals[c | d] = x;
@@ -712,7 +712,7 @@ static void dec_makehuff(struct dec_hufftbl *hu, int *hufflen,
   XPP(t3, t4)               \
 )
 
-static unsigned char zig2[64] = {
+স্থির unsigned অক্ষর zig2[64] = {
      0,  2,  3,  9, 10, 20, 21, 35,
     14, 16, 25, 31, 39, 46, 50, 57,
      5,  7, 12, 18, 23, 33, 37, 48,
@@ -723,23 +723,23 @@ static unsigned char zig2[64] = {
      6, 13, 17, 24, 32, 38, 47, 49
 };
 
-static void idct(int *in, int *out, PREC * quant, PREC off, int max)
+স্থির শূন্য idct(পূর্ণসংখ্যা *in, পূর্ণসংখ্যা *out, PREC * quant, PREC off, পূর্ণসংখ্যা max)
 {
     PREC t0, t1, t2, t3, t4, t5, t6, t7, t;
     PREC tmp[64], *tmpp;
-    int i, j;
-    unsigned char *zig2p;
+    পূর্ণসংখ্যা i, j;
+    unsigned অক্ষর *zig2p;
 
     t0 = off;
-    if (max == 1) {
+    যদি (max == 1) {
         t0 += in[0] * quant[0];
-        for (i = 0; i < 64; i++)
+        জন্য (i = 0; i < 64; i++)
             out[i] = ITOINT(t0);
-        return;
+        ফেরত;
     }
     zig2p = zig2;
     tmpp = tmp;
-    for (i = 0; i < 8; i++) {
+    জন্য (i = 0; i < 8; i++) {
         j = *zig2p++;
         t0 += in[j] * quant[j];
         j = *zig2p++;
@@ -768,7 +768,7 @@ static void idct(int *in, int *out, PREC * quant, PREC off, int max)
         tmpp++;
         t0 = 0;
     }
-    for (i = 0; i < 8; i++) {
+    জন্য (i = 0; i < 8; i++) {
         t0 = tmp[8 * i + 0];
         t1 = tmp[8 * i + 1];
         t2 = tmp[8 * i + 2];
@@ -789,7 +789,7 @@ static void idct(int *in, int *out, PREC * quant, PREC off, int max)
     }
 }
 
-static unsigned char zig[64] = {
+স্থির unsigned অক্ষর zig[64] = {
      0,  1,  5,  6, 14, 15, 27, 28,
      2,  4,  7, 13, 16, 26, 29, 42,
      3,  8, 12, 17, 25, 30, 41, 43,
@@ -800,7 +800,7 @@ static unsigned char zig[64] = {
     35, 36, 48, 49, 57, 58, 62, 63
 };
 
-static PREC aaidct[8] = {
+স্থির PREC aaidct[8] = {
     IFIX(0.3535533906), IFIX(0.4903926402),
     IFIX(0.4619397663), IFIX(0.4157348062),
     IFIX(0.3535533906), IFIX(0.2777851165),
@@ -808,21 +808,21 @@ static PREC aaidct[8] = {
 };
 
 
-static void idctqtab(unsigned char *qin, PREC * qout)
+স্থির শূন্য idctqtab(unsigned অক্ষর *qin, PREC * qout)
 {
-    int i, j;
+    পূর্ণসংখ্যা i, j;
 
-    for (i = 0; i < 8; i++)
-        for (j = 0; j < 8; j++)
+    জন্য (i = 0; i < 8; i++)
+        জন্য (j = 0; j < 8; j++)
             qout[zig[i * 8 + j]] = qin[zig[i * 8 + j]] *
                 IMULT(aaidct[i], aaidct[j]);
 }
 
-static void scaleidctqtab(PREC * q, PREC sc)
+স্থির শূন্য scaleidctqtab(PREC * q, PREC sc)
 {
-    int i;
+    পূর্ণসংখ্যা i;
 
-    for (i = 0; i < 64; i++)
+    জন্য (i = 0; i < 64; i++)
         q[i] = IMULT(q[i], sc);
 }
 
@@ -853,7 +853,7 @@ static void scaleidctqtab(PREC * q, PREC sc)
  *      Cg = (50 * Cb + 130 * Cr + 128) >> 8;
  */
 
-static void initcol(PREC q[][64])
+স্থির শূন্য initcol(PREC q[][64])
 {
     scaleidctqtab(q[1], IFIX(1.77200));
     scaleidctqtab(q[2], IFIX(1.40200));
@@ -863,13 +863,13 @@ static void initcol(PREC q[][64])
 #define STORECLAMP(a,x)                          \
 (                                                \
   (a) = (x),                                     \
-  (unsigned int)(x) >= 256 ?                     \
+  (unsigned পূর্ণসংখ্যা)(x) >= 256 ?                     \
     ((a) = (x) < 0 ? 0 : 255)                    \
   :                                              \
     0                                            \
 )
 
-#define CLAMP(x) ((unsigned int)(x) >= 256 ? ((x) < 0 ? 0 : 255) : (x))
+#define CLAMP(x) ((unsigned পূর্ণসংখ্যা)(x) >= 256 ? ((x) < 0 ? 0 : 255) : (x))
 
 #ifdef ROUND
 
@@ -880,7 +880,7 @@ static void initcol(PREC q[][64])
   cg = (50 * cb + 130 * cr + 128) >> 8           \
 )
 
-#else
+#অন্যথা
 
 #define CBCRCG(yin, xin)                         \
 (                                                \
@@ -899,7 +899,7 @@ static void initcol(PREC q[][64])
   STORECLAMP(p[(xout) * 3 + 1], y - cg),         \
   STORECLAMP(p[(xout) * 3 + 0], y + cb)          \
 )
-#else
+#অন্যথা
 #define PIC(yin, xin, p, xout)                   \
 (                                                \
   y = outy[(yin) * 8 + xin],                     \
@@ -919,7 +919,7 @@ static void initcol(PREC q[][64])
   p[(xout) * 2 + 0] = y & 0xff,                  \
   p[(xout) * 2 + 1] = y >> 8                     \
 )
-#else
+#অন্যথা
 #ifdef CONFIG_PPC
 #define PIC_16(yin, xin, p, xout, add)           \
 (                                                \
@@ -930,7 +930,7 @@ static void initcol(PREC q[][64])
   p[(xout) * 2 + 0] = y >> 8,                    \
   p[(xout) * 2 + 1] = y & 0xff                   \
 )
-#else
+#অন্যথা
 #define PIC_16(yin, xin, p, xout, add)           \
 (                                                \
   y = outy[(yin) * 8 + xin],                     \
@@ -979,20 +979,20 @@ static void initcol(PREC q[][64])
   PIC_32(xin / 4 * 8 + 1, (xin & 3) * 2 + 1, pic1, xin * 2 + 1)     \
 )
 
-static void col221111(int *out, unsigned char *pic, int width)
+স্থির শূন্য col221111(পূর্ণসংখ্যা *out, unsigned অক্ষর *pic, পূর্ণসংখ্যা width)
 {
-    int i, j, k;
-    unsigned char *pic0, *pic1;
-    int *outy, *outc;
-    int cr, cg, cb, y;
+    পূর্ণসংখ্যা i, j, k;
+    unsigned অক্ষর *pic0, *pic1;
+    পূর্ণসংখ্যা *outy, *outc;
+    পূর্ণসংখ্যা cr, cg, cb, y;
 
     pic0 = pic;
     pic1 = pic + width;
     outy = out;
     outc = out + 64 * 4;
-    for (i = 2; i > 0; i--) {
-        for (j = 4; j > 0; j--) {
-            for (k = 0; k < 8; k++) {
+    জন্য (i = 2; i > 0; i--) {
+        জন্য (j = 4; j > 0; j--) {
+            জন্য (k = 0; k < 8; k++) {
                 PIC221111(k);
             }
             outc += 8;
@@ -1004,20 +1004,20 @@ static void col221111(int *out, unsigned char *pic, int width)
     }
 }
 
-static void col221111_16(int *out, unsigned char *pic, int width)
+স্থির শূন্য col221111_16(পূর্ণসংখ্যা *out, unsigned অক্ষর *pic, পূর্ণসংখ্যা width)
 {
-    int i, j, k;
-    unsigned char *pic0, *pic1;
-    int *outy, *outc;
-    int cr, cg, cb, y;
+    পূর্ণসংখ্যা i, j, k;
+    unsigned অক্ষর *pic0, *pic1;
+    পূর্ণসংখ্যা *outy, *outc;
+    পূর্ণসংখ্যা cr, cg, cb, y;
 
     pic0 = pic;
     pic1 = pic + width;
     outy = out;
     outc = out + 64 * 4;
-    for (i = 2; i > 0; i--) {
-        for (j = 4; j > 0; j--) {
-            for (k = 0; k < 8; k++) {
+    জন্য (i = 2; i > 0; i--) {
+        জন্য (j = 4; j > 0; j--) {
+            জন্য (k = 0; k < 8; k++) {
                 PIC221111_16(k);
             }
             outc += 8;
@@ -1029,20 +1029,20 @@ static void col221111_16(int *out, unsigned char *pic, int width)
     }
 }
 
-static void col221111_32(int *out, unsigned char *pic, int width)
+স্থির শূন্য col221111_32(পূর্ণসংখ্যা *out, unsigned অক্ষর *pic, পূর্ণসংখ্যা width)
 {
-    int i, j, k;
-    unsigned char *pic0, *pic1;
-    int *outy, *outc;
-    int cr, cg, cb, y;
+    পূর্ণসংখ্যা i, j, k;
+    unsigned অক্ষর *pic0, *pic1;
+    পূর্ণসংখ্যা *outy, *outc;
+    পূর্ণসংখ্যা cr, cg, cb, y;
 
     pic0 = pic;
     pic1 = pic + width;
     outy = out;
     outc = out + 64 * 4;
-    for (i = 2; i > 0; i--) {
-        for (j = 4; j > 0; j--) {
-            for (k = 0; k < 8; k++) {
+    জন্য (i = 2; i > 0; i--) {
+        জন্য (j = 4; j > 0; j--) {
+            জন্য (k = 0; k < 8; k++) {
                 PIC221111_32(k);
             }
             outc += 8;

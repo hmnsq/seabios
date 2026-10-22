@@ -1,35 +1,35 @@
 #ifndef TPM_DRIVERS_H
 #define TPM_DRIVERS_H
 
-#include "types.h" // u32
+#অন্তর্ভাব "types.h" // u32
 
 
-enum tpmDurationType {
+গণনা tpmDurationType {
     TPM_DURATION_TYPE_SHORT = 0,
     TPM_DURATION_TYPE_MEDIUM,
     TPM_DURATION_TYPE_LONG,
 };
 
-typedef u8 TPMVersion;
+প্রকারলেখ u8 TPMVersion;
 
 #define TPM_VERSION_NONE 0
 #define TPM_VERSION_1_2  1
 #define TPM_VERSION_2    2
 
-TPMVersion tpmhw_probe(void);
-int tpmhw_is_present(void);
-struct tpm_req_header;
-int tpmhw_transmit(u8 locty, struct tpm_req_header *req,
-                   void *respbuffer, u32 *respbufferlen,
-                   enum tpmDurationType to_t);
-void tpmhw_set_timeouts(u32 timeouts[4], u32 durations[3]);
+TPMVersion tpmhw_probe(শূন্য);
+পূর্ণসংখ্যা tpmhw_is_present(শূন্য);
+কাঠামো tpm_req_header;
+পূর্ণসংখ্যা tpmhw_transmit(u8 locty, কাঠামো tpm_req_header *req,
+                   শূন্য *respbuffer, u32 *respbufferlen,
+                   গণনা tpmDurationType to_t);
+শূন্য tpmhw_set_timeouts(u32 timeouts[4], u32 durations[3]);
 
 /* CRB driver */
 /* address of locality 0 (CRB) */
 #define TPM_CRB_BASE_ADDRESS        0xfed40000
 
 #define CRB_REG(LOCTY, REG)                                 \
-    (void *)(TPM_CRB_BASE_ADDRESS + (LOCTY << 12) + REG)
+    (শূন্য *)(TPM_CRB_BASE_ADDRESS + (LOCTY << 12) + REG)
 
 /* hardware registers */
 #define CRB_REG_LOC_STATE              0x0
@@ -43,19 +43,19 @@ void tpmhw_set_timeouts(u32 timeouts[4], u32 durations[3]);
 #define CRB_REG_CTRL_START             0x4C
 #define CRB_REG_INT_ENABLE             0x50
 #define CRB_REG_INT_STS                0x54
-#define CRB_REG_CTRL_CMD_SIZE          0x58
+#define CRB_REG_CTRL_CMD_আকার          0x58
 #define CRB_REG_CTRL_CMD_LADDR         0x5C
 #define CRB_REG_CTRL_CMD_HADDR         0x60
-#define CRB_REG_CTRL_RSP_SIZE          0x64
+#define CRB_REG_CTRL_RSP_আকার          0x64
 #define CRB_REG_CTRL_RSP_ADDR          0x68
-#define CRB_REG_DATA_BUFFER            0x80
+#define CRB_REG_তথ্য_বাফার            0x80
 
 /* TIS driver */
 /* address of locality 0 (TIS) */
 #define TPM_TIS_BASE_ADDRESS        0xfed40000
 
 #define TIS_REG(LOCTY, REG) \
-    (void *)(TPM_TIS_BASE_ADDRESS + (LOCTY << 12) + REG)
+    (শূন্য *)(TPM_TIS_BASE_ADDRESS + (LOCTY << 12) + REG)
 
 /* hardware registers */
 #define TIS_REG_ACCESS                 0x0
@@ -64,7 +64,7 @@ void tpmhw_set_timeouts(u32 timeouts[4], u32 durations[3]);
 #define TIS_REG_INT_STATUS             0x10
 #define TIS_REG_INTF_CAPABILITY        0x14
 #define TIS_REG_STS                    0x18
-#define TIS_REG_DATA_FIFO              0x24
+#define TIS_REG_তথ্য_FIFO              0x24
 #define TIS_REG_IFACE_ID               0x30
 #define TIS_REG_DID_VID                0xf00
 #define TIS_REG_RID                    0xf04
@@ -72,7 +72,7 @@ void tpmhw_set_timeouts(u32 timeouts[4], u32 durations[3]);
 #define TIS_STS_VALID                  (1 << 7) /* 0x80 */
 #define TIS_STS_COMMAND_READY          (1 << 6) /* 0x40 */
 #define TIS_STS_TPM_GO                 (1 << 5) /* 0x20 */
-#define TIS_STS_DATA_AVAILABLE         (1 << 4) /* 0x10 */
+#define TIS_STS_তথ্য_AVAILABLE         (1 << 4) /* 0x10 */
 #define TIS_STS_EXPECT                 (1 << 3) /* 0x08 */
 #define TIS_STS_RESPONSE_RETRY         (1 << 1) /* 0x02 */
 
@@ -100,7 +100,7 @@ void tpmhw_set_timeouts(u32 timeouts[4], u32 durations[3]);
 #define TIS2_DEFAULT_TIMEOUT_C          200000 /* us */
 #define TIS2_DEFAULT_TIMEOUT_D           30000 /* us */
 
-enum tisTimeoutType {
+গণনা tisTimeoutType {
     TIS_TIMEOUT_TYPE_A = 0,
     TIS_TIMEOUT_TYPE_B,
     TIS_TIMEOUT_TYPE_C,

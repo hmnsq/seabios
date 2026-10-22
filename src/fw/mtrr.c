@@ -4,11 +4,11 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_*
-#include "output.h" // dprintf
-#include "paravirt.h" // RamSize
-#include "util.h" // mtrr_setup
-#include "x86.h" // cpuid
+#অন্তর্ভাব "config.h" // CONFIG_*
+#অন্তর্ভাব "output.h" // dprintf
+#অন্তর্ভাব "paravirt.h" // RamSize
+#অন্তর্ভাব "util.h" // mtrr_setup
+#অন্তর্ভাব "x86.h" // cpuid
 
 #define MSR_MTRRcap                    0x000000fe
 #define MSR_MTRRfix64K_00000           0x00000250
@@ -33,65 +33,65 @@
 #define MTRR_MEMTYPE_WP 5
 #define MTRR_MEMTYPE_WB 6
 
-void mtrr_setup(void)
+শূন্য mtrr_setup(শূন্য)
 {
-    if (!CONFIG_MTRR_INIT)
-        return;
+    যদি (!CONFIG_MTRR_INIT)
+        ফেরত;
 
     u32 eax, ebx, ecx, edx, cpuid_features;
     cpuid(1, &eax, &ebx, &ecx, &cpuid_features);
-    if (!(cpuid_features & CPUID_MTRR))
-        return;
-    if (!(cpuid_features & CPUID_MSR))
-        return;
+    যদি (!(cpuid_features & CPUID_MTRR))
+        ফেরত;
+    যদি (!(cpuid_features & CPUID_MSR))
+        ফেরত;
 
     dprintf(3, "init mtrr\n");
 
     u32 mtrr_cap = rdmsr(MSR_MTRRcap);
-    int vcnt = mtrr_cap & 0xff;
-    int fix = mtrr_cap & 0x100;
-    if (!vcnt || !fix)
-       return;
+    পূর্ণসংখ্যা vcnt = mtrr_cap & 0xff;
+    পূর্ণসংখ্যা fix = mtrr_cap & 0x100;
+    যদি (!vcnt || !fix)
+       ফেরত;
 
     // Disable MTRRs
     wrmsr_smp(MSR_MTRRdefType, 0);
 
     // Set fixed MTRRs
-    union u64b {
+    সংঘ u64b {
         u8 valb[8];
         u64 val;
     } u;
     u.val = 0;
-    int i;
-    for (i = 0; i < 8; i++)
-        if (RamSize >= 65536 * (i + 1))
+    পূর্ণসংখ্যা i;
+    জন্য (i = 0; i < 8; i++)
+        যদি (Ram_আকার >= 65536 * (i + 1))
             u.valb[i] = MTRR_MEMTYPE_WB;
     wrmsr_smp(MSR_MTRRfix64K_00000, u.val);
     u.val = 0;
-    for (i = 0; i < 8; i++)
-        if (RamSize >= 0x80000 + 16384 * (i + 1))
+    জন্য (i = 0; i < 8; i++)
+        যদি (Ram_আকার >= 0x80000 + 16384 * (i + 1))
             u.valb[i] = MTRR_MEMTYPE_WB;
     wrmsr_smp(MSR_MTRRfix16K_80000, u.val);
     wrmsr_smp(MSR_MTRRfix16K_A0000, 0);   // 0xA0000-0xC0000 is uncached
-    int j;
-    for (j = 0; j < 8; j++) {
+    পূর্ণসংখ্যা j;
+    জন্য (j = 0; j < 8; j++) {
         u.val = 0;
-        for (i = 0; i < 8; i++)
-            if (RamSize >= 0xC0000 + j * 0x8000 + 4096 * (i + 1))
+        জন্য (i = 0; i < 8; i++)
+            যদি (Ram_আকার >= 0xC0000 + j * 0x8000 + 4096 * (i + 1))
                 u.valb[i] = MTRR_MEMTYPE_WP;
         wrmsr_smp(MSR_MTRRfix4K_C0000 + j, u.val);
     }
 
     // Set variable MTRRs
-    int phys_bits = 36;
+    পূর্ণসংখ্যা phys_bits = 36;
     cpuid(0x80000000u, &eax, &ebx, &ecx, &edx);
-    if (eax >= 0x80000008) {
+    যদি (eax >= 0x80000008) {
         /* Get physical bits from leaf 0x80000008 (if available) */
         cpuid(0x80000008u, &eax, &ebx, &ecx, &edx);
         phys_bits = eax & 0xff;
     }
     u64 phys_mask = ((1ull << phys_bits) - 1);
-    for (i=0; i<vcnt; i++) {
+    জন্য (i=0; i<vcnt; i++) {
         wrmsr_smp(MTRRphysBase_MSR(i), 0);
         wrmsr_smp(MTRRphysMask_MSR(i), 0);
     }

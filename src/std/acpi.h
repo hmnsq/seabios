@@ -1,12 +1,12 @@
 #ifndef __ACPI_H
 #define __ACPI_H
 
-#include "types.h" // u32
+#অন্তর্ভাব "types.h" // u32
 
 /*
  * ACPI 2.0 Generic Address Space definition.
  */
-struct acpi_20_generic_address {
+কাঠামো acpi_20_generic_address {
     u8  address_space_id;
     u8  register_bit_width;
     u8  register_bit_offset;
@@ -16,13 +16,13 @@ struct acpi_20_generic_address {
 
 #define RSDP_SIGNATURE 0x2052545020445352LL // "RSD PTR "
 
-struct rsdp_descriptor {        /* Root System Descriptor Pointer */
+কাঠামো rsdp_descriptor {        /* Root System Descriptor Pointer */
     u64 signature;              /* ACPI signature, contains "RSD PTR " */
     u8  checksum;               /* To make sum of struct == 0 */
     u8  oem_id [6];             /* OEM identification */
     u8  revision;               /* Must be 0 for 1.0, 2 for 2.0 */
     u32 rsdt_physical_address;  /* 32-bit physical address of RSDT */
-    u32 length;                 /* XSDT Length in bytes including hdr */
+    u32 দৈর্ঘ্য;                 /* XSDT Length in bytes including hdr */
     u64 xsdt_physical_address;  /* 64-bit physical address of XSDT */
     u8  extended_checksum;      /* Checksum of entire table */
     u8  reserved [3];           /* Reserved field must be 0 */
@@ -33,7 +33,7 @@ struct rsdp_descriptor {        /* Root System Descriptor Pointer */
 
 #define ACPI_TABLE_HEADER_DEF   /* ACPI common table header */ \
     u32 signature;          /* ACPI signature (4 ASCII characters) */ \
-    u32 length;                 /* Length of table, in bytes, including header */ \
+    u32 দৈর্ঘ্য;                 /* Length of table, in bytes, including header */ \
     u8  revision;               /* ACPI Specification minor version # */ \
     u8  checksum;               /* To make sum of entire table == 0 */ \
     u8  oem_id [6];             /* OEM identification */ \
@@ -66,13 +66,13 @@ struct rsdp_descriptor {        /* Root System Descriptor Pointer */
 #define    ACPI_FADT_F_FORCE_APIC_CLUSTER_MODEL  (1 << 18)
 #define    ACPI_FADT_F_FORCE_APIC_PHYSICAL_DESTINATION_MODE  (1 << 19)
 #define    ACPI_FADT_F_HW_REDUCED_ACPI    (1 << 20)
-#define    ACPI_FADT_F_LOW_POWER_S0_IDLE_CAPABLE  (1 << 21)
+#define    ACPI_FADT_F_নিচের_POWER_S0_IDLE_CAPABLE  (1 << 21)
 
 /*
  * ACPI 1.0 Fixed ACPI Description Table (FADT)
  */
 #define FACP_SIGNATURE 0x50434146 // FACP
-struct fadt_descriptor_rev1
+কাঠামো fadt_descriptor_rev1
 {
     ACPI_TABLE_HEADER_DEF     /* ACPI common table header */
     u32 firmware_ctrl;          /* Physical address of FACS */
@@ -103,7 +103,7 @@ struct fadt_descriptor_rev1
     u8  reserved3;              /* Reserved */
     u16 plvl2_lat;              /* Worst case HW latency to enter/exit C2 state */
     u16 plvl3_lat;              /* Worst case HW latency to enter/exit C3 state */
-    u16 flush_size;             /* Size of area read to flush caches */
+    u16 flush_আকার;             /* Size of area read to flush caches */
     u16 flush_stride;           /* Stride used in flushing caches */
     u8  duty_offset;            /* Bit location of duty cycle field in p_cnt reg */
     u8  duty_width;             /* Bit width of duty cycle field in p_cnt reg */
@@ -116,7 +116,7 @@ struct fadt_descriptor_rev1
     u32 flags;
 } PACKED;
 
-struct acpi_table_header         /* ACPI common table header */
+কাঠামো acpi_table_header         /* ACPI common table header */
 {
     ACPI_TABLE_HEADER_DEF
 } PACKED;
@@ -125,7 +125,7 @@ struct acpi_table_header         /* ACPI common table header */
  * ACPI 1.0 Root System Description Table (RSDT)
  */
 #define RSDT_SIGNATURE 0x54445352 // RSDT
-struct rsdt_descriptor_rev1
+কাঠামো rsdt_descriptor_rev1
 {
     ACPI_TABLE_HEADER_DEF       /* ACPI common table header */
     u32 table_offset_entry[0];  /* Array of pointers to other */
@@ -136,7 +136,7 @@ struct rsdt_descriptor_rev1
  * ACPI 2.0 eXtended System Description Table (XSDT)
  */
 #define XSDT_SIGNATURE 0x54445358 // XSDT
-struct xsdt_descriptor_rev2
+কাঠামো xsdt_descriptor_rev2
 {
     ACPI_TABLE_HEADER_DEF       /* ACPI common table header */
     u64 table_offset_entry[0];  /* Array of pointers to other */
@@ -147,10 +147,10 @@ struct xsdt_descriptor_rev2
  * ACPI 1.0 Firmware ACPI Control Structure (FACS)
  */
 #define FACS_SIGNATURE 0x53434146 // FACS
-struct facs_descriptor_rev1
+কাঠামো facs_descriptor_rev1
 {
     u32 signature;           /* ACPI Signature */
-    u32 length;                 /* Length of structure, in bytes */
+    u32 দৈর্ঘ্য;                 /* Length of structure, in bytes */
     u32 hardware_signature;     /* Hardware configuration signature */
     u32 firmware_waking_vector; /* ACPI OS waking vector */
     u32 global_lock;            /* Global Lock */
@@ -175,7 +175,7 @@ struct facs_descriptor_rev1
 /* Master MADT */
 
 #define APIC_SIGNATURE 0x43495041 // APIC
-struct multiple_apic_table
+কাঠামো multiple_apic_table
 {
     ACPI_TABLE_HEADER_DEF     /* ACPI common table header */
     u32 local_apic_address;     /* Physical address of local APIC */
@@ -200,11 +200,11 @@ struct multiple_apic_table
  */
 #define ACPI_SUB_HEADER_DEF   /* Common ACPI sub-structure header */\
     u8  type;                               \
-    u8  length;
+    u8  দৈর্ঘ্য;
 
 /* Sub-structures for MADT */
 
-struct madt_processor_apic
+কাঠামো madt_processor_apic
 {
     ACPI_SUB_HEADER_DEF
     u8  processor_id;           /* ACPI processor id */
@@ -212,7 +212,7 @@ struct madt_processor_apic
     u32 flags;
 } PACKED;
 
-struct madt_io_apic
+কাঠামো madt_io_apic
 {
     ACPI_SUB_HEADER_DEF
     u8  io_apic_id;             /* I/O APIC ID */
@@ -222,7 +222,7 @@ struct madt_io_apic
                                  * lines start */
 } PACKED;
 
-struct madt_intsrcovr {
+কাঠামো madt_intsrcovr {
     ACPI_SUB_HEADER_DEF
     u8  bus;
     u8  source;
@@ -230,7 +230,7 @@ struct madt_intsrcovr {
     u16 flags;
 } PACKED;
 
-struct madt_local_nmi {
+কাঠামো madt_local_nmi {
     ACPI_SUB_HEADER_DEF
     u8  processor_id;           /* ACPI processor id */
     u16 flags;                  /* MPS INTI flags */
@@ -241,11 +241,11 @@ struct madt_local_nmi {
  * HPET Description Table
  */
 #define HPET_SIGNATURE 0x54455048 // HPET
-struct acpi_20_hpet {
+কাঠামো acpi_20_hpet {
     ACPI_TABLE_HEADER_DEF                    /* ACPI common table header */
     u32           timer_block_id;
-    struct acpi_20_generic_address addr;
-    u8            hpet_number;
+    কাঠামো acpi_20_generic_address addr;
+    u8            hpet_সংখ্যা;
     u16           min_tick;
     u8            page_protect;
 } PACKED;
@@ -255,7 +255,7 @@ struct acpi_20_hpet {
  */
 
 #define SRAT_SIGNATURE 0x54415253 // SRAT
-struct system_resource_affinity_table
+কাঠামো system_resource_affinity_table
 {
     ACPI_TABLE_HEADER_DEF
     u32    reserved1;
@@ -265,7 +265,7 @@ struct system_resource_affinity_table
 #define SRAT_PROCESSOR          0
 #define SRAT_MEMORY             1
 
-struct srat_processor_affinity
+কাঠামো srat_processor_affinity
 {
     ACPI_SUB_HEADER_DEF
     u8     proximity_lo;
@@ -276,13 +276,13 @@ struct srat_processor_affinity
     u32    reserved;
 } PACKED;
 
-struct srat_memory_affinity
+কাঠামো srat_memory_affinity
 {
     ACPI_SUB_HEADER_DEF
     u8     proximity[4];
     u16    reserved1;
     u64    base_addr;
-    u64    range_length;
+    u64    range_দৈর্ঘ্য;
     u32    reserved2;
     u32    flags;
     u32    reserved3[2];
@@ -290,27 +290,27 @@ struct srat_memory_affinity
 
 /* PCI fw r3.0 MCFG table. */
 /* Subtable */
-struct acpi_mcfg_allocation {
+কাঠামো acpi_mcfg_allocation {
     u64 address;                /* Base address, processor-relative */
     u16 pci_segment;            /* PCI segment group number */
-    u8 start_bus_number;       /* Starting PCI Bus number */
-    u8 end_bus_number;         /* Final PCI Bus number */
+    u8 start_bus_সংখ্যা;       /* Starting PCI Bus number */
+    u8 end_bus_সংখ্যা;         /* Final PCI Bus number */
     u32 reserved;
 } PACKED;
 
 #define MCFG_SIGNATURE 0x4746434d       // MCFG
-struct acpi_table_mcfg {
+কাঠামো acpi_table_mcfg {
     ACPI_TABLE_HEADER_DEF;
     u8 reserved[8];
-    struct acpi_mcfg_allocation allocation[0];
+    কাঠামো acpi_mcfg_allocation allocation[0];
 } PACKED;
 
 #define TCPA_SIGNATURE 0x41504354
-struct tcpa_descriptor_rev2
+কাঠামো tcpa_descriptor_rev2
 {
     ACPI_TABLE_HEADER_DEF
     u16  platform_class;
-    u32  log_area_minimum_length;
+    u32  log_area_minimum_দৈর্ঘ্য;
     u64  log_area_start_address;
 } PACKED;
 
@@ -319,7 +319,7 @@ struct tcpa_descriptor_rev2
 #define TCPA_ACPI_CLASS_SERVER          1
 
 #define TPM2_SIGNATURE 0x324D5054
-struct tpm2_descriptor_rev2
+কাঠামো tpm2_descriptor_rev2
 {
     ACPI_TABLE_HEADER_DEF
     u16  platform_class;
@@ -327,7 +327,7 @@ struct tpm2_descriptor_rev2
     u64  address_of_control_area;
     u32  start_method;
     u8   start_method_params[12];
-    u32  log_area_minimum_length;
+    u32  log_area_minimum_দৈর্ঘ্য;
     u64  log_area_start_address;
 } PACKED;
 

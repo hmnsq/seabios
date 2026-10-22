@@ -7,20 +7,20 @@
 #ifndef __BREGS_H
 #define __BREGS_H
 
-#include "types.h" // u16
-#include "x86.h" // F_CF
+#অন্তর্ভাব "types.h" // u16
+#অন্তর্ভাব "x86.h" // F_CF
 
 
 /****************************************************************
  * Registers saved/restored in romlayout.S
  ****************************************************************/
 
-#define UREG(ER, R, RH, RL) union { u32 ER; struct { u16 R; u16 R ## _hi; }; struct { u8 RL; u8 RH; u8 R ## _hilo; u8 R ## _hihi; }; }
+#define UREG(ER, R, RH, RL) সংঘ { u32 ER; কাঠামো { u16 R; u16 R ## _hi; }; কাঠামো { u8 RL; u8 RH; u8 R ## _hilo; u8 R ## _hihi; }; }
 
 // Layout of registers passed in to irq handlers.  Note that this
 // layout corresponds to code in romlayout.S - don't change it here
 // without also updating the assembler code.
-struct bregs {
+কাঠামো bregs {
     u16 ds;
     u16 es;
     UREG(edi, di, di8u, di8l);
@@ -30,7 +30,7 @@ struct bregs {
     UREG(edx, dx, dh, dl);
     UREG(ecx, cx, ch, cl);
     UREG(eax, ax, ah, al);
-    struct segoff_s code;
+    কাঠামো segoff_s code;
     u16 flags;
 } PACKED;
 
@@ -39,39 +39,39 @@ struct bregs {
  * Helper functions
  ****************************************************************/
 
-static inline void
-set_cf(struct bregs *regs, int cond)
+স্থির অন্তঃরেখ শূন্য
+set_cf(কাঠামো bregs *regs, পূর্ণসংখ্যা cond)
 {
-    if (cond)
+    যদি (cond)
         regs->flags |= F_CF;
-    else
+    অন্যথা
         regs->flags &= ~F_CF;
 }
 
 // Frequently used return codes
 #define RET_EUNSUPPORTED 0x86
 
-static inline void
-set_success(struct bregs *regs)
+স্থির অন্তঃরেখ শূন্য
+set_success(কাঠামো bregs *regs)
 {
     set_cf(regs, 0);
 }
 
-static inline void
-set_code_success(struct bregs *regs)
+স্থির অন্তঃরেখ শূন্য
+set_code_success(কাঠামো bregs *regs)
 {
     regs->ah = 0;
     set_cf(regs, 0);
 }
 
-static inline void
-set_invalid_silent(struct bregs *regs)
+স্থির অন্তঃরেখ শূন্য
+set_invalid_silent(কাঠামো bregs *regs)
 {
     set_cf(regs, 1);
 }
 
-static inline void
-set_code_invalid_silent(struct bregs *regs, u8 code)
+স্থির অন্তঃরেখ শূন্য
+set_code_invalid_silent(কাঠামো bregs *regs, u8 code)
 {
     regs->ah = code;
     set_cf(regs, 1);

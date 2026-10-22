@@ -1,7 +1,7 @@
 #ifndef _PCI_CAP_H
 #define _PCI_CAP_H
 
-#include "types.h"
+#অন্তর্ভাব "types.h"
 
 /*
  *
@@ -47,6 +47,6 @@
 #define RES_RESERVE_MEM            16
 #define RES_RESERVE_PREF_MEM_32    20
 #define RES_RESERVE_PREF_MEM_64    24
-#define RES_RESERVE_CAP_SIZE       32
+#define RES_RESERVE_CAP_আকার       32
 
 #endif /* _PCI_CAP_H */

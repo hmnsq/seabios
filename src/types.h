@@ -6,25 +6,25 @@
 #ifndef __TYPES_H
 #define __TYPES_H
 
-typedef unsigned char u8;
-typedef signed char s8;
-typedef unsigned short u16;
-typedef signed short s16;
-typedef unsigned int u32;
-typedef signed int s32;
-typedef unsigned long long u64;
-typedef signed long long s64;
-typedef u32 size_t;
+প্রকারলেখ unsigned অক্ষর u8;
+প্রকারলেখ signed অক্ষর s8;
+প্রকারলেখ unsigned short u16;
+প্রকারলেখ signed short s16;
+প্রকারলেখ unsigned পূর্ণসংখ্যা u32;
+প্রকারলেখ signed পূর্ণসংখ্যা s32;
+প্রকারলেখ unsigned long long u64;
+প্রকারলেখ signed long long s64;
+প্রকারলেখ u32 আকার_t;
 
-union u64_u32_u {
-    struct { u32 lo, hi; };
+সংঘ u64_u32_u {
+    কাঠামো { u32 lo, hi; };
     u64 val;
 };
 
 // Definition for common 16bit segment/offset pointers.
-struct segoff_s {
-    union {
-        struct {
+কাঠামো segoff_s {
+    সংঘ {
+        কাঠামো {
             u16 offset;
             u16 seg;
         };
@@ -33,25 +33,25 @@ struct segoff_s {
 };
 
 #ifdef MANUAL_NO_JUMP_TABLE
-# define default case 775324556: asm(""); default
+# define পূর্বনির্ধারিত ক্ষেত্র 775324556: asm(""); পূর্বনির্ধারিত
 #endif
 
 #ifdef WHOLE_PROGRAM
 # define __VISIBLE __attribute__((externally_visible))
-#else
+#অন্যথা
 # define __VISIBLE
 #endif
 
 #define UNIQSEC __FILE__ "." __stringify(__LINE__)
 
 #define __noreturn __attribute__((noreturn))
-extern void __force_link_error__only_in_32bit_flat(void) __noreturn;
-extern void __force_link_error__only_in_32bit_segmented(void) __noreturn;
-extern void __force_link_error__only_in_16bit(void) __noreturn;
+বাহ্যিক শূন্য __force_link_error__only_in_32bit_flat(শূন্য) __noreturn;
+বাহ্যিক শূন্য __force_link_error__only_in_32bit_segmented(শূন্য) __noreturn;
+বাহ্যিক শূন্য __force_link_error__only_in_16bit(শূন্য) __noreturn;
 
 #define __ASM(code) asm(".section .text.asm." UNIQSEC "\n\t" code)
 
-#if MODE16 == 1
+#যদি MODE16 == 1
 // Notes a function as externally visible in the 16bit code chunk.
 # define VISIBLE16 __VISIBLE
 // Notes a function as externally visible in the 32bit flat code chunk.
@@ -77,10 +77,10 @@ extern void __force_link_error__only_in_16bit(void) __noreturn;
 // Designate top-level assembler as 32bit flat only.
 # define ASM32FLAT(code)
 // Compile time check for a given mode.
-# define ASSERT16() do { } while (0)
+# define ASSERT16() করো { } যখন (0)
 # define ASSERT32SEG() __force_link_error__only_in_32bit_segmented()
 # define ASSERT32FLAT() __force_link_error__only_in_32bit_flat()
-#elif MODESEGMENT == 1
+#নতুবা_যদি MODESEGMENT == 1
 # define VISIBLE16
 # define VISIBLE32FLAT
 # define VISIBLE32INIT
@@ -94,9 +94,9 @@ extern void __force_link_error__only_in_16bit(void) __noreturn;
 # define ASM16(code)
 # define ASM32FLAT(code)
 # define ASSERT16() __force_link_error__only_in_16bit()
-# define ASSERT32SEG() do { } while (0)
+# define ASSERT32SEG() করো { } যখন (0)
 # define ASSERT32FLAT() __force_link_error__only_in_32bit_flat()
-#else
+#অন্যথা
 # define VISIBLE16
 # define VISIBLE32FLAT __section(".text.runtime." UNIQSEC) __VISIBLE
 # define VISIBLE32INIT __section(".text.init." UNIQSEC) __VISIBLE
@@ -111,31 +111,31 @@ extern void __force_link_error__only_in_16bit(void) __noreturn;
 # define ASM32FLAT(code) __ASM(code)
 # define ASSERT16() __force_link_error__only_in_16bit()
 # define ASSERT32SEG() __force_link_error__only_in_32bit_segmented()
-# define ASSERT32FLAT() do { } while (0)
+# define ASSERT32FLAT() করো { } যখন (0)
 #endif
 
-#define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
-#define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
-#define FIELD_SIZEOF(t, f) (sizeof(((t*)0)->f))
+#define offsetof(TYPE, MEMBER) ((আকার_t) &((TYPE *)0)->MEMBER)
+#define ARRAY_আকার(a) (আকার(a) / আকার(a[0]))
+#define FIELD_SIZEOF(t, f) (আকার(((t*)0)->f))
 #define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
-#define DIV_ROUND_CLOSEST(x, divisor)({                 \
-            typeof(divisor) __divisor = divisor;        \
+#define DIV_ROUND_CLOSEST(x, ভাজক)({                 \
+            typeof(ভাজক) __divisor = ভাজক;        \
             (((x) + ((__divisor) / 2)) / (__divisor));  \
         })
 #define ALIGN(x,a)              __ALIGN_MASK(x,(typeof(x))(a)-1)
 #define __ALIGN_MASK(x,mask)    (((x)+(mask))&~(mask))
 #define ALIGN_DOWN(x,a)         ((x) & ~((typeof(x))(a)-1))
 #define container_of(ptr, type, member) ({                      \
-        const typeof( ((type *)0)->member ) *__mptr = (ptr);    \
-        (type *)( (char *)__mptr - offsetof(type,member) );})
+        ধ্রুবক typeof( ((type *)0)->member ) *__mptr = (ptr);    \
+        (type *)( (অক্ষর *)__mptr - offsetof(type,member) );})
 #define container_of_or_null(ptr, type, member) ({              \
-        const typeof( ((type *)0)->member ) *___mptr = (ptr);   \
-        ___mptr ? container_of(___mptr, type, member) : NULL; })
+        ধ্রুবক typeof( ((type *)0)->member ) *___mptr = (ptr);   \
+        ___mptr ? container_of(___mptr, type, member) : ফাঁকা; })
 
 #define likely(x)       __builtin_expect(!!(x), 1)
 #define unlikely(x)     __builtin_expect(!!(x), 0)
 
-#define NULL ((void*)0)
+#define ফাঁকা ((শূন্য*)0)
 
 #define __weak __attribute__((weak))
 #define __section(S) __attribute__((section(S)))
@@ -146,7 +146,7 @@ extern void __force_link_error__only_in_16bit(void) __noreturn;
 #define barrier() __asm__ __volatile__("": : :"memory")
 
 #define noinline __attribute__((noinline))
-#define __always_inline inline __attribute__((always_inline))
+#define __always_inline অন্তঃরেখ __attribute__((always_inline))
 #define __malloc __attribute__((__malloc__))
 #define __attribute_const __attribute__((__const__))
 

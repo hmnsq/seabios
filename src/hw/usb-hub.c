@@ -4,194 +4,194 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_USB_HUB
-#include "output.h" // dprintf
-#include "string.h" // memset
-#include "usb.h" // struct usb_s
-#include "usb-hub.h" // struct usb_hub_descriptor
-#include "util.h" // timer_calc
+#অন্তর্ভাব "config.h" // CONFIG_USB_HUB
+#অন্তর্ভাব "output.h" // dprintf
+#অন্তর্ভাব "string.h" // memset
+#অন্তর্ভাব "usb.h" // struct usb_s
+#অন্তর্ভাব "usb-hub.h" // struct usb_hub_descriptor
+#অন্তর্ভাব "util.h" // timer_calc
 
-static int
-get_hub_desc(struct usb_pipe *pipe, struct usb_hub_descriptor *desc)
+স্থির পূর্ণসংখ্যা
+get_hub_desc(কাঠামো usb_pipe *pipe, কাঠামো usb_hub_descriptor *desc)
 {
-    struct usb_ctrlrequest req;
+    কাঠামো usb_ctrlrequest req;
     req.bRequestType = USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_DEVICE;
     req.bRequest = USB_REQ_GET_DESCRIPTOR;
-    if (pipe->speed == USB_SUPERSPEED)
-        req.wValue = USB_DT_HUB3<<8;
-    else
-        req.wValue = USB_DT_HUB<<8;
-    req.wIndex = 0;
-    req.wLength = sizeof(*desc);
-    return usb_send_default_control(pipe, &req, desc);
+    যদি (pipe->speed == USB_SUPERSPEED)
+        req.w_মান = USB_DT_HUB3<<8;
+    অন্যথা
+        req.w_মান = USB_DT_HUB<<8;
+    req.w_সূচক = 0;
+    req.w_দৈর্ঘ্য = আকার(*desc);
+    ফেরত usb_send_default_control(pipe, &req, desc);
 }
 
-static int
-set_hub_depth(struct usb_pipe *pipe, u16 depth)
+স্থির পূর্ণসংখ্যা
+set_hub_depth(কাঠামো usb_pipe *pipe, u16 depth)
 {
-    struct usb_ctrlrequest req;
+    কাঠামো usb_ctrlrequest req;
     req.bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_DEVICE;
     req.bRequest = HUB_REQ_SET_HUB_DEPTH;
-    req.wValue = depth;
-    req.wIndex = 0;
-    req.wLength = 0;
-    return usb_send_default_control(pipe, &req, NULL);
+    req.w_মান = depth;
+    req.w_সূচক = 0;
+    req.w_দৈর্ঘ্য = 0;
+    ফেরত usb_send_default_control(pipe, &req, ফাঁকা);
 }
 
-static int
-set_port_feature(struct usbhub_s *hub, int port, int feature)
+স্থির পূর্ণসংখ্যা
+set_port_feature(কাঠামো usbhub_s *hub, পূর্ণসংখ্যা port, পূর্ণসংখ্যা feature)
 {
-    struct usb_ctrlrequest req;
+    কাঠামো usb_ctrlrequest req;
     req.bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_OTHER;
     req.bRequest = USB_REQ_SET_FEATURE;
-    req.wValue = feature;
-    req.wIndex = port + 1;
-    req.wLength = 0;
+    req.w_মান = feature;
+    req.w_সূচক = port + 1;
+    req.w_দৈর্ঘ্য = 0;
     mutex_lock(&hub->lock);
-    int ret = usb_send_default_control(hub->usbdev->defpipe, &req, NULL);
+    পূর্ণসংখ্যা ret = usb_send_default_control(hub->usbdev->defpipe, &req, ফাঁকা);
     mutex_unlock(&hub->lock);
-    return ret;
+    ফেরত ret;
 }
 
-static int
-clear_port_feature(struct usbhub_s *hub, int port, int feature)
+স্থির পূর্ণসংখ্যা
+clear_port_feature(কাঠামো usbhub_s *hub, পূর্ণসংখ্যা port, পূর্ণসংখ্যা feature)
 {
-    struct usb_ctrlrequest req;
+    কাঠামো usb_ctrlrequest req;
     req.bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_OTHER;
     req.bRequest = USB_REQ_CLEAR_FEATURE;
-    req.wValue = feature;
-    req.wIndex = port + 1;
-    req.wLength = 0;
+    req.w_মান = feature;
+    req.w_সূচক = port + 1;
+    req.w_দৈর্ঘ্য = 0;
     mutex_lock(&hub->lock);
-    int ret = usb_send_default_control(hub->usbdev->defpipe, &req, NULL);
+    পূর্ণসংখ্যা ret = usb_send_default_control(hub->usbdev->defpipe, &req, ফাঁকা);
     mutex_unlock(&hub->lock);
-    return ret;
+    ফেরত ret;
 }
 
-static int
-get_port_status(struct usbhub_s *hub, int port, struct usb_port_status *sts)
+স্থির পূর্ণসংখ্যা
+get_port_status(কাঠামো usbhub_s *hub, পূর্ণসংখ্যা port, কাঠামো usb_port_status *sts)
 {
-    struct usb_ctrlrequest req;
+    কাঠামো usb_ctrlrequest req;
     req.bRequestType = USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_OTHER;
     req.bRequest = USB_REQ_GET_STATUS;
-    req.wValue = 0;
-    req.wIndex = port + 1;
-    req.wLength = sizeof(*sts);
+    req.w_মান = 0;
+    req.w_সূচক = port + 1;
+    req.w_দৈর্ঘ্য = আকার(*sts);
     mutex_lock(&hub->lock);
-    int ret = usb_send_default_control(hub->usbdev->defpipe, &req, sts);
+    পূর্ণসংখ্যা ret = usb_send_default_control(hub->usbdev->defpipe, &req, sts);
     mutex_unlock(&hub->lock);
-    return ret;
+    ফেরত ret;
 }
 
 // Check if device attached to port
-static int
-usb_hub_detect(struct usbhub_s *hub, u32 port)
+স্থির পূর্ণসংখ্যা
+usb_hub_detect(কাঠামো usbhub_s *hub, u32 port)
 {
-    struct usb_port_status sts;
-    int ret = get_port_status(hub, port, &sts);
-    if (ret) {
+    কাঠামো usb_port_status sts;
+    পূর্ণসংখ্যা ret = get_port_status(hub, port, &sts);
+    যদি (ret) {
         dprintf(1, "Failure on hub port %d detect\n", port);
-        return -1;
+        ফেরত -1;
     }
-    return (sts.wPortStatus & USB_PORT_STAT_CONNECTION) ? 1 : 0;
+    ফেরত (sts.wPortStatus & USB_PORT_STAT_CONNECTION) ? 1 : 0;
 }
 
 // Disable port
-static void
-usb_hub_disconnect(struct usbhub_s *hub, u32 port)
+স্থির শূন্য
+usb_hub_disconnect(কাঠামো usbhub_s *hub, u32 port)
 {
-    int ret = clear_port_feature(hub, port, USB_PORT_FEAT_ENABLE);
-    if (ret)
+    পূর্ণসংখ্যা ret = clear_port_feature(hub, port, USB_PORT_FEAT_ENABLE);
+    যদি (ret)
         dprintf(1, "Failure on hub port %d disconnect\n", port);
 }
 
 // Reset device on port
-static int
-usb_hub_reset(struct usbhub_s *hub, u32 port)
+স্থির পূর্ণসংখ্যা
+usb_hub_reset(কাঠামো usbhub_s *hub, u32 port)
 {
-    int ret = set_port_feature(hub, port, USB_PORT_FEAT_RESET);
-    if (ret)
-        goto fail;
+    পূর্ণসংখ্যা ret = set_port_feature(hub, port, USB_PORT_FEAT_RESET);
+    যদি (ret)
+        যাও fail;
 
     // Wait for reset to complete.
-    struct usb_port_status sts;
+    কাঠামো usb_port_status sts;
     u32 end = timer_calc(USB_TIME_DRST * 2);
-    for (;;) {
+    জন্য (;;) {
         ret = get_port_status(hub, port, &sts);
-        if (ret)
-            goto fail;
-        if (!(sts.wPortStatus & USB_PORT_STAT_RESET)
+        যদি (ret)
+            যাও fail;
+        যদি (!(sts.wPortStatus & USB_PORT_STAT_RESET)
             && (hub->usbdev->speed != USB_SUPERSPEED
                 || !(sts.wPortStatus & USB_PORT_STAT_LINK_MASK)))
-            break;
-        if (timer_check(end)) {
+            বিরতি;
+        যদি (timer_check(end)) {
             warn_timeout();
-            goto fail;
+            যাও fail;
         }
         msleep(5);
     }
 
     // Reset complete.
-    if (!(sts.wPortStatus & USB_PORT_STAT_CONNECTION))
+    যদি (!(sts.wPortStatus & USB_PORT_STAT_CONNECTION))
         // Device no longer present
-        return -1;
+        ফেরত -1;
 
-    if (hub->usbdev->speed == USB_SUPERSPEED)
-        return USB_SUPERSPEED;
-    return ((sts.wPortStatus & USB_PORT_STAT_SPEED_MASK)
+    যদি (hub->usbdev->speed == USB_SUPERSPEED)
+        ফেরত USB_SUPERSPEED;
+    ফেরত ((sts.wPortStatus & USB_PORT_STAT_SPEED_MASK)
             >> USB_PORT_STAT_SPEED_SHIFT);
 
 fail:
     dprintf(1, "Failure on hub port %d reset\n", port);
     usb_hub_disconnect(hub, port);
-    return -1;
+    ফেরত -1;
 }
 
-static struct usbhub_op_s HubOp = {
+স্থির কাঠামো usbhub_op_s HubOp = {
     .detect = usb_hub_detect,
     .reset = usb_hub_reset,
     .disconnect = usb_hub_disconnect,
 };
 
 // Configure a usb hub and then find devices connected to it.
-int
-usb_hub_setup(struct usbdevice_s *usbdev)
+পূর্ণসংখ্যা
+usb_hub_setup(কাঠামো usbdevice_s *usbdev)
 {
     ASSERT32FLAT();
-    if (!CONFIG_USB_HUB)
-        return -1;
+    যদি (!CONFIG_USB_HUB)
+        ফেরত -1;
 
-    struct usb_hub_descriptor desc;
-    int ret = get_hub_desc(usbdev->defpipe, &desc);
-    if (ret)
-        return ret;
+    কাঠামো usb_hub_descriptor desc;
+    পূর্ণসংখ্যা ret = get_hub_desc(usbdev->defpipe, &desc);
+    যদি (ret)
+        ফেরত ret;
 
-    struct usbhub_s hub;
-    memset(&hub, 0, sizeof(hub));
+    কাঠামো usbhub_s hub;
+    memset(&hub, 0, আকার(hub));
     hub.usbdev = usbdev;
     hub.cntl = usbdev->defpipe->cntl;
     hub.portcount = desc.bNbrPorts;
     hub.op = &HubOp;
 
-    if (usbdev->speed == USB_SUPERSPEED) {
-        int depth = 0;
-        struct usbdevice_s *parent = usbdev->hub->usbdev;
-        while (parent) {
+    যদি (usbdev->speed == USB_SUPERSPEED) {
+        পূর্ণসংখ্যা depth = 0;
+        কাঠামো usbdevice_s *parent = usbdev->hub->usbdev;
+        যখন (parent) {
             depth++;
             parent = parent->hub->usbdev;
         }
 
         ret = set_hub_depth(usbdev->defpipe, depth);
-        if (ret)
-            return ret;
+        যদি (ret)
+            ফেরত ret;
     }
 
     // Turn on power to ports.
-    int port;
-    for (port=0; port<desc.bNbrPorts; port++) {
+    পূর্ণসংখ্যা port;
+    জন্য (port=0; port<desc.bNbrPorts; port++) {
         ret = set_port_feature(&hub, port, USB_PORT_FEAT_POWER);
-        if (ret)
-            return ret;
+        যদি (ret)
+            ফেরত ret;
     }
     // Wait for port power to stabilize.
     msleep(desc.bPwrOn2PwrGood * 2);
@@ -199,7 +199,7 @@ usb_hub_setup(struct usbdevice_s *usbdev)
     usb_enumerate(&hub);
 
     dprintf(1, "Initialized USB HUB (%d ports used)\n", hub.devcount);
-    if (hub.devcount)
-        return 0;
-    return -1;
+    যদি (hub.devcount)
+        ফেরত 0;
+    ফেরত -1;
 }

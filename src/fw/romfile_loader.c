@@ -1,162 +1,162 @@
-#include "romfile_loader.h"
-#include "byteorder.h" // leXX_to_cpu/cpu_to_leXX
-#include "util.h" // checksum
-#include "string.h" // strcmp
-#include "romfile.h" // struct romfile_s
-#include "malloc.h" // Zone*, _malloc
-#include "list.h" // struct hlist_node
-#include "output.h" // warn_*
-#include "paravirt.h" // qemu_cfg_write_file
+#অন্তর্ভাব "romfile_loader.h"
+#অন্তর্ভাব "byteorder.h" // leXX_to_cpu/cpu_to_leXX
+#অন্তর্ভাব "util.h" // checksum
+#অন্তর্ভাব "string.h" // strcmp
+#অন্তর্ভাব "romfile.h" // struct romfile_s
+#অন্তর্ভাব "malloc.h" // Zone*, _malloc
+#অন্তর্ভাব "list.h" // struct hlist_node
+#অন্তর্ভাব "output.h" // warn_*
+#অন্তর্ভাব "paravirt.h" // qemu_cfg_write_file
 
-struct romfile_loader_file {
-    struct romfile_s *file;
-    void *data;
+কাঠামো romfile_loader_file {
+    কাঠামো romfile_s *file;
+    শূন্য *তথ্য;
 };
-struct romfile_loader_files {
-    int nfiles;
-    struct romfile_loader_file files[];
+কাঠামো romfile_loader_files {
+    পূর্ণসংখ্যা nfiles;
+    কাঠামো romfile_loader_file files[];
 };
 
 // Data structures for storing "write pointer" entries for possible replay
-struct romfile_wr_pointer_entry {
+কাঠামো romfile_wr_pointer_entry {
     u64 pointer;
     u32 offset;
-    u16 key;
-    u8 ptr_size;
-    struct hlist_node node;
+    u16 চাবি;
+    u8 ptr_আকার;
+    কাঠামো hlist_গ্রন্থি গ্রন্থি;
 };
-static struct hlist_head romfile_pointer_list;
+স্থির কাঠামো hlist_শীর্ষ romfile_pointer_list;
 
-static struct romfile_loader_file *
-romfile_loader_find(const char *name,
-                    struct romfile_loader_files *files)
+স্থির কাঠামো romfile_loader_file *
+romfile_loader_find(ধ্রুবক অক্ষর *name,
+                    কাঠামো romfile_loader_files *files)
 {
-    int i;
-    if (name[ROMFILE_LOADER_FILESZ - 1])
-        return NULL;
-    for (i = 0; i < files->nfiles; ++i)
-        if (!strcmp(files->files[i].file->name, name))
-            return &files->files[i];
-    return NULL;
+    পূর্ণসংখ্যা i;
+    যদি (name[ROMFILE_LOADER_FILESZ - 1])
+        ফেরত ফাঁকা;
+    জন্য (i = 0; i < files->nfiles; ++i)
+        যদি (!strcmp(files->files[i].file->name, name))
+            ফেরত &files->files[i];
+    ফেরত ফাঁকা;
 }
 
 // Replay "write pointer" entries back to QEMU
-void romfile_fw_cfg_resume(void)
+শূন্য romfile_fw_cfg_resume(শূন্য)
 {
-    if (!CONFIG_QEMU)
-        return;
+    যদি (!CONFIG_QEMU)
+        ফেরত;
 
-    struct romfile_wr_pointer_entry *entry;
-    hlist_for_each_entry(entry, &romfile_pointer_list, node) {
-        qemu_cfg_write_file_simple(&entry->pointer, entry->key,
-                                   entry->offset, entry->ptr_size);
+    কাঠামো romfile_wr_pointer_entry *entry;
+    hlist_for_each_entry(entry, &romfile_pointer_list, গ্রন্থি) {
+        qemu_cfg_write_file_simple(&entry->pointer, entry->চাবি,
+                                   entry->offset, entry->ptr_আকার);
     }
 }
 
-static void romfile_loader_allocate(struct romfile_loader_entry_s *entry,
-                                    struct romfile_loader_files *files)
+স্থির শূন্য romfile_loader_allocate(কাঠামো romfile_loader_entry_s *entry,
+                                    কাঠামো romfile_loader_files *files)
 {
-    struct zone_s *zone;
-    struct romfile_loader_file *file = &files->files[files->nfiles];
-    void *data;
-    int ret;
+    কাঠামো zone_s *zone;
+    কাঠামো romfile_loader_file *file = &files->files[files->nfiles];
+    শূন্য *তথ্য;
+    পূর্ণসংখ্যা ret;
     unsigned alloc_align = le32_to_cpu(entry->alloc.align);
 
-    if (alloc_align & (alloc_align - 1))
-        goto err;
+    যদি (alloc_align & (alloc_align - 1))
+        যাও err;
 
-    switch (entry->alloc.zone) {
-        case ROMFILE_LOADER_ALLOC_ZONE_HIGH:
-            zone = &ZoneHigh;
-            break;
-        case ROMFILE_LOADER_ALLOC_ZONE_FSEG:
+    নির্বাচন (entry->alloc.zone) {
+        ক্ষেত্র ROMFILE_LOADER_ALLOC_ZONE_উপরের:
+            zone = &Zone_উপরের;
+            বিরতি;
+        ক্ষেত্র ROMFILE_LOADER_ALLOC_ZONE_FSEG:
             zone = &ZoneFSeg;
-            break;
-        default:
-            goto err;
+            বিরতি;
+        পূর্বনির্ধারিত:
+            যাও err;
     }
-    if (alloc_align < MALLOC_MIN_ALIGN)
+    যদি (alloc_align < MALLOC_MIN_ALIGN)
         alloc_align = MALLOC_MIN_ALIGN;
-    if (entry->alloc.file[ROMFILE_LOADER_FILESZ - 1])
-        goto err;
+    যদি (entry->alloc.file[ROMFILE_LOADER_FILESZ - 1])
+        যাও err;
     file->file = romfile_find(entry->alloc.file);
-    if (!file->file || !file->file->size)
-        return;
-    data = _malloc(zone, file->file->size, alloc_align);
-    if (!data) {
+    যদি (!file->file || !file->file->আকার_2)
+        ফেরত;
+    তথ্য = _malloc(zone, file->file->আকার_2, alloc_align);
+    যদি (!তথ্য) {
         warn_noalloc();
-        return;
+        ফেরত;
     }
-    ret = file->file->copy(file->file, data, file->file->size);
-    if (ret != file->file->size)
-        goto file_err;
-    file->data = data;
+    ret = file->file->copy(file->file, তথ্য, file->file->আকার_2);
+    যদি (ret != file->file->আকার_2)
+        যাও file_err;
+    file->তথ্য = তথ্য;
     files->nfiles++;
-    return;
+    ফেরত;
 
 file_err:
-    free(data);
+    মুক্ত(তথ্য);
 err:
     warn_internalerror();
 }
 
-static void romfile_loader_add_pointer(struct romfile_loader_entry_s *entry,
-                                       struct romfile_loader_files *files)
+স্থির শূন্য romfile_loader_add_pointer(কাঠামো romfile_loader_entry_s *entry,
+                                       কাঠামো romfile_loader_files *files)
 {
-    struct romfile_loader_file *dest_file;
-    struct romfile_loader_file *src_file;
+    কাঠামো romfile_loader_file *dest_file;
+    কাঠামো romfile_loader_file *src_file;
     unsigned offset = le32_to_cpu(entry->pointer.offset);
     u64 pointer = 0;
 
     dest_file = romfile_loader_find(entry->pointer.dest_file, files);
     src_file = romfile_loader_find(entry->pointer.src_file, files);
 
-    if (!dest_file || !src_file || !dest_file->data || !src_file->data ||
-        offset + entry->pointer.size < offset ||
-        offset + entry->pointer.size > dest_file->file->size ||
-        entry->pointer.size < 1 || entry->pointer.size > 8 ||
-        entry->pointer.size & (entry->pointer.size - 1))
-        goto err;
+    যদি (!dest_file || !src_file || !dest_file->তথ্য || !src_file->তথ্য ||
+        offset + entry->pointer.আকার_2 < offset ||
+        offset + entry->pointer.আকার_2 > dest_file->file->আকার_2 ||
+        entry->pointer.আকার_2 < 1 || entry->pointer.আকার_2 > 8 ||
+        entry->pointer.আকার_2 & (entry->pointer.আকার_2 - 1))
+        যাও err;
 
-    memcpy(&pointer, dest_file->data + offset, entry->pointer.size);
+    memcpy(&pointer, dest_file->তথ্য + offset, entry->pointer.আকার_2);
     pointer = le64_to_cpu(pointer);
-    pointer += (unsigned long)src_file->data;
+    pointer += (unsigned long)src_file->তথ্য;
     pointer = cpu_to_le64(pointer);
-    memcpy(dest_file->data + offset, &pointer, entry->pointer.size);
+    memcpy(dest_file->তথ্য + offset, &pointer, entry->pointer.আকার_2);
 
-    return;
+    ফেরত;
 err:
     warn_internalerror();
 }
 
-static void romfile_loader_add_checksum(struct romfile_loader_entry_s *entry,
-                                        struct romfile_loader_files *files)
+স্থির শূন্য romfile_loader_add_checksum(কাঠামো romfile_loader_entry_s *entry,
+                                        কাঠামো romfile_loader_files *files)
 {
-    struct romfile_loader_file *file;
+    কাঠামো romfile_loader_file *file;
     unsigned offset = le32_to_cpu(entry->cksum.offset);
     unsigned start = le32_to_cpu(entry->cksum.start);
-    unsigned len = le32_to_cpu(entry->cksum.length);
-    u8 *data;
+    unsigned len = le32_to_cpu(entry->cksum.দৈর্ঘ্য);
+    u8 *তথ্য;
 
     file = romfile_loader_find(entry->cksum.file, files);
 
-    if (!file || !file->data || offset >= file->file->size ||
-        start + len < start || start + len > file->file->size)
-        goto err;
+    যদি (!file || !file->তথ্য || offset >= file->file->আকার_2 ||
+        start + len < start || start + len > file->file->আকার_2)
+        যাও err;
 
-    data = file->data + offset;
-    *data -= checksum(file->data + start, len);
+    তথ্য = file->তথ্য + offset;
+    *তথ্য -= checksum(file->তথ্য + start, len);
 
-    return;
+    ফেরত;
 err:
     warn_internalerror();
 }
 
-static void romfile_loader_write_pointer(struct romfile_loader_entry_s *entry,
-                                         struct romfile_loader_files *files)
+স্থির শূন্য romfile_loader_write_pointer(কাঠামো romfile_loader_entry_s *entry,
+                                         কাঠামো romfile_loader_files *files)
 {
-    struct romfile_s *dest_file;
-    struct romfile_loader_file *src_file;
+    কাঠামো romfile_s *dest_file;
+    কাঠামো romfile_loader_file *src_file;
     unsigned dst_offset = le32_to_cpu(entry->wr_pointer.dst_offset);
     unsigned src_offset = le32_to_cpu(entry->wr_pointer.src_offset);
     u64 pointer = 0;
@@ -165,95 +165,95 @@ static void romfile_loader_write_pointer(struct romfile_loader_entry_s *entry,
     dest_file = romfile_find(entry->wr_pointer.dest_file);
     src_file = romfile_loader_find(entry->wr_pointer.src_file, files);
 
-    if (!dest_file || !src_file || !src_file->data ||
-        dst_offset + entry->wr_pointer.size < dst_offset ||
-        dst_offset + entry->wr_pointer.size > dest_file->size ||
-        src_offset >= src_file->file->size ||
-        entry->wr_pointer.size < 1 || entry->wr_pointer.size > 8 ||
-        entry->wr_pointer.size & (entry->wr_pointer.size - 1)) {
-        goto err;
+    যদি (!dest_file || !src_file || !src_file->তথ্য ||
+        dst_offset + entry->wr_pointer.আকার_2 < dst_offset ||
+        dst_offset + entry->wr_pointer.আকার_2 > dest_file->আকার_2 ||
+        src_offset >= src_file->file->আকার_2 ||
+        entry->wr_pointer.আকার_2 < 1 || entry->wr_pointer.আকার_2 > 8 ||
+        entry->wr_pointer.আকার_2 & (entry->wr_pointer.আকার_2 - 1)) {
+        যাও err;
     }
 
-    pointer = (unsigned long)src_file->data + src_offset;
+    pointer = (unsigned long)src_file->তথ্য + src_offset;
     /* Make sure the pointer fits within wr_pointer.size */
-    if ((entry->wr_pointer.size != sizeof(u64)) &&
-        ((pointer >> (entry->wr_pointer.size * 8)) > 0)) {
-        goto err;
+    যদি ((entry->wr_pointer.আকার_2 != আকার(u64)) &&
+        ((pointer >> (entry->wr_pointer.আকার_2 * 8)) > 0)) {
+        যাও err;
     }
     pointer = cpu_to_le64(pointer);
 
     /* Only supported on QEMU */
-    if (qemu_cfg_write_file(&pointer, dest_file, dst_offset,
-                            entry->wr_pointer.size) != entry->wr_pointer.size) {
-        goto err;
+    যদি (qemu_cfg_write_file(&pointer, dest_file, dst_offset,
+                            entry->wr_pointer.আকার_2) != entry->wr_pointer.আকার_2) {
+        যাও err;
     }
 
     /* Store the info so it can replayed later if necessary */
-    struct romfile_wr_pointer_entry *store = malloc_high(sizeof(*store));
-    if (!store) {
+    কাঠামো romfile_wr_pointer_entry *store = malloc_উপরের(আকার(*store));
+    যদি (!store) {
         warn_noalloc();
-        return;
+        ফেরত;
     }
     store->pointer = pointer;
-    store->key = qemu_get_romfile_key(dest_file);
+    store->চাবি = qemu_get_romfile_চাবি(dest_file);
     store->offset = dst_offset;
-    store->ptr_size = entry->wr_pointer.size;
-    hlist_add_head(&store->node, &romfile_pointer_list);
+    store->ptr_আকার = entry->wr_pointer.আকার_2;
+    hlist_add_শীর্ষ(&store->গ্রন্থি, &romfile_pointer_list);
 
-    return;
+    ফেরত;
  err:
     warn_internalerror();
 }
 
-int romfile_loader_execute(const char *name)
+পূর্ণসংখ্যা romfile_loader_execute(ধ্রুবক অক্ষর *name)
 {
-    struct romfile_loader_entry_s *entry;
-    int size, offset = 0, nfiles;
-    struct romfile_loader_files *files;
-    void *data = romfile_loadfile(name, &size);
-    if (!data)
-        return -1;
+    কাঠামো romfile_loader_entry_s *entry;
+    পূর্ণসংখ্যা আকার_2, offset = 0, nfiles;
+    কাঠামো romfile_loader_files *files;
+    শূন্য *তথ্য = romfile_loadfile(name, &আকার_2);
+    যদি (!তথ্য)
+        ফেরত -1;
 
-    if (size % sizeof(*entry)) {
+    যদি (আকার_2 % আকার(*entry)) {
         warn_internalerror();
-        goto err;
+        যাও err;
     }
 
     /* (over)estimate the number of files to load. */
-    nfiles = size / sizeof(*entry);
-    files = malloc_tmp(sizeof(*files) + nfiles * sizeof(files->files[0]));
-    if (!files) {
+    nfiles = আকার_2 / আকার(*entry);
+    files = malloc_tmp(আকার(*files) + nfiles * আকার(files->files[0]));
+    যদি (!files) {
         warn_noalloc();
-        goto err;
+        যাও err;
     }
     files->nfiles = 0;
 
-    for (offset = 0; offset < size; offset += sizeof(*entry)) {
-        entry = data + offset;
-        switch (le32_to_cpu(entry->command)) {
-                case ROMFILE_LOADER_COMMAND_ALLOCATE:
+    জন্য (offset = 0; offset < আকার_2; offset += আকার(*entry)) {
+        entry = তথ্য + offset;
+        নির্বাচন (le32_to_cpu(entry->command)) {
+                ক্ষেত্র ROMFILE_LOADER_COMMAND_ALLOCATE:
                         romfile_loader_allocate(entry, files);
-                        break;
-                case ROMFILE_LOADER_COMMAND_ADD_POINTER:
+                        বিরতি;
+                ক্ষেত্র ROMFILE_LOADER_COMMAND_ADD_POINTER:
                         romfile_loader_add_pointer(entry, files);
-                        break;
-                case ROMFILE_LOADER_COMMAND_ADD_CHECKSUM:
+                        বিরতি;
+                ক্ষেত্র ROMFILE_LOADER_COMMAND_ADD_CHECKSUM:
                         romfile_loader_add_checksum(entry, files);
-                        break;
-                case ROMFILE_LOADER_COMMAND_WRITE_POINTER:
+                        বিরতি;
+                ক্ষেত্র ROMFILE_LOADER_COMMAND_WRITE_POINTER:
                         romfile_loader_write_pointer(entry, files);
-                        break;
-                default:
+                        বিরতি;
+                পূর্বনির্ধারিত:
                         /* Skip commands that we don't recognize. */
-                        break;
+                        বিরতি;
         }
     }
 
-    free(files);
-    free(data);
-    return 0;
+    মুক্ত(files);
+    মুক্ত(তথ্য);
+    ফেরত 0;
 
 err:
-    free(data);
-    return -1;
+    মুক্ত(তথ্য);
+    ফেরত -1;
 }

@@ -1,18 +1,18 @@
 #ifndef __AHCI_H
 #define __AHCI_H
 
-#include "block.h" // struct drive_s
-#include "types.h" // u32
+#অন্তর্ভাব "block.h" // struct drive_s
+#অন্তর্ভাব "types.h" // u32
 
-struct sata_cmd_fis {
+কাঠামো sata_cmd_fis {
     u8 reg;
     u8 pmp_type;
     u8 command;
     u8 feature;
 
-    u8 lba_low;
+    u8 lba_নিচের;
     u8 lba_mid;
-    u8 lba_high;
+    u8 lba_উপরের;
     u8 device;
 
     u8 lba_low2;
@@ -20,7 +20,7 @@ struct sata_cmd_fis {
     u8 lba_high2;
     u8 feature2;
 
-    u8 sector_count;
+    u8 sector_গুনতি;
     u8 sector_count2;
     u8 res_1;
     u8 control;
@@ -28,19 +28,19 @@ struct sata_cmd_fis {
     u8 res_2[64 - 16];
 };
 
-struct ahci_ctrl_s {
-    struct pci_device *pci_tmp;
+কাঠামো ahci_ctrl_s {
+    কাঠামো pci_device *pci_tmp;
     u8  irq;
-    void *iobase;
+    শূন্য *iobase;
     u32 caps;
     u32 ports;
 };
 
-struct ahci_cmd_s {
-    struct sata_cmd_fis fis;
+কাঠামো ahci_cmd_s {
+    কাঠামো sata_cmd_fis fis;
     u8 atapi[0x20];
     u8 res[0x20];
-    struct {
+    কাঠামো {
         u32 base;
         u32 baseu;
         u32 res;
@@ -49,7 +49,7 @@ struct ahci_cmd_s {
 };
 
 /* command list */
-struct ahci_list_s {
+কাঠামো ahci_list_s {
     u32 flags;
     u32 bytes;
     u32 base;
@@ -57,7 +57,7 @@ struct ahci_list_s {
     u32 res[4];
 };
 
-struct ahci_fis_s {
+কাঠামো ahci_fis_s {
     u8 dsfis[0x1c];  /* dma setup */
     u8 res_1[0x04];
     u8 psfis[0x14];  /* pio setup */
@@ -69,21 +69,21 @@ struct ahci_fis_s {
     u8 res_4[0x60];
 };
 
-struct ahci_port_s {
-    struct drive_s     drive;
-    struct ahci_ctrl_s *ctrl;
-    struct ahci_list_s *list;
-    struct ahci_fis_s  *fis;
-    struct ahci_cmd_s  *cmd;
+কাঠামো ahci_port_s {
+    কাঠামো drive_s     drive;
+    কাঠামো ahci_ctrl_s *ctrl;
+    কাঠামো ahci_list_s *list;
+    কাঠামো ahci_fis_s  *fis;
+    কাঠামো ahci_cmd_s  *cmd;
     u32                pnr;
     u32                atapi;
-    char               *desc;
-    int                prio;
+    অক্ষর               *desc;
+    পূর্ণসংখ্যা                prio;
 };
 
-void ahci_setup(void);
-int ahci_process_op(struct disk_op_s *op);
-int ahci_atapi_process_op(struct disk_op_s *op);
+শূন্য ahci_setup(শূন্য);
+পূর্ণসংখ্যা ahci_process_op(কাঠামো disk_op_s *op);
+পূর্ণসংখ্যা ahci_atapi_process_op(কাঠামো disk_op_s *op);
 
 #define AHCI_IRQ_ON_SG            (1 << 31)
 #define AHCI_CMD_ATAPI            (1 << 5)
@@ -137,7 +137,7 @@ int ahci_atapi_process_op(struct disk_op_s *op);
 #define PORT_IRQ_COLD_PRES        (1 << 31) /* cold presence detect */
 #define PORT_IRQ_TF_ERR           (1 << 30) /* task file error */
 #define PORT_IRQ_HBUS_ERR         (1 << 29) /* host bus fatal error */
-#define PORT_IRQ_HBUS_DATA_ERR    (1 << 28) /* host bus data error */
+#define PORT_IRQ_HBUS_তথ্য_ERR    (1 << 28) /* host bus data error */
 #define PORT_IRQ_IF_ERR           (1 << 27) /* interface fatal error */
 #define PORT_IRQ_IF_NONFATAL      (1 << 26) /* interface non-fatal error */
 #define PORT_IRQ_OVERFLOW         (1 << 24) /* xfer exhausted available S/G */
@@ -157,7 +157,7 @@ int ahci_atapi_process_op(struct disk_op_s *op);
                                    PORT_IRQ_CONNECT | PORT_IRQ_PHYRDY |    \
                                    PORT_IRQ_UNK_FIS)
 #define PORT_IRQ_ERROR            (PORT_IRQ_FREEZE | PORT_IRQ_TF_ERR |     \
-                                   PORT_IRQ_HBUS_DATA_ERR)
+                                   PORT_IRQ_HBUS_তথ্য_ERR)
 #define DEF_PORT_IRQ              (PORT_IRQ_ERROR | PORT_IRQ_SG_DONE |     \
                                    PORT_IRQ_SDB_FIS | PORT_IRQ_DMAS_FIS |  \
                                    PORT_IRQ_PIOS_FIS | PORT_IRQ_D2H_REG_FIS)

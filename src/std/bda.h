@@ -2,16 +2,16 @@
 #ifndef __BDA_H
 #define __BDA_H
 
-#include "disk.h" // struct fdpt_s
-#include "types.h" // u8
+#অন্তর্ভাব "disk.h" // struct fdpt_s
+#অন্তর্ভাব "types.h" // u8
 
 
 /****************************************************************
  * Interrupt vector table
  ****************************************************************/
 
-struct rmode_IVT {
-    struct segoff_s ivec[256];
+কাঠামো rmode_IVT {
+    কাঠামো segoff_s ivec[256];
 };
 
 
@@ -19,7 +19,7 @@ struct rmode_IVT {
  * Bios Data Area (BDA)
  ****************************************************************/
 
-struct bios_data_area_s {
+কাঠামো bios_তথ্য_area_s {
     // 40:00
     u16 port_com[4];
     u16 port_lpt[3];
@@ -27,19 +27,19 @@ struct bios_data_area_s {
     // 40:10
     u16 equipment_list_flags;
     u8 pad1;
-    u16 mem_size_kb;
+    u16 mem_আকার_kb;
     u8 pad2;
     u8 ps2_ctrl_flag;
     u16 kbd_flag0;
     u8 alt_keypad;
-    u16 kbd_buf_head;
-    u16 kbd_buf_tail;
+    u16 kbd_buf_শীর্ষ;
+    u16 kbd_buf_লেজ;
     // 40:1e
     u8 kbd_buf[32];
     u8 floppy_recalibration_status;
     u8 floppy_motor_status;
     // 40:40
-    u8 floppy_motor_counter;
+    u8 floppy_motor_গণক;
     u8 floppy_last_status;
     u8 floppy_return_status[7];
     u8 video_mode;
@@ -54,9 +54,9 @@ struct bios_data_area_s {
     u16 crtc_address;
     u8 video_msr;
     u8 video_pal;
-    struct segoff_s jump;
+    কাঠামো segoff_s jump;
     u8 other_6b;
-    u32 timer_counter;
+    u32 timer_গণক;
     // 40:70
     u8 timer_rollover;
     u8 break_flag;
@@ -75,8 +75,8 @@ struct bios_data_area_s {
     u8 video_ctl;
     u8 video_switches;
     u8 modeset_ctl;
-    u8 dcc_index;
-    u8 floppy_last_data_rate;
+    u8 dcc_সূচক;
+    u8 floppy_last_তথ্য_rate;
     u8 disk_status_controller;
     u8 disk_error_controller;
     u8 disk_interrupt_flag;
@@ -86,12 +86,12 @@ struct bios_data_area_s {
     u8 floppy_track[2];
     u8 kbd_flag1;
     u8 kbd_led;
-    struct segoff_s user_wait_complete_flag;
+    কাঠামো segoff_s user_wait_complete_flag;
     u32 user_wait_timeout;
     // 40:A0
     u8 rtc_wait_flag;
     u8 other_a1[7];
-    struct segoff_s video_savetable;
+    কাঠামো segoff_s video_savetable;
     u8 other_ac[4];
     // 40:B0
     u8 other_b0[5*16];
@@ -108,7 +108,7 @@ struct bios_data_area_s {
 #define FMS_DRIVE_STATE_MASK        (0x07)
 #define FMS_MEDIA_DRIVE_ESTABLISHED (1<<4)
 #define FMS_DOUBLE_STEPPING         (1<<5)
-#define FMS_DATA_RATE_MASK          (0xc0)
+#define FMS_তথ্য_RATE_MASK          (0xc0)
 
 // BDA kbd_flag[01] bitdefs
 #define KF0_RSHIFT       (1<<0)
@@ -122,7 +122,7 @@ struct bios_data_area_s {
 #define KF0_LALT         (1<<9)
 #define KF0_PAUSEACTIVE  (1<<11)
 #define KF0_SCROLL       (1<<12)
-#define KF0_NUM          (1<<13)
+#define KF0_অঙ্ক          (1<<13)
 #define KF0_CAPS         (1<<14)
 
 #define KF1_LAST_E1    (1<<0)
@@ -139,18 +139,18 @@ struct bios_data_area_s {
  * Extended Bios Data Area (EBDA)
  ****************************************************************/
 
-struct extended_bios_data_area_s {
-    u8 size;
+কাঠামো extended_bios_তথ্য_area_s {
+    u8 আকার_2;
     u8 reserved1[0x21];
-    struct segoff_s far_call_pointer;
+    কাঠামো segoff_s far_call_pointer;
     u8 mouse_flag1;
     u8 mouse_flag2;
-    u8 mouse_data[0x08];
+    u8 mouse_তথ্য[0x08];
     // 0x30
     u8 other1[0x0d];
 
     // 0x3d
-    struct fdpt_s fdpt[2];
+    কাঠামো fdpt_s fdpt[2];
 
     // 0x5d
     u8 other2[0xC4];
@@ -163,8 +163,8 @@ struct extended_bios_data_area_s {
  * Bios Config Table
  ****************************************************************/
 
-struct bios_config_table_s {
-    u16 size;
+কাঠামো bios_config_table_s {
+    u16 আকার_2;
     u8 model;
     u8 submodel;
     u8 biosrev;

@@ -1,7 +1,7 @@
 #ifndef STD_TCG_H
 #define STD_TCG_H
 
-#include "types.h"
+#অন্তর্ভাব "types.h"
 
 #define SHA1_BUFSIZE                20
 #define SHA256_BUFSIZE              32
@@ -53,9 +53,9 @@
 #define TCG_BLOCK_READ_TIMEOUT          (TPM_RET_BASE + 0x13)
 #define TCG_TRANSFER_ABORT              (TPM_RET_BASE + 0x14)
 #define TCG_INVALID_DRV_FUNCTION        (TPM_RET_BASE + 0x15)
-#define TCG_OUTPUT_BUFFER_TOO_SHORT     (TPM_RET_BASE + 0x16)
+#define TCG_OUTPUT_বাফার_TOO_SHORT     (TPM_RET_BASE + 0x16)
 #define TCG_FATAL_COM_ERROR             (TPM_RET_BASE + 0x17)
-#define TCG_INVALID_INPUT_PARA          (TPM_RET_BASE + 0x18)
+#define TCG_INVALID_প্রবেশ_PARA          (TPM_RET_BASE + 0x18)
 #define TCG_TCG_COMMAND_ERROR           (TPM_RET_BASE + 0x19)
 #define TCG_INTERFACE_SHUTDOWN          (TPM_RET_BASE + 0x20)
 //define TCG_PC_UNSUPPORTED             (TPM_RET_BASE + 0x21)
@@ -63,7 +63,7 @@
 #define TCG_PC_TPM_DEACTIVATED          (TPM_RET_BASE + 0x23)
 
 /* interrupt identifiers (al register) */
-enum irq_ids {
+গণনা irq_ids {
     TCG_StatusCheck = 0,
     TCG_HashLogExtendEvent = 1,
     TCG_PassThroughToTPM = 2,
@@ -76,30 +76,30 @@ enum irq_ids {
 
 /* Input and Output blocks for the TCG BIOS commands */
 
-struct hleei_short
+কাঠামো hleei_short
 {
     u16   ipblength;
     u16   reserved;
-    const void *hashdataptr;
+    ধ্রুবক শূন্য *hashdataptr;
     u32   hashdatalen;
     u32   pcrindex;
-    const void *logdataptr;
+    ধ্রুবক শূন্য *logdataptr;
     u32   logdatalen;
 } PACKED;
 
-struct hleei_long
+কাঠামো hleei_long
 {
     u16   ipblength;
     u16   reserved;
-    void *hashdataptr;
+    শূন্য *hashdataptr;
     u32   hashdatalen;
     u32   pcrindex;
     u32   reserved2;
-    void *logdataptr;
+    শূন্য *logdataptr;
     u32   logdatalen;
 } PACKED;
 
-struct hleeo
+কাঠামো hleeo
 {
     u16    opblength;
     u16    reserved;
@@ -107,7 +107,7 @@ struct hleeo
     u8     digest[SHA1_BUFSIZE];
 } PACKED;
 
-struct pttti
+কাঠামো pttti
 {
     u16    ipblength;
     u16    reserved;
@@ -116,42 +116,42 @@ struct pttti
     u8     tpmopin[0];
 } PACKED;
 
-struct pttto
+কাঠামো pttto
 {
     u16    opblength;
     u16    reserved;
     u8     tpmopout[0];
 };
 
-struct hlei
+কাঠামো hlei
 {
     u16    ipblength;
     u16    reserved;
-    const void  *hashdataptr;
+    ধ্রুবক শূন্য  *hashdataptr;
     u32    hashdatalen;
     u32    pcrindex;
     u32    logeventtype;
-    const void  *logdataptr;
+    ধ্রুবক শূন্য  *logdataptr;
     u32    logdatalen;
 } PACKED;
 
-struct hleo
+কাঠামো hleo
 {
     u16    opblength;
     u16    reserved;
     u32    eventnumber;
 } PACKED;
 
-struct hai
+কাঠামো hai
 {
     u16    ipblength;
     u16    reserved;
-    const void  *hashdataptr;
+    ধ্রুবক শূন্য  *hashdataptr;
     u32    hashdatalen;
     u32    algorithmid;
 } PACKED;
 
-struct ti
+কাঠামো ti
 {
     u16    ipblength;
     u16    reserved;
@@ -160,14 +160,14 @@ struct ti
     u8     tssoperandin[0];
 } PACKED;
 
-struct to
+কাঠামো to
 {
     u16    opblength;
     u16    reserved;
     u8     tssoperandout[0];
 } PACKED;
 
-struct pcpes
+কাঠামো pcpes
 {
     u32    pcrindex;
     u32    eventtype;
@@ -188,7 +188,7 @@ struct pcpes
 #define TPM_ORD_PhysicalDisable          0x00000070
 #define TPM_ORD_SetOwnerInstall          0x00000071
 #define TPM_ORD_PhysicalSetDeactivated   0x00000072
-#define TPM_ORD_SetTempDeactivated       0x00000073
+#define TPM_ORD_Set_অস্থায়ী_Deactivated       0x00000073
 #define TPM_ORD_Startup                  0x00000099
 #define TPM_ORD_PhysicalPresence         0x4000000a
 #define TPM_ORD_Extend                   0x00000014
@@ -211,33 +211,33 @@ struct pcpes
 #define TPM_TAG_RQU_AUTH1_CMD            0x00c2
 #define TPM_TAG_RQU_AUTH2_CMD            0x00c3
 
-struct tpm_req_header {
+কাঠামো tpm_req_header {
     u16    tag;
     u32    totlen;
     u32    ordinal;
 } PACKED;
 
-struct tpm_rsp_header {
+কাঠামো tpm_rsp_header {
     u16    tag;
     u32    totlen;
     u32    errcode;
 } PACKED;
 
-struct tpm_req_extend {
-    struct tpm_req_header hdr;
+কাঠামো tpm_req_extend {
+    কাঠামো tpm_req_header hdr;
     u32    pcrindex;
     u8     digest[SHA1_BUFSIZE];
 } PACKED;
 
-struct tpm_rsp_extend {
-    struct tpm_rsp_header hdr;
+কাঠামো tpm_rsp_extend {
+    কাঠামো tpm_rsp_header hdr;
     u8     digest[SHA1_BUFSIZE];
 } PACKED;
 
-struct tpm_req_getcap {
-    struct tpm_req_header hdr;
+কাঠামো tpm_req_getcap {
+    কাঠামো tpm_req_header hdr;
     u32    capArea;
-    u32    subCapSize;
+    u32    sub_Cap_আকার;
     u32    subCap;
 } PACKED;
 
@@ -249,12 +249,12 @@ struct tpm_req_getcap {
 #define TPM_CAP_PROP_TIS_TIMEOUT 0x115
 #define TPM_CAP_PROP_DURATION    0x120
 
-struct tpm_permanent_flags {
+কাঠামো tpm_permanent_flags {
     u16    tag;
     u8     flags[20];
 } PACKED;
 
-enum permFlagsIndex {
+গণনা perm_Flags_সূচক {
     PERM_FLAG_IDX_DISABLE = 0,
     PERM_FLAG_IDX_OWNERSHIP,
     PERM_FLAG_IDX_DEACTIVATED,
@@ -266,13 +266,13 @@ enum permFlagsIndex {
     PERM_FLAG_IDX_PHYSICAL_PRESENCE_CMD_ENABLE,
 };
 
-struct tpm_res_getcap_perm_flags {
-    struct tpm_rsp_header hdr;
-    u32    size;
-    struct tpm_permanent_flags perm_flags;
+কাঠামো tpm_res_getcap_perm_flags {
+    কাঠামো tpm_rsp_header hdr;
+    u32    আকার_2;
+    কাঠামো tpm_permanent_flags perm_flags;
 } PACKED;
 
-struct tpm_stclear_flags {
+কাঠামো tpm_stclear_flags {
     u16    tag;
     u8     flags[5];
 } PACKED;
@@ -283,37 +283,37 @@ struct tpm_stclear_flags {
 #define STCLEAR_FLAG_IDX_PHYSICAL_PRESENCE_LOCK 3
 #define STCLEAR_FLAG_IDX_GLOBAL_LOCK 4
 
-struct tpm_res_getcap_stclear_flags {
-    struct tpm_rsp_header hdr;
-    u32    size;
-    struct tpm_stclear_flags stclear_flags;
+কাঠামো tpm_res_getcap_stclear_flags {
+    কাঠামো tpm_rsp_header hdr;
+    u32    আকার_2;
+    কাঠামো tpm_stclear_flags stclear_flags;
 } PACKED;
 
-struct tpm_res_getcap_ownerauth {
-    struct tpm_rsp_header hdr;
-    u32    size;
+কাঠামো tpm_res_getcap_ownerauth {
+    কাঠামো tpm_rsp_header hdr;
+    u32    আকার_2;
     u8     flag;
 } PACKED;
 
-struct tpm_res_getcap_timeouts {
-    struct tpm_rsp_header hdr;
-    u32    size;
+কাঠামো tpm_res_getcap_timeouts {
+    কাঠামো tpm_rsp_header hdr;
+    u32    আকার_2;
     u32    timeouts[4];
 } PACKED;
 
-struct tpm_res_getcap_durations {
-    struct tpm_rsp_header hdr;
-    u32    size;
+কাঠামো tpm_res_getcap_durations {
+    কাঠামো tpm_rsp_header hdr;
+    u32    আকার_2;
     u32    durations[3];
 } PACKED;
 
-struct tpm_res_sha1start {
-    struct tpm_rsp_header hdr;
-    u32    max_num_bytes;
+কাঠামো tpm_res_sha1start {
+    কাঠামো tpm_rsp_header hdr;
+    u32    max_অঙ্ক_bytes;
 } PACKED;
 
-struct tpm_res_sha1complete {
-    struct tpm_rsp_header hdr;
+কাঠামো tpm_res_sha1complete {
+    কাঠামো tpm_rsp_header hdr;
     u8     hash[20];
 } PACKED;
 
@@ -377,106 +377,106 @@ struct tpm_res_sha1complete {
 
 /* TPM 2 data structures */
 
-struct tpm2_req_stirrandom {
-    struct tpm_req_header hdr;
-    u16 size;
+কাঠামো tpm2_req_stirrandom {
+    কাঠামো tpm_req_header hdr;
+    u16 আকার_2;
     u64 stir;
 } PACKED;
 
-struct tpm2_req_getrandom {
-    struct tpm_req_header hdr;
+কাঠামো tpm2_req_getrandom {
+    কাঠামো tpm_req_header hdr;
     u16 bytesRequested;
 } PACKED;
 
-struct tpm2b_20 {
-    u16 size;
-    u8 buffer[20];
+কাঠামো tpm2b_20 {
+    u16 আকার_2;
+    u8 বাফার[20];
 } PACKED;
 
-struct tpm2_res_getrandom {
-    struct tpm_rsp_header hdr;
-    struct tpm2b_20 rnd;
+কাঠামো tpm2_res_getrandom {
+    কাঠামো tpm_rsp_header hdr;
+    কাঠামো tpm2b_20 rnd;
 } PACKED;
 
-struct tpm2_authblock {
+কাঠামো tpm2_authblock {
     u32 handle;
     u16 noncesize;  /* always 0 */
     u8 contsession; /* always TPM2_YES */
     u16 pwdsize;    /* always 0 */
 } PACKED;
 
-struct tpm2_req_hierarchychangeauth {
-    struct tpm_req_header hdr;
+কাঠামো tpm2_req_hierarchychangeauth {
+    কাঠামো tpm_req_header hdr;
     u32 authhandle;
     u32 authblocksize;
-    struct tpm2_authblock authblock;
-    struct tpm2b_20 newAuth;
+    কাঠামো tpm2_authblock authblock;
+    কাঠামো tpm2b_20 newAuth;
 } PACKED;
 
-struct tpm2_req_extend {
-    struct tpm_req_header hdr;
+কাঠামো tpm2_req_extend {
+    কাঠামো tpm_req_header hdr;
     u32 pcrindex;
     u32 authblocksize;
-    struct tpm2_authblock authblock;
+    কাঠামো tpm2_authblock authblock;
     u8 digest[0];
 } PACKED;
 
-struct tpm2_req_clearcontrol {
-    struct tpm_req_header hdr;
+কাঠামো tpm2_req_clearcontrol {
+    কাঠামো tpm_req_header hdr;
     u32 authhandle;
     u32 authblocksize;
-    struct tpm2_authblock authblock;
+    কাঠামো tpm2_authblock authblock;
     u8 disable;
 } PACKED;
 
-struct tpm2_req_clear {
-    struct tpm_req_header hdr;
+কাঠামো tpm2_req_clear {
+    কাঠামো tpm_req_header hdr;
     u32 authhandle;
     u32 authblocksize;
-    struct tpm2_authblock authblock;
+    কাঠামো tpm2_authblock authblock;
 } PACKED;
 
-struct tpm2_req_hierarchycontrol {
-    struct tpm_req_header hdr;
+কাঠামো tpm2_req_hierarchycontrol {
+    কাঠামো tpm_req_header hdr;
     u32 authhandle;
     u32 authblocksize;
-    struct tpm2_authblock authblock;
+    কাঠামো tpm2_authblock authblock;
     u32 enable;
     u8 state;
 } PACKED;
 
-struct tpm2_req_getcapability {
-    struct tpm_req_header hdr;
+কাঠামো tpm2_req_getcapability {
+    কাঠামো tpm_req_header hdr;
     u32 capability;
     u32 property;
     u32 propertycount;
 } PACKED;
 
-struct tpm2_res_getcapability {
-    struct tpm_rsp_header hdr;
-    u8 moreData;
+কাঠামো tpm2_res_getcapability {
+    কাঠামো tpm_rsp_header hdr;
+    u8 more_তথ্য;
     u32 capability;
-    u8 data[0]; /* capability dependent data */
+    u8 তথ্য[0]; /* capability dependent data */
 } PACKED;
 
-struct tpm2_req_pcr_allocate {
-    struct tpm_req_header hdr;
+কাঠামো tpm2_req_pcr_allocate {
+    কাঠামো tpm_req_header hdr;
     u32 authhandle;
     u32 authblocksize;
-    struct tpm2_authblock authblock;
-    u32 count;
+    কাঠামো tpm2_authblock authblock;
+    u32 গুনতি;
     u8 tpms_pcr_selections[4];
 } PACKED;
 
-struct tpms_pcr_selection {
+কাঠামো tpms_pcr_selection {
     u16 hashAlg;
-    u8 sizeOfSelect;
+    u8 আকার_Of_Select;
     u8 pcrSelect[0];
 } PACKED;
 
-struct tpml_pcr_selection {
-    u32 count;
-    struct tpms_pcr_selection selections[0];
+কাঠামো tpml_pcr_selection {
+    u32 গুনতি;
+    কাঠামো tpms_pcr_selection selections[0];
 } PACKED;
 
 
@@ -492,16 +492,16 @@ struct tpml_pcr_selection {
 #define EV_EVENT_TAG             6
 #define EV_COMPACT_HASH         12
 #define EV_IPL                  13
-#define EV_IPL_PARTITION_DATA   14
+#define EV_IPL_PARTITION_তথ্য   14
 
-struct tpm2_digest_value {
+কাঠামো tpm2_digest_মান {
     u16 hashAlg;
     u8 hash[0]; /* size depends on hashAlg */
 } PACKED;
 
-struct tpm2_digest_values {
-    u32 count;
-    struct tpm2_digest_value digest[0];
+কাঠামো tpm2_digest_মানসমূহ {
+    u32 গুনতি;
+    কাঠামো tpm2_digest_মান digest[0];
 } PACKED;
 
 // Each entry in the TPM log contains: a tpm_log_header, a variable
@@ -511,28 +511,28 @@ struct tpm2_digest_values {
 // contains a tpm2_digest_values struct followed by a variable number
 // of tpm2_digest_value structs (as specified by the hardware via the
 // TPM2_CAP_PCRS request).
-struct tpm_log_header {
+কাঠামো tpm_log_header {
     u32 pcrindex;
     u32 eventtype;
     u8 digest[0];
 } PACKED;
 
-struct tpm_log_trailer {
+কাঠামো tpm_log_trailer {
     u32 eventdatasize;
     u8 event[0];
 } PACKED;
 
-struct TCG_EfiSpecIdEventStruct {
+কাঠামো TCG_EfiSpecIdEventStruct {
     u8 signature[16];
     u32 platformClass;
     u8 specVersionMinor;
     u8 specVersionMajor;
     u8 specErrata;
-    u8 uintnSize;
-    u32 numberOfAlgorithms;
-    struct TCG_EfiSpecIdEventAlgorithmSize {
+    u8 uintn_আকার;
+    u32 সংখ্যা_Of_Algorithms;
+    কাঠামো TCG_Efi_Spec_Id_Event_Algorithm_আকার {
         u16 algorithmId;
-        u16 digestSize;
+        u16 digest_আকার;
     } digestSizes[];
     /*
     u8 vendorInfoSize;
@@ -542,14 +542,14 @@ struct TCG_EfiSpecIdEventStruct {
 
 #define TPM_TCPA_ACPI_CLASS_CLIENT 0
 
-struct pcctes
+কাঠামো pcctes
 {
     u32 eventid;
     u32 eventdatasize;
     u8  digest[SHA1_BUFSIZE];
 } PACKED;
 
-struct pcctes_romex
+কাঠামো pcctes_romex
 {
     u32 eventid;
     u32 eventdatasize;

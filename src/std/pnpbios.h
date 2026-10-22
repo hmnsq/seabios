@@ -3,10 +3,10 @@
 
 #define PNP_SIGNATURE 0x506e5024 // $PnP
 
-struct pnpheader {
+কাঠামো pnpheader {
     u32 signature;
     u8 version;
-    u8 length;
+    u8 দৈর্ঘ্য;
     u16 control;
     u8 checksum;
     u32 eventloc;

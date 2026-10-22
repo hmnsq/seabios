@@ -2,9 +2,9 @@
 #ifndef __PS2PORT_H
 #define __PS2PORT_H
 
-#include "types.h" // u8
+#অন্তর্ভাব "types.h" // u8
 
-#define PORT_PS2_DATA          0x0060
+#define PORT_PS2_তথ্য          0x0060
 #define PORT_PS2_STATUS        0x0064
 
 // Standard commands.
@@ -58,10 +58,10 @@
 #define I8042_CTR_XLATE         0x40
 
 // ps2port.c
-void i8042_reboot(void);
-int ps2_kbd_command(int command, u8 *param);
-int ps2_mouse_command(int command, u8 *param);
-void ps2_check_event(void);
-void ps2port_setup(void);
+শূন্য i8042_reboot(শূন্য);
+পূর্ণসংখ্যা ps2_kbd_command(পূর্ণসংখ্যা command, u8 *param);
+পূর্ণসংখ্যা ps2_mouse_command(পূর্ণসংখ্যা command, u8 *param);
+শূন্য ps2_check_event(শূন্য);
+শূন্য ps2port_setup(শূন্য);
 
 #endif // ps2port.h

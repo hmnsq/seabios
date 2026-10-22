@@ -1,16 +1,16 @@
 #ifndef __PMM_H
 #define __PMM_H
 
-#include "types.h" // u32
+#অন্তর্ভাব "types.h" // u32
 
 #define PMM_SIGNATURE 0x4d4d5024 // $PMM
 
-struct pmmheader {
+কাঠামো pmmheader {
     u32 signature;
     u8 version;
-    u8 length;
+    u8 দৈর্ঘ্য;
     u8 checksum;
-    struct segoff_s entry;
+    কাঠামো segoff_s entry;
     u8 reserved[5];
 } PACKED;
 
