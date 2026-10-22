@@ -15,7 +15,7 @@
 
 
 /****************************************************************
- * 16bit / 32bit call trampolines
+ * 16bit / 32bit نادي trampolines
  ****************************************************************/
 
 // Place CPU into 32bit mode from 16bit mode.
@@ -121,7 +121,7 @@ transition16big:
  * External calling trampolines
  ****************************************************************/
 
-// Far call a 16bit function from 16bit mode with a specified cpu register state
+// Far نادي a 16bit function from 16bit mode with a specified cpu register state
 // %eax = address of struct bregs, %edx = segment of struct bregs
 // Clobbers: %e[bc]x, %e[ds]i, flags
         DECLFUNC __farcall16
@@ -131,14 +131,14 @@ __farcall16:
         pushl %eax
         pushl %edx
 
-        // Setup for iretw call
+        // Setup for iretw نادي
         movl %edx, %ds
         pushw %cs
         pushw $1f                       // return point
         pushw BREGS_flags(%eax)         // flags
         pushl BREGS_code(%eax)          // CS:IP
 
-        // Load calling registers and invoke call
+        // Load calling registers and invoke نادي
         RESTOREBREGS_DSEAX
         iretw                           // XXX - just do a lcalll
 1:
@@ -390,7 +390,7 @@ entry_csm:
         shll $4, %eax
         addl %esp, %eax
 
-        // Change to BUILD_STACK_ADDR stack and call handle_csm(bregs)
+        // Change to BUILD_STACK_ADDR stack and نادي handle_csm(bregs)
         ENTRY_INTO32 _cfunc32flat_handle_csm
 
         DECLFUNC __csm_return
@@ -438,7 +438,7 @@ entry_sercon:
         cmpb $0, sercon_enable  // Test that sercon is enabled
         je 3f
 
-        // call handle_sercon
+        // نادي handle_sercon
         popl %eax
         popw %ds
 2:      pushl $handle_sercon
@@ -482,7 +482,7 @@ irqentry_extrastack:
         movl %esp, PUSHBREGS_size(%eax)
         movw %ss, PUSHBREGS_size+4(%eax)
 
-        movw %ds, %dx           // Setup %ss/%esp and call function
+        movw %ds, %dx           // Setup %ss/%esp and نادي function
         movw %dx, %ss
         movl %eax, %esp
         calll *%ecx
@@ -511,7 +511,7 @@ irqentry_arg_extrastack:
         popl BREGS_code(%eax)
         popw BREGS_flags(%eax)
 
-        movw %ds, %dx           // Setup %ss/%esp and call function
+        movw %ds, %dx           // Setup %ss/%esp and نادي function
         movw %dx, %ss
         movl %eax, %esp
         calll *%ecx
@@ -571,7 +571,7 @@ irqentry_arg:
         DECL_IRQ_ENTRY hwpic1
         DECL_IRQ_ENTRY hwpic2
 
-        // int 18/19 are special - they reset stack and call into 32bit mode.
+        // int 18/19 are special - they reset stack and نادي into 32bit mode.
         DECLFUNC entry_19
 entry_19:
         ENTRY_INTO32 _cfunc32flat_handle_19
@@ -640,7 +640,7 @@ entry_19_official:
 
         ORG 0xf045
 entry_10_0x0f:
-        // XXX - INT 10 Functions 0-Fh Entry Point
+        // XXX - صحيح 10 Functions 0-Fh Entry Point
         iretw
 
         ORG 0xf065

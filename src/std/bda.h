@@ -2,16 +2,16 @@
 #ifndef __BDA_H
 #define __BDA_H
 
-#include "disk.h" // struct fdpt_s
-#include "types.h" // u8
+#ضمن "disk.h" // struct fdpt_s
+#ضمن "types.h" // u8
 
 
 /****************************************************************
  * Interrupt vector table
  ****************************************************************/
 
-struct rmode_IVT {
-    struct segoff_s ivec[256];
+بنية rmode_IVT {
+    بنية segoff_s ivec[256];
 };
 
 
@@ -19,7 +19,7 @@ struct rmode_IVT {
  * Bios Data Area (BDA)
  ****************************************************************/
 
-struct bios_data_area_s {
+بنية bios_data_area_s {
     // 40:00
     u16 port_com[4];
     u16 port_lpt[3];
@@ -54,7 +54,7 @@ struct bios_data_area_s {
     u16 crtc_address;
     u8 video_msr;
     u8 video_pal;
-    struct segoff_s jump;
+    بنية segoff_s jump;
     u8 other_6b;
     u32 timer_counter;
     // 40:70
@@ -86,12 +86,12 @@ struct bios_data_area_s {
     u8 floppy_track[2];
     u8 kbd_flag1;
     u8 kbd_led;
-    struct segoff_s user_wait_complete_flag;
+    بنية segoff_s user_wait_complete_flag;
     u32 user_wait_timeout;
     // 40:A0
     u8 rtc_wait_flag;
     u8 other_a1[7];
-    struct segoff_s video_savetable;
+    بنية segoff_s video_savetable;
     u8 other_ac[4];
     // 40:B0
     u8 other_b0[5*16];
@@ -122,7 +122,7 @@ struct bios_data_area_s {
 #define KF0_LALT         (1<<9)
 #define KF0_PAUSEACTIVE  (1<<11)
 #define KF0_SCROLL       (1<<12)
-#define KF0_NUM          (1<<13)
+#define KF0_اڠک          (1<<13)
 #define KF0_CAPS         (1<<14)
 
 #define KF1_LAST_E1    (1<<0)
@@ -139,10 +139,10 @@ struct bios_data_area_s {
  * Extended Bios Data Area (EBDA)
  ****************************************************************/
 
-struct extended_bios_data_area_s {
+بنية extended_bios_data_area_s {
     u8 size;
     u8 reserved1[0x21];
-    struct segoff_s far_call_pointer;
+    بنية segoff_s far_call_pointer;
     u8 mouse_flag1;
     u8 mouse_flag2;
     u8 mouse_data[0x08];
@@ -150,7 +150,7 @@ struct extended_bios_data_area_s {
     u8 other1[0x0d];
 
     // 0x3d
-    struct fdpt_s fdpt[2];
+    بنية fdpt_s fdpt[2];
 
     // 0x5d
     u8 other2[0xC4];
@@ -163,7 +163,7 @@ struct extended_bios_data_area_s {
  * Bios Config Table
  ****************************************************************/
 
-struct bios_config_table_s {
+بنية bios_config_table_s {
     u16 size;
     u8 model;
     u8 submodel;
