@@ -1,24 +1,24 @@
-#ifndef __PNPHEADER_H
-#define __PNPHEADER_H
+#ਜੇ_ਅਪਰਿਭਾਸ਼ਿਤ __PNPHEADER_H
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ __PNPHEADER_H
 
-#define PNP_SIGNATURE 0x506e5024 // $PnP
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PNP_SIGNATURE 0x506e5024 // $PnP
 
-struct pnpheader {
+ਬਣਤਰ pnpheader {
     u32 signature;
-    u8 version;
-    u8 length;
+    u8 ਸੰਸਕਰਣ_2;
+    u8 ਲੰਮਾਈ;
     u16 control;
     u8 checksum;
     u32 eventloc;
     u16 real_ip;
     u16 real_cs;
     u16 prot_ip;
-    u32 prot_base;
+    u32 prot_ਅਧਾਰ;
     u32 oemid;
     u16 real_ds;
     u32 prot_database;
 } PACKED;
 
-#define FUNCTION_NOT_SUPPORTED 0x82
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ FUNCTION_NOT_SUPPORTED 0x82
 
-#endif // pnpheader.h
+#ਜੇ_ਅੰਤ // pnpheader.h

@@ -19,39 +19,39 @@
   to this file, however, are subject to the LGPL or CPL terms.
 */
 
-#ifndef __LZMADECODE_H
-#define __LZMADECODE_H
+#ਜੇ_ਅਪਰਿਭਾਸ਼ਿਤ __LZMADECODE_H
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ __LZMADECODE_H
 
-typedef unsigned char Byte;
-typedef unsigned short UInt16;
-typedef unsigned int UInt32;
-typedef UInt32 SizeT;
+ਕਿਸਮਪਰਿਭਾਸ਼ਾ ਬਿਨਾਨਿਸ਼ਾਨੀ ਅੱਖਰ Byte;
+ਕਿਸਮਪਰਿਭਾਸ਼ਾ ਬਿਨਾਨਿਸ਼ਾਨੀ ਛੋਟਾ UInt16;
+ਕਿਸਮਪਰਿਭਾਸ਼ਾ ਬਿਨਾਨਿਸ਼ਾਨੀ ਪੂਰਨ UInt32;
+ਕਿਸਮਪਰਿਭਾਸ਼ਾ UInt32 ਮਾਪ_T;
 
-#define CProb UInt16
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ CProb UInt16
 
-#define LZMA_RESULT_OK 0
-#define LZMA_RESULT_DATA_ERROR 1
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ LZMA_ਨਤੀਜਾ_OK 0
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ LZMA_ਨਤੀਜਾ_ਅੰਕੜੇ_ERROR 1
 
 
-#define LZMA_BASE_SIZE 1846
-#define LZMA_LIT_SIZE 768
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ LZMA_ਅਧਾਰ_ਮਾਪ 1846
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ LZMA_LIT_ਮਾਪ 768
 
-#define LZMA_PROPERTIES_SIZE 5
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ LZMA_PROPERTIES_ਮਾਪ 5
 
-typedef struct _CLzmaProperties
+ਕਿਸਮਪਰਿਭਾਸ਼ਾ ਬਣਤਰ _CLzmaProperties
 {
-  int lc;
-  int lp;
-  int pb;
+  ਪੂਰਨ lc;
+  ਪੂਰਨ lp;
+  ਪੂਰਨ pb;
 }CLzmaProperties;
 
-int LzmaDecodeProperties(CLzmaProperties *propsRes, const unsigned char *propsData, int size);
+ਪੂਰਨ LzmaDecodeProperties(CLzmaProperties *propsRes, ਅਚਲ ਬਿਨਾਨਿਸ਼ਾਨੀ ਅੱਖਰ *props_ਅੰਕੜੇ, ਪੂਰਨ ਮਾਪ);
 
-#define LzmaGetNumProbs(Properties) (LZMA_BASE_SIZE + (LZMA_LIT_SIZE << ((Properties)->lc + (Properties)->lp)))
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ Lzma_Get_ਅੰਕ_Probs(Properties) (LZMA_ਅਧਾਰ_ਮਾਪ + (LZMA_LIT_ਮਾਪ << ((Properties)->lc + (Properties)->lp)))
 
-#define kLzmaNeedInitId (-2)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ kLzmaNeedInitId (-2)
 
-typedef struct _CLzmaDecoderState
+ਕਿਸਮਪਰਿਭਾਸ਼ਾ ਬਣਤਰ _CLzmaDecoderState
 {
   CLzmaProperties Properties;
   CProb *Probs;
@@ -60,8 +60,8 @@ typedef struct _CLzmaDecoderState
 } CLzmaDecoderState;
 
 
-int LzmaDecode(CLzmaDecoderState *vs,
-    const unsigned char *inStream, SizeT inSize, SizeT *inSizeProcessed,
-    unsigned char *outStream, SizeT outSize, SizeT *outSizeProcessed);
+ਪੂਰਨ LzmaDecode(CLzmaDecoderState *vs,
+    ਅਚਲ ਬਿਨਾਨਿਸ਼ਾਨੀ ਅੱਖਰ *ਵਿੱਚ_ਧਾਰਾ, ਮਾਪ_T ਵਿੱਚ_ਮਾਪ, ਮਾਪ_T *ਵਿੱਚ_ਮਾਪ_Processed,
+    ਬਿਨਾਨਿਸ਼ਾਨੀ ਅੱਖਰ *ਬਾਹਰਲਾ_ਧਾਰਾ, ਮਾਪ_T ਬਾਹਰਲਾ_ਮਾਪ, ਮਾਪ_T *ਬਾਹਰਲਾ_ਮਾਪ_Processed);
 
-#endif
+#ਜੇ_ਅੰਤ

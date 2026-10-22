@@ -1,11 +1,11 @@
-#ifndef __SHA_H
-#define __SHA_H
+#ਜੇ_ਅਪਰਿਭਾਸ਼ਿਤ __SHA_H
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ __SHA_H
 
-#include "types.h" // u32
+#ਅਨ੍ਤਰ੍ਭਾਵ "types.h" // u32
 
-void sha1(const u8 *data, u32 length, u8 *hash);
-void sha256(const u8 *data, u32 length, u8 *hash);
-void sha384(const u8 *data, u32 length, u8 *hash);
-void sha512(const u8 *data, u32 length, u8 *hash);
+ਖਾਲੀ sha1(ਅਚਲ u8 *ਅੰਕੜੇ, u32 ਲੰਮਾਈ, u8 *hash);
+ਖਾਲੀ sha256(ਅਚਲ u8 *ਅੰਕੜੇ, u32 ਲੰਮਾਈ, u8 *hash);
+ਖਾਲੀ sha384(ਅਚਲ u8 *ਅੰਕੜੇ, u32 ਲੰਮਾਈ, u8 *hash);
+ਖਾਲੀ sha512(ਅਚਲ u8 *ਅੰਕੜੇ, u32 ਲੰਮਾਈ, u8 *hash);
 
-#endif // sha.h
+#ਜੇ_ਅੰਤ // sha.h

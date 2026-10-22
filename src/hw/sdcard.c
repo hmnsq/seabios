@@ -4,39 +4,39 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "block.h" // struct drive_s
-#include "malloc.h" // malloc_fseg
-#include "output.h" // znprintf
-#include "pcidevice.h" // foreachpci
-#include "pci_ids.h" // PCI_CLASS_SYSTEM_SDHCI
-#include "pci_regs.h" // PCI_BASE_ADDRESS_0
-#include "romfile.h" // romfile_findprefix
-#include "stacks.h" // yield
-#include "std/disk.h" // DISK_RET_SUCCESS
-#include "string.h" // memset
-#include "util.h" // boot_add_hd
-#include "x86.h" // writel
+#ਅਨ੍ਤਰ੍ਭਾਵ "block.h" // struct drive_s
+#ਅਨ੍ਤਰ੍ਭਾਵ "malloc.h" // malloc_fseg
+#ਅਨ੍ਤਰ੍ਭਾਵ "output.h" // znprintf
+#ਅਨ੍ਤਰ੍ਭਾਵ "pcidevice.h" // foreachpci
+#ਅਨ੍ਤਰ੍ਭਾਵ "pci_ids.h" // PCI_CLASS_SYSTEM_SDHCI
+#ਅਨ੍ਤਰ੍ਭਾਵ "pci_regs.h" // PCI_BASE_ADDRESS_0
+#ਅਨ੍ਤਰ੍ਭਾਵ "romfile.h" // romfile_findprefix
+#ਅਨ੍ਤਰ੍ਭਾਵ "stacks.h" // yield
+#ਅਨ੍ਤਰ੍ਭਾਵ "std/disk.h" // DISK_RET_SUCCESS
+#ਅਨ੍ਤਰ੍ਭਾਵ "string.h" // memset
+#ਅਨ੍ਤਰ੍ਭਾਵ "util.h" // boot_add_hd
+#ਅਨ੍ਤਰ੍ਭਾਵ "x86.h" // writel
 
 // SDHCI MMIO registers
-struct sdhci_s {
+ਬਣਤਰ sdhci_s {
     u32 sdma_addr;
-    u16 block_size;
-    u16 block_count;
+    u16 ਖੰਡ_ਮਾਪ;
+    u16 ਖੰਡ_ਗਿਣਤੀ;
     u32 arg;
-    u16 transfer_mode;
+    u16 transfer_ਬਹੁਲਕ;
     u16 cmd;
     u32 response[4];
-    u32 data;
+    u32 ਅੰਕੜੇ;
     u32 present_state;
     u8 host_control;
     u8 power_control;
-    u8 block_gap_control;
+    u8 ਖੰਡ_gap_control;
     u8 wakeup_control;
     u16 clock_control;
     u8 timeout_control;
     u8 software_reset;
-    u16 irq_status;
-    u16 error_irq_status;
+    u16 irq_ਸਥਿਤੀ;
+    u16 error_irq_ਸਥਿਤੀ;
     u16 irq_enable;
     u16 error_irq_enable;
     u16 irq_signal;
@@ -51,243 +51,243 @@ struct sdhci_s {
     u8 pad_55[3];
     u64 adma_addr;
     u8 pad_60[156];
-    u16 slot_irq;
-    u16 controller_version;
+    u16 ਥਾਂ_irq;
+    u16 controller_ਸੰਸਕਰਣ;
 } PACKED;
 
 // SDHCI commands
-#define SCB_R0   0x00 // No response
-#define SCB_R48  0x1a // Response R1 (no data), R5, R6, R7
-#define SCB_R48d 0x3a // Response R1 (with data)
-#define SCB_R48b 0x1b // Response R1b, R5b
-#define SCB_R48o 0x02 // Response R3, R4
-#define SCB_R136 0x09 // Response R2
-#define SC_GO_IDLE_STATE        ((0<<8) | SCB_R0)
-#define SC_SEND_OP_COND         ((1<<8) | SCB_R48o)
-#define SC_ALL_SEND_CID         ((2<<8) | SCB_R136)
-#define SC_SEND_RELATIVE_ADDR   ((3<<8) | SCB_R48)
-#define SC_SELECT_DESELECT_CARD ((7<<8) | SCB_R48b)
-#define SC_SEND_IF_COND         ((8<<8) | SCB_R48)
-#define SC_SEND_EXT_CSD         ((8<<8) | SCB_R48d)
-#define SC_SEND_CSD             ((9<<8) | SCB_R136)
-#define SC_READ_SINGLE          ((17<<8) | SCB_R48d)
-#define SC_READ_MULTIPLE        ((18<<8) | SCB_R48d)
-#define SC_WRITE_SINGLE         ((24<<8) | SCB_R48d)
-#define SC_WRITE_MULTIPLE       ((25<<8) | SCB_R48d)
-#define SC_APP_CMD              ((55<<8) | SCB_R48)
-#define SC_APP_SEND_OP_COND ((41<<8) | SCB_R48o)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SCB_R0   0x00 // No response
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SCB_R48  0x1a // Response R1 (no data), R5, R6, R7
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SCB_R48d 0x3a // Response R1 (with data)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SCB_R48b 0x1b // Response R1b, R5b
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SCB_R48o 0x02 // Response R3, R4
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SCB_R136 0x09 // Response R2
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SC_GO_IDLE_STATE        ((0<<8) | SCB_R0)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SC_SEND_OP_COND         ((1<<8) | SCB_R48o)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SC_ALL_SEND_CID         ((2<<8) | SCB_R136)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SC_SEND_RELATIVE_ADDR   ((3<<8) | SCB_R48)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SC_SELECT_DESELECT_CARD ((7<<8) | SCB_R48b)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SC_SEND_IF_COND         ((8<<8) | SCB_R48)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SC_SEND_EXT_CSD         ((8<<8) | SCB_R48d)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SC_SEND_CSD             ((9<<8) | SCB_R136)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SC_READ_SINGLE          ((17<<8) | SCB_R48d)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SC_READ_ਗੁਣਜ        ((18<<8) | SCB_R48d)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SC_WRITE_SINGLE         ((24<<8) | SCB_R48d)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SC_WRITE_ਗੁਣਜ       ((25<<8) | SCB_R48d)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SC_APP_CMD              ((55<<8) | SCB_R48)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SC_APP_SEND_OP_COND ((41<<8) | SCB_R48o)
 
 // SDHCI irqs
-#define SI_CMD_COMPLETE (1<<0)
-#define SI_TRANS_DONE   (1<<1)
-#define SI_WRITE_READY  (1<<4)
-#define SI_READ_READY   (1<<5)
-#define SI_ERROR        (1<<15)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SI_CMD_COMPLETE (1<<0)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SI_TRANS_ਪੂਰਾ   (1<<1)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SI_WRITE_READY  (1<<4)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SI_READ_READY   (1<<5)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SI_ERROR        (1<<15)
 
 // SDHCI present_state flags
-#define SP_CMD_INHIBIT   (1<<0)
-#define SP_DAT_INHIBIT   (1<<1)
-#define SP_CARD_INSERTED (1<<16)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SP_CMD_INHIBIT   (1<<0)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SP_DAT_INHIBIT   (1<<1)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SP_CARD_INSERTED (1<<16)
 
 // SDHCI transfer_mode flags
-#define ST_BLOCKCOUNT (1<<1)
-#define ST_AUTO_CMD12 (1<<2)
-#define ST_READ       (1<<4)
-#define ST_MULTIPLE   (1<<5)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ST_BLOCKCOUNT (1<<1)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ST_AUTO_CMD12 (1<<2)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ST_READ       (1<<4)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ST_ਗੁਣਜ   (1<<5)
 
 // SDHCI capabilities flags
-#define SD_CAPLO_V33             (1<<24)
-#define SD_CAPLO_V30             (1<<25)
-#define SD_CAPLO_V18             (1<<26)
-#define SD_CAPLO_BASECLOCK_SHIFT 8
-#define SD_CAPLO_BASECLOCK_MASK  0xff
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SD_CAPLO_V33             (1<<24)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SD_CAPLO_V30             (1<<25)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SD_CAPLO_V18             (1<<26)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SD_CAPLO_BASECLOCK_ਖਿਸਕਾਓ 8
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SD_CAPLO_BASECLOCK_ਨਕਾਬ  0xff
 
 // SDHCI clock control flags
-#define SCC_INTERNAL_ENABLE (1<<0)
-#define SCC_STABLE          (1<<1)
-#define SCC_CLOCK_ENABLE    (1<<2)
-#define SCC_SDCLK_MASK      0xff
-#define SCC_SDCLK_SHIFT     8
-#define SCC_SDCLK_HI_MASK   0x300
-#define SCC_SDCLK_HI_RSHIFT 2
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SCC_ਅੰਦਰੂਨੀ_ENABLE (1<<0)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SCC_STABLE          (1<<1)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SCC_CLOCK_ENABLE    (1<<2)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SCC_SDCLK_ਨਕਾਬ      0xff
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SCC_SDCLK_ਖਿਸਕਾਓ     8
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SCC_SDCLK_HI_ਨਕਾਬ   0x300
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SCC_SDCLK_HI_RSHIFT 2
 
 // SDHCI power control flags
-#define SPC_POWER_ON (1<<0)
-#define SPC_V18      0x0a
-#define SPC_V30      0x0c
-#define SPC_V33      0x0e
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SPC_POWER_ON (1<<0)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SPC_V18      0x0a
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SPC_V30      0x0c
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SPC_V33      0x0e
 
 // SDHCI software reset flags
-#define SRF_ALL  0x01
-#define SRF_CMD  0x02
-#define SRF_DATA 0x04
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SRF_ALL  0x01
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SRF_CMD  0x02
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SRF_ਅੰਕੜੇ 0x04
 
 // SDHCI result flags
-#define SR_OCR_CCS     (1<<30)
-#define SR_OCR_NOTBUSY (1<<31)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SR_OCR_CCS     (1<<30)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SR_OCR_NOTBUSY (1<<31)
 
 // SDHCI timeouts
-#define SDHCI_POWER_OFF_TIME   1
-#define SDHCI_POWER_ON_TIME    5
-#define SDHCI_CLOCK_ON_TIME    1 // 74 clock cycles
-#define SDHCI_POWERUP_TIMEOUT  1000
-#define SDHCI_PIO_TIMEOUT      1000  // XXX - this is just made up
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SDHCI_POWER_OFF_ਸਮਾਂ   1
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SDHCI_POWER_ON_ਸਮਾਂ    5
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SDHCI_CLOCK_ON_ਸਮਾਂ    1 // 74 clock cycles
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SDHCI_POWERUP_TIMEOUT  1000
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SDHCI_PIO_TIMEOUT      1000  // XXX - this is just made up
 
 // Internal 'struct drive_s' storage for a detected card
-struct sddrive_s {
-    struct drive_s drive;
-    struct sdhci_s *regs;
-    int card_type;
+ਬਣਤਰ sddrive_s {
+    ਬਣਤਰ drive_s drive;
+    ਬਣਤਰ sdhci_s *regs;
+    ਪੂਰਨ card_type;
 };
 
 // SD card types
-#define SF_MMC          (1<<0)
-#define SF_HIGHCAPACITY (1<<1)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SF_MMC          (1<<0)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SF_HIGHCAPACITY (1<<1)
 
 // Repeatedly read a u16 register until any bit in a given mask is set
-static int
-sdcard_waitw(u16 *reg, u16 mask)
+ਸਥਿਰ ਪੂਰਨ
+sdcard_waitw(u16 *reg, u16 ਨਕਾਬ)
 {
-    u32 end = timer_calc(SDHCI_PIO_TIMEOUT);
-    for (;;) {
+    u32 ਸਿਰਾ = timer_calc(SDHCI_PIO_TIMEOUT);
+    ਲਈ (;;) {
         u16 v = readw(reg);
-        if (v & mask)
-            return v;
-        if (timer_check(end)) {
-            dprintf(1, "scard_waitw: %p %x %x\n", reg, mask, v);
+        ਜੇ (v & ਨਕਾਬ)
+            ਵਾਪਸ v;
+        ਜੇ (timer_check(ਸਿਰਾ)) {
+            dprintf(1, "scard_waitw: %p %x %x\n", reg, ਨਕਾਬ, v);
             warn_timeout();
-            return -1;
+            ਵਾਪਸ -1;
         }
         yield();
     }
 }
 
 // Send an sdhci reset
-static int
-sdcard_reset(struct sdhci_s *regs, int flags)
+ਸਥਿਰ ਪੂਰਨ
+sdcard_reset(ਬਣਤਰ sdhci_s *regs, ਪੂਰਨ flags)
 {
     writeb(&regs->software_reset, flags);
-    u32 end = timer_calc(SDHCI_PIO_TIMEOUT);
-    while (readb(&regs->software_reset))
-        if (timer_check(end)) {
+    u32 ਸਿਰਾ = timer_calc(SDHCI_PIO_TIMEOUT);
+    ਜਦੋਂ (readb(&regs->software_reset))
+        ਜੇ (timer_check(ਸਿਰਾ)) {
             warn_timeout();
-            return -1;
+            ਵਾਪਸ -1;
         }
-    return 0;
+    ਵਾਪਸ 0;
 }
 
 // Send a command to the card.
-static int
-sdcard_pio(struct sdhci_s *regs, int cmd, u32 *param)
+ਸਥਿਰ ਪੂਰਨ
+sdcard_pio(ਬਣਤਰ sdhci_s *regs, ਪੂਰਨ cmd, u32 *param)
 {
     u32 state = readl(&regs->present_state);
     dprintf(9, "sdcard_pio cmd %x %x %x\n", cmd, *param, state);
-    if ((state & SP_CMD_INHIBIT)
+    ਜੇ ((state & SP_CMD_INHIBIT)
         || ((cmd & 0x03) == 0x03 && state & SP_DAT_INHIBIT)) {
         dprintf(1, "sdcard_pio not ready %x\n", state);
-        return -1;
+        ਵਾਪਸ -1;
     }
     // Send command
     writel(&regs->arg, *param);
     writew(&regs->cmd, cmd);
-    int ret = sdcard_waitw(&regs->irq_status, SI_ERROR|SI_CMD_COMPLETE);
-    if (ret < 0)
-        return ret;
-    if (ret & SI_ERROR) {
-        u16 err = readw(&regs->error_irq_status);
+    ਪੂਰਨ ret = sdcard_waitw(&regs->irq_ਸਥਿਤੀ, SI_ERROR|SI_CMD_COMPLETE);
+    ਜੇ (ret < 0)
+        ਵਾਪਸ ret;
+    ਜੇ (ret & SI_ERROR) {
+        u16 err = readw(&regs->error_irq_ਸਥਿਤੀ);
         dprintf(3, "sdcard_pio command stop (code=%x)\n", err);
-        sdcard_reset(regs, SRF_CMD|SRF_DATA);
-        writew(&regs->error_irq_status, err);
-        return -1;
+        sdcard_reset(regs, SRF_CMD|SRF_ਅੰਕੜੇ);
+        writew(&regs->error_irq_ਸਥਿਤੀ, err);
+        ਵਾਪਸ -1;
     }
-    writew(&regs->irq_status, SI_CMD_COMPLETE);
+    writew(&regs->irq_ਸਥਿਤੀ, SI_CMD_COMPLETE);
     // Read response
-    memcpy(param, regs->response, sizeof(regs->response));
+    ਸਮ੍ਰਿਤੀ_ਨਕਲ(param, regs->response, ਆਕਾਰ(regs->response));
     dprintf(9, "sdcard cmd %x response %x %x %x %x\n"
             , cmd, param[0], param[1], param[2], param[3]);
-    return 0;
+    ਵਾਪਸ 0;
 }
 
 // Send an "app specific" command to the card.
-static int
-sdcard_pio_app(struct sdhci_s *regs, int cmd, u32 *param)
+ਸਥਿਰ ਪੂਰਨ
+sdcard_pio_app(ਬਣਤਰ sdhci_s *regs, ਪੂਰਨ cmd, u32 *param)
 {
     u32 aparam[4] = {};
-    int ret = sdcard_pio(regs, SC_APP_CMD, aparam);
-    if (ret)
-        return ret;
-    return sdcard_pio(regs, cmd, param);
+    ਪੂਰਨ ret = sdcard_pio(regs, SC_APP_CMD, aparam);
+    ਜੇ (ret)
+        ਵਾਪਸ ret;
+    ਵਾਪਸ sdcard_pio(regs, cmd, param);
 }
 
 // Send a command to the card which transfers data.
-static int
-sdcard_pio_transfer(struct sddrive_s *drive, int cmd, u32 addr
-                    , void *data, int count)
+ਸਥਿਰ ਪੂਰਨ
+sdcard_pio_transfer(ਬਣਤਰ sddrive_s *drive, ਪੂਰਨ cmd, u32 addr
+                    , ਖਾਲੀ *ਅੰਕੜੇ, ਪੂਰਨ ਗਿਣਤੀ_2)
 {
     // Send command
-    writew(&drive->regs->block_size, DISK_SECTOR_SIZE);
-    writew(&drive->regs->block_count, count);
-    int isread = cmd != SC_WRITE_SINGLE && cmd != SC_WRITE_MULTIPLE;
-    u16 tmode = ((count > 1 ? ST_MULTIPLE|ST_AUTO_CMD12|ST_BLOCKCOUNT : 0)
+    writew(&drive->regs->ਖੰਡ_ਮਾਪ, DISK_SECTOR_ਮਾਪ);
+    writew(&drive->regs->ਖੰਡ_ਗਿਣਤੀ, ਗਿਣਤੀ_2);
+    ਪੂਰਨ isread = cmd != SC_WRITE_SINGLE && cmd != SC_WRITE_ਗੁਣਜ;
+    u16 tmode = ((ਗਿਣਤੀ_2 > 1 ? ST_ਗੁਣਜ|ST_AUTO_CMD12|ST_BLOCKCOUNT : 0)
                  | (isread ? ST_READ : 0));
-    writew(&drive->regs->transfer_mode, tmode);
-    if (!(drive->card_type & SF_HIGHCAPACITY))
-        addr *= DISK_SECTOR_SIZE;
+    writew(&drive->regs->transfer_ਬਹੁਲਕ, tmode);
+    ਜੇ (!(drive->card_type & SF_HIGHCAPACITY))
+        addr *= DISK_SECTOR_ਮਾਪ;
     u32 param[4] = { addr };
-    int ret = sdcard_pio(drive->regs, cmd, param);
-    if (ret)
-        return ret;
+    ਪੂਰਨ ret = sdcard_pio(drive->regs, cmd, param);
+    ਜੇ (ret)
+        ਵਾਪਸ ret;
     // Read/write data
     u16 cbit = isread ? SI_READ_READY : SI_WRITE_READY;
-    while (count--) {
-        ret = sdcard_waitw(&drive->regs->irq_status, cbit);
-        if (ret < 0)
-            return ret;
-        writew(&drive->regs->irq_status, cbit);
-        int i;
-        for (i=0; i<DISK_SECTOR_SIZE/4; i++) {
-            if (isread)
-                *(u32*)data = readl(&drive->regs->data);
-            else
-                writel(&drive->regs->data, *(u32*)data);
-            data += 4;
+    ਜਦੋਂ (ਗਿਣਤੀ_2--) {
+        ret = sdcard_waitw(&drive->regs->irq_ਸਥਿਤੀ, cbit);
+        ਜੇ (ret < 0)
+            ਵਾਪਸ ret;
+        writew(&drive->regs->irq_ਸਥਿਤੀ, cbit);
+        ਪੂਰਨ i;
+        ਲਈ (i=0; i<DISK_SECTOR_ਮਾਪ/4; i++) {
+            ਜੇ (isread)
+                *(u32*)ਅੰਕੜੇ = readl(&drive->regs->ਅੰਕੜੇ);
+            ਨਹੀਂਤਾਂ
+                writel(&drive->regs->ਅੰਕੜੇ, *(u32*)ਅੰਕੜੇ);
+            ਅੰਕੜੇ += 4;
         }
     }
     // Complete command
-    ret = sdcard_waitw(&drive->regs->irq_status, SI_TRANS_DONE);
-    if (ret < 0)
-        return ret;
-    writew(&drive->regs->irq_status, SI_TRANS_DONE);
-    return 0;
+    ret = sdcard_waitw(&drive->regs->irq_ਸਥਿਤੀ, SI_TRANS_ਪੂਰਾ);
+    ਜੇ (ret < 0)
+        ਵਾਪਸ ret;
+    writew(&drive->regs->irq_ਸਥਿਤੀ, SI_TRANS_ਪੂਰਾ);
+    ਵਾਪਸ 0;
 }
 
 // Read/write a block of data to/from the card.
-static int
-sdcard_readwrite(struct disk_op_s *op, int iswrite)
+ਸਥਿਰ ਪੂਰਨ
+sdcard_readwrite(ਬਣਤਰ disk_op_s *op, ਪੂਰਨ iswrite)
 {
-    struct sddrive_s *drive = container_of(
-        op->drive_fl, struct sddrive_s, drive);
-    int cmd = iswrite ? SC_WRITE_SINGLE : SC_READ_SINGLE;
-    if (op->count > 1)
-        cmd = iswrite ? SC_WRITE_MULTIPLE : SC_READ_MULTIPLE;
-    int ret = sdcard_pio_transfer(drive, cmd, op->lba, op->buf_fl, op->count);
-    if (ret)
-        return DISK_RET_EBADTRACK;
-    return DISK_RET_SUCCESS;
+    ਬਣਤਰ sddrive_s *drive = container_ਦਾ(
+        op->drive_fl, ਬਣਤਰ sddrive_s, drive);
+    ਪੂਰਨ cmd = iswrite ? SC_WRITE_SINGLE : SC_READ_SINGLE;
+    ਜੇ (op->ਗਿਣਤੀ_2 > 1)
+        cmd = iswrite ? SC_WRITE_ਗੁਣਜ : SC_READ_ਗੁਣਜ;
+    ਪੂਰਨ ret = sdcard_pio_transfer(drive, cmd, op->lba, op->buf_fl, op->ਗਿਣਤੀ_2);
+    ਜੇ (ret)
+        ਵਾਪਸ DISK_RET_EBADTRACK;
+    ਵਾਪਸ DISK_RET_SUCCESS;
 }
 
-int
-sdcard_process_op(struct disk_op_s *op)
+ਪੂਰਨ
+sdcard_process_op(ਬਣਤਰ disk_op_s *op)
 {
-    if (!CONFIG_SDCARD)
-        return 0;
-    switch (op->command) {
-    case CMD_READ:
-        return sdcard_readwrite(op, 0);
-    case CMD_WRITE:
-        return sdcard_readwrite(op, 1);
-    default:
-        return default_process_op(op);
+    ਜੇ (!CONFIG_SDCARD)
+        ਵਾਪਸ 0;
+    ਚੋਣ (op->command) {
+    ਹਾਲਤ CMD_READ:
+        ਵਾਪਸ sdcard_readwrite(op, 0);
+    ਹਾਲਤ CMD_WRITE:
+        ਵਾਪਸ sdcard_readwrite(op, 1);
+    ਮੂਲ:
+        ਵਾਪਸ default_process_op(op);
     }
 }
 
@@ -296,141 +296,141 @@ sdcard_process_op(struct disk_op_s *op)
  * Setup
  ****************************************************************/
 
-static int
-sdcard_set_power(struct sdhci_s *regs)
+ਸਥਿਰ ਪੂਰਨ
+sdcard_ਸੈੱਟ_power(ਬਣਤਰ sdhci_s *regs)
 {
     u32 cap = readl(&regs->cap_lo);
     u32 volt, vbits;
-    if (cap & SD_CAPLO_V33) {
+    ਜੇ (cap & SD_CAPLO_V33) {
         volt = 1<<20;
         vbits = SPC_V33;
-    } else if (cap & SD_CAPLO_V30) {
+    } ਨਹੀਂਤਾਂ ਜੇ (cap & SD_CAPLO_V30) {
         volt = 1<<18;
         vbits = SPC_V30;
-    } else if (cap & SD_CAPLO_V18) {
+    } ਨਹੀਂਤਾਂ ਜੇ (cap & SD_CAPLO_V18) {
         volt = 1<<7;
         vbits = SPC_V18;
-    } else {
+    } ਨਹੀਂਤਾਂ {
         dprintf(1, "SD controller unsupported volt range (%x)\n", cap);
-        return -1;
+        ਵਾਪਸ -1;
     }
     writeb(&regs->power_control, 0);
-    msleep(SDHCI_POWER_OFF_TIME);
+    msleep(SDHCI_POWER_OFF_ਸਮਾਂ);
     writeb(&regs->power_control, vbits | SPC_POWER_ON);
-    msleep(SDHCI_POWER_ON_TIME);
-    return volt;
+    msleep(SDHCI_POWER_ON_ਸਮਾਂ);
+    ਵਾਪਸ volt;
 }
 
-static int
-sdcard_set_frequency(struct sdhci_s *regs, u32 khz)
+ਸਥਿਰ ਪੂਰਨ
+sdcard_ਸੈੱਟ_frequency(ਬਣਤਰ sdhci_s *regs, u32 khz)
 {
-    u16 ver = readw(&regs->controller_version);
+    u16 ver = readw(&regs->controller_ਸੰਸਕਰਣ);
     u32 cap = readl(&regs->cap_lo);
-    u32 base_freq = (cap >> SD_CAPLO_BASECLOCK_SHIFT) & SD_CAPLO_BASECLOCK_MASK;
-    if (!base_freq) {
+    u32 ਅਧਾਰ_freq = (cap >> SD_CAPLO_BASECLOCK_ਖਿਸਕਾਓ) & SD_CAPLO_BASECLOCK_ਨਕਾਬ;
+    ਜੇ (!ਅਧਾਰ_freq) {
         dprintf(1, "Unknown base frequency for SD controller\n");
-        return -1;
+        ਵਾਪਸ -1;
     }
     // Set new frequency
-    u32 divisor = DIV_ROUND_UP(base_freq * 1000, khz);
+    u32 ਭਾਜਕ = DIV_ਗੇੜਾ_ਉੱਪਰ(ਅਧਾਰ_freq * 1000, khz);
     u16 creg;
-    if ((ver & 0xff) <= 0x01) {
-        divisor = divisor > 1 ? 1 << __fls(divisor-1) : 0;
-        creg = (divisor & SCC_SDCLK_MASK) << SCC_SDCLK_SHIFT;
-    } else {
-        divisor = DIV_ROUND_UP(divisor, 2);
-        creg = (divisor & SCC_SDCLK_MASK) << SCC_SDCLK_SHIFT;
-        creg |= (divisor & SCC_SDCLK_HI_MASK) >> SCC_SDCLK_HI_RSHIFT;
+    ਜੇ ((ver & 0xff) <= 0x01) {
+        ਭਾਜਕ = ਭਾਜਕ > 1 ? 1 << __fls(ਭਾਜਕ-1) : 0;
+        creg = (ਭਾਜਕ & SCC_SDCLK_ਨਕਾਬ) << SCC_SDCLK_ਖਿਸਕਾਓ;
+    } ਨਹੀਂਤਾਂ {
+        ਭਾਜਕ = DIV_ਗੇੜਾ_ਉੱਪਰ(ਭਾਜਕ, 2);
+        creg = (ਭਾਜਕ & SCC_SDCLK_ਨਕਾਬ) << SCC_SDCLK_ਖਿਸਕਾਓ;
+        creg |= (ਭਾਜਕ & SCC_SDCLK_HI_ਨਕਾਬ) >> SCC_SDCLK_HI_RSHIFT;
     }
-    dprintf(3, "sdcard_set_frequency %d %d %x\n", base_freq, khz, creg);
+    dprintf(3, "sdcard_set_frequency %d %d %x\n", ਅਧਾਰ_freq, khz, creg);
     writew(&regs->clock_control, 0);
-    writew(&regs->clock_control, creg | SCC_INTERNAL_ENABLE);
+    writew(&regs->clock_control, creg | SCC_ਅੰਦਰੂਨੀ_ENABLE);
     // Wait for frequency to become active
-    int ret = sdcard_waitw(&regs->clock_control, SCC_STABLE);
-    if (ret < 0)
-        return ret;
+    ਪੂਰਨ ret = sdcard_waitw(&regs->clock_control, SCC_STABLE);
+    ਜੇ (ret < 0)
+        ਵਾਪਸ ret;
     // Enable SD clock
-    writew(&regs->clock_control, creg | SCC_INTERNAL_ENABLE | SCC_CLOCK_ENABLE);
-    return 0;
+    writew(&regs->clock_control, creg | SCC_ਅੰਦਰੂਨੀ_ENABLE | SCC_CLOCK_ENABLE);
+    ਵਾਪਸ 0;
 }
 
 // Obtain the disk size of an SD card
-static int
-sdcard_get_capacity(struct sddrive_s *drive, u8 *csd)
+ਸਥਿਰ ਪੂਰਨ
+sdcard_get_ਸਮਰੱਥਾ(ਬਣਤਰ sddrive_s *drive, u8 *csd)
 {
     // Original MMC/SD card capacity formula
-    u16 C_SIZE = (csd[6] >> 6) | (csd[7] << 2) | ((csd[8] & 0x03) << 10);
-    u8 C_SIZE_MULT = (csd[4] >> 7) | ((csd[5] & 0x03) << 1);
+    u16 C_ਮਾਪ = (csd[6] >> 6) | (csd[7] << 2) | ((csd[8] & 0x03) << 10);
+    u8 C_ਮਾਪ_MULT = (csd[4] >> 7) | ((csd[5] & 0x03) << 1);
     u8 READ_BL_LEN = csd[9] & 0x0f;
-    u32 count = (C_SIZE+1) << (C_SIZE_MULT + 2 + READ_BL_LEN - 9);
+    u32 ਗਿਣਤੀ_2 = (C_ਮਾਪ+1) << (C_ਮਾਪ_MULT + 2 + READ_BL_LEN - 9);
     // Check for newer encoding formats.
     u8 CSD_STRUCTURE = csd[14] >> 6;
-    if ((drive->card_type & SF_MMC) && CSD_STRUCTURE >= 2) {
+    ਜੇ ((drive->card_type & SF_MMC) && CSD_STRUCTURE >= 2) {
         // Get capacity from EXT_CSD register
         u8 ext_csd[512];
-        int ret = sdcard_pio_transfer(drive, SC_SEND_EXT_CSD, 0, ext_csd, 1);
-        if (ret)
-            return ret;
-        count = *(u32*)&ext_csd[212];
-    } else if (!(drive->card_type & SF_MMC) && CSD_STRUCTURE >= 1) {
+        ਪੂਰਨ ret = sdcard_pio_transfer(drive, SC_SEND_EXT_CSD, 0, ext_csd, 1);
+        ਜੇ (ret)
+            ਵਾਪਸ ret;
+        ਗਿਣਤੀ_2 = *(u32*)&ext_csd[212];
+    } ਨਹੀਂਤਾਂ ਜੇ (!(drive->card_type & SF_MMC) && CSD_STRUCTURE >= 1) {
         // High capacity SD card
         u32 C_SIZE2 = csd[5] | (csd[6] << 8) | ((csd[7] & 0x3f) << 16);
-        count = (C_SIZE2+1) << (19-9);
+        ਗਿਣਤੀ_2 = (C_SIZE2+1) << (19-9);
     }
     // Fill drive struct and return
-    drive->drive.blksize = DISK_SECTOR_SIZE;
-    drive->drive.sectors = count;
-    return 0;
+    drive->drive.blksize = DISK_SECTOR_ਮਾਪ;
+    drive->drive.sectors = ਗਿਣਤੀ_2;
+    ਵਾਪਸ 0;
 }
 
 // Initialize an SD card
-static int
-sdcard_card_setup(struct sddrive_s *drive, int volt, int prio)
+ਸਥਿਰ ਪੂਰਨ
+sdcard_card_ਤਿਆਰੀ(ਬਣਤਰ sddrive_s *drive, ਪੂਰਨ volt, ਪੂਰਨ prio)
 {
-    struct sdhci_s *regs = drive->regs;
+    ਬਣਤਰ sdhci_s *regs = drive->regs;
     // Set controller to initialization clock rate
-    int ret = sdcard_set_frequency(regs, 400);
-    if (ret)
-        return ret;
-    msleep(SDHCI_CLOCK_ON_TIME);
+    ਪੂਰਨ ret = sdcard_ਸੈੱਟ_frequency(regs, 400);
+    ਜੇ (ret)
+        ਵਾਪਸ ret;
+    msleep(SDHCI_CLOCK_ON_ਸਮਾਂ);
     // Reset card
     u32 param[4] = { };
     ret = sdcard_pio(regs, SC_GO_IDLE_STATE, param);
-    if (ret)
-        return ret;
+    ਜੇ (ret)
+        ਵਾਪਸ ret;
     // Let card know SDHC/SDXC is supported and confirm voltage
     u32 hcs = 0, vrange = (volt >= (1<<15) ? 0x100 : 0x200) | 0xaa;
     param[0] = vrange;
     ret = sdcard_pio(regs, SC_SEND_IF_COND, param);
-    if (!ret && param[0] == vrange)
+    ਜੇ (!ret && param[0] == vrange)
         hcs = (1<<30);
     // Verify SD card (instead of MMC or SDIO)
     param[0] = 0x00;
     ret = sdcard_pio_app(regs, SC_APP_SEND_OP_COND, param);
-    if (ret) {
+    ਜੇ (ret) {
         // Check for MMC card
         param[0] = 0x00;
         ret = sdcard_pio(regs, SC_SEND_OP_COND, param);
-        if (ret)
-            return ret;
+        ਜੇ (ret)
+            ਵਾਪਸ ret;
         drive->card_type |= SF_MMC;
         hcs = (1<<30);
     }
     // Init card
-    u32 end = timer_calc(SDHCI_POWERUP_TIMEOUT);
-    for (;;) {
+    u32 ਸਿਰਾ = timer_calc(SDHCI_POWERUP_TIMEOUT);
+    ਲਈ (;;) {
         param[0] = hcs | volt; // high-capacity support and voltage level
-        if (drive->card_type & SF_MMC)
+        ਜੇ (drive->card_type & SF_MMC)
             ret = sdcard_pio(regs, SC_SEND_OP_COND, param);
-        else
+        ਨਹੀਂਤਾਂ
             ret = sdcard_pio_app(regs, SC_APP_SEND_OP_COND, param);
-        if (ret)
-            return ret;
-        if (param[0] & SR_OCR_NOTBUSY)
-            break;
-        if (timer_check(end)) {
+        ਜੇ (ret)
+            ਵਾਪਸ ret;
+        ਜੇ (param[0] & SR_OCR_NOTBUSY)
+            ਰੋਕੋ;
+        ਜੇ (timer_check(ਸਿਰਾ)) {
             warn_timeout();
-            return -1;
+            ਵਾਪਸ -1;
         }
         msleep(5); // Avoid flooding log when debugging
     }
@@ -438,135 +438,135 @@ sdcard_card_setup(struct sddrive_s *drive, int volt, int prio)
     // Select card (get cid, set rca, get csd, select card)
     param[0] = 0x00;
     ret = sdcard_pio(regs, SC_ALL_SEND_CID, param);
-    if (ret)
-        return ret;
+    ਜੇ (ret)
+        ਵਾਪਸ ret;
     u8 cid[16];
-    memcpy(cid, param, sizeof(cid));
+    ਸਮ੍ਰਿਤੀ_ਨਕਲ(cid, param, ਆਕਾਰ(cid));
     param[0] = drive->card_type & SF_MMC ? 0x0001 << 16 : 0x00;
     ret = sdcard_pio(regs, SC_SEND_RELATIVE_ADDR, param);
-    if (ret)
-        return ret;
+    ਜੇ (ret)
+        ਵਾਪਸ ret;
     u16 rca = drive->card_type & SF_MMC ? 0x0001 : param[0] >> 16;
     param[0] = rca << 16;
     ret = sdcard_pio(regs, SC_SEND_CSD, param);
-    if (ret)
-        return ret;
+    ਜੇ (ret)
+        ਵਾਪਸ ret;
     u8 csd[16];
-    memcpy(csd, param, sizeof(csd));
+    ਸਮ੍ਰਿਤੀ_ਨਕਲ(csd, param, ਆਕਾਰ(csd));
     param[0] = rca << 16;
     ret = sdcard_pio(regs, SC_SELECT_DESELECT_CARD, param);
-    if (ret)
-        return ret;
+    ਜੇ (ret)
+        ਵਾਪਸ ret;
     // Set controller to data transfer clock rate
-    ret = sdcard_set_frequency(regs, 25000);
-    if (ret)
-        return ret;
+    ret = sdcard_ਸੈੱਟ_frequency(regs, 25000);
+    ਜੇ (ret)
+        ਵਾਪਸ ret;
     // Register drive
-    ret = sdcard_get_capacity(drive, csd);
-    if (ret)
-        return ret;
-    char pnm[7] = {};
-    int i;
-    for (i=0; i < (drive->card_type & SF_MMC ? 6 : 5); i++)
+    ret = sdcard_get_ਸਮਰੱਥਾ(drive, csd);
+    ਜੇ (ret)
+        ਵਾਪਸ ret;
+    ਅੱਖਰ pnm[7] = {};
+    ਪੂਰਨ i;
+    ਲਈ (i=0; i < (drive->card_type & SF_MMC ? 6 : 5); i++)
         pnm[i] = cid[11-i];
-    char *desc = znprintf(MAXDESCSIZE, "%s %s %dMiB"
+    ਅੱਖਰ *desc = znprintf(MAXDESCSIZE, "%s %s %dMiB"
                           , drive->card_type & SF_MMC ? "MMC drive" : "SD card"
                           , pnm, (u32)(drive->drive.sectors >> 11));
     dprintf(1, "Found sdcard at %p: %s\n", regs, desc);
-    boot_add_hd(&drive->drive, desc, prio);
-    return 0;
+    boot_ਜੋੜੋ_hd(&drive->drive, desc, prio);
+    ਵਾਪਸ 0;
 }
 
 // Setup and configure an SD card controller
-static void
-sdcard_controller_setup(struct sdhci_s *regs, int prio)
+ਸਥਿਰ ਖਾਲੀ
+sdcard_controller_ਤਿਆਰੀ(ਬਣਤਰ sdhci_s *regs, ਪੂਰਨ prio)
 {
     // Initialize controller
     u32 present_state = readl(&regs->present_state);
-    if (!(present_state & SP_CARD_INSERTED))
+    ਜੇ (!(present_state & SP_CARD_INSERTED))
         // No card present
-        return;
+        ਵਾਪਸ;
     dprintf(3, "sdhci@%p ver=%x cap=%x %x\n", regs
-            , readw(&regs->controller_version)
+            , readw(&regs->controller_ਸੰਸਕਰਣ)
             , readl(&regs->cap_lo), readl(&regs->cap_hi));
     sdcard_reset(regs, SRF_ALL);
     writew(&regs->irq_signal, 0);
     writew(&regs->irq_enable, 0x01ff);
-    writew(&regs->irq_status, readw(&regs->irq_status));
+    writew(&regs->irq_ਸਥਿਤੀ, readw(&regs->irq_ਸਥਿਤੀ));
     writew(&regs->error_signal, 0);
     writew(&regs->error_irq_enable, 0x01ff);
-    writew(&regs->error_irq_status, readw(&regs->error_irq_status));
+    writew(&regs->error_irq_ਸਥਿਤੀ, readw(&regs->error_irq_ਸਥਿਤੀ));
     writeb(&regs->timeout_control, 0x0e); // Set to max timeout
-    int volt = sdcard_set_power(regs);
-    if (volt < 0)
-        return;
+    ਪੂਰਨ volt = sdcard_ਸੈੱਟ_power(regs);
+    ਜੇ (volt < 0)
+        ਵਾਪਸ;
 
     // Initialize card
-    struct sddrive_s *drive = malloc_fseg(sizeof(*drive));
-    if (!drive) {
+    ਬਣਤਰ sddrive_s *drive = malloc_fseg(ਆਕਾਰ(*drive));
+    ਜੇ (!drive) {
         warn_noalloc();
-        goto fail;
+        ਜਾਓ fail;
     }
-    memset(drive, 0, sizeof(*drive));
+    memset(drive, 0, ਆਕਾਰ(*drive));
     drive->drive.type = DTYPE_SDCARD;
     drive->regs = regs;
-    int ret = sdcard_card_setup(drive, volt, prio);
-    if (ret) {
-        free(drive);
-        goto fail;
+    ਪੂਰਨ ret = sdcard_card_ਤਿਆਰੀ(drive, volt, prio);
+    ਜੇ (ret) {
+        ਮੁਕਤ(drive);
+        ਜਾਓ fail;
     }
-    return;
+    ਵਾਪਸ;
 fail:
     writeb(&regs->power_control, 0);
     writew(&regs->clock_control, 0);
 }
 
-static void
-sdcard_pci_setup(void *data)
+ਸਥਿਰ ਖਾਲੀ
+sdcard_pci_ਤਿਆਰੀ(ਖਾਲੀ *ਅੰਕੜੇ)
 {
-    struct pci_device *pci = data;
+    ਬਣਤਰ pci_device *pci = ਅੰਕੜੇ;
     // XXX - bars dependent on slot index register in pci config space
-    struct sdhci_s *regs = pci_enable_membar(pci, PCI_BASE_ADDRESS_0);
-    if (!regs)
-        return;
-    int prio = bootprio_find_pci_device(pci);
-    sdcard_controller_setup(regs, prio);
+    ਬਣਤਰ sdhci_s *regs = pci_enable_membar(pci, PCI_ਅਧਾਰ_ਪਤਾ_0);
+    ਜੇ (!regs)
+        ਵਾਪਸ;
+    ਪੂਰਨ prio = bootprio_ਲੱਭੋ_pci_device(pci);
+    sdcard_controller_ਤਿਆਰੀ(regs, prio);
 }
 
-static void
-sdcard_romfile_setup(void *data)
+ਸਥਿਰ ਖਾਲੀ
+sdcard_romfile_ਤਿਆਰੀ(ਖਾਲੀ *ਅੰਕੜੇ)
 {
-    struct romfile_s *file = data;
-    int prio = bootprio_find_named_rom(file->name, 0);
+    ਬਣਤਰ romfile_s *file = ਅੰਕੜੇ;
+    ਪੂਰਨ prio = bootprio_ਲੱਭੋ_named_rom(file->name, 0);
     u32 addr = romfile_loadint(file->name, 0);
     dprintf(1, "Starting sdcard controller check at addr %x\n", addr);
-    sdcard_controller_setup((void*)addr, prio);
+    sdcard_controller_ਤਿਆਰੀ((ਖਾਲੀ*)addr, prio);
 }
 
-void
-sdcard_setup(void)
+ਖਾਲੀ
+sdcard_ਤਿਆਰੀ(ਖਾਲੀ)
 {
-    if (!CONFIG_SDCARD)
-        return;
+    ਜੇ (!CONFIG_SDCARD)
+        ਵਾਪਸ;
 
-    struct romfile_s *file = NULL;
-    int num_romfiles = 0;
-    for (;;) {
+    ਬਣਤਰ romfile_s *file = ਨਿਰਾ;
+    ਪੂਰਨ ਅੰਕ_romfiles = 0;
+    ਲਈ (;;) {
         file = romfile_findprefix("etc/sdcard", file);
-        if (!file)
-            break;
-        run_thread(sdcard_romfile_setup, file);
-        num_romfiles++;
+        ਜੇ (!file)
+            ਰੋਕੋ;
+        ਲੜੀਵਾਰ_thread(sdcard_romfile_ਤਿਆਰੀ, file);
+        ਅੰਕ_romfiles++;
     }
-    if (num_romfiles)
+    ਜੇ (ਅੰਕ_romfiles)
         // only scan for PCI controllers if etc/sdcard not used
-        return;
+        ਵਾਪਸ;
 
-    struct pci_device *pci;
+    ਬਣਤਰ pci_device *pci;
     foreachpci(pci) {
-        if (pci->class != PCI_CLASS_SYSTEM_SDHCI || pci->prog_if >= 2)
+        ਜੇ (pci->class != PCI_CLASS_SYSTEM_SDHCI || pci->prog_if >= 2)
             // Not an SDHCI controller following SDHCI spec
-            continue;
-        run_thread(sdcard_pci_setup, pci);
+            ਜਾਰੀ;
+        ਲੜੀਵਾਰ_thread(sdcard_pci_ਤਿਆਰੀ, pci);
     }
 }

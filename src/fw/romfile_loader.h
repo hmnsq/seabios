@@ -1,15 +1,15 @@
-#ifndef __ROMFILE_LOADER_H
-#define __ROMFILE_LOADER_H
+#ਜੇ_ਅਪਰਿਭਾਸ਼ਿਤ __ROMFILE_LOADER_H
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ __ROMFILE_LOADER_H
 
-#include "types.h" // u8
-#include "util.h" // romfile_s
+#ਅਨ੍ਤਰ੍ਭਾਵ "types.h" // u8
+#ਅਨ੍ਤਰ੍ਭਾਵ "util.h" // romfile_s
 
-#define ROMFILE_LOADER_FILESZ 56
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ROMFILE_LOADER_FILESZ 56
 
 /* ROM file linker/loader interface. Linker uses little endian format */
-struct romfile_loader_entry_s {
+ਬਣਤਰ romfile_loader_ਇੰਦਰਾਜ_s {
     u32 command;
-    union {
+    ਸੰਘ {
         /*
          * COMMAND_ALLOCATE - allocate a table from @alloc.file
          * subject to @alloc.align alignment (must be power of 2)
@@ -18,8 +18,8 @@ struct romfile_loader_entry_s {
          * Must appear exactly once for each file, and before
          * this file is referenced by any other command.
          */
-        struct {
-            char file[ROMFILE_LOADER_FILESZ];
+        ਬਣਤਰ {
+            ਅੱਖਰ file[ROMFILE_LOADER_FILESZ];
             u32 align;
             u8 zone;
         } alloc;
@@ -30,12 +30,12 @@ struct romfile_loader_entry_s {
          * originating from @src_file. 1,2,4 or 8 byte unsigned
          * addition is used depending on @pointer.size.
          */
-        struct {
-            char dest_file[ROMFILE_LOADER_FILESZ];
-            char src_file[ROMFILE_LOADER_FILESZ];
-            u32 offset;
-            u8 size;
-        } pointer;
+        ਬਣਤਰ {
+            ਅੱਖਰ dest_file[ROMFILE_LOADER_FILESZ];
+            ਅੱਖਰ src_file[ROMFILE_LOADER_FILESZ];
+            u32 ਵਿੱਥ_2;
+            u8 ਮਾਪ;
+        } ਸੂਚਕ;
 
         /*
          * COMMAND_ADD_CHECKSUM - calculate checksum of the range specified by
@@ -44,11 +44,11 @@ struct romfile_loader_entry_s {
          * Checksum simply sums -X for each byte X in the range
          * using 8-bit math.
          */
-        struct {
-            char file[ROMFILE_LOADER_FILESZ];
-            u32 offset;
-            u32 start;
-            u32 length;
+        ਬਣਤਰ {
+            ਅੱਖਰ file[ROMFILE_LOADER_FILESZ];
+            u32 ਵਿੱਥ_2;
+            u32 ਸ਼ੁਰੂ;
+            u32 ਲੰਮਾਈ;
         } cksum;
 
         /*
@@ -59,33 +59,33 @@ struct romfile_loader_entry_s {
          * 1,2,4 or 8 byte unsigned addition is used depending on
          * @wr_pointer.size.
          */
-        struct {
-            char dest_file[ROMFILE_LOADER_FILESZ];
-            char src_file[ROMFILE_LOADER_FILESZ];
-            u32 dst_offset;
-            u32 src_offset;
-            u8 size;
-        } wr_pointer;
+        ਬਣਤਰ {
+            ਅੱਖਰ dest_file[ROMFILE_LOADER_FILESZ];
+            ਅੱਖਰ src_file[ROMFILE_LOADER_FILESZ];
+            u32 dst_ਵਿੱਥ;
+            u32 src_ਵਿੱਥ;
+            u8 ਮਾਪ;
+        } wr_ਸੂਚਕ;
 
         /* padding */
-        char pad[124];
+        ਅੱਖਰ pad[124];
     };
 };
 
-enum {
+ਗਿਣਤੀ {
     ROMFILE_LOADER_COMMAND_ALLOCATE      = 0x1,
-    ROMFILE_LOADER_COMMAND_ADD_POINTER   = 0x2,
-    ROMFILE_LOADER_COMMAND_ADD_CHECKSUM  = 0x3,
-    ROMFILE_LOADER_COMMAND_WRITE_POINTER = 0x4,
+    ROMFILE_LOADER_COMMAND_ਜੋੜੋ_ਸੂਚਕ   = 0x2,
+    ROMFILE_LOADER_COMMAND_ਜੋੜੋ_CHECKSUM  = 0x3,
+    ROMFILE_LOADER_COMMAND_WRITE_ਸੂਚਕ = 0x4,
 };
 
-enum {
-    ROMFILE_LOADER_ALLOC_ZONE_HIGH = 0x1,
+ਗਿਣਤੀ {
+    ROMFILE_LOADER_ALLOC_ZONE_ਉੱਚਾ = 0x1,
     ROMFILE_LOADER_ALLOC_ZONE_FSEG = 0x2,
 };
 
-int romfile_loader_execute(const char *name);
+ਪੂਰਨ romfile_loader_execute(ਅਚਲ ਅੱਖਰ *name);
 
-void romfile_fw_cfg_resume(void);
+ਖਾਲੀ romfile_fw_cfg_resume(ਖਾਲੀ);
 
-#endif
+#ਜੇ_ਅੰਤ

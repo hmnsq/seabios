@@ -5,115 +5,115 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "block.h" // struct disk_op_s
-#include "blockcmd.h" // struct cdb_request_sense
-#include "byteorder.h" // be32_to_cpu
-#include "farptr.h" // GET_FLATPTR
-#include "output.h" // dprintf
-#include "std/disk.h" // DISK_RET_EPARAM
-#include "string.h" // memset
-#include "util.h" // timer_calc
-#include "malloc.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "block.h" // struct disk_op_s
+#ਅਨ੍ਤਰ੍ਭਾਵ "blockcmd.h" // struct cdb_request_sense
+#ਅਨ੍ਤਰ੍ਭਾਵ "byteorder.h" // be32_to_cpu
+#ਅਨ੍ਤਰ੍ਭਾਵ "farptr.h" // GET_FLATPTR
+#ਅਨ੍ਤਰ੍ਭਾਵ "output.h" // dprintf
+#ਅਨ੍ਤਰ੍ਭਾਵ "std/disk.h" // DISK_RET_EPARAM
+#ਅਨ੍ਤਰ੍ਭਾਵ "string.h" // memset
+#ਅਨ੍ਤਰ੍ਭਾਵ "util.h" // timer_calc
+#ਅਨ੍ਤਰ੍ਭਾਵ "malloc.h"
 
 
 /****************************************************************
  * Low level command requests
  ****************************************************************/
 
-static int
-cdb_get_inquiry(struct disk_op_s *op, struct cdbres_inquiry *data)
+ਸਥਿਰ ਪੂਰਨ
+cdb_get_inquiry(ਬਣਤਰ disk_op_s *op, ਬਣਤਰ cdbres_inquiry *ਅੰਕੜੇ)
 {
-    struct cdb_request_sense cmd;
-    memset(&cmd, 0, sizeof(cmd));
+    ਬਣਤਰ cdb_request_sense cmd;
+    memset(&cmd, 0, ਆਕਾਰ(cmd));
     cmd.command = CDB_CMD_INQUIRY;
-    cmd.length = sizeof(*data);
+    cmd.ਲੰਮਾਈ = ਆਕਾਰ(*ਅੰਕੜੇ);
     op->command = CMD_SCSI;
-    op->count = 1;
-    op->buf_fl = data;
+    op->ਗਿਣਤੀ_2 = 1;
+    op->buf_fl = ਅੰਕੜੇ;
     op->cdbcmd = &cmd;
-    op->blocksize = sizeof(*data);
-    return process_op(op);
+    op->blocksize = ਆਕਾਰ(*ਅੰਕੜੇ);
+    ਵਾਪਸ process_op(op);
 }
 
 // Request SENSE
-static int
-cdb_get_sense(struct disk_op_s *op, struct cdbres_request_sense *data)
+ਸਥਿਰ ਪੂਰਨ
+cdb_get_sense(ਬਣਤਰ disk_op_s *op, ਬਣਤਰ cdbres_request_sense *ਅੰਕੜੇ)
 {
-    struct cdb_request_sense cmd;
-    memset(&cmd, 0, sizeof(cmd));
+    ਬਣਤਰ cdb_request_sense cmd;
+    memset(&cmd, 0, ਆਕਾਰ(cmd));
     cmd.command = CDB_CMD_REQUEST_SENSE;
-    cmd.length = sizeof(*data);
+    cmd.ਲੰਮਾਈ = ਆਕਾਰ(*ਅੰਕੜੇ);
     op->command = CMD_SCSI;
-    op->count = 1;
-    op->buf_fl = data;
+    op->ਗਿਣਤੀ_2 = 1;
+    op->buf_fl = ਅੰਕੜੇ;
     op->cdbcmd = &cmd;
-    op->blocksize = sizeof(*data);
-    return process_op(op);
+    op->blocksize = ਆਕਾਰ(*ਅੰਕੜੇ);
+    ਵਾਪਸ process_op(op);
 }
 
 // Test unit ready
-static int
-cdb_test_unit_ready(struct disk_op_s *op)
+ਸਥਿਰ ਪੂਰਨ
+cdb_test_unit_ready(ਬਣਤਰ disk_op_s *op)
 {
-    struct cdb_request_sense cmd;
-    memset(&cmd, 0, sizeof(cmd));
+    ਬਣਤਰ cdb_request_sense cmd;
+    memset(&cmd, 0, ਆਕਾਰ(cmd));
     cmd.command = CDB_CMD_TEST_UNIT_READY;
     op->command = CMD_SCSI;
-    op->count = 0;
-    op->buf_fl = NULL;
+    op->ਗਿਣਤੀ_2 = 0;
+    op->buf_fl = ਨਿਰਾ;
     op->cdbcmd = &cmd;
     op->blocksize = 0;
-    return process_op(op);
+    ਵਾਪਸ process_op(op);
 }
 
-static int
-cdb_read_capacity16(struct disk_op_s *op, struct cdbres_read_capacity_16 *data)
+ਸਥਿਰ ਪੂਰਨ
+cdb_read_capacity16(ਬਣਤਰ disk_op_s *op, ਬਣਤਰ cdbres_read_ਸਮਰੱਥਾ_16 *ਅੰਕੜੇ)
 {
-    struct cdb_sai_read_capacity_16 cmd;
-    memset(&cmd, 0, sizeof(cmd));
-    cmd.command = CDB_CMD_SERVICE_ACTION_IN;
-    cmd.flags = CDB_CMD_SAI_READ_CAPACITY_16;
-    cmd.len = cpu_to_be32(sizeof(struct cdbres_read_capacity_16));
+    ਬਣਤਰ cdb_sai_read_ਸਮਰੱਥਾ_16 cmd;
+    memset(&cmd, 0, ਆਕਾਰ(cmd));
+    cmd.command = CDB_CMD_SERVICE_ACTION_ਵਿੱਚ;
+    cmd.flags = CDB_CMD_SAI_READ_ਸਮਰੱਥਾ_16;
+    cmd.len = cpu_ਮੰਜ਼ਿਲ_be32(ਆਕਾਰ(ਬਣਤਰ cdbres_read_ਸਮਰੱਥਾ_16));
     op->command = CMD_SCSI;
-    op->count = 1;
-    op->buf_fl = data;
+    op->ਗਿਣਤੀ_2 = 1;
+    op->buf_fl = ਅੰਕੜੇ;
     op->cdbcmd = &cmd;
-    op->blocksize = sizeof(*data);
-    return process_op(op);
+    op->blocksize = ਆਕਾਰ(*ਅੰਕੜੇ);
+    ਵਾਪਸ process_op(op);
 }
 
 
 // Request capacity
-static int
-cdb_read_capacity(struct disk_op_s *op, struct cdbres_read_capacity *data)
+ਸਥਿਰ ਪੂਰਨ
+cdb_read_ਸਮਰੱਥਾ(ਬਣਤਰ disk_op_s *op, ਬਣਤਰ cdbres_read_ਸਮਰੱਥਾ *ਅੰਕੜੇ)
 {
-    struct cdb_read_capacity cmd;
-    memset(&cmd, 0, sizeof(cmd));
-    cmd.command = CDB_CMD_READ_CAPACITY;
+    ਬਣਤਰ cdb_read_ਸਮਰੱਥਾ cmd;
+    memset(&cmd, 0, ਆਕਾਰ(cmd));
+    cmd.command = CDB_CMD_READ_ਸਮਰੱਥਾ;
     op->command = CMD_SCSI;
-    op->count = 1;
-    op->buf_fl = data;
+    op->ਗਿਣਤੀ_2 = 1;
+    op->buf_fl = ਅੰਕੜੇ;
     op->cdbcmd = &cmd;
-    op->blocksize = sizeof(*data);
-    return process_op(op);
+    op->blocksize = ਆਕਾਰ(*ਅੰਕੜੇ);
+    ਵਾਪਸ process_op(op);
 }
 
 // Mode sense, geometry page.
-static int
-cdb_mode_sense_geom(struct disk_op_s *op, struct cdbres_mode_sense_geom *data)
+ਸਥਿਰ ਪੂਰਨ
+cdb_ਬਹੁਲਕ_sense_geom(ਬਣਤਰ disk_op_s *op, ਬਣਤਰ cdbres_ਬਹੁਲਕ_sense_geom *ਅੰਕੜੇ)
 {
-    struct cdb_mode_sense cmd;
-    memset(&cmd, 0, sizeof(cmd));
-    cmd.command = CDB_CMD_MODE_SENSE;
+    ਬਣਤਰ cdb_ਬਹੁਲਕ_sense cmd;
+    memset(&cmd, 0, ਆਕਾਰ(cmd));
+    cmd.command = CDB_CMD_ਬਹੁਲਕ_SENSE;
     cmd.flags = 8; /* DBD */
-    cmd.page = MODE_PAGE_HD_GEOMETRY;
-    cmd.count = cpu_to_be16(sizeof(*data));
+    cmd.ਪੰਨਾ = ਬਹੁਲਕ_ਪੰਨਾ_HD_GEOMETRY;
+    cmd.ਗਿਣਤੀ_2 = cpu_ਮੰਜ਼ਿਲ_be16(ਆਕਾਰ(*ਅੰਕੜੇ));
     op->command = CMD_SCSI;
-    op->count = 1;
-    op->buf_fl = data;
+    op->ਗਿਣਤੀ_2 = 1;
+    op->buf_fl = ਅੰਕੜੇ;
     op->cdbcmd = &cmd;
-    op->blocksize = sizeof(*data);
-    return process_op(op);
+    op->blocksize = ਆਕਾਰ(*ਅੰਕੜੇ);
+    ਵਾਪਸ process_op(op);
 }
 
 
@@ -122,49 +122,49 @@ cdb_mode_sense_geom(struct disk_op_s *op, struct cdbres_mode_sense_geom *data)
  ****************************************************************/
 
 // Create a scsi command request from a disk_op_s request
-int
-scsi_fill_cmd(struct disk_op_s *op, void *cdbcmd, int maxcdb)
+ਪੂਰਨ
+scsi_fill_cmd(ਬਣਤਰ disk_op_s *op, ਖਾਲੀ *cdbcmd, ਪੂਰਨ maxcdb)
 {
-    switch (op->command) {
-    case CMD_READ:
-    case CMD_WRITE: ;
-        if (op->lba < 0xFFFFFFFFULL) {
-            struct cdb_rwdata_10 *cmd = cdbcmd;
+    ਚੋਣ (op->command) {
+    ਹਾਲਤ CMD_READ:
+    ਹਾਲਤ CMD_WRITE: ;
+        ਜੇ (op->lba < 0xFFFFFFFFULL) {
+            ਬਣਤਰ cdb_rwdata_10 *cmd = cdbcmd;
             memset(cmd, 0, maxcdb);
             cmd->command = (op->command == CMD_READ ? CDB_CMD_READ_10
                             : CDB_CMD_WRITE_10);
-            cmd->lba = cpu_to_be32(op->lba);
-            cmd->count = cpu_to_be16(op->count);
-        } else {
-            struct cdb_rwdata_16 *cmd = cdbcmd;
+            cmd->lba = cpu_ਮੰਜ਼ਿਲ_be32(op->lba);
+            cmd->ਗਿਣਤੀ_2 = cpu_ਮੰਜ਼ਿਲ_be16(op->ਗਿਣਤੀ_2);
+        } ਨਹੀਂਤਾਂ {
+            ਬਣਤਰ cdb_rwdata_16 *cmd = cdbcmd;
             memset(cmd, 0, maxcdb);
             cmd->command = (op->command == CMD_READ ? CDB_CMD_READ_16
                             : CDB_CMD_WRITE_16);
-            cmd->lba = cpu_to_be64(op->lba);
-            cmd->count = cpu_to_be32(op->count);
+            cmd->lba = cpu_ਮੰਜ਼ਿਲ_be64(op->lba);
+            cmd->ਗਿਣਤੀ_2 = cpu_ਮੰਜ਼ਿਲ_be32(op->ਗਿਣਤੀ_2);
         }
-        return GET_FLATPTR(op->drive_fl->blksize);
-    case CMD_SCSI:
-        if (MODESEGMENT)
-            return -1;
-        memcpy(cdbcmd, op->cdbcmd, maxcdb);
-        return op->blocksize;
-    default:
-        return -1;
+        ਵਾਪਸ GET_FLATPTR(op->drive_fl->blksize);
+    ਹਾਲਤ CMD_SCSI:
+        ਜੇ (MODESEGMENT)
+            ਵਾਪਸ -1;
+        ਸਮ੍ਰਿਤੀ_ਨਕਲ(cdbcmd, op->cdbcmd, maxcdb);
+        ਵਾਪਸ op->blocksize;
+    ਮੂਲ:
+        ਵਾਪਸ -1;
     }
 }
 
 // Determine if the command is a request to pull data from the device
-int
-scsi_is_read(struct disk_op_s *op)
+ਪੂਰਨ
+scsi_is_read(ਬਣਤਰ disk_op_s *op)
 {
-    return op->command == CMD_READ || (
+    ਵਾਪਸ op->command == CMD_READ || (
         !MODESEGMENT && op->command == CMD_SCSI && op->blocksize);
 }
 
 // Check if a SCSI device is ready to receive commands
-int
-scsi_is_ready(struct disk_op_s *op)
+ਪੂਰਨ
+scsi_is_ready(ਬਣਤਰ disk_op_s *op)
 {
     ASSERT32FLAT();
     dprintf(6, "scsi_is_ready (drive=%p)\n", op->drive_fl);
@@ -172,205 +172,205 @@ scsi_is_ready(struct disk_op_s *op)
     /* Retry TEST UNIT READY for 5 seconds unless MEDIUM NOT PRESENT is
      * reported by the device 3 times.  If the device reports "IN PROGRESS",
      * 30 seconds is added. */
-    int tries = 3;
-    int in_progress = 0;
-    u32 end = timer_calc(5000);
-    for (;;) {
-        if (timer_check(end)) {
+    ਪੂਰਨ tries = 3;
+    ਪੂਰਨ ਵਿੱਚ_ਤਰੱਕੀ = 0;
+    u32 ਸਿਰਾ = timer_calc(5000);
+    ਲਈ (;;) {
+        ਜੇ (timer_check(ਸਿਰਾ)) {
             dprintf(1, "test unit ready failed\n");
-            return -1;
+            ਵਾਪਸ -1;
         }
 
-        int ret = cdb_test_unit_ready(op);
-        if (!ret)
+        ਪੂਰਨ ret = cdb_test_unit_ready(op);
+        ਜੇ (!ret)
             // Success
-            break;
+            ਰੋਕੋ;
 
-        struct cdbres_request_sense sense;
+        ਬਣਤਰ cdbres_request_sense sense;
         ret = cdb_get_sense(op, &sense);
-        if (ret)
+        ਜੇ (ret)
             // Error - retry.
-            continue;
+            ਜਾਰੀ;
 
         // Sense succeeded.
-        if (sense.asc == 0x3a) { /* MEDIUM NOT PRESENT */
+        ਜੇ (sense.asc == 0x3a) { /* MEDIUM NOT PRESENT */
             tries--;
             dprintf(1, "Device reports MEDIUM NOT PRESENT - %d tries left\n",
                 tries);
-            if (!tries)
-                return -1;
+            ਜੇ (!tries)
+                ਵਾਪਸ -1;
         }
 
-        if (sense.asc == 0x04 && sense.ascq == 0x01 && !in_progress) {
+        ਜੇ (sense.asc == 0x04 && sense.ascq == 0x01 && !ਵਿੱਚ_ਤਰੱਕੀ) {
             /* IN PROGRESS OF BECOMING READY */
             dprintf(1, "Waiting for device to detect medium... ");
             /* Allow 30 seconds more */
-            end = timer_calc(30000);
-            in_progress = 1;
+            ਸਿਰਾ = timer_calc(30000);
+            ਵਿੱਚ_ਤਰੱਕੀ = 1;
         }
     }
-    return 0;
+    ਵਾਪਸ 0;
 }
 
-#define CDB_CMD_REPORT_LUNS  0xA0
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ CDB_CMD_REPORT_LUNS  0xA0
 
-struct cdb_report_luns {
+ਬਣਤਰ cdb_report_luns {
     u8 command;
     u8 reserved_01[5];
-    u32 length;
+    u32 ਲੰਮਾਈ;
     u8 pad[6];
 } PACKED;
 
-struct scsi_lun {
+ਬਣਤਰ scsi_lun {
     u16 lun[4];
 };
 
-struct cdbres_report_luns {
-    u32 length;
+ਬਣਤਰ cdbres_report_luns {
+    u32 ਲੰਮਾਈ;
     u32 reserved;
-    struct scsi_lun luns[];
+    ਬਣਤਰ scsi_lun luns[];
 };
 
-static u64 scsilun2u64(struct scsi_lun *scsi_lun)
+ਸਥਿਰ u64 scsilun2u64(ਬਣਤਰ scsi_lun *scsi_lun)
 {
-    int i;
+    ਪੂਰਨ i;
     u64 ret = 0;
-    for (i = 0; i < ARRAY_SIZE(scsi_lun->lun); i++)
-        ret |= be16_to_cpu(scsi_lun->lun[i]) << (16 * i);
-    return ret;
+    ਲਈ (i = 0; i < ARRAY_ਮਾਪ(scsi_lun->lun); i++)
+        ret |= be16_ਮੰਜ਼ਿਲ_cpu(scsi_lun->lun[i]) << (16 * i);
+    ਵਾਪਸ ret;
 }
 
 // Issue REPORT LUNS on a temporary drive and iterate reported luns calling
 // @add_lun for each
-int scsi_rep_luns_scan(struct drive_s *tmp_drive, scsi_add_lun add_lun)
+ਪੂਰਨ scsi_rep_luns_ਜਾਂਚ(ਬਣਤਰ drive_s *tmp_drive, scsi_ਜੋੜੋ_lun ਜੋੜੋ_lun)
 {
-    int ret = -1;
+    ਪੂਰਨ ret = -1;
     /* start with the smallest possible buffer, otherwise some devices in QEMU
      * may (incorrectly) error out on returning less data than fits in it */
     u32 maxluns = 1;
     u32 nluns, i;
-    struct cdb_report_luns cdb = {
+    ਬਣਤਰ cdb_report_luns cdb = {
         .command = CDB_CMD_REPORT_LUNS,
     };
-    struct disk_op_s op = {
+    ਬਣਤਰ disk_op_s op = {
         .drive_fl = tmp_drive,
         .command = CMD_SCSI,
-        .count = 1,
+        .ਗਿਣਤੀ_2 = 1,
         .cdbcmd = &cdb,
     };
-    struct cdbres_report_luns *resp;
+    ਬਣਤਰ cdbres_report_luns *resp;
 
     ASSERT32FLAT();
 
-    while (1) {
-        op.blocksize = sizeof(struct cdbres_report_luns) +
-            maxluns * sizeof(struct scsi_lun);
+    ਜਦੋਂ (1) {
+        op.blocksize = ਆਕਾਰ(ਬਣਤਰ cdbres_report_luns) +
+            maxluns * ਆਕਾਰ(ਬਣਤਰ scsi_lun);
         op.buf_fl = malloc_tmp(op.blocksize);
-        if (!op.buf_fl) {
+        ਜੇ (!op.buf_fl) {
             warn_noalloc();
-            return -1;
+            ਵਾਪਸ -1;
         }
 
-        cdb.length = cpu_to_be32(op.blocksize);
-        if (process_op(&op) != DISK_RET_SUCCESS)
-            goto out;
+        cdb.ਲੰਮਾਈ = cpu_ਮੰਜ਼ਿਲ_be32(op.blocksize);
+        ਜੇ (process_op(&op) != DISK_RET_SUCCESS)
+            ਜਾਓ ਬਾਹਰਲਾ;
 
         resp = op.buf_fl;
-        nluns = be32_to_cpu(resp->length) / sizeof(struct scsi_lun);
-        if (nluns <= maxluns)
-            break;
+        nluns = be32_ਮੰਜ਼ਿਲ_cpu(resp->ਲੰਮਾਈ) / ਆਕਾਰ(ਬਣਤਰ scsi_lun);
+        ਜੇ (nluns <= maxluns)
+            ਰੋਕੋ;
 
-        free(op.buf_fl);
+        ਮੁਕਤ(op.buf_fl);
         maxluns = nluns;
     }
 
-    for (i = 0, ret = 0; i < nluns; i++) {
+    ਲਈ (i = 0, ret = 0; i < nluns; i++) {
         u64 lun = scsilun2u64(&resp->luns[i]);
-        if (lun >> 32)
-            continue;
-        ret += !add_lun((u32)lun, tmp_drive);
+        ਜੇ (lun >> 32)
+            ਜਾਰੀ;
+        ret += !ਜੋੜੋ_lun((u32)lun, tmp_drive);
     }
-out:
-    free(op.buf_fl);
-    return ret;
+ਬਾਹਰਲਾ:
+    ਮੁਕਤ(op.buf_fl);
+    ਵਾਪਸ ret;
 }
 
 // Iterate LUNs on the target and call @add_lun for each
-int scsi_sequential_scan(struct drive_s *tmp_drive, u32 maxluns,
-                         scsi_add_lun add_lun)
+ਪੂਰਨ scsi_sequential_ਜਾਂਚ(ਬਣਤਰ drive_s *tmp_drive, u32 maxluns,
+                         scsi_ਜੋੜੋ_lun ਜੋੜੋ_lun)
 {
-    int ret;
+    ਪੂਰਨ ret;
     u32 lun;
 
-    for (lun = 0, ret = 0; lun < maxluns; lun++)
-        ret += !add_lun(lun, tmp_drive);
-    return ret;
+    ਲਈ (lun = 0, ret = 0; lun < maxluns; lun++)
+        ret += !ਜੋੜੋ_lun(lun, tmp_drive);
+    ਵਾਪਸ ret;
 }
 
 // Validate drive, find block size / sector count, and register drive.
-int
-scsi_drive_setup(struct drive_s *drive, const char *s, int prio)
+ਪੂਰਨ
+scsi_drive_ਤਿਆਰੀ(ਬਣਤਰ drive_s *drive, ਅਚਲ ਅੱਖਰ *s, ਪੂਰਨ prio)
 {
     ASSERT32FLAT();
-    struct disk_op_s dop;
-    memset(&dop, 0, sizeof(dop));
+    ਬਣਤਰ disk_op_s dop;
+    memset(&dop, 0, ਆਕਾਰ(dop));
     dop.drive_fl = drive;
-    struct cdbres_inquiry data;
-    int ret = cdb_get_inquiry(&dop, &data);
-    if (ret)
-        return ret;
-    char vendor[sizeof(data.vendor)+1], product[sizeof(data.product)+1];
-    char rev[sizeof(data.rev)+1];
-    strtcpy(vendor, data.vendor, sizeof(vendor));
+    ਬਣਤਰ cdbres_inquiry ਅੰਕੜੇ;
+    ਪੂਰਨ ret = cdb_get_inquiry(&dop, &ਅੰਕੜੇ);
+    ਜੇ (ret)
+        ਵਾਪਸ ret;
+    ਅੱਖਰ vendor[ਆਕਾਰ(ਅੰਕੜੇ.vendor)+1], ਗੁਣਨਫਲ[ਆਕਾਰ(ਅੰਕੜੇ.ਗੁਣਨਫਲ)+1];
+    ਅੱਖਰ rev[ਆਕਾਰ(ਅੰਕੜੇ.rev)+1];
+    strtcpy(vendor, ਅੰਕੜੇ.vendor, ਆਕਾਰ(vendor));
     nullTrailingSpace(vendor);
-    strtcpy(product, data.product, sizeof(product));
-    nullTrailingSpace(product);
-    strtcpy(rev, data.rev, sizeof(rev));
+    strtcpy(ਗੁਣਨਫਲ, ਅੰਕੜੇ.ਗੁਣਨਫਲ, ਆਕਾਰ(ਗੁਣਨਫਲ));
+    nullTrailingSpace(ਗੁਣਨਫਲ);
+    strtcpy(rev, ਅੰਕੜੇ.rev, ਆਕਾਰ(rev));
     nullTrailingSpace(rev);
-    int pdt = data.pdt & 0x1f;
-    int removable = !!(data.removable & 0x80);
+    ਪੂਰਨ pdt = ਅੰਕੜੇ.pdt & 0x1f;
+    ਪੂਰਨ removable = !!(ਅੰਕੜੇ.removable & 0x80);
     dprintf(1, "%s vendor='%s' product='%s' rev='%s' type=%d removable=%d\n"
-            , s, vendor, product, rev, pdt, removable);
+            , s, vendor, ਗੁਣਨਫਲ, rev, pdt, removable);
     drive->removable = removable;
 
-    if (pdt == SCSI_TYPE_CDROM) {
-        drive->blksize = CDROM_SECTOR_SIZE;
+    ਜੇ (pdt == SCSI_TYPE_CDROM) {
+        drive->blksize = CDROM_SECTOR_ਮਾਪ;
         drive->sectors = (u64)-1;
 
-        char *desc = znprintf(MAXDESCSIZE, "DVD/CD [%s Drive %s %s %s]"
-                              , s, vendor, product, rev);
-        boot_add_cd(drive, desc, prio);
-        return 0;
+        ਅੱਖਰ *desc = znprintf(MAXDESCSIZE, "DVD/CD [%s Drive %s %s %s]"
+                              , s, vendor, ਗੁਣਨਫਲ, rev);
+        boot_ਜੋੜੋ_cd(drive, desc, prio);
+        ਵਾਪਸ 0;
     }
 
-    if (pdt != SCSI_TYPE_DISK)
-        return -1;
+    ਜੇ (pdt != SCSI_TYPE_DISK)
+        ਵਾਪਸ -1;
 
     ret = scsi_is_ready(&dop);
-    if (ret) {
+    ਜੇ (ret) {
         dprintf(1, "scsi_is_ready returned %d\n", ret);
-        return ret;
+        ਵਾਪਸ ret;
     }
 
-    struct cdbres_read_capacity capdata;
-    ret = cdb_read_capacity(&dop, &capdata);
-    if (ret)
-        return ret;
+    ਬਣਤਰ cdbres_read_ਸਮਰੱਥਾ capdata;
+    ret = cdb_read_ਸਮਰੱਥਾ(&dop, &capdata);
+    ਜੇ (ret)
+        ਵਾਪਸ ret;
 
-    if (be32_to_cpu(capdata.sectors) == 0xFFFFFFFFUL) {
+    ਜੇ (be32_ਮੰਜ਼ਿਲ_cpu(capdata.sectors) == 0xFFFFFFFFUL) {
         dprintf(3, "%s: >2TB Detected trying READCAP(16)\n", s);
-        struct cdbres_read_capacity_16 capdata16;
+        ਬਣਤਰ cdbres_read_ਸਮਰੱਥਾ_16 capdata16;
         ret = cdb_read_capacity16(&dop, &capdata16);
-        drive->blksize = be32_to_cpu(capdata16.blksize);
-        drive->sectors = be64_to_cpu(capdata16.sectors) + 1;
-    } else {
-        drive->blksize = be32_to_cpu(capdata.blksize);
-        drive->sectors = (u64)be32_to_cpu(capdata.sectors) + 1;
+        drive->blksize = be32_ਮੰਜ਼ਿਲ_cpu(capdata16.blksize);
+        drive->sectors = be64_ਮੰਜ਼ਿਲ_cpu(capdata16.sectors) + 1;
+    } ਨਹੀਂਤਾਂ {
+        drive->blksize = be32_ਮੰਜ਼ਿਲ_cpu(capdata.blksize);
+        drive->sectors = (u64)be32_ਮੰਜ਼ਿਲ_cpu(capdata.sectors) + 1;
     }
 
-    if (drive->blksize != DISK_SECTOR_SIZE) {
+    ਜੇ (drive->blksize != DISK_SECTOR_ਮਾਪ) {
         dprintf(1, "%s: unsupported block size %d\n", s, drive->blksize);
-        return -1;
+        ਵਾਪਸ -1;
     }
     dprintf(1, "%s blksize=%d sectors=0x%llx\n", s, drive->blksize, drive->sectors);
     // We do not recover from USB stalls, so try to be safe and avoid
@@ -381,26 +381,26 @@ scsi_drive_setup(struct drive_s *drive, const char *s, int prio)
     // but some old USB keys only support a very small subset of SCSI which
     // does not even include the MODE SENSE command!
     //
-    if (CONFIG_QEMU_HARDWARE && memcmp(vendor, "QEMU", 5) == 0) {
-        struct cdbres_mode_sense_geom geomdata;
-        ret = cdb_mode_sense_geom(&dop, &geomdata);
-        if (ret == 0) {
+    ਜੇ (CONFIG_QEMU_HARDWARE && memcmp(vendor, "QEMU", 5) == 0) {
+        ਬਣਤਰ cdbres_ਬਹੁਲਕ_sense_geom geomdata;
+        ret = cdb_ਬਹੁਲਕ_sense_geom(&dop, &geomdata);
+        ਜੇ (ret == 0) {
             u32 cylinders;
             cylinders = geomdata.cyl[0] << 16;
             cylinders |= geomdata.cyl[1] << 8;
             cylinders |= geomdata.cyl[2];
-            if (cylinders && geomdata.heads &&
+            ਜੇ (cylinders && geomdata.heads &&
                 drive->sectors <= 0xFFFFFFFFULL &&
                 ((u32)drive->sectors % (geomdata.heads * cylinders) == 0)) {
                 drive->pchs.cylinder = cylinders;
-                drive->pchs.head = geomdata.heads;
+                drive->pchs.ਸਿਰ = geomdata.heads;
                 drive->pchs.sector = (u32)drive->sectors / (geomdata.heads * cylinders);
             }
         }
     }
 
-    char *desc = znprintf(MAXDESCSIZE, "%s Drive %s %s %s"
-                          , s, vendor, product, rev);
-    boot_add_hd(drive, desc, prio);
-    return 0;
+    ਅੱਖਰ *desc = znprintf(MAXDESCSIZE, "%s Drive %s %s %s"
+                          , s, vendor, ਗੁਣਨਫਲ, rev);
+    boot_ਜੋੜੋ_hd(drive, desc, prio);
+    ਵਾਪਸ 0;
 }

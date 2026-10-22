@@ -5,63 +5,63 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "util.h" // dma_setup
-#include "x86.h" // outb
+#ਅਨ੍ਤਰ੍ਭਾਵ "util.h" // dma_setup
+#ਅਨ੍ਤਰ੍ਭਾਵ "x86.h" // outb
 
-#define PORT_DMA_ADDR_2        0x0004
-#define PORT_DMA_CNT_2         0x0005
-#define PORT_DMA1_MASK_REG     0x000a
-#define PORT_DMA1_MODE_REG     0x000b
-#define PORT_DMA1_CLEAR_FF_REG 0x000c
-#define PORT_DMA1_MASTER_CLEAR 0x000d
-#define PORT_DMA_PAGE_2        0x0081
-#define PORT_DMA2_MASK_REG     0x00d4
-#define PORT_DMA2_MODE_REG     0x00d6
-#define PORT_DMA2_MASTER_CLEAR 0x00da
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ਪੋਰਟ_DMA_ADDR_2        0x0004
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ਪੋਰਟ_DMA_CNT_2         0x0005
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ਪੋਰਟ_DMA1_ਨਕਾਬ_REG     0x000a
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ਪੋਰਟ_DMA1_ਬਹੁਲਕ_REG     0x000b
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ਪੋਰਟ_DMA1_CLEAR_FF_REG 0x000c
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ਪੋਰਟ_DMA1_MASTER_CLEAR 0x000d
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ਪੋਰਟ_DMA_ਪੰਨਾ_2        0x0081
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ਪੋਰਟ_DMA2_ਨਕਾਬ_REG     0x00d4
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ਪੋਰਟ_DMA2_ਬਹੁਲਕ_REG     0x00d6
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ਪੋਰਟ_DMA2_MASTER_CLEAR 0x00da
 
 // Setup the DMA controller for a floppy transfer.
-int
-dma_floppy(u32 addr, int count, int isWrite)
+ਪੂਰਨ
+dma_floppy(u32 addr, ਪੂਰਨ ਗਿਣਤੀ_2, ਪੂਰਨ isWrite)
 {
     // check for 64K boundary overrun
-    u16 end = count - 1;
-    u32 last_addr = addr + end;
-    if ((addr >> 16) != (last_addr >> 16))
-        return -1;
+    u16 ਸਿਰਾ = ਗਿਣਤੀ_2 - 1;
+    u32 ਆਖਰੀ_addr = addr + ਸਿਰਾ;
+    ਜੇ ((addr >> 16) != (ਆਖਰੀ_addr >> 16))
+        ਵਾਪਸ -1;
 
-    u8 mode_register = 0x46; // single mode, increment, autoinit disable,
-    if (isWrite)
-        mode_register = 0x4a;
+    u8 ਬਹੁਲਕ_ਰਜਿਸਟਰ = 0x46; // single mode, increment, autoinit disable,
+    ਜੇ (isWrite)
+        ਬਹੁਲਕ_ਰਜਿਸਟਰ = 0x4a;
 
-    outb(0x06, PORT_DMA1_MASK_REG);
-    outb(0x00, PORT_DMA1_CLEAR_FF_REG); // clear flip-flop
-    outb(addr, PORT_DMA_ADDR_2);
-    outb(addr>>8, PORT_DMA_ADDR_2);
-    outb(0x00, PORT_DMA1_CLEAR_FF_REG); // clear flip-flop
-    outb(end, PORT_DMA_CNT_2);
-    outb(end>>8, PORT_DMA_CNT_2);
+    outb(0x06, ਪੋਰਟ_DMA1_ਨਕਾਬ_REG);
+    outb(0x00, ਪੋਰਟ_DMA1_CLEAR_FF_REG); // clear flip-flop
+    outb(addr, ਪੋਰਟ_DMA_ADDR_2);
+    outb(addr>>8, ਪੋਰਟ_DMA_ADDR_2);
+    outb(0x00, ਪੋਰਟ_DMA1_CLEAR_FF_REG); // clear flip-flop
+    outb(ਸਿਰਾ, ਪੋਰਟ_DMA_CNT_2);
+    outb(ਸਿਰਾ>>8, ਪੋਰਟ_DMA_CNT_2);
 
     // port 0b: DMA-1 Mode Register
     // transfer type=write, channel 2
-    outb(mode_register, PORT_DMA1_MODE_REG);
+    outb(ਬਹੁਲਕ_ਰਜਿਸਟਰ, ਪੋਰਟ_DMA1_ਬਹੁਲਕ_REG);
 
     // port 81: DMA-1 Page Register, channel 2
-    outb(addr>>16, PORT_DMA_PAGE_2);
+    outb(addr>>16, ਪੋਰਟ_DMA_ਪੰਨਾ_2);
 
-    outb(0x02, PORT_DMA1_MASK_REG); // unmask channel 2
+    outb(0x02, ਪੋਰਟ_DMA1_ਨਕਾਬ_REG); // unmask channel 2
 
-    return 0;
+    ਵਾਪਸ 0;
 }
 
 // Reset DMA controller
-void
-dma_setup(void)
+ਖਾਲੀ
+dma_ਤਿਆਰੀ(ਖਾਲੀ)
 {
     // first reset the DMA controllers
-    outb(0, PORT_DMA1_MASTER_CLEAR);
-    outb(0, PORT_DMA2_MASTER_CLEAR);
+    outb(0, ਪੋਰਟ_DMA1_MASTER_CLEAR);
+    outb(0, ਪੋਰਟ_DMA2_MASTER_CLEAR);
 
     // then initialize the DMA controllers
-    outb(0xc0, PORT_DMA2_MODE_REG);
-    outb(0x00, PORT_DMA2_MASK_REG);
+    outb(0xc0, ਪੋਰਟ_DMA2_ਬਹੁਲਕ_REG);
+    outb(0x00, ਪੋਰਟ_DMA2_ਨਕਾਬ_REG);
 }

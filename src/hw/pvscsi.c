@@ -7,328 +7,328 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "block.h" // struct drive_s
-#include "blockcmd.h" // scsi_drive_setup
-#include "config.h" // CONFIG_*
-#include "malloc.h" // free
-#include "memmap.h" // PAGE_SHIFT, virt_to_phys
-#include "output.h" // dprintf
-#include "pcidevice.h" // foreachpci
-#include "pci_ids.h" // PCI_DEVICE_ID_VMWARE_PVSCSI
-#include "pci_regs.h" // PCI_VENDOR_ID
-#include "pvscsi.h" // pvscsi_setup
-#include "stacks.h" // run_thread
-#include "std/disk.h" // DISK_RET_SUCCESS
-#include "string.h" // memset
-#include "util.h" // usleep
-#include "x86.h" // writel
+#ਅਨ੍ਤਰ੍ਭਾਵ "block.h" // struct drive_s
+#ਅਨ੍ਤਰ੍ਭਾਵ "blockcmd.h" // scsi_drive_setup
+#ਅਨ੍ਤਰ੍ਭਾਵ "config.h" // CONFIG_*
+#ਅਨ੍ਤਰ੍ਭਾਵ "malloc.h" // free
+#ਅਨ੍ਤਰ੍ਭਾਵ "memmap.h" // PAGE_SHIFT, virt_to_phys
+#ਅਨ੍ਤਰ੍ਭਾਵ "output.h" // dprintf
+#ਅਨ੍ਤਰ੍ਭਾਵ "pcidevice.h" // foreachpci
+#ਅਨ੍ਤਰ੍ਭਾਵ "pci_ids.h" // PCI_DEVICE_ID_VMWARE_PVSCSI
+#ਅਨ੍ਤਰ੍ਭਾਵ "pci_regs.h" // PCI_VENDOR_ID
+#ਅਨ੍ਤਰ੍ਭਾਵ "pvscsi.h" // pvscsi_setup
+#ਅਨ੍ਤਰ੍ਭਾਵ "stacks.h" // run_thread
+#ਅਨ੍ਤਰ੍ਭਾਵ "std/disk.h" // DISK_RET_SUCCESS
+#ਅਨ੍ਤਰ੍ਭਾਵ "string.h" // memset
+#ਅਨ੍ਤਰ੍ਭਾਵ "util.h" // usleep
+#ਅਨ੍ਤਰ੍ਭਾਵ "x86.h" // writel
 
-#define MASK(n) ((1 << (n)) - 1)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ਨਕਾਬ_2(n) ((1 << (n)) - 1)
 
-#define SIMPLE_QUEUE_TAG 0x20
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SIMPLE_ਕਤਾਰ_ਟੈਗ 0x20
 
-#define PVSCSI_INTR_CMPL_0                 (1 << 0)
-#define PVSCSI_INTR_CMPL_1                 (1 << 1)
-#define PVSCSI_INTR_CMPL_MASK              MASK(2)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PVSCSI_INTR_CMPL_0                 (1 << 0)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PVSCSI_INTR_CMPL_1                 (1 << 1)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PVSCSI_INTR_CMPL_ਨਕਾਬ              ਨਕਾਬ_2(2)
 
-#define PVSCSI_INTR_MSG_0                  (1 << 2)
-#define PVSCSI_INTR_MSG_1                  (1 << 3)
-#define PVSCSI_INTR_MSG_MASK               (MASK(2) << 2)
-#define PVSCSI_INTR_ALL_SUPPORTED          MASK(4)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PVSCSI_INTR_ਸੁਨੇਹਾ_0                  (1 << 2)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PVSCSI_INTR_ਸੁਨੇਹਾ_1                  (1 << 3)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PVSCSI_INTR_ਸੁਨੇਹਾ_ਨਕਾਬ               (ਨਕਾਬ_2(2) << 2)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PVSCSI_INTR_ALL_SUPPORTED          ਨਕਾਬ_2(4)
 
-#define PVSCSI_FLAG_CMD_WITH_SG_LIST       (1 << 0)
-#define PVSCSI_FLAG_CMD_OUT_OF_BAND_CDB    (1 << 1)
-#define PVSCSI_FLAG_CMD_DIR_NONE           (1 << 2)
-#define PVSCSI_FLAG_CMD_DIR_TOHOST         (1 << 3)
-#define PVSCSI_FLAG_CMD_DIR_TODEVICE       (1 << 4)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PVSCSI_FLAG_CMD_WITH_SG_LIST       (1 << 0)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PVSCSI_FLAG_CMD_ਬਾਹਰਲਾ_ਦਾ_BAND_CDB    (1 << 1)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PVSCSI_FLAG_CMD_DIR_NONE           (1 << 2)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PVSCSI_FLAG_CMD_DIR_TOHOST         (1 << 3)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PVSCSI_FLAG_CMD_DIR_TODEVICE       (1 << 4)
 
-enum PVSCSIRegOffset {
-    PVSCSI_REG_OFFSET_COMMAND        =    0x0,
-    PVSCSI_REG_OFFSET_COMMAND_DATA   =    0x4,
-    PVSCSI_REG_OFFSET_COMMAND_STATUS =    0x8,
-    PVSCSI_REG_OFFSET_LAST_STS_0     =  0x100,
-    PVSCSI_REG_OFFSET_LAST_STS_1     =  0x104,
-    PVSCSI_REG_OFFSET_LAST_STS_2     =  0x108,
-    PVSCSI_REG_OFFSET_LAST_STS_3     =  0x10c,
-    PVSCSI_REG_OFFSET_INTR_STATUS    = 0x100c,
-    PVSCSI_REG_OFFSET_INTR_MASK      = 0x2010,
-    PVSCSI_REG_OFFSET_KICK_NON_RW_IO = 0x3014,
-    PVSCSI_REG_OFFSET_DEBUG          = 0x3018,
-    PVSCSI_REG_OFFSET_KICK_RW_IO     = 0x4018,
+ਗਿਣਤੀ PVSCSIReg_ਵਿੱਥ {
+    PVSCSI_REG_ਵਿੱਥ_COMMAND        =    0x0,
+    PVSCSI_REG_ਵਿੱਥ_COMMAND_ਅੰਕੜੇ   =    0x4,
+    PVSCSI_REG_ਵਿੱਥ_COMMAND_ਸਥਿਤੀ =    0x8,
+    PVSCSI_REG_ਵਿੱਥ_ਆਖਰੀ_STS_0     =  0x100,
+    PVSCSI_REG_ਵਿੱਥ_ਆਖਰੀ_STS_1     =  0x104,
+    PVSCSI_REG_ਵਿੱਥ_ਆਖਰੀ_STS_2     =  0x108,
+    PVSCSI_REG_ਵਿੱਥ_ਆਖਰੀ_STS_3     =  0x10c,
+    PVSCSI_REG_ਵਿੱਥ_INTR_ਸਥਿਤੀ    = 0x100c,
+    PVSCSI_REG_ਵਿੱਥ_INTR_ਨਕਾਬ      = 0x2010,
+    PVSCSI_REG_ਵਿੱਥ_KICK_NON_RW_IO = 0x3014,
+    PVSCSI_REG_ਵਿੱਥ_DEBUG          = 0x3018,
+    PVSCSI_REG_ਵਿੱਥ_KICK_RW_IO     = 0x4018,
 };
 
-enum PVSCSICommands {
-    PVSCSI_CMD_FIRST             = 0,
+ਗਿਣਤੀ PVSCSICommands {
+    PVSCSI_CMD_ਪਹਿਲਾ             = 0,
     PVSCSI_CMD_ADAPTER_RESET     = 1,
     PVSCSI_CMD_ISSUE_SCSI        = 2,
-    PVSCSI_CMD_SETUP_RINGS       = 3,
+    PVSCSI_CMD_ਤਿਆਰੀ_RINGS       = 3,
     PVSCSI_CMD_RESET_BUS         = 4,
     PVSCSI_CMD_RESET_DEVICE      = 5,
     PVSCSI_CMD_ABORT_CMD         = 6,
     PVSCSI_CMD_CONFIG            = 7,
-    PVSCSI_CMD_SETUP_MSG_RING    = 8,
+    PVSCSI_CMD_ਤਿਆਰੀ_ਸੁਨੇਹਾ_RING    = 8,
     PVSCSI_CMD_DEVICE_UNPLUG     = 9,
-    PVSCSI_CMD_LAST              = 10
+    PVSCSI_CMD_ਆਖਰੀ              = 10
 };
 
-#define PVSCSI_SETUP_RINGS_MAX_NUM_PAGES        32
-struct PVSCSICmdDescSetupRings {
-    u32    reqRingNumPages;
-    u32    cmpRingNumPages;
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PVSCSI_ਤਿਆਰੀ_RINGS_MAX_ਅੰਕ_ਪੰਨੇ        32
+ਬਣਤਰ PVSCSICmd_Desc_ਤਿਆਰੀ_Rings {
+    u32    req_Ring_ਅੰਕ_ਪੰਨੇ;
+    u32    cmp_Ring_ਅੰਕ_ਪੰਨੇ;
     u64    ringsStatePPN;
-    u64    reqRingPPNs[PVSCSI_SETUP_RINGS_MAX_NUM_PAGES];
-    u64    cmpRingPPNs[PVSCSI_SETUP_RINGS_MAX_NUM_PAGES];
+    u64    reqRingPPNs[PVSCSI_ਤਿਆਰੀ_RINGS_MAX_ਅੰਕ_ਪੰਨੇ];
+    u64    cmpRingPPNs[PVSCSI_ਤਿਆਰੀ_RINGS_MAX_ਅੰਕ_ਪੰਨੇ];
 } PACKED;
 
-struct PVSCSIRingCmpDesc {
+ਬਣਤਰ PVSCSIRingCmpDesc {
     u64    context;
-    u64    dataLen;
+    u64    ਅੰਕੜੇ_Len;
     u32    senseLen;
-    u16    hostStatus;
-    u16    scsiStatus;
+    u16    host_ਸਥਿਤੀ;
+    u16    scsi_ਸਥਿਤੀ_2;
     u32    pad[2];
 } PACKED;
 
-struct PVSCSIRingsState {
+ਬਣਤਰ PVSCSIRingsState {
     u32    reqProdIdx;
     u32    reqConsIdx;
-    u32    reqNumEntriesLog2;
+    u32    req_ਅੰਕ_Entries_Log2;
 
     u32    cmpProdIdx;
     u32    cmpConsIdx;
-    u32    cmpNumEntriesLog2;
+    u32    cmp_ਅੰਕ_Entries_Log2;
 
     u8     pad[104];
 
-    u32    msgProdIdx;
-    u32    msgConsIdx;
-    u32    msgNumEntriesLog2;
+    u32    ਸੁਨੇਹਾ_Prod_Idx;
+    u32    ਸੁਨੇਹਾ_Cons_Idx;
+    u32    ਸੁਨੇਹਾ_ਅੰਕ_Entries_Log2;
 } PACKED;
 
-struct PVSCSIRingReqDesc {
+ਬਣਤਰ PVSCSIRingReqDesc {
     u64    context;
-    u64    dataAddr;
-    u64    dataLen;
+    u64    ਅੰਕੜੇ_Addr;
+    u64    ਅੰਕੜੇ_Len;
     u64    senseAddr;
     u32    senseLen;
     u32    flags;
     u8     cdb[16];
     u8     cdbLen;
     u8     lun[8];
-    u8     tag;
+    u8     ਟੈਗ;
     u8     bus;
-    u8     target;
+    u8     ਨਿਸ਼ਾਨਾ;
     u8     vcpuHint;
-    u8     unused[59];
+    u8     ਅਣਵਰਤਿਆ[59];
 } PACKED;
 
-struct pvscsi_ring_dsc_s {
-    struct PVSCSIRingsState *ring_state;
-    struct PVSCSIRingReqDesc *ring_reqs;
-    struct PVSCSIRingCmpDesc *ring_cmps;
+ਬਣਤਰ pvscsi_ring_dsc_s {
+    ਬਣਤਰ PVSCSIRingsState *ring_state;
+    ਬਣਤਰ PVSCSIRingReqDesc *ring_reqs;
+    ਬਣਤਰ PVSCSIRingCmpDesc *ring_cmps;
 };
 
-struct pvscsi_lun_s {
-    struct drive_s drive;
-    void *iobase;
-    u8 target;
+ਬਣਤਰ pvscsi_lun_s {
+    ਬਣਤਰ drive_s drive;
+    ਖਾਲੀ *iobase;
+    u8 ਨਿਸ਼ਾਨਾ;
     u8 lun;
-    struct pvscsi_ring_dsc_s *ring_dsc;
+    ਬਣਤਰ pvscsi_ring_dsc_s *ring_dsc;
 };
 
-static void
-pvscsi_write_cmd_desc(void *iobase, u32 cmd, const void *desc, size_t len)
+ਸਥਿਰ ਖਾਲੀ
+pvscsi_write_cmd_desc(ਖਾਲੀ *iobase, u32 cmd, ਅਚਲ ਖਾਲੀ *desc, ਮਾਪ_t len)
 {
-    const u32 *ptr = desc;
-    size_t i;
+    ਅਚਲ u32 *ptr = desc;
+    ਮਾਪ_t i;
 
-    len /= sizeof(*ptr);
-    writel(iobase + PVSCSI_REG_OFFSET_COMMAND, cmd);
-    for (i = 0; i < len; i++)
-        writel(iobase + PVSCSI_REG_OFFSET_COMMAND_DATA, ptr[i]);
+    len /= ਆਕਾਰ(*ptr);
+    writel(iobase + PVSCSI_REG_ਵਿੱਥ_COMMAND, cmd);
+    ਲਈ (i = 0; i < len; i++)
+        writel(iobase + PVSCSI_REG_ਵਿੱਥ_COMMAND_ਅੰਕੜੇ, ptr[i]);
 }
 
-static void
-pvscsi_kick_rw_io(void *iobase)
+ਸਥਿਰ ਖਾਲੀ
+pvscsi_kick_rw_io(ਖਾਲੀ *iobase)
 {
-    writel(iobase + PVSCSI_REG_OFFSET_KICK_RW_IO, 0);
+    writel(iobase + PVSCSI_REG_ਵਿੱਥ_KICK_RW_IO, 0);
 }
 
-static void
-pvscsi_wait_intr_cmpl(void *iobase)
+ਸਥਿਰ ਖਾਲੀ
+pvscsi_wait_intr_cmpl(ਖਾਲੀ *iobase)
 {
-    while (!(readl(iobase + PVSCSI_REG_OFFSET_INTR_STATUS) & PVSCSI_INTR_CMPL_MASK))
+    ਜਦੋਂ (!(readl(iobase + PVSCSI_REG_ਵਿੱਥ_INTR_ਸਥਿਤੀ) & PVSCSI_INTR_CMPL_ਨਕਾਬ))
         usleep(5);
-    writel(iobase + PVSCSI_REG_OFFSET_INTR_STATUS, PVSCSI_INTR_CMPL_MASK);
+    writel(iobase + PVSCSI_REG_ਵਿੱਥ_INTR_ਸਥਿਤੀ, PVSCSI_INTR_CMPL_ਨਕਾਬ);
 }
 
-static void
-pvscsi_init_rings(void *iobase, struct pvscsi_ring_dsc_s **ring_dsc)
+ਸਥਿਰ ਖਾਲੀ
+pvscsi_init_rings(ਖਾਲੀ *iobase, ਬਣਤਰ pvscsi_ring_dsc_s **ring_dsc)
 {
-    struct PVSCSICmdDescSetupRings cmd = {0,};
+    ਬਣਤਰ PVSCSICmd_Desc_ਤਿਆਰੀ_Rings cmd = {0,};
 
-    struct pvscsi_ring_dsc_s *dsc = malloc_high(sizeof(*dsc));
-    if (!dsc) {
+    ਬਣਤਰ pvscsi_ring_dsc_s *dsc = malloc_ਉੱਚਾ(ਆਕਾਰ(*dsc));
+    ਜੇ (!dsc) {
         warn_noalloc();
-        return;
+        ਵਾਪਸ;
     }
 
     dsc->ring_state =
-        (struct PVSCSIRingsState *)memalign_high(PAGE_SIZE, PAGE_SIZE);
+        (ਬਣਤਰ PVSCSIRingsState *)memalign_ਉੱਚਾ(ਪੰਨਾ_ਮਾਪ, ਪੰਨਾ_ਮਾਪ);
     dsc->ring_reqs =
-        (struct PVSCSIRingReqDesc *)memalign_high(PAGE_SIZE, PAGE_SIZE);
+        (ਬਣਤਰ PVSCSIRingReqDesc *)memalign_ਉੱਚਾ(ਪੰਨਾ_ਮਾਪ, ਪੰਨਾ_ਮਾਪ);
     dsc->ring_cmps =
-        (struct PVSCSIRingCmpDesc *)memalign_high(PAGE_SIZE, PAGE_SIZE);
-    if (!dsc->ring_state || !dsc->ring_reqs || !dsc->ring_cmps) {
+        (ਬਣਤਰ PVSCSIRingCmpDesc *)memalign_ਉੱਚਾ(ਪੰਨਾ_ਮਾਪ, ਪੰਨਾ_ਮਾਪ);
+    ਜੇ (!dsc->ring_state || !dsc->ring_reqs || !dsc->ring_cmps) {
         warn_noalloc();
-        return;
+        ਵਾਪਸ;
     }
-    memset(dsc->ring_state, 0, PAGE_SIZE);
-    memset(dsc->ring_reqs, 0, PAGE_SIZE);
-    memset(dsc->ring_cmps, 0, PAGE_SIZE);
+    memset(dsc->ring_state, 0, ਪੰਨਾ_ਮਾਪ);
+    memset(dsc->ring_reqs, 0, ਪੰਨਾ_ਮਾਪ);
+    memset(dsc->ring_cmps, 0, ਪੰਨਾ_ਮਾਪ);
 
-    cmd.reqRingNumPages = 1;
-    cmd.cmpRingNumPages = 1;
-    cmd.ringsStatePPN = virt_to_phys(dsc->ring_state) >> PAGE_SHIFT;
-    cmd.reqRingPPNs[0] = virt_to_phys(dsc->ring_reqs) >> PAGE_SHIFT;
-    cmd.cmpRingPPNs[0] = virt_to_phys(dsc->ring_cmps) >> PAGE_SHIFT;
+    cmd.req_Ring_ਅੰਕ_ਪੰਨੇ = 1;
+    cmd.cmp_Ring_ਅੰਕ_ਪੰਨੇ = 1;
+    cmd.ringsStatePPN = virt_ਮੰਜ਼ਿਲ_phys(dsc->ring_state) >> ਪੰਨਾ_ਖਿਸਕਾਓ;
+    cmd.reqRingPPNs[0] = virt_ਮੰਜ਼ਿਲ_phys(dsc->ring_reqs) >> ਪੰਨਾ_ਖਿਸਕਾਓ;
+    cmd.cmpRingPPNs[0] = virt_ਮੰਜ਼ਿਲ_phys(dsc->ring_cmps) >> ਪੰਨਾ_ਖਿਸਕਾਓ;
 
-    pvscsi_write_cmd_desc(iobase, PVSCSI_CMD_SETUP_RINGS,
-                          &cmd, sizeof(cmd));
+    pvscsi_write_cmd_desc(iobase, PVSCSI_CMD_ਤਿਆਰੀ_RINGS,
+                          &cmd, ਆਕਾਰ(cmd));
     *ring_dsc = dsc;
 }
 
-static u32
-pvscsi_get_rsp(struct PVSCSIRingsState *s,
-               struct PVSCSIRingCmpDesc *rsp)
+ਸਥਿਰ u32
+pvscsi_get_rsp(ਬਣਤਰ PVSCSIRingsState *s,
+               ਬਣਤਰ PVSCSIRingCmpDesc *rsp)
 {
-    u32 status = rsp->hostStatus;
+    u32 ਸਥਿਤੀ = rsp->host_ਸਥਿਤੀ;
     s->cmpConsIdx = s->cmpConsIdx + 1;
-    return status;
+    ਵਾਪਸ ਸਥਿਤੀ;
 }
 
-int
-pvscsi_process_op(struct disk_op_s *op)
+ਪੂਰਨ
+pvscsi_process_op(ਬਣਤਰ disk_op_s *op)
 {
-    if (!CONFIG_PVSCSI)
-        return DISK_RET_EBADTRACK;
-    struct pvscsi_lun_s *plun =
-        container_of(op->drive_fl, struct pvscsi_lun_s, drive);
-    struct pvscsi_ring_dsc_s *ring_dsc = plun->ring_dsc;
-    struct PVSCSIRingsState *s = ring_dsc->ring_state;
-    u32 req_entries = s->reqNumEntriesLog2;
-    u32 cmp_entries = s->cmpNumEntriesLog2;
-    struct PVSCSIRingReqDesc *req;
-    struct PVSCSIRingCmpDesc *rsp;
-    u32 status;
+    ਜੇ (!CONFIG_PVSCSI)
+        ਵਾਪਸ DISK_RET_EBADTRACK;
+    ਬਣਤਰ pvscsi_lun_s *plun =
+        container_ਦਾ(op->drive_fl, ਬਣਤਰ pvscsi_lun_s, drive);
+    ਬਣਤਰ pvscsi_ring_dsc_s *ring_dsc = plun->ring_dsc;
+    ਬਣਤਰ PVSCSIRingsState *s = ring_dsc->ring_state;
+    u32 req_entries = s->req_ਅੰਕ_Entries_Log2;
+    u32 cmp_entries = s->cmp_ਅੰਕ_Entries_Log2;
+    ਬਣਤਰ PVSCSIRingReqDesc *req;
+    ਬਣਤਰ PVSCSIRingCmpDesc *rsp;
+    u32 ਸਥਿਤੀ;
 
-    if (s->reqProdIdx - s->cmpConsIdx >= 1 << req_entries) {
+    ਜੇ (s->reqProdIdx - s->cmpConsIdx >= 1 << req_entries) {
         dprintf(1, "pvscsi: ring full: reqProdIdx=%d cmpConsIdx=%d\n",
                 s->reqProdIdx, s->cmpConsIdx);
-        return DISK_RET_EBADTRACK;
+        ਵਾਪਸ DISK_RET_EBADTRACK;
     }
 
-    req = ring_dsc->ring_reqs + (s->reqProdIdx & MASK(req_entries));
-    int blocksize = scsi_fill_cmd(op, req->cdb, 16);
-    if (blocksize < 0)
-        return default_process_op(op);
+    req = ring_dsc->ring_reqs + (s->reqProdIdx & ਨਕਾਬ_2(req_entries));
+    ਪੂਰਨ blocksize = scsi_fill_cmd(op, req->cdb, 16);
+    ਜੇ (blocksize < 0)
+        ਵਾਪਸ default_process_op(op);
     req->bus = 0;
-    req->target = plun->target;
-    memset(req->lun, 0, sizeof(req->lun));
+    req->ਨਿਸ਼ਾਨਾ = plun->ਨਿਸ਼ਾਨਾ;
+    memset(req->lun, 0, ਆਕਾਰ(req->lun));
     req->lun[1] = plun->lun;
     req->senseLen = 0;
     req->senseAddr = 0;
     req->cdbLen = 16;
     req->vcpuHint = 0;
-    req->tag = SIMPLE_QUEUE_TAG;
+    req->ਟੈਗ = SIMPLE_ਕਤਾਰ_ਟੈਗ;
     req->flags = scsi_is_read(op) ?
         PVSCSI_FLAG_CMD_DIR_TOHOST : PVSCSI_FLAG_CMD_DIR_TODEVICE;
-    req->dataLen = op->count * blocksize;
-    req->dataAddr = (u32)op->buf_fl;
+    req->ਅੰਕੜੇ_Len = op->ਗਿਣਤੀ_2 * blocksize;
+    req->ਅੰਕੜੇ_Addr = (u32)op->buf_fl;
     s->reqProdIdx = s->reqProdIdx + 1;
 
     pvscsi_kick_rw_io(plun->iobase);
     pvscsi_wait_intr_cmpl(plun->iobase);
 
-    rsp = ring_dsc->ring_cmps + (s->cmpConsIdx & MASK(cmp_entries));
-    status = pvscsi_get_rsp(s, rsp);
+    rsp = ring_dsc->ring_cmps + (s->cmpConsIdx & ਨਕਾਬ_2(cmp_entries));
+    ਸਥਿਤੀ = pvscsi_get_rsp(s, rsp);
 
-    return status == 0 ? DISK_RET_SUCCESS : DISK_RET_EBADTRACK;
+    ਵਾਪਸ ਸਥਿਤੀ == 0 ? DISK_RET_SUCCESS : DISK_RET_EBADTRACK;
 }
 
-static int
-pvscsi_add_lun(struct pci_device *pci, void *iobase,
-               struct pvscsi_ring_dsc_s *ring_dsc, u8 target, u8 lun)
+ਸਥਿਰ ਪੂਰਨ
+pvscsi_ਜੋੜੋ_lun(ਬਣਤਰ pci_device *pci, ਖਾਲੀ *iobase,
+               ਬਣਤਰ pvscsi_ring_dsc_s *ring_dsc, u8 ਨਿਸ਼ਾਨਾ, u8 lun)
 {
-    struct pvscsi_lun_s *plun = malloc_fseg(sizeof(*plun));
-    if (!plun) {
+    ਬਣਤਰ pvscsi_lun_s *plun = malloc_fseg(ਆਕਾਰ(*plun));
+    ਜੇ (!plun) {
         warn_noalloc();
-        return -1;
+        ਵਾਪਸ -1;
     }
-    memset(plun, 0, sizeof(*plun));
+    memset(plun, 0, ਆਕਾਰ(*plun));
     plun->drive.type = DTYPE_PVSCSI;
     plun->drive.cntl_id = pci->bdf;
-    plun->target = target;
+    plun->ਨਿਸ਼ਾਨਾ = ਨਿਸ਼ਾਨਾ;
     plun->lun = lun;
     plun->iobase = iobase;
     plun->ring_dsc = ring_dsc;
 
-    boot_lchs_find_scsi_device(pci, target, lun, &(plun->drive.lchs));
-    char *name = znprintf(MAXDESCSIZE, "pvscsi %pP %d:%d", pci, target, lun);
-    int prio = bootprio_find_scsi_device(pci, target, lun);
-    int ret = scsi_drive_setup(&plun->drive, name, prio);
-    free(name);
-    if (ret)
-        goto fail;
-    return 0;
+    boot_lchs_ਲੱਭੋ_scsi_device(pci, ਨਿਸ਼ਾਨਾ, lun, &(plun->drive.lchs));
+    ਅੱਖਰ *name = znprintf(MAXDESCSIZE, "pvscsi %pP %d:%d", pci, ਨਿਸ਼ਾਨਾ, lun);
+    ਪੂਰਨ prio = bootprio_ਲੱਭੋ_scsi_device(pci, ਨਿਸ਼ਾਨਾ, lun);
+    ਪੂਰਨ ret = scsi_drive_ਤਿਆਰੀ(&plun->drive, name, prio);
+    ਮੁਕਤ(name);
+    ਜੇ (ret)
+        ਜਾਓ fail;
+    ਵਾਪਸ 0;
 
 fail:
-    free(plun);
-    return -1;
+    ਮੁਕਤ(plun);
+    ਵਾਪਸ -1;
 }
 
-static void
-pvscsi_scan_target(struct pci_device *pci, void *iobase,
-                   struct pvscsi_ring_dsc_s *ring_dsc, u8 target)
+ਸਥਿਰ ਖਾਲੀ
+pvscsi_ਜਾਂਚ_ਨਿਸ਼ਾਨਾ(ਬਣਤਰ pci_device *pci, ਖਾਲੀ *iobase,
+                   ਬਣਤਰ pvscsi_ring_dsc_s *ring_dsc, u8 ਨਿਸ਼ਾਨਾ)
 {
     /* pvscsi has no more than a single lun per target */
-    pvscsi_add_lun(pci, iobase, ring_dsc, target, 0);
+    pvscsi_ਜੋੜੋ_lun(pci, iobase, ring_dsc, ਨਿਸ਼ਾਨਾ, 0);
 }
 
-static void
-init_pvscsi(void *data)
+ਸਥਿਰ ਖਾਲੀ
+init_pvscsi(ਖਾਲੀ *ਅੰਕੜੇ)
 {
-    struct pci_device *pci = data;
-    void *iobase = pci_enable_membar(pci, PCI_BASE_ADDRESS_0);
-    if (!iobase)
-        return;
+    ਬਣਤਰ pci_device *pci = ਅੰਕੜੇ;
+    ਖਾਲੀ *iobase = pci_enable_membar(pci, PCI_ਅਧਾਰ_ਪਤਾ_0);
+    ਜੇ (!iobase)
+        ਵਾਪਸ;
     pci_enable_busmaster(pci);
 
     dprintf(1, "found pvscsi at %pP, io @ %p\n", pci, iobase);
 
-    pvscsi_write_cmd_desc(iobase, PVSCSI_CMD_ADAPTER_RESET, NULL, 0);
+    pvscsi_write_cmd_desc(iobase, PVSCSI_CMD_ADAPTER_RESET, ਨਿਰਾ, 0);
 
-    struct pvscsi_ring_dsc_s *ring_dsc = NULL;
+    ਬਣਤਰ pvscsi_ring_dsc_s *ring_dsc = ਨਿਰਾ;
     pvscsi_init_rings(iobase, &ring_dsc);
-    int i;
-    for (i = 0; i < 64; i++)
-        pvscsi_scan_target(pci, iobase, ring_dsc, i);
+    ਪੂਰਨ i;
+    ਲਈ (i = 0; i < 64; i++)
+        pvscsi_ਜਾਂਚ_ਨਿਸ਼ਾਨਾ(pci, iobase, ring_dsc, i);
 }
 
-void
-pvscsi_setup(void)
+ਖਾਲੀ
+pvscsi_ਤਿਆਰੀ(ਖਾਲੀ)
 {
     ASSERT32FLAT();
-    if (! CONFIG_PVSCSI)
-        return;
+    ਜੇ (! CONFIG_PVSCSI)
+        ਵਾਪਸ;
 
     dprintf(3, "init pvscsi\n");
 
-    struct pci_device *pci;
+    ਬਣਤਰ pci_device *pci;
     foreachpci(pci) {
-        if (pci->vendor != PCI_VENDOR_ID_VMWARE
+        ਜੇ (pci->vendor != PCI_VENDOR_ID_VMWARE
             || pci->device != PCI_DEVICE_ID_VMWARE_PVSCSI)
-            continue;
-        run_thread(init_pvscsi, pci);
+            ਜਾਰੀ;
+        ਲੜੀਵਾਰ_thread(init_pvscsi, pci);
     }
 }

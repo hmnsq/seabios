@@ -1,7 +1,7 @@
-#ifndef _PCI_CAP_H
-#define _PCI_CAP_H
+#ਜੇ_ਅਪਰਿਭਾਸ਼ਿਤ _PCI_CAP_H
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ _PCI_CAP_H
 
-#include "types.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "types.h"
 
 /*
  *
@@ -35,18 +35,18 @@
 */
 
 /* Offset of vendor-specific capability type field */
-#define PCI_CAP_REDHAT_TYPE_OFFSET  3
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PCI_CAP_REDHAT_TYPE_ਵਿੱਥ  3
 
 /* List of valid Red Hat vendor-specific capability types */
-#define REDHAT_CAP_RESOURCE_RESERVE 1
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ REDHAT_CAP_RESOURCE_RESERVE 1
 
 
 /* Offsets of RESOURCE_RESERVE capability fields */
-#define RES_RESERVE_BUS_RES        4
-#define RES_RESERVE_IO             8
-#define RES_RESERVE_MEM            16
-#define RES_RESERVE_PREF_MEM_32    20
-#define RES_RESERVE_PREF_MEM_64    24
-#define RES_RESERVE_CAP_SIZE       32
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ RES_RESERVE_BUS_RES        4
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ RES_RESERVE_IO             8
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ RES_RESERVE_MEM            16
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ RES_RESERVE_PREF_MEM_32    20
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ RES_RESERVE_PREF_MEM_64    24
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ RES_RESERVE_CAP_ਮਾਪ       32
 
-#endif /* _PCI_CAP_H */
+#ਜੇ_ਅੰਤ /* _PCI_CAP_H */

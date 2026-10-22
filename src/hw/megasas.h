@@ -1,8 +1,8 @@
-#ifndef __MEGASAS_H
-#define __MEGASAS_H
+#ਜੇ_ਅਪਰਿਭਾਸ਼ਿਤ __MEGASAS_H
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ __MEGASAS_H
 
-struct disk_op_s;
-int megasas_process_op(struct disk_op_s *op);
-void megasas_setup(void);
+ਬਣਤਰ disk_op_s;
+ਪੂਰਨ megasas_process_op(ਬਣਤਰ disk_op_s *op);
+ਖਾਲੀ megasas_ਤਿਆਰੀ(ਖਾਲੀ);
 
-#endif /* __MEGASAS_H */
+#ਜੇ_ਅੰਤ /* __MEGASAS_H */

@@ -1,29 +1,29 @@
-#ifndef __DEV_PIIX_H
-#define __DEV_PIIX_H
+#ਜੇ_ਅਪਰਿਭਾਸ਼ਿਤ __DEV_PIIX_H
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ __DEV_PIIX_H
 
-#define I440FX_PAM0               0x59
-#define I440FX_SMRAM              0x72
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ I440FX_PAM0               0x59
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ I440FX_SMRAM              0x72
 
-#define PIIX_PMBASE               0x40
-#define PIIX_PMREGMISC            0x80
-#define PIIX_SMBHSTBASE           0x90
-#define PIIX_SMBHSTCFG            0xd2
-#define PIIX_DEVACTB              0x58
-#define PIIX_DEVACTB_APMC_EN      (1 << 25)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PIIX_PMBASE               0x40
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PIIX_PMREGMISC            0x80
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PIIX_SMBHSTBASE           0x90
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PIIX_SMBHSTCFG            0xd2
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PIIX_DEVACTB              0x58
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PIIX_DEVACTB_APMC_EN      (1 << 25)
 
-#define PIIX_PORT_ELCR1           0x4d0
-#define PIIX_PORT_ELCR2           0x4d1
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PIIX_ਪੋਰਟ_ELCR1           0x4d0
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PIIX_ਪੋਰਟ_ELCR2           0x4d1
 
 /* ICH9 PM I/O registers */
-#define PIIX_GPE0_BLK            0xafe0
-#define PIIX_GPE0_BLK_LEN        4
-#define PIIX_PMIO_GLBCTL         0x28
-#define PIIX_PMIO_GLBCTL_SMI_EN  1
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PIIX_GPE0_BLK            0xafe0
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PIIX_GPE0_BLK_LEN        4
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PIIX_PMIO_GLBCTL         0x28
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PIIX_PMIO_GLBCTL_SMI_EN  1
 
 /* FADT ACPI_ENABLE/ACPI_DISABLE */
-#define PIIX_ACPI_ENABLE         0xf1
-#define PIIX_ACPI_DISABLE        0xf0
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PIIX_ACPI_ENABLE         0xf1
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PIIX_ACPI_DISABLE        0xf0
 
-#define PIIX_PM_INTRRUPT         9       // irq 9
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PIIX_PM_INTRRUPT         9       // irq 9
 
-#endif // dev-piix.h
+#ਜੇ_ਅੰਤ // dev-piix.h

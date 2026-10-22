@@ -1,26 +1,26 @@
-#ifndef __USB_XHCI_H
-#define __USB_XHCI_H
+#ਜੇ_ਅਪਰਿਭਾਸ਼ਿਤ __USB_XHCI_H
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ __USB_XHCI_H
 
-struct usbdevice_s;
-struct usb_endpoint_descriptor;
-struct usb_pipe;
+ਬਣਤਰ usbdevice_s;
+ਬਣਤਰ usb_endpoint_descriptor;
+ਬਣਤਰ usb_pipe;
 
 // --------------------------------------------------------------
 
 // usb-xhci.c
-void xhci_setup(void);
-struct usb_pipe *xhci_realloc_pipe(struct usbdevice_s *usbdev
-                                   , struct usb_pipe *upipe
-                                   , struct usb_endpoint_descriptor *epdesc);
-int xhci_send_pipe(struct usb_pipe *p, int dir, const void *cmd
-                   , void *data, int datasize);
-int xhci_poll_intr(struct usb_pipe *p, void *data);
+ਖਾਲੀ xhci_ਤਿਆਰੀ(ਖਾਲੀ);
+ਬਣਤਰ usb_pipe *xhci_realloc_pipe(ਬਣਤਰ usbdevice_s *usbdev
+                                   , ਬਣਤਰ usb_pipe *upipe
+                                   , ਬਣਤਰ usb_endpoint_descriptor *epdesc);
+ਪੂਰਨ xhci_send_pipe(ਬਣਤਰ usb_pipe *p, ਪੂਰਨ dir, ਅਚਲ ਖਾਲੀ *cmd
+                   , ਖਾਲੀ *ਅੰਕੜੇ, ਪੂਰਨ datasize);
+ਪੂਰਨ xhci_poll_intr(ਬਣਤਰ usb_pipe *p, ਖਾਲੀ *ਅੰਕੜੇ);
 
 // --------------------------------------------------------------
 // register interface
 
 // capabilities
-struct xhci_caps {
+ਬਣਤਰ xhci_caps {
     u8  caplength;
     u8  reserved_01;
     u16 hciversion;
@@ -33,28 +33,28 @@ struct xhci_caps {
 } PACKED;
 
 // extended capabilities
-struct xhci_xcap {
+ਬਣਤਰ xhci_xcap {
     u32 cap;
-    u32 data[];
+    u32 ਅੰਕੜੇ[];
 } PACKED;
 
 // operational registers
-struct xhci_op {
+ਬਣਤਰ xhci_op {
     u32 usbcmd;
     u32 usbsts;
     u32 pagesize;
     u32 reserved_01[2];
     u32 dnctl;
-    u32 crcr_low;
-    u32 crcr_high;
+    u32 crcr_ਨੀਵਾਂ;
+    u32 crcr_ਉੱਚਾ;
     u32 reserved_02[4];
-    u32 dcbaap_low;
-    u32 dcbaap_high;
+    u32 dcbaap_ਨੀਵਾਂ;
+    u32 dcbaap_ਉੱਚਾ;
     u32 config;
 } PACKED;
 
 // port registers
-struct xhci_pr {
+ਬਣਤਰ xhci_pr {
     u32 portsc;
     u32 portpmsc;
     u32 portli;
@@ -62,72 +62,72 @@ struct xhci_pr {
 } PACKED;
 
 // doorbell registers
-struct xhci_db {
+ਬਣਤਰ xhci_db {
     u32 doorbell;
 } PACKED;
 
 // runtime registers
-struct xhci_rts {
+ਬਣਤਰ xhci_rts {
     u32 mfindex;
 } PACKED;
 
 // interrupter registers
-struct xhci_ir {
+ਬਣਤਰ xhci_ir {
     u32 iman;
     u32 imod;
     u32 erstsz;
     u32 reserved_01;
-    u32 erstba_low;
-    u32 erstba_high;
-    u32 erdp_low;
-    u32 erdp_high;
+    u32 erstba_ਨੀਵਾਂ;
+    u32 erstba_ਉੱਚਾ;
+    u32 erdp_ਨੀਵਾਂ;
+    u32 erdp_ਉੱਚਾ;
 } PACKED;
 
 // --------------------------------------------------------------
 // memory data structs
 
 // slot context
-struct xhci_slotctx {
+ਬਣਤਰ xhci_slotctx {
     u32 ctx[4];
     u32 reserved_01[4];
 } PACKED;
 
 // endpoint context
-struct xhci_epctx {
+ਬਣਤਰ xhci_epctx {
     u32 ctx[2];
-    u32 deq_low;
-    u32 deq_high;
-    u32 length;
+    u32 deq_ਨੀਵਾਂ;
+    u32 deq_ਉੱਚਾ;
+    u32 ਲੰਮਾਈ;
     u32 reserved_01[3];
 } PACKED;
 
 // device context array element
-struct xhci_devlist {
-    u32 ptr_low;
-    u32 ptr_high;
+ਬਣਤਰ xhci_devlist {
+    u32 ptr_ਨੀਵਾਂ;
+    u32 ptr_ਉੱਚਾ;
 } PACKED;
 
 // input context
-struct xhci_inctx {
+ਬਣਤਰ xhci_inctx {
     u32 del;
-    u32 add;
+    u32 ਜੋੜੋ;
     u32 reserved_01[6];
 } PACKED;
 
 // transfer block (ring element)
-struct xhci_trb {
-    u32 ptr_low;
-    u32 ptr_high;
-    u32 status;
+ਬਣਤਰ xhci_trb {
+    u32 ptr_ਨੀਵਾਂ;
+    u32 ptr_ਉੱਚਾ;
+    u32 ਸਥਿਤੀ;
     u32 control;
 } PACKED;
 
 // event ring segment
-struct xhci_er_seg {
-    u32 ptr_low;
-    u32 ptr_high;
-    u32 size;
+ਬਣਤਰ xhci_er_seg {
+    u32 ptr_ਨੀਵਾਂ;
+    u32 ptr_ਉੱਚਾ;
+    u32 ਮਾਪ;
     u32 reserved_01;
 } PACKED;
 
-#endif // usb-xhci.h
+#ਜੇ_ਅੰਤ // usb-xhci.h

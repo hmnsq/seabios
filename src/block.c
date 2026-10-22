@@ -5,187 +5,187 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_GLOBAL
-#include "block.h" // process_op
-#include "hw/ata.h" // process_ata_op
-#include "hw/ahci.h" // process_ahci_op
-#include "hw/esp-scsi.h" // esp_scsi_process_op
-#include "hw/lsi-scsi.h" // lsi_scsi_process_op
-#include "hw/megasas.h" // megasas_process_op
-#include "hw/mpt-scsi.h" // mpt_scsi_process_op
-#include "hw/pci.h" // pci_bdf_to_bus
-#include "hw/pvscsi.h" // pvscsi_process_op
-#include "hw/rtc.h" // rtc_read
-#include "hw/usb-msc.h" // usb_process_op
-#include "hw/usb-uas.h" // uas_process_op
-#include "hw/virtio-blk.h" // process_virtio_blk_op
-#include "hw/virtio-scsi.h" // virtio_scsi_process_op
-#include "hw/nvme.h" // nvme_process_op
-#include "malloc.h" // malloc_low
-#include "output.h" // dprintf
-#include "stacks.h" // call32
-#include "std/disk.h" // struct dpte_s
-#include "string.h" // checksum
-#include "util.h" // process_floppy_op
+#ਅਨ੍ਤਰ੍ਭਾਵ "biosvar.h" // GET_GLOBAL
+#ਅਨ੍ਤਰ੍ਭਾਵ "block.h" // process_op
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/ata.h" // process_ata_op
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/ahci.h" // process_ahci_op
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/esp-scsi.h" // esp_scsi_process_op
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/lsi-scsi.h" // lsi_scsi_process_op
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/megasas.h" // megasas_process_op
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/mpt-scsi.h" // mpt_scsi_process_op
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/pci.h" // pci_bdf_to_bus
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/pvscsi.h" // pvscsi_process_op
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/rtc.h" // rtc_read
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/usb-msc.h" // usb_process_op
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/usb-uas.h" // uas_process_op
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/virtio-blk.h" // process_virtio_blk_op
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/virtio-scsi.h" // virtio_scsi_process_op
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/nvme.h" // nvme_process_op
+#ਅਨ੍ਤਰ੍ਭਾਵ "malloc.h" // malloc_low
+#ਅਨ੍ਤਰ੍ਭਾਵ "output.h" // dprintf
+#ਅਨ੍ਤਰ੍ਭਾਵ "stacks.h" // call32
+#ਅਨ੍ਤਰ੍ਭਾਵ "std/disk.h" // struct dpte_s
+#ਅਨ੍ਤਰ੍ਭਾਵ "string.h" // checksum
+#ਅਨ੍ਤਰ੍ਭਾਵ "util.h" // process_floppy_op
 
-u8 FloppyCount VARFSEG;
+u8 Floppy_ਗਿਣਤੀ VARFSEG;
 u8 CDCount;
-struct drive_s *IDMap[3][BUILD_MAX_EXTDRIVE] VARFSEG;
+ਬਣਤਰ drive_s *IDMap[3][BUILD_MAX_EXTDRIVE] VARFSEG;
 u8 *bounce_buf_fl VARFSEG;
 
-struct drive_s *
+ਬਣਤਰ drive_s *
 getDrive(u8 exttype, u8 extdriveoffset)
 {
-    if (extdriveoffset >= ARRAY_SIZE(IDMap[0]))
-        return NULL;
-    return GET_GLOBAL(IDMap[exttype][extdriveoffset]);
+    ਜੇ (extdriveoffset >= ARRAY_ਮਾਪ(IDMap[0]))
+        ਵਾਪਸ ਨਿਰਾ;
+    ਵਾਪਸ GET_GLOBAL(IDMap[exttype][extdriveoffset]);
 }
 
-int getDriveId(u8 exttype, struct drive_s *drive)
+ਪੂਰਨ getDriveId(u8 exttype, ਬਣਤਰ drive_s *drive)
 {
     ASSERT32FLAT();
-    int i;
-    for (i = 0; i < ARRAY_SIZE(IDMap[0]); i++)
-        if (getDrive(exttype, i) == drive)
-            return i;
-    return -1;
+    ਪੂਰਨ i;
+    ਲਈ (i = 0; i < ARRAY_ਮਾਪ(IDMap[0]); i++)
+        ਜੇ (getDrive(exttype, i) == drive)
+            ਵਾਪਸ i;
+    ਵਾਪਸ -1;
 }
 
-int create_bounce_buf(void)
+ਪੂਰਨ create_bounce_buf(ਖਾਲੀ)
 {
-    if (bounce_buf_fl)
-        return 0;
+    ਜੇ (bounce_buf_fl)
+        ਵਾਪਸ 0;
 
-    u8 *buf = malloc_low(CDROM_SECTOR_SIZE);
-    if (!buf) {
+    u8 *buf = malloc_ਨੀਵਾਂ(CDROM_SECTOR_ਮਾਪ);
+    ਜੇ (!buf) {
         warn_noalloc();
-        return -1;
+        ਵਾਪਸ -1;
     }
     bounce_buf_fl = buf;
-    return 0;
+    ਵਾਪਸ 0;
 }
 
 /****************************************************************
  * Disk geometry translation
  ****************************************************************/
 
-static int
-host_lchs_supplied(struct drive_s *drive)
+ਸਥਿਰ ਪੂਰਨ
+host_lchs_supplied(ਬਣਤਰ drive_s *drive)
 {
-    return (drive->lchs.head <= 255 &&
+    ਵਾਪਸ (drive->lchs.ਸਿਰ <= 255 &&
             drive->lchs.sector > 0 && drive->lchs.sector <= 63);
 }
 
-static u8
-get_translation(struct drive_s *drive)
+ਸਥਿਰ u8
+get_translation(ਬਣਤਰ drive_s *drive)
 {
-    if (host_lchs_supplied(drive))
-        return TRANSLATION_HOST;
+    ਜੇ (host_lchs_supplied(drive))
+        ਵਾਪਸ TRANSLATION_HOST;
     u8 type = drive->type;
-    if (CONFIG_QEMU && type == DTYPE_ATA) {
+    ਜੇ (CONFIG_QEMU && type == DTYPE_ATA) {
         // Emulators pass in the translation info via nvram.
         u8 translation = rtc_read(CMOS_BIOS_DISKTRANSFLAG + drive->cntl_id/4);
         translation >>= 2 * (drive->cntl_id % 4);
         translation &= 0x03;
-        return translation;
+        ਵਾਪਸ translation;
     }
 
     // Otherwise use a heuristic to determine translation type.
-    u16 heads = drive->pchs.head;
+    u16 heads = drive->pchs.ਸਿਰ;
     u16 cylinders = drive->pchs.cylinder;
     u16 spt = drive->pchs.sector;
     u64 sectors = drive->sectors;
     u64 psectors = (u64)heads * cylinders * spt;
-    if (!heads || !cylinders || !spt || psectors > sectors)
+    ਜੇ (!heads || !cylinders || !spt || psectors > sectors)
         // pchs doesn't look valid - use LBA.
-        return TRANSLATION_LBA;
+        ਵਾਪਸ TRANSLATION_LBA;
 
-    if (cylinders <= 1024 && heads <= 16 && spt <= 63)
-        return TRANSLATION_NONE;
-    if (cylinders * heads <= 131072)
-        return TRANSLATION_LARGE;
-    return TRANSLATION_LBA;
+    ਜੇ (cylinders <= 1024 && heads <= 16 && spt <= 63)
+        ਵਾਪਸ TRANSLATION_NONE;
+    ਜੇ (cylinders * heads <= 131072)
+        ਵਾਪਸ TRANSLATION_LARGE;
+    ਵਾਪਸ TRANSLATION_LBA;
 }
 
-static void
-setup_translation(struct drive_s *drive)
+ਸਥਿਰ ਖਾਲੀ
+ਤਿਆਰੀ_translation(ਬਣਤਰ drive_s *drive)
 {
     u8 translation = get_translation(drive);
     drive->translation = translation;
 
-    u16 heads = drive->pchs.head ;
+    u16 heads = drive->pchs.ਸਿਰ ;
     u16 cylinders = drive->pchs.cylinder;
     u16 spt = drive->pchs.sector;
     u64 sectors = drive->sectors;
-    const char *desc = NULL;
+    ਅਚਲ ਅੱਖਰ *desc = ਨਿਰਾ;
 
-    switch (translation) {
-    default:
-    case TRANSLATION_NONE:
+    ਚੋਣ (translation) {
+    ਮੂਲ:
+    ਹਾਲਤ TRANSLATION_NONE:
         desc = "none";
-        break;
-    case TRANSLATION_LBA:
+        ਰੋਕੋ;
+    ਹਾਲਤ TRANSLATION_LBA:
         desc = "lba";
         spt = 63;
-        if (sectors > 63*255*1024) {
+        ਜੇ (sectors > 63*255*1024) {
             heads = 255;
             cylinders = 1024;
-            break;
+            ਰੋਕੋ;
         }
         u32 sect = (u32)sectors / 63;
         heads = sect / 1024;
-        if (heads>128)
+        ਜੇ (heads>128)
             heads = 255;
-        else if (heads>64)
+        ਨਹੀਂਤਾਂ ਜੇ (heads>64)
             heads = 128;
-        else if (heads>32)
+        ਨਹੀਂਤਾਂ ਜੇ (heads>32)
             heads = 64;
-        else if (heads>16)
+        ਨਹੀਂਤਾਂ ਜੇ (heads>16)
             heads = 32;
-        else
+        ਨਹੀਂਤਾਂ
             heads = 16;
         cylinders = sect / heads;
-        break;
-    case TRANSLATION_RECHS:
+        ਰੋਕੋ;
+    ਹਾਲਤ TRANSLATION_RECHS:
         desc = "r-echs";
         // Take care not to overflow
-        if (heads==16) {
-            if (cylinders>61439)
+        ਜੇ (heads==16) {
+            ਜੇ (cylinders>61439)
                 cylinders=61439;
             heads=15;
             cylinders = (u16)((u32)(cylinders)*16/15);
         }
         // then go through the large bitshift process
-    case TRANSLATION_LARGE:
-        if (translation == TRANSLATION_LARGE)
+    ਹਾਲਤ TRANSLATION_LARGE:
+        ਜੇ (translation == TRANSLATION_LARGE)
             desc = "large";
-        while (cylinders > 1024) {
+        ਜਦੋਂ (cylinders > 1024) {
             cylinders >>= 1;
             heads <<= 1;
 
             // If we max out the head count
-            if (heads > 127)
-                break;
+            ਜੇ (heads > 127)
+                ਰੋਕੋ;
         }
-        break;
-    case TRANSLATION_HOST:
+        ਰੋਕੋ;
+    ਹਾਲਤ TRANSLATION_HOST:
         desc = "host-supplied";
         cylinders = drive->lchs.cylinder;
-        heads = drive->lchs.head;
+        heads = drive->lchs.ਸਿਰ;
         spt = drive->lchs.sector;
-        break;
+        ਰੋਕੋ;
     }
     // clip to 1024 cylinders in lchs
-    if (cylinders > 1024)
+    ਜੇ (cylinders > 1024)
         cylinders = 1024;
     dprintf(1, "drive %p: PCHS=%u/%d/%d translation=%s LCHS=%d/%d/%d s=%u\n"
             , drive
-            , drive->pchs.cylinder, drive->pchs.head, drive->pchs.sector
+            , drive->pchs.cylinder, drive->pchs.ਸਿਰ, drive->pchs.sector
             , desc
             , cylinders, heads, spt
             , (u32)sectors);
 
-    drive->lchs.head = heads;
+    drive->lchs.ਸਿਰ = heads;
     drive->lchs.cylinder = cylinders;
     drive->lchs.sector = spt;
 }
@@ -196,21 +196,21 @@ setup_translation(struct drive_s *drive)
  ****************************************************************/
 
 // Fill in Fixed Disk Parameter Table (located in ebda).
-static void
-fill_fdpt(struct drive_s *drive, int hdid)
+ਸਥਿਰ ਖਾਲੀ
+fill_fdpt(ਬਣਤਰ drive_s *drive, ਪੂਰਨ hdid)
 {
-    if (hdid > 1)
-        return;
+    ਜੇ (hdid > 1)
+        ਵਾਪਸ;
 
     u16 nlc = drive->lchs.cylinder;
-    u16 nlh = drive->lchs.head;
+    u16 nlh = drive->lchs.ਸਿਰ;
     u16 nls = drive->lchs.sector;
 
     u16 npc = drive->pchs.cylinder;
-    u16 nph = drive->pchs.head;
+    u16 nph = drive->pchs.ਸਿਰ;
     u16 nps = drive->pchs.sector;
 
-    struct fdpt_s *fdpt = &get_ebda_ptr()->fdpt[hdid];
+    ਬਣਤਰ fdpt_s *fdpt = &get_ebda_ptr()->fdpt[hdid];
     fdpt->precompensation = 0xffff;
     fdpt->drive_control_byte = 0xc0 | ((nph > 8) << 3);
     fdpt->landing_zone = npc;
@@ -218,7 +218,7 @@ fill_fdpt(struct drive_s *drive, int hdid)
     fdpt->heads = nlh;
     fdpt->sectors = nls;
 
-    if (nlc != npc || nlh != nph || nls != nps) {
+    ਜੇ (nlc != npc || nlh != nph || nls != nps) {
         // Logical mapping present - use extended structure.
 
         // complies with Phoenix style Translated Fixed Disk Parameter
@@ -229,72 +229,72 @@ fill_fdpt(struct drive_s *drive, int hdid)
         fdpt->a0h_signature = 0xa0;
 
         // Checksum structure.
-        fdpt->checksum -= checksum(fdpt, sizeof(*fdpt));
+        fdpt->checksum -= checksum(fdpt, ਆਕਾਰ(*fdpt));
     }
 
-    if (hdid == 0)
-        SET_IVT(0x41, SEGOFF(get_ebda_seg(), offsetof(
-                                 struct extended_bios_data_area_s, fdpt[0])));
-    else
-        SET_IVT(0x46, SEGOFF(get_ebda_seg(), offsetof(
-                                 struct extended_bios_data_area_s, fdpt[1])));
+    ਜੇ (hdid == 0)
+        ਸੈੱਟ_IVT(0x41, SEGOFF(get_ebda_seg(), offsetof(
+                                 ਬਣਤਰ extended_bios_ਅੰਕੜੇ_area_s, fdpt[0])));
+    ਨਹੀਂਤਾਂ
+        ਸੈੱਟ_IVT(0x46, SEGOFF(get_ebda_seg(), offsetof(
+                                 ਬਣਤਰ extended_bios_ਅੰਕੜੇ_area_s, fdpt[1])));
 }
 
 // Find spot to add a drive
-static void
-add_drive(struct drive_s **idmap, u8 *count, struct drive_s *drive)
+ਸਥਿਰ ਖਾਲੀ
+ਜੋੜੋ_drive(ਬਣਤਰ drive_s **idmap, u8 *ਗਿਣਤੀ_2, ਬਣਤਰ drive_s *drive)
 {
-    if (*count >= ARRAY_SIZE(IDMap[0])) {
+    ਜੇ (*ਗਿਣਤੀ_2 >= ARRAY_ਮਾਪ(IDMap[0])) {
         warn_noalloc();
-        return;
+        ਵਾਪਸ;
     }
-    idmap[*count] = drive;
-    *count = *count + 1;
+    idmap[*ਗਿਣਤੀ_2] = drive;
+    *ਗਿਣਤੀ_2 = *ਗਿਣਤੀ_2 + 1;
 }
 
 // Map a hard drive
-void
-map_hd_drive(struct drive_s *drive)
+ਖਾਲੀ
+map_hd_drive(ਬਣਤਰ drive_s *drive)
 {
     ASSERT32FLAT();
-    struct bios_data_area_s *bda = MAKE_FLATPTR(SEG_BDA, 0);
-    int hdid = bda->hdcount;
+    ਬਣਤਰ bios_ਅੰਕੜੇ_area_s *bda = MAKE_FLATPTR(SEG_BDA, 0);
+    ਪੂਰਨ hdid = bda->hdcount;
     dprintf(3, "Mapping hd drive %p to %d\n", drive, hdid);
-    add_drive(IDMap[EXTTYPE_HD], &bda->hdcount, drive);
+    ਜੋੜੋ_drive(IDMap[EXTTYPE_HD], &bda->hdcount, drive);
 
     // Setup disk geometry translation.
-    setup_translation(drive);
+    ਤਿਆਰੀ_translation(drive);
 
     // Fill "fdpt" structure.
     fill_fdpt(drive, hdid);
 }
 
 // Map a cd
-void
-map_cd_drive(struct drive_s *drive)
+ਖਾਲੀ
+map_cd_drive(ਬਣਤਰ drive_s *drive)
 {
     ASSERT32FLAT();
     dprintf(3, "Mapping cd drive %p\n", drive);
-    add_drive(IDMap[EXTTYPE_CD], &CDCount, drive);
+    ਜੋੜੋ_drive(IDMap[EXTTYPE_CD], &CDCount, drive);
 }
 
 // Map a floppy
-void
-map_floppy_drive(struct drive_s *drive)
+ਖਾਲੀ
+map_floppy_drive(ਬਣਤਰ drive_s *drive)
 {
     ASSERT32FLAT();
     dprintf(3, "Mapping floppy drive %p\n", drive);
-    add_drive(IDMap[EXTTYPE_FLOPPY], &FloppyCount, drive);
+    ਜੋੜੋ_drive(IDMap[EXTTYPE_FLOPPY], &Floppy_ਗਿਣਤੀ, drive);
 
     // Update equipment word bits for floppy
-    if (FloppyCount == 1) {
+    ਜੇ (Floppy_ਗਿਣਤੀ == 1) {
         // 1 drive, ready for boot
-        set_equipment_flags(0x41, 0x01);
-        SET_BDA(floppy_harddisk_info, 0x07);
-    } else if (FloppyCount >= 2) {
+        ਸੈੱਟ_equipment_flags(0x41, 0x01);
+        ਸੈੱਟ_BDA(floppy_harddisk_info, 0x07);
+    } ਨਹੀਂਤਾਂ ਜੇ (Floppy_ਗਿਣਤੀ >= 2) {
         // 2 drives, ready for boot
-        set_equipment_flags(0x41, 0x41);
-        SET_BDA(floppy_harddisk_info, 0x77);
+        ਸੈੱਟ_equipment_flags(0x41, 0x41);
+        ਸੈੱਟ_BDA(floppy_harddisk_info, 0x77);
     }
 }
 
@@ -304,198 +304,198 @@ map_floppy_drive(struct drive_s *drive)
  ****************************************************************/
 
 // flags for bus_iface field in fill_generic_edd()
-#define EDD_ISA        0x01
-#define EDD_PCI        0x02
-#define EDD_BUS_MASK   0x0f
-#define EDD_ATA        0x10
-#define EDD_SCSI       0x20
-#define EDD_IFACE_MASK 0xf0
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ EDD_ISA        0x01
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ EDD_PCI        0x02
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ EDD_BUS_ਨਕਾਬ   0x0f
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ EDD_ATA        0x10
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ EDD_SCSI       0x20
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ EDD_IFACE_ਨਕਾਬ 0xf0
 
 // Fill in EDD info
-static int
-fill_generic_edd(struct segoff_s edd, struct drive_s *drive_fl
-                 , u32 dpte_so, u8 bus_iface, u32 iface_path, u32 device_path)
+ਸਥਿਰ ਪੂਰਨ
+fill_generic_edd(ਬਣਤਰ segoff_s edd, ਬਣਤਰ drive_s *drive_fl
+                 , u32 dpte_so, u8 bus_iface, u32 iface_ਰਸਤਾ, u32 device_ਰਸਤਾ)
 {
     u16 seg = edd.seg;
-    struct int13dpt_s *param_far = (void*)(edd.offset+0);
-    u16 size = GET_FARVAR(seg, param_far->size);
-    u16 t13 = size == 74;
+    ਬਣਤਰ int13dpt_s *param_far = (ਖਾਲੀ*)(edd.ਵਿੱਥ_2+0);
+    u16 ਮਾਪ = GET_FARVAR(seg, param_far->ਮਾਪ);
+    u16 t13 = ਮਾਪ == 74;
 
     // Buffer is too small
-    if (size < 26)
-        return DISK_RET_EPARAM;
+    ਜੇ (ਮਾਪ < 26)
+        ਵਾਪਸ DISK_RET_EPARAM;
 
     // EDD 1.x
 
     u8  type    = GET_FLATPTR(drive_fl->type);
     u16 npc     = GET_FLATPTR(drive_fl->pchs.cylinder);
-    u16 nph     = GET_FLATPTR(drive_fl->pchs.head);
+    u16 nph     = GET_FLATPTR(drive_fl->pchs.ਸਿਰ);
     u16 nps     = GET_FLATPTR(drive_fl->pchs.sector);
     u64 lba     = GET_FLATPTR(drive_fl->sectors);
     u16 blksize = GET_FLATPTR(drive_fl->blksize);
 
     dprintf(DEBUG_HDL_13, "disk_1348 size=%d t=%d chs=%d,%d,%d lba=%d bs=%d\n"
-            , size, type, npc, nph, nps, (u32)lba, blksize);
+            , ਮਾਪ, type, npc, nph, nps, (u32)lba, blksize);
 
-    SET_FARVAR(seg, param_far->size, 26);
-    if (lba == (u64)-1) {
+    ਸੈੱਟ_FARVAR(seg, param_far->ਮਾਪ, 26);
+    ਜੇ (lba == (u64)-1) {
         // 0x74 = removable, media change, lockable, max values
-        SET_FARVAR(seg, param_far->infos, 0x74);
-        SET_FARVAR(seg, param_far->cylinders, 0xffffffff);
-        SET_FARVAR(seg, param_far->heads, 0xffffffff);
-        SET_FARVAR(seg, param_far->spt, 0xffffffff);
-    } else {
-        if (lba > (u64)nps*nph*0x3fff) {
-            SET_FARVAR(seg, param_far->infos, 0x00); // geometry is invalid
-            SET_FARVAR(seg, param_far->cylinders, 0x3fff);
-        } else {
-            SET_FARVAR(seg, param_far->infos, 0x02); // geometry is valid
-            SET_FARVAR(seg, param_far->cylinders, (u32)npc);
+        ਸੈੱਟ_FARVAR(seg, param_far->infos, 0x74);
+        ਸੈੱਟ_FARVAR(seg, param_far->cylinders, 0xffffffff);
+        ਸੈੱਟ_FARVAR(seg, param_far->heads, 0xffffffff);
+        ਸੈੱਟ_FARVAR(seg, param_far->spt, 0xffffffff);
+    } ਨਹੀਂਤਾਂ {
+        ਜੇ (lba > (u64)nps*nph*0x3fff) {
+            ਸੈੱਟ_FARVAR(seg, param_far->infos, 0x00); // geometry is invalid
+            ਸੈੱਟ_FARVAR(seg, param_far->cylinders, 0x3fff);
+        } ਨਹੀਂਤਾਂ {
+            ਸੈੱਟ_FARVAR(seg, param_far->infos, 0x02); // geometry is valid
+            ਸੈੱਟ_FARVAR(seg, param_far->cylinders, (u32)npc);
         }
-        SET_FARVAR(seg, param_far->heads, (u32)nph);
-        SET_FARVAR(seg, param_far->spt, (u32)nps);
+        ਸੈੱਟ_FARVAR(seg, param_far->heads, (u32)nph);
+        ਸੈੱਟ_FARVAR(seg, param_far->spt, (u32)nps);
     }
-    SET_FARVAR(seg, param_far->sector_count, lba);
-    SET_FARVAR(seg, param_far->blksize, blksize);
+    ਸੈੱਟ_FARVAR(seg, param_far->sector_ਗਿਣਤੀ, lba);
+    ਸੈੱਟ_FARVAR(seg, param_far->blksize, blksize);
 
-    if (size < 30 || !dpte_so)
-        return DISK_RET_SUCCESS;
+    ਜੇ (ਮਾਪ < 30 || !dpte_so)
+        ਵਾਪਸ DISK_RET_SUCCESS;
 
     // EDD 2.x
 
-    SET_FARVAR(seg, param_far->size, 30);
-    SET_FARVAR(seg, param_far->dpte.segoff, dpte_so);
+    ਸੈੱਟ_FARVAR(seg, param_far->ਮਾਪ, 30);
+    ਸੈੱਟ_FARVAR(seg, param_far->dpte.segoff, dpte_so);
 
-    if (size < 66 || !bus_iface)
-        return DISK_RET_SUCCESS;
+    ਜੇ (ਮਾਪ < 66 || !bus_iface)
+        ਵਾਪਸ DISK_RET_SUCCESS;
 
     // EDD 3.x
-    SET_FARVAR(seg, param_far->key, 0xbedd);
-    SET_FARVAR(seg, param_far->dpi_length, t13 ? 44 : 36);
-    SET_FARVAR(seg, param_far->reserved1, 0);
-    SET_FARVAR(seg, param_far->reserved2, 0);
+    ਸੈੱਟ_FARVAR(seg, param_far->ਕੁੰਜੀ, 0xbedd);
+    ਸੈੱਟ_FARVAR(seg, param_far->dpi_ਲੰਮਾਈ, t13 ? 44 : 36);
+    ਸੈੱਟ_FARVAR(seg, param_far->reserved1, 0);
+    ਸੈੱਟ_FARVAR(seg, param_far->reserved2, 0);
 
-    const char *host_bus = "ISA ";
-    if ((bus_iface & EDD_BUS_MASK) == EDD_PCI) {
+    ਅਚਲ ਅੱਖਰ *host_bus = "ISA ";
+    ਜੇ ((bus_iface & EDD_BUS_ਨਕਾਬ) == EDD_PCI) {
         host_bus = "PCI ";
-        if (!t13)
+        ਜੇ (!t13)
             // Phoenix v3 spec (pre t13) did not define the PCI channel field
-            iface_path &= 0x00ffffff;
+            iface_ਰਸਤਾ &= 0x00ffffff;
     }
     memcpy_far(seg, param_far->host_bus, SEG_BIOS, host_bus
-               , sizeof(param_far->host_bus));
-    SET_FARVAR(seg, param_far->iface_path, iface_path);
+               , ਆਕਾਰ(param_far->host_bus));
+    ਸੈੱਟ_FARVAR(seg, param_far->iface_ਰਸਤਾ, iface_ਰਸਤਾ);
 
-    const char *iface_type = "ATA     ";
-    if ((bus_iface & EDD_IFACE_MASK) == EDD_SCSI)
+    ਅਚਲ ਅੱਖਰ *iface_type = "ATA     ";
+    ਜੇ ((bus_iface & EDD_IFACE_ਨਕਾਬ) == EDD_SCSI)
         iface_type = "SCSI    ";
     memcpy_far(seg, param_far->iface_type, SEG_BIOS, iface_type
-               , sizeof(param_far->iface_type));
-    if (t13) {
-        SET_FARVAR(seg, param_far->t13.device_path[0], device_path);
-        SET_FARVAR(seg, param_far->t13.device_path[1], 0);
+               , ਆਕਾਰ(param_far->iface_type));
+    ਜੇ (t13) {
+        ਸੈੱਟ_FARVAR(seg, param_far->t13.device_ਰਸਤਾ[0], device_ਰਸਤਾ);
+        ਸੈੱਟ_FARVAR(seg, param_far->t13.device_ਰਸਤਾ[1], 0);
 
-        SET_FARVAR(seg, param_far->t13.checksum
-                   , -checksum_far(seg, (void*)param_far+30, 43));
-    } else {
-        SET_FARVAR(seg, param_far->phoenix.device_path, device_path);
+        ਸੈੱਟ_FARVAR(seg, param_far->t13.checksum
+                   , -checksum_far(seg, (ਖਾਲੀ*)param_far+30, 43));
+    } ਨਹੀਂਤਾਂ {
+        ਸੈੱਟ_FARVAR(seg, param_far->phoenix.device_ਰਸਤਾ, device_ਰਸਤਾ);
 
-        SET_FARVAR(seg, param_far->phoenix.checksum
-                   , -checksum_far(seg, (void*)param_far+30, 35));
+        ਸੈੱਟ_FARVAR(seg, param_far->phoenix.checksum
+                   , -checksum_far(seg, (ਖਾਲੀ*)param_far+30, 35));
     }
 
-    return DISK_RET_SUCCESS;
+    ਵਾਪਸ DISK_RET_SUCCESS;
 }
 
 // Build an EDD "iface_path" field for a PCI device
-static u32
-edd_pci_path(u16 bdf, u8 channel)
+ਸਥਿਰ u32
+edd_pci_ਰਸਤਾ(u16 bdf, u8 channel)
 {
-    return (pci_bdf_to_bus(bdf) | (pci_bdf_to_dev(bdf) << 8)
-            | (pci_bdf_to_fn(bdf) << 16) | ((u32)channel << 24));
+    ਵਾਪਸ (pci_bdf_ਮੰਜ਼ਿਲ_bus(bdf) | (pci_bdf_ਮੰਜ਼ਿਲ_dev(bdf) << 8)
+            | (pci_bdf_ਮੰਜ਼ਿਲ_fn(bdf) << 16) | ((u32)channel << 24));
 }
 
-struct dpte_s DefaultDPTE VARLOW;
+ਬਣਤਰ dpte_s DefaultDPTE VARLOW;
 
 // EDD info for ATA and ATAPI drives
-static int
-fill_ata_edd(struct segoff_s edd, struct drive_s *drive_gf)
+ਸਥਿਰ ਪੂਰਨ
+fill_ata_edd(ਬਣਤਰ segoff_s edd, ਬਣਤਰ drive_s *drive_gf)
 {
-    if (!CONFIG_ATA)
-        return DISK_RET_EPARAM;
+    ਜੇ (!CONFIG_ATA)
+        ਵਾਪਸ DISK_RET_EPARAM;
 
     // Fill in dpte
-    struct atadrive_s *adrive_gf = container_of(
-        drive_gf, struct atadrive_s, drive);
-    struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
+    ਬਣਤਰ atadrive_s *adrive_gf = container_ਦਾ(
+        drive_gf, ਬਣਤਰ atadrive_s, drive);
+    ਬਣਤਰ ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
     u8 slave = GET_GLOBALFLAT(adrive_gf->slave);
     u16 iobase2 = GET_GLOBALFLAT(chan_gf->iobase2);
     u8 irq = GET_GLOBALFLAT(chan_gf->irq);
     u16 iobase1 = GET_GLOBALFLAT(chan_gf->iobase1);
-    int bdf = GET_GLOBALFLAT(chan_gf->pci_bdf);
+    ਪੂਰਨ bdf = GET_GLOBALFLAT(chan_gf->pci_bdf);
     u8 channel = GET_GLOBALFLAT(chan_gf->chanid);
 
     u16 options = 0;
-    if (GET_GLOBALFLAT(drive_gf->type) == DTYPE_ATA) {
+    ਜੇ (GET_GLOBALFLAT(drive_gf->type) == DTYPE_ATA) {
         u8 translation = GET_GLOBALFLAT(drive_gf->translation);
-        if ((translation != TRANSLATION_NONE) &&
+        ਜੇ ((translation != TRANSLATION_NONE) &&
             (translation != TRANSLATION_HOST)) {
             options |= 1<<3; // CHS translation
-            if (translation == TRANSLATION_LBA)
+            ਜੇ (translation == TRANSLATION_LBA)
                 options |= 1<<9;
-            if (translation == TRANSLATION_RECHS)
+            ਜੇ (translation == TRANSLATION_RECHS)
                 options |= 3<<9;
         }
-    } else {
+    } ਨਹੀਂਤਾਂ {
         // ATAPI
         options |= 1<<5; // removable device
         options |= 1<<6; // atapi device
     }
     options |= 1<<4; // lba translation
-    if (CONFIG_ATA_PIO32)
+    ਜੇ (CONFIG_ATA_PIO32)
         options |= 1<<7;
 
-    SET_LOW(DefaultDPTE.iobase1, iobase1);
-    SET_LOW(DefaultDPTE.iobase2, iobase2 + ATA_CB_DC);
-    SET_LOW(DefaultDPTE.prefix, ((slave ? ATA_CB_DH_DEV1 : ATA_CB_DH_DEV0)
+    ਸੈੱਟ_ਨੀਵਾਂ(DefaultDPTE.iobase1, iobase1);
+    ਸੈੱਟ_ਨੀਵਾਂ(DefaultDPTE.iobase2, iobase2 + ATA_CB_DC);
+    ਸੈੱਟ_ਨੀਵਾਂ(DefaultDPTE.ਅਗੇਤਰ, ((slave ? ATA_CB_DH_DEV1 : ATA_CB_DH_DEV0)
                                  | ATA_CB_DH_LBA));
-    SET_LOW(DefaultDPTE.unused, 0xcb);
-    SET_LOW(DefaultDPTE.irq, irq);
-    SET_LOW(DefaultDPTE.blkcount, 1);
-    SET_LOW(DefaultDPTE.dma, 0);
-    SET_LOW(DefaultDPTE.pio, 0);
-    SET_LOW(DefaultDPTE.options, options);
-    SET_LOW(DefaultDPTE.reserved, 0);
-    SET_LOW(DefaultDPTE.revision, 0x11);
+    ਸੈੱਟ_ਨੀਵਾਂ(DefaultDPTE.ਅਣਵਰਤਿਆ, 0xcb);
+    ਸੈੱਟ_ਨੀਵਾਂ(DefaultDPTE.irq, irq);
+    ਸੈੱਟ_ਨੀਵਾਂ(DefaultDPTE.blkcount, 1);
+    ਸੈੱਟ_ਨੀਵਾਂ(DefaultDPTE.dma, 0);
+    ਸੈੱਟ_ਨੀਵਾਂ(DefaultDPTE.pio, 0);
+    ਸੈੱਟ_ਨੀਵਾਂ(DefaultDPTE.options, options);
+    ਸੈੱਟ_ਨੀਵਾਂ(DefaultDPTE.reserved, 0);
+    ਸੈੱਟ_ਨੀਵਾਂ(DefaultDPTE.revision, 0x11);
 
-    u8 sum = checksum_far(SEG_LOW, &DefaultDPTE, 15);
-    SET_LOW(DefaultDPTE.checksum, -sum);
+    u8 ਜੋੜ = checksum_far(SEG_ਨੀਵਾਂ, &DefaultDPTE, 15);
+    ਸੈੱਟ_ਨੀਵਾਂ(DefaultDPTE.checksum, -ਜੋੜ);
 
     u32 bustype = EDD_ISA, ifpath = iobase1;
-    if (bdf >= 0) {
+    ਜੇ (bdf >= 0) {
         bustype = EDD_PCI;
-        ifpath = edd_pci_path(bdf, channel);
+        ifpath = edd_pci_ਰਸਤਾ(bdf, channel);
     }
-    return fill_generic_edd(
-        edd, drive_gf, SEGOFF(SEG_LOW, (u32)&DefaultDPTE).segoff
+    ਵਾਪਸ fill_generic_edd(
+        edd, drive_gf, SEGOFF(SEG_ਨੀਵਾਂ, (u32)&DefaultDPTE).segoff
         , bustype | EDD_ATA, ifpath, slave);
 }
 
 // Fill Extended Disk Drive (EDD) "Get drive parameters" info for a drive
-int noinline
-fill_edd(struct segoff_s edd, struct drive_s *drive_fl)
+ਪੂਰਨ noinline
+fill_edd(ਬਣਤਰ segoff_s edd, ਬਣਤਰ drive_s *drive_fl)
 {
-    switch (GET_FLATPTR(drive_fl->type)) {
-    case DTYPE_ATA:
-    case DTYPE_ATA_ATAPI:
-        return fill_ata_edd(edd, drive_fl);
-    case DTYPE_VIRTIO_BLK:
-    case DTYPE_VIRTIO_SCSI:
-        return fill_generic_edd(
+    ਚੋਣ (GET_FLATPTR(drive_fl->type)) {
+    ਹਾਲਤ DTYPE_ATA:
+    ਹਾਲਤ DTYPE_ATA_ATAPI:
+        ਵਾਪਸ fill_ata_edd(edd, drive_fl);
+    ਹਾਲਤ DTYPE_VIRTIO_BLK:
+    ਹਾਲਤ DTYPE_VIRTIO_SCSI:
+        ਵਾਪਸ fill_generic_edd(
             edd, drive_fl, 0xffffffff, EDD_PCI | EDD_SCSI
-            , edd_pci_path(GET_FLATPTR(drive_fl->cntl_id), 0), 0);
-    default:
-        return fill_generic_edd(edd, drive_fl, 0, 0, 0, 0);
+            , edd_pci_ਰਸਤਾ(GET_FLATPTR(drive_fl->cntl_id), 0), 0);
+    ਮੂਲ:
+        ਵਾਪਸ fill_generic_edd(edd, drive_fl, 0, 0, 0, 0);
     }
 }
 
@@ -504,136 +504,136 @@ fill_edd(struct segoff_s edd, struct drive_s *drive_fl)
  * Disk driver dispatch
  ****************************************************************/
 
-void
-block_setup(void)
+ਖਾਲੀ
+ਖੰਡ_ਤਿਆਰੀ(ਖਾਲੀ)
 {
-    floppy_setup();
-    ata_setup();
-    ahci_setup();
-    sdcard_setup();
-    ramdisk_setup();
-    virtio_blk_setup();
-    virtio_scsi_setup();
-    lsi_scsi_setup();
-    esp_scsi_setup();
-    megasas_setup();
-    pvscsi_setup();
-    mpt_scsi_setup();
-    nvme_setup();
+    floppy_ਤਿਆਰੀ();
+    ata_ਤਿਆਰੀ();
+    ahci_ਤਿਆਰੀ();
+    sdcard_ਤਿਆਰੀ();
+    ramdisk_ਤਿਆਰੀ();
+    virtio_blk_ਤਿਆਰੀ();
+    virtio_scsi_ਤਿਆਰੀ();
+    lsi_scsi_ਤਿਆਰੀ();
+    esp_scsi_ਤਿਆਰੀ();
+    megasas_ਤਿਆਰੀ();
+    pvscsi_ਤਿਆਰੀ();
+    mpt_scsi_ਤਿਆਰੀ();
+    nvme_ਤਿਆਰੀ();
 }
 
 // Fallback handler for command requests not implemented by drivers
-int
-default_process_op(struct disk_op_s *op)
+ਪੂਰਨ
+default_process_op(ਬਣਤਰ disk_op_s *op)
 {
-    switch (op->command) {
-    case CMD_FORMAT:
-    case CMD_RESET:
-    case CMD_ISREADY:
-    case CMD_VERIFY:
-    case CMD_SEEK:
+    ਚੋਣ (op->command) {
+    ਹਾਲਤ CMD_FORMAT:
+    ਹਾਲਤ CMD_RESET:
+    ਹਾਲਤ CMD_ISREADY:
+    ਹਾਲਤ CMD_VERIFY:
+    ਹਾਲਤ CMD_SEEK:
         // Return success if the driver doesn't implement these commands
-        return DISK_RET_SUCCESS;
-    default:
-        return DISK_RET_EPARAM;
+        ਵਾਪਸ DISK_RET_SUCCESS;
+    ਮੂਲ:
+        ਵਾਪਸ DISK_RET_EPARAM;
     }
 }
 
 // Command dispatch for disk drivers that run in both 16bit and 32bit mode
-static int
-process_op_both(struct disk_op_s *op)
+ਸਥਿਰ ਪੂਰਨ
+process_op_both(ਬਣਤਰ disk_op_s *op)
 {
-    switch (GET_FLATPTR(op->drive_fl->type)) {
-    case DTYPE_ATA_ATAPI:
-        return ata_atapi_process_op(op);
-    case DTYPE_USB:
-        return usb_process_op(op);
-    case DTYPE_UAS:
-        return uas_process_op(op);
-    case DTYPE_LSI_SCSI:
-        return lsi_scsi_process_op(op);
-    case DTYPE_ESP_SCSI:
-        return esp_scsi_process_op(op);
-    case DTYPE_MEGASAS:
-        return megasas_process_op(op);
-    case DTYPE_MPT_SCSI:
-        return mpt_scsi_process_op(op);
-    default:
-        if (!MODESEGMENT)
-            return DISK_RET_EPARAM;
+    ਚੋਣ (GET_FLATPTR(op->drive_fl->type)) {
+    ਹਾਲਤ DTYPE_ATA_ATAPI:
+        ਵਾਪਸ ata_atapi_process_op(op);
+    ਹਾਲਤ DTYPE_USB:
+        ਵਾਪਸ usb_process_op(op);
+    ਹਾਲਤ DTYPE_UAS:
+        ਵਾਪਸ uas_process_op(op);
+    ਹਾਲਤ DTYPE_LSI_SCSI:
+        ਵਾਪਸ lsi_scsi_process_op(op);
+    ਹਾਲਤ DTYPE_ESP_SCSI:
+        ਵਾਪਸ esp_scsi_process_op(op);
+    ਹਾਲਤ DTYPE_MEGASAS:
+        ਵਾਪਸ megasas_process_op(op);
+    ਹਾਲਤ DTYPE_MPT_SCSI:
+        ਵਾਪਸ mpt_scsi_process_op(op);
+    ਮੂਲ:
+        ਜੇ (!MODESEGMENT)
+            ਵਾਪਸ DISK_RET_EPARAM;
         // In 16bit mode and driver not found - try in 32bit mode
-        return call32(process_op_32, MAKE_FLATPTR(GET_SEG(SS), op)
+        ਵਾਪਸ call32(process_op_32, MAKE_FLATPTR(GET_SEG(SS), op)
                       , DISK_RET_EPARAM);
     }
 }
 
 // Command dispatch for disk drivers that only run in 32bit mode
-int VISIBLE32FLAT
-process_op_32(struct disk_op_s *op)
+ਪੂਰਨ VISIBLE32FLAT
+process_op_32(ਬਣਤਰ disk_op_s *op)
 {
     ASSERT32FLAT();
-    switch (op->drive_fl->type) {
-    case DTYPE_VIRTIO_BLK:
-        return virtio_blk_process_op(op);
-    case DTYPE_AHCI:
-        return ahci_process_op(op);
-    case DTYPE_AHCI_ATAPI:
-        return ahci_atapi_process_op(op);
-    case DTYPE_SDCARD:
-        return sdcard_process_op(op);
-    case DTYPE_USB_32:
-        return usb_process_op(op);
-    case DTYPE_UAS_32:
-        return uas_process_op(op);
-    case DTYPE_VIRTIO_SCSI:
-        return virtio_scsi_process_op(op);
-    case DTYPE_PVSCSI:
-        return pvscsi_process_op(op);
-    case DTYPE_NVME:
-        return nvme_process_op(op);
-    default:
-        return process_op_both(op);
+    ਚੋਣ (op->drive_fl->type) {
+    ਹਾਲਤ DTYPE_VIRTIO_BLK:
+        ਵਾਪਸ virtio_blk_process_op(op);
+    ਹਾਲਤ DTYPE_AHCI:
+        ਵਾਪਸ ahci_process_op(op);
+    ਹਾਲਤ DTYPE_AHCI_ATAPI:
+        ਵਾਪਸ ahci_atapi_process_op(op);
+    ਹਾਲਤ DTYPE_SDCARD:
+        ਵਾਪਸ sdcard_process_op(op);
+    ਹਾਲਤ DTYPE_USB_32:
+        ਵਾਪਸ usb_process_op(op);
+    ਹਾਲਤ DTYPE_UAS_32:
+        ਵਾਪਸ uas_process_op(op);
+    ਹਾਲਤ DTYPE_VIRTIO_SCSI:
+        ਵਾਪਸ virtio_scsi_process_op(op);
+    ਹਾਲਤ DTYPE_PVSCSI:
+        ਵਾਪਸ pvscsi_process_op(op);
+    ਹਾਲਤ DTYPE_NVME:
+        ਵਾਪਸ nvme_process_op(op);
+    ਮੂਲ:
+        ਵਾਪਸ process_op_both(op);
     }
 }
 
 // Command dispatch for disk drivers that only run in 16bit mode
-static int
-process_op_16(struct disk_op_s *op)
+ਸਥਿਰ ਪੂਰਨ
+process_op_16(ਬਣਤਰ disk_op_s *op)
 {
     ASSERT16();
-    switch (GET_FLATPTR(op->drive_fl->type)) {
-    case DTYPE_FLOPPY:
-        return floppy_process_op(op);
-    case DTYPE_ATA:
-        return ata_process_op(op);
-    case DTYPE_RAMDISK:
-        return ramdisk_process_op(op);
-    case DTYPE_CDEMU:
-        return cdemu_process_op(op);
-    default:
-        return process_op_both(op);
+    ਚੋਣ (GET_FLATPTR(op->drive_fl->type)) {
+    ਹਾਲਤ DTYPE_FLOPPY:
+        ਵਾਪਸ floppy_process_op(op);
+    ਹਾਲਤ DTYPE_ATA:
+        ਵਾਪਸ ata_process_op(op);
+    ਹਾਲਤ DTYPE_RAMDISK:
+        ਵਾਪਸ ramdisk_process_op(op);
+    ਹਾਲਤ DTYPE_CDEMU:
+        ਵਾਪਸ cdemu_process_op(op);
+    ਮੂਲ:
+        ਵਾਪਸ process_op_both(op);
     }
 }
 
 // Execute a disk_op_s request.
-int
-process_op(struct disk_op_s *op)
+ਪੂਰਨ
+process_op(ਬਣਤਰ disk_op_s *op)
 {
     dprintf(DEBUG_HDL_13, "disk_op d=%p lba=%d buf=%p count=%d cmd=%d\n"
             , op->drive_fl, (u32)op->lba, op->buf_fl
-            , op->count, op->command);
+            , op->ਗਿਣਤੀ_2, op->command);
 
-    int ret, origcount = op->count;
-    if (origcount * GET_FLATPTR(op->drive_fl->blksize) > 64*1024) {
-        op->count = 0;
-        return DISK_RET_EBOUNDARY;
+    ਪੂਰਨ ret, origcount = op->ਗਿਣਤੀ_2;
+    ਜੇ (origcount * GET_FLATPTR(op->drive_fl->blksize) > 64*1024) {
+        op->ਗਿਣਤੀ_2 = 0;
+        ਵਾਪਸ DISK_RET_EBOUNDARY;
     }
-    if (MODESEGMENT)
+    ਜੇ (MODESEGMENT)
         ret = process_op_16(op);
-    else
+    ਨਹੀਂਤਾਂ
         ret = process_op_32(op);
-    if (ret && op->count == origcount)
+    ਜੇ (ret && op->ਗਿਣਤੀ_2 == origcount)
         // If the count hasn't changed on error, assume no data transferred.
-        op->count = 0;
-    return ret;
+        op->ਗਿਣਤੀ_2 = 0;
+    ਵਾਪਸ ret;
 }

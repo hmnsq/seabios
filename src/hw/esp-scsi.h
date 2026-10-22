@@ -1,8 +1,8 @@
-#ifndef __ESP_SCSI_H
-#define __ESP_SCSI_H
+#ਜੇ_ਅਪਰਿਭਾਸ਼ਿਤ __ESP_SCSI_H
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ __ESP_SCSI_H
 
-struct disk_op_s;
-int esp_scsi_process_op(struct disk_op_s *op);
-void esp_scsi_setup(void);
+ਬਣਤਰ disk_op_s;
+ਪੂਰਨ esp_scsi_process_op(ਬਣਤਰ disk_op_s *op);
+ਖਾਲੀ esp_scsi_ਤਿਆਰੀ(ਖਾਲੀ);
 
-#endif /* __ESP_SCSI_H */
+#ਜੇ_ਅੰਤ /* __ESP_SCSI_H */

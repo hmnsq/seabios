@@ -4,123 +4,123 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_GLOBAL
-#include "bregs.h" // set_code_invalid
-#include "config.h" // CONFIG_*
-#include "hw/pci.h" // pci_config_readb
-#include "hw/pcidevice.h" // pci_find_device
-#include "hw/pci_ids.h" // PCI_VENDOR_ID_VIA
-#include "hw/pci_regs.h" // PCI_VENDOR_ID
-#include "output.h" // dprintf
-#include "string.h" // strcmp
-#include "util.h" // handle_155f, handle_157f
+#ਅਨ੍ਤਰ੍ਭਾਵ "biosvar.h" // GET_GLOBAL
+#ਅਨ੍ਤਰ੍ਭਾਵ "bregs.h" // set_code_invalid
+#ਅਨ੍ਤਰ੍ਭਾਵ "config.h" // CONFIG_*
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/pci.h" // pci_config_readb
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/pcidevice.h" // pci_find_device
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/pci_ids.h" // PCI_VENDOR_ID_VIA
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/pci_regs.h" // PCI_VENDOR_ID
+#ਅਨ੍ਤਰ੍ਭਾਵ "output.h" // dprintf
+#ਅਨ੍ਤਰ੍ਭਾਵ "string.h" // strcmp
+#ਅਨ੍ਤਰ੍ਭਾਵ "util.h" // handle_155f, handle_157f
 
-#define VH_VIA 1
-#define VH_INTEL 2
-#define VH_SMI 3
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ VH_ਰਾਹੀਂ 1
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ VH_INTEL 2
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ VH_SMI 3
 
-int VGAHookHandlerType VARFSEG;
+ਪੂਰਨ VGAHookHandlerType VARFSEG;
 
-static void
-handle_155fXX(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+handle_155fXX(ਬਣਤਰ bregs *regs)
 {
-    set_code_unimplemented(regs, RET_EUNSUPPORTED);
+    ਸੈੱਟ_ਕੋਡ_unimplemented(regs, RET_EUNSUPPORTED);
 }
 
-static void
-handle_157fXX(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+handle_157fXX(ਬਣਤਰ bregs *regs)
 {
-    set_code_unimplemented(regs, RET_EUNSUPPORTED);
+    ਸੈੱਟ_ਕੋਡ_unimplemented(regs, RET_EUNSUPPORTED);
 }
 
 /****************************************************************
  * Via hooks
  ****************************************************************/
 
-int ViaFBsize VARFSEG, ViaRamSpeed VARFSEG;
+ਪੂਰਨ ਰਾਹੀਂ_FBsize VARFSEG, ਰਾਹੀਂ_Ram_ਰਫਤਾਰ VARFSEG;
 
-static void
-via_155f01(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+ਰਾਹੀਂ_155f01(ਬਣਤਰ bregs *regs)
 {
     regs->eax = 0x5f;
     regs->cl = 2; // panel type =  2 = 1024 * 768
-    set_success(regs);
+    ਸੈੱਟ_success(regs);
     dprintf(1, "Warning: VGA panel type is hardcoded\n");
 }
 
-static void
-via_155f02(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+ਰਾਹੀਂ_155f02(ਬਣਤਰ bregs *regs)
 {
     regs->eax = 0x5f;
     regs->bx = 2;
     regs->cx = 0x401;  // PAL + crt only
     regs->dx = 0;  // TV Layout - default
-    set_success(regs);
+    ਸੈੱਟ_success(regs);
     dprintf(1, "Warning: VGA TV/CRT output type is hardcoded\n");
 }
 
-static void
-via_155f18(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+ਰਾਹੀਂ_155f18(ਬਣਤਰ bregs *regs)
 {
-    int fbsize = GET_GLOBAL(ViaFBsize), ramspeed = GET_GLOBAL(ViaRamSpeed);
-    if (fbsize < 0 || ramspeed < 0) {
-        set_code_invalid(regs, RET_EUNSUPPORTED);
-        return;
+    ਪੂਰਨ fbsize = GET_GLOBAL(ਰਾਹੀਂ_FBsize), ramspeed = GET_GLOBAL(ਰਾਹੀਂ_Ram_ਰਫਤਾਰ);
+    ਜੇ (fbsize < 0 || ramspeed < 0) {
+        ਸੈੱਟ_ਕੋਡ_invalid(regs, RET_EUNSUPPORTED);
+        ਵਾਪਸ;
     }
     regs->eax = 0x5f;
     regs->ebx = 0x500 | (ramspeed << 4) | fbsize;
     regs->ecx = 0x060;
-    set_success(regs);
+    ਸੈੱਟ_success(regs);
 }
 
-static void
-via_155f19(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+ਰਾਹੀਂ_155f19(ਬਣਤਰ bregs *regs)
 {
-    set_invalid_silent(regs);
+    ਸੈੱਟ_invalid_silent(regs);
 }
 
-static void
-via_155f(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+ਰਾਹੀਂ_155f(ਬਣਤਰ bregs *regs)
 {
-    switch (regs->al) {
-    case 0x01: via_155f01(regs); break;
-    case 0x02: via_155f02(regs); break;
-    case 0x18: via_155f18(regs); break;
-    case 0x19: via_155f19(regs); break;
-    default:   handle_155fXX(regs); break;
+    ਚੋਣ (regs->al) {
+    ਹਾਲਤ 0x01: ਰਾਹੀਂ_155f01(regs); ਰੋਕੋ;
+    ਹਾਲਤ 0x02: ਰਾਹੀਂ_155f02(regs); ਰੋਕੋ;
+    ਹਾਲਤ 0x18: ਰਾਹੀਂ_155f18(regs); ਰੋਕੋ;
+    ਹਾਲਤ 0x19: ਰਾਹੀਂ_155f19(regs); ਰੋਕੋ;
+    ਮੂਲ:   handle_155fXX(regs); ਰੋਕੋ;
     }
 }
 
-static int
-getFBSize(struct pci_device *pci)
+ਸਥਿਰ ਪੂਰਨ
+getFBSize(ਬਣਤਰ pci_device *pci)
 {
     /* FB config */
     u8 reg = pci_config_readb(pci->bdf, 0xa1);
 
     /* GFX disabled ? */
-    if (!(reg & 0x80))
-        return -1;
+    ਜੇ (!(reg & 0x80))
+        ਵਾਪਸ -1;
 
-    static u8 mem_power[] = {0, 3, 4, 5, 6, 7, 8, 9};
-    return mem_power[(reg >> 4) & 0x7];
+    ਸਥਿਰ u8 mem_power[] = {0, 3, 4, 5, 6, 7, 8, 9};
+    ਵਾਪਸ mem_power[(reg >> 4) & 0x7];
 }
 
-static int
-getViaRamSpeed(struct pci_device *pci)
+ਸਥਿਰ ਪੂਰਨ
+get_ਰਾਹੀਂ_Ram_ਰਫਤਾਰ(ਬਣਤਰ pci_device *pci)
 {
-    return (pci_config_readb(pci->bdf, 0x90) & 0x07) + 3;
+    ਵਾਪਸ (pci_config_readb(pci->bdf, 0x90) & 0x07) + 3;
 }
 
-static int
-getAMDRamSpeed(void)
+ਸਥਿਰ ਪੂਰਨ
+get_AMDRam_ਰਫਤਾਰ(ਖਾਲੀ)
 {
-    struct pci_device *pci = pci_find_device(PCI_VENDOR_ID_AMD
+    ਬਣਤਰ pci_device *pci = pci_ਲੱਭੋ_device(PCI_VENDOR_ID_AMD
                                              , PCI_DEVICE_ID_AMD_K8_NB_MEMCTL);
-    if (!pci)
-        return -1;
+    ਜੇ (!pci)
+        ਵਾਪਸ -1;
 
     /* mem clk 0 = DDR2 400 */
-    return (pci_config_readb(pci->bdf, 0x94) & 0x7) + 6;
+    ਵਾਪਸ (pci_config_readb(pci->bdf, 0x94) & 0x7) + 6;
 }
 
 /* int 0x15 - 5f18
@@ -144,31 +144,31 @@ getAMDRamSpeed(void)
    EAX = 0x5f for success
 */
 
-#define PCI_DEVICE_ID_VIA_K8M890CE_3    0x3336
-#define PCI_DEVICE_ID_VIA_VX855_MEMCTRL 0x3409
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PCI_DEVICE_ID_ਰਾਹੀਂ_K8_M890_CE_3    0x3336
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PCI_DEVICE_ID_ਰਾਹੀਂ_VX855_MEMCTRL 0x3409
 
-static void
-via_setup(struct pci_device *pci)
+ਸਥਿਰ ਖਾਲੀ
+ਰਾਹੀਂ_ਤਿਆਰੀ(ਬਣਤਰ pci_device *pci)
 {
-    VGAHookHandlerType = VH_VIA;
+    VGAHookHandlerType = VH_ਰਾਹੀਂ;
 
-    struct pci_device *d = pci_find_device(PCI_VENDOR_ID_VIA
-                                           , PCI_DEVICE_ID_VIA_K8M890CE_3);
-    if (d) {
-        ViaFBsize = getFBSize(d);
-        ViaRamSpeed = getAMDRamSpeed();
-        return;
+    ਬਣਤਰ pci_device *d = pci_ਲੱਭੋ_device(PCI_VENDOR_ID_ਰਾਹੀਂ
+                                           , PCI_DEVICE_ID_ਰਾਹੀਂ_K8_M890_CE_3);
+    ਜੇ (d) {
+        ਰਾਹੀਂ_FBsize = getFBSize(d);
+        ਰਾਹੀਂ_Ram_ਰਫਤਾਰ = get_AMDRam_ਰਫਤਾਰ();
+        ਵਾਪਸ;
     }
-    d = pci_find_device(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_VX855_MEMCTRL);
-    if (d) {
-        ViaFBsize = getFBSize(d);
-        ViaRamSpeed = getViaRamSpeed(d);
-        return;
+    d = pci_ਲੱਭੋ_device(PCI_VENDOR_ID_ਰਾਹੀਂ, PCI_DEVICE_ID_ਰਾਹੀਂ_VX855_MEMCTRL);
+    ਜੇ (d) {
+        ਰਾਹੀਂ_FBsize = getFBSize(d);
+        ਰਾਹੀਂ_Ram_ਰਫਤਾਰ = get_ਰਾਹੀਂ_Ram_ਰਫਤਾਰ(d);
+        ਵਾਪਸ;
     }
 
     dprintf(1, "Warning: VGA memory size and speed is hardcoded\n");
-    ViaFBsize = 5; // 32M frame buffer
-    ViaRamSpeed = 4; // MCLK = DDR266
+    ਰਾਹੀਂ_FBsize = 5; // 32M frame buffer
+    ਰਾਹੀਂ_Ram_ਰਫਤਾਰ = 4; // MCLK = DDR266
 }
 
 
@@ -178,53 +178,53 @@ via_setup(struct pci_device *pci)
 
 u8 IntelDisplayType VARFSEG, IntelDisplayId VARFSEG;
 
-static void
-intel_155f35(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+intel_155f35(ਬਣਤਰ bregs *regs)
 {
     regs->ax = 0x005f;
     regs->cl = GET_GLOBAL(IntelDisplayType);
-    set_success(regs);
+    ਸੈੱਟ_success(regs);
 }
 
-static void
-intel_155f40(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+intel_155f40(ਬਣਤਰ bregs *regs)
 {
     regs->ax = 0x005f;
     regs->cl = GET_GLOBAL(IntelDisplayId);
-    set_success(regs);
+    ਸੈੱਟ_success(regs);
 }
 
-static void
-intel_155f50(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+intel_155f50(ਬਣਤਰ bregs *regs)
 {
     /* Mandatory hook on some Dell laptops */
     regs->ax = 0x005f;
-    set_success(regs);
+    ਸੈੱਟ_success(regs);
 }
 
-static void
-intel_155f(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+intel_155f(ਬਣਤਰ bregs *regs)
 {
-    switch (regs->al) {
-    case 0x35: intel_155f35(regs); break;
-    case 0x40: intel_155f40(regs); break;
-    case 0x50: intel_155f50(regs); break;
-    default:   handle_155fXX(regs); break;
+    ਚੋਣ (regs->al) {
+    ਹਾਲਤ 0x35: intel_155f35(regs); ਰੋਕੋ;
+    ਹਾਲਤ 0x40: intel_155f40(regs); ਰੋਕੋ;
+    ਹਾਲਤ 0x50: intel_155f50(regs); ਰੋਕੋ;
+    ਮੂਲ:   handle_155fXX(regs); ਰੋਕੋ;
     }
 }
 
-#define BOOT_DISPLAY_DEFAULT    (0)
-#define BOOT_DISPLAY_CRT        (1 << 0)
-#define BOOT_DISPLAY_TV         (1 << 1)
-#define BOOT_DISPLAY_EFP        (1 << 2)
-#define BOOT_DISPLAY_LCD        (1 << 3)
-#define BOOT_DISPLAY_CRT2       (1 << 4)
-#define BOOT_DISPLAY_TV2        (1 << 5)
-#define BOOT_DISPLAY_EFP2       (1 << 6)
-#define BOOT_DISPLAY_LCD2       (1 << 7)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ BOOT_DISPLAY_DEFAULT    (0)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ BOOT_DISPLAY_CRT        (1 << 0)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ BOOT_DISPLAY_TV         (1 << 1)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ BOOT_DISPLAY_EFP        (1 << 2)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ BOOT_DISPLAY_LCD        (1 << 3)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ BOOT_DISPLAY_CRT2       (1 << 4)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ BOOT_DISPLAY_TV2        (1 << 5)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ BOOT_DISPLAY_EFP2       (1 << 6)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ BOOT_DISPLAY_LCD2       (1 << 7)
 
-static void
-intel_setup(struct pci_device *pci)
+ਸਥਿਰ ਖਾਲੀ
+intel_ਤਿਆਰੀ(ਬਣਤਰ pci_device *pci)
 {
     VGAHookHandlerType = VH_INTEL;
 
@@ -232,8 +232,8 @@ intel_setup(struct pci_device *pci)
     IntelDisplayId = 3;
 }
 
-static void
-roda_setup(struct pci_device *pci)
+ਸਥਿਰ ਖਾਲੀ
+roda_ਤਿਆਰੀ(ਬਣਤਰ pci_device *pci)
 {
     VGAHookHandlerType = VH_INTEL;
     // IntelDisplayType = BOOT_DISPLAY_DEFAULT;
@@ -242,16 +242,16 @@ roda_setup(struct pci_device *pci)
     IntelDisplayId = 3; // Correct according to empirical studies
 }
 
-static void
-kontron_setup(struct pci_device *pci)
+ਸਥਿਰ ਖਾਲੀ
+kontron_ਤਿਆਰੀ(ਬਣਤਰ pci_device *pci)
 {
     VGAHookHandlerType = VH_INTEL;
     IntelDisplayType = BOOT_DISPLAY_CRT;
     IntelDisplayId = 3;
 }
 
-static void
-getac_setup(struct pci_device *pci)
+ਸਥਿਰ ਖਾਲੀ
+getac_ਤਿਆਰੀ(ਬਣਤਰ pci_device *pci)
 {
 }
 
@@ -261,36 +261,36 @@ getac_setup(struct pci_device *pci)
 
 u8 SmiBootDisplay VARFSEG; // 1: LCD, 2: CRT, 3: Both */
 
-static void
-smi_157f02(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+smi_157f02(ਬਣਤਰ bregs *regs)
 {
     /* Boot Display Device Override */
     regs->ax = 0x007f;
     regs->bl = GET_GLOBAL(SmiBootDisplay);
-    set_success(regs);
+    ਸੈੱਟ_success(regs);
 }
 
-static void
-smi_157f14(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+smi_157f14(ਬਣਤਰ bregs *regs)
 {
     /* ReduceOn support default status */
     regs->ax = 0x007f;
     regs->bl = 0x00;
-    set_success(regs);
+    ਸੈੱਟ_success(regs);
 }
 
-static void
-smi_157f(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+smi_157f(ਬਣਤਰ bregs *regs)
 {
-    switch (regs->al) {
-    case 0x02: smi_157f02(regs); break;
-    case 0x14: smi_157f14(regs); break;
-    default:   handle_157fXX(regs); break;
+    ਚੋਣ (regs->al) {
+    ਹਾਲਤ 0x02: smi_157f02(regs); ਰੋਕੋ;
+    ਹਾਲਤ 0x14: smi_157f14(regs); ਰੋਕੋ;
+    ਮੂਲ:   handle_157fXX(regs); ਰੋਕੋ;
     }
 }
 
-static void
-winent_mb6047_setup(struct pci_device *pci)
+ਸਥਿਰ ਖਾਲੀ
+winent_mb6047_ਤਿਆਰੀ(ਬਣਤਰ pci_device *pci)
 {
     VGAHookHandlerType = VH_SMI;
     SmiBootDisplay = 0x02;
@@ -301,55 +301,55 @@ winent_mb6047_setup(struct pci_device *pci)
  ****************************************************************/
 
 // Main 16bit entry point
-void
-handle_155f(struct bregs *regs)
+ਖਾਲੀ
+handle_155f(ਬਣਤਰ bregs *regs)
 {
-    if (!CONFIG_VGAHOOKS) {
+    ਜੇ (!CONFIG_VGAHOOKS) {
         handle_155fXX(regs);
-        return;
+        ਵਾਪਸ;
     }
 
-    int htype = GET_GLOBAL(VGAHookHandlerType);
-    switch (htype) {
-    case VH_VIA:   via_155f(regs); break;
-    case VH_INTEL: intel_155f(regs); break;
-    default:       handle_155fXX(regs); break;
+    ਪੂਰਨ htype = GET_GLOBAL(VGAHookHandlerType);
+    ਚੋਣ (htype) {
+    ਹਾਲਤ VH_ਰਾਹੀਂ:   ਰਾਹੀਂ_155f(regs); ਰੋਕੋ;
+    ਹਾਲਤ VH_INTEL: intel_155f(regs); ਰੋਕੋ;
+    ਮੂਲ:       handle_155fXX(regs); ਰੋਕੋ;
     }
 }
 
 // Main 16bit entry point
-void
-handle_157f(struct bregs *regs)
+ਖਾਲੀ
+handle_157f(ਬਣਤਰ bregs *regs)
 {
-    if (!CONFIG_VGAHOOKS) {
+    ਜੇ (!CONFIG_VGAHOOKS) {
         handle_157fXX(regs);
-        return;
+        ਵਾਪਸ;
     }
 
-    int htype = GET_GLOBAL(VGAHookHandlerType);
-    switch (htype) {
-    case VH_SMI:   smi_157f(regs); break;
-    default:       handle_157fXX(regs); break;
+    ਪੂਰਨ htype = GET_GLOBAL(VGAHookHandlerType);
+    ਚੋਣ (htype) {
+    ਹਾਲਤ VH_SMI:   smi_157f(regs); ਰੋਕੋ;
+    ਮੂਲ:       handle_157fXX(regs); ਰੋਕੋ;
     }
 }
 
-// Setup
-void
-vgahook_setup(struct pci_device *pci)
+//ਤਿਆਰੀ
+ਖਾਲੀ
+vgahook_ਤਿਆਰੀ(ਬਣਤਰ pci_device *pci)
 {
-    if (!CONFIG_VGAHOOKS)
-        return;
+    ਜੇ (!CONFIG_VGAHOOKS)
+        ਵਾਪਸ;
 
-    if (strcmp(CBvendor, "KONTRON") == 0 && strcmp(CBpart, "986LCD-M") == 0)
-        kontron_setup(pci);
-    else if (strcmp(CBvendor, "GETAC") == 0 && strcmp(CBpart, "P470") == 0)
-        getac_setup(pci);
-    else if (strcmp(CBvendor, "RODA") == 0 && strcmp(CBpart, "RK886EX") == 0)
-        roda_setup(pci);
-    else if (strcmp(CBvendor, "Win Enterprise") == 0 && strcmp(CBpart, "MB6047") == 0)
-        winent_mb6047_setup(pci);
-    else if (pci->vendor == PCI_VENDOR_ID_VIA)
-        via_setup(pci);
-    else if (pci->vendor == PCI_VENDOR_ID_INTEL)
-        intel_setup(pci);
+    ਜੇ (strcmp(CBvendor, "KONTRON") == 0 && strcmp(CBpart, "986LCD-M") == 0)
+        kontron_ਤਿਆਰੀ(pci);
+    ਨਹੀਂਤਾਂ ਜੇ (strcmp(CBvendor, "GETAC") == 0 && strcmp(CBpart, "P470") == 0)
+        getac_ਤਿਆਰੀ(pci);
+    ਨਹੀਂਤਾਂ ਜੇ (strcmp(CBvendor, "RODA") == 0 && strcmp(CBpart, "RK886EX") == 0)
+        roda_ਤਿਆਰੀ(pci);
+    ਨਹੀਂਤਾਂ ਜੇ (strcmp(CBvendor, "Win Enterprise") == 0 && strcmp(CBpart, "MB6047") == 0)
+        winent_mb6047_ਤਿਆਰੀ(pci);
+    ਨਹੀਂਤਾਂ ਜੇ (pci->vendor == PCI_VENDOR_ID_ਰਾਹੀਂ)
+        ਰਾਹੀਂ_ਤਿਆਰੀ(pci);
+    ਨਹੀਂਤਾਂ ਜੇ (pci->vendor == PCI_VENDOR_ID_INTEL)
+        intel_ਤਿਆਰੀ(pci);
 }

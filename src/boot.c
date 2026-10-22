@@ -5,22 +5,22 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "block.h" // struct drive_s
-#include "bregs.h" // struct bregs
-#include "config.h" // CONFIG_*
-#include "fw/paravirt.h" // qemu_cfg_show_boot_menu
-#include "hw/pci.h" // pci_bdf_to_*
-#include "hw/pcidevice.h" // struct pci_device
-#include "hw/rtc.h" // rtc_read
-#include "hw/usb.h" // struct usbdevice_s
-#include "list.h" // hlist_node
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "romfile.h" // romfile_loadint
-#include "std/disk.h" // struct mbr_s
-#include "string.h" // memset
-#include "util.h" // irqtimer_calc
-#include "tcgbios.h" // tpm_*
+#ਅਨ੍ਤਰ੍ਭਾਵ "block.h" // struct drive_s
+#ਅਨ੍ਤਰ੍ਭਾਵ "bregs.h" // struct bregs
+#ਅਨ੍ਤਰ੍ਭਾਵ "config.h" // CONFIG_*
+#ਅਨ੍ਤਰ੍ਭਾਵ "fw/paravirt.h" // qemu_cfg_show_boot_menu
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/pci.h" // pci_bdf_to_*
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/pcidevice.h" // struct pci_device
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/rtc.h" // rtc_read
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/usb.h" // struct usbdevice_s
+#ਅਨ੍ਤਰ੍ਭਾਵ "list.h" // hlist_node
+#ਅਨ੍ਤਰ੍ਭਾਵ "malloc.h" // free
+#ਅਨ੍ਤਰ੍ਭਾਵ "output.h" // dprintf
+#ਅਨ੍ਤਰ੍ਭਾਵ "romfile.h" // romfile_loadint
+#ਅਨ੍ਤਰ੍ਭਾਵ "std/disk.h" // struct mbr_s
+#ਅਨ੍ਤਰ੍ਭਾਵ "string.h" // memset
+#ਅਨ੍ਤਰ੍ਭਾਵ "util.h" // irqtimer_calc
+#ਅਨ੍ਤਰ੍ਭਾਵ "tcgbios.h" // tpm_*
 
 /****************************************************************
  * Helper search functions
@@ -29,70 +29,70 @@
 // See if 'str' starts with 'glob' - if glob contains an '*' character
 // it will match any number of characters in str that aren't a '/' or
 // the next glob character.
-static char *
-glob_prefix(const char *glob, const char *str)
+ਸਥਿਰ ਅੱਖਰ *
+glob_ਅਗੇਤਰ(ਅਚਲ ਅੱਖਰ *glob, ਅਚਲ ਅੱਖਰ *str)
 {
-    for (;;) {
-        if (!*glob && (!*str || *str == '/'))
-            return (char*)str;
-        if (*glob == '*') {
-            if (!*str || *str == '/' || *str == glob[1])
+    ਲਈ (;;) {
+        ਜੇ (!*glob && (!*str || *str == '/'))
+            ਵਾਪਸ (ਅੱਖਰ*)str;
+        ਜੇ (*glob == '*') {
+            ਜੇ (!*str || *str == '/' || *str == glob[1])
                 glob++;
-            else
+            ਨਹੀਂਤਾਂ
                 str++;
-            continue;
+            ਜਾਰੀ;
         }
-        if (*glob != *str)
-            return NULL;
+        ਜੇ (*glob != *str)
+            ਵਾਪਸ ਨਿਰਾ;
         glob++;
         str++;
     }
 }
 
-#define FW_PCI_DOMAIN "/pci@i0cf8"
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ FW_PCI_DOMAIN "/pci@i0cf8"
 
-static char *
-build_pci_path(char *buf, int max, const char *devname, struct pci_device *pci)
+ਸਥਿਰ ਅੱਖਰ *
+build_pci_ਰਸਤਾ(ਅੱਖਰ *buf, ਪੂਰਨ max, ਅਚਲ ਅੱਖਰ *devname, ਬਣਤਰ pci_device *pci)
 {
     // Build the string path of a bdf - for example: /pci@i0cf8/isa@1,2
-    char *p = buf;
-    if (pci->parent) {
-        p = build_pci_path(p, max, "pci-bridge", pci->parent);
-    } else {
+    ਅੱਖਰ *p = buf;
+    ਜੇ (pci->ਮਾਪਾ) {
+        p = build_pci_ਰਸਤਾ(p, max, "pci-bridge", pci->ਮਾਪਾ);
+    } ਨਹੀਂਤਾਂ {
         p += snprintf(p, buf+max-p, "%s", FW_PCI_DOMAIN);
-        if (pci->rootbus)
+        ਜੇ (pci->rootbus)
             p += snprintf(p, buf+max-p, ",%x", pci->rootbus);
     }
 
-    int dev = pci_bdf_to_dev(pci->bdf), fn = pci_bdf_to_fn(pci->bdf);
+    ਪੂਰਨ dev = pci_bdf_ਮੰਜ਼ਿਲ_dev(pci->bdf), fn = pci_bdf_ਮੰਜ਼ਿਲ_fn(pci->bdf);
     p += snprintf(p, buf+max-p, "/%s@%x", devname, dev);
-    if (fn)
+    ਜੇ (fn)
         p += snprintf(p, buf+max-p, ",%x", fn);
-    return p;
+    ਵਾਪਸ p;
 }
 
-static char *
-build_scsi_path(char *buf, int max,
-                struct pci_device *pci, int target, int lun)
+ਸਥਿਰ ਅੱਖਰ *
+build_scsi_ਰਸਤਾ(ਅੱਖਰ *buf, ਪੂਰਨ max,
+                ਬਣਤਰ pci_device *pci, ਪੂਰਨ ਨਿਸ਼ਾਨਾ, ਪੂਰਨ lun)
 {
     // Build the string path of a scsi drive - for example:
     // /pci@i0cf8/scsi@5/channel@0/disk@1,0
-    char *p;
-    p = build_pci_path(buf, max, "*", pci);
-    p += snprintf(p, buf+max-p, "/*@0/*@%x,%x", target, lun);
-    return p;
+    ਅੱਖਰ *p;
+    p = build_pci_ਰਸਤਾ(buf, max, "*", pci);
+    p += snprintf(p, buf+max-p, "/*@0/*@%x,%x", ਨਿਸ਼ਾਨਾ, lun);
+    ਵਾਪਸ p;
 }
 
-static char *
-build_ata_path(char *buf, int max,
-               struct pci_device *pci, int chanid, int slave)
+ਸਥਿਰ ਅੱਖਰ *
+build_ata_ਰਸਤਾ(ਅੱਖਰ *buf, ਪੂਰਨ max,
+               ਬਣਤਰ pci_device *pci, ਪੂਰਨ chanid, ਪੂਰਨ slave)
 {
     // Build the string path of an ata drive - for example:
     // /pci@i0cf8/ide@1,1/drive@1/disk@0
-    char *p;
-    p = build_pci_path(buf, max, "*", pci);
+    ਅੱਖਰ *p;
+    p = build_pci_ਰਸਤਾ(buf, max, "*", pci);
     p += snprintf(p, buf+max-p, "/drive@%x/disk@%x", chanid, slave);
-    return p;
+    ਵਾਪਸ p;
 }
 
 
@@ -100,141 +100,141 @@ build_ata_path(char *buf, int max,
  * Boot device logical geometry
  ****************************************************************/
 
-typedef struct BootDeviceLCHS {
-    char *name;
+ਕਿਸਮਪਰਿਭਾਸ਼ਾ ਬਣਤਰ BootDeviceLCHS {
+    ਅੱਖਰ *name;
     u32 lcyls;
     u32 lheads;
     u32 lsecs;
 } BootDeviceLCHS;
 
-static BootDeviceLCHS *BiosGeometry VARVERIFY32INIT;
-static int BiosGeometryCount;
+ਸਥਿਰ BootDeviceLCHS *BiosGeometry VARVERIFY32INIT;
+ਸਥਿਰ ਪੂਰਨ Bios_Geometry_ਗਿਣਤੀ;
 
-static char *
-parse_u32(char *cur, u32 *n)
+ਸਥਿਰ ਅੱਖਰ *
+parse_u32(ਅੱਖਰ *cur, u32 *n)
 {
     u32 m = 0;
-    if (cur) {
-        while ('0' <= *cur && *cur <= '9') {
+    ਜੇ (cur) {
+        ਜਦੋਂ ('0' <= *cur && *cur <= '9') {
             m = 10 * m + (*cur - '0');
             cur++;
         }
-        if (*cur != '\0')
+        ਜੇ (*cur != '\0')
             cur++;
     }
     *n = m;
-    return cur;
+    ਵਾਪਸ cur;
 }
 
-static void
-loadBiosGeometry(void)
+ਸਥਿਰ ਖਾਲੀ
+ਲੱਦੋ_Bios_Geometry(ਖਾਲੀ)
 {
-    if (!CONFIG_HOST_BIOS_GEOMETRY)
-        return;
-    char *f = romfile_loadfile("bios-geometry", NULL);
-    if (!f)
-        return;
+    ਜੇ (!CONFIG_HOST_BIOS_GEOMETRY)
+        ਵਾਪਸ;
+    ਅੱਖਰ *f = romfile_loadfile("bios-geometry", ਨਿਰਾ);
+    ਜੇ (!f)
+        ਵਾਪਸ;
 
-    int i = 0;
-    BiosGeometryCount = 1;
-    while (f[i]) {
-        if (f[i] == '\n')
-            BiosGeometryCount++;
+    ਪੂਰਨ i = 0;
+    Bios_Geometry_ਗਿਣਤੀ = 1;
+    ਜਦੋਂ (f[i]) {
+        ਜੇ (f[i] == '\n')
+            Bios_Geometry_ਗਿਣਤੀ++;
         i++;
     }
-    BiosGeometry = malloc_tmphigh(BiosGeometryCount * sizeof(BootDeviceLCHS));
-    if (!BiosGeometry) {
+    BiosGeometry = malloc_tmphigh(Bios_Geometry_ਗਿਣਤੀ * ਆਕਾਰ(BootDeviceLCHS));
+    ਜੇ (!BiosGeometry) {
         warn_noalloc();
-        free(f);
-        BiosGeometryCount = 0;
-        return;
+        ਮੁਕਤ(f);
+        Bios_Geometry_ਗਿਣਤੀ = 0;
+        ਵਾਪਸ;
     }
 
     dprintf(1, "bios geometry:\n");
     i = 0;
-    do {
+    ਕਰੋ {
         BootDeviceLCHS *d = &BiosGeometry[i];
         d->name = f;
         f = strchr(f, '\n');
-        if (f)
+        ਜੇ (f)
             *(f++) = '\0';
-        char *chs_values = strchr(d->name, ' ');
-        if (chs_values)
-            *(chs_values++) = '\0';
-        chs_values = parse_u32(chs_values, &d->lcyls);
-        chs_values = parse_u32(chs_values, &d->lheads);
-        chs_values = parse_u32(chs_values, &d->lsecs);
+        ਅੱਖਰ *chs_ਮੁੱਲਾਂ = strchr(d->name, ' ');
+        ਜੇ (chs_ਮੁੱਲਾਂ)
+            *(chs_ਮੁੱਲਾਂ++) = '\0';
+        chs_ਮੁੱਲਾਂ = parse_u32(chs_ਮੁੱਲਾਂ, &d->lcyls);
+        chs_ਮੁੱਲਾਂ = parse_u32(chs_ਮੁੱਲਾਂ, &d->lheads);
+        chs_ਮੁੱਲਾਂ = parse_u32(chs_ਮੁੱਲਾਂ, &d->lsecs);
         dprintf(1, "%s: (%u, %u, %u)\n",
                 d->name, d->lcyls, d->lheads, d->lsecs);
         i++;
-    } while (f);
+    } ਜਦੋਂ (f);
 }
 
 // Search the bios-geometry list for the given glob pattern.
-static BootDeviceLCHS *
-boot_lchs_find(const char *glob)
+ਸਥਿਰ BootDeviceLCHS *
+boot_lchs_ਲੱਭੋ(ਅਚਲ ਅੱਖਰ *glob)
 {
     dprintf(1, "Searching bios-geometry for: %s\n", glob);
-    int i;
-    for (i = 0; i < BiosGeometryCount; i++)
-        if (glob_prefix(glob, BiosGeometry[i].name))
-            return &BiosGeometry[i];
-    return NULL;
+    ਪੂਰਨ i;
+    ਲਈ (i = 0; i < Bios_Geometry_ਗਿਣਤੀ; i++)
+        ਜੇ (glob_ਅਗੇਤਰ(glob, BiosGeometry[i].name))
+            ਵਾਪਸ &BiosGeometry[i];
+    ਵਾਪਸ ਨਿਰਾ;
 }
 
-int boot_lchs_find_pci_device(struct pci_device *pci, struct chs_s *chs)
+ਪੂਰਨ boot_lchs_ਲੱਭੋ_pci_device(ਬਣਤਰ pci_device *pci, ਬਣਤਰ chs_s *chs)
 {
-    if (!CONFIG_HOST_BIOS_GEOMETRY)
-        return -1;
-    char desc[256];
-    build_pci_path(desc, sizeof(desc), "*", pci);
-    BootDeviceLCHS *b = boot_lchs_find(desc);
-    if (!b)
-        return -1;
+    ਜੇ (!CONFIG_HOST_BIOS_GEOMETRY)
+        ਵਾਪਸ -1;
+    ਅੱਖਰ desc[256];
+    build_pci_ਰਸਤਾ(desc, ਆਕਾਰ(desc), "*", pci);
+    BootDeviceLCHS *b = boot_lchs_ਲੱਭੋ(desc);
+    ਜੇ (!b)
+        ਵਾਪਸ -1;
     chs->cylinder = (u16)b->lcyls;
-    chs->head = (u16)b->lheads;
+    chs->ਸਿਰ = (u16)b->lheads;
     chs->sector = (u16)b->lsecs;
-    return 0;
+    ਵਾਪਸ 0;
 }
 
-int boot_lchs_find_scsi_device(struct pci_device *pci, int target, int lun,
-                               struct chs_s *chs)
+ਪੂਰਨ boot_lchs_ਲੱਭੋ_scsi_device(ਬਣਤਰ pci_device *pci, ਪੂਰਨ ਨਿਸ਼ਾਨਾ, ਪੂਰਨ lun,
+                               ਬਣਤਰ chs_s *chs)
 {
-    if (!CONFIG_HOST_BIOS_GEOMETRY)
-        return -1;
-    if (!pci)
+    ਜੇ (!CONFIG_HOST_BIOS_GEOMETRY)
+        ਵਾਪਸ -1;
+    ਜੇ (!pci)
         // support only pci machine for now
-        return -1;
+        ਵਾਪਸ -1;
     // Find scsi drive - for example: /pci@i0cf8/scsi@5/channel@0/disk@1,0
-    char desc[256];
-    build_scsi_path(desc, sizeof(desc), pci, target, lun);
-    BootDeviceLCHS *b = boot_lchs_find(desc);
-    if (!b)
-        return -1;
+    ਅੱਖਰ desc[256];
+    build_scsi_ਰਸਤਾ(desc, ਆਕਾਰ(desc), pci, ਨਿਸ਼ਾਨਾ, lun);
+    BootDeviceLCHS *b = boot_lchs_ਲੱਭੋ(desc);
+    ਜੇ (!b)
+        ਵਾਪਸ -1;
     chs->cylinder = (u16)b->lcyls;
-    chs->head = (u16)b->lheads;
+    chs->ਸਿਰ = (u16)b->lheads;
     chs->sector = (u16)b->lsecs;
-    return 0;
+    ਵਾਪਸ 0;
 }
 
-int boot_lchs_find_ata_device(struct pci_device *pci, int chanid, int slave,
-                              struct chs_s *chs)
+ਪੂਰਨ boot_lchs_ਲੱਭੋ_ata_device(ਬਣਤਰ pci_device *pci, ਪੂਰਨ chanid, ਪੂਰਨ slave,
+                              ਬਣਤਰ chs_s *chs)
 {
-    if (!CONFIG_HOST_BIOS_GEOMETRY)
-        return -1;
-    if (!pci)
+    ਜੇ (!CONFIG_HOST_BIOS_GEOMETRY)
+        ਵਾਪਸ -1;
+    ਜੇ (!pci)
         // support only pci machine for now
-        return -1;
+        ਵਾਪਸ -1;
     // Find ata drive - for example: /pci@i0cf8/ide@1,1/drive@1/disk@0
-    char desc[256];
-    build_ata_path(desc, sizeof(desc), pci, chanid, slave);
-    BootDeviceLCHS *b = boot_lchs_find(desc);
-    if (!b)
-        return -1;
+    ਅੱਖਰ desc[256];
+    build_ata_ਰਸਤਾ(desc, ਆਕਾਰ(desc), pci, chanid, slave);
+    BootDeviceLCHS *b = boot_lchs_ਲੱਭੋ(desc);
+    ਜੇ (!b)
+        ਵਾਪਸ -1;
     chs->cylinder = (u16)b->lcyls;
-    chs->head = (u16)b->lheads;
+    chs->ਸਿਰ = (u16)b->lheads;
     chs->sector = (u16)b->lsecs;
-    return 0;
+    ਵਾਪਸ 0;
 }
 
 
@@ -242,209 +242,209 @@ int boot_lchs_find_ata_device(struct pci_device *pci, int chanid, int slave,
  * Boot priority ordering
  ****************************************************************/
 
-static char **Bootorder VARVERIFY32INIT;
-static int BootorderCount;
+ਸਥਿਰ ਅੱਖਰ **Bootorder VARVERIFY32INIT;
+ਸਥਿਰ ਪੂਰਨ Bootorder_ਗਿਣਤੀ;
 
-static void
-loadBootOrder(void)
+ਸਥਿਰ ਖਾਲੀ
+ਲੱਦੋ_Boot_ਕ੍ਰਮ(ਖਾਲੀ)
 {
-    if (!CONFIG_BOOTORDER)
-        return;
+    ਜੇ (!CONFIG_BOOTORDER)
+        ਵਾਪਸ;
 
-    char *f = romfile_loadfile("bootorder", NULL);
-    if (!f)
-        return;
+    ਅੱਖਰ *f = romfile_loadfile("bootorder", ਨਿਰਾ);
+    ਜੇ (!f)
+        ਵਾਪਸ;
 
-    int i = 0;
-    BootorderCount = 1;
-    while (f[i]) {
-        if (f[i] == '\n')
-            BootorderCount++;
+    ਪੂਰਨ i = 0;
+    Bootorder_ਗਿਣਤੀ = 1;
+    ਜਦੋਂ (f[i]) {
+        ਜੇ (f[i] == '\n')
+            Bootorder_ਗਿਣਤੀ++;
         i++;
     }
-    Bootorder = malloc_tmphigh(BootorderCount*sizeof(char*));
-    if (!Bootorder) {
+    Bootorder = malloc_tmphigh(Bootorder_ਗਿਣਤੀ*ਆਕਾਰ(ਅੱਖਰ*));
+    ਜੇ (!Bootorder) {
         warn_noalloc();
-        free(f);
-        BootorderCount = 0;
-        return;
+        ਮੁਕਤ(f);
+        Bootorder_ਗਿਣਤੀ = 0;
+        ਵਾਪਸ;
     }
 
     dprintf(1, "boot order:\n");
     i = 0;
-    do {
+    ਕਰੋ {
         Bootorder[i] = f;
         f = strchr(f, '\n');
-        if (f)
+        ਜੇ (f)
             *(f++) = '\0';
         Bootorder[i] = nullTrailingSpace(Bootorder[i]);
         dprintf(1, "%d: %s\n", i+1, Bootorder[i]);
         i++;
-    } while (f);
+    } ਜਦੋਂ (f);
 }
 
 // Search the bootorder list for the given glob pattern.
-static int
-find_prio(const char *glob)
+ਸਥਿਰ ਪੂਰਨ
+ਲੱਭੋ_prio(ਅਚਲ ਅੱਖਰ *glob)
 {
     dprintf(1, "Searching bootorder for: %s\n", glob);
-    int i;
-    for (i = 0; i < BootorderCount; i++)
-        if (glob_prefix(glob, Bootorder[i]))
-            return i+1;
-    return -1;
+    ਪੂਰਨ i;
+    ਲਈ (i = 0; i < Bootorder_ਗਿਣਤੀ; i++)
+        ਜੇ (glob_ਅਗੇਤਰ(glob, Bootorder[i]))
+            ਵਾਪਸ i+1;
+    ਵਾਪਸ -1;
 }
 
-u8 is_bootprio_strict(void)
+u8 is_bootprio_strict(ਖਾਲੀ)
 {
-    static int prio_halt = -2;
+    ਸਥਿਰ ਪੂਰਨ prio_halt = -2;
 
-    if (prio_halt == -2)
-        prio_halt = find_prio("HALT");
-    return prio_halt >= 0;
+    ਜੇ (prio_halt == -2)
+        prio_halt = ਲੱਭੋ_prio("HALT");
+    ਵਾਪਸ prio_halt >= 0;
 }
 
-int bootprio_find_pci_device(struct pci_device *pci)
+ਪੂਰਨ bootprio_ਲੱਭੋ_pci_device(ਬਣਤਰ pci_device *pci)
 {
-    if (CONFIG_CSM)
-        return csm_bootprio_pci(pci);
-    if (!CONFIG_BOOTORDER)
-        return -1;
+    ਜੇ (CONFIG_CSM)
+        ਵਾਪਸ csm_bootprio_pci(pci);
+    ਜੇ (!CONFIG_BOOTORDER)
+        ਵਾਪਸ -1;
     // Find pci device - for example: /pci@i0cf8/ethernet@5
-    char desc[256];
-    build_pci_path(desc, sizeof(desc), "*", pci);
-    return find_prio(desc);
+    ਅੱਖਰ desc[256];
+    build_pci_ਰਸਤਾ(desc, ਆਕਾਰ(desc), "*", pci);
+    ਵਾਪਸ ਲੱਭੋ_prio(desc);
 }
 
-int bootprio_find_mmio_device(void *mmio)
+ਪੂਰਨ bootprio_ਲੱਭੋ_mmio_device(ਖਾਲੀ *mmio)
 {
-    if (!CONFIG_BOOTORDER)
-        return -1;
-    char desc[256];
-    snprintf(desc, sizeof(desc), "/virtio-mmio@%016x/*", (u32)mmio);
-    return find_prio(desc);
+    ਜੇ (!CONFIG_BOOTORDER)
+        ਵਾਪਸ -1;
+    ਅੱਖਰ desc[256];
+    snprintf(desc, ਆਕਾਰ(desc), "/virtio-mmio@%016x/*", (u32)mmio);
+    ਵਾਪਸ ਲੱਭੋ_prio(desc);
 }
 
-int bootprio_find_scsi_device(struct pci_device *pci, int target, int lun)
+ਪੂਰਨ bootprio_ਲੱਭੋ_scsi_device(ਬਣਤਰ pci_device *pci, ਪੂਰਨ ਨਿਸ਼ਾਨਾ, ਪੂਰਨ lun)
 {
-    if (!CONFIG_BOOTORDER)
-        return -1;
-    if (!pci)
+    ਜੇ (!CONFIG_BOOTORDER)
+        ਵਾਪਸ -1;
+    ਜੇ (!pci)
         // support only pci machine for now
-        return -1;
-    char desc[256];
-    build_scsi_path(desc, sizeof(desc), pci, target, lun);
-    return find_prio(desc);
+        ਵਾਪਸ -1;
+    ਅੱਖਰ desc[256];
+    build_scsi_ਰਸਤਾ(desc, ਆਕਾਰ(desc), pci, ਨਿਸ਼ਾਨਾ, lun);
+    ਵਾਪਸ ਲੱਭੋ_prio(desc);
 }
 
-int bootprio_find_scsi_mmio_device(void *mmio, int target, int lun)
+ਪੂਰਨ bootprio_ਲੱਭੋ_scsi_mmio_device(ਖਾਲੀ *mmio, ਪੂਰਨ ਨਿਸ਼ਾਨਾ, ਪੂਰਨ lun)
 {
-    if (!CONFIG_BOOTORDER)
-        return -1;
-    char desc[256];
-    snprintf(desc, sizeof(desc), "/virtio-mmio@%016x/*@0/*@%x,%x",
-             (u32)mmio, target, lun);
-    return find_prio(desc);
+    ਜੇ (!CONFIG_BOOTORDER)
+        ਵਾਪਸ -1;
+    ਅੱਖਰ desc[256];
+    snprintf(desc, ਆਕਾਰ(desc), "/virtio-mmio@%016x/*@0/*@%x,%x",
+             (u32)mmio, ਨਿਸ਼ਾਨਾ, lun);
+    ਵਾਪਸ ਲੱਭੋ_prio(desc);
 }
 
-int bootprio_find_ata_device(struct pci_device *pci, int chanid, int slave)
+ਪੂਰਨ bootprio_ਲੱਭੋ_ata_device(ਬਣਤਰ pci_device *pci, ਪੂਰਨ chanid, ਪੂਰਨ slave)
 {
-    if (CONFIG_CSM)
-        return csm_bootprio_ata(pci, chanid, slave);
-    if (!CONFIG_BOOTORDER)
-        return -1;
-    if (!pci)
+    ਜੇ (CONFIG_CSM)
+        ਵਾਪਸ csm_bootprio_ata(pci, chanid, slave);
+    ਜੇ (!CONFIG_BOOTORDER)
+        ਵਾਪਸ -1;
+    ਜੇ (!pci)
         // support only pci machine for now
-        return -1;
-    char desc[256];
-    build_ata_path(desc, sizeof(desc), pci, chanid, slave);
-    return find_prio(desc);
+        ਵਾਪਸ -1;
+    ਅੱਖਰ desc[256];
+    build_ata_ਰਸਤਾ(desc, ਆਕਾਰ(desc), pci, chanid, slave);
+    ਵਾਪਸ ਲੱਭੋ_prio(desc);
 }
 
-int bootprio_find_fdc_device(struct pci_device *pci, int port, int fdid)
+ਪੂਰਨ bootprio_ਲੱਭੋ_fdc_device(ਬਣਤਰ pci_device *pci, ਪੂਰਨ ਪੋਰਟ, ਪੂਰਨ fdid)
 {
-    if (CONFIG_CSM)
-        return csm_bootprio_fdc(pci, port, fdid);
-    if (!CONFIG_BOOTORDER)
-        return -1;
-    if (!pci)
+    ਜੇ (CONFIG_CSM)
+        ਵਾਪਸ csm_bootprio_fdc(pci, ਪੋਰਟ, fdid);
+    ਜੇ (!CONFIG_BOOTORDER)
+        ਵਾਪਸ -1;
+    ਜੇ (!pci)
         // support only pci machine for now
-        return -1;
+        ਵਾਪਸ -1;
     // Find floppy - for example: /pci@i0cf8/isa@1/fdc@03f1/floppy@0
-    char desc[256], *p;
-    p = build_pci_path(desc, sizeof(desc), "isa", pci);
-    snprintf(p, desc+sizeof(desc)-p, "/fdc@%04x/floppy@%x", port, fdid);
-    return find_prio(desc);
+    ਅੱਖਰ desc[256], *p;
+    p = build_pci_ਰਸਤਾ(desc, ਆਕਾਰ(desc), "isa", pci);
+    snprintf(p, desc+ਆਕਾਰ(desc)-p, "/fdc@%04x/floppy@%x", ਪੋਰਟ, fdid);
+    ਵਾਪਸ ਲੱਭੋ_prio(desc);
 }
 
-int bootprio_find_pci_rom(struct pci_device *pci, int instance)
+ਪੂਰਨ bootprio_ਲੱਭੋ_pci_rom(ਬਣਤਰ pci_device *pci, ਪੂਰਨ instance)
 {
-    if (!CONFIG_BOOTORDER)
-        return -1;
+    ਜੇ (!CONFIG_BOOTORDER)
+        ਵਾਪਸ -1;
     // Find pci rom - for example: /pci@i0cf8/scsi@3:rom2
-    char desc[256], *p;
-    p = build_pci_path(desc, sizeof(desc), "*", pci);
-    if (instance)
-        snprintf(p, desc+sizeof(desc)-p, ":rom%x", instance);
-    return find_prio(desc);
+    ਅੱਖਰ desc[256], *p;
+    p = build_pci_ਰਸਤਾ(desc, ਆਕਾਰ(desc), "*", pci);
+    ਜੇ (instance)
+        snprintf(p, desc+ਆਕਾਰ(desc)-p, ":rom%x", instance);
+    ਵਾਪਸ ਲੱਭੋ_prio(desc);
 }
 
-int bootprio_find_named_rom(const char *name, int instance)
+ਪੂਰਨ bootprio_ਲੱਭੋ_named_rom(ਅਚਲ ਅੱਖਰ *name, ਪੂਰਨ instance)
 {
-    if (!CONFIG_BOOTORDER)
-        return -1;
+    ਜੇ (!CONFIG_BOOTORDER)
+        ਵਾਪਸ -1;
     // Find named rom - for example: /rom@genroms/linuxboot.bin
-    char desc[256], *p;
-    p = desc + snprintf(desc, sizeof(desc), "/rom@%s", name);
-    if (instance)
-        snprintf(p, desc+sizeof(desc)-p, ":rom%x", instance);
-    return find_prio(desc);
+    ਅੱਖਰ desc[256], *p;
+    p = desc + snprintf(desc, ਆਕਾਰ(desc), "/rom@%s", name);
+    ਜੇ (instance)
+        snprintf(p, desc+ਆਕਾਰ(desc)-p, ":rom%x", instance);
+    ਵਾਪਸ ਲੱਭੋ_prio(desc);
 }
 
-static int usb_portmap(struct usbdevice_s *usbdev)
+ਸਥਿਰ ਪੂਰਨ usb_portmap(ਬਣਤਰ usbdevice_s *usbdev)
 {
-    if (usbdev->hub->op->portmap)
-        return usbdev->hub->op->portmap(usbdev->hub, usbdev->port);
-    return usbdev->port + 1;
+    ਜੇ (usbdev->hub->op->portmap)
+        ਵਾਪਸ usbdev->hub->op->portmap(usbdev->hub, usbdev->ਪੋਰਟ);
+    ਵਾਪਸ usbdev->ਪੋਰਟ + 1;
 }
 
-static char *
-build_usb_path(char *buf, int max, struct usbhub_s *hub)
+ਸਥਿਰ ਅੱਖਰ *
+build_usb_ਰਸਤਾ(ਅੱਖਰ *buf, ਪੂਰਨ max, ਬਣਤਰ usbhub_s *hub)
 {
-    if (!hub->usbdev)
+    ਜੇ (!hub->usbdev)
         // Root hub - nothing to add.
-        return buf;
-    char *p = build_usb_path(buf, max, hub->usbdev->hub);
+        ਵਾਪਸ buf;
+    ਅੱਖਰ *p = build_usb_ਰਸਤਾ(buf, max, hub->usbdev->hub);
     p += snprintf(p, buf+max-p, "/hub@%x", usb_portmap(hub->usbdev));
-    return p;
+    ਵਾਪਸ p;
 }
 
-int bootprio_find_usb(struct usbdevice_s *usbdev, int lun)
+ਪੂਰਨ bootprio_ਲੱਭੋ_usb(ਬਣਤਰ usbdevice_s *usbdev, ਪੂਰਨ lun)
 {
-    if (!CONFIG_BOOTORDER)
-        return -1;
+    ਜੇ (!CONFIG_BOOTORDER)
+        ਵਾਪਸ -1;
     // Find usb - examples:
     //   pci:  /pci@i0cf8/usb@1,2/storage@1/channel@0/disk@0,0
     //   mmio: /sysbus-xhci@00000000fe900000/storage@1/channel@0/disk@0,0
-    char desc[256], *p;
+    ਅੱਖਰ desc[256], *p;
 
-    if (usbdev->hub->cntl->pci)
-        p = build_pci_path(desc, sizeof(desc), "usb", usbdev->hub->cntl->pci);
-    else if (usbdev->hub->cntl->mmio)
-        p = desc + snprintf(desc, sizeof(desc), "/*@%016x"
+    ਜੇ (usbdev->hub->cntl->pci)
+        p = build_pci_ਰਸਤਾ(desc, ਆਕਾਰ(desc), "usb", usbdev->hub->cntl->pci);
+    ਨਹੀਂਤਾਂ ਜੇ (usbdev->hub->cntl->mmio)
+        p = desc + snprintf(desc, ਆਕਾਰ(desc), "/*@%016x"
                             , (u32)usbdev->hub->cntl->mmio);
-    else
-        return -1;
+    ਨਹੀਂਤਾਂ
+        ਵਾਪਸ -1;
 
-    p = build_usb_path(p, desc+sizeof(desc)-p, usbdev->hub);
-    snprintf(p, desc+sizeof(desc)-p, "/storage@%x/*@0/*@0,%x"
+    p = build_usb_ਰਸਤਾ(p, desc+ਆਕਾਰ(desc)-p, usbdev->hub);
+    snprintf(p, desc+ਆਕਾਰ(desc)-p, "/storage@%x/*@0/*@0,%x"
              , usb_portmap(usbdev), lun);
-    int ret = find_prio(desc);
-    if (ret >= 0)
-        return ret;
+    ਪੂਰਨ ret = ਲੱਭੋ_prio(desc);
+    ਜੇ (ret >= 0)
+        ਵਾਪਸ ret;
     // Try usb-host/redir - for example: /pci@i0cf8/usb@1,2/usb-host@1
-    snprintf(p, desc+sizeof(desc)-p, "/usb-*@%x", usb_portmap(usbdev));
-    return find_prio(desc);
+    snprintf(p, desc+ਆਕਾਰ(desc)-p, "/usb-*@%x", usb_portmap(usbdev));
+    ਵਾਪਸ ਲੱਭੋ_prio(desc);
 }
 
 
@@ -452,47 +452,47 @@ int bootprio_find_usb(struct usbdevice_s *usbdev, int lun)
  * Boot setup
  ****************************************************************/
 
-static int BootRetryTime;
-static int CheckFloppySig = 1;
+ਸਥਿਰ ਪੂਰਨ Boot_Retry_ਸਮਾਂ;
+ਸਥਿਰ ਪੂਰਨ CheckFloppySig = 1;
 
-#define DEFAULT_PRIO           9999
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ DEFAULT_PRIO           9999
 
-static int DefaultFloppyPrio = 101;
-static int DefaultCDPrio     = 102;
-static int DefaultHDPrio     = 103;
-static int DefaultBEVPrio    = 104;
+ਸਥਿਰ ਪੂਰਨ DefaultFloppyPrio = 101;
+ਸਥਿਰ ਪੂਰਨ DefaultCDPrio     = 102;
+ਸਥਿਰ ਪੂਰਨ DefaultHDPrio     = 103;
+ਸਥਿਰ ਪੂਰਨ DefaultBEVPrio    = 104;
 
-void
-boot_init(void)
+ਖਾਲੀ
+boot_init(ਖਾਲੀ)
 {
-    if (! CONFIG_BOOT)
-        return;
+    ਜੇ (! CONFIG_BOOT)
+        ਵਾਪਸ;
 
-    if (CONFIG_QEMU) {
+    ਜੇ (CONFIG_QEMU) {
         // On emulators, get boot order from nvram.
-        if (rtc_read(CMOS_BIOS_BOOTFLAG1) & 1)
+        ਜੇ (rtc_read(CMOS_BIOS_BOOTFLAG1) & 1)
             CheckFloppySig = 0;
         u32 bootorder = (rtc_read(CMOS_BIOS_BOOTFLAG2)
                          | ((rtc_read(CMOS_BIOS_BOOTFLAG1) & 0xf0) << 4));
         DefaultFloppyPrio = DefaultCDPrio = DefaultHDPrio
             = DefaultBEVPrio = DEFAULT_PRIO;
-        int i;
-        for (i=101; i<104; i++) {
+        ਪੂਰਨ i;
+        ਲਈ (i=101; i<104; i++) {
             u32 val = bootorder & 0x0f;
             bootorder >>= 4;
-            switch (val) {
-            case 1: DefaultFloppyPrio = i; break;
-            case 2: DefaultHDPrio = i;     break;
-            case 3: DefaultCDPrio = i;     break;
-            case 4: DefaultBEVPrio = i;    break;
+            ਚੋਣ (val) {
+            ਹਾਲਤ 1: DefaultFloppyPrio = i; ਰੋਕੋ;
+            ਹਾਲਤ 2: DefaultHDPrio = i;     ਰੋਕੋ;
+            ਹਾਲਤ 3: DefaultCDPrio = i;     ਰੋਕੋ;
+            ਹਾਲਤ 4: DefaultBEVPrio = i;    ਰੋਕੋ;
             }
         }
     }
 
-    BootRetryTime = romfile_loadint("etc/boot-fail-wait", 60*1000);
+    Boot_Retry_ਸਮਾਂ = romfile_loadint("etc/boot-fail-wait", 60*1000);
 
-    loadBootOrder();
-    loadBiosGeometry();
+    ਲੱਦੋ_Boot_ਕ੍ਰਮ();
+    ਲੱਦੋ_Bios_Geometry();
 }
 
 
@@ -500,125 +500,125 @@ boot_init(void)
  * BootList handling
  ****************************************************************/
 
-struct bootentry_s {
-    int type;
-    union {
-        u32 data;
-        struct segoff_s vector;
-        struct drive_s *drive;
+ਬਣਤਰ bootentry_s {
+    ਪੂਰਨ type;
+    ਸੰਘ {
+        u32 ਅੰਕੜੇ;
+        ਬਣਤਰ segoff_s ਸਦਿਸ਼;
+        ਬਣਤਰ drive_s *drive;
     };
-    int priority;
-    const char *description;
-    struct hlist_node node;
+    ਪੂਰਨ ਤਰਜੀਹ;
+    ਅਚਲ ਅੱਖਰ *description;
+    ਬਣਤਰ hlist_ਗੰਢ ਗੰਢ;
 };
-static struct hlist_head BootList VARVERIFY32INIT;
+ਸਥਿਰ ਬਣਤਰ hlist_ਸਿਰ BootList VARVERIFY32INIT;
 
-#define IPL_TYPE_FLOPPY      0x01
-#define IPL_TYPE_HARDDISK    0x02
-#define IPL_TYPE_CDROM       0x03
-#define IPL_TYPE_CBFS        0x20
-#define IPL_TYPE_BEV         0x80
-#define IPL_TYPE_BCV         0x81
-#define IPL_TYPE_HALT        0xf0
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ IPL_TYPE_FLOPPY      0x01
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ IPL_TYPE_HARDDISK    0x02
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ IPL_TYPE_CDROM       0x03
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ IPL_TYPE_CBFS        0x20
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ IPL_TYPE_BEV         0x80
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ IPL_TYPE_BCV         0x81
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ IPL_TYPE_HALT        0xf0
 
-static void
-bootentry_add(int type, int prio, u32 data, const char *desc)
+ਸਥਿਰ ਖਾਲੀ
+bootentry_ਜੋੜੋ(ਪੂਰਨ type, ਪੂਰਨ prio, u32 ਅੰਕੜੇ, ਅਚਲ ਅੱਖਰ *desc)
 {
-    if (! CONFIG_BOOT)
-        return;
-    struct bootentry_s *be = malloc_tmp(sizeof(*be));
-    if (!be) {
+    ਜੇ (! CONFIG_BOOT)
+        ਵਾਪਸ;
+    ਬਣਤਰ bootentry_s *be = malloc_tmp(ਆਕਾਰ(*be));
+    ਜੇ (!be) {
         warn_noalloc();
-        return;
+        ਵਾਪਸ;
     }
     be->type = type;
-    be->priority = prio;
-    be->data = data;
+    be->ਤਰਜੀਹ = prio;
+    be->ਅੰਕੜੇ = ਅੰਕੜੇ;
     be->description = desc ?: "?";
     dprintf(3, "Registering bootable: %s (type:%d prio:%d data:%x)\n"
-            , be->description, type, prio, data);
+            , be->description, type, prio, ਅੰਕੜੇ);
 
     // Add entry in sorted order.
-    struct hlist_node **pprev;
-    struct bootentry_s *pos;
-    hlist_for_each_entry_pprev(pos, pprev, &BootList, node) {
-        if (be->priority < pos->priority)
-            break;
-        if (be->priority > pos->priority)
-            continue;
-        if (be->type < pos->type)
-            break;
-        if (be->type > pos->type)
-            continue;
-        if (be->type <= IPL_TYPE_CDROM
+    ਬਣਤਰ hlist_ਗੰਢ **pprev;
+    ਬਣਤਰ bootentry_s *pos;
+    hlist_for_each_ਇੰਦਰਾਜ_pprev(pos, pprev, &BootList, ਗੰਢ) {
+        ਜੇ (be->ਤਰਜੀਹ < pos->ਤਰਜੀਹ)
+            ਰੋਕੋ;
+        ਜੇ (be->ਤਰਜੀਹ > pos->ਤਰਜੀਹ)
+            ਜਾਰੀ;
+        ਜੇ (be->type < pos->type)
+            ਰੋਕੋ;
+        ਜੇ (be->type > pos->type)
+            ਜਾਰੀ;
+        ਜੇ (be->type <= IPL_TYPE_CDROM
             && (be->drive->type < pos->drive->type
                 || (be->drive->type == pos->drive->type
                     && be->drive->cntl_id < pos->drive->cntl_id)))
-            break;
+            ਰੋਕੋ;
     }
-    hlist_add(&be->node, pprev);
+    hlist_ਜੋੜੋ(&be->ਗੰਢ, pprev);
 }
 
 // Return the given priority if it's set - defaultprio otherwise.
-static inline int defPrio(int priority, int defaultprio) {
-    return (priority < 0) ? defaultprio : priority;
+ਸਥਿਰ ਸਤਰਅੰਦਰ ਪੂਰਨ defPrio(ਪੂਰਨ ਤਰਜੀਹ, ਪੂਰਨ defaultprio) {
+    ਵਾਪਸ (ਤਰਜੀਹ < 0) ? defaultprio : ਤਰਜੀਹ;
 }
 
 // Add a BEV vector for a given pnp compatible option rom.
-void
-boot_add_bev(u16 seg, u16 bev, u16 desc, int prio)
+ਖਾਲੀ
+boot_ਜੋੜੋ_bev(u16 seg, u16 bev, u16 desc, ਪੂਰਨ prio)
 {
-    bootentry_add(IPL_TYPE_BEV, defPrio(prio, DefaultBEVPrio)
+    bootentry_ਜੋੜੋ(IPL_TYPE_BEV, defPrio(prio, DefaultBEVPrio)
                   , SEGOFF(seg, bev).segoff
                   , desc ? MAKE_FLATPTR(seg, desc) : "Unknown");
     DefaultBEVPrio = DEFAULT_PRIO;
 }
 
 // Add a bcv entry for an expansion card harddrive or legacy option rom
-void
-boot_add_bcv(u16 seg, u16 ip, u16 desc, int prio)
+ਖਾਲੀ
+boot_ਜੋੜੋ_bcv(u16 seg, u16 ip, u16 desc, ਪੂਰਨ prio)
 {
-    bootentry_add(IPL_TYPE_BCV, defPrio(prio, DefaultHDPrio)
+    bootentry_ਜੋੜੋ(IPL_TYPE_BCV, defPrio(prio, DefaultHDPrio)
                   , SEGOFF(seg, ip).segoff
                   , desc ? MAKE_FLATPTR(seg, desc) : "Legacy option rom");
 }
 
-void
-boot_add_floppy(struct drive_s *drive, const char *desc, int prio)
+ਖਾਲੀ
+boot_ਜੋੜੋ_floppy(ਬਣਤਰ drive_s *drive, ਅਚਲ ਅੱਖਰ *desc, ਪੂਰਨ prio)
 {
-    bootentry_add(IPL_TYPE_FLOPPY, defPrio(prio, DefaultFloppyPrio)
+    bootentry_ਜੋੜੋ(IPL_TYPE_FLOPPY, defPrio(prio, DefaultFloppyPrio)
                   , (u32)drive, desc);
 }
 
-void
-boot_add_hd(struct drive_s *drive, const char *desc, int prio)
+ਖਾਲੀ
+boot_ਜੋੜੋ_hd(ਬਣਤਰ drive_s *drive, ਅਚਲ ਅੱਖਰ *desc, ਪੂਰਨ prio)
 {
-    bootentry_add(IPL_TYPE_HARDDISK, defPrio(prio, DefaultHDPrio)
+    bootentry_ਜੋੜੋ(IPL_TYPE_HARDDISK, defPrio(prio, DefaultHDPrio)
                   , (u32)drive, desc);
 }
 
-void
-boot_add_cd(struct drive_s *drive, const char *desc, int prio)
+ਖਾਲੀ
+boot_ਜੋੜੋ_cd(ਬਣਤਰ drive_s *drive, ਅਚਲ ਅੱਖਰ *desc, ਪੂਰਨ prio)
 {
-    if (GET_GLOBAL(PlatformRunningOn) & PF_QEMU) {
+    ਜੇ (GET_GLOBAL(PlatformRunningOn) & PF_QEMU) {
         // We want short boot times.  But on physical hardware even
         // the test unit ready can take several seconds.  So do media
         // access on qemu only, where we know it will be fast.
-        char *extra = cdrom_media_info(drive);
-        if (extra) {
+        ਅੱਖਰ *extra = cdrom_media_info(drive);
+        ਜੇ (extra) {
             desc = znprintf(MAXDESCSIZE, "%s (%s)", desc, extra);
-            free(extra);
+            ਮੁਕਤ(extra);
         }
     }
-    bootentry_add(IPL_TYPE_CDROM, defPrio(prio, DefaultCDPrio)
+    bootentry_ਜੋੜੋ(IPL_TYPE_CDROM, defPrio(prio, DefaultCDPrio)
                   , (u32)drive, desc);
 }
 
 // Add a CBFS payload entry
-void
-boot_add_cbfs(void *data, const char *desc, int prio)
+ਖਾਲੀ
+boot_ਜੋੜੋ_cbfs(ਖਾਲੀ *ਅੰਕੜੇ, ਅਚਲ ਅੱਖਰ *desc, ਪੂਰਨ prio)
 {
-    bootentry_add(IPL_TYPE_CBFS, defPrio(prio, DEFAULT_PRIO), (u32)data, desc);
+    bootentry_ਜੋੜੋ(IPL_TYPE_CBFS, defPrio(prio, DEFAULT_PRIO), (u32)ਅੰਕੜੇ, desc);
 }
 
 
@@ -627,62 +627,62 @@ boot_add_cbfs(void *data, const char *desc, int prio)
  ****************************************************************/
 
 // See if a keystroke is pending in the keyboard buffer.
-static int
-check_for_keystroke(void)
+ਸਥਿਰ ਪੂਰਨ
+check_for_keystroke(ਖਾਲੀ)
 {
-    struct bregs br;
-    memset(&br, 0, sizeof(br));
+    ਬਣਤਰ bregs br;
+    memset(&br, 0, ਆਕਾਰ(br));
     br.flags = F_IF|F_ZF;
     br.ah = 1;
     call16_int(0x16, &br);
-    return !(br.flags & F_ZF);
+    ਵਾਪਸ !(br.flags & F_ZF);
 }
 
 // Return a keystroke - waiting forever if necessary.
-static int
-get_raw_keystroke(void)
+ਸਥਿਰ ਪੂਰਨ
+get_raw_keystroke(ਖਾਲੀ)
 {
-    struct bregs br;
-    memset(&br, 0, sizeof(br));
+    ਬਣਤਰ bregs br;
+    memset(&br, 0, ਆਕਾਰ(br));
     br.flags = F_IF;
     call16_int(0x16, &br);
-    return br.ax;
+    ਵਾਪਸ br.ax;
 }
 
 // Read a keystroke - waiting up to 'msec' milliseconds.
 // returns both scancode and ascii code.
-int
-get_keystroke_full(int msec)
+ਪੂਰਨ
+get_keystroke_ਭਰਿਆ(ਪੂਰਨ msec)
 {
-    u32 end = irqtimer_calc(msec);
-    for (;;) {
-        if (check_for_keystroke())
-            return get_raw_keystroke();
-        if (irqtimer_check(end))
-            return -1;
+    u32 ਸਿਰਾ = irqtimer_calc(msec);
+    ਲਈ (;;) {
+        ਜੇ (check_for_keystroke())
+            ਵਾਪਸ get_raw_keystroke();
+        ਜੇ (irqtimer_check(ਸਿਰਾ))
+            ਵਾਪਸ -1;
         yield_toirq();
     }
 }
 
 // Read a keystroke - waiting up to 'msec' milliseconds.
 // returns scancode only.
-int
-get_keystroke(int msec)
+ਪੂਰਨ
+get_keystroke(ਪੂਰਨ msec)
 {
-    int keystroke = get_keystroke_full(msec);
+    ਪੂਰਨ keystroke = get_keystroke_ਭਰਿਆ(msec);
 
-    if (keystroke < 0)
-        return keystroke;
-    return keystroke >> 8;
+    ਜੇ (keystroke < 0)
+        ਵਾਪਸ keystroke;
+    ਵਾਪਸ keystroke >> 8;
 }
 
 /****************************************************************
  * Boot menu and BCV execution
  ****************************************************************/
 
-#define DEFAULT_BOOTMENU_WAIT 2500
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ DEFAULT_BOOTMENU_WAIT 2500
 
-static const char menuchars[] = {
+ਸਥਿਰ ਅਚਲ ਅੱਖਰ menuchars[] = {
     '1', '2', '3', '4', '5', '6', '7', '8', '9',
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i',
     'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r',
@@ -691,170 +691,170 @@ static const char menuchars[] = {
 };
 
 // Show IPL option menu.
-void
-interactive_bootmenu(void)
+ਖਾਲੀ
+interactive_bootmenu(ਖਾਲੀ)
 {
-    if (! CONFIG_BOOTMENU)
-        return;
-    int show_boot_menu = romfile_loadint("etc/show-boot-menu", 1);
-    if (!show_boot_menu)
-        return;
+    ਜੇ (! CONFIG_BOOTMENU)
+        ਵਾਪਸ;
+    ਪੂਰਨ show_boot_menu = romfile_loadint("etc/show-boot-menu", 1);
+    ਜੇ (!show_boot_menu)
+        ਵਾਪਸ;
 
     // skip menu if only one boot device and no TPM
-    if (show_boot_menu == 2 && !tpm_can_show_menu()
-        && !hlist_empty(&BootList) && !BootList.first->next) {
+    ਜੇ (show_boot_menu == 2 && !tpm_can_show_menu()
+        && !hlist_ਖਾਲੀ_ਥਾਵਾਂ(&BootList) && !BootList.ਪਹਿਲਾ->ਅਗਲਾ) {
         dprintf(1, "Only one boot device present. Skip boot menu.\n");
-        printf("\n");
-        return;
+        ਲਿਖੋ("\n");
+        ਵਾਪਸ;
     }
 
-    int menutime = romfile_loadint("etc/boot-menu-wait", DEFAULT_BOOTMENU_WAIT);
-    int menukey = romfile_loadint("etc/boot-menu-key", 1);
-    int scan_code;
-    if (menutime >= 0) {
-        while (get_keystroke(0) >= 0)
+    ਪੂਰਨ menutime = romfile_loadint("etc/boot-menu-wait", DEFAULT_BOOTMENU_WAIT);
+    ਪੂਰਨ menukey = romfile_loadint("etc/boot-menu-key", 1);
+    ਪੂਰਨ ਜਾਂਚ_ਕੋਡ;
+    ਜੇ (menutime >= 0) {
+        ਜਦੋਂ (get_keystroke(0) >= 0)
             ;
 
-        char *bootmsg = romfile_loadfile("etc/boot-menu-message", NULL);
-        printf("%s", bootmsg ?: "\nPress ESC for boot menu.\n\n");
-        free(bootmsg);
+        ਅੱਖਰ *bootmsg = romfile_loadfile("etc/boot-menu-message", ਨਿਰਾ);
+        ਲਿਖੋ("%s", bootmsg ?: "\nPress ESC for boot menu.\n\n");
+        ਮੁਕਤ(bootmsg);
 
         enable_bootsplash();
-        scan_code = get_keystroke(menutime);
+        ਜਾਂਚ_ਕੋਡ = get_keystroke(menutime);
         disable_bootsplash();
-        if (scan_code != menukey)
-            return;
+        ਜੇ (ਜਾਂਚ_ਕੋਡ != menukey)
+            ਵਾਪਸ;
     }
 
-    while (get_keystroke(0) >= 0)
+    ਜਦੋਂ (get_keystroke(0) >= 0)
         ;
 
-    printf("Select boot device:\n\n");
-    wait_threads();
+    ਲਿਖੋ("Select boot device:\n\n");
+    wait_ਧਾਗੇ();
 
     // Show menu items
-    int maxmenu = 0;
-    struct bootentry_s *pos, *boot = NULL;
-    hlist_for_each_entry(pos, &BootList, node) {
-        char desc[77];
-        if (maxmenu >= ARRAY_SIZE(menuchars)) {
-            break;
+    ਪੂਰਨ maxmenu = 0;
+    ਬਣਤਰ bootentry_s *pos, *boot = ਨਿਰਾ;
+    hlist_for_each_ਇੰਦਰਾਜ(pos, &BootList, ਗੰਢ) {
+        ਅੱਖਰ desc[77];
+        ਜੇ (maxmenu >= ARRAY_ਮਾਪ(menuchars)) {
+            ਰੋਕੋ;
         }
-        printf("%c. %s\n", menuchars[maxmenu]
-               , strtcpy(desc, pos->description, ARRAY_SIZE(desc)));
+        ਲਿਖੋ("%c. %s\n", menuchars[maxmenu]
+               , strtcpy(desc, pos->description, ARRAY_ਮਾਪ(desc)));
         maxmenu++;
     }
-    if (tpm_can_show_menu()) {
-        printf("\nt. TPM Configuration\n");
+    ਜੇ (tpm_can_show_menu()) {
+        ਲਿਖੋ("\nt. TPM Configuration\n");
     }
 
     // Get key press.  If the menu key is ESC, do not restart boot unless
     // 1.5 seconds have passed.  Otherwise users (trained by years of
     // repeatedly hitting keys to enter the BIOS) will end up hitting ESC
     // multiple times and immediately booting the primary boot device.
-    int esc_accepted_time = irqtimer_calc(menukey == 1 ? 1500 : 0);
-    for (;;) {
-        int keystroke = get_keystroke_full(1000);
-        if (keystroke == 0x011b && !irqtimer_check(esc_accepted_time))
-            continue;
-        if (keystroke < 0) // timeout
-            continue;
+    ਪੂਰਨ esc_accepted_ਸਮਾਂ = irqtimer_calc(menukey == 1 ? 1500 : 0);
+    ਲਈ (;;) {
+        ਪੂਰਨ keystroke = get_keystroke_ਭਰਿਆ(1000);
+        ਜੇ (keystroke == 0x011b && !irqtimer_check(esc_accepted_ਸਮਾਂ))
+            ਜਾਰੀ;
+        ਜੇ (keystroke < 0) // timeout
+            ਜਾਰੀ;
 
-        scan_code = keystroke >> 8;
-        int key_ascii = keystroke & 0xff;
-        if (tpm_can_show_menu() && key_ascii == 't') {
-            printf("\n");
+        ਜਾਂਚ_ਕੋਡ = keystroke >> 8;
+        ਪੂਰਨ ਕੁੰਜੀ_ascii = keystroke & 0xff;
+        ਜੇ (tpm_can_show_menu() && ਕੁੰਜੀ_ascii == 't') {
+            ਲਿਖੋ("\n");
             tpm_menu();
         }
-        if (scan_code == 1) {
+        ਜੇ (ਜਾਂਚ_ਕੋਡ == 1) {
             // ESC
-            printf("\n");
-            return;
+            ਲਿਖੋ("\n");
+            ਵਾਪਸ;
         }
 
         maxmenu = 0;
-        hlist_for_each_entry(pos, &BootList, node) {
-            if (maxmenu >= ARRAY_SIZE(menuchars))
-                break;
-            if (key_ascii == menuchars[maxmenu]) {
+        hlist_for_each_ਇੰਦਰਾਜ(pos, &BootList, ਗੰਢ) {
+            ਜੇ (maxmenu >= ARRAY_ਮਾਪ(menuchars))
+                ਰੋਕੋ;
+            ਜੇ (ਕੁੰਜੀ_ascii == menuchars[maxmenu]) {
                 boot = pos;
-                break;
+                ਰੋਕੋ;
             }
             maxmenu++;
         }
-        if (boot)
-            break;
+        ਜੇ (boot)
+            ਰੋਕੋ;
     }
-    printf("\n");
+    ਲਿਖੋ("\n");
 
     // Find entry and make top priority.
-    hlist_del(&boot->node);
-    boot->priority = 0;
-    hlist_add_head(&boot->node, &BootList);
+    hlist_del(&boot->ਗੰਢ);
+    boot->ਤਰਜੀਹ = 0;
+    hlist_ਜੋੜੋ_ਸਿਰ(&boot->ਗੰਢ, &BootList);
 }
 
 // BEV (Boot Execution Vector) list
-struct bev_s {
-    int type;
-    u32 vector;
+ਬਣਤਰ bev_s {
+    ਪੂਰਨ type;
+    u32 ਸਦਿਸ਼;
 };
-static struct bev_s BEV[20];
-static int BEVCount;
-static int HaveHDBoot, HaveFDBoot;
+ਸਥਿਰ ਬਣਤਰ bev_s BEV[20];
+ਸਥਿਰ ਪੂਰਨ BEVCount;
+ਸਥਿਰ ਪੂਰਨ HaveHDBoot, HaveFDBoot;
 
-static void
-add_bev(int type, u32 vector)
+ਸਥਿਰ ਖਾਲੀ
+ਜੋੜੋ_bev(ਪੂਰਨ type, u32 ਸਦਿਸ਼)
 {
-    if (type == IPL_TYPE_HARDDISK && HaveHDBoot++)
-        return;
-    if (type == IPL_TYPE_FLOPPY && HaveFDBoot++)
-        return;
-    if (BEVCount >= ARRAY_SIZE(BEV))
-        return;
-    struct bev_s *bev = &BEV[BEVCount++];
+    ਜੇ (type == IPL_TYPE_HARDDISK && HaveHDBoot++)
+        ਵਾਪਸ;
+    ਜੇ (type == IPL_TYPE_FLOPPY && HaveFDBoot++)
+        ਵਾਪਸ;
+    ਜੇ (BEVCount >= ARRAY_ਮਾਪ(BEV))
+        ਵਾਪਸ;
+    ਬਣਤਰ bev_s *bev = &BEV[BEVCount++];
     bev->type = type;
-    bev->vector = vector;
+    bev->ਸਦਿਸ਼ = ਸਦਿਸ਼;
 }
 
 // Prepare for boot - show menu and run bcvs.
-void
-bcv_prepboot(void)
+ਖਾਲੀ
+bcv_prepboot(ਖਾਲੀ)
 {
-    if (! CONFIG_BOOT)
-        return;
+    ਜੇ (! CONFIG_BOOT)
+        ਵਾਪਸ;
 
-    int haltprio = find_prio("HALT");
-    if (haltprio >= 0)
-        bootentry_add(IPL_TYPE_HALT, haltprio, 0, "HALT");
+    ਪੂਰਨ haltprio = ਲੱਭੋ_prio("HALT");
+    ਜੇ (haltprio >= 0)
+        bootentry_ਜੋੜੋ(IPL_TYPE_HALT, haltprio, 0, "HALT");
 
     // Map drives and populate BEV list
-    struct bootentry_s *pos;
-    hlist_for_each_entry(pos, &BootList, node) {
-        switch (pos->type) {
-        case IPL_TYPE_BCV:
-            call_bcv(pos->vector.seg, pos->vector.offset);
-            add_bev(IPL_TYPE_HARDDISK, 0);
-            break;
-        case IPL_TYPE_FLOPPY:
+    ਬਣਤਰ bootentry_s *pos;
+    hlist_for_each_ਇੰਦਰਾਜ(pos, &BootList, ਗੰਢ) {
+        ਚੋਣ (pos->type) {
+        ਹਾਲਤ IPL_TYPE_BCV:
+            call_bcv(pos->ਸਦਿਸ਼.seg, pos->ਸਦਿਸ਼.ਵਿੱਥ_2);
+            ਜੋੜੋ_bev(IPL_TYPE_HARDDISK, 0);
+            ਰੋਕੋ;
+        ਹਾਲਤ IPL_TYPE_FLOPPY:
             map_floppy_drive(pos->drive);
-            add_bev(IPL_TYPE_FLOPPY, 0);
-            break;
-        case IPL_TYPE_HARDDISK:
+            ਜੋੜੋ_bev(IPL_TYPE_FLOPPY, 0);
+            ਰੋਕੋ;
+        ਹਾਲਤ IPL_TYPE_HARDDISK:
             map_hd_drive(pos->drive);
-            add_bev(IPL_TYPE_HARDDISK, 0);
-            break;
-        case IPL_TYPE_CDROM:
+            ਜੋੜੋ_bev(IPL_TYPE_HARDDISK, 0);
+            ਰੋਕੋ;
+        ਹਾਲਤ IPL_TYPE_CDROM:
             map_cd_drive(pos->drive);
             // NO BREAK
-        default:
-            add_bev(pos->type, pos->data);
-            break;
+        ਮੂਲ:
+            ਜੋੜੋ_bev(pos->type, pos->ਅੰਕੜੇ);
+            ਰੋਕੋ;
         }
     }
 
     // If nothing added a floppy/hd boot - add it manually.
-    add_bev(IPL_TYPE_FLOPPY, 0);
-    add_bev(IPL_TYPE_HARDDISK, 0);
+    ਜੋੜੋ_bev(IPL_TYPE_FLOPPY, 0);
+    ਜੋੜੋ_bev(IPL_TYPE_HARDDISK, 0);
 }
 
 
@@ -863,14 +863,14 @@ bcv_prepboot(void)
  ****************************************************************/
 
 // Jump to a bootup entry point.
-static void
-call_boot_entry(struct segoff_s bootsegip, u8 bootdrv)
+ਸਥਿਰ ਖਾਲੀ
+call_boot_ਇੰਦਰਾਜ(ਬਣਤਰ segoff_s bootsegip, u8 bootdrv)
 {
-    dprintf(1, "Booting from %04x:%04x\n", bootsegip.seg, bootsegip.offset);
-    struct bregs br;
-    memset(&br, 0, sizeof(br));
+    dprintf(1, "Booting from %04x:%04x\n", bootsegip.seg, bootsegip.ਵਿੱਥ_2);
+    ਬਣਤਰ bregs br;
+    memset(&br, 0, ਆਕਾਰ(br));
     br.flags = F_IF;
-    br.code = bootsegip;
+    br.ਕੋਡ = bootsegip;
     // Set the magic number in ax and the boot drive in dl.
     br.dl = bootdrv;
     br.ax = 0xaa55;
@@ -878,14 +878,14 @@ call_boot_entry(struct segoff_s bootsegip, u8 bootdrv)
 }
 
 // Boot from a disk (either floppy or harddrive)
-static void
-boot_disk(u8 bootdrv, int checksig)
+ਸਥਿਰ ਖਾਲੀ
+boot_disk(u8 bootdrv, ਪੂਰਨ checksig)
 {
     u16 bootseg = 0x07c0;
 
     // Read sector
-    struct bregs br;
-    memset(&br, 0, sizeof(br));
+    ਬਣਤਰ bregs br;
+    memset(&br, 0, ਆਕਾਰ(br));
     br.flags = F_IF;
     br.dl = bootdrv;
     br.es = bootseg;
@@ -894,153 +894,153 @@ boot_disk(u8 bootdrv, int checksig)
     br.cl = 1;
     call16_int(0x13, &br);
 
-    if (br.flags & F_CF) {
-        printf("Boot failed: could not read the boot disk\n\n");
-        return;
+    ਜੇ (br.flags & F_CF) {
+        ਲਿਖੋ("Boot failed: could not read the boot disk\n\n");
+        ਵਾਪਸ;
     }
 
-    if (checksig) {
-        struct mbr_s *mbr = (void*)0;
-        if (GET_FARVAR(bootseg, mbr->signature) != MBR_SIGNATURE) {
-            printf("Boot failed: not a bootable disk\n\n");
-            return;
+    ਜੇ (checksig) {
+        ਬਣਤਰ mbr_s *mbr = (ਖਾਲੀ*)0;
+        ਜੇ (GET_FARVAR(bootseg, mbr->signature) != MBR_SIGNATURE) {
+            ਲਿਖੋ("Boot failed: not a bootable disk\n\n");
+            ਵਾਪਸ;
         }
     }
 
-    tpm_add_bcv(bootdrv, MAKE_FLATPTR(bootseg, 0), 512);
+    tpm_ਜੋੜੋ_bcv(bootdrv, MAKE_FLATPTR(bootseg, 0), 512);
 
     /* Canonicalize bootseg:bootip */
     u16 bootip = (bootseg & 0x0fff) << 4;
     bootseg &= 0xf000;
 
-    call_boot_entry(SEGOFF(bootseg, bootip), bootdrv);
+    call_boot_ਇੰਦਰਾਜ(SEGOFF(bootseg, bootip), bootdrv);
 }
 
 // Boot from a CD-ROM
-static void
-boot_cdrom(struct drive_s *drive)
+ਸਥਿਰ ਖਾਲੀ
+boot_cdrom(ਬਣਤਰ drive_s *drive)
 {
-    if (! CONFIG_CDROM_BOOT)
-        return;
-    printf("Booting from DVD/CD...\n");
+    ਜੇ (! CONFIG_CDROM_BOOT)
+        ਵਾਪਸ;
+    ਲਿਖੋ("Booting from DVD/CD...\n");
 
-    int status = cdrom_boot(drive);
-    if (status) {
-        printf("Boot failed: Could not read from CDROM (code %04x)\n", status);
-        return;
+    ਪੂਰਨ ਸਥਿਤੀ = cdrom_boot(drive);
+    ਜੇ (ਸਥਿਤੀ) {
+        ਲਿਖੋ("Boot failed: Could not read from CDROM (code %04x)\n", ਸਥਿਤੀ);
+        ਵਾਪਸ;
     }
 
     u8 bootdrv = CDEmu.emulated_drive;
-    u16 bootseg = CDEmu.load_segment;
+    u16 bootseg = CDEmu.ਲੱਦੋ_segment;
 
-    tpm_add_cdrom(bootdrv, MAKE_FLATPTR(bootseg, 0), 512);
+    tpm_ਜੋੜੋ_cdrom(bootdrv, MAKE_FLATPTR(bootseg, 0), 512);
 
     /* Canonicalize bootseg:bootip */
     u16 bootip = (bootseg & 0x0fff) << 4;
     bootseg &= 0xf000;
 
-    call_boot_entry(SEGOFF(bootseg, bootip), bootdrv);
+    call_boot_ਇੰਦਰਾਜ(SEGOFF(bootseg, bootip), bootdrv);
 }
 
 // Boot from a CBFS payload
-static void
-boot_cbfs(struct cbfs_file *file)
+ਸਥਿਰ ਖਾਲੀ
+boot_cbfs(ਬਣਤਰ cbfs_file *file)
 {
-    if (!CONFIG_COREBOOT_FLASH)
-        return;
-    printf("Booting from CBFS...\n");
-    cbfs_run_payload(file);
+    ਜੇ (!CONFIG_COREBOOT_FLASH)
+        ਵਾਪਸ;
+    ਲਿਖੋ("Booting from CBFS...\n");
+    cbfs_ਲੜੀਵਾਰ_payload(file);
 }
 
 // Boot from a BEV entry on an optionrom.
-static void
-boot_rom(u32 vector)
+ਸਥਿਰ ਖਾਲੀ
+boot_rom(u32 ਸਦਿਸ਼)
 {
-    printf("Booting from ROM...\n");
-    struct segoff_s so;
-    so.segoff = vector;
-    call_boot_entry(so, 0);
+    ਲਿਖੋ("Booting from ROM...\n");
+    ਬਣਤਰ segoff_s so;
+    so.segoff = ਸਦਿਸ਼;
+    call_boot_ਇੰਦਰਾਜ(so, 0);
 }
 
 // Unable to find bootable device - warn user and eventually retry.
-static void
-boot_fail(void)
+ਸਥਿਰ ਖਾਲੀ
+boot_fail(ਖਾਲੀ)
 {
-    if (BootRetryTime == (u32)-1)
-        printf("No bootable device.\n");
-    else
-        printf("No bootable device.  Retrying in %d seconds.\n"
-               , BootRetryTime/1000);
+    ਜੇ (Boot_Retry_ਸਮਾਂ == (u32)-1)
+        ਲਿਖੋ("No bootable device.\n");
+    ਨਹੀਂਤਾਂ
+        ਲਿਖੋ("No bootable device.  Retrying in %d seconds.\n"
+               , Boot_Retry_ਸਮਾਂ/1000);
     // Wait for 'BootRetryTime' milliseconds and then reboot.
-    u32 end = irqtimer_calc(BootRetryTime);
-    for (;;) {
-        if (BootRetryTime != (u32)-1 && irqtimer_check(end))
-            break;
+    u32 ਸਿਰਾ = irqtimer_calc(Boot_Retry_ਸਮਾਂ);
+    ਲਈ (;;) {
+        ਜੇ (Boot_Retry_ਸਮਾਂ != (u32)-1 && irqtimer_check(ਸਿਰਾ))
+            ਰੋਕੋ;
         yield_toirq();
     }
-    printf("Rebooting.\n");
+    ਲਿਖੋ("Rebooting.\n");
     reset();
 }
 
 // Determine next boot method and attempt a boot using it.
-static void
-do_boot(int seq_nr)
+ਸਥਿਰ ਖਾਲੀ
+do_boot(ਪੂਰਨ seq_nr)
 {
-    if (! CONFIG_BOOT)
+    ਜੇ (! CONFIG_BOOT)
         panic("Boot support not compiled in.\n");
 
-    if (seq_nr >= BEVCount)
+    ਜੇ (seq_nr >= BEVCount)
         boot_fail();
 
     // Boot the given BEV type.
-    struct bev_s *ie = &BEV[seq_nr];
-    switch (ie->type) {
-    case IPL_TYPE_FLOPPY:
-        printf("Booting from Floppy...\n");
+    ਬਣਤਰ bev_s *ie = &BEV[seq_nr];
+    ਚੋਣ (ie->type) {
+    ਹਾਲਤ IPL_TYPE_FLOPPY:
+        ਲਿਖੋ("Booting from Floppy...\n");
         boot_disk(0x00, CheckFloppySig);
-        break;
-    case IPL_TYPE_HARDDISK:
-        printf("Booting from Hard Disk...\n");
+        ਰੋਕੋ;
+    ਹਾਲਤ IPL_TYPE_HARDDISK:
+        ਲਿਖੋ("Booting from Hard Disk...\n");
         boot_disk(0x80, 1);
-        break;
-    case IPL_TYPE_CDROM:
-        boot_cdrom((void*)ie->vector);
-        break;
-    case IPL_TYPE_CBFS:
-        boot_cbfs((void*)ie->vector);
-        break;
-    case IPL_TYPE_BEV:
-        boot_rom(ie->vector);
-        break;
-    case IPL_TYPE_HALT:
+        ਰੋਕੋ;
+    ਹਾਲਤ IPL_TYPE_CDROM:
+        boot_cdrom((ਖਾਲੀ*)ie->ਸਦਿਸ਼);
+        ਰੋਕੋ;
+    ਹਾਲਤ IPL_TYPE_CBFS:
+        boot_cbfs((ਖਾਲੀ*)ie->ਸਦਿਸ਼);
+        ਰੋਕੋ;
+    ਹਾਲਤ IPL_TYPE_BEV:
+        boot_rom(ie->ਸਦਿਸ਼);
+        ਰੋਕੋ;
+    ਹਾਲਤ IPL_TYPE_HALT:
         boot_fail();
-        break;
+        ਰੋਕੋ;
     }
 
     // Boot failed: invoke the boot recovery function
-    struct bregs br;
-    memset(&br, 0, sizeof(br));
+    ਬਣਤਰ bregs br;
+    memset(&br, 0, ਆਕਾਰ(br));
     br.flags = F_IF;
     call16_int(0x18, &br);
 }
 
-int BootSequence VARLOW = -1;
+ਪੂਰਨ BootSequence VARLOW = -1;
 
 // Boot Failure recovery: try the next device.
-void VISIBLE32FLAT
-handle_18(void)
+ਖਾਲੀ VISIBLE32FLAT
+handle_18(ਖਾਲੀ)
 {
-    debug_enter(NULL, DEBUG_HDL_18);
-    int seq = BootSequence + 1;
+    debug_enter(ਨਿਰਾ, DEBUG_HDL_18);
+    ਪੂਰਨ seq = BootSequence + 1;
     BootSequence = seq;
     do_boot(seq);
 }
 
 // INT 19h Boot Load Service Entry Point
-void VISIBLE32FLAT
-handle_19(void)
+ਖਾਲੀ VISIBLE32FLAT
+handle_19(ਖਾਲੀ)
 {
-    debug_enter(NULL, DEBUG_HDL_19);
+    debug_enter(ਨਿਰਾ, DEBUG_HDL_19);
     BootSequence = 0;
     do_boot(0);
 }

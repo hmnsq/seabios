@@ -1,35 +1,35 @@
-#ifndef __PIRTABLE_H
-#define __PIRTABLE_H
+#ਜੇ_ਅਪਰਿਭਾਸ਼ਿਤ __PIRTABLE_H
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ __PIRTABLE_H
 
-#include "types.h" // u32
+#ਅਨ੍ਤਰ੍ਭਾਵ "types.h" // u32
 
-struct link_info {
+ਬਣਤਰ link_info {
     u8 link;
     u16 bitmap;
 } PACKED;
 
-struct pir_slot {
+ਬਣਤਰ pir_ਥਾਂ {
     u8 bus;
     u8 dev;
-    struct link_info links[4];
-    u8 slot_nr;
+    ਬਣਤਰ link_info links[4];
+    u8 ਥਾਂ_nr;
     u8 reserved;
 } PACKED;
 
-struct pir_header {
+ਬਣਤਰ pir_ਸਿਰਲੇਖ {
     u32 signature;
-    u16 version;
-    u16 size;
-    u8 router_bus;
-    u8 router_devfunc;
+    u16 ਸੰਸਕਰਣ_2;
+    u16 ਮਾਪ;
+    u8 ਰਾਊਟਰ_bus;
+    u8 ਰਾਊਟਰ_devfunc;
     u16 exclusive_irqs;
     u32 compatible_devid;
-    u32 miniport_data;
+    u32 miniport_ਅੰਕੜੇ;
     u8 reserved[11];
     u8 checksum;
-    struct pir_slot slots[0];
+    ਬਣਤਰ pir_ਥਾਂ slots[0];
 } PACKED;
 
-#define PIR_SIGNATURE 0x52495024 // $PIR
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PIR_SIGNATURE 0x52495024 // $PIR
 
-#endif // pirtable.h
+#ਜੇ_ਅੰਤ // pirtable.h

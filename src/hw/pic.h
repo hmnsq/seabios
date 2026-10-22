@@ -4,57 +4,57 @@
 // Copyright (C) 2002  MandrakeSoft S.A.
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
-#ifndef __PIC_H
-#define __PIC_H
+#ਜੇ_ਅਪਰਿਭਾਸ਼ਿਤ __PIC_H
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ __PIC_H
 
-#include "x86.h" // outb
+#ਅਨ੍ਤਰ੍ਭਾਵ "x86.h" // outb
 
-#define PORT_PIC1_CMD          0x0020
-#define PORT_PIC1_DATA         0x0021
-#define PORT_PIC2_CMD          0x00a0
-#define PORT_PIC2_DATA         0x00a1
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ਪੋਰਟ_PIC1_CMD          0x0020
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ਪੋਰਟ_PIC1_ਅੰਕੜੇ         0x0021
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ਪੋਰਟ_PIC2_CMD          0x00a0
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ਪੋਰਟ_PIC2_ਅੰਕੜੇ         0x00a1
 
 // PORT_PIC1 bitdefs
-#define PIC1_IRQ0  (1<<0)
-#define PIC1_IRQ1  (1<<1)
-#define PIC1_IRQ2  (1<<2)
-#define PIC1_IRQ5  (1<<5)
-#define PIC1_IRQ6  (1<<6)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PIC1_IRQ0  (1<<0)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PIC1_IRQ1  (1<<1)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PIC1_IRQ2  (1<<2)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PIC1_IRQ5  (1<<5)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PIC1_IRQ6  (1<<6)
 // PORT_PIC2 bitdefs
-#define PIC2_IRQ8  (1<<8)
-#define PIC2_IRQ12 (1<<12)
-#define PIC2_IRQ13 (1<<13)
-#define PIC2_IRQ14 (1<<14)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PIC2_IRQ8  (1<<8)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PIC2_IRQ12 (1<<12)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PIC2_IRQ13 (1<<13)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PIC2_IRQ14 (1<<14)
 
-#define PIC_IRQMASK_DEFAULT ((u16)~PIC1_IRQ2)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PIC_IRQMASK_DEFAULT ((u16)~PIC1_IRQ2)
 
-#define BIOS_HWIRQ0_VECTOR 0x08
-#define BIOS_HWIRQ8_VECTOR 0x70
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ BIOS_HWIRQ0_ਸਦਿਸ਼ 0x08
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ BIOS_HWIRQ8_ਸਦਿਸ਼ 0x70
 
-static inline void
-pic_eoi1(void)
+ਸਥਿਰ ਸਤਰਅੰਦਰ ਖਾਲੀ
+pic_eoi1(ਖਾਲੀ)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return;
+    ਜੇ (!CONFIG_HARDWARE_IRQ)
+        ਵਾਪਸ;
     // Send eoi (select OCW2 + eoi)
-    outb(0x20, PORT_PIC1_CMD);
+    outb(0x20, ਪੋਰਟ_PIC1_CMD);
 }
 
-static inline void
-pic_eoi2(void)
+ਸਥਿਰ ਸਤਰਅੰਦਰ ਖਾਲੀ
+pic_eoi2(ਖਾਲੀ)
 {
-    if (!CONFIG_HARDWARE_IRQ)
-        return;
+    ਜੇ (!CONFIG_HARDWARE_IRQ)
+        ਵਾਪਸ;
     // Send eoi (select OCW2 + eoi)
-    outb(0x20, PORT_PIC2_CMD);
+    outb(0x20, ਪੋਰਟ_PIC2_CMD);
     pic_eoi1();
 }
 
-u16 pic_irqmask_read(void);
-void pic_irqmask_write(u16 mask);
-void pic_irqmask_mask(u16 off, u16 on);
-void pic_reset(u8 irq0, u8 irq8);
-void pic_setup(void);
-void enable_hwirq(int hwirq, struct segoff_s func);
+u16 pic_irqmask_read(ਖਾਲੀ);
+ਖਾਲੀ pic_irqmask_write(u16 ਨਕਾਬ);
+ਖਾਲੀ pic_irqmask_ਨਕਾਬ(u16 off, u16 on);
+ਖਾਲੀ pic_reset(u8 irq0, u8 irq8);
+ਖਾਲੀ pic_ਤਿਆਰੀ(ਖਾਲੀ);
+ਖਾਲੀ enable_hwirq(ਪੂਰਨ hwirq, ਬਣਤਰ segoff_s func);
 
-#endif // pic.h
+#ਜੇ_ਅੰਤ // pic.h

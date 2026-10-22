@@ -5,82 +5,82 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // SET_BDA
-#include "bregs.h" // struct bregs
-#include "hw/serialio.h" // SEROFF_IER
-#include "output.h" // debug_enter
-#include "romfile.h" // romfile_loadint
-#include "stacks.h" // yield
-#include "util.h" // serial_setup
+#ਅਨ੍ਤਰ੍ਭਾਵ "biosvar.h" // SET_BDA
+#ਅਨ੍ਤਰ੍ਭਾਵ "bregs.h" // struct bregs
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/serialio.h" // SEROFF_IER
+#ਅਨ੍ਤਰ੍ਭਾਵ "output.h" // debug_enter
+#ਅਨ੍ਤਰ੍ਭਾਵ "romfile.h" // romfile_loadint
+#ਅਨ੍ਤਰ੍ਭਾਵ "stacks.h" // yield
+#ਅਨ੍ਤਰ੍ਭਾਵ "util.h" // serial_setup
 
 
 /****************************************************************
  * COM ports
  ****************************************************************/
 
-static u16
-detect_serial(u16 port, u8 timeout, u8 count)
+ਸਥਿਰ u16
+detect_serial(u16 ਪੋਰਟ, u8 timeout, u8 ਗਿਣਤੀ_2)
 {
-    if (CONFIG_DEBUG_SERIAL && port == CONFIG_DEBUG_SERIAL_PORT
+    ਜੇ (CONFIG_DEBUG_SERIAL && ਪੋਰਟ == CONFIG_DEBUG_SERIAL_ਪੋਰਟ
         && !romfile_loadint("etc/advertise-serial-debug-port", 1))
-        return 0;
-    outb(0x02, port+SEROFF_IER);
-    u8 ier = inb(port+SEROFF_IER);
-    if (ier != 0x02)
-        return 0;
-    u8 iir = inb(port+SEROFF_IIR);
-    if ((iir & 0x3f) != 0x02)
-        return 0;
+        ਵਾਪਸ 0;
+    outb(0x02, ਪੋਰਟ+SEROFF_IER);
+    u8 ier = inb(ਪੋਰਟ+SEROFF_IER);
+    ਜੇ (ier != 0x02)
+        ਵਾਪਸ 0;
+    u8 iir = inb(ਪੋਰਟ+SEROFF_IIR);
+    ਜੇ ((iir & 0x3f) != 0x02)
+        ਵਾਪਸ 0;
 
-    outb(0x00, port+SEROFF_IER);
-    SET_BDA(port_com[count], port);
-    SET_BDA(com_timeout[count], timeout);
-    return 1;
+    outb(0x00, ਪੋਰਟ+SEROFF_IER);
+    ਸੈੱਟ_BDA(ਪੋਰਟ_com[ਗਿਣਤੀ_2], ਪੋਰਟ);
+    ਸੈੱਟ_BDA(com_timeout[ਗਿਣਤੀ_2], timeout);
+    ਵਾਪਸ 1;
 }
 
-void
-serial_setup(void)
+ਖਾਲੀ
+serial_ਤਿਆਰੀ(ਖਾਲੀ)
 {
-    if (! CONFIG_SERIAL)
-        return;
+    ਜੇ (! CONFIG_SERIAL)
+        ਵਾਪਸ;
     dprintf(3, "init serial\n");
 
-    u16 count = 0;
-    count += detect_serial(PORT_SERIAL1, 0x0a, count);
-    count += detect_serial(PORT_SERIAL2, 0x0a, count);
-    count += detect_serial(PORT_SERIAL3, 0x0a, count);
-    count += detect_serial(PORT_SERIAL4, 0x0a, count);
-    dprintf(1, "Found %d serial ports\n", count);
+    u16 ਗਿਣਤੀ_2 = 0;
+    ਗਿਣਤੀ_2 += detect_serial(ਪੋਰਟ_SERIAL1, 0x0a, ਗਿਣਤੀ_2);
+    ਗਿਣਤੀ_2 += detect_serial(ਪੋਰਟ_SERIAL2, 0x0a, ਗਿਣਤੀ_2);
+    ਗਿਣਤੀ_2 += detect_serial(ਪੋਰਟ_SERIAL3, 0x0a, ਗਿਣਤੀ_2);
+    ਗਿਣਤੀ_2 += detect_serial(ਪੋਰਟ_SERIAL4, 0x0a, ਗਿਣਤੀ_2);
+    dprintf(1, "Found %d serial ports\n", ਗਿਣਤੀ_2);
 
     // Equipment word bits 9..11 determing # serial ports
-    set_equipment_flags(0xe00, count << 9);
+    ਸੈੱਟ_equipment_flags(0xe00, ਗਿਣਤੀ_2 << 9);
 }
 
-static u16
-getComAddr(struct bregs *regs)
+ਸਥਿਰ u16
+getComAddr(ਬਣਤਰ bregs *regs)
 {
-    if (regs->dx >= 4) {
-        set_invalid(regs);
-        return 0;
+    ਜੇ (regs->dx >= 4) {
+        ਸੈੱਟ_invalid(regs);
+        ਵਾਪਸ 0;
     }
-    u16 addr = GET_BDA(port_com[regs->dx]);
-    if (! addr)
-        set_invalid(regs);
-    return addr;
+    u16 addr = GET_BDA(ਪੋਰਟ_com[regs->dx]);
+    ਜੇ (! addr)
+        ਸੈੱਟ_invalid(regs);
+    ਵਾਪਸ addr;
 }
 
 // SERIAL - INITIALIZE PORT
-static void
-handle_1400(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+handle_1400(ਬਣਤਰ bregs *regs)
 {
     u16 addr = getComAddr(regs);
-    if (!addr)
-        return;
+    ਜੇ (!addr)
+        ਵਾਪਸ;
     outb(inb(addr+SEROFF_LCR) | 0x80, addr+SEROFF_LCR);
-    if ((regs->al & 0xE0) == 0) {
+    ਜੇ ((regs->al & 0xE0) == 0) {
         outb(0x17, addr+SEROFF_DLL);
         outb(0x04, addr+SEROFF_DLH);
-    } else {
+    } ਨਹੀਂਤਾਂ {
         u16 val16 = 0x600 >> ((regs->al & 0xE0) >> 5);
         outb(val16 & 0xFF, addr+SEROFF_DLL);
         outb(val16 >> 8, addr+SEROFF_DLH);
@@ -88,96 +88,96 @@ handle_1400(struct bregs *regs)
     outb(regs->al & 0x1F, addr+SEROFF_LCR);
     regs->ah = inb(addr+SEROFF_LSR);
     regs->al = inb(addr+SEROFF_MSR);
-    set_success(regs);
+    ਸੈੱਟ_success(regs);
 }
 
 // SERIAL - WRITE CHARACTER TO PORT
-static void
-handle_1401(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+handle_1401(ਬਣਤਰ bregs *regs)
 {
     u16 addr = getComAddr(regs);
-    if (!addr)
-        return;
-    u32 end = irqtimer_calc_ticks(GET_BDA(com_timeout[regs->dx]));
-    for (;;) {
+    ਜੇ (!addr)
+        ਵਾਪਸ;
+    u32 ਸਿਰਾ = irqtimer_calc_ticks(GET_BDA(com_timeout[regs->dx]));
+    ਲਈ (;;) {
         u8 lsr = inb(addr+SEROFF_LSR);
-        if ((lsr & 0x60) == 0x60) {
+        ਜੇ ((lsr & 0x60) == 0x60) {
             // Success - can write data
-            outb(regs->al, addr+SEROFF_DATA);
+            outb(regs->al, addr+SEROFF_ਅੰਕੜੇ);
             // XXX - reread lsr?
             regs->ah = lsr;
-            break;
+            ਰੋਕੋ;
         }
-        if (irqtimer_check(end)) {
+        ਜੇ (irqtimer_check(ਸਿਰਾ)) {
             // Timed out - can't write data.
             regs->ah = lsr | 0x80;
-            break;
+            ਰੋਕੋ;
         }
         yield();
     }
-    set_success(regs);
+    ਸੈੱਟ_success(regs);
 }
 
 // SERIAL - READ CHARACTER FROM PORT
-static void
-handle_1402(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+handle_1402(ਬਣਤਰ bregs *regs)
 {
     u16 addr = getComAddr(regs);
-    if (!addr)
-        return;
-    u32 end = irqtimer_calc_ticks(GET_BDA(com_timeout[regs->dx]));
-    for (;;) {
+    ਜੇ (!addr)
+        ਵਾਪਸ;
+    u32 ਸਿਰਾ = irqtimer_calc_ticks(GET_BDA(com_timeout[regs->dx]));
+    ਲਈ (;;) {
         u8 lsr = inb(addr+SEROFF_LSR);
-        if (lsr & 0x01) {
+        ਜੇ (lsr & 0x01) {
             // Success - can read data
-            regs->al = inb(addr+SEROFF_DATA);
+            regs->al = inb(addr+SEROFF_ਅੰਕੜੇ);
             regs->ah = lsr;
-            break;
+            ਰੋਕੋ;
         }
-        if (irqtimer_check(end)) {
+        ਜੇ (irqtimer_check(ਸਿਰਾ)) {
             // Timed out - can't read data.
             regs->ah = lsr | 0x80;
-            break;
+            ਰੋਕੋ;
         }
         yield();
     }
-    set_success(regs);
+    ਸੈੱਟ_success(regs);
 }
 
 // SERIAL - GET PORT STATUS
-static void
-handle_1403(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+handle_1403(ਬਣਤਰ bregs *regs)
 {
     u16 addr = getComAddr(regs);
-    if (!addr)
-        return;
+    ਜੇ (!addr)
+        ਵਾਪਸ;
     regs->ah = inb(addr+SEROFF_LSR);
     regs->al = inb(addr+SEROFF_MSR);
-    set_success(regs);
+    ਸੈੱਟ_success(regs);
 }
 
-static void
-handle_14XX(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+handle_14XX(ਬਣਤਰ bregs *regs)
 {
-    set_unimplemented(regs);
+    ਸੈੱਟ_unimplemented(regs);
 }
 
 // INT 14h Serial Communications Service Entry Point
-void VISIBLE16
-handle_14(struct bregs *regs)
+ਖਾਲੀ VISIBLE16
+handle_14(ਬਣਤਰ bregs *regs)
 {
     debug_enter(regs, DEBUG_HDL_14);
-    if (! CONFIG_SERIAL) {
+    ਜੇ (! CONFIG_SERIAL) {
         handle_14XX(regs);
-        return;
+        ਵਾਪਸ;
     }
 
-    switch (regs->ah) {
-    case 0x00: handle_1400(regs); break;
-    case 0x01: handle_1401(regs); break;
-    case 0x02: handle_1402(regs); break;
-    case 0x03: handle_1403(regs); break;
-    default:   handle_14XX(regs); break;
+    ਚੋਣ (regs->ah) {
+    ਹਾਲਤ 0x00: handle_1400(regs); ਰੋਕੋ;
+    ਹਾਲਤ 0x01: handle_1401(regs); ਰੋਕੋ;
+    ਹਾਲਤ 0x02: handle_1402(regs); ਰੋਕੋ;
+    ਹਾਲਤ 0x03: handle_1403(regs); ਰੋਕੋ;
+    ਮੂਲ:   handle_14XX(regs); ਰੋਕੋ;
     }
 }
 
@@ -186,59 +186,59 @@ handle_14(struct bregs *regs)
  * LPT ports
  ****************************************************************/
 
-static u16
-detect_parport(u16 port, u8 timeout, u8 count)
+ਸਥਿਰ u16
+detect_parport(u16 ਪੋਰਟ, u8 timeout, u8 ਗਿਣਤੀ_2)
 {
     // clear input mode
-    outb(inb(port+2) & 0xdf, port+2);
+    outb(inb(ਪੋਰਟ+2) & 0xdf, ਪੋਰਟ+2);
 
-    outb(0xaa, port);
-    if (inb(port) != 0xaa)
+    outb(0xaa, ਪੋਰਟ);
+    ਜੇ (inb(ਪੋਰਟ) != 0xaa)
         // Not present
-        return 0;
-    SET_BDA(port_lpt[count], port);
-    SET_BDA(lpt_timeout[count], timeout);
-    return 1;
+        ਵਾਪਸ 0;
+    ਸੈੱਟ_BDA(ਪੋਰਟ_lpt[ਗਿਣਤੀ_2], ਪੋਰਟ);
+    ਸੈੱਟ_BDA(lpt_timeout[ਗਿਣਤੀ_2], timeout);
+    ਵਾਪਸ 1;
 }
 
-void
-lpt_setup(void)
+ਖਾਲੀ
+lpt_ਤਿਆਰੀ(ਖਾਲੀ)
 {
-    if (! CONFIG_LPT)
-        return;
+    ਜੇ (! CONFIG_LPT)
+        ਵਾਪਸ;
     dprintf(3, "init lpt\n");
 
-    u16 count = 0;
-    count += detect_parport(PORT_LPT1, 0x14, count);
-    count += detect_parport(PORT_LPT2, 0x14, count);
-    dprintf(1, "Found %d lpt ports\n", count);
+    u16 ਗਿਣਤੀ_2 = 0;
+    ਗਿਣਤੀ_2 += detect_parport(ਪੋਰਟ_LPT1, 0x14, ਗਿਣਤੀ_2);
+    ਗਿਣਤੀ_2 += detect_parport(ਪੋਰਟ_LPT2, 0x14, ਗਿਣਤੀ_2);
+    dprintf(1, "Found %d lpt ports\n", ਗਿਣਤੀ_2);
 
     // Equipment word bits 14..15 determing # parallel ports
-    set_equipment_flags(0xc000, count << 14);
+    ਸੈੱਟ_equipment_flags(0xc000, ਗਿਣਤੀ_2 << 14);
 }
 
-static u16
-getLptAddr(struct bregs *regs)
+ਸਥਿਰ u16
+getLptAddr(ਬਣਤਰ bregs *regs)
 {
-    if (regs->dx >= 3) {
-        set_invalid(regs);
-        return 0;
+    ਜੇ (regs->dx >= 3) {
+        ਸੈੱਟ_invalid(regs);
+        ਵਾਪਸ 0;
     }
-    u16 addr = GET_BDA(port_lpt[regs->dx]);
-    if (! addr)
-        set_invalid(regs);
-    return addr;
+    u16 addr = GET_BDA(ਪੋਰਟ_lpt[regs->dx]);
+    ਜੇ (! addr)
+        ਸੈੱਟ_invalid(regs);
+    ਵਾਪਸ addr;
 }
 
 // INT 17 - PRINTER - WRITE CHARACTER
-static void
-handle_1700(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+handle_1700(ਬਣਤਰ bregs *regs)
 {
     u16 addr = getLptAddr(regs);
-    if (!addr)
-        return;
+    ਜੇ (!addr)
+        ਵਾਪਸ;
 
-    u32 end = irqtimer_calc_ticks(GET_BDA(lpt_timeout[regs->dx]));
+    u32 ਸਿਰਾ = irqtimer_calc_ticks(GET_BDA(lpt_timeout[regs->dx]));
 
     outb(regs->al, addr);
     u8 val8 = inb(addr+2);
@@ -246,31 +246,31 @@ handle_1700(struct bregs *regs)
     udelay(5);
     outb(val8 & ~0x01, addr+2);
 
-    for (;;) {
+    ਲਈ (;;) {
         u8 v = inb(addr+1);
-        if (!(v & 0x40)) {
+        ਜੇ (!(v & 0x40)) {
             // Success
             regs->ah = v ^ 0x48;
-            break;
+            ਰੋਕੋ;
         }
-        if (irqtimer_check(end)) {
+        ਜੇ (irqtimer_check(ਸਿਰਾ)) {
             // Timeout
             regs->ah = (v ^ 0x48) | 0x01;
-            break;
+            ਰੋਕੋ;
         }
         yield();
     }
 
-    set_success(regs);
+    ਸੈੱਟ_success(regs);
 }
 
 // INT 17 - PRINTER - INITIALIZE PORT
-static void
-handle_1701(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+handle_1701(ਬਣਤਰ bregs *regs)
 {
     u16 addr = getLptAddr(regs);
-    if (!addr)
-        return;
+    ਜੇ (!addr)
+        ਵਾਪਸ;
 
     u8 val8 = inb(addr+2);
     outb(val8 & ~0x04, addr+2); // send init
@@ -278,40 +278,40 @@ handle_1701(struct bregs *regs)
     outb(val8 | 0x04, addr+2);
 
     regs->ah = inb(addr+1) ^ 0x48;
-    set_success(regs);
+    ਸੈੱਟ_success(regs);
 }
 
 // INT 17 - PRINTER - GET STATUS
-static void
-handle_1702(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+handle_1702(ਬਣਤਰ bregs *regs)
 {
     u16 addr = getLptAddr(regs);
-    if (!addr)
-        return;
+    ਜੇ (!addr)
+        ਵਾਪਸ;
     regs->ah = inb(addr+1) ^ 0x48;
-    set_success(regs);
+    ਸੈੱਟ_success(regs);
 }
 
-static void
-handle_17XX(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+handle_17XX(ਬਣਤਰ bregs *regs)
 {
-    set_unimplemented(regs);
+    ਸੈੱਟ_unimplemented(regs);
 }
 
 // INT17h : Printer Service Entry Point
-void VISIBLE16
-handle_17(struct bregs *regs)
+ਖਾਲੀ VISIBLE16
+handle_17(ਬਣਤਰ bregs *regs)
 {
     debug_enter(regs, DEBUG_HDL_17);
-    if (! CONFIG_LPT) {
+    ਜੇ (! CONFIG_LPT) {
         handle_17XX(regs);
-        return;
+        ਵਾਪਸ;
     }
 
-    switch (regs->ah) {
-    case 0x00: handle_1700(regs); break;
-    case 0x01: handle_1701(regs); break;
-    case 0x02: handle_1702(regs); break;
-    default:   handle_17XX(regs); break;
+    ਚੋਣ (regs->ah) {
+    ਹਾਲਤ 0x00: handle_1700(regs); ਰੋਕੋ;
+    ਹਾਲਤ 0x01: handle_1701(regs); ਰੋਕੋ;
+    ਹਾਲਤ 0x02: handle_1702(regs); ਰੋਕੋ;
+    ਮੂਲ:   handle_17XX(regs); ਰੋਕੋ;
     }
 }

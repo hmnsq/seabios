@@ -1,76 +1,76 @@
-#ifndef __PCIDEVICE_H
-#define __PCIDEVICE_H
+#ਜੇ_ਅਪਰਿਭਾਸ਼ਿਤ __PCIDEVICE_H
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ __PCIDEVICE_H
 
-#include "types.h" // u32
-#include "list.h" // hlist_node
+#ਅਨ੍ਤਰ੍ਭਾਵ "types.h" // u32
+#ਅਨ੍ਤਰ੍ਭਾਵ "list.h" // hlist_node
 
-struct pci_device {
+ਬਣਤਰ pci_device {
     u16 bdf;
     u8 rootbus;
-    struct hlist_node node;
-    struct pci_device *parent;
+    ਬਣਤਰ hlist_ਗੰਢ ਗੰਢ;
+    ਬਣਤਰ pci_device *ਮਾਪਾ;
 
     // Configuration space device information
     u16 vendor, device;
     u16 class;
     u8 prog_if, revision;
-    u8 header_type;
+    u8 ਸਿਰਲੇਖ_type;
     u8 secondary_bus;
 
     // Local information on device.
-    int have_driver;
+    ਪੂਰਨ have_driver;
 };
-extern struct hlist_head PCIDevices;
-extern int MaxPCIBus;
+ਬਾਹਰੀ ਬਣਤਰ hlist_ਸਿਰ PCIDevices;
+ਬਾਹਰੀ ਪੂਰਨ MaxPCIBus;
 
-static inline u32 pci_classprog(struct pci_device *pci) {
-    return (pci->class << 8) | pci->prog_if;
+ਸਥਿਰ ਸਤਰਅੰਦਰ u32 pci_classprog(ਬਣਤਰ pci_device *pci) {
+    ਵਾਪਸ (pci->class << 8) | pci->prog_if;
 }
 
-#define foreachpci(PCI)                                 \
-    hlist_for_each_entry(PCI, &PCIDevices, node)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ foreachpci(PCI)                                 \
+    hlist_for_each_ਇੰਦਰਾਜ(PCI, &PCIDevices, ਗੰਢ)
 
-#define PCI_ANY_ID      (~0)
-struct pci_device_id {
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PCI_ANY_ID      (~0)
+ਬਣਤਰ pci_device_id {
     u32 vendid;
     u32 devid;
     u32 class;
-    u32 class_mask;
-    void (*func)(struct pci_device *pci, void *arg);
+    u32 class_ਨਕਾਬ;
+    ਖਾਲੀ (*func)(ਬਣਤਰ pci_device *pci, ਖਾਲੀ *arg);
 };
 
-#define PCI_DEVICE(vendor_id, device_id, init_func)     \
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PCI_DEVICE(vendor_id, device_id, init_func)     \
     {                                                   \
         .vendid = (vendor_id),                          \
         .devid = (device_id),                           \
         .class = PCI_ANY_ID,                            \
-        .class_mask = 0,                                \
+        .class_ਨਕਾਬ = 0,                                \
         .func = (init_func)                             \
     }
 
-#define PCI_DEVICE_CLASS(vendor_id, device_id, class_code, init_func)   \
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PCI_DEVICE_CLASS(vendor_id, device_id, class_ਕੋਡ, init_func)   \
     {                                                                   \
         .vendid = (vendor_id),                                          \
         .devid = (device_id),                                           \
-        .class = (class_code),                                          \
-        .class_mask = ~0,                                               \
+        .class = (class_ਕੋਡ),                                          \
+        .class_ਨਕਾਬ = ~0,                                               \
         .func = (init_func)                                             \
     }
 
-#define PCI_DEVICE_END                          \
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PCI_DEVICE_ਸਿਰਾ                          \
     {                                           \
         .vendid = 0,                            \
     }
 
-void pci_probe_devices(void);
-struct pci_device *pci_find_device(u16 vendid, u16 devid);
-struct pci_device *pci_find_class(u16 classid);
-int pci_init_device(const struct pci_device_id *ids
-                    , struct pci_device *pci, void *arg);
-struct pci_device *pci_find_init_device(const struct pci_device_id *ids
-                                        , void *arg);
-void pci_enable_busmaster(struct pci_device *pci);
-u16 pci_enable_iobar(struct pci_device *pci, u32 addr);
-void *pci_enable_membar(struct pci_device *pci, u32 addr);
+ਖਾਲੀ pci_probe_devices(ਖਾਲੀ);
+ਬਣਤਰ pci_device *pci_ਲੱਭੋ_device(u16 vendid, u16 devid);
+ਬਣਤਰ pci_device *pci_ਲੱਭੋ_class(u16 classid);
+ਪੂਰਨ pci_init_device(ਅਚਲ ਬਣਤਰ pci_device_id *ids
+                    , ਬਣਤਰ pci_device *pci, ਖਾਲੀ *arg);
+ਬਣਤਰ pci_device *pci_ਲੱਭੋ_init_device(ਅਚਲ ਬਣਤਰ pci_device_id *ids
+                                        , ਖਾਲੀ *arg);
+ਖਾਲੀ pci_enable_busmaster(ਬਣਤਰ pci_device *pci);
+u16 pci_enable_iobar(ਬਣਤਰ pci_device *pci, u32 addr);
+ਖਾਲੀ *pci_enable_membar(ਬਣਤਰ pci_device *pci, u32 addr);
 
-#endif // pcidevice.h
+#ਜੇ_ਅੰਤ // pcidevice.h

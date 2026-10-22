@@ -1,70 +1,70 @@
-#ifndef __MALLOC_H
-#define __MALLOC_H
+#ਜੇ_ਅਪਰਿਭਾਸ਼ਿਤ __MALLOC_H
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ __MALLOC_H
 
-#include "types.h" // u32
+#ਅਨ੍ਤਰ੍ਭਾਵ "types.h" // u32
 
 // malloc.c
-extern struct zone_s ZoneLow, ZoneHigh, ZoneFSeg, ZoneTmpLow, ZoneTmpHigh;
-u32 rom_get_max(void);
-u32 rom_get_last(void);
-struct rom_header *rom_reserve(u32 size);
-int rom_confirm(u32 size);
-void malloc_csm_preinit(u32 low_pmm, u32 low_pmm_size, u32 hi_pmm,
-                        u32 hi_pmm_size);
-void malloc_preinit(void);
-extern u32 LegacyRamSize;
-void malloc_init(void);
-void malloc_prepboot(void);
-u32 malloc_palloc(struct zone_s *zone, u32 size, u32 align);
-void *_malloc(struct zone_s *zone, u32 size, u32 align);
-int malloc_pfree(u32 data);
-void free(void *data);
-u32 malloc_getspace(struct zone_s *zone);
-void malloc_sethandle(u32 data, u32 handle);
+ਬਾਹਰੀ ਬਣਤਰ zone_s Zone_ਨੀਵਾਂ, Zone_ਉੱਚਾ, ZoneFSeg, Zone_Tmp_ਨੀਵਾਂ, Zone_Tmp_ਉੱਚਾ;
+u32 rom_get_max(ਖਾਲੀ);
+u32 rom_get_ਆਖਰੀ(ਖਾਲੀ);
+ਬਣਤਰ rom_ਸਿਰਲੇਖ *rom_reserve(u32 ਮਾਪ);
+ਪੂਰਨ rom_confirm(u32 ਮਾਪ);
+ਖਾਲੀ malloc_csm_preinit(u32 ਨੀਵਾਂ_pmm, u32 ਨੀਵਾਂ_pmm_ਮਾਪ, u32 hi_pmm,
+                        u32 hi_pmm_ਮਾਪ);
+ਖਾਲੀ malloc_preinit(ਖਾਲੀ);
+ਬਾਹਰੀ u32 Legacy_Ram_ਮਾਪ;
+ਖਾਲੀ malloc_init(ਖਾਲੀ);
+ਖਾਲੀ malloc_prepboot(ਖਾਲੀ);
+u32 malloc_palloc(ਬਣਤਰ zone_s *zone, u32 ਮਾਪ, u32 align);
+ਖਾਲੀ *_malloc(ਬਣਤਰ zone_s *zone, u32 ਮਾਪ, u32 align);
+ਪੂਰਨ malloc_pfree(u32 ਅੰਕੜੇ);
+ਖਾਲੀ ਮੁਕਤ(ਖਾਲੀ *ਅੰਕੜੇ);
+u32 malloc_getspace(ਬਣਤਰ zone_s *zone);
+ਖਾਲੀ malloc_sethandle(u32 ਅੰਕੜੇ, u32 handle);
 u32 malloc_findhandle(u32 handle);
 
-#define MALLOC_DEFAULT_HANDLE 0xFFFFFFFF
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ MALLOC_DEFAULT_HANDLE 0xFFFFFFFF
 // Minimum alignment of malloc'd memory
-#define MALLOC_MIN_ALIGN 16
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ MALLOC_MIN_ALIGN 16
 // Helper functions for memory allocation.
-static inline void *malloc_low(u32 size) {
-    return _malloc(&ZoneLow, size, MALLOC_MIN_ALIGN);
+ਸਥਿਰ ਸਤਰਅੰਦਰ ਖਾਲੀ *malloc_ਨੀਵਾਂ(u32 ਮਾਪ) {
+    ਵਾਪਸ _malloc(&Zone_ਨੀਵਾਂ, ਮਾਪ, MALLOC_MIN_ALIGN);
 }
-static inline void *malloc_high(u32 size) {
-    return _malloc(&ZoneHigh, size, MALLOC_MIN_ALIGN);
+ਸਥਿਰ ਸਤਰਅੰਦਰ ਖਾਲੀ *malloc_ਉੱਚਾ(u32 ਮਾਪ) {
+    ਵਾਪਸ _malloc(&Zone_ਉੱਚਾ, ਮਾਪ, MALLOC_MIN_ALIGN);
 }
-static inline void *malloc_fseg(u32 size) {
-    return _malloc(&ZoneFSeg, size, MALLOC_MIN_ALIGN);
+ਸਥਿਰ ਸਤਰਅੰਦਰ ਖਾਲੀ *malloc_fseg(u32 ਮਾਪ) {
+    ਵਾਪਸ _malloc(&ZoneFSeg, ਮਾਪ, MALLOC_MIN_ALIGN);
 }
-static inline void *malloc_tmplow(u32 size) {
-    return _malloc(&ZoneTmpLow, size, MALLOC_MIN_ALIGN);
+ਸਥਿਰ ਸਤਰਅੰਦਰ ਖਾਲੀ *malloc_tmplow(u32 ਮਾਪ) {
+    ਵਾਪਸ _malloc(&Zone_Tmp_ਨੀਵਾਂ, ਮਾਪ, MALLOC_MIN_ALIGN);
 }
-static inline void *malloc_tmphigh(u32 size) {
-    return _malloc(&ZoneTmpHigh, size, MALLOC_MIN_ALIGN);
+ਸਥਿਰ ਸਤਰਅੰਦਰ ਖਾਲੀ *malloc_tmphigh(u32 ਮਾਪ) {
+    ਵਾਪਸ _malloc(&Zone_Tmp_ਉੱਚਾ, ਮਾਪ, MALLOC_MIN_ALIGN);
 }
-static inline void *malloc_tmp(u32 size) {
-    void *ret = malloc_tmphigh(size);
-    if (ret)
-        return ret;
-    return malloc_tmplow(size);
+ਸਥਿਰ ਸਤਰਅੰਦਰ ਖਾਲੀ *malloc_tmp(u32 ਮਾਪ) {
+    ਖਾਲੀ *ret = malloc_tmphigh(ਮਾਪ);
+    ਜੇ (ret)
+        ਵਾਪਸ ret;
+    ਵਾਪਸ malloc_tmplow(ਮਾਪ);
 }
-static inline void *memalign_low(u32 align, u32 size) {
-    return _malloc(&ZoneLow, size, align);
+ਸਥਿਰ ਸਤਰਅੰਦਰ ਖਾਲੀ *memalign_ਨੀਵਾਂ(u32 align, u32 ਮਾਪ) {
+    ਵਾਪਸ _malloc(&Zone_ਨੀਵਾਂ, ਮਾਪ, align);
 }
-static inline void *memalign_high(u32 align, u32 size) {
-    return _malloc(&ZoneHigh, size, align);
+ਸਥਿਰ ਸਤਰਅੰਦਰ ਖਾਲੀ *memalign_ਉੱਚਾ(u32 align, u32 ਮਾਪ) {
+    ਵਾਪਸ _malloc(&Zone_ਉੱਚਾ, ਮਾਪ, align);
 }
-static inline void *memalign_tmplow(u32 align, u32 size) {
-    return _malloc(&ZoneTmpLow, size, align);
+ਸਥਿਰ ਸਤਰਅੰਦਰ ਖਾਲੀ *memalign_tmplow(u32 align, u32 ਮਾਪ) {
+    ਵਾਪਸ _malloc(&Zone_Tmp_ਨੀਵਾਂ, ਮਾਪ, align);
 }
-static inline void *memalign_tmphigh(u32 align, u32 size) {
-    return _malloc(&ZoneTmpHigh, size, align);
+ਸਥਿਰ ਸਤਰਅੰਦਰ ਖਾਲੀ *memalign_tmphigh(u32 align, u32 ਮਾਪ) {
+    ਵਾਪਸ _malloc(&Zone_Tmp_ਉੱਚਾ, ਮਾਪ, align);
 }
-static inline void *memalign_tmp(u32 align, u32 size) {
-    void *ret = memalign_tmphigh(align, size);
-    if (ret)
-        return ret;
-    return memalign_tmplow(align, size);
+ਸਥਿਰ ਸਤਰਅੰਦਰ ਖਾਲੀ *memalign_tmp(u32 align, u32 ਮਾਪ) {
+    ਖਾਲੀ *ret = memalign_tmphigh(align, ਮਾਪ);
+    ਜੇ (ret)
+        ਵਾਪਸ ret;
+    ਵਾਪਸ memalign_tmplow(align, ਮਾਪ);
 }
 
-#endif // malloc.h
+#ਜੇ_ਅੰਤ // malloc.h

@@ -4,79 +4,79 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // FUNC16
-#include "config.h" // CONFIG_*
-#include "malloc.h" // _malloc
-#include "output.h" // dprintf
-#include "e820map.h" // struct e820entry
-#include "std/pmm.h" // PMM_SIGNATURE
-#include "string.h" // checksum
-#include "util.h" // pmm_init
-#include "x86.h" // __ffs
+#ਅਨ੍ਤਰ੍ਭਾਵ "biosvar.h" // FUNC16
+#ਅਨ੍ਤਰ੍ਭਾਵ "config.h" // CONFIG_*
+#ਅਨ੍ਤਰ੍ਭਾਵ "malloc.h" // _malloc
+#ਅਨ੍ਤਰ੍ਭਾਵ "output.h" // dprintf
+#ਅਨ੍ਤਰ੍ਭਾਵ "e820map.h" // struct e820entry
+#ਅਨ੍ਤਰ੍ਭਾਵ "std/pmm.h" // PMM_SIGNATURE
+#ਅਨ੍ਤਰ੍ਭਾਵ "string.h" // checksum
+#ਅਨ੍ਤਰ੍ਭਾਵ "util.h" // pmm_init
+#ਅਨ੍ਤਰ੍ਭਾਵ "x86.h" // __ffs
 
-extern struct pmmheader PMMHEADER;
+ਬਾਹਰੀ ਬਣਤਰ pmmheader PMMHEADER;
 
-#if CONFIG_PMM
-struct pmmheader PMMHEADER __aligned(16) VARFSEG = {
+#ਜੇ CONFIG_PMM
+ਬਣਤਰ pmmheader PMMHEADER __aligned(16) VARFSEG = {
     .signature = PMM_SIGNATURE,
-    .version = 0x01,
-    .length = sizeof(PMMHEADER),
+    .ਸੰਸਕਰਣ_2 = 0x01,
+    .ਲੰਮਾਈ = ਆਕਾਰ(PMMHEADER),
 };
-#endif
+#ਜੇ_ਅੰਤ
 
 // PMM - allocate
-static u32
-handle_pmm00(u16 *args)
+ਸਥਿਰ u32
+handle_pmm00(u16 *ਦਲੀਲਾਂ)
 {
-    u32 length = *(u32*)&args[1], handle = *(u32*)&args[3];
-    u16 flags = args[5];
+    u32 ਲੰਮਾਈ = *(u32*)&ਦਲੀਲਾਂ[1], handle = *(u32*)&ਦਲੀਲਾਂ[3];
+    u16 flags = ਦਲੀਲਾਂ[5];
     dprintf(3, "pmm00: length=%x handle=%x flags=%x\n"
-            , length, handle, flags);
-    struct zone_s *lowzone = &ZoneTmpLow, *highzone = &ZoneTmpHigh;
-    if (flags & 8) {
+            , ਲੰਮਾਈ, handle, flags);
+    ਬਣਤਰ zone_s *lowzone = &Zone_Tmp_ਨੀਵਾਂ, *highzone = &Zone_Tmp_ਉੱਚਾ;
+    ਜੇ (flags & 8) {
         // Permanent memory request.
-        lowzone = &ZoneLow;
-        highzone = &ZoneHigh;
+        lowzone = &Zone_ਨੀਵਾਂ;
+        highzone = &Zone_ਉੱਚਾ;
     }
-    if (!length) {
+    ਜੇ (!ਲੰਮਾਈ) {
         // Memory size request
-        switch (flags & 3) {
-        default:
-        case 0:
-            return 0;
-        case 1:
-            return malloc_getspace(lowzone);
-        case 2:
-            return malloc_getspace(highzone);
-        case 3: {
+        ਚੋਣ (flags & 3) {
+        ਮੂਲ:
+        ਹਾਲਤ 0:
+            ਵਾਪਸ 0;
+        ਹਾਲਤ 1:
+            ਵਾਪਸ malloc_getspace(lowzone);
+        ਹਾਲਤ 2:
+            ਵਾਪਸ malloc_getspace(highzone);
+        ਹਾਲਤ 3: {
             u32 spacelow = malloc_getspace(lowzone);
             u32 spacehigh = malloc_getspace(highzone);
-            if (spacelow > spacehigh)
-                return spacelow;
-            return spacehigh;
+            ਜੇ (spacelow > spacehigh)
+                ਵਾਪਸ spacelow;
+            ਵਾਪਸ spacehigh;
         }
         }
     }
-    u32 size = length * 16;
-    if ((s32)size <= 0)
-        return 0;
+    u32 ਮਾਪ = ਲੰਮਾਈ * 16;
+    ਜੇ ((s32)ਮਾਪ <= 0)
+        ਵਾਪਸ 0;
     u32 align = MALLOC_MIN_ALIGN;
-    if (flags & 4) {
-        align = 1<<__ffs(size);
-        if (align < MALLOC_MIN_ALIGN)
+    ਜੇ (flags & 4) {
+        align = 1<<__ffs(ਮਾਪ);
+        ਜੇ (align < MALLOC_MIN_ALIGN)
             align = MALLOC_MIN_ALIGN;
     }
-    u32 data;
-    switch (flags & 3) {
-    default:
-    case 0:
-        return 0;
-    case 1:
-        data = malloc_palloc(lowzone, size, align);
-        break;
-    case 2:
-        data = malloc_palloc(highzone, size, align);
-        if (!data && (flags & 8)) {
+    u32 ਅੰਕੜੇ;
+    ਚੋਣ (flags & 3) {
+    ਮੂਲ:
+    ਹਾਲਤ 0:
+        ਵਾਪਸ 0;
+    ਹਾਲਤ 1:
+        ਅੰਕੜੇ = malloc_palloc(lowzone, ਮਾਪ, align);
+        ਰੋਕੋ;
+    ਹਾਲਤ 2:
+        ਅੰਕੜੇ = malloc_palloc(highzone, ਮਾਪ, align);
+        ਜੇ (!ਅੰਕੜੇ && (flags & 8)) {
             /*
              * We are out of meory.  So go allocate from the (big)
              * ZoneTmpHigh instead and reserve the block in the e820
@@ -84,93 +84,93 @@ handle_pmm00(u16 *args)
              * handle big permanent allocations without needing a big
              * ZoneHigh.
              */
-            data = malloc_palloc(&ZoneTmpHigh, size, align);
-            if (data)
-                e820_add(data, size, E820_RESERVED);
+            ਅੰਕੜੇ = malloc_palloc(&Zone_Tmp_ਉੱਚਾ, ਮਾਪ, align);
+            ਜੇ (ਅੰਕੜੇ)
+                e820_ਜੋੜੋ(ਅੰਕੜੇ, ਮਾਪ, E820_RESERVED);
         }
-        break;
-    case 3: {
-        data = malloc_palloc(lowzone, size, align);
-        if (!data)
-            data = malloc_palloc(highzone, size, align);
+        ਰੋਕੋ;
+    ਹਾਲਤ 3: {
+        ਅੰਕੜੇ = malloc_palloc(lowzone, ਮਾਪ, align);
+        ਜੇ (!ਅੰਕੜੇ)
+            ਅੰਕੜੇ = malloc_palloc(highzone, ਮਾਪ, align);
     }
     }
-    if (data && handle != MALLOC_DEFAULT_HANDLE)
-        malloc_sethandle(data, handle);
-    return data;
+    ਜੇ (ਅੰਕੜੇ && handle != MALLOC_DEFAULT_HANDLE)
+        malloc_sethandle(ਅੰਕੜੇ, handle);
+    ਵਾਪਸ ਅੰਕੜੇ;
 }
 
 // PMM - find
-static u32
-handle_pmm01(u16 *args)
+ਸਥਿਰ u32
+handle_pmm01(u16 *ਦਲੀਲਾਂ)
 {
-    u32 handle = *(u32*)&args[1];
+    u32 handle = *(u32*)&ਦਲੀਲਾਂ[1];
     dprintf(3, "pmm01: handle=%x\n", handle);
-    if (handle == MALLOC_DEFAULT_HANDLE)
-        return 0;
-    return malloc_findhandle(handle);
+    ਜੇ (handle == MALLOC_DEFAULT_HANDLE)
+        ਵਾਪਸ 0;
+    ਵਾਪਸ malloc_findhandle(handle);
 }
 
 // PMM - deallocate
-static u32
-handle_pmm02(u16 *args)
+ਸਥਿਰ u32
+handle_pmm02(u16 *ਦਲੀਲਾਂ)
 {
-    u32 buffer = *(u32*)&args[1];
-    dprintf(3, "pmm02: buffer=%x\n", buffer);
-    int ret = malloc_pfree(buffer);
-    if (ret)
+    u32 ਬਫਰ = *(u32*)&ਦਲੀਲਾਂ[1];
+    dprintf(3, "pmm02: buffer=%x\n", ਬਫਰ);
+    ਪੂਰਨ ret = malloc_pfree(ਬਫਰ);
+    ਜੇ (ret)
         // Error
-        return 1;
-    return 0;
+        ਵਾਪਸ 1;
+    ਵਾਪਸ 0;
 }
 
-static u32
-handle_pmmXX(u16 *args)
+ਸਥਿਰ u32
+handle_pmmXX(u16 *ਦਲੀਲਾਂ)
 {
-    return PMM_FUNCTION_NOT_SUPPORTED;
+    ਵਾਪਸ PMM_FUNCTION_NOT_SUPPORTED;
 }
 
 u32 VISIBLE32INIT
-handle_pmm(u16 *args)
+handle_pmm(u16 *ਦਲੀਲਾਂ)
 {
     ASSERT32FLAT();
-    if (! CONFIG_PMM)
-        return PMM_FUNCTION_NOT_SUPPORTED;
+    ਜੇ (! CONFIG_PMM)
+        ਵਾਪਸ PMM_FUNCTION_NOT_SUPPORTED;
 
-    u16 arg1 = args[0];
+    u16 arg1 = ਦਲੀਲਾਂ[0];
     dprintf(DEBUG_HDL_pmm, "pmm call arg1=%x\n", arg1);
 
     u32 ret;
-    switch (arg1) {
-    case 0x00: ret = handle_pmm00(args); break;
-    case 0x01: ret = handle_pmm01(args); break;
-    case 0x02: ret = handle_pmm02(args); break;
-    default:   ret = handle_pmmXX(args); break;
+    ਚੋਣ (arg1) {
+    ਹਾਲਤ 0x00: ret = handle_pmm00(ਦਲੀਲਾਂ); ਰੋਕੋ;
+    ਹਾਲਤ 0x01: ret = handle_pmm01(ਦਲੀਲਾਂ); ਰੋਕੋ;
+    ਹਾਲਤ 0x02: ret = handle_pmm02(ਦਲੀਲਾਂ); ਰੋਕੋ;
+    ਮੂਲ:   ret = handle_pmmXX(ਦਲੀਲਾਂ); ਰੋਕੋ;
     }
 
-    return ret;
+    ਵਾਪਸ ret;
 }
 
-void
-pmm_init(void)
+ਖਾਲੀ
+pmm_init(ਖਾਲੀ)
 {
-    if (! CONFIG_PMM)
-        return;
+    ਜੇ (! CONFIG_PMM)
+        ਵਾਪਸ;
 
     dprintf(3, "init PMM\n");
 
-    PMMHEADER.entry = FUNC16(entry_pmm);
-    PMMHEADER.checksum -= checksum(&PMMHEADER, sizeof(PMMHEADER));
+    PMMHEADER.ਇੰਦਰਾਜ = FUNC16(ਇੰਦਰਾਜ_pmm);
+    PMMHEADER.checksum -= checksum(&PMMHEADER, ਆਕਾਰ(PMMHEADER));
 }
 
-void
-pmm_prepboot(void)
+ਖਾਲੀ
+pmm_prepboot(ਖਾਲੀ)
 {
-    if (! CONFIG_PMM)
-        return;
+    ਜੇ (! CONFIG_PMM)
+        ਵਾਪਸ;
 
     dprintf(3, "finalize PMM\n");
 
     PMMHEADER.signature = 0;
-    PMMHEADER.entry.segoff = 0;
+    PMMHEADER.ਇੰਦਰਾਜ.segoff = 0;
 }

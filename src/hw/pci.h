@@ -1,64 +1,64 @@
-#ifndef __PCI_H
-#define __PCI_H
+#ਜੇ_ਅਪਰਿਭਾਸ਼ਿਤ __PCI_H
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ __PCI_H
 
-#include "types.h" // u32
+#ਅਨ੍ਤਰ੍ਭਾਵ "types.h" // u32
 
-#define PORT_PCI_REBOOT        0x0cf9
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ਪੋਰਟ_PCI_REBOOT        0x0cf9
 
-static inline u8 pci_bdf_to_bus(u16 bdf) {
-    return bdf >> 8;
+ਸਥਿਰ ਸਤਰਅੰਦਰ u8 pci_bdf_ਮੰਜ਼ਿਲ_bus(u16 bdf) {
+    ਵਾਪਸ bdf >> 8;
 }
-static inline u8 pci_bdf_to_devfn(u16 bdf) {
-    return bdf & 0xff;
+ਸਥਿਰ ਸਤਰਅੰਦਰ u8 pci_bdf_ਮੰਜ਼ਿਲ_devfn(u16 bdf) {
+    ਵਾਪਸ bdf & 0xff;
 }
-static inline u16 pci_bdf_to_busdev(u16 bdf) {
-    return bdf & ~0x07;
+ਸਥਿਰ ਸਤਰਅੰਦਰ u16 pci_bdf_ਮੰਜ਼ਿਲ_busdev(u16 bdf) {
+    ਵਾਪਸ bdf & ~0x07;
 }
-static inline u8 pci_bdf_to_dev(u16 bdf) {
-    return (bdf >> 3) & 0x1f;
+ਸਥਿਰ ਸਤਰਅੰਦਰ u8 pci_bdf_ਮੰਜ਼ਿਲ_dev(u16 bdf) {
+    ਵਾਪਸ (bdf >> 3) & 0x1f;
 }
-static inline u8 pci_bdf_to_fn(u16 bdf) {
-    return bdf & 0x07;
+ਸਥਿਰ ਸਤਰਅੰਦਰ u8 pci_bdf_ਮੰਜ਼ਿਲ_fn(u16 bdf) {
+    ਵਾਪਸ bdf & 0x07;
 }
-static inline u16 pci_to_bdf(int bus, int dev, int fn) {
-    return (bus<<8) | (dev<<3) | fn;
+ਸਥਿਰ ਸਤਰਅੰਦਰ u16 pci_ਮੰਜ਼ਿਲ_bdf(ਪੂਰਨ bus, ਪੂਰਨ dev, ਪੂਰਨ fn) {
+    ਵਾਪਸ (bus<<8) | (dev<<3) | fn;
 }
-static inline u16 pci_bus_devfn_to_bdf(int bus, u16 devfn) {
-    return (bus << 8) | devfn;
+ਸਥਿਰ ਸਤਰਅੰਦਰ u16 pci_bus_devfn_ਮੰਜ਼ਿਲ_bdf(ਪੂਰਨ bus, u16 devfn) {
+    ਵਾਪਸ (bus << 8) | devfn;
 }
 
-#define pci_ioconfig_foreachbdf(BDF, BUS)                               \
-    for (BDF=pci_ioconfig_next(pci_bus_devfn_to_bdf((BUS), 0)-1, (BUS)) \
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ pci_ioconfig_foreachbdf(BDF, BUS)                               \
+    ਲਈ (BDF=pci_ioconfig_ਅਗਲਾ(pci_bus_devfn_ਮੰਜ਼ਿਲ_bdf((BUS), 0)-1, (BUS)) \
          ; BDF >= 0                                                     \
-         ; BDF=pci_ioconfig_next(BDF, (BUS)))
+         ; BDF=pci_ioconfig_ਅਗਲਾ(BDF, (BUS)))
 
-#define foreachbdf(BDF, BUS)                                    \
-    for (BDF=pci_next(pci_bus_devfn_to_bdf((BUS), 0)-1, (BUS))  \
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ foreachbdf(BDF, BUS)                                    \
+    ਲਈ (BDF=pci_ਅਗਲਾ(pci_bus_devfn_ਮੰਜ਼ਿਲ_bdf((BUS), 0)-1, (BUS))  \
          ; BDF >= 0                                             \
-         ; BDF=pci_next(BDF, (BUS)))
+         ; BDF=pci_ਅਗਲਾ(BDF, (BUS)))
 
 // standard PCI configration access mechanism
-void pci_ioconfig_writel(u16 bdf, u32 addr, u32 val);
-void pci_ioconfig_writew(u16 bdf, u32 addr, u16 val);
-void pci_ioconfig_writeb(u16 bdf, u32 addr, u8 val);
+ਖਾਲੀ pci_ioconfig_writel(u16 bdf, u32 addr, u32 val);
+ਖਾਲੀ pci_ioconfig_writew(u16 bdf, u32 addr, u16 val);
+ਖਾਲੀ pci_ioconfig_writeb(u16 bdf, u32 addr, u8 val);
 u32 pci_ioconfig_readl(u16 bdf, u32 addr);
 u16 pci_ioconfig_readw(u16 bdf, u32 addr);
 u8 pci_ioconfig_readb(u16 bdf, u32 addr);
-int pci_ioconfig_next(int bdf, int bus);
+ਪੂਰਨ pci_ioconfig_ਅਗਲਾ(ਪੂਰਨ bdf, ਪੂਰਨ bus);
 
 // PCI configuration access using either PCI CAM or PCIe ECAM
-void pci_config_writel(u16 bdf, u32 addr, u32 val);
-void pci_config_writew(u16 bdf, u32 addr, u16 val);
-void pci_config_writeb(u16 bdf, u32 addr, u8 val);
+ਖਾਲੀ pci_config_writel(u16 bdf, u32 addr, u32 val);
+ਖਾਲੀ pci_config_writew(u16 bdf, u32 addr, u16 val);
+ਖਾਲੀ pci_config_writeb(u16 bdf, u32 addr, u8 val);
 u32 pci_config_readl(u16 bdf, u32 addr);
 u16 pci_config_readw(u16 bdf, u32 addr);
 u8 pci_config_readb(u16 bdf, u32 addr);
-void pci_config_maskw(u16 bdf, u32 addr, u16 off, u16 on);
-u8 pci_find_capability(u16 bdf, u8 cap_id, u8 cap);
-int pci_next(int bdf, int bus);
+ਖਾਲੀ pci_config_maskw(u16 bdf, u32 addr, u16 off, u16 on);
+u8 pci_ਲੱਭੋ_capability(u16 bdf, u8 cap_id, u8 cap);
+ਪੂਰਨ pci_ਅਗਲਾ(ਪੂਰਨ bdf, ਪੂਰਨ bus);
 
-void pci_enable_mmconfig(u64 addr, const char *name);
-int pci_probe_host(void);
-void pci_reboot(void);
+ਖਾਲੀ pci_enable_mmconfig(u64 addr, ਅਚਲ ਅੱਖਰ *name);
+ਪੂਰਨ pci_probe_host(ਖਾਲੀ);
+ਖਾਲੀ pci_reboot(ਖਾਲੀ);
 
-#endif // pci.h
+#ਜੇ_ਅੰਤ // pci.h

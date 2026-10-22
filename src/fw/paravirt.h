@@ -1,80 +1,80 @@
-#ifndef __PV_H
-#define __PV_H
+#ਜੇ_ਅਪਰਿਭਾਸ਼ਿਤ __PV_H
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ __PV_H
 
-#include "config.h" // CONFIG_*
-#include "biosvar.h" // GET_GLOBAL
-#include "romfile.h" // struct romfile_s
+#ਅਨ੍ਤਰ੍ਭਾਵ "config.h" // CONFIG_*
+#ਅਨ੍ਤਰ੍ਭਾਵ "biosvar.h" // GET_GLOBAL
+#ਅਨ੍ਤਰ੍ਭਾਵ "romfile.h" // struct romfile_s
 
 // kvmclock
-struct pvclock_vcpu_time_info {
-	u32   version;
+ਬਣਤਰ pvclock_vcpu_ਸਮਾਂ_info {
+	u32   ਸੰਸਕਰਣ_2;
 	u32   pad0;
 	u64   tsc_timestamp;
-	u64   system_time;
-	u32   tsc_to_system_mul;
-	s8    tsc_shift;
+	u64   system_ਸਮਾਂ;
+	u32   tsc_ਮੰਜ਼ਿਲ_system_mul;
+	s8    tsc_ਖਿਸਕਾਓ;
 	u8    flags;
 	u8    pad[2];
 } __attribute__((__packed__)); /* 32 bytes */
 
 // Types of paravirtualized platforms.
-#define PF_QEMU     (1<<0)
-#define PF_XEN      (1<<1)
-#define PF_KVM      (1<<2)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PF_QEMU     (1<<0)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PF_XEN      (1<<1)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PF_KVM      (1<<2)
 
-typedef struct QemuCfgDmaAccess {
+ਕਿਸਮਪਰਿਭਾਸ਼ਾ ਬਣਤਰ QemuCfgDmaAccess {
     u32 control;
-    u32 length;
-    u64 address;
+    u32 ਲੰਮਾਈ;
+    u64 ਪਤਾ;
 } PACKED QemuCfgDmaAccess;
 
-extern u32 RamSize;
-extern u64 RamSizeOver4G;
-extern int PlatformRunningOn;
-extern u8 CPUPhysBits;
-extern u8 CPULongMode;
+ਬਾਹਰੀ u32 Ram_ਮਾਪ;
+ਬਾਹਰੀ u64 Ram_ਮਾਪ_Over4_G;
+ਬਾਹਰੀ ਪੂਰਨ PlatformRunningOn;
+ਬਾਹਰੀ u8 CPUPhys_ਬਿੱਟ;
+ਬਾਹਰੀ u8 CPULong_ਬਹੁਲਕ;
 
-static inline int runningOnQEMU(void) {
-    return CONFIG_QEMU || (
+ਸਥਿਰ ਸਤਰਅੰਦਰ ਪੂਰਨ runningOnQEMU(ਖਾਲੀ) {
+    ਵਾਪਸ CONFIG_QEMU || (
         CONFIG_QEMU_HARDWARE && GET_GLOBAL(PlatformRunningOn) & PF_QEMU);
 }
-static inline int runningOnXen(void) {
-    return CONFIG_XEN && GET_GLOBAL(PlatformRunningOn) & PF_XEN;
+ਸਥਿਰ ਸਤਰਅੰਦਰ ਪੂਰਨ runningOnXen(ਖਾਲੀ) {
+    ਵਾਪਸ CONFIG_XEN && GET_GLOBAL(PlatformRunningOn) & PF_XEN;
 }
-static inline int runningOnKVM(void) {
-    return CONFIG_QEMU && GET_GLOBAL(PlatformRunningOn) & PF_KVM;
+ਸਥਿਰ ਸਤਰਅੰਦਰ ਪੂਰਨ runningOnKVM(ਖਾਲੀ) {
+    ਵਾਪਸ CONFIG_QEMU && GET_GLOBAL(PlatformRunningOn) & PF_KVM;
 }
 
 // Common paravirt ports.
-#define PORT_SMI_CMD                0x00b2
-#define PORT_SMI_STATUS             0x00b3
-#define PORT_QEMU_CFG_CTL           0x0510
-#define PORT_QEMU_CFG_DATA          0x0511
-#define PORT_QEMU_CFG_DMA_ADDR_HIGH 0x0514
-#define PORT_QEMU_CFG_DMA_ADDR_LOW  0x0518
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ਪੋਰਟ_SMI_CMD                0x00b2
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ਪੋਰਟ_SMI_ਸਥਿਤੀ             0x00b3
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ਪੋਰਟ_QEMU_CFG_CTL           0x0510
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ਪੋਰਟ_QEMU_CFG_ਅੰਕੜੇ          0x0511
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ਪੋਰਟ_QEMU_CFG_DMA_ADDR_ਉੱਚਾ 0x0514
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ਪੋਰਟ_QEMU_CFG_DMA_ADDR_ਨੀਵਾਂ  0x0518
 
 // QEMU_CFG_DMA_CONTROL bits
-#define QEMU_CFG_DMA_CTL_ERROR   0x01
-#define QEMU_CFG_DMA_CTL_READ    0x02
-#define QEMU_CFG_DMA_CTL_SKIP    0x04
-#define QEMU_CFG_DMA_CTL_SELECT  0x08
-#define QEMU_CFG_DMA_CTL_WRITE   0x10
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ QEMU_CFG_DMA_CTL_ERROR   0x01
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ QEMU_CFG_DMA_CTL_READ    0x02
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ QEMU_CFG_DMA_CTL_SKIP    0x04
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ QEMU_CFG_DMA_CTL_SELECT  0x08
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ QEMU_CFG_DMA_CTL_WRITE   0x10
 
 // QEMU_CFG_DMA ID bit
-#define QEMU_CFG_VERSION_DMA    2
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ QEMU_CFG_ਸੰਸਕਰਣ_DMA    2
 
 // QEMU debugcon read value
-#define QEMU_DEBUGCON_READBACK  0xe9
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ QEMU_DEBUGCON_READBACK  0xe9
 
-int qemu_cfg_enabled(void);
-int qemu_cfg_dma_enabled(void);
-void qemu_preinit(void);
-void qemu_platform_setup(void);
-void qemu_cfg_init(void);
+ਪੂਰਨ qemu_cfg_enabled(ਖਾਲੀ);
+ਪੂਰਨ qemu_cfg_dma_enabled(ਖਾਲੀ);
+ਖਾਲੀ qemu_preinit(ਖਾਲੀ);
+ਖਾਲੀ qemu_platform_ਤਿਆਰੀ(ਖਾਲੀ);
+ਖਾਲੀ qemu_cfg_init(ਖਾਲੀ);
 
-u16 qemu_get_present_cpus_count(void);
-int qemu_cfg_write_file(void *src, struct romfile_s *file, u32 offset, u32 len);
-int qemu_cfg_write_file_simple(void *src, u16 key, u32 offset, u32 len);
-u16 qemu_get_romfile_key(struct romfile_s *file);
+u16 qemu_get_present_cpus_ਗਿਣਤੀ(ਖਾਲੀ);
+ਪੂਰਨ qemu_cfg_write_file(ਖਾਲੀ *src, ਬਣਤਰ romfile_s *file, u32 ਵਿੱਥ_2, u32 len);
+ਪੂਰਨ qemu_cfg_write_file_simple(ਖਾਲੀ *src, u16 ਕੁੰਜੀ, u32 ਵਿੱਥ_2, u32 len);
+u16 qemu_get_romfile_ਕੁੰਜੀ(ਬਣਤਰ romfile_s *file);
 
-#endif
+#ਜੇ_ਅੰਤ

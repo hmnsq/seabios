@@ -1,8 +1,8 @@
-#ifndef __LSI_SCSI_H
-#define __LSI_SCSI_H
+#ਜੇ_ਅਪਰਿਭਾਸ਼ਿਤ __LSI_SCSI_H
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ __LSI_SCSI_H
 
-struct disk_op_s;
-int lsi_scsi_process_op(struct disk_op_s *op);
-void lsi_scsi_setup(void);
+ਬਣਤਰ disk_op_s;
+ਪੂਰਨ lsi_scsi_process_op(ਬਣਤਰ disk_op_s *op);
+ਖਾਲੀ lsi_scsi_ਤਿਆਰੀ(ਖਾਲੀ);
 
-#endif /* __LSI_SCSI_H */
+#ਜੇ_ਅੰਤ /* __LSI_SCSI_H */

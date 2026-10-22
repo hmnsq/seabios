@@ -3,55 +3,55 @@
 // Copyright (C) 2008-2010  Kevin O'Connor <kevin@koconnor.net>
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
-#ifndef __TYPES_H
-#define __TYPES_H
+#ਜੇ_ਅਪਰਿਭਾਸ਼ਿਤ __TYPES_H
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ __TYPES_H
 
-typedef unsigned char u8;
-typedef signed char s8;
-typedef unsigned short u16;
-typedef signed short s16;
-typedef unsigned int u32;
-typedef signed int s32;
-typedef unsigned long long u64;
-typedef signed long long s64;
-typedef u32 size_t;
+ਕਿਸਮਪਰਿਭਾਸ਼ਾ ਬਿਨਾਨਿਸ਼ਾਨੀ ਅੱਖਰ u8;
+ਕਿਸਮਪਰਿਭਾਸ਼ਾ ਨਿਸ਼ਾਨੀਵਾਲਾ ਅੱਖਰ s8;
+ਕਿਸਮਪਰਿਭਾਸ਼ਾ ਬਿਨਾਨਿਸ਼ਾਨੀ ਛੋਟਾ u16;
+ਕਿਸਮਪਰਿਭਾਸ਼ਾ ਨਿਸ਼ਾਨੀਵਾਲਾ ਛੋਟਾ s16;
+ਕਿਸਮਪਰਿਭਾਸ਼ਾ ਬਿਨਾਨਿਸ਼ਾਨੀ ਪੂਰਨ u32;
+ਕਿਸਮਪਰਿਭਾਸ਼ਾ ਨਿਸ਼ਾਨੀਵਾਲਾ ਪੂਰਨ s32;
+ਕਿਸਮਪਰਿਭਾਸ਼ਾ ਬਿਨਾਨਿਸ਼ਾਨੀ ਲੰਮਾ ਲੰਮਾ u64;
+ਕਿਸਮਪਰਿਭਾਸ਼ਾ ਨਿਸ਼ਾਨੀਵਾਲਾ ਲੰਮਾ ਲੰਮਾ s64;
+ਕਿਸਮਪਰਿਭਾਸ਼ਾ u32 ਮਾਪ_t;
 
-union u64_u32_u {
-    struct { u32 lo, hi; };
+ਸੰਘ u64_u32_u {
+    ਬਣਤਰ { u32 lo, hi; };
     u64 val;
 };
 
 // Definition for common 16bit segment/offset pointers.
-struct segoff_s {
-    union {
-        struct {
-            u16 offset;
+ਬਣਤਰ segoff_s {
+    ਸੰਘ {
+        ਬਣਤਰ {
+            u16 ਵਿੱਥ_2;
             u16 seg;
         };
         u32 segoff;
     };
 };
 
-#ifdef MANUAL_NO_JUMP_TABLE
-# define default case 775324556: asm(""); default
-#endif
+#ਜੇ_ਪਰਿਭਾਸ਼ਿਤ MANUAL_NO_JUMP_ਸਾਰਣੀ
+# define ਮੂਲ ਹਾਲਤ 775324556: asm(""); ਮੂਲ
+#ਜੇ_ਅੰਤ
 
-#ifdef WHOLE_PROGRAM
+#ਜੇ_ਪਰਿਭਾਸ਼ਿਤ ਸਾਰਾ_ਪ੍ਰੋਗਰਾਮ
 # define __VISIBLE __attribute__((externally_visible))
-#else
+#ਨਹੀਂਤਾਂ
 # define __VISIBLE
-#endif
+#ਜੇ_ਅੰਤ
 
-#define UNIQSEC __FILE__ "." __stringify(__LINE__)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ UNIQSEC __FILE__ "." __stringify(__LINE__)
 
-#define __noreturn __attribute__((noreturn))
-extern void __force_link_error__only_in_32bit_flat(void) __noreturn;
-extern void __force_link_error__only_in_32bit_segmented(void) __noreturn;
-extern void __force_link_error__only_in_16bit(void) __noreturn;
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ __noreturn __attribute__((noreturn))
+ਬਾਹਰੀ ਖਾਲੀ __force_link_error__only_in_32bit_flat(ਖਾਲੀ) __noreturn;
+ਬਾਹਰੀ ਖਾਲੀ __force_link_error__only_in_32bit_segmented(ਖਾਲੀ) __noreturn;
+ਬਾਹਰੀ ਖਾਲੀ __force_link_error__only_in_16bit(ਖਾਲੀ) __noreturn;
 
-#define __ASM(code) asm(".section .text.asm." UNIQSEC "\n\t" code)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ __ASM(ਕੋਡ) asm(".section .text.asm." UNIQSEC "\n\t" ਕੋਡ)
 
-#if MODE16 == 1
+#ਜੇ MODE16 == 1
 // Notes a function as externally visible in the 16bit code chunk.
 # define VISIBLE16 __VISIBLE
 // Notes a function as externally visible in the 32bit flat code chunk.
@@ -73,14 +73,14 @@ extern void __force_link_error__only_in_16bit(void) __noreturn;
 // Verify a variable is only accessible via 32bit "init" functions
 # define VARVERIFY32INIT __section(".discard.varinit." UNIQSEC)
 // Designate top-level assembler as 16bit only.
-# define ASM16(code) __ASM(code)
+# define ASM16(ਕੋਡ) __ASM(ਕੋਡ)
 // Designate top-level assembler as 32bit flat only.
-# define ASM32FLAT(code)
+# define ASM32FLAT(ਕੋਡ)
 // Compile time check for a given mode.
-# define ASSERT16() do { } while (0)
+# define ASSERT16() ਕਰੋ { } ਜਦੋਂ (0)
 # define ASSERT32SEG() __force_link_error__only_in_32bit_segmented()
 # define ASSERT32FLAT() __force_link_error__only_in_32bit_flat()
-#elif MODESEGMENT == 1
+#ਜਾਂਜੇ MODESEGMENT == 1
 # define VISIBLE16
 # define VISIBLE32FLAT
 # define VISIBLE32INIT
@@ -91,12 +91,12 @@ extern void __force_link_error__only_in_16bit(void) __noreturn;
 # define VARFSEG __section(".discard.varfseg." UNIQSEC) __VISIBLE __weak
 # define VARFSEGFIXED(addr) __section(".discard.varfixed." UNIQSEC) __VISIBLE __weak
 # define VARVERIFY32INIT __section(".discard.varinit." UNIQSEC)
-# define ASM16(code)
-# define ASM32FLAT(code)
+# define ASM16(ਕੋਡ)
+# define ASM32FLAT(ਕੋਡ)
 # define ASSERT16() __force_link_error__only_in_16bit()
-# define ASSERT32SEG() do { } while (0)
+# define ASSERT32SEG() ਕਰੋ { } ਜਦੋਂ (0)
 # define ASSERT32FLAT() __force_link_error__only_in_32bit_flat()
-#else
+#ਨਹੀਂਤਾਂ
 # define VISIBLE16
 # define VISIBLE32FLAT __section(".text.runtime." UNIQSEC) __VISIBLE
 # define VISIBLE32INIT __section(".text.init." UNIQSEC) __VISIBLE
@@ -107,50 +107,50 @@ extern void __force_link_error__only_in_16bit(void) __noreturn;
 # define VARFSEG __section(".data.varfseg." UNIQSEC) __VISIBLE
 # define VARFSEGFIXED(addr) __section(".fixedaddr." __stringify(addr)) __VISIBLE __aligned(1)
 # define VARVERIFY32INIT __section(".data.varinit." UNIQSEC)
-# define ASM16(code)
-# define ASM32FLAT(code) __ASM(code)
+# define ASM16(ਕੋਡ)
+# define ASM32FLAT(ਕੋਡ) __ASM(ਕੋਡ)
 # define ASSERT16() __force_link_error__only_in_16bit()
 # define ASSERT32SEG() __force_link_error__only_in_32bit_segmented()
-# define ASSERT32FLAT() do { } while (0)
-#endif
+# define ASSERT32FLAT() ਕਰੋ { } ਜਦੋਂ (0)
+#ਜੇ_ਅੰਤ
 
-#define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
-#define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
-#define FIELD_SIZEOF(t, f) (sizeof(((t*)0)->f))
-#define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
-#define DIV_ROUND_CLOSEST(x, divisor)({                 \
-            typeof(divisor) __divisor = divisor;        \
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ offsetof(TYPE, MEMBER) ((ਮਾਪ_t) &((TYPE *)0)->MEMBER)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ARRAY_ਮਾਪ(a) (ਆਕਾਰ(a) / ਆਕਾਰ(a[0]))
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ਖੇਤਰ_SIZEOF(t, f) (ਆਕਾਰ(((t*)0)->f))
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ DIV_ਗੇੜਾ_ਉੱਪਰ(n,d) (((n) + (d) - 1) / (d))
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ DIV_ਗੇੜਾ_CLOSEST(x, ਭਾਜਕ)({                 \
+            typeof(ਭਾਜਕ) __divisor = ਭਾਜਕ;        \
             (((x) + ((__divisor) / 2)) / (__divisor));  \
         })
-#define ALIGN(x,a)              __ALIGN_MASK(x,(typeof(x))(a)-1)
-#define __ALIGN_MASK(x,mask)    (((x)+(mask))&~(mask))
-#define ALIGN_DOWN(x,a)         ((x) & ~((typeof(x))(a)-1))
-#define container_of(ptr, type, member) ({                      \
-        const typeof( ((type *)0)->member ) *__mptr = (ptr);    \
-        (type *)( (char *)__mptr - offsetof(type,member) );})
-#define container_of_or_null(ptr, type, member) ({              \
-        const typeof( ((type *)0)->member ) *___mptr = (ptr);   \
-        ___mptr ? container_of(___mptr, type, member) : NULL; })
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ALIGN(x,a)              __ALIGN_MASK(x,(typeof(x))(a)-1)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ __ALIGN_MASK(x,ਨਕਾਬ)    (((x)+(ਨਕਾਬ))&~(ਨਕਾਬ))
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ALIGN_ਥੱਲੇ(x,a)         ((x) & ~((typeof(x))(a)-1))
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ container_ਦਾ(ptr, type, member) ({                      \
+        ਅਚਲ typeof( ((type *)0)->member ) *__mptr = (ptr);    \
+        (type *)( (ਅੱਖਰ *)__mptr - offsetof(type,member) );})
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ container_ਦਾ_or_null(ptr, type, member) ({              \
+        ਅਚਲ typeof( ((type *)0)->member ) *___mptr = (ptr);   \
+        ___mptr ? container_ਦਾ(___mptr, type, member) : ਨਿਰਾ; })
 
-#define likely(x)       __builtin_expect(!!(x), 1)
-#define unlikely(x)     __builtin_expect(!!(x), 0)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ likely(x)       __builtin_expect(!!(x), 1)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ unlikely(x)     __builtin_expect(!!(x), 0)
 
-#define NULL ((void*)0)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ਨਿਰਾ ((ਖਾਲੀ*)0)
 
-#define __weak __attribute__((weak))
-#define __section(S) __attribute__((section(S)))
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ __weak __attribute__((weak))
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ __section(S) __attribute__((section(S)))
 
-#define PACKED __attribute__((packed))
-#define __aligned(x) __attribute__((aligned(x)))
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PACKED __attribute__((packed))
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ __aligned(x) __attribute__((aligned(x)))
 
-#define barrier() __asm__ __volatile__("": : :"memory")
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ barrier() __asm__ __volatile__("": : :"memory")
 
-#define noinline __attribute__((noinline))
-#define __always_inline inline __attribute__((always_inline))
-#define __malloc __attribute__((__malloc__))
-#define __attribute_const __attribute__((__const__))
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ noinline __attribute__((noinline))
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ __always_inline ਸਤਰਅੰਦਰ __attribute__((always_inline))
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ __malloc __attribute__((__malloc__))
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ __attribute_const __attribute__((__const__))
 
-#define __stringify_1(x)        #x
-#define __stringify(x)          __stringify_1(x)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ __stringify_1(x)        #x
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ __stringify(x)          __stringify_1(x)
 
-#endif // types.h
+#ਜੇ_ਅੰਤ // types.h

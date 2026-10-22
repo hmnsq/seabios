@@ -1,71 +1,71 @@
-#ifndef __BYTEORDER_H
-#define __BYTEORDER_H
+#ਜੇ_ਅਪਰਿਭਾਸ਼ਿਤ __BYTEORDER_H
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ __BYTEORDER_H
 
-#include "types.h" // u32
+#ਅਨ੍ਤਰ੍ਭਾਵ "types.h" // u32
 
-static inline u16 __swab16_constant(u16 val) {
-    return (val<<8) | (val>>8);
+ਸਥਿਰ ਸਤਰਅੰਦਰ u16 __swab16_constant(u16 val) {
+    ਵਾਪਸ (val<<8) | (val>>8);
 }
-static inline u32 __swab32_constant(u32 val) {
-    return (val<<24) | ((val&0xff00)<<8) | ((val&0xff0000)>>8) | (val>>24);
+ਸਥਿਰ ਸਤਰਅੰਦਰ u32 __swab32_constant(u32 val) {
+    ਵਾਪਸ (val<<24) | ((val&0xff00)<<8) | ((val&0xff0000)>>8) | (val>>24);
 }
-static inline u64 __swab64_constant(u64 val) {
-    return ((u64)__swab32_constant(val) << 32) | __swab32_constant(val>>32);
+ਸਥਿਰ ਸਤਰਅੰਦਰ u64 __swab64_constant(u64 val) {
+    ਵਾਪਸ ((u64)__swab32_constant(val) << 32) | __swab32_constant(val>>32);
 }
-static inline u32 __swab32(u32 val) {
+ਸਥਿਰ ਸਤਰਅੰਦਰ u32 __swab32(u32 val) {
     asm("bswapl %0" : "+r"(val));
-    return val;
+    ਵਾਪਸ val;
 }
-static inline u64 __swab64(u64 val) {
-    union u64_u32_u i, o;
+ਸਥਿਰ ਸਤਰਅੰਦਰ u64 __swab64(u64 val) {
+    ਸੰਘ u64_u32_u i, o;
     i.val = val;
     o.lo = __swab32(i.hi);
     o.hi = __swab32(i.lo);
-    return o.val;
+    ਵਾਪਸ o.val;
 }
 
-#define swab16(x) __swab16_constant(x)
-#define swab32(x) (__builtin_constant_p((u32)(x)) \
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ swab16(x) __swab16_constant(x)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ swab32(x) (__builtin_constant_p((u32)(x)) \
                    ? __swab32_constant(x) : __swab32(x))
-#define swab64(x) (__builtin_constant_p((u64)(x)) \
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ swab64(x) (__builtin_constant_p((u64)(x)) \
                    ? __swab64_constant(x) : __swab64(x))
 
-static inline u16 cpu_to_le16(u16 x) {
-    return x;
+ਸਥਿਰ ਸਤਰਅੰਦਰ u16 cpu_ਮੰਜ਼ਿਲ_le16(u16 x) {
+    ਵਾਪਸ x;
 }
-static inline u32 cpu_to_le32(u32 x) {
-    return x;
+ਸਥਿਰ ਸਤਰਅੰਦਰ u32 cpu_ਮੰਜ਼ਿਲ_le32(u32 x) {
+    ਵਾਪਸ x;
 }
-static inline u64 cpu_to_le64(u64 x) {
-    return x;
+ਸਥਿਰ ਸਤਰਅੰਦਰ u64 cpu_ਮੰਜ਼ਿਲ_le64(u64 x) {
+    ਵਾਪਸ x;
 }
-static inline u16 le16_to_cpu(u16 x) {
-    return x;
+ਸਥਿਰ ਸਤਰਅੰਦਰ u16 le16_ਮੰਜ਼ਿਲ_cpu(u16 x) {
+    ਵਾਪਸ x;
 }
-static inline u32 le32_to_cpu(u32 x) {
-    return x;
+ਸਥਿਰ ਸਤਰਅੰਦਰ u32 le32_ਮੰਜ਼ਿਲ_cpu(u32 x) {
+    ਵਾਪਸ x;
 }
-static inline u64 le64_to_cpu(u64 x) {
-    return x;
-}
-
-static inline u16 cpu_to_be16(u16 x) {
-    return swab16(x);
-}
-static inline u32 cpu_to_be32(u32 x) {
-    return swab32(x);
-}
-static inline u64 cpu_to_be64(u64 x) {
-    return swab64(x);
-}
-static inline u16 be16_to_cpu(u16 x) {
-    return swab16(x);
-}
-static inline u32 be32_to_cpu(u32 x) {
-    return swab32(x);
-}
-static inline u64 be64_to_cpu(u64 x) {
-    return swab64(x);
+ਸਥਿਰ ਸਤਰਅੰਦਰ u64 le64_ਮੰਜ਼ਿਲ_cpu(u64 x) {
+    ਵਾਪਸ x;
 }
 
-#endif // byteorder.h
+ਸਥਿਰ ਸਤਰਅੰਦਰ u16 cpu_ਮੰਜ਼ਿਲ_be16(u16 x) {
+    ਵਾਪਸ swab16(x);
+}
+ਸਥਿਰ ਸਤਰਅੰਦਰ u32 cpu_ਮੰਜ਼ਿਲ_be32(u32 x) {
+    ਵਾਪਸ swab32(x);
+}
+ਸਥਿਰ ਸਤਰਅੰਦਰ u64 cpu_ਮੰਜ਼ਿਲ_be64(u64 x) {
+    ਵਾਪਸ swab64(x);
+}
+ਸਥਿਰ ਸਤਰਅੰਦਰ u16 be16_ਮੰਜ਼ਿਲ_cpu(u16 x) {
+    ਵਾਪਸ swab16(x);
+}
+ਸਥਿਰ ਸਤਰਅੰਦਰ u32 be32_ਮੰਜ਼ਿਲ_cpu(u32 x) {
+    ਵਾਪਸ swab32(x);
+}
+ਸਥਿਰ ਸਤਰਅੰਦਰ u64 be64_ਮੰਜ਼ਿਲ_cpu(u64 x) {
+    ਵਾਪਸ swab64(x);
+}
+
+#ਜੇ_ਅੰਤ // byteorder.h

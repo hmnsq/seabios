@@ -1,121 +1,121 @@
-#ifndef _VIRTIO_RING_H
-#define _VIRTIO_RING_H
+#ਜੇ_ਅਪਰਿਭਾਸ਼ਿਤ _VIRTIO_RING_H
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ _VIRTIO_RING_H
 
-#include "types.h" // u64
-#include "memmap.h" // PAGE_SIZE
+#ਅਨ੍ਤਰ੍ਭਾਵ "types.h" // u64
+#ਅਨ੍ਤਰ੍ਭਾਵ "memmap.h" // PAGE_SIZE
 
 /* Status byte for guest to report progress, and synchronize features. */
 /* We have seen device and processed generic fields (VIRTIO_CONFIG_F_VIRTIO) */
-#define VIRTIO_CONFIG_S_ACKNOWLEDGE     1
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ VIRTIO_CONFIG_S_ACKNOWLEDGE     1
 /* We have found a driver for the device. */
-#define VIRTIO_CONFIG_S_DRIVER          2
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ VIRTIO_CONFIG_S_DRIVER          2
 /* Driver has used its parts of the config, and is happy */
-#define VIRTIO_CONFIG_S_DRIVER_OK       4
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ VIRTIO_CONFIG_S_DRIVER_OK       4
 /* Driver has finished configuring features */
-#define VIRTIO_CONFIG_S_FEATURES_OK     8
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ VIRTIO_CONFIG_S_FEATURES_OK     8
 /* We've given up on this device. */
-#define VIRTIO_CONFIG_S_FAILED          0x80
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ VIRTIO_CONFIG_S_FAILED          0x80
 
 /* v1.0 compliant. */
-#define VIRTIO_F_VERSION_1              32
-#define VIRTIO_F_IOMMU_PLATFORM         33
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ VIRTIO_F_ਸੰਸਕਰਣ_1              32
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ VIRTIO_F_IOMMU_PLATFORM         33
 
-#define MAX_QUEUE_NUM      (256)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ MAX_ਕਤਾਰ_ਅੰਕ      (256)
 
-#define VRING_DESC_F_NEXT  1
-#define VRING_DESC_F_WRITE 2
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ VRING_DESC_F_ਅਗਲਾ  1
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ VRING_DESC_F_WRITE 2
 
-#define VRING_AVAIL_F_NO_INTERRUPT 1
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ VRING_AVAIL_F_NO_ਰੁਕਾਵਟ 1
 
-#define VRING_USED_F_NO_NOTIFY     1
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ VRING_ਵਰਤਿਆ_F_NO_NOTIFY     1
 
-struct vring_desc
+ਬਣਤਰ vring_desc
 {
    u64 addr;
    u32 len;
    u16 flags;
-   u16 next;
+   u16 ਅਗਲਾ;
 };
 
-struct vring_avail
+ਬਣਤਰ vring_avail
 {
    u16 flags;
    u16 idx;
    u16 ring[0];
 };
 
-struct vring_used_elem
+ਬਣਤਰ vring_ਵਰਤਿਆ_elem
 {
    u32 id;
    u32 len;
 };
 
-struct vring_used
+ਬਣਤਰ vring_ਵਰਤਿਆ
 {
    u16 flags;
    u16 idx;
-   struct vring_used_elem ring[];
+   ਬਣਤਰ vring_ਵਰਤਿਆ_elem ring[];
 };
 
-struct vring {
-   unsigned int num;
-   struct vring_desc *desc;
-   struct vring_avail *avail;
-   struct vring_used *used;
+ਬਣਤਰ vring {
+   ਬਿਨਾਨਿਸ਼ਾਨੀ ਪੂਰਨ ਅੰਕ;
+   ਬਣਤਰ vring_desc *desc;
+   ਬਣਤਰ vring_avail *avail;
+   ਬਣਤਰ vring_ਵਰਤਿਆ *ਵਰਤਿਆ;
 };
 
-#define vring_size(num) \
-    (ALIGN(sizeof(struct vring_desc) * num + sizeof(struct vring_avail) \
-           + sizeof(u16) * num, PAGE_SIZE)                              \
-     + sizeof(struct vring_used) + sizeof(struct vring_used_elem) * num)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ vring_ਮਾਪ(ਅੰਕ) \
+    (ALIGN(ਆਕਾਰ(ਬਣਤਰ vring_desc) * ਅੰਕ + ਆਕਾਰ(ਬਣਤਰ vring_avail) \
+           + ਆਕਾਰ(u16) * ਅੰਕ, ਪੰਨਾ_ਮਾਪ)                              \
+     + ਆਕਾਰ(ਬਣਤਰ vring_ਵਰਤਿਆ) + ਆਕਾਰ(ਬਣਤਰ vring_ਵਰਤਿਆ_elem) * ਅੰਕ)
 
-typedef unsigned char virtio_queue_t[vring_size(MAX_QUEUE_NUM)];
+ਕਿਸਮਪਰਿਭਾਸ਼ਾ ਬਿਨਾਨਿਸ਼ਾਨੀ ਅੱਖਰ virtio_ਕਤਾਰ_t[vring_ਮਾਪ(MAX_ਕਤਾਰ_ਅੰਕ)];
 
-struct vring_virtqueue {
-   virtio_queue_t queue;
-   struct vring vring;
-   u16 free_head;
-   u16 last_used_idx;
-   u16 vdata[MAX_QUEUE_NUM];
+ਬਣਤਰ vring_virtqueue {
+   virtio_ਕਤਾਰ_t ਕਤਾਰ;
+   ਬਣਤਰ vring vring;
+   u16 free_ਸਿਰ;
+   u16 ਆਖਰੀ_ਵਰਤਿਆ_idx;
+   u16 vdata[MAX_ਕਤਾਰ_ਅੰਕ];
    /* PCI */
-   int queue_index;
-   int queue_notify_off;
+   ਪੂਰਨ ਕਤਾਰ_ਸੂਚਕਾਂਕ;
+   ਪੂਰਨ ਕਤਾਰ_notify_off;
 };
 
-struct vring_list {
-  char *addr;
-  unsigned int length;
+ਬਣਤਰ vring_list {
+  ਅੱਖਰ *addr;
+  ਬਿਨਾਨਿਸ਼ਾਨੀ ਪੂਰਨ ਲੰਮਾਈ;
 };
 
-static inline void
-vring_init(struct vring *vr, unsigned int num, unsigned char *queue)
+ਸਥਿਰ ਸਤਰਅੰਦਰ ਖਾਲੀ
+vring_init(ਬਣਤਰ vring *vr, ਬਿਨਾਨਿਸ਼ਾਨੀ ਪੂਰਨ ਅੰਕ, ਬਿਨਾਨਿਸ਼ਾਨੀ ਅੱਖਰ *ਕਤਾਰ)
 {
    ASSERT32FLAT();
-   vr->num = num;
+   vr->ਅੰਕ = ਅੰਕ;
 
    /* physical address of desc must be page aligned */
-   vr->desc = (void*)ALIGN((u32)queue, PAGE_SIZE);
+   vr->desc = (ਖਾਲੀ*)ALIGN((u32)ਕਤਾਰ, ਪੰਨਾ_ਮਾਪ);
 
-   vr->avail = (struct vring_avail *)&vr->desc[num];
+   vr->avail = (ਬਣਤਰ vring_avail *)&vr->desc[ਅੰਕ];
    /* disable interrupts */
-   vr->avail->flags |= VRING_AVAIL_F_NO_INTERRUPT;
+   vr->avail->flags |= VRING_AVAIL_F_NO_ਰੁਕਾਵਟ;
 
    /* physical address of used must be page aligned */
-   vr->used = (void*)ALIGN((u32)&vr->avail->ring[num], PAGE_SIZE);
+   vr->ਵਰਤਿਆ = (ਖਾਲੀ*)ALIGN((u32)&vr->avail->ring[ਅੰਕ], ਪੰਨਾ_ਮਾਪ);
 
-   int i;
-   for (i = 0; i < num - 1; i++)
-       vr->desc[i].next = i + 1;
-   vr->desc[i].next = 0;
+   ਪੂਰਨ i;
+   ਲਈ (i = 0; i < ਅੰਕ - 1; i++)
+       vr->desc[i].ਅਗਲਾ = i + 1;
+   vr->desc[i].ਅਗਲਾ = 0;
 }
 
-struct vp_device;
-int vring_more_used(struct vring_virtqueue *vq);
-void vring_detach(struct vring_virtqueue *vq, unsigned int head);
-int vring_get_buf(struct vring_virtqueue *vq, unsigned int *len);
-void vring_add_buf(struct vring_virtqueue *vq, struct vring_list list[],
-                   unsigned int out, unsigned int in,
-                   int index, int num_added);
-void vring_kick(struct vp_device *vp, struct vring_virtqueue *vq, int num_added);
+ਬਣਤਰ vp_device;
+ਪੂਰਨ vring_ਹੋਰ_ਵਰਤਿਆ(ਬਣਤਰ vring_virtqueue *vq);
+ਖਾਲੀ vring_detach(ਬਣਤਰ vring_virtqueue *vq, ਬਿਨਾਨਿਸ਼ਾਨੀ ਪੂਰਨ ਸਿਰ);
+ਪੂਰਨ vring_get_buf(ਬਣਤਰ vring_virtqueue *vq, ਬਿਨਾਨਿਸ਼ਾਨੀ ਪੂਰਨ *len);
+ਖਾਲੀ vring_ਜੋੜੋ_buf(ਬਣਤਰ vring_virtqueue *vq, ਬਣਤਰ vring_list list[],
+                   ਬਿਨਾਨਿਸ਼ਾਨੀ ਪੂਰਨ ਬਾਹਰਲਾ, ਬਿਨਾਨਿਸ਼ਾਨੀ ਪੂਰਨ ਵਿੱਚ_2,
+                   ਪੂਰਨ ਸੂਚਕਾਂਕ, ਪੂਰਨ ਅੰਕ_added);
+ਖਾਲੀ vring_kick(ਬਣਤਰ vp_device *vp, ਬਣਤਰ vring_virtqueue *vq, ਪੂਰਨ ਅੰਕ_added);
 
-#endif /* _VIRTIO_RING_H_ */
+#ਜੇ_ਅੰਤ /* _VIRTIO_RING_H_ */

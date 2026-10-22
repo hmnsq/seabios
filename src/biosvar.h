@@ -3,27 +3,27 @@
 // Copyright (C) 2008-2013  Kevin O'Connor <kevin@koconnor.net>
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
-#ifndef __BIOSVAR_H
-#define __BIOSVAR_H
+#ਜੇ_ਅਪਰਿਭਾਸ਼ਿਤ __BIOSVAR_H
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ __BIOSVAR_H
 
-#include "config.h" // SEG_BDA
-#include "farptr.h" // GET_FARVAR
-#include "memmap.h" // SYMBOL
-#include "std/bda.h" // struct bios_data_area_s
+#ਅਨ੍ਤਰ੍ਭਾਵ "config.h" // SEG_BDA
+#ਅਨ੍ਤਰ੍ਭਾਵ "farptr.h" // GET_FARVAR
+#ਅਨ੍ਤਰ੍ਭਾਵ "memmap.h" //ਚਿੰਨ੍ਹ
+#ਅਨ੍ਤਰ੍ਭਾਵ "std/bda.h" // struct bios_data_area_s
 
 
 /****************************************************************
  * Interrupt vector table
  ****************************************************************/
 
-#define GET_IVT(vector)                                         \
-    GET_FARVAR(SEG_IVT, ((struct rmode_IVT *)0)->ivec[vector])
-#define SET_IVT(vector, segoff)                                         \
-    SET_FARVAR(SEG_IVT, ((struct rmode_IVT *)0)->ivec[vector], segoff)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ GET_IVT(ਸਦਿਸ਼)                                         \
+    GET_FARVAR(SEG_IVT, ((ਬਣਤਰ rmode_IVT *)0)->ivec[ਸਦਿਸ਼])
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ਸੈੱਟ_IVT(ਸਦਿਸ਼, segoff)                                         \
+    ਸੈੱਟ_FARVAR(SEG_IVT, ((ਬਣਤਰ rmode_IVT *)0)->ivec[ਸਦਿਸ਼], segoff)
 
-#define FUNC16(func) ({                                 \
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ FUNC16(func) ({                                 \
         ASSERT32FLAT();                                 \
-        extern void func (void);                        \
+        ਬਾਹਰੀ ਖਾਲੀ func (ਖਾਲੀ);                        \
         SEGOFF(SEG_BIOS, (u32)func - BUILD_BIOS_ADDR);  \
     })
 
@@ -33,15 +33,15 @@
  ****************************************************************/
 
 // Accessor functions
-#define GET_BDA(var) \
-    GET_FARVAR(SEG_BDA, ((struct bios_data_area_s *)0)->var)
-#define SET_BDA(var, val) \
-    SET_FARVAR(SEG_BDA, ((struct bios_data_area_s *)0)->var, (val))
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ GET_BDA(var) \
+    GET_FARVAR(SEG_BDA, ((ਬਣਤਰ bios_ਅੰਕੜੇ_area_s *)0)->var)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ਸੈੱਟ_BDA(var, val) \
+    ਸੈੱਟ_FARVAR(SEG_BDA, ((ਬਣਤਰ bios_ਅੰਕੜੇ_area_s *)0)->var, (val))
 
 // Helper function to set the bits of the equipment_list_flags variable.
-static inline void set_equipment_flags(u16 clear, u16 set) {
+ਸਥਿਰ ਸਤਰਅੰਦਰ ਖਾਲੀ ਸੈੱਟ_equipment_flags(u16 clear, u16 ਸੈੱਟ) {
     u16 eqf = GET_BDA(equipment_list_flags);
-    SET_BDA(equipment_list_flags, (eqf & ~clear) | set);
+    ਸੈੱਟ_BDA(equipment_list_flags, (eqf & ~clear) | ਸੈੱਟ);
 }
 
 
@@ -50,81 +50,81 @@ static inline void set_equipment_flags(u16 clear, u16 set) {
  ****************************************************************/
 
 // The initial size and location of EBDA
-#define EBDA_SIZE_START \
-    DIV_ROUND_UP(sizeof(struct extended_bios_data_area_s), 1024)
-#define EBDA_SEGMENT_START \
-    FLATPTR_TO_SEG(BUILD_LOWRAM_END - EBDA_SIZE_START*1024)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ EBDA_ਮਾਪ_ਸ਼ੁਰੂ \
+    DIV_ਗੇੜਾ_ਉੱਪਰ(ਆਕਾਰ(ਬਣਤਰ extended_bios_ਅੰਕੜੇ_area_s), 1024)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ EBDA_SEGMENT_ਸ਼ੁਰੂ \
+    FLATPTR_ਮੰਜ਼ਿਲ_SEG(BUILD_LOWRAM_ਸਿਰਾ - EBDA_ਮਾਪ_ਸ਼ੁਰੂ*1024)
 
 // Accessor functions
-static inline u16 get_ebda_seg(void) {
-    return GET_BDA(ebda_seg);
+ਸਥਿਰ ਸਤਰਅੰਦਰ u16 get_ebda_seg(ਖਾਲੀ) {
+    ਵਾਪਸ GET_BDA(ebda_seg);
 }
-static inline struct extended_bios_data_area_s *
-get_ebda_ptr(void)
+ਸਥਿਰ ਸਤਰਅੰਦਰ ਬਣਤਰ extended_bios_ਅੰਕੜੇ_area_s *
+get_ebda_ptr(ਖਾਲੀ)
 {
     ASSERT32FLAT();
-    return MAKE_FLATPTR(get_ebda_seg(), 0);
+    ਵਾਪਸ MAKE_FLATPTR(get_ebda_seg(), 0);
 }
-#define GET_EBDA(eseg, var)                                             \
-    GET_FARVAR(eseg, ((struct extended_bios_data_area_s *)0)->var)
-#define SET_EBDA(eseg, var, val)                                        \
-    SET_FARVAR(eseg, ((struct extended_bios_data_area_s *)0)->var, (val))
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ GET_EBDA(eseg, var)                                             \
+    GET_FARVAR(eseg, ((ਬਣਤਰ extended_bios_ਅੰਕੜੇ_area_s *)0)->var)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ਸੈੱਟ_EBDA(eseg, var, val)                                        \
+    ਸੈੱਟ_FARVAR(eseg, ((ਬਣਤਰ extended_bios_ਅੰਕੜੇ_area_s *)0)->var, (val))
 
 
 /****************************************************************
  * Global variables
  ****************************************************************/
 
-#if MODE16 == 0 && MODESEGMENT == 1
+#ਜੇ MODE16 == 0 && MODESEGMENT == 1
 // In 32bit segmented mode %cs may not be readable and the code may be
 // relocated.  The entry code sets up %gs with a readable segment and
 // the code offset can be determined by get_global_offset().
-#define GLOBAL_SEGREG GS
-static inline u32 __attribute_const get_global_offset(void) {
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ GLOBAL_SEGREG GS
+ਸਥਿਰ ਸਤਰਅੰਦਰ u32 __attribute_const get_global_ਵਿੱਥ(ਖਾਲੀ) {
     u32 ret;
     asm("  calll 1f\n"
         "1:popl %0\n"
         "  subl $1b, %0"
         : "=r"(ret));
-    return ret;
+    ਵਾਪਸ ret;
 }
-#else
-#define GLOBAL_SEGREG CS
-static inline u32 __attribute_const get_global_offset(void) {
-    return 0;
+#ਨਹੀਂਤਾਂ
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ GLOBAL_SEGREG CS
+ਸਥਿਰ ਸਤਰਅੰਦਰ u32 __attribute_const get_global_ਵਿੱਥ(ਖਾਲੀ) {
+    ਵਾਪਸ 0;
 }
-#endif
-static inline u16 get_global_seg(void) {
-    return GET_SEG(GLOBAL_SEGREG);
+#ਜੇ_ਅੰਤ
+ਸਥਿਰ ਸਤਰਅੰਦਰ u16 get_global_seg(ਖਾਲੀ) {
+    ਵਾਪਸ GET_SEG(GLOBAL_SEGREG);
 }
-#define GET_GLOBAL(var)                                                 \
-    GET_VAR(GLOBAL_SEGREG, *(typeof(&(var)))((void*)&(var)              \
-                                             + get_global_offset()))
-#if MODESEGMENT
-#define GLOBALFLAT2GLOBAL(var) ((typeof(var))((void*)(var) - BUILD_BIOS_ADDR))
-#else
-#define GLOBALFLAT2GLOBAL(var) (var)
-#endif
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ GET_GLOBAL(var)                                                 \
+    GET_VAR(GLOBAL_SEGREG, *(typeof(&(var)))((ਖਾਲੀ*)&(var)              \
+                                             + get_global_ਵਿੱਥ()))
+#ਜੇ MODESEGMENT
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ GLOBALFLAT2GLOBAL(var) ((typeof(var))((ਖਾਲੀ*)(var) - BUILD_BIOS_ADDR))
+#ਨਹੀਂਤਾਂ
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ GLOBALFLAT2GLOBAL(var) (var)
+#ਜੇ_ਅੰਤ
 // Access a "flat" pointer known to point to the f-segment.
-#define GET_GLOBALFLAT(var) GET_GLOBAL(*GLOBALFLAT2GLOBAL(&(var)))
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ GET_GLOBALFLAT(var) GET_GLOBAL(*GLOBALFLAT2GLOBAL(&(var)))
 
 
 /****************************************************************
  * "Low" memory variables
  ****************************************************************/
 
-#define SEG_LOW SYMBOL(_zonelow_seg)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SEG_ਨੀਵਾਂ ਚਿੰਨ੍ਹ(_zonelow_seg)
 
-#if MODESEGMENT
-#define GET_LOW(var)            GET_FARVAR(SEG_LOW, (var))
-#define SET_LOW(var, val)       SET_FARVAR(SEG_LOW, (var), (val))
-#define LOWFLAT2LOW(var) ((typeof(var))((void*)(var) - SYMBOL(zonelow_base)))
-#else
-#define GET_LOW(var)            (var)
-#define SET_LOW(var, val)       do { (var) = (val); } while (0)
-#define LOWFLAT2LOW(var) (var)
-#endif
-#define GET_LOWFLAT(var) GET_LOW(*LOWFLAT2LOW(&(var)))
-#define SET_LOWFLAT(var, val) SET_LOW(*LOWFLAT2LOW(&(var)), (val))
+#ਜੇ MODESEGMENT
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ GET_ਨੀਵਾਂ(var)            GET_FARVAR(SEG_ਨੀਵਾਂ, (var))
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ਸੈੱਟ_ਨੀਵਾਂ(var, val)       ਸੈੱਟ_FARVAR(SEG_ਨੀਵਾਂ, (var), (val))
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ LOWFLAT2_ਨੀਵਾਂ(var) ((typeof(var))((ਖਾਲੀ*)(var) - ਚਿੰਨ੍ਹ(zonelow_ਅਧਾਰ)))
+#ਨਹੀਂਤਾਂ
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ GET_ਨੀਵਾਂ(var)            (var)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ਸੈੱਟ_ਨੀਵਾਂ(var, val)       ਕਰੋ { (var) = (val); } ਜਦੋਂ (0)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ LOWFLAT2_ਨੀਵਾਂ(var) (var)
+#ਜੇ_ਅੰਤ
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ GET_LOWFLAT(var) GET_ਨੀਵਾਂ(*LOWFLAT2_ਨੀਵਾਂ(&(var)))
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ਸੈੱਟ_LOWFLAT(var, val) ਸੈੱਟ_ਨੀਵਾਂ(*LOWFLAT2_ਨੀਵਾਂ(&(var)), (val))
 
-#endif // __BIOSVAR_H
+#ਜੇ_ਅੰਤ // __BIOSVAR_H

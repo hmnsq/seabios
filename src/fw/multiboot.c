@@ -4,108 +4,108 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_*
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "romfile.h" // romfile_add
-#include "std/multiboot.h" // MULTIBOOT_*
-#include "string.h" // memset
-#include "util.h" // multiboot_init
+#ਅਨ੍ਤਰ੍ਭਾਵ "config.h" // CONFIG_*
+#ਅਨ੍ਤਰ੍ਭਾਵ "malloc.h" // free
+#ਅਨ੍ਤਰ੍ਭਾਵ "output.h" // dprintf
+#ਅਨ੍ਤਰ੍ਭਾਵ "romfile.h" // romfile_add
+#ਅਨ੍ਤਰ੍ਭਾਵ "std/multiboot.h" // MULTIBOOT_*
+#ਅਨ੍ਤਰ੍ਭਾਵ "string.h" // memset
+#ਅਨ੍ਤਰ੍ਭਾਵ "util.h" // multiboot_init
 
-struct mbfs_romfile_s {
-    struct romfile_s file;
-    void *data;
+ਬਣਤਰ mbfs_romfile_s {
+    ਬਣਤਰ romfile_s file;
+    ਖਾਲੀ *ਅੰਕੜੇ;
 };
 
-static int
-extract_filename(char *dest, char *src, size_t lim)
+ਸਥਿਰ ਪੂਰਨ
+ਕੱਢੋ_filename(ਅੱਖਰ *dest, ਅੱਖਰ *src, ਮਾਪ_t lim)
 {
-    char *ptr;
-    for (ptr = src; *ptr; ptr++) {
-        if (!(ptr == src || ptr[-1] == ' ' || ptr[-1] == '\t'))
-            continue;
+    ਅੱਖਰ *ptr;
+    ਲਈ (ptr = src; *ptr; ptr++) {
+        ਜੇ (!(ptr == src || ptr[-1] == ' ' || ptr[-1] == '\t'))
+            ਜਾਰੀ;
         /* memcmp stops early if it encounters \0 as it doesn't match name=.  */
-        if (memcmp(ptr, "name=", 5) == 0) {
-            int i;
-            char *optr = dest;
-            for (i = 0, ptr += 5; *ptr && *ptr != ' ' && i < lim; i++) {
+        ਜੇ (memcmp(ptr, "name=", 5) == 0) {
+            ਪੂਰਨ i;
+            ਅੱਖਰ *optr = dest;
+            ਲਈ (i = 0, ptr += 5; *ptr && *ptr != ' ' && i < lim; i++) {
                 *optr++ = *ptr++;
             }
             *optr++ = '\0';
-            return 1;
+            ਵਾਪਸ 1;
         }
     }
-    return 0;
+    ਵਾਪਸ 0;
 }
 
 // Copy a file to memory
-static int
-mbfs_copyfile(struct romfile_s *file, void *dst, u32 maxlen)
+ਸਥਿਰ ਪੂਰਨ
+mbfs_copyfile(ਬਣਤਰ romfile_s *file, ਖਾਲੀ *dst, u32 maxlen)
 {
-    struct mbfs_romfile_s *cfile;
-    cfile = container_of(file, struct mbfs_romfile_s, file);
-    u32 size = cfile->file.size;
-    void *src = cfile->data;
+    ਬਣਤਰ mbfs_romfile_s *cfile;
+    cfile = container_ਦਾ(file, ਬਣਤਰ mbfs_romfile_s, file);
+    u32 ਮਾਪ = cfile->file.ਮਾਪ;
+    ਖਾਲੀ *src = cfile->ਅੰਕੜੇ;
 
     // Not compressed.
-    dprintf(3, "Copying data %d@%p to %d@%p\n", size, src, maxlen, dst);
-    if (size > maxlen) {
+    dprintf(3, "Copying data %d@%p to %d@%p\n", ਮਾਪ, src, maxlen, dst);
+    ਜੇ (ਮਾਪ > maxlen) {
         warn_noalloc();
-        return -1;
+        ਵਾਪਸ -1;
     }
-    iomemcpy(dst, src, size);
-    return size;
+    iomemcpy(dst, src, ਮਾਪ);
+    ਵਾਪਸ ਮਾਪ;
 }
 
-u32 __VISIBLE entry_elf_eax, entry_elf_ebx;
+u32 __VISIBLE ਇੰਦਰਾਜ_elf_eax, ਇੰਦਰਾਜ_elf_ebx;
 
-void
-multiboot_init(void)
+ਖਾਲੀ
+multiboot_init(ਖਾਲੀ)
 {
-    struct multiboot_info *mbi;
-    if (!CONFIG_MULTIBOOT)
-        return;
-    dprintf(1, "multiboot: eax=%x, ebx=%x\n", entry_elf_eax, entry_elf_ebx);
-    if (entry_elf_eax != MULTIBOOT_BOOTLOADER_MAGIC)
-        return;
-    mbi = (void *)entry_elf_ebx;
+    ਬਣਤਰ multiboot_info *mbi;
+    ਜੇ (!CONFIG_MULTIBOOT)
+        ਵਾਪਸ;
+    dprintf(1, "multiboot: eax=%x, ebx=%x\n", ਇੰਦਰਾਜ_elf_eax, ਇੰਦਰਾਜ_elf_ebx);
+    ਜੇ (ਇੰਦਰਾਜ_elf_eax != MULTIBOOT_BOOTLOADER_MAGIC)
+        ਵਾਪਸ;
+    mbi = (ਖਾਲੀ *)ਇੰਦਰਾਜ_elf_ebx;
     dprintf(1, "mbptr=%p\n", mbi);
     dprintf(1, "flags=0x%x, mods=0x%x, mods_c=%d\n", mbi->flags, mbi->mods_addr,
-            mbi->mods_count);
-    if (!(mbi->flags & MULTIBOOT_INFO_MODS))
-        return;
-    int i;
-    struct multiboot_mod_list *mod = (void *)mbi->mods_addr;
-    for (i = 0; i < mbi->mods_count; i++) {
-        struct mbfs_romfile_s *cfile;
+            mbi->mods_ਗਿਣਤੀ);
+    ਜੇ (!(mbi->flags & MULTIBOOT_INFO_MODS))
+        ਵਾਪਸ;
+    ਪੂਰਨ i;
+    ਬਣਤਰ multiboot_mod_list *mod = (ਖਾਲੀ *)mbi->mods_addr;
+    ਲਈ (i = 0; i < mbi->mods_ਗਿਣਤੀ; i++) {
+        ਬਣਤਰ mbfs_romfile_s *cfile;
         u8 *copy;
         u32 len;
-        if (!mod[i].cmdline)
-            continue;
-        len = mod[i].mod_end - mod[i].mod_start;
-        cfile = malloc_tmp(sizeof(*cfile));
-        if (!cfile) {
+        ਜੇ (!mod[i].cmdline)
+            ਜਾਰੀ;
+        len = mod[i].mod_ਸਿਰਾ - mod[i].mod_ਸ਼ੁਰੂ;
+        cfile = malloc_tmp(ਆਕਾਰ(*cfile));
+        ਜੇ (!cfile) {
             warn_noalloc();
-            return;
+            ਵਾਪਸ;
         }
-        memset(cfile, 0, sizeof(*cfile));
-        dprintf(1, "module %s, size 0x%x\n", (char *)mod[i].cmdline, len);
-        if (!extract_filename(cfile->file.name, (char *)mod[i].cmdline,
-                              sizeof(cfile->file.name))) {
-            free(cfile);
-            continue;
+        memset(cfile, 0, ਆਕਾਰ(*cfile));
+        dprintf(1, "module %s, size 0x%x\n", (ਅੱਖਰ *)mod[i].cmdline, len);
+        ਜੇ (!ਕੱਢੋ_filename(cfile->file.name, (ਅੱਖਰ *)mod[i].cmdline,
+                              ਆਕਾਰ(cfile->file.name))) {
+            ਮੁਕਤ(cfile);
+            ਜਾਰੀ;
         }
         dprintf(1, "assigned file name <%s>\n", cfile->file.name);
-        cfile->file.size = len;
+        cfile->file.ਮਾਪ = len;
         copy = malloc_tmp(len);
-        if (!copy) {
+        ਜੇ (!copy) {
             warn_noalloc();
-            free(cfile);
-            return;
+            ਮੁਕਤ(cfile);
+            ਵਾਪਸ;
         }
-        memcpy(copy, (void *)mod[i].mod_start, len);
+        ਸਮ੍ਰਿਤੀ_ਨਕਲ(copy, (ਖਾਲੀ *)mod[i].mod_ਸ਼ੁਰੂ, len);
         cfile->file.copy = mbfs_copyfile;
-        cfile->data = copy;
-        romfile_add(&cfile->file);
+        cfile->ਅੰਕੜੇ = copy;
+        romfile_ਜੋੜੋ(&cfile->file);
     }
 }

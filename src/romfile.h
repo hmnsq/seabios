@@ -1,22 +1,22 @@
-#ifndef __ROMFILE_H
-#define __ROMFILE_H
+#ਜੇ_ਅਪਰਿਭਾਸ਼ਿਤ __ROMFILE_H
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ __ROMFILE_H
 
-#include "types.h" // u32
+#ਅਨ੍ਤਰ੍ਭਾਵ "types.h" // u32
 
 // romfile.c
-struct romfile_s {
-    struct romfile_s *next;
-    char name[128];
-    u32 size;
-    int (*copy)(struct romfile_s *file, void *dest, u32 maxlen);
+ਬਣਤਰ romfile_s {
+    ਬਣਤਰ romfile_s *ਅਗਲਾ;
+    ਅੱਖਰ name[128];
+    u32 ਮਾਪ;
+    ਪੂਰਨ (*copy)(ਬਣਤਰ romfile_s *file, ਖਾਲੀ *dest, u32 maxlen);
 };
-void romfile_add(struct romfile_s *file);
-struct romfile_s *romfile_findprefix(const char *prefix, struct romfile_s *prev);
-struct romfile_s *romfile_find(const char *name);
-void *romfile_loadfile(const char *name, int *psize);
-u64 romfile_loadint(const char *name, u64 defval);
-u32 romfile_loadbool(const char *name, u32 defval);
+ਖਾਲੀ romfile_ਜੋੜੋ(ਬਣਤਰ romfile_s *file);
+ਬਣਤਰ romfile_s *romfile_findprefix(ਅਚਲ ਅੱਖਰ *ਅਗੇਤਰ, ਬਣਤਰ romfile_s *prev);
+ਬਣਤਰ romfile_s *romfile_ਲੱਭੋ(ਅਚਲ ਅੱਖਰ *name);
+ਖਾਲੀ *romfile_loadfile(ਅਚਲ ਅੱਖਰ *name, ਪੂਰਨ *psize);
+u64 romfile_loadint(ਅਚਲ ਅੱਖਰ *name, u64 defval);
+u32 romfile_loadbool(ਅਚਲ ਅੱਖਰ *name, u32 defval);
 
-void const_romfile_add_int(char *name, u32 value);
+ਖਾਲੀ const_romfile_ਜੋੜੋ_int(ਅੱਖਰ *name, u32 ਮੁੱਲ);
 
-#endif // romfile.h
+#ਜੇ_ਅੰਤ // romfile.h

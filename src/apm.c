@@ -6,17 +6,17 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_GLOBAL
-#include "bregs.h" // struct bregs
-#include "config.h" // CONFIG_*
-#include "output.h" // dprintf
-#include "stacks.h" // yield_toirq
-#include "util.h" // apm_shutdown
-#include "x86.h" // outb
+#ਅਨ੍ਤਰ੍ਭਾਵ "biosvar.h" // GET_GLOBAL
+#ਅਨ੍ਤਰ੍ਭਾਵ "bregs.h" // struct bregs
+#ਅਨ੍ਤਰ੍ਭਾਵ "config.h" // CONFIG_*
+#ਅਨ੍ਤਰ੍ਭਾਵ "output.h" // dprintf
+#ਅਨ੍ਤਰ੍ਭਾਵ "stacks.h" // yield_toirq
+#ਅਨ੍ਤਰ੍ਭਾਵ "util.h" // apm_shutdown
+#ਅਨ੍ਤਰ੍ਭਾਵ "x86.h" // outb
 
 // APM installation check
-static void
-handle_155300(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+handle_155300(ਬਣਤਰ bregs *regs)
 {
     regs->ah = 1; // APM major version
     regs->al = 2; // APM minor version
@@ -25,110 +25,110 @@ handle_155300(struct bregs *regs)
     // bit 0 : 16 bit interface supported
     // bit 1 : 32 bit interface supported
     regs->cx = 0x03;
-    set_success(regs);
+    ਸੈੱਟ_success(regs);
 }
 
 // APM real mode interface connect
-static void
-handle_155301(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+handle_155301(ਬਣਤਰ bregs *regs)
 {
-    set_success(regs);
+    ਸੈੱਟ_success(regs);
 }
 
 // APM 16 bit protected mode interface connect
-static void
-handle_155302(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+handle_155302(ਬਣਤਰ bregs *regs)
 {
-    extern void entry_apm16(void);
-    regs->bx = (u32)entry_apm16;
+    ਬਾਹਰੀ ਖਾਲੀ ਇੰਦਰਾਜ_apm16(ਖਾਲੀ);
+    regs->bx = (u32)ਇੰਦਰਾਜ_apm16;
     regs->ax = SEG_BIOS; // 16 bit code segment base
     regs->si = 0xfff0;   // 16 bit code segment size
     regs->cx = SEG_BIOS; // data segment address
     regs->di = 0xfff0;   // data segment length
-    set_success(regs);
+    ਸੈੱਟ_success(regs);
 }
 
 // APM 32 bit protected mode interface connect
-static void
-handle_155303(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+handle_155303(ਬਣਤਰ bregs *regs)
 {
-    extern void entry_apm32(void);
+    ਬਾਹਰੀ ਖਾਲੀ ਇੰਦਰਾਜ_apm32(ਖਾਲੀ);
     regs->ax = SEG_BIOS; // 32 bit code segment base
-    regs->ebx = (u32)entry_apm32;
+    regs->ebx = (u32)ਇੰਦਰਾਜ_apm32;
     regs->cx = SEG_BIOS; // 16 bit code segment base
     // 32 bit code segment size (low 16 bits)
     // 16 bit code segment size (high 16 bits)
     regs->esi = 0xfff0fff0;
     regs->dx = SEG_BIOS; // data segment address
     regs->di = 0xfff0; // data segment length
-    set_success(regs);
+    ਸੈੱਟ_success(regs);
 }
 
 // APM interface disconnect
-static void
-handle_155304(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+handle_155304(ਬਣਤਰ bregs *regs)
 {
-    set_success(regs);
+    ਸੈੱਟ_success(regs);
 }
 
 // APM cpu idle
-static void
-handle_155305(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+handle_155305(ਬਣਤਰ bregs *regs)
 {
     yield_toirq();
-    set_success(regs);
+    ਸੈੱਟ_success(regs);
 }
 
 // APM cpu busy
-static void
-handle_155306(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+handle_155306(ਬਣਤਰ bregs *regs)
 {
-    set_success(regs);
+    ਸੈੱਟ_success(regs);
 }
 
-void
-apm_shutdown(void)
+ਖਾਲੀ
+apm_shutdown(ਖਾਲੀ)
 {
     u16 pm1a_cnt = GET_GLOBAL(acpi_pm1a_cnt);
-    if (pm1a_cnt)
+    ਜੇ (pm1a_cnt)
         outw(0x2000, pm1a_cnt);
 
     irq_disable();
-    for (;;)
+    ਲਈ (;;)
         hlt();
 }
 
 // APM Set Power State
-static void
-handle_155307(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+handle_155307(ਬਣਤਰ bregs *regs)
 {
-    if (regs->bx != 1) {
-        set_success(regs);
-        return;
+    ਜੇ (regs->bx != 1) {
+        ਸੈੱਟ_success(regs);
+        ਵਾਪਸ;
     }
-    switch (regs->cx) {
-    case 1:
+    ਚੋਣ (regs->cx) {
+    ਹਾਲਤ 1:
         dprintf(1, "APM standby request\n");
-        break;
-    case 2:
+        ਰੋਕੋ;
+    ਹਾਲਤ 2:
         dprintf(1, "APM suspend request\n");
-        break;
-    case 3:
+        ਰੋਕੋ;
+    ਹਾਲਤ 3:
         apm_shutdown();
-        break;
+        ਰੋਕੋ;
     }
-    set_success(regs);
+    ਸੈੱਟ_success(regs);
 }
 
-static void
-handle_155308(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+handle_155308(ਬਣਤਰ bregs *regs)
 {
-    set_success(regs);
+    ਸੈੱਟ_success(regs);
 }
 
 // Get Power Status
-static void
-handle_15530a(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+handle_15530a(ਬਣਤਰ bregs *regs)
 {
     regs->bh = 0x01; // on line
     regs->bl = 0xff; // unknown battery status
@@ -136,79 +136,79 @@ handle_15530a(struct bregs *regs)
     regs->cl = 0xff; // unknown remaining time
     regs->dx = 0xffff; // unknown remaining time
     regs->si = 0x00; // zero battery
-    set_success(regs);
+    ਸੈੱਟ_success(regs);
 }
 
-#define RET_ENOEVENT 0x80
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ RET_ENOEVENT 0x80
 
 // Get PM Event
-static void
-handle_15530b(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+handle_15530b(ਬਣਤਰ bregs *regs)
 {
-    set_code_invalid_silent(regs, RET_ENOEVENT);
+    ਸੈੱਟ_ਕੋਡ_invalid_silent(regs, RET_ENOEVENT);
 }
 
 // APM Driver Version
-static void
-handle_15530e(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+handle_15530e(ਬਣਤਰ bregs *regs)
 {
     regs->ah = 1;
     regs->al = 2;
-    set_success(regs);
+    ਸੈੱਟ_success(regs);
 }
 
 // APM Engage / Disengage
-static void
-handle_15530f(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+handle_15530f(ਬਣਤਰ bregs *regs)
 {
-    set_success(regs);
+    ਸੈੱਟ_success(regs);
 }
 
 // APM Get Capabilities
-static void
-handle_155310(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+handle_155310(ਬਣਤਰ bregs *regs)
 {
     regs->bl = 0;
     regs->cx = 0;
-    set_success(regs);
+    ਸੈੱਟ_success(regs);
 }
 
-static void
-handle_1553XX(struct bregs *regs)
+ਸਥਿਰ ਖਾਲੀ
+handle_1553XX(ਬਣਤਰ bregs *regs)
 {
-    set_unimplemented(regs);
+    ਸੈੱਟ_unimplemented(regs);
 }
 
-void
-handle_1553(struct bregs *regs)
+ਖਾਲੀ
+handle_1553(ਬਣਤਰ bregs *regs)
 {
-    if (! CONFIG_APMBIOS) {
-        set_code_invalid(regs, RET_EUNSUPPORTED);
-        return;
+    ਜੇ (! CONFIG_APMBIOS) {
+        ਸੈੱਟ_ਕੋਡ_invalid(regs, RET_EUNSUPPORTED);
+        ਵਾਪਸ;
     }
 
     //debug_stub(regs);
-    switch (regs->al) {
-    case 0x00: handle_155300(regs); break;
-    case 0x01: handle_155301(regs); break;
-    case 0x02: handle_155302(regs); break;
-    case 0x03: handle_155303(regs); break;
-    case 0x04: handle_155304(regs); break;
-    case 0x05: handle_155305(regs); break;
-    case 0x06: handle_155306(regs); break;
-    case 0x07: handle_155307(regs); break;
-    case 0x08: handle_155308(regs); break;
-    case 0x0a: handle_15530a(regs); break;
-    case 0x0b: handle_15530b(regs); break;
-    case 0x0e: handle_15530e(regs); break;
-    case 0x0f: handle_15530f(regs); break;
-    case 0x10: handle_155310(regs); break;
-    default:   handle_1553XX(regs); break;
+    ਚੋਣ (regs->al) {
+    ਹਾਲਤ 0x00: handle_155300(regs); ਰੋਕੋ;
+    ਹਾਲਤ 0x01: handle_155301(regs); ਰੋਕੋ;
+    ਹਾਲਤ 0x02: handle_155302(regs); ਰੋਕੋ;
+    ਹਾਲਤ 0x03: handle_155303(regs); ਰੋਕੋ;
+    ਹਾਲਤ 0x04: handle_155304(regs); ਰੋਕੋ;
+    ਹਾਲਤ 0x05: handle_155305(regs); ਰੋਕੋ;
+    ਹਾਲਤ 0x06: handle_155306(regs); ਰੋਕੋ;
+    ਹਾਲਤ 0x07: handle_155307(regs); ਰੋਕੋ;
+    ਹਾਲਤ 0x08: handle_155308(regs); ਰੋਕੋ;
+    ਹਾਲਤ 0x0a: handle_15530a(regs); ਰੋਕੋ;
+    ਹਾਲਤ 0x0b: handle_15530b(regs); ਰੋਕੋ;
+    ਹਾਲਤ 0x0e: handle_15530e(regs); ਰੋਕੋ;
+    ਹਾਲਤ 0x0f: handle_15530f(regs); ਰੋਕੋ;
+    ਹਾਲਤ 0x10: handle_155310(regs); ਰੋਕੋ;
+    ਮੂਲ:   handle_1553XX(regs); ਰੋਕੋ;
     }
 }
 
-void VISIBLE16 VISIBLE32SEG
-handle_apm(struct bregs *regs)
+ਖਾਲੀ VISIBLE16 VISIBLE32SEG
+handle_apm(ਬਣਤਰ bregs *regs)
 {
     debug_enter(regs, DEBUG_HDL_apm);
     handle_1553(regs);

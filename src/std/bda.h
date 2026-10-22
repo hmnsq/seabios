@@ -1,17 +1,17 @@
 // BIOS Data Area (and similar) definitions
-#ifndef __BDA_H
-#define __BDA_H
+#ਜੇ_ਅਪਰਿਭਾਸ਼ਿਤ __BDA_H
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ __BDA_H
 
-#include "disk.h" // struct fdpt_s
-#include "types.h" // u8
+#ਅਨ੍ਤਰ੍ਭਾਵ "disk.h" // struct fdpt_s
+#ਅਨ੍ਤਰ੍ਭਾਵ "types.h" // u8
 
 
 /****************************************************************
  * Interrupt vector table
  ****************************************************************/
 
-struct rmode_IVT {
-    struct segoff_s ivec[256];
+ਬਣਤਰ rmode_IVT {
+    ਬਣਤਰ segoff_s ivec[256];
 };
 
 
@@ -19,138 +19,138 @@ struct rmode_IVT {
  * Bios Data Area (BDA)
  ****************************************************************/
 
-struct bios_data_area_s {
+ਬਣਤਰ bios_ਅੰਕੜੇ_area_s {
     // 40:00
-    u16 port_com[4];
-    u16 port_lpt[3];
+    u16 ਪੋਰਟ_com[4];
+    u16 ਪੋਰਟ_lpt[3];
     u16 ebda_seg;
     // 40:10
     u16 equipment_list_flags;
     u8 pad1;
-    u16 mem_size_kb;
+    u16 mem_ਮਾਪ_kb;
     u8 pad2;
     u8 ps2_ctrl_flag;
     u16 kbd_flag0;
     u8 alt_keypad;
-    u16 kbd_buf_head;
-    u16 kbd_buf_tail;
+    u16 kbd_buf_ਸਿਰ;
+    u16 kbd_buf_ਪੂਛ;
     // 40:1e
     u8 kbd_buf[32];
-    u8 floppy_recalibration_status;
-    u8 floppy_motor_status;
+    u8 floppy_recalibration_ਸਥਿਤੀ;
+    u8 floppy_motor_ਸਥਿਤੀ;
     // 40:40
     u8 floppy_motor_counter;
-    u8 floppy_last_status;
-    u8 floppy_return_status[7];
-    u8 video_mode;
-    u16 video_cols;
+    u8 floppy_ਆਖਰੀ_ਸਥਿਤੀ;
+    u8 floppy_return_ਸਥਿਤੀ[7];
+    u8 video_ਬਹੁਲਕ;
+    u16 video_ਖਾਨੇ_ਗਿਣਤੀ;
     u16 video_pagesize;
     u16 video_pagestart;
     // 40:50
     u16 cursor_pos[8];
     // 40:60
     u16 cursor_type;
-    u8 video_page;
-    u16 crtc_address;
+    u8 video_ਪੰਨਾ;
+    u16 crtc_ਪਤਾ;
     u8 video_msr;
     u8 video_pal;
-    struct segoff_s jump;
+    ਬਣਤਰ segoff_s jump;
     u8 other_6b;
     u32 timer_counter;
     // 40:70
     u8 timer_rollover;
     u8 break_flag;
     u16 soft_reset_flag;
-    u8 disk_last_status;
+    u8 disk_ਆਖਰੀ_ਸਥਿਤੀ;
     u8 hdcount;
     u8 disk_control_byte;
-    u8 port_disk;
+    u8 ਪੋਰਟ_disk;
     u8 lpt_timeout[4];
     u8 com_timeout[4];
     // 40:80
-    u16 kbd_buf_start_offset;
-    u16 kbd_buf_end_offset;
-    u8 video_rows;
-    u16 char_height;
+    u16 kbd_buf_ਸ਼ੁਰੂ_ਵਿੱਥ;
+    u16 kbd_buf_ਸਿਰਾ_ਵਿੱਥ;
+    u8 video_ਪੰਕਤੀਆਂ;
+    u16 char_ਉਚਾਈ;
     u8 video_ctl;
     u8 video_switches;
     u8 modeset_ctl;
-    u8 dcc_index;
-    u8 floppy_last_data_rate;
-    u8 disk_status_controller;
+    u8 dcc_ਸੂਚਕਾਂਕ;
+    u8 floppy_ਆਖਰੀ_ਅੰਕੜੇ_ਦਰ;
+    u8 disk_ਸਥਿਤੀ_controller;
     u8 disk_error_controller;
-    u8 disk_interrupt_flag;
+    u8 disk_ਰੁਕਾਵਟ_flag;
     u8 floppy_harddisk_info;
     // 40:90
     u8 floppy_media_state[4];
     u8 floppy_track[2];
     u8 kbd_flag1;
     u8 kbd_led;
-    struct segoff_s user_wait_complete_flag;
+    ਬਣਤਰ segoff_s user_wait_complete_flag;
     u32 user_wait_timeout;
     // 40:A0
     u8 rtc_wait_flag;
     u8 other_a1[7];
-    struct segoff_s video_savetable;
+    ਬਣਤਰ segoff_s video_savetable;
     u8 other_ac[4];
     // 40:B0
     u8 other_b0[5*16];
 } PACKED;
 
 // BDA floppy_recalibration_status bitdefs
-#define FRS_IRQ (1<<7)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ FRS_IRQ (1<<7)
 
 // BDA rtc_wait_flag bitdefs
-#define RWS_WAIT_PENDING (1<<0)
-#define RWS_WAIT_ELAPSED (1<<7)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ RWS_WAIT_PENDING (1<<0)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ RWS_WAIT_ELAPSED (1<<7)
 
 // BDA floppy_media_state bitdefs
-#define FMS_DRIVE_STATE_MASK        (0x07)
-#define FMS_MEDIA_DRIVE_ESTABLISHED (1<<4)
-#define FMS_DOUBLE_STEPPING         (1<<5)
-#define FMS_DATA_RATE_MASK          (0xc0)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ FMS_DRIVE_STATE_ਨਕਾਬ        (0x07)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ FMS_MEDIA_DRIVE_ESTABLISHED (1<<4)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ FMS_DOUBLE_STEPPING         (1<<5)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ FMS_ਅੰਕੜੇ_ਦਰ_ਨਕਾਬ          (0xc0)
 
 // BDA kbd_flag[01] bitdefs
-#define KF0_RSHIFT       (1<<0)
-#define KF0_LSHIFT       (1<<1)
-#define KF0_CTRLACTIVE   (1<<2)
-#define KF0_ALTACTIVE    (1<<3)
-#define KF0_SCROLLACTIVE (1<<4)
-#define KF0_NUMACTIVE    (1<<5)
-#define KF0_CAPSACTIVE   (1<<6)
-#define KF0_LCTRL        (1<<8)
-#define KF0_LALT         (1<<9)
-#define KF0_PAUSEACTIVE  (1<<11)
-#define KF0_SCROLL       (1<<12)
-#define KF0_NUM          (1<<13)
-#define KF0_CAPS         (1<<14)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ KF0_RSHIFT       (1<<0)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ KF0_LSHIFT       (1<<1)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ KF0_CTRLACTIVE   (1<<2)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ KF0_ALTACTIVE    (1<<3)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ KF0_SCROLLACTIVE (1<<4)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ KF0_NUMACTIVE    (1<<5)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ KF0_CAPSACTIVE   (1<<6)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ KF0_LCTRL        (1<<8)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ KF0_LALT         (1<<9)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ KF0_PAUSEACTIVE  (1<<11)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ KF0_SCROLL       (1<<12)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ KF0_ਅੰਕ          (1<<13)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ KF0_CAPS         (1<<14)
 
-#define KF1_LAST_E1    (1<<0)
-#define KF1_LAST_E0    (1<<1)
-#define KF1_RCTRL      (1<<2)
-#define KF1_RALT       (1<<3)
-#define KF1_101KBD     (1<<4)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ KF1_ਆਖਰੀ_E1    (1<<0)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ KF1_ਆਖਰੀ_E0    (1<<1)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ KF1_RCTRL      (1<<2)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ KF1_RALT       (1<<3)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ KF1_101KBD     (1<<4)
 
 // Limit of BDA timer_counter field
-#define TICKS_PER_DAY 1573040
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ TICKS_ਪ੍ਰਤੀ_DAY 1573040
 
 
 /****************************************************************
  * Extended Bios Data Area (EBDA)
  ****************************************************************/
 
-struct extended_bios_data_area_s {
-    u8 size;
+ਬਣਤਰ extended_bios_ਅੰਕੜੇ_area_s {
+    u8 ਮਾਪ;
     u8 reserved1[0x21];
-    struct segoff_s far_call_pointer;
+    ਬਣਤਰ segoff_s far_call_ਸੂਚਕ;
     u8 mouse_flag1;
     u8 mouse_flag2;
-    u8 mouse_data[0x08];
+    u8 mouse_ਅੰਕੜੇ[0x08];
     // 0x30
     u8 other1[0x0d];
 
     // 0x3d
-    struct fdpt_s fdpt[2];
+    ਬਣਤਰ fdpt_s fdpt[2];
 
     // 0x5d
     u8 other2[0xC4];
@@ -163,12 +163,12 @@ struct extended_bios_data_area_s {
  * Bios Config Table
  ****************************************************************/
 
-struct bios_config_table_s {
-    u16 size;
+ਬਣਤਰ bios_config_ਸਾਰਣੀ_s {
+    u16 ਮਾਪ;
     u8 model;
     u8 submodel;
     u8 biosrev;
     u8 feature1, feature2, feature3, feature4, feature5;
 } PACKED;
 
-#endif // bda.h
+#ਜੇ_ਅੰਤ // bda.h

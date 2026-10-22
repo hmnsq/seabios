@@ -1,9 +1,9 @@
-#ifndef __USB_UAS_H
-#define __USB_UAS_H
+#ਜੇ_ਅਪਰਿਭਾਸ਼ਿਤ __USB_UAS_H
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ __USB_UAS_H
 
-struct disk_op_s;
-int uas_process_op(struct disk_op_s *op);
-struct usbdevice_s;
-int usb_uas_setup(struct usbdevice_s *usbdev);
+ਬਣਤਰ disk_op_s;
+ਪੂਰਨ uas_process_op(ਬਣਤਰ disk_op_s *op);
+ਬਣਤਰ usbdevice_s;
+ਪੂਰਨ usb_uas_ਤਿਆਰੀ(ਬਣਤਰ usbdevice_s *usbdev);
 
-#endif /* __USB_UAS_H */
+#ਜੇ_ਅੰਤ /* __USB_UAS_H */

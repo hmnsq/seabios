@@ -11,33 +11,33 @@
 //       RFC3174, Wikipedia's SHA1 alogrithm description
 //
 
-#include "config.h"
-#include "byteorder.h" // cpu_to_*, __swab64
-#include "sha.h" // sha1
-#include "string.h" // memcpy
-#include "x86.h" // rol
+#ਅਨ੍ਤਰ੍ਭਾਵ "config.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "byteorder.h" // cpu_to_*, __swab64
+#ਅਨ੍ਤਰ੍ਭਾਵ "sha.h" // sha1
+#ਅਨ੍ਤਰ੍ਭਾਵ "string.h" // memcpy
+#ਅਨ੍ਤਰ੍ਭਾਵ "x86.h" // rol
 
-typedef struct _sha1_ctx {
+ਕਿਸਮਪਰਿਭਾਸ਼ਾ ਬਣਤਰ _sha1_ctx {
     u32 h[5];
 } sha1_ctx;
 
 
-static void
-sha1_block(u32 *w, sha1_ctx *ctx)
+ਸਥਿਰ ਖਾਲੀ
+sha1_ਖੰਡ(u32 *w, sha1_ctx *ctx)
 {
     u32 i;
     u32 a,b,c,d,e,f;
     u32 tmp;
     u32 idx;
 
-    static const u32 sha_ko[4] = {
+    ਸਥਿਰ ਅਚਲ u32 sha_ko[4] = {
         0x5a827999, 0x6ed9eba1, 0x8f1bbcdc, 0xca62c1d6 };
 
     /* change endianness of given data */
-    for (i = 0; i < 16; i++)
-        w[i] = be32_to_cpu(w[i]);
+    ਲਈ (i = 0; i < 16; i++)
+        w[i] = be32_ਮੰਜ਼ਿਲ_cpu(w[i]);
 
-    for (i = 16; i <= 79; i++) {
+    ਲਈ (i = 16; i <= 79; i++) {
         tmp = w[i-3] ^ w[i-8] ^ w[i-14] ^ w[i-16];
         w[i] = rol(tmp,1);
     }
@@ -48,17 +48,17 @@ sha1_block(u32 *w, sha1_ctx *ctx)
     d = ctx->h[3];
     e = ctx->h[4];
 
-    for (i = 0; i <= 79; i++) {
-        if (i <= 19) {
+    ਲਈ (i = 0; i <= 79; i++) {
+        ਜੇ (i <= 19) {
             f = (b & c) | ((b ^ 0xffffffff) & d);
             idx = 0;
-        } else if (i <= 39) {
+        } ਨਹੀਂਤਾਂ ਜੇ (i <= 39) {
             f = b ^ c ^ d;
             idx = 1;
-        } else if (i <= 59) {
+        } ਨਹੀਂਤਾਂ ਜੇ (i <= 59) {
             f = (b & c) | (b & d) | (c & d);
             idx = 2;
-        } else {
+        } ਨਹੀਂਤਾਂ {
             f = b ^ c ^ d;
             idx = 3;
         }
@@ -83,54 +83,54 @@ sha1_block(u32 *w, sha1_ctx *ctx)
 }
 
 
-static void
-sha1_do(sha1_ctx *ctx, const u8 *data32, u32 length)
+ਸਥਿਰ ਖਾਲੀ
+sha1_do(sha1_ctx *ctx, ਅਚਲ u8 *data32, u32 ਲੰਮਾਈ)
 {
-    u32 offset;
-    u16 num;
-    u32 bits = 0;
+    u32 ਵਿੱਥ_2;
+    u16 ਅੰਕ;
+    u32 ਬਿੱਟ = 0;
     u32 w[80];
     u64 tmp;
 
     /* treat data in 64-byte chunks */
-    for (offset = 0; length - offset >= 64; offset += 64) {
-        memcpy(w, data32 + offset, 64);
-        sha1_block((u32 *)w, ctx);
-        bits += (64 * 8);
+    ਲਈ (ਵਿੱਥ_2 = 0; ਲੰਮਾਈ - ਵਿੱਥ_2 >= 64; ਵਿੱਥ_2 += 64) {
+        ਸਮ੍ਰਿਤੀ_ਨਕਲ(w, data32 + ਵਿੱਥ_2, 64);
+        sha1_ਖੰਡ((u32 *)w, ctx);
+        ਬਿੱਟ += (64 * 8);
     }
 
     /* last block with less than 64 bytes */
-    num = length - offset;
-    bits += (num << 3);
+    ਅੰਕ = ਲੰਮਾਈ - ਵਿੱਥ_2;
+    ਬਿੱਟ += (ਅੰਕ << 3);
 
-    memcpy(w, data32 + offset, num);
-    ((u8 *)w)[num] = 0x80;
-    if (64 - (num + 1) > 0)
-        memset( &((u8 *)w)[num + 1], 0x0, 64 - (num + 1));
+    ਸਮ੍ਰਿਤੀ_ਨਕਲ(w, data32 + ਵਿੱਥ_2, ਅੰਕ);
+    ((u8 *)w)[ਅੰਕ] = 0x80;
+    ਜੇ (64 - (ਅੰਕ + 1) > 0)
+        memset( &((u8 *)w)[ਅੰਕ + 1], 0x0, 64 - (ਅੰਕ + 1));
 
-    if (num >= 56) {
+    ਜੇ (ਅੰਕ >= 56) {
         /* cannot append number of bits here */
-        sha1_block((u32 *)w, ctx);
+        sha1_ਖੰਡ((u32 *)w, ctx);
         memset(w, 0x0, 60);
     }
 
     /* write number of bits to end of block */
-    tmp = __swab64(bits);
-    memcpy(&w[14], &tmp, 8);
+    tmp = __swab64(ਬਿੱਟ);
+    ਸਮ੍ਰਿਤੀ_ਨਕਲ(&w[14], &tmp, 8);
 
-    sha1_block(w, ctx);
+    sha1_ਖੰਡ(w, ctx);
 
     /* need to switch result's endianness */
-    for (num = 0; num < 5; num++)
-        ctx->h[num] = cpu_to_be32(ctx->h[num]);
+    ਲਈ (ਅੰਕ = 0; ਅੰਕ < 5; ਅੰਕ++)
+        ctx->h[ਅੰਕ] = cpu_ਮੰਜ਼ਿਲ_be32(ctx->h[ਅੰਕ]);
 }
 
 
-void
-sha1(const u8 *data, u32 length, u8 *hash)
+ਖਾਲੀ
+sha1(ਅਚਲ u8 *ਅੰਕੜੇ, u32 ਲੰਮਾਈ, u8 *hash)
 {
-    if (!CONFIG_TCGBIOS)
-        return;
+    ਜੇ (!CONFIG_TCGBIOS)
+        ਵਾਪਸ;
 
     sha1_ctx ctx = {
         .h[0] = 0x67452301,
@@ -140,8 +140,8 @@ sha1(const u8 *data, u32 length, u8 *hash)
         .h[4] = 0xc3d2e1f0,
     };
 
-    sha1_do(&ctx, data, length);
-    memcpy(hash, &ctx.h[0], 20);
+    sha1_do(&ctx, ਅੰਕੜੇ, ਲੰਮਾਈ);
+    ਸਮ੍ਰਿਤੀ_ਨਕਲ(hash, &ctx.h[0], 20);
 
-    return;
+    ਵਾਪਸ;
 }

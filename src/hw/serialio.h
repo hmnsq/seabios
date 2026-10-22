@@ -1,30 +1,30 @@
-#ifndef __SERIALIO_H
-#define __SERIALIO_H
+#ਜੇ_ਅਪਰਿਭਾਸ਼ਿਤ __SERIALIO_H
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ __SERIALIO_H
 
-#include "types.h" // u16
+#ਅਨ੍ਤਰ੍ਭਾਵ "types.h" // u16
 
-#define PORT_LPT2              0x0278
-#define PORT_SERIAL4           0x02e8
-#define PORT_SERIAL2           0x02f8
-#define PORT_LPT1              0x0378
-#define PORT_SERIAL3           0x03e8
-#define PORT_SERIAL1           0x03f8
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ਪੋਰਟ_LPT2              0x0278
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ਪੋਰਟ_SERIAL4           0x02e8
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ਪੋਰਟ_SERIAL2           0x02f8
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ਪੋਰਟ_LPT1              0x0378
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ਪੋਰਟ_SERIAL3           0x03e8
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ ਪੋਰਟ_SERIAL1           0x03f8
 
 // Serial port offsets
-#define SEROFF_DATA    0
-#define SEROFF_DLL     0
-#define SEROFF_IER     1
-#define SEROFF_DLH     1
-#define SEROFF_IIR     2
-#define SEROFF_LCR     3
-#define SEROFF_LSR     5
-#define SEROFF_MSR     6
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SEROFF_ਅੰਕੜੇ    0
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SEROFF_DLL     0
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SEROFF_IER     1
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SEROFF_DLH     1
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SEROFF_IIR     2
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SEROFF_LCR     3
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SEROFF_LSR     5
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SEROFF_MSR     6
 
-void serial_debug_preinit(void);
-void serial_debug_putc(char c);
-void serial_debug_flush(void);
-extern u16 DebugOutputPort;
-void qemu_debug_preinit(void);
-void qemu_debug_putc(char c);
+ਖਾਲੀ serial_debug_preinit(ਖਾਲੀ);
+ਖਾਲੀ serial_debug_putc(ਅੱਖਰ c);
+ਖਾਲੀ serial_debug_flush(ਖਾਲੀ);
+ਬਾਹਰੀ u16 Debug_Output_ਪੋਰਟ;
+ਖਾਲੀ qemu_debug_preinit(ਖਾਲੀ);
+ਖਾਲੀ qemu_debug_putc(ਅੱਖਰ c);
 
-#endif // serialio.h
+#ਜੇ_ਅੰਤ // serialio.h

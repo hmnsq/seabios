@@ -4,116 +4,116 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "ahci.h" // CDB_CMD_READ_10
-#include "ata.h" // ATA_CB_STAT
-#include "biosvar.h" // GET_GLOBAL
-#include "blockcmd.h" // CDB_CMD_READ_10
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "pci.h" // pci_config_readb
-#include "pcidevice.h" // foreachpci
-#include "pci_ids.h" // PCI_CLASS_STORAGE_OTHER
-#include "pci_regs.h" // PCI_INTERRUPT_LINE
-#include "stacks.h" // yield
-#include "std/disk.h" // DISK_RET_SUCCESS
-#include "string.h" // memset
-#include "util.h" // timer_calc
-#include "x86.h" // inb
+#ਅਨ੍ਤਰ੍ਭਾਵ "ahci.h" // CDB_CMD_READ_10
+#ਅਨ੍ਤਰ੍ਭਾਵ "ata.h" // ATA_CB_STAT
+#ਅਨ੍ਤਰ੍ਭਾਵ "biosvar.h" // GET_GLOBAL
+#ਅਨ੍ਤਰ੍ਭਾਵ "blockcmd.h" // CDB_CMD_READ_10
+#ਅਨ੍ਤਰ੍ਭਾਵ "malloc.h" // free
+#ਅਨ੍ਤਰ੍ਭਾਵ "output.h" // dprintf
+#ਅਨ੍ਤਰ੍ਭਾਵ "pci.h" // pci_config_readb
+#ਅਨ੍ਤਰ੍ਭਾਵ "pcidevice.h" // foreachpci
+#ਅਨ੍ਤਰ੍ਭਾਵ "pci_ids.h" // PCI_CLASS_STORAGE_OTHER
+#ਅਨ੍ਤਰ੍ਭਾਵ "pci_regs.h" // PCI_INTERRUPT_LINE
+#ਅਨ੍ਤਰ੍ਭਾਵ "stacks.h" // yield
+#ਅਨ੍ਤਰ੍ਭਾਵ "std/disk.h" // DISK_RET_SUCCESS
+#ਅਨ੍ਤਰ੍ਭਾਵ "string.h" // memset
+#ਅਨ੍ਤਰ੍ਭਾਵ "util.h" // timer_calc
+#ਅਨ੍ਤਰ੍ਭਾਵ "x86.h" // inb
 
-#define AHCI_REQUEST_TIMEOUT 32000 // 32 seconds max for IDE ops
-#define AHCI_RESET_TIMEOUT     500 // 500 miliseconds
-#define AHCI_LINK_TIMEOUT       10 // 10 miliseconds
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ AHCI_REQUEST_TIMEOUT 32000 // 32 seconds max for IDE ops
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ AHCI_RESET_TIMEOUT     500 // 500 miliseconds
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ AHCI_LINK_TIMEOUT       10 // 10 miliseconds
 
 // prepare sata command fis
-static void sata_prep_simple(struct sata_cmd_fis *fis, u8 command)
+ਸਥਿਰ ਖਾਲੀ sata_prep_simple(ਬਣਤਰ sata_cmd_fis *fis, u8 command)
 {
-    memset_fl(fis, 0, sizeof(*fis));
+    memset_fl(fis, 0, ਆਕਾਰ(*fis));
     fis->command = command;
 }
 
-static void sata_prep_readwrite(struct sata_cmd_fis *fis,
-                                struct disk_op_s *op, int iswrite)
+ਸਥਿਰ ਖਾਲੀ sata_prep_readwrite(ਬਣਤਰ sata_cmd_fis *fis,
+                                ਬਣਤਰ disk_op_s *op, ਪੂਰਨ iswrite)
 {
     u64 lba = op->lba;
     u8 command;
 
-    memset_fl(fis, 0, sizeof(*fis));
+    memset_fl(fis, 0, ਆਕਾਰ(*fis));
 
-    if (op->count >= (1<<8) || lba + op->count >= (1<<28)) {
-        fis->sector_count2 = op->count >> 8;
+    ਜੇ (op->ਗਿਣਤੀ_2 >= (1<<8) || lba + op->ਗਿਣਤੀ_2 >= (1<<28)) {
+        fis->sector_count2 = op->ਗਿਣਤੀ_2 >> 8;
         fis->lba_low2      = lba >> 24;
         fis->lba_mid2      = lba >> 32;
         fis->lba_high2     = lba >> 40;
         lba &= 0xffffff;
         command = (iswrite ? ATA_CMD_WRITE_DMA_EXT
                    : ATA_CMD_READ_DMA_EXT);
-    } else {
+    } ਨਹੀਂਤਾਂ {
         command = (iswrite ? ATA_CMD_WRITE_DMA
                    : ATA_CMD_READ_DMA);
     }
     fis->feature      = 1; /* dma */
     fis->command      = command;
-    fis->sector_count = op->count;
-    fis->lba_low      = lba;
+    fis->sector_ਗਿਣਤੀ = op->ਗਿਣਤੀ_2;
+    fis->lba_ਨੀਵਾਂ      = lba;
     fis->lba_mid      = lba >> 8;
-    fis->lba_high     = lba >> 16;
+    fis->lba_ਉੱਚਾ     = lba >> 16;
     fis->device       = ((lba >> 24) & 0xf) | ATA_CB_DH_LBA;
 }
 
-static void sata_prep_atapi(struct sata_cmd_fis *fis, u16 blocksize)
+ਸਥਿਰ ਖਾਲੀ sata_prep_atapi(ਬਣਤਰ sata_cmd_fis *fis, u16 blocksize)
 {
-    memset_fl(fis, 0, sizeof(*fis));
+    memset_fl(fis, 0, ਆਕਾਰ(*fis));
     fis->command  = ATA_CMD_PACKET;
     fis->feature  = 1; /* dma */
     fis->lba_mid  = blocksize;
-    fis->lba_high = blocksize >> 8;
+    fis->lba_ਉੱਚਾ = blocksize >> 8;
 }
 
 // ahci register access helpers
-static u32 ahci_ctrl_readl(struct ahci_ctrl_s *ctrl, u32 reg)
+ਸਥਿਰ u32 ahci_ctrl_readl(ਬਣਤਰ ahci_ctrl_s *ctrl, u32 reg)
 {
-    return readl(ctrl->iobase + reg);
+    ਵਾਪਸ readl(ctrl->iobase + reg);
 }
 
-static void ahci_ctrl_writel(struct ahci_ctrl_s *ctrl, u32 reg, u32 val)
+ਸਥਿਰ ਖਾਲੀ ahci_ctrl_writel(ਬਣਤਰ ahci_ctrl_s *ctrl, u32 reg, u32 val)
 {
     writel(ctrl->iobase + reg, val);
 }
 
-static u32 ahci_port_to_ctrl(u32 pnr, u32 port_reg)
+ਸਥਿਰ u32 ahci_ਪੋਰਟ_ਮੰਜ਼ਿਲ_ctrl(u32 pnr, u32 ਪੋਰਟ_reg)
 {
     u32 ctrl_reg = 0x100;
     ctrl_reg += pnr * 0x80;
-    ctrl_reg += port_reg;
-    return ctrl_reg;
+    ctrl_reg += ਪੋਰਟ_reg;
+    ਵਾਪਸ ctrl_reg;
 }
 
-static u32 ahci_port_readl(struct ahci_ctrl_s *ctrl, u32 pnr, u32 reg)
+ਸਥਿਰ u32 ahci_ਪੋਰਟ_readl(ਬਣਤਰ ahci_ctrl_s *ctrl, u32 pnr, u32 reg)
 {
-    u32 ctrl_reg = ahci_port_to_ctrl(pnr, reg);
-    return ahci_ctrl_readl(ctrl, ctrl_reg);
+    u32 ctrl_reg = ahci_ਪੋਰਟ_ਮੰਜ਼ਿਲ_ctrl(pnr, reg);
+    ਵਾਪਸ ahci_ctrl_readl(ctrl, ctrl_reg);
 }
 
-static void ahci_port_writel(struct ahci_ctrl_s *ctrl, u32 pnr, u32 reg, u32 val)
+ਸਥਿਰ ਖਾਲੀ ahci_ਪੋਰਟ_writel(ਬਣਤਰ ahci_ctrl_s *ctrl, u32 pnr, u32 reg, u32 val)
 {
-    u32 ctrl_reg = ahci_port_to_ctrl(pnr, reg);
+    u32 ctrl_reg = ahci_ਪੋਰਟ_ਮੰਜ਼ਿਲ_ctrl(pnr, reg);
     ahci_ctrl_writel(ctrl, ctrl_reg, val);
 }
 
 // submit ahci command + wait for result
-static int ahci_command(struct ahci_port_s *port_gf, int iswrite, int isatapi,
-                        void *buffer, u32 bsize)
+ਸਥਿਰ ਪੂਰਨ ahci_command(ਬਣਤਰ ahci_ਪੋਰਟ_s *ਪੋਰਟ_gf, ਪੂਰਨ iswrite, ਪੂਰਨ isatapi,
+                        ਖਾਲੀ *ਬਫਰ, u32 bsize)
 {
-    u32 val, status, success, flags, intbits, error;
-    struct ahci_ctrl_s *ctrl = port_gf->ctrl;
-    struct ahci_cmd_s  *cmd  = port_gf->cmd;
-    struct ahci_fis_s  *fis  = port_gf->fis;
-    struct ahci_list_s *list = port_gf->list;
-    u32 pnr                  = port_gf->pnr;
+    u32 val, ਸਥਿਤੀ, success, flags, intbits, error;
+    ਬਣਤਰ ahci_ctrl_s *ctrl = ਪੋਰਟ_gf->ctrl;
+    ਬਣਤਰ ahci_cmd_s  *cmd  = ਪੋਰਟ_gf->cmd;
+    ਬਣਤਰ ahci_fis_s  *fis  = ਪੋਰਟ_gf->fis;
+    ਬਣਤਰ ahci_list_s *list = ਪੋਰਟ_gf->list;
+    u32 pnr                  = ਪੋਰਟ_gf->pnr;
 
     cmd->fis.reg       = 0x27;
     cmd->fis.pmp_type  = 1 << 7; /* cmd fis */
-    cmd->prdt[0].base  = (u32)buffer;
+    cmd->prdt[0].ਅਧਾਰ  = (u32)ਬਫਰ;
     cmd->prdt[0].baseu = 0;
     cmd->prdt[0].flags = bsize-1;
 
@@ -122,539 +122,539 @@ static int ahci_command(struct ahci_port_s *port_gf, int iswrite, int isatapi,
              (isatapi ? (1 << 5) : 0) |
              (5 << 0)); /* fis length (dwords) */
     list[0].flags  = flags;
-    list[0].bytes  = 0;
-    list[0].base   = (u32)(cmd);
+    list[0].ਬਾਈਟਾਂ  = 0;
+    list[0].ਅਧਾਰ   = (u32)(cmd);
     list[0].baseu  = 0;
 
     dprintf(8, "AHCI/%d: send cmd ...\n", pnr);
-    intbits = ahci_port_readl(ctrl, pnr, PORT_IRQ_STAT);
-    if (intbits)
-        ahci_port_writel(ctrl, pnr, PORT_IRQ_STAT, intbits);
-    ahci_port_writel(ctrl, pnr, PORT_CMD_ISSUE, 1);
+    intbits = ahci_ਪੋਰਟ_readl(ctrl, pnr, ਪੋਰਟ_IRQ_STAT);
+    ਜੇ (intbits)
+        ahci_ਪੋਰਟ_writel(ctrl, pnr, ਪੋਰਟ_IRQ_STAT, intbits);
+    ahci_ਪੋਰਟ_writel(ctrl, pnr, ਪੋਰਟ_CMD_ISSUE, 1);
 
-    u32 end = timer_calc(AHCI_REQUEST_TIMEOUT);
-    do {
-        for (;;) {
-            intbits = ahci_port_readl(ctrl, pnr, PORT_IRQ_STAT);
-            if (intbits) {
-                ahci_port_writel(ctrl, pnr, PORT_IRQ_STAT, intbits);
-                if (intbits & 0x40000000) {
-                    u32 tf = ahci_port_readl(ctrl, pnr, PORT_TFDATA);
-                    status = tf & 0xff;
+    u32 ਸਿਰਾ = timer_calc(AHCI_REQUEST_TIMEOUT);
+    ਕਰੋ {
+        ਲਈ (;;) {
+            intbits = ahci_ਪੋਰਟ_readl(ctrl, pnr, ਪੋਰਟ_IRQ_STAT);
+            ਜੇ (intbits) {
+                ahci_ਪੋਰਟ_writel(ctrl, pnr, ਪੋਰਟ_IRQ_STAT, intbits);
+                ਜੇ (intbits & 0x40000000) {
+                    u32 tf = ahci_ਪੋਰਟ_readl(ctrl, pnr, ਪੋਰਟ_TFDATA);
+                    ਸਥਿਤੀ = tf & 0xff;
                     error = (tf & 0xff00) >> 8;
-                    break;
+                    ਰੋਕੋ;
                 }
-                if (intbits & 0x02) {
-                    status = GET_LOWFLAT(fis->psfis[2]);
+                ਜੇ (intbits & 0x02) {
+                    ਸਥਿਤੀ = GET_LOWFLAT(fis->psfis[2]);
                     error  = GET_LOWFLAT(fis->psfis[3]);
-                    break;
+                    ਰੋਕੋ;
                 }
-                if (intbits & 0x01) {
-                    status = GET_LOWFLAT(fis->rfis[2]);
+                ਜੇ (intbits & 0x01) {
+                    ਸਥਿਤੀ = GET_LOWFLAT(fis->rfis[2]);
                     error  = GET_LOWFLAT(fis->rfis[3]);
-                    break;
+                    ਰੋਕੋ;
                 }
             }
-            if (timer_check(end)) {
+            ਜੇ (timer_check(ਸਿਰਾ)) {
                 warn_timeout();
-                return -1;
+                ਵਾਪਸ -1;
             }
             yield();
         }
         dprintf(8, "AHCI/%d: ... intbits 0x%x, status 0x%x ...\n",
-                pnr, intbits, status);
-    } while (status & ATA_CB_STAT_BSY);
+                pnr, intbits, ਸਥਿਤੀ);
+    } ਜਦੋਂ (ਸਥਿਤੀ & ATA_CB_STAT_BSY);
 
-    success = (0x00 == (status & (ATA_CB_STAT_BSY | ATA_CB_STAT_DF |
+    success = (0x00 == (ਸਥਿਤੀ & (ATA_CB_STAT_BSY | ATA_CB_STAT_DF |
                                   ATA_CB_STAT_ERR)) &&
-               ATA_CB_STAT_RDY == (status & (ATA_CB_STAT_RDY)));
-    if (success) {
+               ATA_CB_STAT_RDY == (ਸਥਿਤੀ & (ATA_CB_STAT_RDY)));
+    ਜੇ (success) {
         dprintf(8, "AHCI/%d: ... finished, status 0x%x, OK\n", pnr,
-                status);
-    } else {
+                ਸਥਿਤੀ);
+    } ਨਹੀਂਤਾਂ {
         dprintf(2, "AHCI/%d: ... finished, status 0x%x, ERROR 0x%x\n", pnr,
-                status, error);
+                ਸਥਿਤੀ, error);
 
         // non-queued error recovery (AHCI 1.3 section 6.2.2.1)
         // Clears PxCMD.ST to 0 to reset the PxCI register
-        val = ahci_port_readl(ctrl, pnr, PORT_CMD);
-        ahci_port_writel(ctrl, pnr, PORT_CMD, val & ~PORT_CMD_START);
+        val = ahci_ਪੋਰਟ_readl(ctrl, pnr, ਪੋਰਟ_CMD);
+        ahci_ਪੋਰਟ_writel(ctrl, pnr, ਪੋਰਟ_CMD, val & ~ਪੋਰਟ_CMD_ਸ਼ੁਰੂ);
 
         // waits for PxCMD.CR to clear to 0
-        while (1) {
-            val = ahci_port_readl(ctrl, pnr, PORT_CMD);
-            if ((val & PORT_CMD_LIST_ON) == 0)
-                break;
+        ਜਦੋਂ (1) {
+            val = ahci_ਪੋਰਟ_readl(ctrl, pnr, ਪੋਰਟ_CMD);
+            ਜੇ ((val & ਪੋਰਟ_CMD_LIST_ON) == 0)
+                ਰੋਕੋ;
             yield();
         }
 
         // Clears any error bits in PxSERR to enable capturing new errors
-        val = ahci_port_readl(ctrl, pnr, PORT_SCR_ERR);
-        ahci_port_writel(ctrl, pnr, PORT_SCR_ERR, val);
+        val = ahci_ਪੋਰਟ_readl(ctrl, pnr, ਪੋਰਟ_SCR_ERR);
+        ahci_ਪੋਰਟ_writel(ctrl, pnr, ਪੋਰਟ_SCR_ERR, val);
 
         // Clears status bits in PxIS as appropriate
-        val = ahci_port_readl(ctrl, pnr, PORT_IRQ_STAT);
-        ahci_port_writel(ctrl, pnr, PORT_IRQ_STAT, val);
+        val = ahci_ਪੋਰਟ_readl(ctrl, pnr, ਪੋਰਟ_IRQ_STAT);
+        ahci_ਪੋਰਟ_writel(ctrl, pnr, ਪੋਰਟ_IRQ_STAT, val);
 
         // If PxTFD.STS.BSY or PxTFD.STS.DRQ is set to 1, issue
         // a COMRESET to the device to put it in an idle state
-        val = ahci_port_readl(ctrl, pnr, PORT_TFDATA);
-        if (val & (ATA_CB_STAT_BSY | ATA_CB_STAT_DRQ)) {
+        val = ahci_ਪੋਰਟ_readl(ctrl, pnr, ਪੋਰਟ_TFDATA);
+        ਜੇ (val & (ATA_CB_STAT_BSY | ATA_CB_STAT_DRQ)) {
             dprintf(2, "AHCI/%d: issue comreset\n", pnr);
-            val = ahci_port_readl(ctrl, pnr, PORT_SCR_CTL);
+            val = ahci_ਪੋਰਟ_readl(ctrl, pnr, ਪੋਰਟ_SCR_CTL);
             // set Device Detection Initialization (DET) to 1 for 1 ms for comreset
-            ahci_port_writel(ctrl, pnr, PORT_SCR_CTL, val | 1);
+            ahci_ਪੋਰਟ_writel(ctrl, pnr, ਪੋਰਟ_SCR_CTL, val | 1);
             mdelay (1);
-            ahci_port_writel(ctrl, pnr, PORT_SCR_CTL, val);
+            ahci_ਪੋਰਟ_writel(ctrl, pnr, ਪੋਰਟ_SCR_CTL, val);
         }
 
         // Sets PxCMD.ST to 1 to enable issuing new commands
-        val = ahci_port_readl(ctrl, pnr, PORT_CMD);
-        ahci_port_writel(ctrl, pnr, PORT_CMD, val | PORT_CMD_START);
+        val = ahci_ਪੋਰਟ_readl(ctrl, pnr, ਪੋਰਟ_CMD);
+        ahci_ਪੋਰਟ_writel(ctrl, pnr, ਪੋਰਟ_CMD, val | ਪੋਰਟ_CMD_ਸ਼ੁਰੂ);
     }
-    return success ? 0 : -1;
+    ਵਾਪਸ success ? 0 : -1;
 }
 
-#define CDROM_CDB_SIZE 12
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ CDROM_CDB_ਮਾਪ 12
 
-int ahci_atapi_process_op(struct disk_op_s *op)
+ਪੂਰਨ ahci_atapi_process_op(ਬਣਤਰ disk_op_s *op)
 {
-    if (! CONFIG_AHCI)
-        return 0;
+    ਜੇ (! CONFIG_AHCI)
+        ਵਾਪਸ 0;
 
-    struct ahci_port_s *port_gf = container_of(
-        op->drive_fl, struct ahci_port_s, drive);
-    struct ahci_cmd_s *cmd = port_gf->cmd;
+    ਬਣਤਰ ahci_ਪੋਰਟ_s *ਪੋਰਟ_gf = container_ਦਾ(
+        op->drive_fl, ਬਣਤਰ ahci_ਪੋਰਟ_s, drive);
+    ਬਣਤਰ ahci_cmd_s *cmd = ਪੋਰਟ_gf->cmd;
 
-    if (op->command == CMD_WRITE || op->command == CMD_FORMAT)
-        return DISK_RET_EWRITEPROTECT;
-    int blocksize = scsi_fill_cmd(op, cmd->atapi, CDROM_CDB_SIZE);
-    if (blocksize < 0)
-        return default_process_op(op);
+    ਜੇ (op->command == CMD_WRITE || op->command == CMD_FORMAT)
+        ਵਾਪਸ DISK_RET_EWRITEPROTECT;
+    ਪੂਰਨ blocksize = scsi_fill_cmd(op, cmd->atapi, CDROM_CDB_ਮਾਪ);
+    ਜੇ (blocksize < 0)
+        ਵਾਪਸ default_process_op(op);
     sata_prep_atapi(&cmd->fis, blocksize);
-    int rc = ahci_command(port_gf, 0, 1, op->buf_fl, op->count * blocksize);
-    if (rc < 0)
-        return DISK_RET_EBADTRACK;
-    return DISK_RET_SUCCESS;
+    ਪੂਰਨ rc = ahci_command(ਪੋਰਟ_gf, 0, 1, op->buf_fl, op->ਗਿਣਤੀ_2 * blocksize);
+    ਜੇ (rc < 0)
+        ਵਾਪਸ DISK_RET_EBADTRACK;
+    ਵਾਪਸ DISK_RET_SUCCESS;
 }
 
 // read/write count blocks from a harddrive, op->buf_fl must be word aligned
-static int
-ahci_disk_readwrite_aligned(struct disk_op_s *op, int iswrite)
+ਸਥਿਰ ਪੂਰਨ
+ahci_disk_readwrite_aligned(ਬਣਤਰ disk_op_s *op, ਪੂਰਨ iswrite)
 {
-    struct ahci_port_s *port_gf = container_of(
-        op->drive_fl, struct ahci_port_s, drive);
-    struct ahci_cmd_s *cmd = port_gf->cmd;
-    int rc;
+    ਬਣਤਰ ahci_ਪੋਰਟ_s *ਪੋਰਟ_gf = container_ਦਾ(
+        op->drive_fl, ਬਣਤਰ ahci_ਪੋਰਟ_s, drive);
+    ਬਣਤਰ ahci_cmd_s *cmd = ਪੋਰਟ_gf->cmd;
+    ਪੂਰਨ rc;
 
     sata_prep_readwrite(&cmd->fis, op, iswrite);
-    rc = ahci_command(port_gf, iswrite, 0, op->buf_fl,
-                      op->count * DISK_SECTOR_SIZE);
+    rc = ahci_command(ਪੋਰਟ_gf, iswrite, 0, op->buf_fl,
+                      op->ਗਿਣਤੀ_2 * DISK_SECTOR_ਮਾਪ);
     dprintf(8, "ahci disk %s, lba %6x, count %3x, buf %p, rc %d\n",
-            iswrite ? "write" : "read", (u32)op->lba, op->count, op->buf_fl, rc);
-    if (rc < 0)
-        return DISK_RET_EBADTRACK;
-    return DISK_RET_SUCCESS;
+            iswrite ? "write" : "read", (u32)op->lba, op->ਗਿਣਤੀ_2, op->buf_fl, rc);
+    ਜੇ (rc < 0)
+        ਵਾਪਸ DISK_RET_EBADTRACK;
+    ਵਾਪਸ DISK_RET_SUCCESS;
 }
 
 // read/write count blocks from a harddrive.
-static int
-ahci_disk_readwrite(struct disk_op_s *op, int iswrite)
+ਸਥਿਰ ਪੂਰਨ
+ahci_disk_readwrite(ਬਣਤਰ disk_op_s *op, ਪੂਰਨ iswrite)
 {
     // if caller's buffer is word aligned, use it directly
-    if (((u32) op->buf_fl & 1) == 0)
-        return ahci_disk_readwrite_aligned(op, iswrite);
+    ਜੇ (((u32) op->buf_fl & 1) == 0)
+        ਵਾਪਸ ahci_disk_readwrite_aligned(op, iswrite);
 
     // Use a word aligned buffer for AHCI I/O
-    int rc;
-    struct disk_op_s localop = *op;
+    ਪੂਰਨ rc;
+    ਬਣਤਰ disk_op_s localop = *op;
     u8 *alignedbuf_fl = bounce_buf_fl;
     u8 *position = op->buf_fl;
 
     localop.buf_fl = alignedbuf_fl;
-    localop.count = 1;
+    localop.ਗਿਣਤੀ_2 = 1;
 
-    if (iswrite) {
-        u16 block;
-        for (block = 0; block < op->count; block++) {
-            memcpy_fl (alignedbuf_fl, position, DISK_SECTOR_SIZE);
+    ਜੇ (iswrite) {
+        u16 ਖੰਡ;
+        ਲਈ (ਖੰਡ = 0; ਖੰਡ < op->ਗਿਣਤੀ_2; ਖੰਡ++) {
+            memcpy_fl (alignedbuf_fl, position, DISK_SECTOR_ਮਾਪ);
             rc = ahci_disk_readwrite_aligned (&localop, 1);
-            if (rc)
-                return rc;
-            position += DISK_SECTOR_SIZE;
+            ਜੇ (rc)
+                ਵਾਪਸ rc;
+            position += DISK_SECTOR_ਮਾਪ;
             localop.lba++;
         }
-    } else { // read
-        u16 block;
-        for (block = 0; block < op->count; block++) {
+    } ਨਹੀਂਤਾਂ { // read
+        u16 ਖੰਡ;
+        ਲਈ (ਖੰਡ = 0; ਖੰਡ < op->ਗਿਣਤੀ_2; ਖੰਡ++) {
             rc = ahci_disk_readwrite_aligned (&localop, 0);
-            if (rc)
-                return rc;
-            memcpy_fl (position, alignedbuf_fl, DISK_SECTOR_SIZE);
-            position += DISK_SECTOR_SIZE;
+            ਜੇ (rc)
+                ਵਾਪਸ rc;
+            memcpy_fl (position, alignedbuf_fl, DISK_SECTOR_ਮਾਪ);
+            position += DISK_SECTOR_ਮਾਪ;
             localop.lba++;
         }
     }
-    return DISK_RET_SUCCESS;
+    ਵਾਪਸ DISK_RET_SUCCESS;
 }
 
 // command demuxer
-int
-ahci_process_op(struct disk_op_s *op)
+ਪੂਰਨ
+ahci_process_op(ਬਣਤਰ disk_op_s *op)
 {
-    if (!CONFIG_AHCI)
-        return 0;
-    switch (op->command) {
-    case CMD_READ:
-        return ahci_disk_readwrite(op, 0);
-    case CMD_WRITE:
-        return ahci_disk_readwrite(op, 1);
-    default:
-        return default_process_op(op);
+    ਜੇ (!CONFIG_AHCI)
+        ਵਾਪਸ 0;
+    ਚੋਣ (op->command) {
+    ਹਾਲਤ CMD_READ:
+        ਵਾਪਸ ahci_disk_readwrite(op, 0);
+    ਹਾਲਤ CMD_WRITE:
+        ਵਾਪਸ ahci_disk_readwrite(op, 1);
+    ਮੂਲ:
+        ਵਾਪਸ default_process_op(op);
     }
 }
 
-static void
-ahci_port_reset(struct ahci_ctrl_s *ctrl, u32 pnr)
+ਸਥਿਰ ਖਾਲੀ
+ahci_ਪੋਰਟ_reset(ਬਣਤਰ ahci_ctrl_s *ctrl, u32 pnr)
 {
     u32 val;
 
     /* disable FIS + CMD */
-    u32 end = timer_calc(AHCI_RESET_TIMEOUT);
-    for (;;) {
-        val = ahci_port_readl(ctrl, pnr, PORT_CMD);
-        if (!(val & (PORT_CMD_FIS_RX | PORT_CMD_START |
-                     PORT_CMD_FIS_ON | PORT_CMD_LIST_ON)))
-            break;
-        val &= ~(PORT_CMD_FIS_RX | PORT_CMD_START);
-        ahci_port_writel(ctrl, pnr, PORT_CMD, val);
-        if (timer_check(end)) {
+    u32 ਸਿਰਾ = timer_calc(AHCI_RESET_TIMEOUT);
+    ਲਈ (;;) {
+        val = ahci_ਪੋਰਟ_readl(ctrl, pnr, ਪੋਰਟ_CMD);
+        ਜੇ (!(val & (ਪੋਰਟ_CMD_FIS_RX | ਪੋਰਟ_CMD_ਸ਼ੁਰੂ |
+                     ਪੋਰਟ_CMD_FIS_ON | ਪੋਰਟ_CMD_LIST_ON)))
+            ਰੋਕੋ;
+        val &= ~(ਪੋਰਟ_CMD_FIS_RX | ਪੋਰਟ_CMD_ਸ਼ੁਰੂ);
+        ahci_ਪੋਰਟ_writel(ctrl, pnr, ਪੋਰਟ_CMD, val);
+        ਜੇ (timer_check(ਸਿਰਾ)) {
             warn_timeout();
-            break;
+            ਰੋਕੋ;
         }
         yield();
     }
 
     /* disable + clear IRQs */
-    ahci_port_writel(ctrl, pnr, PORT_IRQ_MASK, 0);
-    val = ahci_port_readl(ctrl, pnr, PORT_IRQ_STAT);
-    if (val)
-        ahci_port_writel(ctrl, pnr, PORT_IRQ_STAT, val);
+    ahci_ਪੋਰਟ_writel(ctrl, pnr, ਪੋਰਟ_IRQ_ਨਕਾਬ, 0);
+    val = ahci_ਪੋਰਟ_readl(ctrl, pnr, ਪੋਰਟ_IRQ_STAT);
+    ਜੇ (val)
+        ahci_ਪੋਰਟ_writel(ctrl, pnr, ਪੋਰਟ_IRQ_STAT, val);
 }
 
-static struct ahci_port_s*
-ahci_port_alloc(struct ahci_ctrl_s *ctrl, u32 pnr)
+ਸਥਿਰ ਬਣਤਰ ahci_ਪੋਰਟ_s*
+ahci_ਪੋਰਟ_alloc(ਬਣਤਰ ahci_ctrl_s *ctrl, u32 pnr)
 {
-    struct ahci_port_s *port = malloc_tmp(sizeof(*port));
+    ਬਣਤਰ ahci_ਪੋਰਟ_s *ਪੋਰਟ = malloc_tmp(ਆਕਾਰ(*ਪੋਰਟ));
 
-    if (!port) {
+    ਜੇ (!ਪੋਰਟ) {
         warn_noalloc();
-        return NULL;
+        ਵਾਪਸ ਨਿਰਾ;
     }
-    memset(port, 0, sizeof(*port));
-    port->pnr = pnr;
-    port->ctrl = ctrl;
-    port->list = memalign_tmp(1024, 1024);
-    port->fis = memalign_tmp(256, 256);
-    port->cmd = memalign_tmp(256, 256);
-    if (port->list == NULL || port->fis == NULL || port->cmd == NULL) {
+    memset(ਪੋਰਟ, 0, ਆਕਾਰ(*ਪੋਰਟ));
+    ਪੋਰਟ->pnr = pnr;
+    ਪੋਰਟ->ctrl = ctrl;
+    ਪੋਰਟ->list = memalign_tmp(1024, 1024);
+    ਪੋਰਟ->fis = memalign_tmp(256, 256);
+    ਪੋਰਟ->cmd = memalign_tmp(256, 256);
+    ਜੇ (ਪੋਰਟ->list == ਨਿਰਾ || ਪੋਰਟ->fis == ਨਿਰਾ || ਪੋਰਟ->cmd == ਨਿਰਾ) {
         warn_noalloc();
-        return NULL;
+        ਵਾਪਸ ਨਿਰਾ;
     }
-    memset(port->list, 0, 1024);
-    memset(port->fis, 0, 256);
-    memset(port->cmd, 0, 256);
+    memset(ਪੋਰਟ->list, 0, 1024);
+    memset(ਪੋਰਟ->fis, 0, 256);
+    memset(ਪੋਰਟ->cmd, 0, 256);
 
-    ahci_port_writel(ctrl, pnr, PORT_LST_ADDR, (u32)port->list);
-    ahci_port_writel(ctrl, pnr, PORT_FIS_ADDR, (u32)port->fis);
-    if (ctrl->caps & HOST_CAP_64) {
-        ahci_port_writel(ctrl, pnr, PORT_LST_ADDR_HI, 0);
-        ahci_port_writel(ctrl, pnr, PORT_FIS_ADDR_HI, 0);
+    ahci_ਪੋਰਟ_writel(ctrl, pnr, ਪੋਰਟ_LST_ADDR, (u32)ਪੋਰਟ->list);
+    ahci_ਪੋਰਟ_writel(ctrl, pnr, ਪੋਰਟ_FIS_ADDR, (u32)ਪੋਰਟ->fis);
+    ਜੇ (ctrl->caps & HOST_CAP_64) {
+        ahci_ਪੋਰਟ_writel(ctrl, pnr, ਪੋਰਟ_LST_ADDR_HI, 0);
+        ahci_ਪੋਰਟ_writel(ctrl, pnr, ਪੋਰਟ_FIS_ADDR_HI, 0);
     }
 
-    return port;
+    ਵਾਪਸ ਪੋਰਟ;
 }
 
-static void ahci_port_release(struct ahci_port_s *port)
+ਸਥਿਰ ਖਾਲੀ ahci_ਪੋਰਟ_release(ਬਣਤਰ ahci_ਪੋਰਟ_s *ਪੋਰਟ)
 {
-    ahci_port_reset(port->ctrl, port->pnr);
-    free(port->list);
-    free(port->fis);
-    free(port->cmd);
-    free(port);
+    ahci_ਪੋਰਟ_reset(ਪੋਰਟ->ctrl, ਪੋਰਟ->pnr);
+    ਮੁਕਤ(ਪੋਰਟ->list);
+    ਮੁਕਤ(ਪੋਰਟ->fis);
+    ਮੁਕਤ(ਪੋਰਟ->cmd);
+    ਮੁਕਤ(ਪੋਰਟ);
 }
 
-static struct ahci_port_s* ahci_port_realloc(struct ahci_port_s *port)
+ਸਥਿਰ ਬਣਤਰ ahci_ਪੋਰਟ_s* ahci_ਪੋਰਟ_realloc(ਬਣਤਰ ahci_ਪੋਰਟ_s *ਪੋਰਟ)
 {
-    struct ahci_port_s *tmp;
+    ਬਣਤਰ ahci_ਪੋਰਟ_s *tmp;
     u32 cmd;
 
-    tmp = malloc_fseg(sizeof(*port));
-    if (!tmp) {
+    tmp = malloc_fseg(ਆਕਾਰ(*ਪੋਰਟ));
+    ਜੇ (!tmp) {
         warn_noalloc();
-        ahci_port_release(port);
-        return NULL;
+        ahci_ਪੋਰਟ_release(ਪੋਰਟ);
+        ਵਾਪਸ ਨਿਰਾ;
     }
-    *tmp = *port;
-    free(port);
-    port = tmp;
+    *tmp = *ਪੋਰਟ;
+    ਮੁਕਤ(ਪੋਰਟ);
+    ਪੋਰਟ = tmp;
 
-    ahci_port_reset(port->ctrl, port->pnr);
+    ahci_ਪੋਰਟ_reset(ਪੋਰਟ->ctrl, ਪੋਰਟ->pnr);
 
-    free(port->list);
-    free(port->fis);
-    free(port->cmd);
-    port->list = memalign_high(1024, 1024);
-    port->fis = memalign_high(256, 256);
-    port->cmd = memalign_high(256, 256);
-    if (!port->list || !port->fis || !port->cmd) {
+    ਮੁਕਤ(ਪੋਰਟ->list);
+    ਮੁਕਤ(ਪੋਰਟ->fis);
+    ਮੁਕਤ(ਪੋਰਟ->cmd);
+    ਪੋਰਟ->list = memalign_ਉੱਚਾ(1024, 1024);
+    ਪੋਰਟ->fis = memalign_ਉੱਚਾ(256, 256);
+    ਪੋਰਟ->cmd = memalign_ਉੱਚਾ(256, 256);
+    ਜੇ (!ਪੋਰਟ->list || !ਪੋਰਟ->fis || !ਪੋਰਟ->cmd) {
         warn_noalloc();
-        free(port->list);
-        free(port->fis);
-        free(port->cmd);
-        free(port);
-        return NULL;
+        ਮੁਕਤ(ਪੋਰਟ->list);
+        ਮੁਕਤ(ਪੋਰਟ->fis);
+        ਮੁਕਤ(ਪੋਰਟ->cmd);
+        ਮੁਕਤ(ਪੋਰਟ);
+        ਵਾਪਸ ਨਿਰਾ;
     }
 
-    ahci_port_writel(port->ctrl, port->pnr, PORT_LST_ADDR, (u32)port->list);
-    ahci_port_writel(port->ctrl, port->pnr, PORT_FIS_ADDR, (u32)port->fis);
+    ahci_ਪੋਰਟ_writel(ਪੋਰਟ->ctrl, ਪੋਰਟ->pnr, ਪੋਰਟ_LST_ADDR, (u32)ਪੋਰਟ->list);
+    ahci_ਪੋਰਟ_writel(ਪੋਰਟ->ctrl, ਪੋਰਟ->pnr, ਪੋਰਟ_FIS_ADDR, (u32)ਪੋਰਟ->fis);
 
-    cmd = ahci_port_readl(port->ctrl, port->pnr, PORT_CMD);
-    cmd |= (PORT_CMD_FIS_RX|PORT_CMD_START);
-    ahci_port_writel(port->ctrl, port->pnr, PORT_CMD, cmd);
+    cmd = ahci_ਪੋਰਟ_readl(ਪੋਰਟ->ctrl, ਪੋਰਟ->pnr, ਪੋਰਟ_CMD);
+    cmd |= (ਪੋਰਟ_CMD_FIS_RX|ਪੋਰਟ_CMD_ਸ਼ੁਰੂ);
+    ahci_ਪੋਰਟ_writel(ਪੋਰਟ->ctrl, ਪੋਰਟ->pnr, ਪੋਰਟ_CMD, cmd);
 
-    return port;
+    ਵਾਪਸ ਪੋਰਟ;
 }
 
-#define MAXMODEL 40
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ MAXMODEL 40
 
 /* See ahci spec chapter 10.1 "Software Initialization of HBA" */
-static int ahci_port_setup(struct ahci_port_s *port)
+ਸਥਿਰ ਪੂਰਨ ahci_ਪੋਰਟ_ਤਿਆਰੀ(ਬਣਤਰ ahci_ਪੋਰਟ_s *ਪੋਰਟ)
 {
-    struct ahci_ctrl_s *ctrl = port->ctrl;
-    u32 pnr = port->pnr;
-    char model[MAXMODEL+1];
-    u16 buffer[256];
+    ਬਣਤਰ ahci_ctrl_s *ctrl = ਪੋਰਟ->ctrl;
+    u32 pnr = ਪੋਰਟ->pnr;
+    ਅੱਖਰ model[MAXMODEL+1];
+    u16 ਬਫਰ[256];
     u32 cmd, stat, err, tf;
-    int rc;
+    ਪੂਰਨ rc;
 
     /* enable FIS recv */
-    cmd = ahci_port_readl(ctrl, pnr, PORT_CMD);
-    cmd |= PORT_CMD_FIS_RX;
-    ahci_port_writel(ctrl, pnr, PORT_CMD, cmd);
+    cmd = ahci_ਪੋਰਟ_readl(ctrl, pnr, ਪੋਰਟ_CMD);
+    cmd |= ਪੋਰਟ_CMD_FIS_RX;
+    ahci_ਪੋਰਟ_writel(ctrl, pnr, ਪੋਰਟ_CMD, cmd);
 
     /* spin up */
-    cmd &= ~PORT_CMD_ICC_MASK;
-    cmd |= PORT_CMD_SPIN_UP | PORT_CMD_POWER_ON | PORT_CMD_ICC_ACTIVE;
-    ahci_port_writel(ctrl, pnr, PORT_CMD, cmd);
-    u32 end = timer_calc(AHCI_LINK_TIMEOUT);
-    for (;;) {
-        stat = ahci_port_readl(ctrl, pnr, PORT_SCR_STAT);
-        if ((stat & 0x07) == 0x03) {
-            dprintf(2, "AHCI/%d: link up\n", port->pnr);
-            break;
+    cmd &= ~ਪੋਰਟ_CMD_ICC_ਨਕਾਬ;
+    cmd |= ਪੋਰਟ_CMD_SPIN_ਉੱਪਰ | ਪੋਰਟ_CMD_POWER_ON | ਪੋਰਟ_CMD_ICC_ਸਰਗਰਮ;
+    ahci_ਪੋਰਟ_writel(ctrl, pnr, ਪੋਰਟ_CMD, cmd);
+    u32 ਸਿਰਾ = timer_calc(AHCI_LINK_TIMEOUT);
+    ਲਈ (;;) {
+        stat = ahci_ਪੋਰਟ_readl(ctrl, pnr, ਪੋਰਟ_SCR_STAT);
+        ਜੇ ((stat & 0x07) == 0x03) {
+            dprintf(2, "AHCI/%d: link up\n", ਪੋਰਟ->pnr);
+            ਰੋਕੋ;
         }
-        if (timer_check(end)) {
-            dprintf(2, "AHCI/%d: link down\n", port->pnr);
-            return -1;
+        ਜੇ (timer_check(ਸਿਰਾ)) {
+            dprintf(2, "AHCI/%d: link down\n", ਪੋਰਟ->pnr);
+            ਵਾਪਸ -1;
         }
         yield();
     }
 
     /* clear error status */
-    err = ahci_port_readl(ctrl, pnr, PORT_SCR_ERR);
-    if (err)
-        ahci_port_writel(ctrl, pnr, PORT_SCR_ERR, err);
+    err = ahci_ਪੋਰਟ_readl(ctrl, pnr, ਪੋਰਟ_SCR_ERR);
+    ਜੇ (err)
+        ahci_ਪੋਰਟ_writel(ctrl, pnr, ਪੋਰਟ_SCR_ERR, err);
 
     /* wait for device becoming ready */
-    end = timer_calc(AHCI_REQUEST_TIMEOUT);
-    for (;;) {
-        tf = ahci_port_readl(ctrl, pnr, PORT_TFDATA);
-        if (!(tf & (ATA_CB_STAT_BSY |
+    ਸਿਰਾ = timer_calc(AHCI_REQUEST_TIMEOUT);
+    ਲਈ (;;) {
+        tf = ahci_ਪੋਰਟ_readl(ctrl, pnr, ਪੋਰਟ_TFDATA);
+        ਜੇ (!(tf & (ATA_CB_STAT_BSY |
                     ATA_CB_STAT_DRQ)))
-            break;
-        if (timer_check(end)) {
+            ਰੋਕੋ;
+        ਜੇ (timer_check(ਸਿਰਾ)) {
             warn_timeout();
-            dprintf(1, "AHCI/%d: device not ready (tf 0x%x)\n", port->pnr, tf);
-            return -1;
+            dprintf(1, "AHCI/%d: device not ready (tf 0x%x)\n", ਪੋਰਟ->pnr, tf);
+            ਵਾਪਸ -1;
         }
         yield();
     }
 
     /* start device */
-    cmd |= PORT_CMD_START;
-    ahci_port_writel(ctrl, pnr, PORT_CMD, cmd);
+    cmd |= ਪੋਰਟ_CMD_ਸ਼ੁਰੂ;
+    ahci_ਪੋਰਟ_writel(ctrl, pnr, ਪੋਰਟ_CMD, cmd);
 
-    sata_prep_simple(&port->cmd->fis, ATA_CMD_IDENTIFY_PACKET_DEVICE);
-    rc = ahci_command(port, 0, 0, buffer, sizeof(buffer));
-    if (rc == 0) {
-        port->atapi = 1;
-    } else {
-        port->atapi = 0;
-        sata_prep_simple(&port->cmd->fis, ATA_CMD_IDENTIFY_DEVICE);
-        rc = ahci_command(port, 0, 0, buffer, sizeof(buffer));
-        if (rc < 0)
-            return -1;
+    sata_prep_simple(&ਪੋਰਟ->cmd->fis, ATA_CMD_IDENTIFY_PACKET_DEVICE);
+    rc = ahci_command(ਪੋਰਟ, 0, 0, ਬਫਰ, ਆਕਾਰ(ਬਫਰ));
+    ਜੇ (rc == 0) {
+        ਪੋਰਟ->atapi = 1;
+    } ਨਹੀਂਤਾਂ {
+        ਪੋਰਟ->atapi = 0;
+        sata_prep_simple(&ਪੋਰਟ->cmd->fis, ATA_CMD_IDENTIFY_DEVICE);
+        rc = ahci_command(ਪੋਰਟ, 0, 0, ਬਫਰ, ਆਕਾਰ(ਬਫਰ));
+        ਜੇ (rc < 0)
+            ਵਾਪਸ -1;
     }
 
-    port->drive.cntl_id = pnr;
-    port->drive.removable = (buffer[0] & 0x80) ? 1 : 0;
+    ਪੋਰਟ->drive.cntl_id = pnr;
+    ਪੋਰਟ->drive.removable = (ਬਫਰ[0] & 0x80) ? 1 : 0;
 
-    if (!port->atapi) {
+    ਜੇ (!ਪੋਰਟ->atapi) {
         // found disk (ata)
-        port->drive.type = DTYPE_AHCI;
-        port->drive.blksize = DISK_SECTOR_SIZE;
-        port->drive.pchs.cylinder = buffer[1];
-        port->drive.pchs.head = buffer[3];
-        port->drive.pchs.sector = buffer[6];
+        ਪੋਰਟ->drive.type = DTYPE_AHCI;
+        ਪੋਰਟ->drive.blksize = DISK_SECTOR_ਮਾਪ;
+        ਪੋਰਟ->drive.pchs.cylinder = ਬਫਰ[1];
+        ਪੋਰਟ->drive.pchs.ਸਿਰ = ਬਫਰ[3];
+        ਪੋਰਟ->drive.pchs.sector = ਬਫਰ[6];
 
         u64 sectors;
-        if (buffer[83] & (1 << 10)) // word 83 - lba48 support
-            sectors = *(u64*)&buffer[100]; // word 100-103
-        else
-            sectors = *(u32*)&buffer[60]; // word 60 and word 61
-        port->drive.sectors = sectors;
+        ਜੇ (ਬਫਰ[83] & (1 << 10)) // word 83 - lba48 support
+            sectors = *(u64*)&ਬਫਰ[100]; // word 100-103
+        ਨਹੀਂਤਾਂ
+            sectors = *(u32*)&ਬਫਰ[60]; // word 60 and word 61
+        ਪੋਰਟ->drive.sectors = sectors;
         u64 adjsize = sectors >> 11;
-        char adjprefix = 'M';
-        if (adjsize >= (1 << 16)) {
+        ਅੱਖਰ adjprefix = 'M';
+        ਜੇ (adjsize >= (1 << 16)) {
             adjsize >>= 10;
             adjprefix = 'G';
         }
-        port->desc = znprintf(MAXDESCSIZE
+        ਪੋਰਟ->desc = znprintf(MAXDESCSIZE
                               , "AHCI/%d: %s ATA-%d Hard-Disk (%u %ciBytes)"
-                              , port->pnr
-                              , ata_extract_model(model, MAXMODEL, buffer)
-                              , ata_extract_version(buffer)
+                              , ਪੋਰਟ->pnr
+                              , ata_ਕੱਢੋ_model(model, MAXMODEL, ਬਫਰ)
+                              , ata_ਕੱਢੋ_ਸੰਸਕਰਣ(ਬਫਰ)
                               , (u32)adjsize, adjprefix);
-        port->prio = bootprio_find_ata_device(ctrl->pci_tmp, pnr, 0);
+        ਪੋਰਟ->prio = bootprio_ਲੱਭੋ_ata_device(ctrl->pci_tmp, pnr, 0);
 
         s8 multi_dma = -1;
-        s8 pio_mode = -1;
-        s8 udma_mode = -1;
+        s8 pio_ਬਹੁਲਕ = -1;
+        s8 udma_ਬਹੁਲਕ = -1;
         // If bit 2 in word 53 is set, udma information is valid in word 88.
-        if (buffer[53] & 0x04) {
-            udma_mode = 6;
-            while ((udma_mode >= 0) &&
-                   !((buffer[88] & 0x7f) & ( 1 << udma_mode ))) {
-                udma_mode--;
+        ਜੇ (ਬਫਰ[53] & 0x04) {
+            udma_ਬਹੁਲਕ = 6;
+            ਜਦੋਂ ((udma_ਬਹੁਲਕ >= 0) &&
+                   !((ਬਫਰ[88] & 0x7f) & ( 1 << udma_ਬਹੁਲਕ ))) {
+                udma_ਬਹੁਲਕ--;
             }
         }
         // If bit 1 in word 53 is set, multiword-dma and advanced pio modes
         // are available in words 63 and 64.
-        if (buffer[53] & 0x02) {
-            pio_mode = 4;
+        ਜੇ (ਬਫਰ[53] & 0x02) {
+            pio_ਬਹੁਲਕ = 4;
             multi_dma = 3;
-            while ((multi_dma >= 0) &&
-                   !((buffer[63] & 0x7) & ( 1 << multi_dma ))) {
+            ਜਦੋਂ ((multi_dma >= 0) &&
+                   !((ਬਫਰ[63] & 0x7) & ( 1 << multi_dma ))) {
                 multi_dma--;
             }
-            while ((pio_mode >= 3) &&
-                   !((buffer[64] & 0x3) & ( 1 << ( pio_mode - 3 ) ))) {
-                pio_mode--;
+            ਜਦੋਂ ((pio_ਬਹੁਲਕ >= 3) &&
+                   !((ਬਫਰ[64] & 0x3) & ( 1 << ( pio_ਬਹੁਲਕ - 3 ) ))) {
+                pio_ਬਹੁਲਕ--;
             }
         }
         dprintf(2, "AHCI/%d: supported modes: udma %d, multi-dma %d, pio %d\n",
-                port->pnr, udma_mode, multi_dma, pio_mode);
+                ਪੋਰਟ->pnr, udma_ਬਹੁਲਕ, multi_dma, pio_ਬਹੁਲਕ);
 
-        sata_prep_simple(&port->cmd->fis, ATA_CMD_SET_FEATURES);
-        port->cmd->fis.feature = ATA_SET_FEATRUE_TRANSFER_MODE;
+        sata_prep_simple(&ਪੋਰਟ->cmd->fis, ATA_CMD_ਸੈੱਟ_FEATURES);
+        ਪੋਰਟ->cmd->fis.feature = ATA_ਸੈੱਟ_FEATRUE_TRANSFER_ਬਹੁਲਕ;
         // Select used mode. UDMA first, then Multi-DMA followed by
         // advanced PIO modes 3 or 4. If non, set default PIO.
-        if (udma_mode >= 0) {
+        ਜੇ (udma_ਬਹੁਲਕ >= 0) {
             dprintf(1, "AHCI/%d: Set transfer mode to UDMA-%d\n",
-                    port->pnr, udma_mode);
-            port->cmd->fis.sector_count = ATA_TRANSFER_MODE_ULTRA_DMA
-                                          | udma_mode;
-        } else if (multi_dma >= 0) {
+                    ਪੋਰਟ->pnr, udma_ਬਹੁਲਕ);
+            ਪੋਰਟ->cmd->fis.sector_ਗਿਣਤੀ = ATA_TRANSFER_ਬਹੁਲਕ_ULTRA_DMA
+                                          | udma_ਬਹੁਲਕ;
+        } ਨਹੀਂਤਾਂ ਜੇ (multi_dma >= 0) {
             dprintf(1, "AHCI/%d: Set transfer mode to Multi-DMA-%d\n",
-                    port->pnr, multi_dma);
-            port->cmd->fis.sector_count = ATA_TRANSFER_MODE_MULTIWORD_DMA
+                    ਪੋਰਟ->pnr, multi_dma);
+            ਪੋਰਟ->cmd->fis.sector_ਗਿਣਤੀ = ATA_TRANSFER_ਬਹੁਲਕ_MULTIWORD_DMA
                                           | multi_dma;
-        } else if (pio_mode >= 3) {
+        } ਨਹੀਂਤਾਂ ਜੇ (pio_ਬਹੁਲਕ >= 3) {
             dprintf(1, "AHCI/%d: Set transfer mode to PIO-%d\n",
-                    port->pnr, pio_mode);
-            port->cmd->fis.sector_count = ATA_TRANSFER_MODE_PIO_FLOW_CTRL
-                                          | pio_mode;
-        } else {
+                    ਪੋਰਟ->pnr, pio_ਬਹੁਲਕ);
+            ਪੋਰਟ->cmd->fis.sector_ਗਿਣਤੀ = ATA_TRANSFER_ਬਹੁਲਕ_PIO_FLOW_CTRL
+                                          | pio_ਬਹੁਲਕ;
+        } ਨਹੀਂਤਾਂ {
             dprintf(1, "AHCI/%d: Set transfer mode to default PIO\n",
-                    port->pnr);
-            port->cmd->fis.sector_count = ATA_TRANSFER_MODE_DEFAULT_PIO;
+                    ਪੋਰਟ->pnr);
+            ਪੋਰਟ->cmd->fis.sector_ਗਿਣਤੀ = ATA_TRANSFER_ਬਹੁਲਕ_DEFAULT_PIO;
         }
-        rc = ahci_command(port, 1, 0, 0, 0);
-        if (rc < 0) {
-            dprintf(1, "AHCI/%d: Set transfer mode failed.\n", port->pnr);
+        rc = ahci_command(ਪੋਰਟ, 1, 0, 0, 0);
+        ਜੇ (rc < 0) {
+            dprintf(1, "AHCI/%d: Set transfer mode failed.\n", ਪੋਰਟ->pnr);
         }
-    } else {
+    } ਨਹੀਂਤਾਂ {
         // found cdrom (atapi)
-        port->drive.type = DTYPE_AHCI_ATAPI;
-        port->drive.blksize = CDROM_SECTOR_SIZE;
-        port->drive.sectors = (u64)-1;
-        u8 iscd = ((buffer[0] >> 8) & 0x1f) == 0x05;
-        if (!iscd) {
-            dprintf(1, "AHCI/%d: atapi device isn't a cdrom\n", port->pnr);
-            return -1;
+        ਪੋਰਟ->drive.type = DTYPE_AHCI_ATAPI;
+        ਪੋਰਟ->drive.blksize = CDROM_SECTOR_ਮਾਪ;
+        ਪੋਰਟ->drive.sectors = (u64)-1;
+        u8 iscd = ((ਬਫਰ[0] >> 8) & 0x1f) == 0x05;
+        ਜੇ (!iscd) {
+            dprintf(1, "AHCI/%d: atapi device isn't a cdrom\n", ਪੋਰਟ->pnr);
+            ਵਾਪਸ -1;
         }
-        port->desc = znprintf(MAXDESCSIZE
+        ਪੋਰਟ->desc = znprintf(MAXDESCSIZE
                               , "DVD/CD [AHCI/%d: %s ATAPI-%d DVD/CD]"
-                              , port->pnr
-                              , ata_extract_model(model, MAXMODEL, buffer)
-                              , ata_extract_version(buffer));
-        port->prio = bootprio_find_ata_device(ctrl->pci_tmp, pnr, 0);
+                              , ਪੋਰਟ->pnr
+                              , ata_ਕੱਢੋ_model(model, MAXMODEL, ਬਫਰ)
+                              , ata_ਕੱਢੋ_ਸੰਸਕਰਣ(ਬਫਰ));
+        ਪੋਰਟ->prio = bootprio_ਲੱਭੋ_ata_device(ctrl->pci_tmp, pnr, 0);
     }
-    boot_lchs_find_ata_device(ctrl->pci_tmp, pnr, 0, &(port->drive.lchs));
-    return 0;
+    boot_lchs_ਲੱਭੋ_ata_device(ctrl->pci_tmp, pnr, 0, &(ਪੋਰਟ->drive.lchs));
+    ਵਾਪਸ 0;
 }
 
 // Detect any drives attached to a given controller.
-static void
-ahci_port_detect(void *data)
+ਸਥਿਰ ਖਾਲੀ
+ahci_ਪੋਰਟ_detect(ਖਾਲੀ *ਅੰਕੜੇ)
 {
-    struct ahci_port_s *port = data;
-    int rc;
+    ਬਣਤਰ ahci_ਪੋਰਟ_s *ਪੋਰਟ = ਅੰਕੜੇ;
+    ਪੂਰਨ rc;
 
-    dprintf(2, "AHCI/%d: probing\n", port->pnr);
-    ahci_port_reset(port->ctrl, port->pnr);
-    rc = ahci_port_setup(port);
-    if (rc < 0)
-        ahci_port_release(port);
-    else {
-        port = ahci_port_realloc(port);
-        if (port == NULL)
-            return;
-        dprintf(1, "AHCI/%d: registering: \"%s\"\n", port->pnr, port->desc);
-        if (!port->atapi) {
+    dprintf(2, "AHCI/%d: probing\n", ਪੋਰਟ->pnr);
+    ahci_ਪੋਰਟ_reset(ਪੋਰਟ->ctrl, ਪੋਰਟ->pnr);
+    rc = ahci_ਪੋਰਟ_ਤਿਆਰੀ(ਪੋਰਟ);
+    ਜੇ (rc < 0)
+        ahci_ਪੋਰਟ_release(ਪੋਰਟ);
+    ਨਹੀਂਤਾਂ {
+        ਪੋਰਟ = ahci_ਪੋਰਟ_realloc(ਪੋਰਟ);
+        ਜੇ (ਪੋਰਟ == ਨਿਰਾ)
+            ਵਾਪਸ;
+        dprintf(1, "AHCI/%d: registering: \"%s\"\n", ਪੋਰਟ->pnr, ਪੋਰਟ->desc);
+        ਜੇ (!ਪੋਰਟ->atapi) {
             // Register with bcv system.
-            boot_add_hd(&port->drive, port->desc, port->prio);
-        } else {
+            boot_ਜੋੜੋ_hd(&ਪੋਰਟ->drive, ਪੋਰਟ->desc, ਪੋਰਟ->prio);
+        } ਨਹੀਂਤਾਂ {
             // fill cdidmap
-            boot_add_cd(&port->drive, port->desc, port->prio);
+            boot_ਜੋੜੋ_cd(&ਪੋਰਟ->drive, ਪੋਰਟ->desc, ਪੋਰਟ->prio);
         }
     }
 }
 
 // Initialize an ata controller and detect its drives.
-static void
-ahci_controller_setup(struct pci_device *pci)
+ਸਥਿਰ ਖਾਲੀ
+ahci_controller_ਤਿਆਰੀ(ਬਣਤਰ pci_device *pci)
 {
-    struct ahci_port_s *port;
+    ਬਣਤਰ ahci_ਪੋਰਟ_s *ਪੋਰਟ;
     u32 pnr, max;
 
-    if (create_bounce_buf() < 0)
-        return;
+    ਜੇ (create_bounce_buf() < 0)
+        ਵਾਪਸ;
 
-    void *iobase = pci_enable_membar(pci, PCI_BASE_ADDRESS_5);
-    if (!iobase)
-        return;
+    ਖਾਲੀ *iobase = pci_enable_membar(pci, PCI_ਅਧਾਰ_ਪਤਾ_5);
+    ਜੇ (!iobase)
+        ਵਾਪਸ;
 
-    struct ahci_ctrl_s *ctrl = malloc_fseg(sizeof(*ctrl));
-    if (!ctrl) {
+    ਬਣਤਰ ahci_ctrl_s *ctrl = malloc_fseg(ਆਕਾਰ(*ctrl));
+    ਜੇ (!ctrl) {
         warn_noalloc();
-        return;
+        ਵਾਪਸ;
     }
 
     ctrl->pci_tmp = pci;
     ctrl->iobase = iobase;
-    ctrl->irq = pci_config_readb(pci->bdf, PCI_INTERRUPT_LINE);
+    ctrl->irq = pci_config_readb(pci->bdf, PCI_ਰੁਕਾਵਟ_ਸਤਰ);
     dprintf(1, "AHCI controller at %pP, iobase %p, irq %d\n"
             , pci, ctrl->iobase, ctrl->irq);
 
@@ -662,21 +662,21 @@ ahci_controller_setup(struct pci_device *pci)
 
     u32 val = ahci_ctrl_readl(ctrl, HOST_CTL);
     ahci_ctrl_writel(ctrl, HOST_CTL, val | HOST_CTL_RESET);
-    u32 end = timer_calc(AHCI_RESET_TIMEOUT);
-    for (;;) {
+    u32 ਸਿਰਾ = timer_calc(AHCI_RESET_TIMEOUT);
+    ਲਈ (;;) {
         val = ahci_ctrl_readl(ctrl, HOST_CTL);
-        if (!(val & HOST_CTL_RESET))
-            break;
-        if (timer_check(end)) {
+        ਜੇ (!(val & HOST_CTL_RESET))
+            ਰੋਕੋ;
+        ਜੇ (timer_check(ਸਿਰਾ)) {
             warn_timeout();
             dprintf(1, "AHCI: controller reset failed\n");
-            free(ctrl);
-            return;
+            ਮੁਕਤ(ctrl);
+            ਵਾਪਸ;
         }
         yield();
     }
     ahci_ctrl_writel(ctrl, HOST_CTL, val | HOST_CTL_AHCI_EN);
-    (void)ahci_ctrl_readl(ctrl, HOST_CTL); /* Flush */
+    (ਖਾਲੀ)ahci_ctrl_readl(ctrl, HOST_CTL); /* Flush */
 
     ctrl->caps = ahci_ctrl_readl(ctrl, HOST_CAP);
     ctrl->ports = ahci_ctrl_readl(ctrl, HOST_PORTS_IMPL);
@@ -684,38 +684,38 @@ ahci_controller_setup(struct pci_device *pci)
             ctrl->caps, ctrl->ports);
 
     max = 0x1f;
-    for (pnr = 0; pnr <= max; pnr++) {
-        if (!(ctrl->ports & (1 << pnr)))
-            continue;
-        port = ahci_port_alloc(ctrl, pnr);
-        if (port == NULL)
-            continue;
-        run_thread(ahci_port_detect, port);
+    ਲਈ (pnr = 0; pnr <= max; pnr++) {
+        ਜੇ (!(ctrl->ports & (1 << pnr)))
+            ਜਾਰੀ;
+        ਪੋਰਟ = ahci_ਪੋਰਟ_alloc(ctrl, pnr);
+        ਜੇ (ਪੋਰਟ == ਨਿਰਾ)
+            ਜਾਰੀ;
+        ਲੜੀਵਾਰ_thread(ahci_ਪੋਰਟ_detect, ਪੋਰਟ);
     }
 }
 
 // Locate and init ahci controllers.
-static void
-ahci_scan(void)
+ਸਥਿਰ ਖਾਲੀ
+ahci_ਜਾਂਚ(ਖਾਲੀ)
 {
     // Scan PCI bus for ATA adapters
-    struct pci_device *pci;
+    ਬਣਤਰ pci_device *pci;
     foreachpci(pci) {
-        if (pci->class != PCI_CLASS_STORAGE_SATA)
-            continue;
-        if (pci->prog_if != 1 /* AHCI rev 1 */)
-            continue;
-        ahci_controller_setup(pci);
+        ਜੇ (pci->class != PCI_CLASS_STORAGE_SATA)
+            ਜਾਰੀ;
+        ਜੇ (pci->prog_if != 1 /* AHCI rev 1 */)
+            ਜਾਰੀ;
+        ahci_controller_ਤਿਆਰੀ(pci);
     }
 }
 
-void
-ahci_setup(void)
+ਖਾਲੀ
+ahci_ਤਿਆਰੀ(ਖਾਲੀ)
 {
     ASSERT32FLAT();
-    if (!CONFIG_AHCI)
-        return;
+    ਜੇ (!CONFIG_AHCI)
+        ਵਾਪਸ;
 
     dprintf(3, "init ahci\n");
-    ahci_scan();
+    ahci_ਜਾਂਚ();
 }

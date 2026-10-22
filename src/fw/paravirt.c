@@ -8,145 +8,145 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "byteorder.h" // be32_to_cpu
-#include "config.h" // CONFIG_QEMU
-#include "e820map.h" // e820_add
-#include "hw/pci.h" // pci_config_readw
-#include "hw/pcidevice.h" // pci_probe_devices
-#include "hw/pci_regs.h" // PCI_DEVICE_ID
-#include "hw/serialio.h" // PORT_SERIAL1
-#include "hw/rtc.h" // CMOS_*
-#include "hw/virtio-mmio.h" // virtio_mmio_acpi
-#include "malloc.h" // malloc_tmp
-#include "output.h" // dprintf
-#include "paravirt.h" // qemu_cfg_preinit
-#include "romfile.h" // romfile_loadint
-#include "romfile_loader.h" // romfile_loader_execute
-#include "string.h" // memset
-#include "util.h" // pci_setup
-#include "x86.h" // cpuid
-#include "xen.h" // xen_biostable_setup
-#include "stacks.h" // yield
+#ਅਨ੍ਤਰ੍ਭਾਵ "byteorder.h" // be32_to_cpu
+#ਅਨ੍ਤਰ੍ਭਾਵ "config.h" // CONFIG_QEMU
+#ਅਨ੍ਤਰ੍ਭਾਵ "e820map.h" // e820_add
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/pci.h" // pci_config_readw
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/pcidevice.h" // pci_probe_devices
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/pci_regs.h" // PCI_DEVICE_ID
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/serialio.h" // PORT_SERIAL1
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/rtc.h" // CMOS_*
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/virtio-mmio.h" // virtio_mmio_acpi
+#ਅਨ੍ਤਰ੍ਭਾਵ "malloc.h" // malloc_tmp
+#ਅਨ੍ਤਰ੍ਭਾਵ "output.h" // dprintf
+#ਅਨ੍ਤਰ੍ਭਾਵ "paravirt.h" // qemu_cfg_preinit
+#ਅਨ੍ਤਰ੍ਭਾਵ "romfile.h" // romfile_loadint
+#ਅਨ੍ਤਰ੍ਭਾਵ "romfile_loader.h" // romfile_loader_execute
+#ਅਨ੍ਤਰ੍ਭਾਵ "string.h" // memset
+#ਅਨ੍ਤਰ੍ਭਾਵ "util.h" // pci_setup
+#ਅਨ੍ਤਰ੍ਭਾਵ "x86.h" // cpuid
+#ਅਨ੍ਤਰ੍ਭਾਵ "xen.h" // xen_biostable_setup
+#ਅਨ੍ਤਰ੍ਭਾਵ "stacks.h" // yield
 
 // Amount of continuous ram under 4Gig
-u32 RamSize;
+u32 Ram_ਮਾਪ;
 // Amount of continuous ram >4Gig
-u64 RamSizeOver4G;
+u64 Ram_ਮਾਪ_Over4_G;
 // physical address space bits
-u8 CPUPhysBits;
+u8 CPUPhys_ਬਿੱਟ;
 // 64bit processor
-u8 CPULongMode;
+u8 CPULong_ਬਹੁਲਕ;
 // Type of emulator platform.
-int PlatformRunningOn VARFSEG;
+ਪੂਰਨ PlatformRunningOn VARFSEG;
 // cfg enabled
-int cfg_enabled = 0;
+ਪੂਰਨ cfg_enabled = 0;
 // cfg_dma enabled
-int cfg_dma_enabled = 0;
+ਪੂਰਨ cfg_dma_enabled = 0;
 
-inline int qemu_cfg_enabled(void)
+ਸਤਰਅੰਦਰ ਪੂਰਨ qemu_cfg_enabled(ਖਾਲੀ)
 {
-    return cfg_enabled;
+    ਵਾਪਸ cfg_enabled;
 }
 
-inline int qemu_cfg_dma_enabled(void)
+ਸਤਰਅੰਦਰ ਪੂਰਨ qemu_cfg_dma_enabled(ਖਾਲੀ)
 {
-    return cfg_dma_enabled;
+    ਵਾਪਸ cfg_dma_enabled;
 }
 
 /* This CPUID returns the signature 'KVMKVMKVM' in ebx, ecx, and edx.  It
  * should be used to determine that a VM is running under KVM.
  */
-#define KVM_CPUID_SIGNATURE     0x40000000
-static unsigned int kvm_cpuid_base = 0;
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ KVM_CPUID_SIGNATURE     0x40000000
+ਸਥਿਰ ਬਿਨਾਨਿਸ਼ਾਨੀ ਪੂਰਨ kvm_cpuid_ਅਧਾਰ = 0;
 
-static void kvm_detect(void)
+ਸਥਿਰ ਖਾਲੀ kvm_detect(ਖਾਲੀ)
 {
-    unsigned int i, max = 0;
-    unsigned int eax, ebx, ecx, edx;
-    char signature[13];
+    ਬਿਨਾਨਿਸ਼ਾਨੀ ਪੂਰਨ i, max = 0;
+    ਬਿਨਾਨਿਸ਼ਾਨੀ ਪੂਰਨ eax, ebx, ecx, edx;
+    ਅੱਖਰ signature[13];
 
-    for (i = KVM_CPUID_SIGNATURE;; i += 0x100) {
+    ਲਈ (i = KVM_CPUID_SIGNATURE;; i += 0x100) {
         eax = 0;
         cpuid(i, &eax, &ebx, &ecx, &edx);
-        if (eax < i)
-            break;
-        memcpy(signature + 0, &ebx, 4);
-        memcpy(signature + 4, &ecx, 4);
-        memcpy(signature + 8, &edx, 4);
+        ਜੇ (eax < i)
+            ਰੋਕੋ;
+        ਸਮ੍ਰਿਤੀ_ਨਕਲ(signature + 0, &ebx, 4);
+        ਸਮ੍ਰਿਤੀ_ਨਕਲ(signature + 4, &ecx, 4);
+        ਸਮ੍ਰਿਤੀ_ਨਕਲ(signature + 8, &edx, 4);
         signature[12] = 0;
         dprintf(1, "cpuid 0x%x: eax %x, signature '%s'\n", i, eax, signature);
-        if (strcmp(signature, "KVMKVMKVM") == 0) {
-            kvm_cpuid_base = i;
+        ਜੇ (strcmp(signature, "KVMKVMKVM") == 0) {
+            kvm_cpuid_ਅਧਾਰ = i;
             max = eax;
         }
     }
 
-    if (kvm_cpuid_base) {
+    ਜੇ (kvm_cpuid_ਅਧਾਰ) {
         dprintf(1, "Running on KVM\n");
         PlatformRunningOn |= PF_KVM;
-        if (max >= kvm_cpuid_base + 0x10) {
-            cpuid(kvm_cpuid_base + 0x10, &eax, &ebx, &ecx, &edx);
+        ਜੇ (max >= kvm_cpuid_ਅਧਾਰ + 0x10) {
+            cpuid(kvm_cpuid_ਅਧਾਰ + 0x10, &eax, &ebx, &ecx, &edx);
             dprintf(1, "kvm: have invtsc, freq %u kHz\n", eax);
             tsctimer_setfreq(eax, "invtsc");
         }
     }
 }
 
-#define KVM_FEATURE_CLOCKSOURCE           0
-#define KVM_FEATURE_CLOCKSOURCE2          3
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ KVM_FEATURE_CLOCKSOURCE           0
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ KVM_FEATURE_CLOCKSOURCE2          3
 
-#define MSR_KVM_SYSTEM_TIME            0x12
-#define MSR_KVM_SYSTEM_TIME_NEW  0x4b564d01
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ MSR_KVM_SYSTEM_ਸਮਾਂ            0x12
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ MSR_KVM_SYSTEM_ਸਮਾਂ_NEW  0x4b564d01
 
-#define PVCLOCK_TSC_STABLE_BIT     (1 << 0)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ PVCLOCK_TSC_STABLE_ਦੋਆਧਾਰੀ_ਅੰਕ     (1 << 0)
 
-struct pvclock_vcpu_time_info *kvmclock;
+ਬਣਤਰ pvclock_vcpu_ਸਮਾਂ_info *kvmclock;
 
-static void kvmclock_init(void)
+ਸਥਿਰ ਖਾਲੀ kvmclock_init(ਖਾਲੀ)
 {
-    unsigned int eax, ebx, ecx, edx, msr;
+    ਬਿਨਾਨਿਸ਼ਾਨੀ ਪੂਰਨ eax, ebx, ecx, edx, msr;
 
-    if (!runningOnKVM())
-        return;
+    ਜੇ (!runningOnKVM())
+        ਵਾਪਸ;
 
-    cpuid(kvm_cpuid_base + 0x01, &eax, &ebx, &ecx, &edx);
-    if (eax & (1 <<  KVM_FEATURE_CLOCKSOURCE2))
-        msr = MSR_KVM_SYSTEM_TIME_NEW;
-    else if (eax & (1 <<  KVM_FEATURE_CLOCKSOURCE))
-        msr = MSR_KVM_SYSTEM_TIME;
-    else
-        return;
+    cpuid(kvm_cpuid_ਅਧਾਰ + 0x01, &eax, &ebx, &ecx, &edx);
+    ਜੇ (eax & (1 <<  KVM_FEATURE_CLOCKSOURCE2))
+        msr = MSR_KVM_SYSTEM_ਸਮਾਂ_NEW;
+    ਨਹੀਂਤਾਂ ਜੇ (eax & (1 <<  KVM_FEATURE_CLOCKSOURCE))
+        msr = MSR_KVM_SYSTEM_ਸਮਾਂ;
+    ਨਹੀਂਤਾਂ
+        ਵਾਪਸ;
 
-    kvmclock = memalign_low(sizeof(*kvmclock), 32);
-    memset(kvmclock, 0, sizeof(*kvmclock));
-    u32 value = (u32)(kvmclock);
-    dprintf(1, "kvmclock: at 0x%x (msr 0x%x)\n", value, msr);
-    wrmsr(msr, value | 0x01);
+    kvmclock = memalign_ਨੀਵਾਂ(ਆਕਾਰ(*kvmclock), 32);
+    memset(kvmclock, 0, ਆਕਾਰ(*kvmclock));
+    u32 ਮੁੱਲ = (u32)(kvmclock);
+    dprintf(1, "kvmclock: at 0x%x (msr 0x%x)\n", ਮੁੱਲ, msr);
+    wrmsr(msr, ਮੁੱਲ | 0x01);
 
-    if (!(kvmclock->flags & PVCLOCK_TSC_STABLE_BIT))
-        return;
-    u32 MHz = (1000 << 16) / (kvmclock->tsc_to_system_mul >> 16);
-    if (kvmclock->tsc_shift < 0)
-        MHz <<= -kvmclock->tsc_shift;
-    else
-        MHz >>= kvmclock->tsc_shift;
+    ਜੇ (!(kvmclock->flags & PVCLOCK_TSC_STABLE_ਦੋਆਧਾਰੀ_ਅੰਕ))
+        ਵਾਪਸ;
+    u32 MHz = (1000 << 16) / (kvmclock->tsc_ਮੰਜ਼ਿਲ_system_mul >> 16);
+    ਜੇ (kvmclock->tsc_ਖਿਸਕਾਓ < 0)
+        MHz <<= -kvmclock->tsc_ਖਿਸਕਾਓ;
+    ਨਹੀਂਤਾਂ
+        MHz >>= kvmclock->tsc_ਖਿਸਕਾਓ;
     dprintf(1, "kvmclock: stable tsc, %d MHz\n", MHz);
     tsctimer_setfreq(MHz * 1000, "kvmclock");
 }
 
-static void physbits(int qemu_quirk)
+ਸਥਿਰ ਖਾਲੀ physbits(ਪੂਰਨ qemu_quirk)
 {
-    unsigned int max, eax, ebx, ecx, edx;
-    unsigned int physbits;
-    char signature[13];
-    int pae = 0, valid = 0;
+    ਬਿਨਾਨਿਸ਼ਾਨੀ ਪੂਰਨ max, eax, ebx, ecx, edx;
+    ਬਿਨਾਨਿਸ਼ਾਨੀ ਪੂਰਨ physbits;
+    ਅੱਖਰ signature[13];
+    ਪੂਰਨ pae = 0, valid = 0;
 
     cpuid(0, &eax, &ebx, &ecx, &edx);
-    memcpy(signature + 0, &ebx, 4);
-    memcpy(signature + 4, &edx, 4);
-    memcpy(signature + 8, &ecx, 4);
+    ਸਮ੍ਰਿਤੀ_ਨਕਲ(signature + 0, &ebx, 4);
+    ਸਮ੍ਰਿਤੀ_ਨਕਲ(signature + 4, &edx, 4);
+    ਸਮ੍ਰਿਤੀ_ਨਕਲ(signature + 8, &ecx, 4);
     signature[12] = 0;
-    if (eax >= 1) {
+    ਜੇ (eax >= 1) {
         cpuid(1, &eax, &ebx, &ecx, &edx);
         pae = (edx & (1 << 6));
     }
@@ -154,173 +154,173 @@ static void physbits(int qemu_quirk)
     cpuid(0x80000000, &eax, &ebx, &ecx, &edx);
     max = eax;
 
-    if (max >= 0x80000001) {
+    ਜੇ (max >= 0x80000001) {
         cpuid(0x80000001, &eax, &ebx, &ecx, &edx);
-        CPULongMode = !!(edx & (1 << 29));
+        CPULong_ਬਹੁਲਕ = !!(edx & (1 << 29));
     }
 
-    if (pae && CPULongMode && max >= 0x80000008) {
+    ਜੇ (pae && CPULong_ਬਹੁਲਕ && max >= 0x80000008) {
         cpuid(0x80000008, &eax, &ebx, &ecx, &edx);
         physbits = (u8)eax;
-        if (!qemu_quirk) {
+        ਜੇ (!qemu_quirk) {
             valid = 1;
-        } else if (physbits >= 41) {
+        } ਨਹੀਂਤਾਂ ਜੇ (physbits >= 41) {
             valid = 1;
-        } else if (strcmp(signature, "GenuineIntel") == 0) {
-            if ((physbits == 36) || (physbits == 39))
+        } ਨਹੀਂਤਾਂ ਜੇ (strcmp(signature, "GenuineIntel") == 0) {
+            ਜੇ ((physbits == 36) || (physbits == 39))
                 valid = 1;
-        } else if (strcmp(signature, "AuthenticAMD") == 0) {
-            if (physbits == 40)
+        } ਨਹੀਂਤਾਂ ਜੇ (strcmp(signature, "AuthenticAMD") == 0) {
+            ਜੇ (physbits == 40)
                 valid = 1;
         }
-    } else {
+    } ਨਹੀਂਤਾਂ {
         physbits = pae ? 36 : 32;
         valid = 1;
     }
 
     dprintf(1, "%s: signature=\"%s\", pae=%s, lm=%s, phys-bits=%d, valid=%s\n",
-            __func__, signature, pae ? "yes" : "no", CPULongMode ? "yes" : "no",
+            __func__, signature, pae ? "yes" : "no", CPULong_ਬਹੁਲਕ ? "yes" : "no",
             physbits, valid ? "yes" : "no");
 
-    if (valid)
-        CPUPhysBits = physbits;
+    ਜੇ (valid)
+        CPUPhys_ਬਿੱਟ = physbits;
 }
 
-static void qemu_detect(void)
+ਸਥਿਰ ਖਾਲੀ qemu_detect(ਖਾਲੀ)
 {
-    if (!CONFIG_QEMU_HARDWARE)
-        return;
+    ਜੇ (!CONFIG_QEMU_HARDWARE)
+        ਵਾਪਸ;
 
     // Setup QEMU debug output port
     qemu_debug_preinit();
 
     // check northbridge @ 00:00.0
     u16 v = pci_config_readw(0, PCI_VENDOR_ID);
-    if (v == 0x0000 || v == 0xffff)
-        return;
+    ਜੇ (v == 0x0000 || v == 0xffff)
+        ਵਾਪਸ;
     u16 d = pci_config_readw(0, PCI_DEVICE_ID);
     u16 sv = pci_config_readw(0, PCI_SUBSYSTEM_VENDOR_ID);
     u16 sd = pci_config_readw(0, PCI_SUBSYSTEM_ID);
 
-    if (sv != 0x1af4 || /* Red Hat, Inc */
+    ਜੇ (sv != 0x1af4 || /* Red Hat, Inc */
         sd != 0x1100)   /* Qemu virtual machine */
-        return;
+        ਵਾਪਸ;
 
     PlatformRunningOn |= PF_QEMU;
-    switch (d) {
-    case 0x1237:
+    ਚੋਣ (d) {
+    ਹਾਲਤ 0x1237:
         dprintf(1, "Running on QEMU (i440fx)\n");
-        break;
-    case 0x29c0:
+        ਰੋਕੋ;
+    ਹਾਲਤ 0x29c0:
         dprintf(1, "Running on QEMU (q35)\n");
-        break;
-    default:
+        ਰੋਕੋ;
+    ਮੂਲ:
         dprintf(1, "Running on QEMU (unknown nb: %04x:%04x)\n", v, d);
-        break;
+        ਰੋਕੋ;
     }
     physbits(1);
 }
 
-static int qemu_early_e820(void);
+ਸਥਿਰ ਪੂਰਨ qemu_early_e820(ਖਾਲੀ);
 
-void
-qemu_preinit(void)
+ਖਾਲੀ
+qemu_preinit(ਖਾਲੀ)
 {
     qemu_detect();
     kvm_detect();
 
-    if (!CONFIG_QEMU)
-        return;
+    ਜੇ (!CONFIG_QEMU)
+        ਵਾਪਸ;
 
-    if (runningOnXen()) {
+    ਜੇ (runningOnXen()) {
         xen_ramsize_preinit();
-        return;
+        ਵਾਪਸ;
     }
 
     // try read e820 table first
-    if (!qemu_early_e820()) {
+    ਜੇ (!qemu_early_e820()) {
         // when it fails get memory size from nvram.
-        u32 rs = ((rtc_read(CMOS_MEM_EXTMEM2_LOW) << 16)
-                  | (rtc_read(CMOS_MEM_EXTMEM2_HIGH) << 24));
-        if (rs)
+        u32 rs = ((rtc_read(CMOS_MEM_EXTMEM2_ਨੀਵਾਂ) << 16)
+                  | (rtc_read(CMOS_MEM_EXTMEM2_ਉੱਚਾ) << 24));
+        ਜੇ (rs)
             rs += 16 * 1024 * 1024;
-        else
-            rs = (((rtc_read(CMOS_MEM_EXTMEM_LOW) << 10)
-                   | (rtc_read(CMOS_MEM_EXTMEM_HIGH) << 18))
+        ਨਹੀਂਤਾਂ
+            rs = (((rtc_read(CMOS_MEM_EXTMEM_ਨੀਵਾਂ) << 10)
+                   | (rtc_read(CMOS_MEM_EXTMEM_ਉੱਚਾ) << 18))
                   + 1 * 1024 * 1024);
-        RamSize = rs;
-        e820_add(0, rs, E820_RAM);
-        dprintf(1, "RamSize: 0x%08x [cmos]\n", RamSize);
+        Ram_ਮਾਪ = rs;
+        e820_ਜੋੜੋ(0, rs, E820_RAM);
+        dprintf(1, "RamSize: 0x%08x [cmos]\n", Ram_ਮਾਪ);
     }
 
     /* reserve 256KB BIOS area at the end of 4 GB */
-    e820_add(0xfffc0000, 256*1024, E820_RESERVED);
+    e820_ਜੋੜੋ(0xfffc0000, 256*1024, E820_RESERVED);
 }
 
-#define MSR_IA32_FEATURE_CONTROL 0x0000003a
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ MSR_IA32_FEATURE_CONTROL 0x0000003a
 
-static void msr_feature_control_setup(void)
+ਸਥਿਰ ਖਾਲੀ msr_feature_control_ਤਿਆਰੀ(ਖਾਲੀ)
 {
-    u64 feature_control_bits = romfile_loadint("etc/msr_feature_control", 0);
-    if (feature_control_bits)
-        wrmsr_smp(MSR_IA32_FEATURE_CONTROL, feature_control_bits);
+    u64 feature_control_ਬਿੱਟ = romfile_loadint("etc/msr_feature_control", 0);
+    ਜੇ (feature_control_ਬਿੱਟ)
+        wrmsr_smp(MSR_IA32_FEATURE_CONTROL, feature_control_ਬਿੱਟ);
 }
 
-void
-qemu_platform_setup(void)
+ਖਾਲੀ
+qemu_platform_ਤਿਆਰੀ(ਖਾਲੀ)
 {
-    if (!CONFIG_QEMU)
-        return;
+    ਜੇ (!CONFIG_QEMU)
+        ਵਾਪਸ;
 
-    if (runningOnXen()) {
+    ਜੇ (runningOnXen()) {
         pci_probe_devices();
-        xen_hypercall_setup();
-        xen_biostable_setup();
-        return;
+        xen_hypercall_ਤਿਆਰੀ();
+        xen_biostable_ਤਿਆਰੀ();
+        ਵਾਪਸ;
     }
 
     kvmclock_init();
 
     // Initialize pci
-    pci_setup();
-    smm_device_setup();
-    smm_setup();
+    pci_ਤਿਆਰੀ();
+    smm_device_ਤਿਆਰੀ();
+    smm_ਤਿਆਰੀ();
 
     // Initialize mtrr, msr_feature_control and smp
-    mtrr_setup();
-    msr_feature_control_setup();
-    smp_setup();
+    mtrr_ਤਿਆਰੀ();
+    msr_feature_control_ਤਿਆਰੀ();
+    smp_ਤਿਆਰੀ();
 
     // Create bios tables
-    if (MaxCountCPUs <= 255) {
-        pirtable_setup();
-        mptable_setup();
+    ਜੇ (Max_ਗਿਣਤੀ_CPUs <= 255) {
+        pirtable_ਤਿਆਰੀ();
+        mptable_ਤਿਆਰੀ();
     }
-    smbios_setup();
+    smbios_ਤਿਆਰੀ();
 
-    if (CONFIG_FW_ROMFILE_LOAD) {
-        int loader_err;
+    ਜੇ (CONFIG_FW_ROMFILE_ਲੱਦੋ) {
+        ਪੂਰਨ loader_err;
 
         dprintf(3, "load ACPI tables\n");
 
         loader_err = romfile_loader_execute("etc/table-loader");
 
-        RsdpAddr = find_acpi_rsdp();
+        RsdpAddr = ਲੱਭੋ_acpi_rsdp();
 
-        if (RsdpAddr) {
+        ਜੇ (RsdpAddr) {
             acpi_dsdt_parse();
-            virtio_mmio_setup_acpi();
-            return;
+            virtio_mmio_ਤਿਆਰੀ_acpi();
+            ਵਾਪਸ;
         }
         /* If present, loader should have installed an RSDP.
          * Not installed? We might still be able to continue
          * using the builtin RSDP.
          */
-        if (!loader_err)
+        ਜੇ (!loader_err)
             warn_internalerror();
     }
 
-    acpi_setup();
+    acpi_ਤਿਆਰੀ();
 }
 
 
@@ -330,466 +330,466 @@ qemu_platform_setup(void)
 
 // List of QEMU fw_cfg entries.  DO NOT ADD MORE.  (All new content
 // should be passed via the fw_cfg "file" interface.)
-#define QEMU_CFG_SIGNATURE              0x00
-#define QEMU_CFG_ID                     0x01
-#define QEMU_CFG_UUID                   0x02
-#define QEMU_CFG_NOGRAPHIC              0x04
-#define QEMU_CFG_NUMA                   0x0d
-#define QEMU_CFG_BOOT_MENU              0x0e
-#define QEMU_CFG_NB_CPUS                0x05
-#define QEMU_CFG_MAX_CPUS               0x0f
-#define QEMU_CFG_FILE_DIR               0x19
-#define QEMU_CFG_ARCH_LOCAL             0x8000
-#define QEMU_CFG_ACPI_TABLES            (QEMU_CFG_ARCH_LOCAL + 0)
-#define QEMU_CFG_SMBIOS_ENTRIES         (QEMU_CFG_ARCH_LOCAL + 1)
-#define QEMU_CFG_IRQ0_OVERRIDE          (QEMU_CFG_ARCH_LOCAL + 2)
-#define QEMU_CFG_E820_TABLE             (QEMU_CFG_ARCH_LOCAL + 3)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ QEMU_CFG_SIGNATURE              0x00
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ QEMU_CFG_ID                     0x01
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ QEMU_CFG_UUID                   0x02
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ QEMU_CFG_NOGRAPHIC              0x04
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ QEMU_CFG_NUMA                   0x0d
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ QEMU_CFG_BOOT_MENU              0x0e
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ QEMU_CFG_NB_CPUS                0x05
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ QEMU_CFG_MAX_CPUS               0x0f
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ QEMU_CFG_FILE_DIR               0x19
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ QEMU_CFG_ARCH_LOCAL             0x8000
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ QEMU_CFG_ACPI_TABLES            (QEMU_CFG_ARCH_LOCAL + 0)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ QEMU_CFG_SMBIOS_ENTRIES         (QEMU_CFG_ARCH_LOCAL + 1)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ QEMU_CFG_IRQ0_OVERRIDE          (QEMU_CFG_ARCH_LOCAL + 2)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ QEMU_CFG_E820_ਸਾਰਣੀ             (QEMU_CFG_ARCH_LOCAL + 3)
 
-static void
+ਸਥਿਰ ਖਾਲੀ
 qemu_cfg_select(u16 f)
 {
-    outw(f, PORT_QEMU_CFG_CTL);
+    outw(f, ਪੋਰਟ_QEMU_CFG_CTL);
 }
 
-static void
-qemu_cfg_dma_transfer(void *address, u32 length, u32 control)
+ਸਥਿਰ ਖਾਲੀ
+qemu_cfg_dma_transfer(ਖਾਲੀ *ਪਤਾ, u32 ਲੰਮਾਈ, u32 control)
 {
     QemuCfgDmaAccess access;
 
-    access.address = cpu_to_be64((u64)(u32)address);
-    access.length = cpu_to_be32(length);
-    access.control = cpu_to_be32(control);
+    access.ਪਤਾ = cpu_ਮੰਜ਼ਿਲ_be64((u64)(u32)ਪਤਾ);
+    access.ਲੰਮਾਈ = cpu_ਮੰਜ਼ਿਲ_be32(ਲੰਮਾਈ);
+    access.control = cpu_ਮੰਜ਼ਿਲ_be32(control);
 
     barrier();
 
-    outl(cpu_to_be32((u32)&access), PORT_QEMU_CFG_DMA_ADDR_LOW);
+    outl(cpu_ਮੰਜ਼ਿਲ_be32((u32)&access), ਪੋਰਟ_QEMU_CFG_DMA_ADDR_ਨੀਵਾਂ);
 
-    while(be32_to_cpu(access.control) & ~QEMU_CFG_DMA_CTL_ERROR) {
+    ਜਦੋਂ(be32_ਮੰਜ਼ਿਲ_cpu(access.control) & ~QEMU_CFG_DMA_CTL_ERROR) {
         yield();
     }
 }
 
-static void
-qemu_cfg_read(void *buf, int len)
+ਸਥਿਰ ਖਾਲੀ
+qemu_cfg_read(ਖਾਲੀ *buf, ਪੂਰਨ len)
 {
-    if (len == 0) {
-        return;
+    ਜੇ (len == 0) {
+        ਵਾਪਸ;
     }
 
-    if (qemu_cfg_dma_enabled()) {
+    ਜੇ (qemu_cfg_dma_enabled()) {
         qemu_cfg_dma_transfer(buf, len, QEMU_CFG_DMA_CTL_READ);
-    } else {
-        insb(PORT_QEMU_CFG_DATA, buf, len);
+    } ਨਹੀਂਤਾਂ {
+        insb(ਪੋਰਟ_QEMU_CFG_ਅੰਕੜੇ, buf, len);
     }
 }
 
-static void
-qemu_cfg_write(void *buf, int len)
+ਸਥਿਰ ਖਾਲੀ
+qemu_cfg_write(ਖਾਲੀ *buf, ਪੂਰਨ len)
 {
-    if (len == 0) {
-        return;
+    ਜੇ (len == 0) {
+        ਵਾਪਸ;
     }
 
-    if (qemu_cfg_dma_enabled()) {
+    ਜੇ (qemu_cfg_dma_enabled()) {
         qemu_cfg_dma_transfer(buf, len, QEMU_CFG_DMA_CTL_WRITE);
-    } else {
+    } ਨਹੀਂਤਾਂ {
         warn_internalerror();
     }
 }
 
-static void
-qemu_cfg_skip(int len)
+ਸਥਿਰ ਖਾਲੀ
+qemu_cfg_skip(ਪੂਰਨ len)
 {
-    if (len == 0) {
-        return;
+    ਜੇ (len == 0) {
+        ਵਾਪਸ;
     }
 
-    if (qemu_cfg_dma_enabled()) {
+    ਜੇ (qemu_cfg_dma_enabled()) {
         qemu_cfg_dma_transfer(0, len, QEMU_CFG_DMA_CTL_SKIP);
-    } else {
-        while (len--)
-            inb(PORT_QEMU_CFG_DATA);
+    } ਨਹੀਂਤਾਂ {
+        ਜਦੋਂ (len--)
+            inb(ਪੋਰਟ_QEMU_CFG_ਅੰਕੜੇ);
     }
 }
 
-static void
-qemu_cfg_read_entry(void *buf, int e, int len)
+ਸਥਿਰ ਖਾਲੀ
+qemu_cfg_read_ਇੰਦਰਾਜ(ਖਾਲੀ *buf, ਪੂਰਨ e, ਪੂਰਨ len)
 {
-    if (qemu_cfg_dma_enabled()) {
+    ਜੇ (qemu_cfg_dma_enabled()) {
         u32 control = (e << 16) | QEMU_CFG_DMA_CTL_SELECT
                         | QEMU_CFG_DMA_CTL_READ;
         qemu_cfg_dma_transfer(buf, len, control);
-    } else {
+    } ਨਹੀਂਤਾਂ {
         qemu_cfg_select(e);
         qemu_cfg_read(buf, len);
     }
 }
 
-static void
-qemu_cfg_write_entry(void *buf, int e, int len)
+ਸਥਿਰ ਖਾਲੀ
+qemu_cfg_write_ਇੰਦਰਾਜ(ਖਾਲੀ *buf, ਪੂਰਨ e, ਪੂਰਨ len)
 {
-    if (qemu_cfg_dma_enabled()) {
+    ਜੇ (qemu_cfg_dma_enabled()) {
         u32 control = (e << 16) | QEMU_CFG_DMA_CTL_SELECT
                         | QEMU_CFG_DMA_CTL_WRITE;
         qemu_cfg_dma_transfer(buf, len, control);
-    } else {
+    } ਨਹੀਂਤਾਂ {
         warn_internalerror();
     }
 }
 
-struct qemu_romfile_s {
-    struct romfile_s file;
-    int select, skip;
+ਬਣਤਰ qemu_romfile_s {
+    ਬਣਤਰ romfile_s file;
+    ਪੂਰਨ select, skip;
 };
 
-static int
-qemu_cfg_read_file(struct romfile_s *file, void *dst, u32 maxlen)
+ਸਥਿਰ ਪੂਰਨ
+qemu_cfg_read_file(ਬਣਤਰ romfile_s *file, ਖਾਲੀ *dst, u32 maxlen)
 {
-    if (file->size > maxlen)
-        return -1;
-    struct qemu_romfile_s *qfile;
-    qfile = container_of(file, struct qemu_romfile_s, file);
-    if (qfile->skip == 0) {
+    ਜੇ (file->ਮਾਪ > maxlen)
+        ਵਾਪਸ -1;
+    ਬਣਤਰ qemu_romfile_s *qfile;
+    qfile = container_ਦਾ(file, ਬਣਤਰ qemu_romfile_s, file);
+    ਜੇ (qfile->skip == 0) {
         /* Do it in one transfer */
-        qemu_cfg_read_entry(dst, qfile->select, file->size);
-    } else {
+        qemu_cfg_read_ਇੰਦਰਾਜ(dst, qfile->select, file->ਮਾਪ);
+    } ਨਹੀਂਤਾਂ {
         qemu_cfg_select(qfile->select);
         qemu_cfg_skip(qfile->skip);
-        qemu_cfg_read(dst, file->size);
+        qemu_cfg_read(dst, file->ਮਾਪ);
     }
-    return file->size;
+    ਵਾਪਸ file->ਮਾਪ;
 }
 
 // Bare-bones function for writing a file knowing only its unique
 // identifying key (select)
-int
-qemu_cfg_write_file_simple(void *src, u16 key, u32 offset, u32 len)
+ਪੂਰਨ
+qemu_cfg_write_file_simple(ਖਾਲੀ *src, u16 ਕੁੰਜੀ, u32 ਵਿੱਥ_2, u32 len)
 {
-    if (offset == 0) {
+    ਜੇ (ਵਿੱਥ_2 == 0) {
         /* Do it in one transfer */
-        qemu_cfg_write_entry(src, key, len);
-    } else {
-        qemu_cfg_select(key);
-        qemu_cfg_skip(offset);
+        qemu_cfg_write_ਇੰਦਰਾਜ(src, ਕੁੰਜੀ, len);
+    } ਨਹੀਂਤਾਂ {
+        qemu_cfg_select(ਕੁੰਜੀ);
+        qemu_cfg_skip(ਵਿੱਥ_2);
         qemu_cfg_write(src, len);
     }
-    return len;
+    ਵਾਪਸ len;
 }
 
-int
-qemu_cfg_write_file(void *src, struct romfile_s *file, u32 offset, u32 len)
+ਪੂਰਨ
+qemu_cfg_write_file(ਖਾਲੀ *src, ਬਣਤਰ romfile_s *file, u32 ਵਿੱਥ_2, u32 len)
 {
-    if ((offset + len) > file->size)
-        return -1;
+    ਜੇ ((ਵਿੱਥ_2 + len) > file->ਮਾਪ)
+        ਵਾਪਸ -1;
 
-    if (!qemu_cfg_dma_enabled() || (file->copy != qemu_cfg_read_file)) {
+    ਜੇ (!qemu_cfg_dma_enabled() || (file->copy != qemu_cfg_read_file)) {
         warn_internalerror();
-        return -1;
+        ਵਾਪਸ -1;
     }
-    return qemu_cfg_write_file_simple(src, qemu_get_romfile_key(file),
-                                      offset, len);
+    ਵਾਪਸ qemu_cfg_write_file_simple(src, qemu_get_romfile_ਕੁੰਜੀ(file),
+                                      ਵਿੱਥ_2, len);
 }
 
-static void
-qemu_romfile_add(char *name, int select, int skip, int size)
+ਸਥਿਰ ਖਾਲੀ
+qemu_romfile_ਜੋੜੋ(ਅੱਖਰ *name, ਪੂਰਨ select, ਪੂਰਨ skip, ਪੂਰਨ ਮਾਪ)
 {
-    struct qemu_romfile_s *qfile = malloc_tmp(sizeof(*qfile));
-    if (!qfile) {
+    ਬਣਤਰ qemu_romfile_s *qfile = malloc_tmp(ਆਕਾਰ(*qfile));
+    ਜੇ (!qfile) {
         warn_noalloc();
-        return;
+        ਵਾਪਸ;
     }
-    memset(qfile, 0, sizeof(*qfile));
-    strtcpy(qfile->file.name, name, sizeof(qfile->file.name));
-    qfile->file.size = size;
+    memset(qfile, 0, ਆਕਾਰ(*qfile));
+    strtcpy(qfile->file.name, name, ਆਕਾਰ(qfile->file.name));
+    qfile->file.ਮਾਪ = ਮਾਪ;
     qfile->select = select;
     qfile->skip = skip;
     qfile->file.copy = qemu_cfg_read_file;
-    romfile_add(&qfile->file);
+    romfile_ਜੋੜੋ(&qfile->file);
 }
 
 u16
-qemu_get_romfile_key(struct romfile_s *file)
+qemu_get_romfile_ਕੁੰਜੀ(ਬਣਤਰ romfile_s *file)
 {
-    struct qemu_romfile_s *qfile;
-    if (file->copy != qemu_cfg_read_file) {
+    ਬਣਤਰ qemu_romfile_s *qfile;
+    ਜੇ (file->copy != qemu_cfg_read_file) {
         warn_internalerror();
-        return 0;
+        ਵਾਪਸ 0;
     }
-    qfile = container_of(file, struct qemu_romfile_s, file);
-    return qfile->select;
+    qfile = container_ਦਾ(file, ਬਣਤਰ qemu_romfile_s, file);
+    ਵਾਪਸ qfile->select;
 }
 
-static int rtc_present(void)
+ਸਥਿਰ ਪੂਰਨ rtc_present(ਖਾਲੀ)
 {
-    return rtc_read(CMOS_RTC_MONTH) != 0xff;
+    ਵਾਪਸ rtc_read(CMOS_RTC_MONTH) != 0xff;
 }
 
 u16
-qemu_get_present_cpus_count(void)
+qemu_get_present_cpus_ਗਿਣਤੀ(ਖਾਲੀ)
 {
-    u16 smp_count = 0;
-    if (qemu_cfg_enabled()) {
-        qemu_cfg_read_entry(&smp_count, QEMU_CFG_NB_CPUS, sizeof(smp_count));
+    u16 smp_ਗਿਣਤੀ = 0;
+    ਜੇ (qemu_cfg_enabled()) {
+        qemu_cfg_read_ਇੰਦਰਾਜ(&smp_ਗਿਣਤੀ, QEMU_CFG_NB_CPUS, ਆਕਾਰ(smp_ਗਿਣਤੀ));
     }
-    if (rtc_present()) {
-        u16 cmos_cpu_count = rtc_read(CMOS_BIOS_SMP_COUNT) + 1;
-        if (smp_count < cmos_cpu_count) {
-            smp_count = cmos_cpu_count;
+    ਜੇ (rtc_present()) {
+        u16 cmos_cpu_ਗਿਣਤੀ = rtc_read(CMOS_BIOS_SMP_ਗਿਣਤੀ) + 1;
+        ਜੇ (smp_ਗਿਣਤੀ < cmos_cpu_ਗਿਣਤੀ) {
+            smp_ਗਿਣਤੀ = cmos_cpu_ਗਿਣਤੀ;
         }
     }
-    return smp_count;
+    ਵਾਪਸ smp_ਗਿਣਤੀ;
 }
 
-struct e820_reservation {
-    u64 address;
-    u64 length;
+ਬਣਤਰ e820_reservation {
+    u64 ਪਤਾ;
+    u64 ਲੰਮਾਈ;
     u32 type;
 };
 
-#define SMBIOS_FIELD_ENTRY 0
-#define SMBIOS_TABLE_ENTRY 1
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SMBIOS_ਖੇਤਰ_ਇੰਦਰਾਜ 0
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ SMBIOS_ਸਾਰਣੀ_ਇੰਦਰਾਜ 1
 
-struct qemu_smbios_header {
-    u16 length;
+ਬਣਤਰ qemu_smbios_ਸਿਰਲੇਖ {
+    u16 ਲੰਮਾਈ;
     u8 headertype;
     u8 tabletype;
     u16 fieldoffset;
 } PACKED;
 
-static void
-qemu_cfg_e820(void)
+ਸਥਿਰ ਖਾਲੀ
+qemu_cfg_e820(ਖਾਲੀ)
 {
-    if (!CONFIG_QEMU)
-        return;
+    ਜੇ (!CONFIG_QEMU)
+        ਵਾਪਸ;
 
-    if (romfile_find("etc/e820")) {
+    ਜੇ (romfile_ਲੱਭੋ("etc/e820")) {
         // qemu_early_e820() has handled everything
-        return;
+        ਵਾਪਸ;
     }
 
     // QEMU_CFG_E820_TABLE has reservations only
     u32 count32;
-    qemu_cfg_read_entry(&count32, QEMU_CFG_E820_TABLE, sizeof(count32));
-    if (count32) {
-        struct e820_reservation entry;
-        int i;
-        for (i = 0; i < count32; i++) {
-            qemu_cfg_read(&entry, sizeof(entry));
-            e820_add(entry.address, entry.length, entry.type);
+    qemu_cfg_read_ਇੰਦਰਾਜ(&count32, QEMU_CFG_E820_ਸਾਰਣੀ, ਆਕਾਰ(count32));
+    ਜੇ (count32) {
+        ਬਣਤਰ e820_reservation ਇੰਦਰਾਜ;
+        ਪੂਰਨ i;
+        ਲਈ (i = 0; i < count32; i++) {
+            qemu_cfg_read(&ਇੰਦਰਾਜ, ਆਕਾਰ(ਇੰਦਰਾਜ));
+            e820_ਜੋੜੋ(ਇੰਦਰਾਜ.ਪਤਾ, ਇੰਦਰਾਜ.ਲੰਮਾਈ, ਇੰਦਰਾਜ.type);
         }
-    } else if (runningOnKVM()) {
+    } ਨਹੀਂਤਾਂ ਜੇ (runningOnKVM()) {
         // Backwards compatibility - provide hard coded range.
         // 4 pages before the bios, 3 pages for vmx tss pages, the
         // other page for EPT real mode pagetable
-        e820_add(0xfffbc000, 4*4096, E820_RESERVED);
+        e820_ਜੋੜੋ(0xfffbc000, 4*4096, E820_RESERVED);
     }
 
     // Check for memory over 4Gig in cmos
-    u64 high = ((rtc_read(CMOS_MEM_HIGHMEM_LOW) << 16)
+    u64 ਉੱਚਾ = ((rtc_read(CMOS_MEM_HIGHMEM_ਨੀਵਾਂ) << 16)
                 | ((u32)rtc_read(CMOS_MEM_HIGHMEM_MID) << 24)
-                | ((u64)rtc_read(CMOS_MEM_HIGHMEM_HIGH) << 32));
-    RamSizeOver4G = high;
-    e820_add(0x100000000ull, high, E820_RAM);
-    dprintf(1, "RamSizeOver4G: 0x%016llx [cmos]\n", RamSizeOver4G);
+                | ((u64)rtc_read(CMOS_MEM_HIGHMEM_ਉੱਚਾ) << 32));
+    Ram_ਮਾਪ_Over4_G = ਉੱਚਾ;
+    e820_ਜੋੜੋ(0x100000000ull, ਉੱਚਾ, E820_RAM);
+    dprintf(1, "RamSizeOver4G: 0x%016llx [cmos]\n", Ram_ਮਾਪ_Over4_G);
 }
 
 // Populate romfile entries for legacy fw_cfg ports (that predate the
 // "file" interface).
-static void
-qemu_cfg_legacy(void)
+ਸਥਿਰ ਖਾਲੀ
+qemu_cfg_legacy(ਖਾਲੀ)
 {
-    if (!CONFIG_QEMU)
-        return;
+    ਜੇ (!CONFIG_QEMU)
+        ਵਾਪਸ;
 
     // Misc config items.
-    qemu_romfile_add("etc/show-boot-menu", QEMU_CFG_BOOT_MENU, 0, 2);
-    qemu_romfile_add("etc/irq0-override", QEMU_CFG_IRQ0_OVERRIDE, 0, 1);
-    qemu_romfile_add("etc/max-cpus", QEMU_CFG_MAX_CPUS, 0, 2);
+    qemu_romfile_ਜੋੜੋ("etc/show-boot-menu", QEMU_CFG_BOOT_MENU, 0, 2);
+    qemu_romfile_ਜੋੜੋ("etc/irq0-override", QEMU_CFG_IRQ0_OVERRIDE, 0, 1);
+    qemu_romfile_ਜੋੜੋ("etc/max-cpus", QEMU_CFG_MAX_CPUS, 0, 2);
 
     // NUMA data
     u64 numacount;
-    qemu_cfg_read_entry(&numacount, QEMU_CFG_NUMA, sizeof(numacount));
-    int max_cpu = romfile_loadint("etc/max-cpus", 0);
-    qemu_romfile_add("etc/numa-cpu-map", QEMU_CFG_NUMA, sizeof(numacount)
-                     , max_cpu*sizeof(u64));
-    qemu_romfile_add("etc/numa-nodes", QEMU_CFG_NUMA
-                     , sizeof(numacount) + max_cpu*sizeof(u64)
-                     , numacount*sizeof(u64));
+    qemu_cfg_read_ਇੰਦਰਾਜ(&numacount, QEMU_CFG_NUMA, ਆਕਾਰ(numacount));
+    ਪੂਰਨ max_cpu = romfile_loadint("etc/max-cpus", 0);
+    qemu_romfile_ਜੋੜੋ("etc/numa-cpu-map", QEMU_CFG_NUMA, ਆਕਾਰ(numacount)
+                     , max_cpu*ਆਕਾਰ(u64));
+    qemu_romfile_ਜੋੜੋ("etc/numa-nodes", QEMU_CFG_NUMA
+                     , ਆਕਾਰ(numacount) + max_cpu*ਆਕਾਰ(u64)
+                     , numacount*ਆਕਾਰ(u64));
 
     // ACPI tables
-    char name[128];
+    ਅੱਖਰ name[128];
     u16 cnt;
-    qemu_cfg_read_entry(&cnt, QEMU_CFG_ACPI_TABLES, sizeof(cnt));
-    int i, offset = sizeof(cnt);
-    for (i = 0; i < cnt; i++) {
+    qemu_cfg_read_ਇੰਦਰਾਜ(&cnt, QEMU_CFG_ACPI_TABLES, ਆਕਾਰ(cnt));
+    ਪੂਰਨ i, ਵਿੱਥ_2 = ਆਕਾਰ(cnt);
+    ਲਈ (i = 0; i < cnt; i++) {
         u16 len;
-        qemu_cfg_read(&len, sizeof(len));
-        offset += sizeof(len);
-        snprintf(name, sizeof(name), "acpi/table%d", i);
-        qemu_romfile_add(name, QEMU_CFG_ACPI_TABLES, offset, len);
+        qemu_cfg_read(&len, ਆਕਾਰ(len));
+        ਵਿੱਥ_2 += ਆਕਾਰ(len);
+        snprintf(name, ਆਕਾਰ(name), "acpi/table%d", i);
+        qemu_romfile_ਜੋੜੋ(name, QEMU_CFG_ACPI_TABLES, ਵਿੱਥ_2, len);
         qemu_cfg_skip(len);
-        offset += len;
+        ਵਿੱਥ_2 += len;
     }
 
     // SMBIOS info
-    qemu_cfg_read_entry(&cnt, QEMU_CFG_SMBIOS_ENTRIES, sizeof(cnt));
-    offset = sizeof(cnt);
-    for (i = 0; i < cnt; i++) {
-        struct qemu_smbios_header header;
-        qemu_cfg_read(&header, sizeof(header));
-        if (header.headertype == SMBIOS_FIELD_ENTRY) {
-            snprintf(name, sizeof(name), "smbios/field%d-%d"
-                     , header.tabletype, header.fieldoffset);
-            qemu_romfile_add(name, QEMU_CFG_SMBIOS_ENTRIES
-                             , offset + sizeof(header)
-                             , header.length - sizeof(header));
-        } else {
-            snprintf(name, sizeof(name), "smbios/table%d-%d"
-                     , header.tabletype, i);
-            qemu_romfile_add(name, QEMU_CFG_SMBIOS_ENTRIES
-                             , offset + 3, header.length - 3);
+    qemu_cfg_read_ਇੰਦਰਾਜ(&cnt, QEMU_CFG_SMBIOS_ENTRIES, ਆਕਾਰ(cnt));
+    ਵਿੱਥ_2 = ਆਕਾਰ(cnt);
+    ਲਈ (i = 0; i < cnt; i++) {
+        ਬਣਤਰ qemu_smbios_ਸਿਰਲੇਖ ਸਿਰਲੇਖ;
+        qemu_cfg_read(&ਸਿਰਲੇਖ, ਆਕਾਰ(ਸਿਰਲੇਖ));
+        ਜੇ (ਸਿਰਲੇਖ.headertype == SMBIOS_ਖੇਤਰ_ਇੰਦਰਾਜ) {
+            snprintf(name, ਆਕਾਰ(name), "smbios/field%d-%d"
+                     , ਸਿਰਲੇਖ.tabletype, ਸਿਰਲੇਖ.fieldoffset);
+            qemu_romfile_ਜੋੜੋ(name, QEMU_CFG_SMBIOS_ENTRIES
+                             , ਵਿੱਥ_2 + ਆਕਾਰ(ਸਿਰਲੇਖ)
+                             , ਸਿਰਲੇਖ.ਲੰਮਾਈ - ਆਕਾਰ(ਸਿਰਲੇਖ));
+        } ਨਹੀਂਤਾਂ {
+            snprintf(name, ਆਕਾਰ(name), "smbios/table%d-%d"
+                     , ਸਿਰਲੇਖ.tabletype, i);
+            qemu_romfile_ਜੋੜੋ(name, QEMU_CFG_SMBIOS_ENTRIES
+                             , ਵਿੱਥ_2 + 3, ਸਿਰਲੇਖ.ਲੰਮਾਈ - 3);
         }
-        qemu_cfg_skip(header.length - sizeof(header));
-        offset += header.length;
+        qemu_cfg_skip(ਸਿਰਲੇਖ.ਲੰਮਾਈ - ਆਕਾਰ(ਸਿਰਲੇਖ));
+        ਵਿੱਥ_2 += ਸਿਰਲੇਖ.ਲੰਮਾਈ;
     }
 }
 
-struct QemuCfgFile {
-    u32  size;        /* file size */
+ਬਣਤਰ QemuCfgFile {
+    u32  ਮਾਪ;        /* file size */
     u16  select;      /* write this to 0x510 to read it */
     u16  reserved;
-    char name[56];
+    ਅੱਖਰ name[56];
 };
 
-static int qemu_cfg_detect(void)
+ਸਥਿਰ ਪੂਰਨ qemu_cfg_detect(ਖਾਲੀ)
 {
-    if (cfg_enabled)
-        return 1;
+    ਜੇ (cfg_enabled)
+        ਵਾਪਸ 1;
 
     // Detect fw_cfg interface.
     qemu_cfg_select(QEMU_CFG_SIGNATURE);
-    char *sig = "QEMU";
-    int i;
-    for (i = 0; i < 4; i++)
-        if (inb(PORT_QEMU_CFG_DATA) != sig[i])
-            return 0;
+    ਅੱਖਰ *sig = "QEMU";
+    ਪੂਰਨ i;
+    ਲਈ (i = 0; i < 4; i++)
+        ਜੇ (inb(ਪੋਰਟ_QEMU_CFG_ਅੰਕੜੇ) != sig[i])
+            ਵਾਪਸ 0;
 
     dprintf(1, "Found QEMU fw_cfg\n");
     cfg_enabled = 1;
 
     // Detect DMA interface.
     u32 id;
-    qemu_cfg_read_entry(&id, QEMU_CFG_ID, sizeof(id));
+    qemu_cfg_read_ਇੰਦਰਾਜ(&id, QEMU_CFG_ID, ਆਕਾਰ(id));
 
-    if (id & QEMU_CFG_VERSION_DMA) {
+    ਜੇ (id & QEMU_CFG_ਸੰਸਕਰਣ_DMA) {
         dprintf(1, "QEMU fw_cfg DMA interface supported\n");
         cfg_dma_enabled = 1;
     }
-    return 1;
+    ਵਾਪਸ 1;
 }
 
-void qemu_cfg_init(void)
+ਖਾਲੀ qemu_cfg_init(ਖਾਲੀ)
 {
-    if (!runningOnQEMU())
-        return;
+    ਜੇ (!runningOnQEMU())
+        ਵਾਪਸ;
 
-    if (!qemu_cfg_detect())
-        return;
+    ਜੇ (!qemu_cfg_detect())
+        ਵਾਪਸ;
 
     // Populate romfiles for legacy fw_cfg entries
     qemu_cfg_legacy();
 
     // Load files found in the fw_cfg file directory
-    u32 count;
-    qemu_cfg_read_entry(&count, QEMU_CFG_FILE_DIR, sizeof(count));
-    count = be32_to_cpu(count);
+    u32 ਗਿਣਤੀ_2;
+    qemu_cfg_read_ਇੰਦਰਾਜ(&ਗਿਣਤੀ_2, QEMU_CFG_FILE_DIR, ਆਕਾਰ(ਗਿਣਤੀ_2));
+    ਗਿਣਤੀ_2 = be32_ਮੰਜ਼ਿਲ_cpu(ਗਿਣਤੀ_2);
     u32 e;
-    for (e = 0; e < count; e++) {
-        struct QemuCfgFile qfile;
-        qemu_cfg_read(&qfile, sizeof(qfile));
-        qemu_romfile_add(qfile.name, be16_to_cpu(qfile.select)
-                         , 0, be32_to_cpu(qfile.size));
+    ਲਈ (e = 0; e < ਗਿਣਤੀ_2; e++) {
+        ਬਣਤਰ QemuCfgFile qfile;
+        qemu_cfg_read(&qfile, ਆਕਾਰ(qfile));
+        qemu_romfile_ਜੋੜੋ(qfile.name, be16_ਮੰਜ਼ਿਲ_cpu(qfile.select)
+                         , 0, be32_ਮੰਜ਼ਿਲ_cpu(qfile.ਮਾਪ));
     }
 
     qemu_cfg_e820();
 
-    if (romfile_find("etc/table-loader")) {
-        acpi_pm_base = 0x0600;
-        dprintf(1, "Moving pm_base to 0x%x\n", acpi_pm_base);
+    ਜੇ (romfile_ਲੱਭੋ("etc/table-loader")) {
+        acpi_pm_ਅਧਾਰ = 0x0600;
+        dprintf(1, "Moving pm_base to 0x%x\n", acpi_pm_ਅਧਾਰ);
     }
 
     // serial console
     u16 nogfx = 0;
-    qemu_cfg_read_entry(&nogfx, QEMU_CFG_NOGRAPHIC, sizeof(nogfx));
-    if (nogfx && !romfile_find("etc/sercon-port")
-        && !romfile_find("vgaroms/sgabios.bin"))
-        const_romfile_add_int("etc/sercon-port", PORT_SERIAL1);
+    qemu_cfg_read_ਇੰਦਰਾਜ(&nogfx, QEMU_CFG_NOGRAPHIC, ਆਕਾਰ(nogfx));
+    ਜੇ (nogfx && !romfile_ਲੱਭੋ("etc/sercon-port")
+        && !romfile_ਲੱਭੋ("vgaroms/sgabios.bin"))
+        const_romfile_ਜੋੜੋ_int("etc/sercon-port", ਪੋਰਟ_SERIAL1);
 }
 
 /*
  * This runs before malloc and romfile are ready, so we have to work
  * with stack allocations and read from fw_cfg in chunks.
  */
-static int qemu_early_e820(void)
+ਸਥਿਰ ਪੂਰਨ qemu_early_e820(ਖਾਲੀ)
 {
-    struct e820_reservation table;
-    struct QemuCfgFile qfile;
-    u32 select = 0, size = 0;
-    u32 count, i;
+    ਬਣਤਰ e820_reservation ਸਾਰਣੀ;
+    ਬਣਤਰ QemuCfgFile qfile;
+    u32 select = 0, ਮਾਪ = 0;
+    u32 ਗਿਣਤੀ_2, i;
 
-    if (!qemu_cfg_detect())
-        return 0;
+    ਜੇ (!qemu_cfg_detect())
+        ਵਾਪਸ 0;
 
     // find e820 table
-    qemu_cfg_read_entry(&count, QEMU_CFG_FILE_DIR, sizeof(count));
-    count = be32_to_cpu(count);
-    for (i = 0; i < count; i++) {
-        qemu_cfg_read(&qfile, sizeof(qfile));
-        if (memcmp(qfile.name, "etc/e820", 9) != 0)
-            continue;
-        select = be16_to_cpu(qfile.select);
-        size = be32_to_cpu(qfile.size);
-        break;
+    qemu_cfg_read_ਇੰਦਰਾਜ(&ਗਿਣਤੀ_2, QEMU_CFG_FILE_DIR, ਆਕਾਰ(ਗਿਣਤੀ_2));
+    ਗਿਣਤੀ_2 = be32_ਮੰਜ਼ਿਲ_cpu(ਗਿਣਤੀ_2);
+    ਲਈ (i = 0; i < ਗਿਣਤੀ_2; i++) {
+        qemu_cfg_read(&qfile, ਆਕਾਰ(qfile));
+        ਜੇ (memcmp(qfile.name, "etc/e820", 9) != 0)
+            ਜਾਰੀ;
+        select = be16_ਮੰਜ਼ਿਲ_cpu(qfile.select);
+        ਮਾਪ = be32_ਮੰਜ਼ਿਲ_cpu(qfile.ਮਾਪ);
+        ਰੋਕੋ;
     }
-    if (select == 0) {
+    ਜੇ (select == 0) {
         // may happen on old qemu
         dprintf(1, "qemu/e820: fw_cfg file etc/e820 not found\n");
-        return 0;
+        ਵਾਪਸ 0;
     }
 
     // walk e820 table
     qemu_cfg_select(select);
-    count = size/sizeof(table);
-    for (i = 0, select = 0; i < count; i++) {
-        qemu_cfg_read(&table, sizeof(table));
-        switch (table.type) {
-        case E820_RESERVED:
-            e820_add(table.address, table.length, table.type);
+    ਗਿਣਤੀ_2 = ਮਾਪ/ਆਕਾਰ(ਸਾਰਣੀ);
+    ਲਈ (i = 0, select = 0; i < ਗਿਣਤੀ_2; i++) {
+        qemu_cfg_read(&ਸਾਰਣੀ, ਆਕਾਰ(ਸਾਰਣੀ));
+        ਚੋਣ (ਸਾਰਣੀ.type) {
+        ਹਾਲਤ E820_RESERVED:
+            e820_ਜੋੜੋ(ਸਾਰਣੀ.ਪਤਾ, ਸਾਰਣੀ.ਲੰਮਾਈ, ਸਾਰਣੀ.type);
             dprintf(1, "qemu/e820: addr 0x%016llx len 0x%016llx [reserved]\n",
-                    table.address, table.length);
-            break;
-        case E820_SOFT_RESERVED:
-            e820_add(table.address, table.length, table.type);
+                    ਸਾਰਣੀ.ਪਤਾ, ਸਾਰਣੀ.ਲੰਮਾਈ);
+            ਰੋਕੋ;
+        ਹਾਲਤ E820_SOFT_RESERVED:
+            e820_ਜੋੜੋ(ਸਾਰਣੀ.ਪਤਾ, ਸਾਰਣੀ.ਲੰਮਾਈ, ਸਾਰਣੀ.type);
             dprintf(1, "qemu/e820: addr 0x%016llx len 0x%016llx [soft-reserved]\n",
-                    table.address, table.length);
-            break;
-        case E820_RAM:
-            e820_add(table.address, table.length, table.type);
+                    ਸਾਰਣੀ.ਪਤਾ, ਸਾਰਣੀ.ਲੰਮਾਈ);
+            ਰੋਕੋ;
+        ਹਾਲਤ E820_RAM:
+            e820_ਜੋੜੋ(ਸਾਰਣੀ.ਪਤਾ, ਸਾਰਣੀ.ਲੰਮਾਈ, ਸਾਰਣੀ.type);
             dprintf(1, "qemu/e820: addr 0x%016llx len 0x%016llx [RAM]\n",
-                    table.address, table.length);
-            if (table.address < 0x100000000LL) {
+                    ਸਾਰਣੀ.ਪਤਾ, ਸਾਰਣੀ.ਲੰਮਾਈ);
+            ਜੇ (ਸਾਰਣੀ.ਪਤਾ < 0x100000000LL) {
                 // below 4g
-                if (RamSize < table.address + table.length)
-                    RamSize = table.address + table.length;
-            } else {
+                ਜੇ (Ram_ਮਾਪ < ਸਾਰਣੀ.ਪਤਾ + ਸਾਰਣੀ.ਲੰਮਾਈ)
+                    Ram_ਮਾਪ = ਸਾਰਣੀ.ਪਤਾ + ਸਾਰਣੀ.ਲੰਮਾਈ;
+            } ਨਹੀਂਤਾਂ {
                 // above 4g
-                if (RamSizeOver4G < table.address + table.length - 0x100000000LL)
-                    RamSizeOver4G = table.address + table.length - 0x100000000LL;
+                ਜੇ (Ram_ਮਾਪ_Over4_G < ਸਾਰਣੀ.ਪਤਾ + ਸਾਰਣੀ.ਲੰਮਾਈ - 0x100000000LL)
+                    Ram_ਮਾਪ_Over4_G = ਸਾਰਣੀ.ਪਤਾ + ਸਾਰਣੀ.ਲੰਮਾਈ - 0x100000000LL;
             }
         }
     }
 
-    dprintf(3, "qemu/e820: RamSize: 0x%08x\n", RamSize);
-    dprintf(3, "qemu/e820: RamSizeOver4G: 0x%016llx\n", RamSizeOver4G);
-    return 1;
+    dprintf(3, "qemu/e820: RamSize: 0x%08x\n", Ram_ਮਾਪ);
+    dprintf(3, "qemu/e820: RamSizeOver4G: 0x%016llx\n", Ram_ਮਾਪ_Over4_G);
+    ਵਾਪਸ 1;
 }

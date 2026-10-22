@@ -4,85 +4,85 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // BUILD_BIOS_ADDR
-#include "farptr.h" // SET_FARVAR
-#include "output.h" // dprintf
-#include "std/pnpbios.h" // PNP_SIGNATURE
-#include "string.h" // checksum
-#include "util.h" // pnp_init
+#ਅਨ੍ਤਰ੍ਭਾਵ "config.h" // BUILD_BIOS_ADDR
+#ਅਨ੍ਤਰ੍ਭਾਵ "farptr.h" // SET_FARVAR
+#ਅਨ੍ਤਰ੍ਭਾਵ "output.h" // dprintf
+#ਅਨ੍ਤਰ੍ਭਾਵ "std/pnpbios.h" // PNP_SIGNATURE
+#ਅਨ੍ਤਰ੍ਭਾਵ "string.h" // checksum
+#ਅਨ੍ਤਰ੍ਭਾਵ "util.h" // pnp_init
 
-extern struct pnpheader PNPHEADER;
-extern char pnp_string[];
+ਬਾਹਰੀ ਬਣਤਰ pnpheader PNPHEADER;
+ਬਾਹਰੀ ਅੱਖਰ pnp_string[];
 
-#if CONFIG_PNPBIOS
-struct pnpheader PNPHEADER __aligned(16) VARFSEG = {
+#ਜੇ CONFIG_PNPBIOS
+ਬਣਤਰ pnpheader PNPHEADER __aligned(16) VARFSEG = {
     .signature = PNP_SIGNATURE,
-    .version = 0x10,
-    .length = sizeof(PNPHEADER),
+    .ਸੰਸਕਰਣ_2 = 0x10,
+    .ਲੰਮਾਈ = ਆਕਾਰ(PNPHEADER),
     .real_cs = SEG_BIOS,
-    .prot_base = BUILD_BIOS_ADDR,
+    .prot_ਅਧਾਰ = BUILD_BIOS_ADDR,
     .real_ds = SEG_BIOS,
     .prot_database = BUILD_BIOS_ADDR,
 };
-#else
+#ਨਹੀਂਤਾਂ
 // We need a copy of this string in the 0xf000 segment, but we are not
 // actually a PnP BIOS, so make sure it is *not* aligned, so OSes will
 // not see it if they scan.
-char pnp_string[] __aligned(2) VARFSEG = " $PnP";
-#endif
+ਅੱਖਰ pnp_string[] __aligned(2) VARFSEG = " $PnP";
+#ਜੇ_ਅੰਤ
 
 // BBS - Get Version and Installation Check
-static u16
-handle_pnp60(u16 *args)
+ਸਥਿਰ u16
+handle_pnp60(u16 *ਦਲੀਲਾਂ)
 {
-    u16 version_ptr = args[1];
-    u16 version_seg = args[2];
-    SET_FARVAR(version_seg, *(u16*)(version_ptr+0), 0x0101);
-    return 0;
+    u16 ਸੰਸਕਰਣ_ptr = ਦਲੀਲਾਂ[1];
+    u16 ਸੰਸਕਰਣ_seg = ਦਲੀਲਾਂ[2];
+    ਸੈੱਟ_FARVAR(ਸੰਸਕਰਣ_seg, *(u16*)(ਸੰਸਕਰਣ_ptr+0), 0x0101);
+    ਵਾਪਸ 0;
 }
 
-static u16
-handle_pnpXX(u16 *args)
+ਸਥਿਰ u16
+handle_pnpXX(u16 *ਦਲੀਲਾਂ)
 {
-    return FUNCTION_NOT_SUPPORTED;
+    ਵਾਪਸ FUNCTION_NOT_SUPPORTED;
 }
 
 u16 VISIBLE16
-handle_pnp(u16 *args)
+handle_pnp(u16 *ਦਲੀਲਾਂ)
 {
-    if (! CONFIG_PNPBIOS)
-        return FUNCTION_NOT_SUPPORTED;
+    ਜੇ (! CONFIG_PNPBIOS)
+        ਵਾਪਸ FUNCTION_NOT_SUPPORTED;
 
-    u16 arg1 = args[0];
+    u16 arg1 = ਦਲੀਲਾਂ[0];
     dprintf(DEBUG_HDL_pnp, "pnp call arg1=%x\n", arg1);
 
-    switch (arg1) {
-    case 0x60: return handle_pnp60(args);
-    default:   return handle_pnpXX(args);
+    ਚੋਣ (arg1) {
+    ਹਾਲਤ 0x60: ਵਾਪਸ handle_pnp60(ਦਲੀਲਾਂ);
+    ਮੂਲ:   ਵਾਪਸ handle_pnpXX(ਦਲੀਲਾਂ);
     }
 }
 
 u16
-get_pnp_offset(void)
+get_pnp_ਵਿੱਥ(ਖਾਲੀ)
 {
-    if (! CONFIG_PNPBIOS)
-        return (u32)pnp_string + 1 - BUILD_BIOS_ADDR;
-    return (u32)&PNPHEADER - BUILD_BIOS_ADDR;
+    ਜੇ (! CONFIG_PNPBIOS)
+        ਵਾਪਸ (u32)pnp_string + 1 - BUILD_BIOS_ADDR;
+    ਵਾਪਸ (u32)&PNPHEADER - BUILD_BIOS_ADDR;
 }
 
 // romlayout.S
-extern void entry_pnp_real(void);
-extern void entry_pnp_prot(void);
+ਬਾਹਰੀ ਖਾਲੀ ਇੰਦਰਾਜ_pnp_real(ਖਾਲੀ);
+ਬਾਹਰੀ ਖਾਲੀ ਇੰਦਰਾਜ_pnp_prot(ਖਾਲੀ);
 
-void
-pnp_init(void)
+ਖਾਲੀ
+pnp_init(ਖਾਲੀ)
 {
-    if (! CONFIG_PNPBIOS)
-        return;
+    ਜੇ (! CONFIG_PNPBIOS)
+        ਵਾਪਸ;
 
     dprintf(3, "init PNPBIOS table\n");
 
-    PNPHEADER.real_ip = (u32)entry_pnp_real - BUILD_BIOS_ADDR;
-    PNPHEADER.prot_ip = (u32)entry_pnp_prot - BUILD_BIOS_ADDR;
-    PNPHEADER.checksum -= checksum(&PNPHEADER, sizeof(PNPHEADER));
+    PNPHEADER.real_ip = (u32)ਇੰਦਰਾਜ_pnp_real - BUILD_BIOS_ADDR;
+    PNPHEADER.prot_ip = (u32)ਇੰਦਰਾਜ_pnp_prot - BUILD_BIOS_ADDR;
+    PNPHEADER.checksum -= checksum(&PNPHEADER, ਆਕਾਰ(PNPHEADER));
 }

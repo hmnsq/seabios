@@ -1,91 +1,91 @@
-#ifndef __LIST_H
-#define __LIST_H
+#ਜੇ_ਅਪਰਿਭਾਸ਼ਿਤ __LIST_H
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ __LIST_H
 
-#include "types.h" // container_of
+#ਅਨ੍ਤਰ੍ਭਾਵ "types.h" // container_of
 
 
 /****************************************************************
  * hlist - Double linked lists with a single pointer list head
  ****************************************************************/
 
-struct hlist_node {
-    struct hlist_node *next, **pprev;
+ਬਣਤਰ hlist_ਗੰਢ {
+    ਬਣਤਰ hlist_ਗੰਢ *ਅਗਲਾ, **pprev;
 };
 
-struct hlist_head {
-    struct hlist_node *first;
+ਬਣਤਰ hlist_ਸਿਰ {
+    ਬਣਤਰ hlist_ਗੰਢ *ਪਹਿਲਾ;
 };
 
-static inline int
-hlist_empty(const struct hlist_head *h)
+ਸਥਿਰ ਸਤਰਅੰਦਰ ਪੂਰਨ
+hlist_ਖਾਲੀ_ਥਾਵਾਂ(ਅਚਲ ਬਣਤਰ hlist_ਸਿਰ *h)
 {
-    return !h->first;
+    ਵਾਪਸ !h->ਪਹਿਲਾ;
 }
 
-static inline void
-hlist_del(struct hlist_node *n)
+ਸਥਿਰ ਸਤਰਅੰਦਰ ਖਾਲੀ
+hlist_del(ਬਣਤਰ hlist_ਗੰਢ *n)
 {
-    struct hlist_node *next = n->next;
-    struct hlist_node **pprev = n->pprev;
-    *pprev = next;
-    if (next)
-        next->pprev = pprev;
+    ਬਣਤਰ hlist_ਗੰਢ *ਅਗਲਾ = n->ਅਗਲਾ;
+    ਬਣਤਰ hlist_ਗੰਢ **pprev = n->pprev;
+    *pprev = ਅਗਲਾ;
+    ਜੇ (ਅਗਲਾ)
+        ਅਗਲਾ->pprev = pprev;
 }
 
-static inline void
-hlist_add(struct hlist_node *n, struct hlist_node **pprev)
+ਸਥਿਰ ਸਤਰਅੰਦਰ ਖਾਲੀ
+hlist_ਜੋੜੋ(ਬਣਤਰ hlist_ਗੰਢ *n, ਬਣਤਰ hlist_ਗੰਢ **pprev)
 {
-    struct hlist_node *next = *pprev;
+    ਬਣਤਰ hlist_ਗੰਢ *ਅਗਲਾ = *pprev;
     n->pprev = pprev;
-    n->next = next;
-    if (next)
-        next->pprev = &n->next;
+    n->ਅਗਲਾ = ਅਗਲਾ;
+    ਜੇ (ਅਗਲਾ)
+        ਅਗਲਾ->pprev = &n->ਅਗਲਾ;
     *pprev = n;
 }
 
-static inline void
-hlist_add_head(struct hlist_node *n, struct hlist_head *h)
+ਸਥਿਰ ਸਤਰਅੰਦਰ ਖਾਲੀ
+hlist_ਜੋੜੋ_ਸਿਰ(ਬਣਤਰ hlist_ਗੰਢ *n, ਬਣਤਰ hlist_ਸਿਰ *h)
 {
-    hlist_add(n, &h->first);
+    hlist_ਜੋੜੋ(n, &h->ਪਹਿਲਾ);
 }
 
-static inline void
-hlist_add_before(struct hlist_node *n, struct hlist_node *next)
+ਸਥਿਰ ਸਤਰਅੰਦਰ ਖਾਲੀ
+hlist_ਜੋੜੋ_before(ਬਣਤਰ hlist_ਗੰਢ *n, ਬਣਤਰ hlist_ਗੰਢ *ਅਗਲਾ)
 {
-    hlist_add(n, next->pprev);
+    hlist_ਜੋੜੋ(n, ਅਗਲਾ->pprev);
 }
 
-static inline void
-hlist_add_after(struct hlist_node *n, struct hlist_node *prev)
+ਸਥਿਰ ਸਤਰਅੰਦਰ ਖਾਲੀ
+hlist_ਜੋੜੋ_after(ਬਣਤਰ hlist_ਗੰਢ *n, ਬਣਤਰ hlist_ਗੰਢ *prev)
 {
-    hlist_add(n, &prev->next);
+    hlist_ਜੋੜੋ(n, &prev->ਅਗਲਾ);
 }
 
-static inline void
-hlist_replace(struct hlist_node *old, struct hlist_node *new)
+ਸਥਿਰ ਸਤਰਅੰਦਰ ਖਾਲੀ
+hlist_replace(ਬਣਤਰ hlist_ਗੰਢ *old, ਬਣਤਰ hlist_ਗੰਢ *new)
 {
-    new->next = old->next;
-    if (new->next)
-        new->next->pprev = &new->next;
+    new->ਅਗਲਾ = old->ਅਗਲਾ;
+    ਜੇ (new->ਅਗਲਾ)
+        new->ਅਗਲਾ->pprev = &new->ਅਗਲਾ;
     new->pprev = old->pprev;
     *new->pprev = new;
 }
 
-#define hlist_for_each_entry(pos, head, member)                         \
-    for (pos = container_of((head)->first, typeof(*pos), member)        \
-         ; pos != container_of(NULL, typeof(*pos), member)              \
-         ; pos = container_of(pos->member.next, typeof(*pos), member))
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ hlist_for_each_ਇੰਦਰਾਜ(pos, ਸਿਰ, member)                         \
+    ਲਈ (pos = container_ਦਾ((ਸਿਰ)->ਪਹਿਲਾ, typeof(*pos), member)        \
+         ; pos != container_ਦਾ(ਨਿਰਾ, typeof(*pos), member)              \
+         ; pos = container_ਦਾ(pos->member.ਅਗਲਾ, typeof(*pos), member))
 
-#define hlist_for_each_entry_safe(pos, n, head, member)                 \
-    for (pos = container_of((head)->first, typeof(*pos), member)        \
-         ; pos != container_of(NULL, typeof(*pos), member)              \
-             && ({ n = pos->member.next; 1; })                          \
-         ; pos = container_of(n, typeof(*pos), member))
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ hlist_for_each_ਇੰਦਰਾਜ_ਸੁਰੱਖਿਅਤ(pos, n, ਸਿਰ, member)                 \
+    ਲਈ (pos = container_ਦਾ((ਸਿਰ)->ਪਹਿਲਾ, typeof(*pos), member)        \
+         ; pos != container_ਦਾ(ਨਿਰਾ, typeof(*pos), member)              \
+             && ({ n = pos->member.ਅਗਲਾ; 1; })                          \
+         ; pos = container_ਦਾ(n, typeof(*pos), member))
 
-#define hlist_for_each_entry_pprev(pos, pprev, head, member)            \
-    for (pprev = &(head)->first                                         \
-         ; *pprev && ({ pos=container_of(*pprev, typeof(*pos), member); 1; }) \
-         ; pprev = &(*pprev)->next)
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ hlist_for_each_ਇੰਦਰਾਜ_pprev(pos, pprev, ਸਿਰ, member)            \
+    ਲਈ (pprev = &(ਸਿਰ)->ਪਹਿਲਾ                                         \
+         ; *pprev && ({ pos=container_ਦਾ(*pprev, typeof(*pos), member); 1; }) \
+         ; pprev = &(*pprev)->ਅਗਲਾ)
 
 
-#endif // list.h
+#ਜੇ_ਅੰਤ // list.h
