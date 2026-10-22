@@ -5,26 +5,26 @@
 
 #define PORT_PCI_REBOOT        0x0cf9
 
-static inline u8 pci_bdf_to_bus(u16 bdf) {
-    return bdf >> 8;
+static anta_hstha u8 pci_bdf_to_bus(u16 bdf) {
+    ᯀᯮᯞ bdf >> 8;
 }
-static inline u8 pci_bdf_to_devfn(u16 bdf) {
-    return bdf & 0xff;
+static anta_hstha u8 pci_bdf_to_devfn(u16 bdf) {
+    ᯀᯮᯞ bdf & 0xff;
 }
-static inline u16 pci_bdf_to_busdev(u16 bdf) {
-    return bdf & ~0x07;
+static anta_hstha u16 pci_bdf_to_busdev(u16 bdf) {
+    ᯀᯮᯞ bdf & ~0x07;
 }
-static inline u8 pci_bdf_to_dev(u16 bdf) {
-    return (bdf >> 3) & 0x1f;
+static anta_hstha u8 pci_bdf_to_dev(u16 bdf) {
+    ᯀᯮᯞ (bdf >> 3) & 0x1f;
 }
-static inline u8 pci_bdf_to_fn(u16 bdf) {
-    return bdf & 0x07;
+static anta_hstha u8 pci_bdf_to_fn(u16 bdf) {
+    ᯀᯮᯞ bdf & 0x07;
 }
-static inline u16 pci_to_bdf(int bus, int dev, int fn) {
-    return (bus<<8) | (dev<<3) | fn;
+static anta_hstha u16 pci_to_bdf(puur_naa_nka bus, puur_naa_nka dev, puur_naa_nka fn) {
+    ᯀᯮᯞ (bus<<8) | (dev<<3) | fn;
 }
-static inline u16 pci_bus_devfn_to_bdf(int bus, u16 devfn) {
-    return (bus << 8) | devfn;
+static anta_hstha u16 pci_bus_devfn_to_bdf(puur_naa_nka bus, u16 devfn) {
+    ᯀᯮᯞ (bus << 8) | devfn;
 }
 
 #define pci_ioconfig_foreachbdf(BDF, BUS)                               \
@@ -44,7 +44,7 @@ void pci_ioconfig_writeb(u16 bdf, u32 addr, u8 val);
 u32 pci_ioconfig_readl(u16 bdf, u32 addr);
 u16 pci_ioconfig_readw(u16 bdf, u32 addr);
 u8 pci_ioconfig_readb(u16 bdf, u32 addr);
-int pci_ioconfig_next(int bdf, int bus);
+puur_naa_nka pci_ioconfig_next(puur_naa_nka bdf, puur_naa_nka bus);
 
 // PCI configuration access using either PCI CAM or PCIe ECAM
 void pci_config_writel(u16 bdf, u32 addr, u32 val);
@@ -55,10 +55,10 @@ u16 pci_config_readw(u16 bdf, u32 addr);
 u8 pci_config_readb(u16 bdf, u32 addr);
 void pci_config_maskw(u16 bdf, u32 addr, u16 off, u16 on);
 u8 pci_find_capability(u16 bdf, u8 cap_id, u8 cap);
-int pci_next(int bdf, int bus);
+puur_naa_nka pci_next(puur_naa_nka bdf, puur_naa_nka bus);
 
-void pci_enable_mmconfig(u64 addr, const char *name);
-int pci_probe_host(void);
+void pci_enable_mmconfig(u64 addr, const var_na *name);
+puur_naa_nka pci_probe_host(void);
 void pci_reboot(void);
 
 #endif // pci.h

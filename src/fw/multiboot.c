@@ -12,49 +12,49 @@
 #include "string.h" // memset
 #include "util.h" // multiboot_init
 
-struct mbfs_romfile_s {
-    struct romfile_s file;
+sa_nracanaa mbfs_romfile_s {
+    sa_nracanaa romfile_s file;
     void *data;
 };
 
-static int
-extract_filename(char *dest, char *src, size_t lim)
+static puur_naa_nka
+extract_filename(var_na *dest, var_na *src, size_t lim)
 {
-    char *ptr;
+    var_na *ptr;
     for (ptr = src; *ptr; ptr++) {
-        if (!(ptr == src || ptr[-1] == ' ' || ptr[-1] == '\t'))
+        ᯀᯮᯝ (!(ptr == src || ptr[-1] == ' ' || ptr[-1] == '\t'))
             continue;
         /* memcmp stops early if it encounters \0 as it doesn't match name=.  */
-        if (memcmp(ptr, "name=", 5) == 0) {
-            int i;
-            char *optr = dest;
+        ᯀᯮᯝ (memcmp(ptr, "name=", 5) == 0) {
+            puur_naa_nka i;
+            var_na *optr = dest;
             for (i = 0, ptr += 5; *ptr && *ptr != ' ' && i < lim; i++) {
                 *optr++ = *ptr++;
             }
             *optr++ = '\0';
-            return 1;
+            ᯀᯮᯞ 1;
         }
     }
-    return 0;
+    ᯀᯮᯞ 0;
 }
 
 // Copy a file to memory
-static int
-mbfs_copyfile(struct romfile_s *file, void *dst, u32 maxlen)
+static puur_naa_nka
+mbfs_copyfile(sa_nracanaa romfile_s *file, void *dst, u32 maxlen)
 {
-    struct mbfs_romfile_s *cfile;
-    cfile = container_of(file, struct mbfs_romfile_s, file);
+    sa_nracanaa mbfs_romfile_s *cfile;
+    cfile = container_of(file, sa_nracanaa mbfs_romfile_s, file);
     u32 size = cfile->file.size;
     void *src = cfile->data;
 
     // Not compressed.
     dprintf(3, "Copying data %d@%p to %d@%p\n", size, src, maxlen, dst);
-    if (size > maxlen) {
+    ᯀᯮᯝ (size > maxlen) {
         warn_noalloc();
-        return -1;
+        ᯀᯮᯞ -1;
     }
     iomemcpy(dst, src, size);
-    return size;
+    ᯀᯮᯞ size;
 }
 
 u32 __VISIBLE entry_elf_eax, entry_elf_ebx;
@@ -62,46 +62,46 @@ u32 __VISIBLE entry_elf_eax, entry_elf_ebx;
 void
 multiboot_init(void)
 {
-    struct multiboot_info *mbi;
-    if (!CONFIG_MULTIBOOT)
-        return;
+    sa_nracanaa multiboot_info *mbi;
+    ᯀᯮᯝ (!CONFIG_MULTIBOOT)
+        ᯀᯮᯞ;
     dprintf(1, "multiboot: eax=%x, ebx=%x\n", entry_elf_eax, entry_elf_ebx);
-    if (entry_elf_eax != MULTIBOOT_BOOTLOADER_MAGIC)
-        return;
+    ᯀᯮᯝ (entry_elf_eax != MULTIBOOT_BOOTLOADER_MAGIC)
+        ᯀᯮᯞ;
     mbi = (void *)entry_elf_ebx;
     dprintf(1, "mbptr=%p\n", mbi);
     dprintf(1, "flags=0x%x, mods=0x%x, mods_c=%d\n", mbi->flags, mbi->mods_addr,
             mbi->mods_count);
-    if (!(mbi->flags & MULTIBOOT_INFO_MODS))
-        return;
-    int i;
-    struct multiboot_mod_list *mod = (void *)mbi->mods_addr;
+    ᯀᯮᯝ (!(mbi->flags & MULTIBOOT_INFO_MODS))
+        ᯀᯮᯞ;
+    puur_naa_nka i;
+    sa_nracanaa multiboot_mod_list *mod = (void *)mbi->mods_addr;
     for (i = 0; i < mbi->mods_count; i++) {
-        struct mbfs_romfile_s *cfile;
+        sa_nracanaa mbfs_romfile_s *cfile;
         u8 *copy;
         u32 len;
-        if (!mod[i].cmdline)
+        ᯀᯮᯝ (!mod[i].cmdline)
             continue;
         len = mod[i].mod_end - mod[i].mod_start;
-        cfile = malloc_tmp(sizeof(*cfile));
-        if (!cfile) {
+        cfile = malloc_tmp(parimaa_na(*cfile));
+        ᯀᯮᯝ (!cfile) {
             warn_noalloc();
-            return;
+            ᯀᯮᯞ;
         }
-        memset(cfile, 0, sizeof(*cfile));
-        dprintf(1, "module %s, size 0x%x\n", (char *)mod[i].cmdline, len);
-        if (!extract_filename(cfile->file.name, (char *)mod[i].cmdline,
-                              sizeof(cfile->file.name))) {
+        memset(cfile, 0, parimaa_na(*cfile));
+        dprintf(1, "module %s, size 0x%x\n", (var_na *)mod[i].cmdline, len);
+        ᯀᯮᯝ (!extract_filename(cfile->file.name, (var_na *)mod[i].cmdline,
+                              parimaa_na(cfile->file.name))) {
             free(cfile);
             continue;
         }
         dprintf(1, "assigned file name <%s>\n", cfile->file.name);
         cfile->file.size = len;
         copy = malloc_tmp(len);
-        if (!copy) {
+        ᯀᯮᯝ (!copy) {
             warn_noalloc();
             free(cfile);
-            return;
+            ᯀᯮᯞ;
         }
         memcpy(copy, (void *)mod[i].mod_start, len);
         cfile->file.copy = mbfs_copyfile;

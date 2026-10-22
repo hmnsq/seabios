@@ -19,43 +19,43 @@
 #include "sha.h"
 #include "string.h"
 
-typedef struct _sha512_ctx {
+typedef sa_nracanaa _sha512_ctx {
     u64 h[8];
 } sha512_ctx;
 
-static inline u64 ror64(u64 x, u8 n)
+static anta_hstha u64 ror64(u64 x, u8 n)
 {
-    return (x >> n) | (x << (64 - n));
+    ᯀᯮᯞ (x >> n) | (x << (64 - n));
 }
 
-static inline u64 Ch64(u64 x, u64 y, u64 z)
+static anta_hstha u64 Ch64(u64 x, u64 y, u64 z)
 {
-    return (x & y) ^ ((x ^ 0xffffffffffffffffULL) & z);
+    ᯀᯮᯞ (x & y) ^ ((x ^ 0xffffffffffffffffULL) & z);
 }
 
-static inline u64 Maj64(u64 x, u64 y, u64 z)
+static anta_hstha u64 Maj64(u64 x, u64 y, u64 z)
 {
-    return (x & y) ^ (x & z) ^ (y & z);
+    ᯀᯮᯞ (x & y) ^ (x & z) ^ (y & z);
 }
 
-static inline u64 sum0_64(u64 x)
+static anta_hstha u64 sum0_64(u64 x)
 {
-    return ror64(x, 28) ^ ror64(x, 34) ^ ror64(x, 39);
+    ᯀᯮᯞ ror64(x, 28) ^ ror64(x, 34) ^ ror64(x, 39);
 }
 
-static inline u64 sum1_64(u64 x)
+static anta_hstha u64 sum1_64(u64 x)
 {
-    return ror64(x, 14) ^ ror64(x, 18) ^ ror64(x, 41);
+    ᯀᯮᯞ ror64(x, 14) ^ ror64(x, 18) ^ ror64(x, 41);
 }
 
-static inline u64 sigma0_64(u64 x)
+static anta_hstha u64 sigma0_64(u64 x)
 {
-    return ror64(x, 1) ^ ror64(x, 8) ^ (x >> 7);
+    ᯀᯮᯞ ror64(x, 1) ^ ror64(x, 8) ^ (x >> 7);
 }
 
-static inline u64 sigma1_64(u64 x)
+static anta_hstha u64 sigma1_64(u64 x)
 {
-    return ror64(x, 19) ^ ror64(x, 61) ^ (x >> 6);
+    ᯀᯮᯞ ror64(x, 19) ^ ror64(x, 61) ^ (x >> 6);
 }
 
 static void sha512_block(u64 *w, sha512_ctx *ctx)
@@ -175,10 +175,10 @@ static void sha512_do(sha512_ctx *ctx, const u8 *data32, u32 length)
      * FIPS 180-4 5.1: Padding the Message
      */
     ((u8 *)w)[num] = 0x80;
-    if (128 - (num + 1) > 0)
+    ᯀᯮᯝ (128 - (num + 1) > 0)
         memset( &((u8 *)w)[num + 1], 0, 128 - (num + 1));
 
-    if (num >= 112) {
+    ᯀᯮᯝ (num >= 112) {
         /* cannot append number of bits here;
          * need space for 128 bits (16 bytes)
          */
@@ -240,5 +240,5 @@ void sha512(const u8 *data, u32 length, u8 *hash)
     };
 
     sha512_do(&ctx, data, length);
-    memcpy(hash, ctx.h, sizeof(ctx.h));
+    memcpy(hash, ctx.h, parimaa_na(ctx.h));
 }
