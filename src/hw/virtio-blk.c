@@ -37,19 +37,19 @@ struct virtiodrive_s {
 
 void
 virtio_blk_op_one_segment(struct virtiodrive_s *vdrive,
-    int write, struct vring_list sg[])
+    цяло write, struct vring_list sg[])
 {
     struct vring_virtqueue *vq = vdrive->vq;
 
     /* Add to virtqueue and kick host */
-    if (write)
+    ако (write)
         vring_add_buf(vq, sg, 2, 1, 0, 0);
-    else
+    иначе
         vring_add_buf(vq, sg, 1, 2, 0, 0);
     vring_kick(&vdrive->vp, vq, 1);
 
     /* Wait for reply */
-    while (!vring_more_used(vq))
+    докато (!vring_more_used(vq))
         usleep(5);
 
     /* Reclaim virtqueue element */
@@ -62,8 +62,8 @@ virtio_blk_op_one_segment(struct virtiodrive_s *vdrive,
     vp_get_isr(&vdrive->vp);
 }
 
-static int
-virtio_blk_op(struct disk_op_s *op, int write)
+static цяло
+virtio_blk_op(struct disk_op_s *op, цяло write)
 {
     struct virtiodrive_s *vdrive =
         container_of(op->drive_fl, struct virtiodrive_s, drive);
@@ -91,47 +91,47 @@ virtio_blk_op(struct disk_op_s *op, int write)
         vdrive->drive.max_segment_size * vdrive->drive.max_segments;
     u16 blk_num_max;
 
-    if (vdrive->drive.blksize != 0 && max_io_size != 0)
+    ако (vdrive->drive.blksize != 0 && max_io_size != 0)
         blk_num_max = (u16) min(max_io_size / vdrive->drive.blksize, 0xffff);
-    else
+    иначе
         /* default blk_num_max if hardware doesnot advise a proper value */
         blk_num_max = 64;
 
-    if (op->count <= blk_num_max) {
+    ако (op->count <= blk_num_max) {
         virtio_blk_op_one_segment(vdrive, write, sg);
-    } else {
+    } иначе {
         void *p  = op->buf_fl;
         u16 count = op->count;
 
-        while (count > 0) {
+        докато (count > 0) {
             u16 blk_num = min(count, blk_num_max);
             sg[1].length = vdrive->drive.blksize * blk_num;
             sg[1].addr = p;
             virtio_blk_op_one_segment(vdrive, write, sg);
-            if (status == VIRTIO_BLK_S_OK) {
+            ако (status == VIRTIO_BLK_S_OK) {
                 hdr.sector += blk_num;
                 p += sg[1].length;
                 count -= blk_num;
-            } else {
+            } иначе {
                 break;
             }
         }
     }
-    return status == VIRTIO_BLK_S_OK ? DISK_RET_SUCCESS : DISK_RET_EBADTRACK;
+    върни status == VIRTIO_BLK_S_OK ? DISK_RET_SUCCESS : DISK_RET_EBADTRACK;
 }
 
-int
+цяло
 virtio_blk_process_op(struct disk_op_s *op)
 {
-    if (! CONFIG_VIRTIO_BLK)
-        return 0;
+    ако (! CONFIG_VIRTIO_BLK)
+        върни 0;
     switch (op->command) {
     case CMD_READ:
-        return virtio_blk_op(op, 0);
+        върни virtio_blk_op(op, 0);
     case CMD_WRITE:
-        return virtio_blk_op(op, 1);
+        върни virtio_blk_op(op, 1);
     default:
-        return default_process_op(op);
+        върни default_process_op(op);
     }
 }
 
@@ -142,9 +142,9 @@ init_virtio_blk(void *data)
     u8 status = VIRTIO_CONFIG_S_ACKNOWLEDGE | VIRTIO_CONFIG_S_DRIVER;
     dprintf(1, "found virtio-blk at %pP\n", pci);
     struct virtiodrive_s *vdrive = malloc_low(sizeof(*vdrive));
-    if (!vdrive) {
+    ако (!vdrive) {
         warn_noalloc();
-        return;
+        върни;
     }
     memset(vdrive, 0, sizeof(*vdrive));
     vdrive->drive.type = DTYPE_VIRTIO_BLK;
@@ -152,7 +152,7 @@ init_virtio_blk(void *data)
 
     vp_init_simple(&vdrive->vp, pci);
 
-    if (vdrive->vp.use_modern) {
+    ако (vdrive->vp.use_modern) {
         struct vp_device *vp = &vdrive->vp;
         u64 features = vp_get_features(vp);
         u64 version1 = 1ull << VIRTIO_F_VERSION_1;
@@ -161,7 +161,7 @@ init_virtio_blk(void *data)
         u64 max_segments = 1ull << VIRTIO_BLK_F_SEG_MAX;
         u64 max_segment_size = 1ull << VIRTIO_BLK_F_SIZE_MAX;
 
-        if (!(features & version1)) {
+        ако (!(features & version1)) {
             dprintf(1, "modern device without virtio_1 feature bit: %pP\n", pci);
             goto fail;
         }
@@ -171,28 +171,28 @@ init_virtio_blk(void *data)
         vp_set_features(vp, features);
         status |= VIRTIO_CONFIG_S_FEATURES_OK;
         vp_set_status(vp, status);
-        if (!(vp_get_status(vp) & VIRTIO_CONFIG_S_FEATURES_OK)) {
+        ако (!(vp_get_status(vp) & VIRTIO_CONFIG_S_FEATURES_OK)) {
             dprintf(1, "device didn't accept features: %pP\n", pci);
             goto fail;
         }
 
-        if (features & max_segment_size)
+        ако (features & max_segment_size)
             vdrive->drive.max_segment_size =
                 vp_read(&vp->device, struct virtio_blk_config, size_max);
 
-        if (features & max_segments)
+        ако (features & max_segments)
             vdrive->drive.max_segments =
                 vp_read(&vp->device, struct virtio_blk_config, seg_max);
 
         vdrive->drive.sectors =
             vp_read(&vp->device, struct virtio_blk_config, capacity);
-        if (features & blk_size) {
+        ако (features & blk_size) {
             vdrive->drive.blksize =
                 vp_read(&vp->device, struct virtio_blk_config, blk_size);
-        } else {
+        } иначе {
             vdrive->drive.blksize = DISK_SECTOR_SIZE;
         }
-        if (vdrive->drive.blksize != DISK_SECTOR_SIZE) {
+        ако (vdrive->drive.blksize != DISK_SECTOR_SIZE) {
             dprintf(1, "virtio-blk %pP block size %d is unsupported\n",
                     pci, vdrive->drive.blksize);
             goto fail;
@@ -210,12 +210,12 @@ init_virtio_blk(void *data)
             vp_read(&vp->device, struct virtio_blk_config, sectors);
     }
 
-    if (vp_find_vq(&vdrive->vp, 0, &vdrive->vq) < 0 ) {
+    ако (vp_find_vq(&vdrive->vp, 0, &vdrive->vq) < 0 ) {
         dprintf(1, "fail to find vq for virtio-blk %pP\n", pci);
         goto fail;
     }
 
-    if (!vdrive->vp.use_modern) {
+    ако (!vdrive->vp.use_modern) {
         struct virtio_blk_config cfg;
         vp_get_legacy(&vdrive->vp, 0, &cfg, sizeof(cfg));
 
@@ -223,10 +223,10 @@ init_virtio_blk(void *data)
         vdrive->drive.blksize = (f & (1 << VIRTIO_BLK_F_BLK_SIZE)) ?
             cfg.blk_size : DISK_SECTOR_SIZE;
 
-        if (f & (1 << VIRTIO_BLK_F_SIZE_MAX))
+        ако (f & (1 << VIRTIO_BLK_F_SIZE_MAX))
             vdrive->drive.max_segment_size = cfg.size_max;
 
-        if (f & (1 << VIRTIO_BLK_F_SEG_MAX))
+        ако (f & (1 << VIRTIO_BLK_F_SEG_MAX))
             vdrive->drive.max_segments = cfg.seg_max;
 
         vdrive->drive.sectors = cfg.capacity;
@@ -235,7 +235,7 @@ init_virtio_blk(void *data)
                 (u32)vdrive->drive.sectors, vdrive->drive.max_segment_size,
                 vdrive->drive.max_segments);
 
-        if (vdrive->drive.blksize != DISK_SECTOR_SIZE) {
+        ако (vdrive->drive.blksize != DISK_SECTOR_SIZE) {
             dprintf(1, "virtio-blk %pP block size %d is unsupported\n",
                     pci, vdrive->drive.blksize);
             goto fail;
@@ -252,7 +252,7 @@ init_virtio_blk(void *data)
     vp_set_status(&vdrive->vp, status);
 
     boot_lchs_find_pci_device(pci, &vdrive->drive.lchs);
-    return;
+    върни;
 
 fail:
     vp_reset(&vdrive->vp);
@@ -266,9 +266,9 @@ init_virtio_blk_mmio(void *mmio)
     u8 status = VIRTIO_CONFIG_S_ACKNOWLEDGE | VIRTIO_CONFIG_S_DRIVER;
     dprintf(1, "found virtio-blk-mmio at %p\n", mmio);
     struct virtiodrive_s *vdrive = malloc_low(sizeof(*vdrive));
-    if (!vdrive) {
+    ако (!vdrive) {
         warn_noalloc();
-        return;
+        върни;
     }
     memset(vdrive, 0, sizeof(*vdrive));
     vdrive->drive.type = DTYPE_VIRTIO_BLK;
@@ -288,33 +288,33 @@ init_virtio_blk_mmio(void *mmio)
     vp_set_features(vp, features);
     status |= VIRTIO_CONFIG_S_FEATURES_OK;
     vp_set_status(vp, status);
-    if (!(vp_get_status(vp) & VIRTIO_CONFIG_S_FEATURES_OK)) {
+    ако (!(vp_get_status(vp) & VIRTIO_CONFIG_S_FEATURES_OK)) {
         dprintf(1, "device didn't accept features: %p\n", mmio);
         goto fail;
     }
 
-    if (vp_find_vq(&vdrive->vp, 0, &vdrive->vq) < 0 ) {
+    ако (vp_find_vq(&vdrive->vp, 0, &vdrive->vq) < 0 ) {
         dprintf(1, "fail to find vq for virtio-blk-mmio %p\n", mmio);
         goto fail;
     }
 
-    if (features & max_segment_size)
+    ако (features & max_segment_size)
         vdrive->drive.max_segment_size =
             vp_read(&vp->device, struct virtio_blk_config, size_max);
 
-    if (features & max_segments)
+    ако (features & max_segments)
         vdrive->drive.max_segments =
             vp_read(&vp->device, struct virtio_blk_config, seg_max);
 
     vdrive->drive.sectors =
         vp_read(&vp->device, struct virtio_blk_config, capacity);
-    if (features & blk_size) {
+    ако (features & blk_size) {
         vdrive->drive.blksize =
             vp_read(&vp->device, struct virtio_blk_config, blk_size);
-    } else {
+    } иначе {
         vdrive->drive.blksize = DISK_SECTOR_SIZE;
     }
-    if (vdrive->drive.blksize != DISK_SECTOR_SIZE) {
+    ако (vdrive->drive.blksize != DISK_SECTOR_SIZE) {
         dprintf(1, "virtio-blk-mmio %p block size %d is unsupported\n",
                 mmio, vdrive->drive.blksize);
         goto fail;
@@ -336,7 +336,7 @@ init_virtio_blk_mmio(void *mmio)
 
     status |= VIRTIO_CONFIG_S_DRIVER_OK;
     vp_set_status(&vdrive->vp, status);
-    return;
+    върни;
 
 fail:
     vp_reset(&vdrive->vp);
@@ -350,19 +350,19 @@ virtio_blk_setup(void)
     u8 skip_nonbootable = is_bootprio_strict();
 
     ASSERT32FLAT();
-    if (! CONFIG_VIRTIO_BLK)
-        return;
+    ако (! CONFIG_VIRTIO_BLK)
+        върни;
 
     dprintf(3, "init virtio-blk\n");
 
     struct pci_device *pci;
     foreachpci(pci) {
-        if (pci->vendor != PCI_VENDOR_ID_REDHAT_QUMRANET ||
+        ако (pci->vendor != PCI_VENDOR_ID_REDHAT_QUMRANET ||
             (pci->device != PCI_DEVICE_ID_VIRTIO_BLK_09 &&
              pci->device != PCI_DEVICE_ID_VIRTIO_BLK_10))
             continue;
 
-        if (skip_nonbootable && bootprio_find_pci_device(pci) < 0) {
+        ако (skip_nonbootable && bootprio_find_pci_device(pci) < 0) {
             dprintf(1, "skipping init of a non-bootable virtio-blk at %pP\n",
                     pci);
             continue;

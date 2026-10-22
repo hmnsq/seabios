@@ -107,9 +107,9 @@ handle_csm_0000(struct bregs *regs)
 static void
 handle_csm_0001(struct bregs *regs)
 {
-    if (!CONFIG_BOOT) {
+    ако (!CONFIG_BOOT) {
         regs->ax = 1;
-        return;
+        върни;
     }
 
     dprintf(3, "Legacy16UpdateBbs table %04x:%04x\n", regs->es, regs->bx);
@@ -138,32 +138,32 @@ handle_csm_0001(struct bregs *regs)
 static void
 handle_csm_0002(struct bregs *regs)
 {
-    if (!CONFIG_BOOT) {
+    ако (!CONFIG_BOOT) {
         regs->ax = 1;
-        return;
+        върни;
     }
 
     dprintf(3, "PrepareToBoot table %04x:%04x\n", regs->es, regs->bx);
 
     struct e820entry *p = (void *)csm_compat_table.E820Pointer;
-    int i;
-    for (i=0; i < csm_compat_table.E820Length / sizeof(struct e820entry); i++)
+    цяло i;
+    за (i=0; i < csm_compat_table.E820Length / sizeof(struct e820entry); i++)
         e820_add(p[i].start, p[i].size, p[i].type);
 
-    if (csm_init_table->HiPmmMemorySizeInBytes > BUILD_MIN_HIGHTABLE) {
+    ако (csm_init_table->HiPmmMemorySizeInBytes > BUILD_MIN_HIGHTABLE) {
         u32 hi_pmm_end = csm_init_table->HiPmmMemory + csm_init_table->HiPmmMemorySizeInBytes;
         e820_add(hi_pmm_end - BUILD_MIN_HIGHTABLE, BUILD_MIN_HIGHTABLE, E820_RESERVED);
     }
 
     // For PCIBIOS 1ab10e
-    if (csm_compat_table.IrqRoutingTablePointer &&
+    ако (csm_compat_table.IrqRoutingTablePointer &&
         csm_compat_table.IrqRoutingTableLength) {
         PirAddr = (void *)csm_compat_table.IrqRoutingTablePointer;
         dprintf(3, "CSM PIRQ table at %p\n", PirAddr);
     }
 
     // For find_resume_vector()... and find_acpi_features()
-    if (csm_rsdp.signature == RSDP_SIGNATURE) {
+    ако (csm_rsdp.signature == RSDP_SIGNATURE) {
         RsdpAddr = &csm_rsdp;
         dprintf(3, "CSM ACPI RSDP at %p\n", RsdpAddr);
 
@@ -172,7 +172,7 @@ handle_csm_0002(struct bregs *regs)
 
     // SMBIOS table needs to be copied into the f-seg
     // XX: OVMF doesn't seem to set SmbiosTableLength so don't check it
-    if (csm_boot_table->SmbiosTable)
+    ако (csm_boot_table->SmbiosTable)
         copy_smbios_21((void *)csm_boot_table->SmbiosTable);
 
     // MPTABLE is just there; we don't care where.
@@ -201,9 +201,9 @@ handle_csm_0002(struct bregs *regs)
 static void
 handle_csm_0003(struct bregs *regs)
 {
-    if (!CONFIG_BOOT) {
+    ако (!CONFIG_BOOT) {
         regs->ax = 1;
-        return;
+        върни;
     }
 
     dprintf(3, "Boot\n");
@@ -221,9 +221,9 @@ handle_csm_0005(struct bregs *regs)
     struct rom_header *rom;
     u16 bdf;
 
-    if (!CONFIG_OPTIONROMS) {
+    ако (!CONFIG_OPTIONROMS) {
         regs->ax = 1;
-        return;
+        върни;
     }
 
     dprintf(3, "Legacy16DispatchOprom rom %p\n", table);
@@ -261,31 +261,31 @@ handle_csm_0006(struct bregs *regs)
     dprintf(3, "Legacy16GetTableAddress size %x align %x region %d\n",
         size, align, region);
 
-    if (!region)
+    ако (!region)
         region = 3;
 
     // DX = Required address alignment. Bit mapped.
     // First non-zero bit from the right is the alignment.*/
-    if (align) {
+    ако (align) {
         align = 1 << __ffs(align);
-        if (align < MALLOC_MIN_ALIGN)
+        ако (align < MALLOC_MIN_ALIGN)
             align = MALLOC_MIN_ALIGN;
-    } else {
+    } иначе {
         align = MALLOC_MIN_ALIGN;
     }
 
-    if (region & 2)
+    ако (region & 2)
         chunk = _malloc(&ZoneLow, size, align);
-    if (!chunk && (region & 1))
+    ако (!chunk && (region & 1))
         chunk = _malloc(&ZoneFSeg, size, align);
 
     dprintf(3, "Legacy16GetTableAddress size %x align %x region %d yields %p\n",
         size, align, region, chunk);
-    if (chunk) {
+    ако (chunk) {
         regs->ds = FLATPTR_TO_SEG(chunk);
         regs->bx = FLATPTR_TO_OFFSET(chunk);
         regs->ax = 0;
-    } else {
+    } иначе {
         regs->ax = 1;
     }
 }
@@ -295,8 +295,8 @@ handle_csm(struct bregs *regs)
 {
     ASSERT32FLAT();
 
-    if (!CONFIG_CSM)
-        return;
+    ако (!CONFIG_CSM)
+        върни;
 
     dprintf(3, "handle_csm regs %p AX=%04x\n", regs, regs->ax);
 
@@ -319,12 +319,12 @@ handle_csm(struct bregs *regs)
     csm_return(regs);
 }
 
-static int csm_prio_to_seabios(u16 csm_prio)
+static цяло csm_prio_to_seabios(u16 csm_prio)
 {
     switch (csm_prio) {
     case BBS_DO_NOT_BOOT_FROM:
     case BBS_IGNORE_ENTRY:
-        return -1;
+        върни -1;
 
     case BBS_LOWEST_PRIORITY:
     case BBS_UNPRIORITIZED_ENTRY:
@@ -332,43 +332,43 @@ static int csm_prio_to_seabios(u16 csm_prio)
         // SeaBIOS default priorities start at 1, with 0 being used for
         // an item explicitly selected from interactive_bootmenu().
         // As in find_prio(), add 1 to the value being returned.
-        return csm_prio + 1;
+        върни csm_prio + 1;
     }
 }
 
-int csm_bootprio_ata(struct pci_device *pci, int chanid, int slave)
+цяло csm_bootprio_ata(struct pci_device *pci, цяло chanid, цяло slave)
 {
-    if (!csm_boot_table)
-        return -1;
+    ако (!csm_boot_table)
+        върни -1;
     BBS_TABLE *bbs = (void *)csm_boot_table->BbsTable;
-    int index = 1 + (chanid * 2) + slave;
+    цяло index = 1 + (chanid * 2) + slave;
     dprintf(3, "CSM bootprio for ATA%d,%d (index %d) is %d\n", chanid, slave,
             index, bbs[index].BootPriority);
-    return csm_prio_to_seabios(bbs[index].BootPriority);
+    върни csm_prio_to_seabios(bbs[index].BootPriority);
 }
 
-int csm_bootprio_fdc(struct pci_device *pci, int port, int fdid)
+цяло csm_bootprio_fdc(struct pci_device *pci, цяло port, цяло fdid)
 {
-    if (!csm_boot_table)
-        return -1;
+    ако (!csm_boot_table)
+        върни -1;
     BBS_TABLE *bbs = (void *)csm_boot_table->BbsTable;
     dprintf(3, "CSM bootprio for FDC is %d\n", bbs[0].BootPriority);
-    return csm_prio_to_seabios(bbs[0].BootPriority);
+    върни csm_prio_to_seabios(bbs[0].BootPriority);
 }
 
-int csm_bootprio_pci(struct pci_device *pci)
+цяло csm_bootprio_pci(struct pci_device *pci)
 {
-    if (!csm_boot_table)
-        return -1;
+    ако (!csm_boot_table)
+        върни -1;
     BBS_TABLE *bbs = (void *)csm_boot_table->BbsTable;
-    int i;
+    цяло i;
 
-    for (i = 5; i < csm_boot_table->NumberBbsEntries; i++) {
-        if (pci->bdf == pci_to_bdf(bbs[i].Bus, bbs[i].Device, bbs[i].Function)) {
+    за (i = 5; i < csm_boot_table->NumberBbsEntries; i++) {
+        ако (pci->bdf == pci_to_bdf(bbs[i].Bus, bbs[i].Device, bbs[i].Function)) {
             dprintf(3, "CSM bootprio for PCI(%d,%d,%d) is %d\n", bbs[i].Bus,
                     bbs[i].Device, bbs[i].Function, bbs[i].BootPriority);
-            return csm_prio_to_seabios(bbs[i].BootPriority);
+            върни csm_prio_to_seabios(bbs[i].BootPriority);
         }
     }
-    return -1;
+    върни -1;
 }

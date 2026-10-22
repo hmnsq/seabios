@@ -32,18 +32,18 @@
 static char *
 glob_prefix(const char *glob, const char *str)
 {
-    for (;;) {
-        if (!*glob && (!*str || *str == '/'))
-            return (char*)str;
-        if (*glob == '*') {
-            if (!*str || *str == '/' || *str == glob[1])
+    за (;;) {
+        ако (!*glob && (!*str || *str == '/'))
+            върни (char*)str;
+        ако (*glob == '*') {
+            ако (!*str || *str == '/' || *str == glob[1])
                 glob++;
-            else
+            иначе
                 str++;
             continue;
         }
-        if (*glob != *str)
-            return NULL;
+        ако (*glob != *str)
+            върни NULL;
         glob++;
         str++;
     }
@@ -52,47 +52,47 @@ glob_prefix(const char *glob, const char *str)
 #define FW_PCI_DOMAIN "/pci@i0cf8"
 
 static char *
-build_pci_path(char *buf, int max, const char *devname, struct pci_device *pci)
+build_pci_path(char *buf, цяло max, const char *devname, struct pci_device *pci)
 {
     // Build the string path of a bdf - for example: /pci@i0cf8/isa@1,2
     char *p = buf;
-    if (pci->parent) {
+    ако (pci->parent) {
         p = build_pci_path(p, max, "pci-bridge", pci->parent);
-    } else {
+    } иначе {
         p += snprintf(p, buf+max-p, "%s", FW_PCI_DOMAIN);
-        if (pci->rootbus)
+        ако (pci->rootbus)
             p += snprintf(p, buf+max-p, ",%x", pci->rootbus);
     }
 
-    int dev = pci_bdf_to_dev(pci->bdf), fn = pci_bdf_to_fn(pci->bdf);
+    цяло dev = pci_bdf_to_dev(pci->bdf), fn = pci_bdf_to_fn(pci->bdf);
     p += snprintf(p, buf+max-p, "/%s@%x", devname, dev);
-    if (fn)
+    ако (fn)
         p += snprintf(p, buf+max-p, ",%x", fn);
-    return p;
+    върни p;
 }
 
 static char *
-build_scsi_path(char *buf, int max,
-                struct pci_device *pci, int target, int lun)
+build_scsi_path(char *buf, цяло max,
+                struct pci_device *pci, цяло target, цяло lun)
 {
     // Build the string path of a scsi drive - for example:
     // /pci@i0cf8/scsi@5/channel@0/disk@1,0
     char *p;
     p = build_pci_path(buf, max, "*", pci);
     p += snprintf(p, buf+max-p, "/*@0/*@%x,%x", target, lun);
-    return p;
+    върни p;
 }
 
 static char *
-build_ata_path(char *buf, int max,
-               struct pci_device *pci, int chanid, int slave)
+build_ata_path(char *buf, цяло max,
+               struct pci_device *pci, цяло chanid, цяло slave)
 {
     // Build the string path of an ata drive - for example:
     // /pci@i0cf8/ide@1,1/drive@1/disk@0
     char *p;
     p = build_pci_path(buf, max, "*", pci);
     p += snprintf(p, buf+max-p, "/drive@%x/disk@%x", chanid, slave);
-    return p;
+    върни p;
 }
 
 
@@ -108,46 +108,46 @@ typedef struct BootDeviceLCHS {
 } BootDeviceLCHS;
 
 static BootDeviceLCHS *BiosGeometry VARVERIFY32INIT;
-static int BiosGeometryCount;
+static цяло BiosGeometryCount;
 
 static char *
 parse_u32(char *cur, u32 *n)
 {
     u32 m = 0;
-    if (cur) {
-        while ('0' <= *cur && *cur <= '9') {
+    ако (cur) {
+        докато ('0' <= *cur && *cur <= '9') {
             m = 10 * m + (*cur - '0');
             cur++;
         }
-        if (*cur != '\0')
+        ако (*cur != '\0')
             cur++;
     }
     *n = m;
-    return cur;
+    върни cur;
 }
 
 static void
 loadBiosGeometry(void)
 {
-    if (!CONFIG_HOST_BIOS_GEOMETRY)
-        return;
+    ако (!CONFIG_HOST_BIOS_GEOMETRY)
+        върни;
     char *f = romfile_loadfile("bios-geometry", NULL);
-    if (!f)
-        return;
+    ако (!f)
+        върни;
 
-    int i = 0;
+    цяло i = 0;
     BiosGeometryCount = 1;
-    while (f[i]) {
-        if (f[i] == '\n')
+    докато (f[i]) {
+        ако (f[i] == '\n')
             BiosGeometryCount++;
         i++;
     }
     BiosGeometry = malloc_tmphigh(BiosGeometryCount * sizeof(BootDeviceLCHS));
-    if (!BiosGeometry) {
+    ако (!BiosGeometry) {
         warn_noalloc();
         free(f);
         BiosGeometryCount = 0;
-        return;
+        върни;
     }
 
     dprintf(1, "bios geometry:\n");
@@ -156,10 +156,10 @@ loadBiosGeometry(void)
         BootDeviceLCHS *d = &BiosGeometry[i];
         d->name = f;
         f = strchr(f, '\n');
-        if (f)
+        ако (f)
             *(f++) = '\0';
         char *chs_values = strchr(d->name, ' ');
-        if (chs_values)
+        ако (chs_values)
             *(chs_values++) = '\0';
         chs_values = parse_u32(chs_values, &d->lcyls);
         chs_values = parse_u32(chs_values, &d->lheads);
@@ -167,7 +167,7 @@ loadBiosGeometry(void)
         dprintf(1, "%s: (%u, %u, %u)\n",
                 d->name, d->lcyls, d->lheads, d->lsecs);
         i++;
-    } while (f);
+    } докато (f);
 }
 
 // Search the bios-geometry list for the given glob pattern.
@@ -175,66 +175,66 @@ static BootDeviceLCHS *
 boot_lchs_find(const char *glob)
 {
     dprintf(1, "Searching bios-geometry for: %s\n", glob);
-    int i;
-    for (i = 0; i < BiosGeometryCount; i++)
-        if (glob_prefix(glob, BiosGeometry[i].name))
-            return &BiosGeometry[i];
-    return NULL;
+    цяло i;
+    за (i = 0; i < BiosGeometryCount; i++)
+        ако (glob_prefix(glob, BiosGeometry[i].name))
+            върни &BiosGeometry[i];
+    върни NULL;
 }
 
-int boot_lchs_find_pci_device(struct pci_device *pci, struct chs_s *chs)
+цяло boot_lchs_find_pci_device(struct pci_device *pci, struct chs_s *chs)
 {
-    if (!CONFIG_HOST_BIOS_GEOMETRY)
-        return -1;
+    ако (!CONFIG_HOST_BIOS_GEOMETRY)
+        върни -1;
     char desc[256];
     build_pci_path(desc, sizeof(desc), "*", pci);
     BootDeviceLCHS *b = boot_lchs_find(desc);
-    if (!b)
-        return -1;
+    ако (!b)
+        върни -1;
     chs->cylinder = (u16)b->lcyls;
     chs->head = (u16)b->lheads;
     chs->sector = (u16)b->lsecs;
-    return 0;
+    върни 0;
 }
 
-int boot_lchs_find_scsi_device(struct pci_device *pci, int target, int lun,
+цяло boot_lchs_find_scsi_device(struct pci_device *pci, цяло target, цяло lun,
                                struct chs_s *chs)
 {
-    if (!CONFIG_HOST_BIOS_GEOMETRY)
-        return -1;
-    if (!pci)
+    ако (!CONFIG_HOST_BIOS_GEOMETRY)
+        върни -1;
+    ако (!pci)
         // support only pci machine for now
-        return -1;
+        върни -1;
     // Find scsi drive - for example: /pci@i0cf8/scsi@5/channel@0/disk@1,0
     char desc[256];
     build_scsi_path(desc, sizeof(desc), pci, target, lun);
     BootDeviceLCHS *b = boot_lchs_find(desc);
-    if (!b)
-        return -1;
+    ако (!b)
+        върни -1;
     chs->cylinder = (u16)b->lcyls;
     chs->head = (u16)b->lheads;
     chs->sector = (u16)b->lsecs;
-    return 0;
+    върни 0;
 }
 
-int boot_lchs_find_ata_device(struct pci_device *pci, int chanid, int slave,
+цяло boot_lchs_find_ata_device(struct pci_device *pci, цяло chanid, цяло slave,
                               struct chs_s *chs)
 {
-    if (!CONFIG_HOST_BIOS_GEOMETRY)
-        return -1;
-    if (!pci)
+    ако (!CONFIG_HOST_BIOS_GEOMETRY)
+        върни -1;
+    ако (!pci)
         // support only pci machine for now
-        return -1;
+        върни -1;
     // Find ata drive - for example: /pci@i0cf8/ide@1,1/drive@1/disk@0
     char desc[256];
     build_ata_path(desc, sizeof(desc), pci, chanid, slave);
     BootDeviceLCHS *b = boot_lchs_find(desc);
-    if (!b)
-        return -1;
+    ако (!b)
+        върни -1;
     chs->cylinder = (u16)b->lcyls;
     chs->head = (u16)b->lheads;
     chs->sector = (u16)b->lsecs;
-    return 0;
+    върни 0;
 }
 
 
@@ -243,31 +243,31 @@ int boot_lchs_find_ata_device(struct pci_device *pci, int chanid, int slave,
  ****************************************************************/
 
 static char **Bootorder VARVERIFY32INIT;
-static int BootorderCount;
+static цяло BootorderCount;
 
 static void
 loadBootOrder(void)
 {
-    if (!CONFIG_BOOTORDER)
-        return;
+    ако (!CONFIG_BOOTORDER)
+        върни;
 
     char *f = romfile_loadfile("bootorder", NULL);
-    if (!f)
-        return;
+    ако (!f)
+        върни;
 
-    int i = 0;
+    цяло i = 0;
     BootorderCount = 1;
-    while (f[i]) {
-        if (f[i] == '\n')
+    докато (f[i]) {
+        ако (f[i] == '\n')
             BootorderCount++;
         i++;
     }
     Bootorder = malloc_tmphigh(BootorderCount*sizeof(char*));
-    if (!Bootorder) {
+    ако (!Bootorder) {
         warn_noalloc();
         free(f);
         BootorderCount = 0;
-        return;
+        върни;
     }
 
     dprintf(1, "boot order:\n");
@@ -275,176 +275,176 @@ loadBootOrder(void)
     do {
         Bootorder[i] = f;
         f = strchr(f, '\n');
-        if (f)
+        ако (f)
             *(f++) = '\0';
         Bootorder[i] = nullTrailingSpace(Bootorder[i]);
         dprintf(1, "%d: %s\n", i+1, Bootorder[i]);
         i++;
-    } while (f);
+    } докато (f);
 }
 
 // Search the bootorder list for the given glob pattern.
-static int
+static цяло
 find_prio(const char *glob)
 {
     dprintf(1, "Searching bootorder for: %s\n", glob);
-    int i;
-    for (i = 0; i < BootorderCount; i++)
-        if (glob_prefix(glob, Bootorder[i]))
-            return i+1;
-    return -1;
+    цяло i;
+    за (i = 0; i < BootorderCount; i++)
+        ако (glob_prefix(glob, Bootorder[i]))
+            върни i+1;
+    върни -1;
 }
 
 u8 is_bootprio_strict(void)
 {
-    static int prio_halt = -2;
+    static цяло prio_halt = -2;
 
-    if (prio_halt == -2)
+    ако (prio_halt == -2)
         prio_halt = find_prio("HALT");
-    return prio_halt >= 0;
+    върни prio_halt >= 0;
 }
 
-int bootprio_find_pci_device(struct pci_device *pci)
+цяло bootprio_find_pci_device(struct pci_device *pci)
 {
-    if (CONFIG_CSM)
-        return csm_bootprio_pci(pci);
-    if (!CONFIG_BOOTORDER)
-        return -1;
+    ако (CONFIG_CSM)
+        върни csm_bootprio_pci(pci);
+    ако (!CONFIG_BOOTORDER)
+        върни -1;
     // Find pci device - for example: /pci@i0cf8/ethernet@5
     char desc[256];
     build_pci_path(desc, sizeof(desc), "*", pci);
-    return find_prio(desc);
+    върни find_prio(desc);
 }
 
-int bootprio_find_mmio_device(void *mmio)
+цяло bootprio_find_mmio_device(void *mmio)
 {
-    if (!CONFIG_BOOTORDER)
-        return -1;
+    ако (!CONFIG_BOOTORDER)
+        върни -1;
     char desc[256];
     snprintf(desc, sizeof(desc), "/virtio-mmio@%016x/*", (u32)mmio);
-    return find_prio(desc);
+    върни find_prio(desc);
 }
 
-int bootprio_find_scsi_device(struct pci_device *pci, int target, int lun)
+цяло bootprio_find_scsi_device(struct pci_device *pci, цяло target, цяло lun)
 {
-    if (!CONFIG_BOOTORDER)
-        return -1;
-    if (!pci)
+    ако (!CONFIG_BOOTORDER)
+        върни -1;
+    ако (!pci)
         // support only pci machine for now
-        return -1;
+        върни -1;
     char desc[256];
     build_scsi_path(desc, sizeof(desc), pci, target, lun);
-    return find_prio(desc);
+    върни find_prio(desc);
 }
 
-int bootprio_find_scsi_mmio_device(void *mmio, int target, int lun)
+цяло bootprio_find_scsi_mmio_device(void *mmio, цяло target, цяло lun)
 {
-    if (!CONFIG_BOOTORDER)
-        return -1;
+    ако (!CONFIG_BOOTORDER)
+        върни -1;
     char desc[256];
     snprintf(desc, sizeof(desc), "/virtio-mmio@%016x/*@0/*@%x,%x",
              (u32)mmio, target, lun);
-    return find_prio(desc);
+    върни find_prio(desc);
 }
 
-int bootprio_find_ata_device(struct pci_device *pci, int chanid, int slave)
+цяло bootprio_find_ata_device(struct pci_device *pci, цяло chanid, цяло slave)
 {
-    if (CONFIG_CSM)
-        return csm_bootprio_ata(pci, chanid, slave);
-    if (!CONFIG_BOOTORDER)
-        return -1;
-    if (!pci)
+    ако (CONFIG_CSM)
+        върни csm_bootprio_ata(pci, chanid, slave);
+    ако (!CONFIG_BOOTORDER)
+        върни -1;
+    ако (!pci)
         // support only pci machine for now
-        return -1;
+        върни -1;
     char desc[256];
     build_ata_path(desc, sizeof(desc), pci, chanid, slave);
-    return find_prio(desc);
+    върни find_prio(desc);
 }
 
-int bootprio_find_fdc_device(struct pci_device *pci, int port, int fdid)
+цяло bootprio_find_fdc_device(struct pci_device *pci, цяло port, цяло fdid)
 {
-    if (CONFIG_CSM)
-        return csm_bootprio_fdc(pci, port, fdid);
-    if (!CONFIG_BOOTORDER)
-        return -1;
-    if (!pci)
+    ако (CONFIG_CSM)
+        върни csm_bootprio_fdc(pci, port, fdid);
+    ако (!CONFIG_BOOTORDER)
+        върни -1;
+    ако (!pci)
         // support only pci machine for now
-        return -1;
+        върни -1;
     // Find floppy - for example: /pci@i0cf8/isa@1/fdc@03f1/floppy@0
     char desc[256], *p;
     p = build_pci_path(desc, sizeof(desc), "isa", pci);
     snprintf(p, desc+sizeof(desc)-p, "/fdc@%04x/floppy@%x", port, fdid);
-    return find_prio(desc);
+    върни find_prio(desc);
 }
 
-int bootprio_find_pci_rom(struct pci_device *pci, int instance)
+цяло bootprio_find_pci_rom(struct pci_device *pci, цяло instance)
 {
-    if (!CONFIG_BOOTORDER)
-        return -1;
+    ако (!CONFIG_BOOTORDER)
+        върни -1;
     // Find pci rom - for example: /pci@i0cf8/scsi@3:rom2
     char desc[256], *p;
     p = build_pci_path(desc, sizeof(desc), "*", pci);
-    if (instance)
+    ако (instance)
         snprintf(p, desc+sizeof(desc)-p, ":rom%x", instance);
-    return find_prio(desc);
+    върни find_prio(desc);
 }
 
-int bootprio_find_named_rom(const char *name, int instance)
+цяло bootprio_find_named_rom(const char *name, цяло instance)
 {
-    if (!CONFIG_BOOTORDER)
-        return -1;
+    ако (!CONFIG_BOOTORDER)
+        върни -1;
     // Find named rom - for example: /rom@genroms/linuxboot.bin
     char desc[256], *p;
     p = desc + snprintf(desc, sizeof(desc), "/rom@%s", name);
-    if (instance)
+    ако (instance)
         snprintf(p, desc+sizeof(desc)-p, ":rom%x", instance);
-    return find_prio(desc);
+    върни find_prio(desc);
 }
 
-static int usb_portmap(struct usbdevice_s *usbdev)
+static цяло usb_portmap(struct usbdevice_s *usbdev)
 {
-    if (usbdev->hub->op->portmap)
-        return usbdev->hub->op->portmap(usbdev->hub, usbdev->port);
-    return usbdev->port + 1;
+    ако (usbdev->hub->op->portmap)
+        върни usbdev->hub->op->portmap(usbdev->hub, usbdev->port);
+    върни usbdev->port + 1;
 }
 
 static char *
-build_usb_path(char *buf, int max, struct usbhub_s *hub)
+build_usb_path(char *buf, цяло max, struct usbhub_s *hub)
 {
-    if (!hub->usbdev)
+    ако (!hub->usbdev)
         // Root hub - nothing to add.
-        return buf;
+        върни buf;
     char *p = build_usb_path(buf, max, hub->usbdev->hub);
     p += snprintf(p, buf+max-p, "/hub@%x", usb_portmap(hub->usbdev));
-    return p;
+    върни p;
 }
 
-int bootprio_find_usb(struct usbdevice_s *usbdev, int lun)
+цяло bootprio_find_usb(struct usbdevice_s *usbdev, цяло lun)
 {
-    if (!CONFIG_BOOTORDER)
-        return -1;
+    ако (!CONFIG_BOOTORDER)
+        върни -1;
     // Find usb - examples:
     //   pci:  /pci@i0cf8/usb@1,2/storage@1/channel@0/disk@0,0
     //   mmio: /sysbus-xhci@00000000fe900000/storage@1/channel@0/disk@0,0
     char desc[256], *p;
 
-    if (usbdev->hub->cntl->pci)
+    ако (usbdev->hub->cntl->pci)
         p = build_pci_path(desc, sizeof(desc), "usb", usbdev->hub->cntl->pci);
-    else if (usbdev->hub->cntl->mmio)
+    иначе ако (usbdev->hub->cntl->mmio)
         p = desc + snprintf(desc, sizeof(desc), "/*@%016x"
                             , (u32)usbdev->hub->cntl->mmio);
-    else
-        return -1;
+    иначе
+        върни -1;
 
     p = build_usb_path(p, desc+sizeof(desc)-p, usbdev->hub);
     snprintf(p, desc+sizeof(desc)-p, "/storage@%x/*@0/*@0,%x"
              , usb_portmap(usbdev), lun);
-    int ret = find_prio(desc);
-    if (ret >= 0)
-        return ret;
+    цяло ret = find_prio(desc);
+    ако (ret >= 0)
+        върни ret;
     // Try usb-host/redir - for example: /pci@i0cf8/usb@1,2/usb-host@1
     snprintf(p, desc+sizeof(desc)-p, "/usb-*@%x", usb_portmap(usbdev));
-    return find_prio(desc);
+    върни find_prio(desc);
 }
 
 
@@ -452,32 +452,32 @@ int bootprio_find_usb(struct usbdevice_s *usbdev, int lun)
  * Boot setup
  ****************************************************************/
 
-static int BootRetryTime;
-static int CheckFloppySig = 1;
+static цяло BootRetryTime;
+static цяло CheckFloppySig = 1;
 
 #define DEFAULT_PRIO           9999
 
-static int DefaultFloppyPrio = 101;
-static int DefaultCDPrio     = 102;
-static int DefaultHDPrio     = 103;
-static int DefaultBEVPrio    = 104;
+static цяло DefaultFloppyPrio = 101;
+static цяло DefaultCDPrio     = 102;
+static цяло DefaultHDPrio     = 103;
+static цяло DefaultBEVPrio    = 104;
 
 void
 boot_init(void)
 {
-    if (! CONFIG_BOOT)
-        return;
+    ако (! CONFIG_BOOT)
+        върни;
 
-    if (CONFIG_QEMU) {
+    ако (CONFIG_QEMU) {
         // On emulators, get boot order from nvram.
-        if (rtc_read(CMOS_BIOS_BOOTFLAG1) & 1)
+        ако (rtc_read(CMOS_BIOS_BOOTFLAG1) & 1)
             CheckFloppySig = 0;
         u32 bootorder = (rtc_read(CMOS_BIOS_BOOTFLAG2)
                          | ((rtc_read(CMOS_BIOS_BOOTFLAG1) & 0xf0) << 4));
         DefaultFloppyPrio = DefaultCDPrio = DefaultHDPrio
             = DefaultBEVPrio = DEFAULT_PRIO;
-        int i;
-        for (i=101; i<104; i++) {
+        цяло i;
+        за (i=101; i<104; i++) {
             u32 val = bootorder & 0x0f;
             bootorder >>= 4;
             switch (val) {
@@ -501,13 +501,13 @@ boot_init(void)
  ****************************************************************/
 
 struct bootentry_s {
-    int type;
+    цяло type;
     union {
         u32 data;
         struct segoff_s vector;
         struct drive_s *drive;
     };
-    int priority;
+    цяло priority;
     const char *description;
     struct hlist_node node;
 };
@@ -522,14 +522,14 @@ static struct hlist_head BootList VARVERIFY32INIT;
 #define IPL_TYPE_HALT        0xf0
 
 static void
-bootentry_add(int type, int prio, u32 data, const char *desc)
+bootentry_add(цяло type, цяло prio, u32 data, const char *desc)
 {
-    if (! CONFIG_BOOT)
-        return;
+    ако (! CONFIG_BOOT)
+        върни;
     struct bootentry_s *be = malloc_tmp(sizeof(*be));
-    if (!be) {
+    ако (!be) {
         warn_noalloc();
-        return;
+        върни;
     }
     be->type = type;
     be->priority = prio;
@@ -542,15 +542,15 @@ bootentry_add(int type, int prio, u32 data, const char *desc)
     struct hlist_node **pprev;
     struct bootentry_s *pos;
     hlist_for_each_entry_pprev(pos, pprev, &BootList, node) {
-        if (be->priority < pos->priority)
+        ако (be->priority < pos->priority)
             break;
-        if (be->priority > pos->priority)
+        ако (be->priority > pos->priority)
             continue;
-        if (be->type < pos->type)
+        ако (be->type < pos->type)
             break;
-        if (be->type > pos->type)
+        ако (be->type > pos->type)
             continue;
-        if (be->type <= IPL_TYPE_CDROM
+        ако (be->type <= IPL_TYPE_CDROM
             && (be->drive->type < pos->drive->type
                 || (be->drive->type == pos->drive->type
                     && be->drive->cntl_id < pos->drive->cntl_id)))
@@ -560,13 +560,13 @@ bootentry_add(int type, int prio, u32 data, const char *desc)
 }
 
 // Return the given priority if it's set - defaultprio otherwise.
-static inline int defPrio(int priority, int defaultprio) {
-    return (priority < 0) ? defaultprio : priority;
+static inline цяло defPrio(цяло priority, цяло defaultprio) {
+    върни (priority < 0) ? defaultprio : priority;
 }
 
 // Add a BEV vector for a given pnp compatible option rom.
 void
-boot_add_bev(u16 seg, u16 bev, u16 desc, int prio)
+boot_add_bev(u16 seg, u16 bev, u16 desc, цяло prio)
 {
     bootentry_add(IPL_TYPE_BEV, defPrio(prio, DefaultBEVPrio)
                   , SEGOFF(seg, bev).segoff
@@ -576,7 +576,7 @@ boot_add_bev(u16 seg, u16 bev, u16 desc, int prio)
 
 // Add a bcv entry for an expansion card harddrive or legacy option rom
 void
-boot_add_bcv(u16 seg, u16 ip, u16 desc, int prio)
+boot_add_bcv(u16 seg, u16 ip, u16 desc, цяло prio)
 {
     bootentry_add(IPL_TYPE_BCV, defPrio(prio, DefaultHDPrio)
                   , SEGOFF(seg, ip).segoff
@@ -584,28 +584,28 @@ boot_add_bcv(u16 seg, u16 ip, u16 desc, int prio)
 }
 
 void
-boot_add_floppy(struct drive_s *drive, const char *desc, int prio)
+boot_add_floppy(struct drive_s *drive, const char *desc, цяло prio)
 {
     bootentry_add(IPL_TYPE_FLOPPY, defPrio(prio, DefaultFloppyPrio)
                   , (u32)drive, desc);
 }
 
 void
-boot_add_hd(struct drive_s *drive, const char *desc, int prio)
+boot_add_hd(struct drive_s *drive, const char *desc, цяло prio)
 {
     bootentry_add(IPL_TYPE_HARDDISK, defPrio(prio, DefaultHDPrio)
                   , (u32)drive, desc);
 }
 
 void
-boot_add_cd(struct drive_s *drive, const char *desc, int prio)
+boot_add_cd(struct drive_s *drive, const char *desc, цяло prio)
 {
-    if (GET_GLOBAL(PlatformRunningOn) & PF_QEMU) {
+    ако (GET_GLOBAL(PlatformRunningOn) & PF_QEMU) {
         // We want short boot times.  But on physical hardware even
         // the test unit ready can take several seconds.  So do media
         // access on qemu only, where we know it will be fast.
         char *extra = cdrom_media_info(drive);
-        if (extra) {
+        ако (extra) {
             desc = znprintf(MAXDESCSIZE, "%s (%s)", desc, extra);
             free(extra);
         }
@@ -616,7 +616,7 @@ boot_add_cd(struct drive_s *drive, const char *desc, int prio)
 
 // Add a CBFS payload entry
 void
-boot_add_cbfs(void *data, const char *desc, int prio)
+boot_add_cbfs(void *data, const char *desc, цяло prio)
 {
     bootentry_add(IPL_TYPE_CBFS, defPrio(prio, DEFAULT_PRIO), (u32)data, desc);
 }
@@ -627,7 +627,7 @@ boot_add_cbfs(void *data, const char *desc, int prio)
  ****************************************************************/
 
 // See if a keystroke is pending in the keyboard buffer.
-static int
+static цяло
 check_for_keystroke(void)
 {
     struct bregs br;
@@ -635,45 +635,45 @@ check_for_keystroke(void)
     br.flags = F_IF|F_ZF;
     br.ah = 1;
     call16_int(0x16, &br);
-    return !(br.flags & F_ZF);
+    върни !(br.flags & F_ZF);
 }
 
 // Return a keystroke - waiting forever if necessary.
-static int
+static цяло
 get_raw_keystroke(void)
 {
     struct bregs br;
     memset(&br, 0, sizeof(br));
     br.flags = F_IF;
     call16_int(0x16, &br);
-    return br.ax;
+    върни br.ax;
 }
 
 // Read a keystroke - waiting up to 'msec' milliseconds.
 // returns both scancode and ascii code.
-int
-get_keystroke_full(int msec)
+цяло
+get_keystroke_full(цяло msec)
 {
     u32 end = irqtimer_calc(msec);
-    for (;;) {
-        if (check_for_keystroke())
-            return get_raw_keystroke();
-        if (irqtimer_check(end))
-            return -1;
+    за (;;) {
+        ако (check_for_keystroke())
+            върни get_raw_keystroke();
+        ако (irqtimer_check(end))
+            върни -1;
         yield_toirq();
     }
 }
 
 // Read a keystroke - waiting up to 'msec' milliseconds.
 // returns scancode only.
-int
-get_keystroke(int msec)
+цяло
+get_keystroke(цяло msec)
 {
-    int keystroke = get_keystroke_full(msec);
+    цяло keystroke = get_keystroke_full(msec);
 
-    if (keystroke < 0)
-        return keystroke;
-    return keystroke >> 8;
+    ако (keystroke < 0)
+        върни keystroke;
+    върни keystroke >> 8;
 }
 
 /****************************************************************
@@ -694,25 +694,25 @@ static const char menuchars[] = {
 void
 interactive_bootmenu(void)
 {
-    if (! CONFIG_BOOTMENU)
-        return;
-    int show_boot_menu = romfile_loadint("etc/show-boot-menu", 1);
-    if (!show_boot_menu)
-        return;
+    ако (! CONFIG_BOOTMENU)
+        върни;
+    цяло show_boot_menu = romfile_loadint("etc/show-boot-menu", 1);
+    ако (!show_boot_menu)
+        върни;
 
     // skip menu if only one boot device and no TPM
-    if (show_boot_menu == 2 && !tpm_can_show_menu()
+    ако (show_boot_menu == 2 && !tpm_can_show_menu()
         && !hlist_empty(&BootList) && !BootList.first->next) {
         dprintf(1, "Only one boot device present. Skip boot menu.\n");
         printf("\n");
-        return;
+        върни;
     }
 
-    int menutime = romfile_loadint("etc/boot-menu-wait", DEFAULT_BOOTMENU_WAIT);
-    int menukey = romfile_loadint("etc/boot-menu-key", 1);
-    int scan_code;
-    if (menutime >= 0) {
-        while (get_keystroke(0) >= 0)
+    цяло menutime = romfile_loadint("etc/boot-menu-wait", DEFAULT_BOOTMENU_WAIT);
+    цяло menukey = romfile_loadint("etc/boot-menu-key", 1);
+    цяло scan_code;
+    ако (menutime >= 0) {
+        докато (get_keystroke(0) >= 0)
             ;
 
         char *bootmsg = romfile_loadfile("etc/boot-menu-message", NULL);
@@ -722,29 +722,29 @@ interactive_bootmenu(void)
         enable_bootsplash();
         scan_code = get_keystroke(menutime);
         disable_bootsplash();
-        if (scan_code != menukey)
-            return;
+        ако (scan_code != menukey)
+            върни;
     }
 
-    while (get_keystroke(0) >= 0)
+    докато (get_keystroke(0) >= 0)
         ;
 
     printf("Select boot device:\n\n");
     wait_threads();
 
     // Show menu items
-    int maxmenu = 0;
+    цяло maxmenu = 0;
     struct bootentry_s *pos, *boot = NULL;
     hlist_for_each_entry(pos, &BootList, node) {
         char desc[77];
-        if (maxmenu >= ARRAY_SIZE(menuchars)) {
+        ако (maxmenu >= ARRAY_SIZE(menuchars)) {
             break;
         }
         printf("%c. %s\n", menuchars[maxmenu]
                , strtcpy(desc, pos->description, ARRAY_SIZE(desc)));
         maxmenu++;
     }
-    if (tpm_can_show_menu()) {
+    ако (tpm_can_show_menu()) {
         printf("\nt. TPM Configuration\n");
     }
 
@@ -752,37 +752,37 @@ interactive_bootmenu(void)
     // 1.5 seconds have passed.  Otherwise users (trained by years of
     // repeatedly hitting keys to enter the BIOS) will end up hitting ESC
     // multiple times and immediately booting the primary boot device.
-    int esc_accepted_time = irqtimer_calc(menukey == 1 ? 1500 : 0);
-    for (;;) {
-        int keystroke = get_keystroke_full(1000);
-        if (keystroke == 0x011b && !irqtimer_check(esc_accepted_time))
+    цяло esc_accepted_time = irqtimer_calc(menukey == 1 ? 1500 : 0);
+    за (;;) {
+        цяло keystroke = get_keystroke_full(1000);
+        ако (keystroke == 0x011b && !irqtimer_check(esc_accepted_time))
             continue;
-        if (keystroke < 0) // timeout
+        ако (keystroke < 0) // timeout
             continue;
 
         scan_code = keystroke >> 8;
-        int key_ascii = keystroke & 0xff;
-        if (tpm_can_show_menu() && key_ascii == 't') {
+        цяло key_ascii = keystroke & 0xff;
+        ако (tpm_can_show_menu() && key_ascii == 't') {
             printf("\n");
             tpm_menu();
         }
-        if (scan_code == 1) {
+        ако (scan_code == 1) {
             // ESC
             printf("\n");
-            return;
+            върни;
         }
 
         maxmenu = 0;
         hlist_for_each_entry(pos, &BootList, node) {
-            if (maxmenu >= ARRAY_SIZE(menuchars))
+            ако (maxmenu >= ARRAY_SIZE(menuchars))
                 break;
-            if (key_ascii == menuchars[maxmenu]) {
+            ако (key_ascii == menuchars[maxmenu]) {
                 boot = pos;
                 break;
             }
             maxmenu++;
         }
-        if (boot)
+        ако (boot)
             break;
     }
     printf("\n");
@@ -795,22 +795,22 @@ interactive_bootmenu(void)
 
 // BEV (Boot Execution Vector) list
 struct bev_s {
-    int type;
+    цяло type;
     u32 vector;
 };
 static struct bev_s BEV[20];
-static int BEVCount;
-static int HaveHDBoot, HaveFDBoot;
+static цяло BEVCount;
+static цяло HaveHDBoot, HaveFDBoot;
 
 static void
-add_bev(int type, u32 vector)
+add_bev(цяло type, u32 vector)
 {
-    if (type == IPL_TYPE_HARDDISK && HaveHDBoot++)
-        return;
-    if (type == IPL_TYPE_FLOPPY && HaveFDBoot++)
-        return;
-    if (BEVCount >= ARRAY_SIZE(BEV))
-        return;
+    ако (type == IPL_TYPE_HARDDISK && HaveHDBoot++)
+        върни;
+    ако (type == IPL_TYPE_FLOPPY && HaveFDBoot++)
+        върни;
+    ако (BEVCount >= ARRAY_SIZE(BEV))
+        върни;
     struct bev_s *bev = &BEV[BEVCount++];
     bev->type = type;
     bev->vector = vector;
@@ -820,11 +820,11 @@ add_bev(int type, u32 vector)
 void
 bcv_prepboot(void)
 {
-    if (! CONFIG_BOOT)
-        return;
+    ако (! CONFIG_BOOT)
+        върни;
 
-    int haltprio = find_prio("HALT");
-    if (haltprio >= 0)
+    цяло haltprio = find_prio("HALT");
+    ако (haltprio >= 0)
         bootentry_add(IPL_TYPE_HALT, haltprio, 0, "HALT");
 
     // Map drives and populate BEV list
@@ -879,7 +879,7 @@ call_boot_entry(struct segoff_s bootsegip, u8 bootdrv)
 
 // Boot from a disk (either floppy or harddrive)
 static void
-boot_disk(u8 bootdrv, int checksig)
+boot_disk(u8 bootdrv, цяло checksig)
 {
     u16 bootseg = 0x07c0;
 
@@ -894,16 +894,16 @@ boot_disk(u8 bootdrv, int checksig)
     br.cl = 1;
     call16_int(0x13, &br);
 
-    if (br.flags & F_CF) {
+    ако (br.flags & F_CF) {
         printf("Boot failed: could not read the boot disk\n\n");
-        return;
+        върни;
     }
 
-    if (checksig) {
+    ако (checksig) {
         struct mbr_s *mbr = (void*)0;
-        if (GET_FARVAR(bootseg, mbr->signature) != MBR_SIGNATURE) {
+        ако (GET_FARVAR(bootseg, mbr->signature) != MBR_SIGNATURE) {
             printf("Boot failed: not a bootable disk\n\n");
-            return;
+            върни;
         }
     }
 
@@ -920,14 +920,14 @@ boot_disk(u8 bootdrv, int checksig)
 static void
 boot_cdrom(struct drive_s *drive)
 {
-    if (! CONFIG_CDROM_BOOT)
-        return;
+    ако (! CONFIG_CDROM_BOOT)
+        върни;
     printf("Booting from DVD/CD...\n");
 
-    int status = cdrom_boot(drive);
-    if (status) {
+    цяло status = cdrom_boot(drive);
+    ако (status) {
         printf("Boot failed: Could not read from CDROM (code %04x)\n", status);
-        return;
+        върни;
     }
 
     u8 bootdrv = CDEmu.emulated_drive;
@@ -946,8 +946,8 @@ boot_cdrom(struct drive_s *drive)
 static void
 boot_cbfs(struct cbfs_file *file)
 {
-    if (!CONFIG_COREBOOT_FLASH)
-        return;
+    ако (!CONFIG_COREBOOT_FLASH)
+        върни;
     printf("Booting from CBFS...\n");
     cbfs_run_payload(file);
 }
@@ -966,15 +966,15 @@ boot_rom(u32 vector)
 static void
 boot_fail(void)
 {
-    if (BootRetryTime == (u32)-1)
+    ако (BootRetryTime == (u32)-1)
         printf("No bootable device.\n");
-    else
+    иначе
         printf("No bootable device.  Retrying in %d seconds.\n"
                , BootRetryTime/1000);
     // Wait for 'BootRetryTime' milliseconds and then reboot.
     u32 end = irqtimer_calc(BootRetryTime);
-    for (;;) {
-        if (BootRetryTime != (u32)-1 && irqtimer_check(end))
+    за (;;) {
+        ако (BootRetryTime != (u32)-1 && irqtimer_check(end))
             break;
         yield_toirq();
     }
@@ -984,12 +984,12 @@ boot_fail(void)
 
 // Determine next boot method and attempt a boot using it.
 static void
-do_boot(int seq_nr)
+do_boot(цяло seq_nr)
 {
-    if (! CONFIG_BOOT)
+    ако (! CONFIG_BOOT)
         panic("Boot support not compiled in.\n");
 
-    if (seq_nr >= BEVCount)
+    ако (seq_nr >= BEVCount)
         boot_fail();
 
     // Boot the given BEV type.
@@ -1024,14 +1024,14 @@ do_boot(int seq_nr)
     call16_int(0x18, &br);
 }
 
-int BootSequence VARLOW = -1;
+цяло BootSequence VARLOW = -1;
 
 // Boot Failure recovery: try the next device.
 void VISIBLE32FLAT
 handle_18(void)
 {
     debug_enter(NULL, DEBUG_HDL_18);
-    int seq = BootSequence + 1;
+    цяло seq = BootSequence + 1;
     BootSequence = seq;
     do_boot(seq);
 }

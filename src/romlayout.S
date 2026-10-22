@@ -640,7 +640,7 @@ entry_19_official:
 
         ORG 0xf045
 entry_10_0x0f:
-        // XXX - INT 10 Functions 0-Fh Entry Point
+        // XXX - цяло 10 Functions 0-Fh Entry Point
         iretw
 
         ORG 0xf065

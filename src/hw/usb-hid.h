@@ -3,11 +3,11 @@
 
 // usb-hid.c
 struct usbdevice_s;
-int usb_hid_setup(struct usbdevice_s *usbdev);
-int usb_kbd_active(void);
-int usb_kbd_command(int command, u8 *param);
-int usb_mouse_active(void);
-int usb_mouse_command(int command, u8 *param);
+цяло usb_hid_setup(struct usbdevice_s *usbdev);
+цяло usb_kbd_active(void);
+цяло usb_kbd_command(цяло command, u8 *param);
+цяло usb_mouse_active(void);
+цяло usb_mouse_command(цяло command, u8 *param);
 void usb_check_event(void);
 
 

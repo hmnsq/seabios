@@ -20,47 +20,47 @@
 void
 ramdisk_setup(void)
 {
-    if (!CONFIG_FLASH_FLOPPY)
-        return;
+    ако (!CONFIG_FLASH_FLOPPY)
+        върни;
 
     // Find image.
     struct romfile_s *file = romfile_findprefix("floppyimg/", NULL);
-    if (!file)
-        return;
+    ако (!file)
+        върни;
     const char *filename = file->name;
     u32 size = file->size;
     dprintf(3, "Found floppy file %s of size %d\n", filename, size);
-    int ftype = find_floppy_type(size);
-    if (ftype < 0) {
+    цяло ftype = find_floppy_type(size);
+    ако (ftype < 0) {
         dprintf(3, "No floppy type found for ramdisk size\n");
-        return;
+        върни;
     }
 
     // Allocate ram for image.
     void *pos = memalign_tmphigh(PAGE_SIZE, size);
-    if (!pos) {
+    ако (!pos) {
         warn_noalloc();
-        return;
+        върни;
     }
     e820_add((u32)pos, size, E820_RESERVED);
 
     // Copy image into ram.
-    int ret = file->copy(file, pos, size);
-    if (ret < 0)
-        return;
+    цяло ret = file->copy(file, pos, size);
+    ако (ret < 0)
+        върни;
 
     // Setup driver.
     struct drive_s *drive = init_floppy((u32)pos, ftype);
-    if (!drive)
-        return;
+    ако (!drive)
+        върни;
     drive->type = DTYPE_RAMDISK;
     dprintf(1, "Mapping floppy %s to addr %p\n", filename, pos);
     char *desc = znprintf(MAXDESCSIZE, "Ramdisk [%s]", &filename[10]);
     boot_add_floppy(drive, desc, bootprio_find_named_rom(filename, 0));
 }
 
-static int
-ramdisk_copy(struct disk_op_s *op, int iswrite)
+static цяло
+ramdisk_copy(struct disk_op_s *op, цяло iswrite)
 {
     u32 offset = GET_GLOBALFLAT(op->drive_fl->cntl_id);
     offset += (u32)op->lba * DISK_SECTOR_SIZE;
@@ -68,10 +68,10 @@ ramdisk_copy(struct disk_op_s *op, int iswrite)
     u64 ramd = GDT_DATA | GDT_LIMIT(0xfffff) | GDT_BASE(offset);
 
     u64 gdt[6];
-    if (iswrite) {
+    ако (iswrite) {
         gdt[2] = opd;
         gdt[3] = ramd;
-    } else {
+    } иначе {
         gdt[2] = ramd;
         gdt[3] = opd;
     }
@@ -86,23 +86,23 @@ ramdisk_copy(struct disk_op_s *op, int iswrite)
     br.cx = op->count * DISK_SECTOR_SIZE / 2;
     call16_int(0x15, &br);
 
-    if (br.flags & F_CF)
-        return DISK_RET_EBADTRACK;
-    return DISK_RET_SUCCESS;
+    ако (br.flags & F_CF)
+        върни DISK_RET_EBADTRACK;
+    върни DISK_RET_SUCCESS;
 }
 
-int
+цяло
 ramdisk_process_op(struct disk_op_s *op)
 {
-    if (!CONFIG_FLASH_FLOPPY)
-        return 0;
+    ако (!CONFIG_FLASH_FLOPPY)
+        върни 0;
 
     switch (op->command) {
     case CMD_READ:
-        return ramdisk_copy(op, 0);
+        върни ramdisk_copy(op, 0);
     case CMD_WRITE:
-        return ramdisk_copy(op, 1);
+        върни ramdisk_copy(op, 1);
     default:
-        return default_process_op(op);
+        върни default_process_op(op);
     }
 }

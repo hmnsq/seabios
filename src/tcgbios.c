@@ -48,11 +48,11 @@ struct {
     u8 *          log_area_last_entry;
 } tpm_state VARLOW;
 
-static int tpm_set_log_area(u8 *log_area_start_address,
+static цяло tpm_set_log_area(u8 *log_area_start_address,
                             u32 log_area_minimum_length)
 {
-    if (!log_area_start_address || !log_area_minimum_length)
-        return -1;
+    ако (!log_area_start_address || !log_area_minimum_length)
+        върни -1;
 
     memset(log_area_start_address, 0, log_area_minimum_length);
     tpm_state.log_area_start_address = log_area_start_address;
@@ -60,39 +60,39 @@ static int tpm_set_log_area(u8 *log_area_start_address,
     tpm_state.log_area_next_entry = log_area_start_address;
     tpm_state.log_area_last_entry = NULL;
     tpm_state.entry_count = 0;
-    return 0;
+    върни 0;
 }
 
-static int
+static цяло
 tpm_tcpa_probe(void)
 {
     struct tcpa_descriptor_rev2 *tcpa = find_acpi_table(TCPA_SIGNATURE);
-    if (!tcpa)
-        return -1;
+    ако (!tcpa)
+        върни -1;
 
     dprintf(DEBUG_tcg, "TCGBIOS: TCPA: LASA = %p, LAML = %u\n",
             (u8 *)(long)tcpa->log_area_start_address,
             tcpa->log_area_minimum_length);
 
-    return tpm_set_log_area((u8*)(long)tcpa->log_area_start_address,
+    върни tpm_set_log_area((u8*)(long)tcpa->log_area_start_address,
                             tcpa->log_area_minimum_length);
 }
 
-static int
+static цяло
 tpm_tpm2_probe(void)
 {
     struct tpm2_descriptor_rev2 *tpm2 = find_acpi_table(TPM2_SIGNATURE);
-    if (!tpm2)
-        return -1;
+    ако (!tpm2)
+        върни -1;
 
-    if (tpm2->length < 76)
-        return -1;
+    ако (tpm2->length < 76)
+        върни -1;
 
     dprintf(DEBUG_tcg, "TCGBIOS: TPM2: LASA = %p, LAML = %u\n",
             (u8 *)(long)tpm2->log_area_start_address,
             tpm2->log_area_minimum_length);
 
-    return tpm_set_log_area((u8*)(long)tpm2->log_area_start_address,
+    върни tpm_set_log_area((u8*)(long)tpm2->log_area_start_address,
                             tpm2->log_area_minimum_length);
 }
 
@@ -108,23 +108,23 @@ tpm_tpm2_probe(void)
  * Output:
  *  Returns an error code in case of faiure, 0 in case of success
  */
-static int
-tpm_log_event(struct tpm_log_header *entry, int digest_len
-              , const void *event, int event_len)
+static цяло
+tpm_log_event(struct tpm_log_header *entry, цяло digest_len
+              , const void *event, цяло event_len)
 {
     dprintf(DEBUG_tcg, "TCGBIOS: LASA = %p, next entry = %p\n",
             tpm_state.log_area_start_address, tpm_state.log_area_next_entry);
 
-    if (tpm_state.log_area_next_entry == NULL)
-        return -1;
+    ако (tpm_state.log_area_next_entry == NULL)
+        върни -1;
 
     u32 size = (sizeof(*entry) + digest_len
                 + sizeof(struct tpm_log_trailer) + event_len);
     u32 logsize = (tpm_state.log_area_next_entry + size
                    - tpm_state.log_area_start_address);
-    if (logsize > tpm_state.log_area_minimum_length) {
+    ако (logsize > tpm_state.log_area_minimum_length) {
         dprintf(DEBUG_tcg, "TCGBIOS: LOG OVERFLOW: size = %d\n", size);
-        return -1;
+        върни -1;
     }
 
     void *dest = tpm_state.log_area_next_entry;
@@ -137,7 +137,7 @@ tpm_log_event(struct tpm_log_header *entry, int digest_len
     tpm_state.log_area_next_entry += size;
     tpm_state.entry_count++;
 
-    return 0;
+    върни 0;
 }
 
 
@@ -216,16 +216,16 @@ static const struct hash_parameters {
     }
 };
 
-static int
+static цяло
 tpm20_get_hash_buffersize(u16 hashAlg)
 {
     unsigned i;
 
-    for (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
-        if (hash_parameters[i].hashalg == hashAlg)
-            return hash_parameters[i].hash_buffersize;
+    за (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
+        ако (hash_parameters[i].hashalg == hashAlg)
+            върни hash_parameters[i].hash_buffersize;
     }
-    return -1;
+    върни -1;
 }
 
 static u8
@@ -233,11 +233,11 @@ tpm20_hashalg_to_flag(u16 hashAlg)
 {
     unsigned i;
 
-    for (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
-        if (hash_parameters[i].hashalg == hashAlg)
-            return hash_parameters[i].hashalg_flag;
+    за (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
+        ако (hash_parameters[i].hashalg == hashAlg)
+            върни hash_parameters[i].hashalg_flag;
     }
-    return 0;
+    върни 0;
 }
 
 static u16
@@ -245,11 +245,11 @@ tpm20_hashalg_flag_to_hashalg(u8 hashalg_flag)
 {
     unsigned i;
 
-    for (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
-        if (hash_parameters[i].hashalg_flag == hashalg_flag)
-            return hash_parameters[i].hashalg;
+    за (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
+        ако (hash_parameters[i].hashalg_flag == hashalg_flag)
+            върни hash_parameters[i].hashalg;
     }
-    return 0;
+    върни 0;
 }
 
 static const char *
@@ -257,22 +257,22 @@ tpm20_hashalg_flag_to_name(u8 hashalg_flag)
 {
     unsigned i;
 
-    for (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
-        if (hash_parameters[i].hashalg_flag == hashalg_flag)
-            return hash_parameters[i].name;
+    за (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
+        ако (hash_parameters[i].hashalg_flag == hashalg_flag)
+            върни hash_parameters[i].name;
     }
-    return NULL;
+    върни NULL;
 }
 
 static void tpm2_hash_data(u16 hashAlg, const u8 *data, u32 data_len, u8 *hash)
 {
     unsigned i;
 
-    for (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
-        if (hash_parameters[i].hashalg == hashAlg) {
-            if (hash_parameters[i].hashfunc) {
+    за (i = 0; i < ARRAY_SIZE(hash_parameters); i++) {
+        ако (hash_parameters[i].hashalg == hashAlg) {
+            ако (hash_parameters[i].hashfunc) {
                 hash_parameters[i].hashfunc(data, data_len, hash);
-            } else {
+            } иначе {
                 memset(hash, 0xff, hash_parameters[i].hash_buffersize);
             }
         }
@@ -280,11 +280,11 @@ static void tpm2_hash_data(u16 hashAlg, const u8 *data, u32 data_len, u8 *hash)
 }
 
 // Add an entry at the start of the log describing digest formats
-static int
+static цяло
 tpm20_write_EfiSpecIdEventStruct(void)
 {
-    if (!tpm20_pcr_selection)
-        return -1;
+    ако (!tpm20_pcr_selection)
+        върни -1;
 
     struct {
         struct TCG_EfiSpecIdEventStruct hdr;
@@ -302,30 +302,30 @@ tpm20_write_EfiSpecIdEventStruct(void)
     void *nsel, *end = (void*)tpm20_pcr_selection + tpm20_pcr_selection_size;
 
     u32 count, numAlgs = 0;
-    for (count = 0; count < be32_to_cpu(tpm20_pcr_selection->count); count++) {
+    за (count = 0; count < be32_to_cpu(tpm20_pcr_selection->count); count++) {
         u8 sizeOfSelect = sel->sizeOfSelect;
 
         nsel = (void*)sel + sizeof(*sel) + sizeOfSelect;
-        if (nsel > end)
+        ако (nsel > end)
             break;
 
-        if (!sizeOfSelect || sel->pcrSelect[0] == 0) {
+        ако (!sizeOfSelect || sel->pcrSelect[0] == 0) {
             sel = nsel;
             continue;
         }
 
-        int hsize = tpm20_get_hash_buffersize(be16_to_cpu(sel->hashAlg));
-        if (hsize < 0) {
+        цяло hsize = tpm20_get_hash_buffersize(be16_to_cpu(sel->hashAlg));
+        ако (hsize < 0) {
             dprintf(DEBUG_tcg, "TPM is using an unsupported hash: %d\n",
                     be16_to_cpu(sel->hashAlg));
-            return -1;
+            върни -1;
         }
 
-        int event_size = offsetof(struct TCG_EfiSpecIdEventStruct
+        цяло event_size = offsetof(struct TCG_EfiSpecIdEventStruct
                                   , digestSizes[count+1]);
-        if (event_size > sizeof(event) - sizeof(u8)) {
+        ако (event_size > sizeof(event) - sizeof(u8)) {
             dprintf(DEBUG_tcg, "EfiSpecIdEventStruct pad too small\n");
-            return -1;
+            върни -1;
         }
 
         event.hdr.digestSizes[numAlgs].algorithmId = be16_to_cpu(sel->hashAlg);
@@ -335,13 +335,13 @@ tpm20_write_EfiSpecIdEventStruct(void)
         sel = nsel;
     }
 
-    if (sel != end) {
+    ако (sel != end) {
         dprintf(DEBUG_tcg, "Malformed pcr selection structure fron TPM\n");
-        return -1;
+        върни -1;
     }
 
     event.hdr.numberOfAlgorithms = numAlgs;
-    int event_size = offsetof(struct TCG_EfiSpecIdEventStruct
+    цяло event_size = offsetof(struct TCG_EfiSpecIdEventStruct
                               , digestSizes[numAlgs]);
     u8 *vendorInfoSize = (void*)&event + event_size;
     *vendorInfoSize = 0;
@@ -350,7 +350,7 @@ tpm20_write_EfiSpecIdEventStruct(void)
     struct tpm_log_entry le = {
         .hdr.eventtype = EV_NO_ACTION,
     };
-    return tpm_log_event(&le.hdr, SHA1_BUFSIZE, &event, event_size);
+    върни tpm_log_event(&le.hdr, SHA1_BUFSIZE, &event, event_size);
 }
 
 /*
@@ -369,48 +369,48 @@ tpm20_write_EfiSpecIdEventStruct(void)
  *
  * Returns the digest size; -1 on fatal error
  */
-static int
+static цяло
 tpm20_build_digest(struct tpm_log_entry *le,
-                   const u8 *hashdata, u32 hashdata_len, int bigEndian)
+                   const u8 *hashdata, u32 hashdata_len, цяло bigEndian)
 {
-    if (!tpm20_pcr_selection)
-        return -1;
+    ако (!tpm20_pcr_selection)
+        върни -1;
 
     struct tpms_pcr_selection *sel = tpm20_pcr_selection->selections;
     void *nsel, *end = (void*)tpm20_pcr_selection + tpm20_pcr_selection_size;
     void *dest = le->hdr.digest + sizeof(struct tpm2_digest_values);
 
     u32 count, numAlgs = 0;
-    for (count = 0; count < be32_to_cpu(tpm20_pcr_selection->count); count++) {
+    за (count = 0; count < be32_to_cpu(tpm20_pcr_selection->count); count++) {
         u8 sizeOfSelect = sel->sizeOfSelect;
 
         nsel = (void*)sel + sizeof(*sel) + sizeOfSelect;
-        if (nsel > end)
+        ако (nsel > end)
             break;
 
         /* PCR 0-7 unused? -- skip */
-        if (!sizeOfSelect || sel->pcrSelect[0] == 0) {
+        ако (!sizeOfSelect || sel->pcrSelect[0] == 0) {
             sel = nsel;
             continue;
         }
 
-        int hsize = tpm20_get_hash_buffersize(be16_to_cpu(sel->hashAlg));
-        if (hsize < 0) {
+        цяло hsize = tpm20_get_hash_buffersize(be16_to_cpu(sel->hashAlg));
+        ако (hsize < 0) {
             dprintf(DEBUG_tcg, "TPM is using an unsupported hash: %d\n",
                     be16_to_cpu(sel->hashAlg));
-            return -1;
+            върни -1;
         }
 
         /* buffer size sanity check before writing */
         struct tpm2_digest_value *v = dest;
-        if (dest + sizeof(*v) + hsize > (void*)le + sizeof(*le)) {
+        ако (dest + sizeof(*v) + hsize > (void*)le + sizeof(*le)) {
             dprintf(DEBUG_tcg, "tpm_log_entry is too small\n");
-            return -1;
+            върни -1;
         }
 
-        if (bigEndian)
+        ако (bigEndian)
             v->hashAlg = sel->hashAlg;
-        else
+        иначе
             v->hashAlg = be16_to_cpu(sel->hashAlg);
 
         tpm2_hash_data(be16_to_cpu(sel->hashAlg), hashdata, hashdata_len,
@@ -422,47 +422,47 @@ tpm20_build_digest(struct tpm_log_entry *le,
         numAlgs++;
     }
 
-    if (sel != end) {
+    ако (sel != end) {
         dprintf(DEBUG_tcg, "Malformed pcr selection structure fron TPM\n");
-        return -1;
+        върни -1;
     }
 
     struct tpm2_digest_values *v = (void*)le->hdr.digest;
-    if (bigEndian)
+    ако (bigEndian)
         v->count = cpu_to_be32(numAlgs);
-    else
+    иначе
         v->count = numAlgs;
 
-    return dest - (void*)le->hdr.digest;
+    върни dest - (void*)le->hdr.digest;
 }
 
-static int
+static цяло
 tpm12_build_digest(struct tpm_log_entry *le,
                    const u8 *hashdata, u32 hashdata_len)
 {
     sha1(hashdata, hashdata_len, le->hdr.digest);
-    return SHA1_BUFSIZE;
+    върни SHA1_BUFSIZE;
 }
 
-static int
+static цяло
 tpm12_build_digest_direct(struct tpm_log_entry *le, const u8 *sha1)
 {
     // On TPM 1.2 the digest contains just the SHA1 hash
     memcpy(le->hdr.digest, sha1, SHA1_BUFSIZE);
-    return SHA1_BUFSIZE;
+    върни SHA1_BUFSIZE;
 }
 
-static int
+static цяло
 tpm_build_digest(struct tpm_log_entry *le, const u8 *hashdata, u32 hashdata_len
-                 , int bigEndian)
+                 , цяло bigEndian)
 {
     switch (TPM_version) {
     case TPM_VERSION_1_2:
-        return tpm12_build_digest(le, hashdata, hashdata_len);
+        върни tpm12_build_digest(le, hashdata, hashdata_len);
     case TPM_VERSION_2:
-        return tpm20_build_digest(le, hashdata, hashdata_len, bigEndian);
+        върни tpm20_build_digest(le, hashdata, hashdata_len, bigEndian);
     }
-    return -1;
+    върни -1;
 }
 
 
@@ -472,9 +472,9 @@ tpm_build_digest(struct tpm_log_entry *le, const u8 *hashdata, u32 hashdata_len
 
 // Helper function for sending tpm commands that take a single
 // optional parameter (0, 1, or 2 bytes) and have no special response.
-static int
+static цяло
 tpm_simple_cmd(u8 locty, u32 ordinal
-               , int param_size, u16 param, enum tpmDurationType to_t)
+               , цяло param_size, u16 param, enum tpmDurationType to_t)
 {
     struct {
         struct tpm_req_header trqh;
@@ -498,14 +498,14 @@ tpm_simple_cmd(u8 locty, u32 ordinal
     u32 obuffer_len = sizeof(obuffer);
     memset(obuffer, 0x0, sizeof(obuffer));
 
-    int ret = tpmhw_transmit(locty, &req.trqh, obuffer, &obuffer_len, to_t);
+    цяло ret = tpmhw_transmit(locty, &req.trqh, obuffer, &obuffer_len, to_t);
     ret = ret ? -1 : be32_to_cpu(trsh->errcode);
     dprintf(DEBUG_tcg, "Return from tpm_simple_cmd(%x, %x) = %x\n",
             ordinal, param, ret);
-    return ret;
+    върни ret;
 }
 
-static int
+static цяло
 tpm20_getcapability(u32 capability, u32 property, u32 count,
                     struct tpm_rsp_header *rsp, u32 rsize)
 {
@@ -519,7 +519,7 @@ tpm20_getcapability(u32 capability, u32 property, u32 count,
     };
 
     u32 resp_size = rsize;
-    int ret = tpmhw_transmit(0, &trg.hdr, rsp, &resp_size,
+    цяло ret = tpmhw_transmit(0, &trg.hdr, rsp, &resp_size,
                              TPM_DURATION_TYPE_SHORT);
     ret = (ret ||
            rsize < be32_to_cpu(rsp->totlen)) ? -1 : be32_to_cpu(rsp->errcode);
@@ -527,61 +527,61 @@ tpm20_getcapability(u32 capability, u32 property, u32 count,
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_GetCapability = 0x%08x\n",
             ret);
 
-    return ret;
+    върни ret;
 }
 
-static int
+static цяло
 tpm20_get_pcrbanks(void)
 {
     u8 buffer[128];
     struct tpm2_res_getcapability *trg =
       (struct tpm2_res_getcapability *)&buffer;
 
-    int ret = tpm20_getcapability(TPM2_CAP_PCRS, 0, 8, &trg->hdr,
+    цяло ret = tpm20_getcapability(TPM2_CAP_PCRS, 0, 8, &trg->hdr,
                                   sizeof(buffer));
-    if (ret)
-        return ret;
+    ако (ret)
+        върни ret;
 
     /* defend against (broken) TPM sending packets that are too short */
     u32 resplen = be32_to_cpu(trg->hdr.totlen);
-    if (resplen <= offsetof(struct tpm2_res_getcapability, data))
-        return -1;
+    ако (resplen <= offsetof(struct tpm2_res_getcapability, data))
+        върни -1;
 
     u32 size = resplen - offsetof(struct tpm2_res_getcapability, data);
     /* we need a valid tpml_pcr_selection up to and including sizeOfSelect */
-    if (size < offsetof(struct tpml_pcr_selection, selections) +
+    ако (size < offsetof(struct tpml_pcr_selection, selections) +
                offsetof(struct tpms_pcr_selection, pcrSelect))
-        return -1;
+        върни -1;
 
     tpm20_pcr_selection = malloc_high(size);
-    if (tpm20_pcr_selection) {
+    ако (tpm20_pcr_selection) {
         memcpy(tpm20_pcr_selection, &trg->data, size);
         tpm20_pcr_selection_size = size;
-    } else {
+    } иначе {
         warn_noalloc();
         ret = -1;
     }
 
-    return ret;
+    върни ret;
 }
 
-static int
+static цяло
 tpm20_get_suppt_pcrbanks(u8 *suppt_pcrbanks, u8 *active_pcrbanks)
 {
     *suppt_pcrbanks = 0;
     *active_pcrbanks = 0;
 
-    if (!tpm20_pcr_selection)
-        return -1;
+    ако (!tpm20_pcr_selection)
+        върни -1;
 
     struct tpms_pcr_selection *sel = tpm20_pcr_selection->selections;
     void *end = (void*)tpm20_pcr_selection + tpm20_pcr_selection_size;
 
-    while (1) {
+    докато (1) {
         u8 sizeOfSelect = sel->sizeOfSelect;
         void *nsel = (void*)sel + sizeof(*sel) + sizeOfSelect;
-        if (nsel > end)
-            return 0;
+        ако (nsel > end)
+            върни 0;
 
         u16 hashalg = be16_to_cpu(sel->hashAlg);
         u8 hashalg_flag = tpm20_hashalg_to_flag(hashalg);
@@ -589,8 +589,8 @@ tpm20_get_suppt_pcrbanks(u8 *suppt_pcrbanks, u8 *active_pcrbanks)
         *suppt_pcrbanks |= hashalg_flag;
 
         unsigned i;
-        for (i = 0; i < sizeOfSelect; i++) {
-            if (sel->pcrSelect[i]) {
+        за (i = 0; i < sizeOfSelect; i++) {
+            ако (sel->pcrSelect[i]) {
                 *active_pcrbanks |= hashalg_flag;
                 break;
             }
@@ -600,7 +600,7 @@ tpm20_get_suppt_pcrbanks(u8 *suppt_pcrbanks, u8 *active_pcrbanks)
     }
 }
 
-static int
+static цяло
 tpm20_set_pcrbanks(u32 active_banks)
 {
     struct tpm2_req_pcr_allocate trpa = {
@@ -620,22 +620,22 @@ tpm20_set_pcrbanks(u32 active_banks)
         u8 sizeOfSelect;
         u8 pcrSelect[3];
     } tps[ARRAY_SIZE(trpa.tpms_pcr_selections)];
-    int i = 0;
+    цяло i = 0;
     u8 hashalg_flag = TPM2_ALG_SHA1_FLAG;
     u8 dontcare, suppt_banks;
 
     tpm20_get_suppt_pcrbanks(&suppt_banks, &dontcare);
 
-    while (hashalg_flag) {
-        if ((hashalg_flag & suppt_banks)) {
+    докато (hashalg_flag) {
+        ако ((hashalg_flag & suppt_banks)) {
             u16 hashalg = tpm20_hashalg_flag_to_hashalg(hashalg_flag);
 
-            if (hashalg) {
+            ако (hashalg) {
                 u8 mask = 0;
                 tps[i].hashAlg = cpu_to_be16(hashalg);
                 tps[i].sizeOfSelect = 3;
 
-                if (active_banks & hashalg_flag)
+                ако (active_banks & hashalg_flag)
                     mask = 0xff;
 
                 tps[i].pcrSelect[0] = mask;
@@ -656,25 +656,25 @@ tpm20_set_pcrbanks(u32 active_banks)
     struct tpm_rsp_header rsp;
     u32 resp_length = sizeof(rsp);
 
-    int ret = tpmhw_transmit(0, &trpa.hdr, &rsp, &resp_length,
+    цяло ret = tpmhw_transmit(0, &trpa.hdr, &rsp, &resp_length,
                              TPM_DURATION_TYPE_SHORT);
     ret = ret ? -1 : be32_to_cpu(rsp.errcode);
 
-    return ret;
+    върни ret;
 }
 
-static int tpm20_activate_pcrbanks(u32 active_banks)
+static цяло tpm20_activate_pcrbanks(u32 active_banks)
 {
-    int ret = tpm20_set_pcrbanks(active_banks);
-    if (!ret)
+    цяло ret = tpm20_set_pcrbanks(active_banks);
+    ако (!ret)
         ret = tpm_simple_cmd(0, TPM2_CC_Shutdown,
                              2, TPM2_SU_CLEAR, TPM_DURATION_TYPE_SHORT);
-    if (!ret)
+    ако (!ret)
         reset();
-    return ret;
+    върни ret;
 }
 
-static int
+static цяло
 tpm12_get_capability(u32 cap, u32 subcap, struct tpm_rsp_header *rsp, u32 rsize)
 {
     struct tpm_req_getcap trgc = {
@@ -686,50 +686,50 @@ tpm12_get_capability(u32 cap, u32 subcap, struct tpm_rsp_header *rsp, u32 rsize)
         .subCap = cpu_to_be32(subcap)
     };
     u32 resp_size = rsize;
-    int ret = tpmhw_transmit(0, &trgc.hdr, rsp, &resp_size,
+    цяло ret = tpmhw_transmit(0, &trgc.hdr, rsp, &resp_size,
                              TPM_DURATION_TYPE_SHORT);
     ret = (ret || resp_size != rsize) ? -1 : be32_to_cpu(rsp->errcode);
     dprintf(DEBUG_tcg, "TCGBIOS: Return code from TPM_GetCapability(%d, %d)"
             " = %x\n", cap, subcap, ret);
-    return ret;
+    върни ret;
 }
 
-static int
-tpm12_read_permanent_flags(char *buf, int buf_len)
+static цяло
+tpm12_read_permanent_flags(char *buf, цяло buf_len)
 {
     memset(buf, 0, buf_len);
 
     struct tpm_res_getcap_perm_flags pf;
-    int ret = tpm12_get_capability(TPM_CAP_FLAG, TPM_CAP_FLAG_PERMANENT
+    цяло ret = tpm12_get_capability(TPM_CAP_FLAG, TPM_CAP_FLAG_PERMANENT
                                    , &pf.hdr, sizeof(pf));
-    if (ret)
-        return -1;
+    ако (ret)
+        върни -1;
 
     memcpy(buf, &pf.perm_flags, buf_len);
 
-    return 0;
+    върни 0;
 }
 
-static int
+static цяло
 tpm12_determine_timeouts(void)
 {
     struct tpm_res_getcap_timeouts timeouts;
-    int ret = tpm12_get_capability(TPM_CAP_PROPERTY, TPM_CAP_PROP_TIS_TIMEOUT
+    цяло ret = tpm12_get_capability(TPM_CAP_PROPERTY, TPM_CAP_PROP_TIS_TIMEOUT
                                    , &timeouts.hdr, sizeof(timeouts));
-    if (ret)
-        return ret;
+    ако (ret)
+        върни ret;
 
     struct tpm_res_getcap_durations durations;
     ret = tpm12_get_capability(TPM_CAP_PROPERTY, TPM_CAP_PROP_DURATION
                                , &durations.hdr, sizeof(durations));
-    if (ret)
-        return ret;
+    ако (ret)
+        върни ret;
 
-    int i;
-    for (i = 0; i < 3; i++)
+    цяло i;
+    за (i = 0; i < 3; i++)
         durations.durations[i] = be32_to_cpu(durations.durations[i]);
 
-    for (i = 0; i < 4; i++)
+    за (i = 0; i < 4; i++)
         timeouts.timeouts[i] = be32_to_cpu(timeouts.timeouts[i]);
 
     dprintf(DEBUG_tcg, "TCGBIOS: timeouts: %u %u %u %u\n",
@@ -745,7 +745,7 @@ tpm12_determine_timeouts(void)
 
     tpmhw_set_timeouts(timeouts.timeouts, durations.durations);
 
-    return 0;
+    върни 0;
 }
 
 static void
@@ -766,8 +766,8 @@ tpm20_set_timeouts(void)
     tpmhw_set_timeouts(timeouts, durations);
 }
 
-static int
-tpm12_extend(struct tpm_log_entry *le, int digest_len)
+static цяло
+tpm12_extend(struct tpm_log_entry *le, цяло digest_len)
 {
     struct tpm_req_extend tre = {
         .hdr.tag     = cpu_to_be16(TPM_TAG_RQU_CMD),
@@ -779,15 +779,15 @@ tpm12_extend(struct tpm_log_entry *le, int digest_len)
 
     struct tpm_rsp_extend rsp;
     u32 resp_length = sizeof(rsp);
-    int ret = tpmhw_transmit(0, &tre.hdr, &rsp, &resp_length,
+    цяло ret = tpmhw_transmit(0, &tre.hdr, &rsp, &resp_length,
                              TPM_DURATION_TYPE_SHORT);
-    if (ret || resp_length != sizeof(rsp) || rsp.hdr.errcode)
-        return -1;
+    ако (ret || resp_length != sizeof(rsp) || rsp.hdr.errcode)
+        върни -1;
 
-    return 0;
+    върни 0;
 }
 
-static int tpm20_extend(struct tpm_log_entry *le, int digest_len)
+static цяло tpm20_extend(struct tpm_log_entry *le, цяло digest_len)
 {
     struct tpm2_req_extend tmp_tre = {
         .hdr.tag     = cpu_to_be16(TPM2_ST_SESSIONS),
@@ -812,27 +812,27 @@ static int tpm20_extend(struct tpm_log_entry *le, int digest_len)
 
     struct tpm_rsp_header rsp;
     u32 resp_length = sizeof(rsp);
-    int ret = tpmhw_transmit(0, &tre->hdr, &rsp, &resp_length,
+    цяло ret = tpmhw_transmit(0, &tre->hdr, &rsp, &resp_length,
                              TPM_DURATION_TYPE_SHORT);
-    if (ret || resp_length != sizeof(rsp) || rsp.errcode)
-        return -1;
+    ако (ret || resp_length != sizeof(rsp) || rsp.errcode)
+        върни -1;
 
-    return 0;
+    върни 0;
 }
 
-static int
-tpm_extend(struct tpm_log_entry *le, int digest_len)
+static цяло
+tpm_extend(struct tpm_log_entry *le, цяло digest_len)
 {
     switch (TPM_version) {
     case TPM_VERSION_1_2:
-        return tpm12_extend(le, digest_len);
+        върни tpm12_extend(le, digest_len);
     case TPM_VERSION_2:
-        return tpm20_extend(le, digest_len);
+        върни tpm20_extend(le, digest_len);
     }
-    return -1;
+    върни -1;
 }
 
-static int
+static цяло
 tpm20_stirrandom(void)
 {
     struct tpm2_req_stirrandom stir = {
@@ -847,24 +847,24 @@ tpm20_stirrandom(void)
 
     struct tpm_rsp_header rsp;
     u32 resp_length = sizeof(rsp);
-    int ret = tpmhw_transmit(0, &stir.hdr, &rsp, &resp_length,
+    цяло ret = tpmhw_transmit(0, &stir.hdr, &rsp, &resp_length,
                              TPM_DURATION_TYPE_SHORT);
-    if (ret || resp_length != sizeof(rsp) || rsp.errcode)
+    ако (ret || resp_length != sizeof(rsp) || rsp.errcode)
         ret = -1;
 
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_StirRandom = 0x%08x\n",
             ret);
 
-    return ret;
+    върни ret;
 }
 
-static int
+static цяло
 tpm20_getrandom(u8 *buf, u16 buf_len)
 {
     struct tpm2_res_getrandom rsp;
 
-    if (buf_len > sizeof(rsp.rnd.buffer))
-        return -1;
+    ако (buf_len > sizeof(rsp.rnd.buffer))
+        върни -1;
 
     struct tpm2_req_getrandom trgr = {
         .hdr.tag = cpu_to_be16(TPM2_ST_NO_SESSIONS),
@@ -874,20 +874,20 @@ tpm20_getrandom(u8 *buf, u16 buf_len)
     };
     u32 resp_length = sizeof(rsp);
 
-    int ret = tpmhw_transmit(0, &trgr.hdr, &rsp, &resp_length,
+    цяло ret = tpmhw_transmit(0, &trgr.hdr, &rsp, &resp_length,
                              TPM_DURATION_TYPE_MEDIUM);
-    if (ret || resp_length != sizeof(rsp) || rsp.hdr.errcode)
+    ако (ret || resp_length != sizeof(rsp) || rsp.hdr.errcode)
         ret = -1;
-    else
+    иначе
         memcpy(buf, rsp.rnd.buffer, buf_len);
 
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_GetRandom = 0x%08x\n",
             ret);
 
-    return ret;
+    върни ret;
 }
 
-static int
+static цяло
 tpm20_hierarchycontrol(u32 hierarchy, u8 state)
 {
     /* we will try to deactivate the TPM now - ignoring all errors */
@@ -908,18 +908,18 @@ tpm20_hierarchycontrol(u32 hierarchy, u8 state)
     };
     struct tpm_rsp_header rsp;
     u32 resp_length = sizeof(rsp);
-    int ret = tpmhw_transmit(0, &trh.hdr, &rsp, &resp_length,
+    цяло ret = tpmhw_transmit(0, &trh.hdr, &rsp, &resp_length,
                              TPM_DURATION_TYPE_MEDIUM);
-    if (ret || resp_length != sizeof(rsp) || rsp.errcode)
+    ако (ret || resp_length != sizeof(rsp) || rsp.errcode)
         ret = -1;
 
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_HierarchyControl = 0x%08x\n",
             ret);
 
-    return ret;
+    върни ret;
 }
 
-static int
+static цяло
 tpm20_hierarchychangeauth(u8 auth[20])
 {
     struct tpm2_req_hierarchychangeauth trhca = {
@@ -942,15 +942,15 @@ tpm20_hierarchychangeauth(u8 auth[20])
 
     struct tpm_rsp_header rsp;
     u32 resp_length = sizeof(rsp);
-    int ret = tpmhw_transmit(0, &trhca.hdr, &rsp, &resp_length,
+    цяло ret = tpmhw_transmit(0, &trhca.hdr, &rsp, &resp_length,
                              TPM_DURATION_TYPE_MEDIUM);
-    if (ret || resp_length != sizeof(rsp) || rsp.errcode)
+    ако (ret || resp_length != sizeof(rsp) || rsp.errcode)
         ret = -1;
 
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_HierarchyChangeAuth = 0x%08x\n",
             ret);
 
-    return ret;
+    върни ret;
 }
 
 
@@ -958,13 +958,13 @@ tpm20_hierarchychangeauth(u8 auth[20])
  * Setup and Measurements
  ****************************************************************/
 
-static int TPM_has_physical_presence;
+static цяло TPM_has_physical_presence;
 u8 TPM_working VARLOW;
 
-static int
+static цяло
 tpm_is_working(void)
 {
-    return CONFIG_TCGBIOS && TPM_working;
+    върни CONFIG_TCGBIOS && TPM_working;
 }
 
 static void
@@ -1007,20 +1007,20 @@ tpm_add_measurement_to_log(u32 pcrindex, u32 event_type,
                            const char *event, u32 event_length,
                            const u8 *hashdata, u32 hashdata_length)
 {
-    if (!tpm_is_working())
-        return;
+    ако (!tpm_is_working())
+        върни;
 
     struct tpm_log_entry le = {
         .hdr.pcrindex = pcrindex,
         .hdr.eventtype = event_type,
     };
-    int digest_len = tpm_build_digest(&le, hashdata, hashdata_length, 1);
-    if (digest_len < 0)
-        return;
-    int ret = tpm_extend(&le, digest_len);
-    if (ret) {
+    цяло digest_len = tpm_build_digest(&le, hashdata, hashdata_length, 1);
+    ако (digest_len < 0)
+        върни;
+    цяло ret = tpm_extend(&le, digest_len);
+    ако (ret) {
         tpm_set_failure();
-        return;
+        върни;
     }
     tpm_build_digest(&le, hashdata, hashdata_length, 0);
     tpm_log_event(&le.hdr, digest_len, event, event_length);
@@ -1043,7 +1043,7 @@ tpm_add_event_separators(void)
 {
     static const u8 evt_separator[] = {0xff,0xff,0xff,0xff};
     u32 pcrIndex;
-    for (pcrIndex = 0; pcrIndex <= 7; pcrIndex++)
+    за (pcrIndex = 0; pcrIndex <= 7; pcrIndex++)
         tpm_add_measurement_to_log(pcrIndex, EV_SEPARATOR,
                                    (const char *)evt_separator,
                                    sizeof(evt_separator),
@@ -1063,8 +1063,8 @@ tpm_smbios_measure(void)
 
     dprintf(DEBUG_tcg, "TCGBIOS: SMBIOS tables at %p\n", smbios_tables);
 
-    if (!smbios_tables)
-        return;
+    ако (!smbios_tables)
+        върни;
 
     sha1((const u8 *)smbios_tables, smbios_len, pcctes.digest);
     tpm_add_measurement_to_log(1,
@@ -1073,96 +1073,96 @@ tpm_smbios_measure(void)
                                (u8 *)&pcctes, sizeof(pcctes));
 }
 
-static int
+static цяло
 tpm12_assert_physical_presence(void)
 {
-    int ret = tpm_simple_cmd(0, TPM_ORD_PhysicalPresence,
+    цяло ret = tpm_simple_cmd(0, TPM_ORD_PhysicalPresence,
                              2, TPM_PP_PRESENT, TPM_DURATION_TYPE_SHORT);
-    if (!ret)
-        return 0;
+    ако (!ret)
+        върни 0;
 
     struct tpm_permanent_flags pf;
     ret = tpm12_read_permanent_flags((char *)&pf, sizeof(pf));
-    if (ret)
-        return -1;
+    ако (ret)
+        върни -1;
 
     /* check if hardware physical presence is supported */
-    if (pf.flags[PERM_FLAG_IDX_PHYSICAL_PRESENCE_HW_ENABLE]) {
+    ако (pf.flags[PERM_FLAG_IDX_PHYSICAL_PRESENCE_HW_ENABLE]) {
         /* HW phys. presence may not be asserted... */
-        return 0;
+        върни 0;
     }
 
-    if (!pf.flags[PERM_FLAG_IDX_PHYSICAL_PRESENCE_LIFETIME_LOCK]
+    ако (!pf.flags[PERM_FLAG_IDX_PHYSICAL_PRESENCE_LIFETIME_LOCK]
         && !pf.flags[PERM_FLAG_IDX_PHYSICAL_PRESENCE_CMD_ENABLE]) {
         tpm_simple_cmd(0, TPM_ORD_PhysicalPresence,
                        2, TPM_PP_CMD_ENABLE, TPM_DURATION_TYPE_SHORT);
 
-        return tpm_simple_cmd(0, TPM_ORD_PhysicalPresence,
+        върни tpm_simple_cmd(0, TPM_ORD_PhysicalPresence,
                               2, TPM_PP_PRESENT, TPM_DURATION_TYPE_SHORT);
     }
-    return -1;
+    върни -1;
 }
 
-static int
+static цяло
 tpm12_startup(void)
 {
     dprintf(DEBUG_tcg, "TCGBIOS: Starting with TPM_Startup(ST_CLEAR)\n");
-    int ret = tpm_simple_cmd(0, TPM_ORD_Startup,
+    цяло ret = tpm_simple_cmd(0, TPM_ORD_Startup,
                              2, TPM_ST_CLEAR, TPM_DURATION_TYPE_SHORT);
-    if (CONFIG_COREBOOT && ret == TPM_INVALID_POSTINIT)
+    ако (CONFIG_COREBOOT && ret == TPM_INVALID_POSTINIT)
         /* with other firmware on the system the TPM may already have been
          * initialized
          */
         ret = 0;
-    if (ret)
+    ако (ret)
         goto err_exit;
 
     /* assertion of physical presence is only possible after startup */
     ret = tpm12_assert_physical_presence();
-    if (!ret)
+    ако (!ret)
         TPM_has_physical_presence = 1;
 
     ret = tpm12_determine_timeouts();
-    if (ret)
+    ако (ret)
         goto err_exit;
 
     ret = tpm_simple_cmd(0, TPM_ORD_SelfTestFull,
                          0, 0, TPM_DURATION_TYPE_LONG);
-    if (ret)
+    ако (ret)
         goto err_exit;
 
     ret = tpm_simple_cmd(3, TSC_ORD_ResetEstablishmentBit,
                          0, 0, TPM_DURATION_TYPE_SHORT);
-    if (ret && ret != TPM_BAD_LOCALITY)
+    ако (ret && ret != TPM_BAD_LOCALITY)
         goto err_exit;
 
-    return 0;
+    върни 0;
 
 err_exit:
     dprintf(DEBUG_tcg, "TCGBIOS: TPM malfunctioning (line %d).\n", __LINE__);
 
     tpm_set_failure();
-    return -1;
+    върни -1;
 }
 
-static int
+static цяло
 tpm20_startup(void)
 {
     tpm20_set_timeouts();
 
-    int ret = tpm_simple_cmd(0, TPM2_CC_Startup,
+    цяло ret = tpm_simple_cmd(0, TPM2_CC_Startup,
                              2, TPM2_SU_CLEAR, TPM_DURATION_TYPE_SHORT);
 
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_Startup(SU_CLEAR) = 0x%08x\n",
             ret);
 
-    if (CONFIG_COREBOOT && ret == TPM2_RC_INITIALIZE)
+    ако (CONFIG_COREBOOT && ret == TPM2_RC_INITIALIZE)
         /* with other firmware on the system the TPM may already have been
          * initialized
          */
         ret = 0;
 
-    if (ret)
+    ако (ret)
         goto err_exit;
 
     ret = tpm_simple_cmd(0, TPM2_CC_SelfTest,
@@ -1171,54 +1171,54 @@ tpm20_startup(void)
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_SelfTest = 0x%08x\n",
             ret);
 
-    if (ret)
+    ако (ret)
         goto err_exit;
 
     ret = tpm20_get_pcrbanks();
-    if (ret)
+    ако (ret)
         goto err_exit;
 
     ret = tpm20_write_EfiSpecIdEventStruct();
-    if (ret)
+    ако (ret)
         goto err_exit;
 
-    return 0;
+    върни 0;
 
 err_exit:
     dprintf(DEBUG_tcg, "TCGBIOS: TPM malfunctioning (line %d).\n", __LINE__);
 
     tpm_set_failure();
-    return -1;
+    върни -1;
 }
 
-static int
+static цяло
 tpm_startup(void)
 {
     switch (TPM_version) {
     case TPM_VERSION_1_2:
-        return tpm12_startup();
+        върни tpm12_startup();
     case TPM_VERSION_2:
-        return tpm20_startup();
+        върни tpm20_startup();
     }
-    return -1;
+    върни -1;
 }
 
 void
 tpm_setup(void)
 {
-    if (!CONFIG_TCGBIOS)
-        return;
+    ако (!CONFIG_TCGBIOS)
+        върни;
 
-    int ret = tpm_tpm2_probe();
-    if (ret) {
+    цяло ret = tpm_tpm2_probe();
+    ако (ret) {
         ret = tpm_tcpa_probe();
-        if (ret)
-            return;
+        ако (ret)
+            върни;
     }
 
     TPM_version = tpmhw_probe();
-    if (TPM_version == TPM_VERSION_NONE)
-        return;
+    ако (TPM_version == TPM_VERSION_NONE)
+        върни;
 
     dprintf(DEBUG_tcg,
             "TCGBIOS: Detected a TPM %s.\n",
@@ -1226,12 +1226,12 @@ tpm_setup(void)
 
     TPM_working = 1;
 
-    if (runningOnXen())
-        return;
+    ако (runningOnXen())
+        върни;
 
     ret = tpm_startup();
-    if (ret)
-        return;
+    ако (ret)
+        върни;
 
     tpm_smbios_measure();
     tpm_add_action(2, "Start Option ROM Scan");
@@ -1240,20 +1240,20 @@ tpm_setup(void)
 static void
 tpm20_prepboot(void)
 {
-    int ret = tpm20_stirrandom();
-    if (ret)
+    цяло ret = tpm20_stirrandom();
+    ако (ret)
          goto err_exit;
 
     u8 auth[20];
     ret = tpm20_getrandom(&auth[0], sizeof(auth));
-    if (ret)
+    ако (ret)
         goto err_exit;
 
     ret = tpm20_hierarchychangeauth(auth);
-    if (ret)
+    ако (ret)
         goto err_exit;
 
-    return;
+    върни;
 
 err_exit:
     dprintf(DEBUG_tcg, "TCGBIOS: TPM malfunctioning (line %d).\n", __LINE__);
@@ -1264,12 +1264,12 @@ err_exit:
 void
 tpm_prepboot(void)
 {
-    if (!CONFIG_TCGBIOS)
-        return;
+    ако (!CONFIG_TCGBIOS)
+        върни;
 
     switch (TPM_version) {
     case TPM_VERSION_1_2:
-        if (TPM_has_physical_presence)
+        ако (TPM_has_physical_presence)
             tpm_simple_cmd(0, TPM_ORD_PhysicalPresence,
                            2, TPM_PP_NOT_PRESENT_LOCK, TPM_DURATION_TYPE_SHORT);
         break;
@@ -1288,8 +1288,8 @@ tpm_prepboot(void)
 void
 tpm_option_rom(const void *addr, u32 len)
 {
-    if (!tpm_is_working())
-        return;
+    ако (!tpm_is_working())
+        върни;
 
     struct pcctes_romex pcctes = {
         .eventid = 7,
@@ -1305,14 +1305,14 @@ tpm_option_rom(const void *addr, u32 len)
 void
 tpm_add_bcv(u32 bootdrv, const u8 *addr, u32 length)
 {
-    if (!tpm_is_working())
-        return;
+    ако (!tpm_is_working())
+        върни;
 
-    if (length < 0x200)
-        return;
+    ако (length < 0x200)
+        върни;
 
     const char *string = "Booting BCV device 00h (Floppy)";
-    if (bootdrv == 0x80)
+    ако (bootdrv == 0x80)
         string = "Booting BCV device 80h (HDD)";
     tpm_add_action(4, string);
 
@@ -1333,8 +1333,8 @@ tpm_add_bcv(u32 bootdrv, const u8 *addr, u32 length)
 void
 tpm_add_cdrom(u32 bootdrv, const u8 *addr, u32 length)
 {
-    if (!tpm_is_working())
-        return;
+    ако (!tpm_is_working())
+        върни;
 
     tpm_add_action(4, "Booting from CD ROM device");
 
@@ -1348,8 +1348,8 @@ tpm_add_cdrom(u32 bootdrv, const u8 *addr, u32 length)
 void
 tpm_add_cdrom_catalog(const u8 *addr, u32 length)
 {
-    if (!tpm_is_working())
-        return;
+    ако (!tpm_is_working())
+        върни;
 
     tpm_add_action(4, "Booting from CD ROM device");
 
@@ -1363,12 +1363,12 @@ tpm_add_cdrom_catalog(const u8 *addr, u32 length)
 void
 tpm_s3_resume(void)
 {
-    if (!tpm_is_working())
-        return;
+    ако (!tpm_is_working())
+        върни;
 
     dprintf(DEBUG_tcg, "TCGBIOS: Resuming with TPM_Startup(ST_STATE)\n");
 
-    int ret = -1;
+    цяло ret = -1;
 
     switch (TPM_version) {
     case TPM_VERSION_1_2:
@@ -1382,7 +1382,7 @@ tpm_s3_resume(void)
         dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_Startup(SU_STATE) = 0x%08x\n",
                 ret);
 
-        if (ret)
+        ако (ret)
             goto err_exit;
 
 
@@ -1395,10 +1395,10 @@ tpm_s3_resume(void)
         break;
     }
 
-    if (ret)
+    ако (ret)
         goto err_exit;
 
-    return;
+    върни;
 
 err_exit:
     dprintf(DEBUG_tcg, "TCGBIOS: TPM malfunctioning (line %d).\n", __LINE__);
@@ -1415,41 +1415,41 @@ u8 TPM_interface_shutdown VARLOW;
 
 static inline void *input_buf32(struct bregs *regs)
 {
-    return MAKE_FLATPTR(regs->es, regs->di);
+    върни MAKE_FLATPTR(regs->es, regs->di);
 }
 
 static inline void *output_buf32(struct bregs *regs)
 {
-    return MAKE_FLATPTR(regs->ds, regs->si);
+    върни MAKE_FLATPTR(regs->ds, regs->si);
 }
 
 static u32
 hash_log_extend(struct pcpes *pcpes, const void *hashdata, u32 hashdata_length
-                , void *event, int extend)
+                , void *event, цяло extend)
 {
-    if (pcpes->pcrindex >= 24)
-        return TCG_INVALID_INPUT_PARA;
-    if (hashdata)
+    ако (pcpes->pcrindex >= 24)
+        върни TCG_INVALID_INPUT_PARA;
+    ако (hashdata)
         sha1(hashdata, hashdata_length, pcpes->digest);
 
     struct tpm_log_entry le = {
         .hdr.pcrindex = pcpes->pcrindex,
         .hdr.eventtype = pcpes->eventtype,
     };
-    int digest_len = tpm12_build_digest_direct(&le, pcpes->digest);
-    if (digest_len < 0)
-        return TCG_GENERAL_ERROR;
-    if (extend) {
-        int ret = tpm_extend(&le, digest_len);
-        if (ret)
-            return TCG_TCG_COMMAND_ERROR;
+    цяло digest_len = tpm12_build_digest_direct(&le, pcpes->digest);
+    ако (digest_len < 0)
+        върни TCG_GENERAL_ERROR;
+    ако (extend) {
+        цяло ret = tpm_extend(&le, digest_len);
+        ако (ret)
+            върни TCG_TCG_COMMAND_ERROR;
     }
     tpm12_build_digest_direct(&le, pcpes->digest);
-    int ret = tpm_log_event(&le.hdr, digest_len
+    цяло ret = tpm_log_event(&le.hdr, digest_len
                             , pcpes->event, pcpes->eventdatasize);
-    if (ret)
-        return TCG_PC_LOGOVERFLOW;
-    return 0;
+    ако (ret)
+        върни TCG_PC_LOGOVERFLOW;
+    върни 0;
 }
 
 static u32
@@ -1487,14 +1487,14 @@ hash_log_extend_event_int(const struct hleei_short *hleei_s,
 
     pcpes = (struct pcpes *)logdataptr;
 
-    if (pcpes->pcrindex != pcrindex
+    ако (pcpes->pcrindex != pcrindex
         || logdatalen != sizeof(*pcpes) + pcpes->eventdatasize) {
         rc = TCG_INVALID_INPUT_PARA;
         goto err_exit;
     }
     rc = hash_log_extend(pcpes, hleei_s->hashdataptr, hleei_s->hashdatalen
                          , pcpes->event, 1);
-    if (rc)
+    ако (rc)
         goto err_exit;
 
     hleeo->opblength = sizeof(struct hleeo);
@@ -1503,12 +1503,12 @@ hash_log_extend_event_int(const struct hleei_short *hleei_s,
     memcpy(hleeo->digest, pcpes->digest, sizeof(hleeo->digest));
 
 err_exit:
-    if (rc != 0) {
+    ако (rc != 0) {
         hleeo->opblength = 4;
         hleeo->reserved  = 0;
     }
 
-    return rc;
+    върни rc;
 }
 
 static u32
@@ -1517,7 +1517,7 @@ pass_through_to_tpm_int(struct pttti *pttti, struct pttto *pttto)
     u32 rc = 0;
     struct tpm_req_header *trh = (void*)pttti->tpmopin;
 
-    if (pttti->ipblength < sizeof(struct pttti) + sizeof(*trh)
+    ако (pttti->ipblength < sizeof(struct pttti) + sizeof(*trh)
         || pttti->ipblength != sizeof(struct pttti) + be32_to_cpu(trh->totlen)
         || pttti->opblength < sizeof(struct pttto)) {
         rc = TCG_INVALID_INPUT_PARA;
@@ -1528,23 +1528,23 @@ pass_through_to_tpm_int(struct pttti *pttti, struct pttto *pttto)
 
     switch (TPM_version) {
     case TPM_VERSION_1_2:
-        if (tag != TPM_TAG_RQU_CMD && tag != TPM_TAG_RQU_AUTH1_CMD
+        ако (tag != TPM_TAG_RQU_CMD && tag != TPM_TAG_RQU_AUTH1_CMD
             && tag != TPM_TAG_RQU_AUTH2_CMD) {
             rc = TCG_INVALID_INPUT_PARA;
             goto err_exit;
         }
         break;
     case TPM_VERSION_2:
-        if (tag != TPM2_ST_NO_SESSIONS && tag != TPM2_ST_SESSIONS) {
+        ако (tag != TPM2_ST_NO_SESSIONS && tag != TPM2_ST_SESSIONS) {
             rc = TCG_INVALID_INPUT_PARA;
             goto err_exit;
         }
     }
 
     u32 resbuflen = pttti->opblength - offsetof(struct pttto, tpmopout);
-    int ret = tpmhw_transmit(0, trh, pttto->tpmopout, &resbuflen,
+    цяло ret = tpmhw_transmit(0, trh, pttto->tpmopout, &resbuflen,
                              TPM_DURATION_TYPE_LONG /* worst case */);
-    if (ret) {
+    ако (ret) {
         rc = TCG_FATAL_COM_ERROR;
         goto err_exit;
     }
@@ -1553,19 +1553,19 @@ pass_through_to_tpm_int(struct pttti *pttti, struct pttto *pttto)
     pttto->reserved  = 0;
 
 err_exit:
-    if (rc != 0) {
+    ако (rc != 0) {
         pttto->opblength = 4;
         pttto->reserved = 0;
     }
 
-    return rc;
+    върни rc;
 }
 
 static u32
 shutdown_preboot_interface(void)
 {
     TPM_interface_shutdown = 1;
-    return 0;
+    върни 0;
 }
 
 static u32
@@ -1576,14 +1576,14 @@ hash_log_event_int(const struct hlei *hlei, struct hleo *hleo)
     struct pcpes *pcpes;
 
     size = hlei->ipblength;
-    if (size != sizeof(*hlei)) {
+    ако (size != sizeof(*hlei)) {
         rc = TCG_INVALID_INPUT_PARA;
         goto err_exit;
     }
 
     pcpes = (struct pcpes *)hlei->logdataptr;
 
-    if (pcpes->pcrindex != hlei->pcrindex
+    ако (pcpes->pcrindex != hlei->pcrindex
         || pcpes->eventtype != hlei->logeventtype
         || hlei->logdatalen != sizeof(*pcpes) + pcpes->eventdatasize) {
         rc = TCG_INVALID_INPUT_PARA;
@@ -1591,7 +1591,7 @@ hash_log_event_int(const struct hlei *hlei, struct hleo *hleo)
     }
     rc = hash_log_extend(pcpes, hlei->hashdataptr, hlei->hashdatalen
                          , pcpes->event, 0);
-    if (rc)
+    ако (rc)
         goto err_exit;
 
     /* updating the log was fine */
@@ -1600,25 +1600,25 @@ hash_log_event_int(const struct hlei *hlei, struct hleo *hleo)
     hleo->eventnumber = tpm_state.entry_count;
 
 err_exit:
-    if (rc != 0) {
+    ако (rc != 0) {
         hleo->opblength = 2;
         hleo->reserved = 0;
     }
 
-    return rc;
+    върни rc;
 }
 
 static u32
 hash_all_int(const struct hai *hai, u8 *hash)
 {
-    if (hai->ipblength != sizeof(struct hai) ||
+    ако (hai->ipblength != sizeof(struct hai) ||
         hai->hashdataptr == 0 ||
         hai->hashdatalen == 0 ||
         hai->algorithmid != TPM_ALG_SHA)
-        return TCG_INVALID_INPUT_PARA;
+        върни TCG_INVALID_INPUT_PARA;
 
     sha1((const u8 *)hai->hashdataptr, hai->hashdatalen, hash);
-    return 0;
+    върни 0;
 }
 
 static u32
@@ -1627,7 +1627,7 @@ tss_int(struct ti *ti, struct to *to)
     to->opblength = sizeof(struct to);
     to->reserved  = 0;
 
-    return TCG_PC_UNSUPPORTED;
+    върни TCG_PC_UNSUPPORTED;
 }
 
 static u32
@@ -1643,32 +1643,32 @@ compact_hash_log_extend_event_int(u8 *buffer,
         .eventdatasize = sizeof(info),
     };
     u32 rc = hash_log_extend(&pcpes, buffer, length, &info, 1);
-    if (rc)
-        return rc;
+    ако (rc)
+        върни rc;
 
     *edx_ptr = tpm_state.entry_count;
-    return 0;
+    върни 0;
 }
 
 void VISIBLE32FLAT
 tpm_interrupt_handler32(struct bregs *regs)
 {
-    if (!CONFIG_TCGBIOS)
-        return;
+    ако (!CONFIG_TCGBIOS)
+        върни;
 
     set_cf(regs, 0);
 
-    if (TPM_interface_shutdown && regs->al) {
+    ако (TPM_interface_shutdown && regs->al) {
         regs->eax = TCG_INTERFACE_SHUTDOWN;
-        return;
+        върни;
     }
 
     switch ((enum irq_ids)regs->al) {
     case TCG_StatusCheck:
-        if (!tpmhw_is_present()) {
+        ако (!tpmhw_is_present()) {
             /* no TPM available */
             regs->eax = TCG_PC_TPM_NOT_PRESENT;
-        } else {
+        } иначе {
             regs->eax = 0;
             regs->ebx = TCG_MAGIC;
             regs->ch = TCG_VERSION_MAJOR;
@@ -1725,7 +1725,7 @@ tpm_interrupt_handler32(struct bregs *regs)
         set_cf(regs, 1);
     }
 
-    return;
+    върни;
 }
 
 
@@ -1735,64 +1735,64 @@ tpm_interrupt_handler32(struct bregs *regs)
 
 typedef u8 tpm_ppi_code;
 
-static int
-tpm12_read_has_owner(int *has_owner)
+static цяло
+tpm12_read_has_owner(цяло *has_owner)
 {
     struct tpm_res_getcap_ownerauth oauth;
-    int ret = tpm12_get_capability(TPM_CAP_PROPERTY, TPM_CAP_PROP_OWNER
+    цяло ret = tpm12_get_capability(TPM_CAP_PROPERTY, TPM_CAP_PROP_OWNER
                                    , &oauth.hdr, sizeof(oauth));
-    if (ret)
-        return -1;
+    ако (ret)
+        върни -1;
 
     *has_owner = oauth.flag;
 
-    return 0;
+    върни 0;
 }
 
-static int
-tpm12_enable_tpm(int enable, int verbose)
+static цяло
+tpm12_enable_tpm(цяло enable, цяло verbose)
 {
     struct tpm_permanent_flags pf;
-    int ret = tpm12_read_permanent_flags((char *)&pf, sizeof(pf));
-    if (ret)
-        return -1;
+    цяло ret = tpm12_read_permanent_flags((char *)&pf, sizeof(pf));
+    ако (ret)
+        върни -1;
 
-    if (pf.flags[PERM_FLAG_IDX_DISABLE] && !enable)
-        return 0;
+    ако (pf.flags[PERM_FLAG_IDX_DISABLE] && !enable)
+        върни 0;
 
     ret = tpm_simple_cmd(0, enable ? TPM_ORD_PhysicalEnable
                                    : TPM_ORD_PhysicalDisable,
                          0, 0, TPM_DURATION_TYPE_SHORT);
-    if (ret) {
-        if (enable)
+    ако (ret) {
+        ако (enable)
             dprintf(DEBUG_tcg, "TCGBIOS: Enabling the TPM failed.\n");
-        else
+        иначе
             dprintf(DEBUG_tcg, "TCGBIOS: Disabling the TPM failed.\n");
     }
-    return ret;
+    върни ret;
 }
 
-static int
-tpm12_activate_tpm(int activate, int allow_reset, int verbose)
+static цяло
+tpm12_activate_tpm(цяло activate, цяло allow_reset, цяло verbose)
 {
     struct tpm_permanent_flags pf;
-    int ret = tpm12_read_permanent_flags((char *)&pf, sizeof(pf));
-    if (ret)
-        return -1;
+    цяло ret = tpm12_read_permanent_flags((char *)&pf, sizeof(pf));
+    ако (ret)
+        върни -1;
 
-    if (pf.flags[PERM_FLAG_IDX_DEACTIVATED] && !activate)
-        return 0;
+    ако (pf.flags[PERM_FLAG_IDX_DEACTIVATED] && !activate)
+        върни 0;
 
-    if (pf.flags[PERM_FLAG_IDX_DISABLE])
-        return 0;
+    ако (pf.flags[PERM_FLAG_IDX_DISABLE])
+        върни 0;
 
     ret = tpm_simple_cmd(0, TPM_ORD_PhysicalSetDeactivated,
                          1, activate ? 0x00 : 0x01, TPM_DURATION_TYPE_SHORT);
-    if (ret)
-        return ret;
+    ако (ret)
+        върни ret;
 
-    if (activate && allow_reset) {
-        if (verbose) {
+    ако (activate && allow_reset) {
+        ако (verbose) {
             printf("Requiring a reboot to activate the TPM.\n");
 
             msleep(2000);
@@ -1800,96 +1800,96 @@ tpm12_activate_tpm(int activate, int allow_reset, int verbose)
         reset();
     }
 
-    return 0;
+    върни 0;
 }
 
-static int
-tpm12_enable_activate(int allow_reset, int verbose)
+static цяло
+tpm12_enable_activate(цяло allow_reset, цяло verbose)
 {
-    int ret = tpm12_enable_tpm(1, verbose);
-    if (ret)
-        return ret;
+    цяло ret = tpm12_enable_tpm(1, verbose);
+    ако (ret)
+        върни ret;
 
-    return tpm12_activate_tpm(1, allow_reset, verbose);
+    върни tpm12_activate_tpm(1, allow_reset, verbose);
 }
 
-static int
-tpm12_force_clear(int enable_activate_before, int enable_activate_after,
-                  int verbose)
+static цяло
+tpm12_force_clear(цяло enable_activate_before, цяло enable_activate_after,
+                  цяло verbose)
 {
-    int has_owner;
-    int ret = tpm12_read_has_owner(&has_owner);
-    if (ret)
-        return -1;
-    if (!has_owner) {
-        if (verbose)
+    цяло has_owner;
+    цяло ret = tpm12_read_has_owner(&has_owner);
+    ако (ret)
+        върни -1;
+    ако (!has_owner) {
+        ако (verbose)
             printf("TPM does not have an owner.\n");
-        return 0;
+        върни 0;
     }
 
-    if (enable_activate_before) {
+    ако (enable_activate_before) {
         ret = tpm12_enable_activate(0, verbose);
-        if (ret) {
+        ако (ret) {
             dprintf(DEBUG_tcg,
                     "TCGBIOS: Enabling/activating the TPM failed.\n");
-            return ret;
+            върни ret;
         }
     }
 
     ret = tpm_simple_cmd(0, TPM_ORD_ForceClear,
                          0, 0, TPM_DURATION_TYPE_SHORT);
-    if (ret)
-        return ret;
+    ако (ret)
+        върни ret;
 
-    if (!enable_activate_after) {
-        if (verbose)
+    ако (!enable_activate_after) {
+        ако (verbose)
             printf("Owner successfully cleared.\n"
                    "You will need to enable/activate the TPM again.\n\n");
-        return 0;
+        върни 0;
     }
 
-    return tpm12_enable_activate(1, verbose);
+    върни tpm12_enable_activate(1, verbose);
 }
 
-static int
-tpm12_set_owner_install(int allow, int verbose)
+static цяло
+tpm12_set_owner_install(цяло allow, цяло verbose)
 {
-    int has_owner;
-    int ret = tpm12_read_has_owner(&has_owner);
-    if (ret)
-        return -1;
-    if (has_owner) {
-        if (verbose)
+    цяло has_owner;
+    цяло ret = tpm12_read_has_owner(&has_owner);
+    ако (ret)
+        върни -1;
+    ако (has_owner) {
+        ако (verbose)
             printf("Must first remove owner.\n");
-        return 0;
+        върни 0;
     }
 
     struct tpm_permanent_flags pf;
     ret = tpm12_read_permanent_flags((char *)&pf, sizeof(pf));
-    if (ret)
-        return -1;
+    ако (ret)
+        върни -1;
 
-    if (pf.flags[PERM_FLAG_IDX_DISABLE]) {
-        if (verbose)
+    ако (pf.flags[PERM_FLAG_IDX_DISABLE]) {
+        ако (verbose)
             printf("TPM must first be enable.\n");
-        return 0;
+        върни 0;
     }
 
     ret = tpm_simple_cmd(0, TPM_ORD_SetOwnerInstall,
                          1, allow ? 0x01 : 0x00, TPM_DURATION_TYPE_SHORT);
-    if (ret)
-        return ret;
+    ако (ret)
+        върни ret;
 
-    if (verbose)
+    ако (verbose)
         printf("Installation of owner %s.\n", allow ? "enabled" : "disabled");
 
-    return 0;
+    върни 0;
 }
 
-static int
-tpm12_process_cfg(tpm_ppi_code msgCode, int verbose)
+static цяло
+tpm12_process_cfg(tpm_ppi_code msgCode, цяло verbose)
 {
-    int ret = 0;
+    цяло ret = 0;
 
     switch (msgCode) {
         case TPM_PPI_OP_NOOP: /* no-op */
@@ -1927,14 +1927,14 @@ tpm12_process_cfg(tpm_ppi_code msgCode, int verbose)
             break;
     }
 
-    if (ret)
+    ако (ret)
         printf("Op %d: An error occurred: 0x%x\n", msgCode, ret);
 
-    return ret;
+    върни ret;
 }
 
-static int
-tpm20_clearcontrol(u8 disable, int verbose)
+static цяло
+tpm20_clearcontrol(u8 disable, цяло verbose)
 {
     struct tpm2_req_clearcontrol trc = {
         .hdr.tag     = cpu_to_be16(TPM2_ST_SESSIONS),
@@ -1952,18 +1952,18 @@ tpm20_clearcontrol(u8 disable, int verbose)
     };
     struct tpm_rsp_header rsp;
     u32 resp_length = sizeof(rsp);
-    int ret = tpmhw_transmit(0, &trc.hdr, &rsp, &resp_length,
+    цяло ret = tpmhw_transmit(0, &trc.hdr, &rsp, &resp_length,
                              TPM_DURATION_TYPE_SHORT);
-    if (ret || resp_length != sizeof(rsp) || rsp.errcode)
+    ако (ret || resp_length != sizeof(rsp) || rsp.errcode)
         ret = -1;
 
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_ClearControl = 0x%08x\n",
             ret);
 
-    return ret;
+    върни ret;
 }
 
-static int
+static цяло
 tpm20_clear(void)
 {
     struct tpm2_req_clear trq = {
@@ -1981,21 +1981,21 @@ tpm20_clear(void)
     };
     struct tpm_rsp_header rsp;
     u32 resp_length = sizeof(rsp);
-    int ret = tpmhw_transmit(0, &trq.hdr, &rsp, &resp_length,
+    цяло ret = tpmhw_transmit(0, &trq.hdr, &rsp, &resp_length,
                              TPM_DURATION_TYPE_MEDIUM);
-    if (ret || resp_length != sizeof(rsp) || rsp.errcode)
+    ако (ret || resp_length != sizeof(rsp) || rsp.errcode)
         ret = -1;
 
     dprintf(DEBUG_tcg, "TCGBIOS: Return value from sending TPM2_CC_Clear = 0x%08x\n",
             ret);
 
-    return ret;
+    върни ret;
 }
 
-static int
-tpm20_process_cfg(tpm_ppi_code msgCode, int verbose)
+static цяло
+tpm20_process_cfg(tpm_ppi_code msgCode, цяло verbose)
 {
-    int ret = 0;
+    цяло ret = 0;
 
     switch (msgCode) {
         case TPM_PPI_OP_NOOP: /* no-op */
@@ -2003,104 +2003,104 @@ tpm20_process_cfg(tpm_ppi_code msgCode, int verbose)
 
         case TPM_PPI_OP_CLEAR:
             ret = tpm20_clearcontrol(0, verbose);
-            if (!ret)
+            ако (!ret)
                  ret = tpm20_clear();
             break;
     }
 
-    if (ret)
+    ако (ret)
         printf("Op %d: An error occurred: 0x%x\n", msgCode, ret);
 
-    return ret;
+    върни ret;
 }
 
-static int
+static цяло
 tpm12_get_tpm_state(void)
 {
-    int state = 0;
+    цяло state = 0;
     struct tpm_permanent_flags pf;
-    int has_owner;
+    цяло has_owner;
 
-    if (tpm12_read_permanent_flags((char *)&pf, sizeof(pf)) ||
+    ако (tpm12_read_permanent_flags((char *)&pf, sizeof(pf)) ||
         tpm12_read_has_owner(&has_owner))
-        return ~0;
+        върни ~0;
 
-    if (!pf.flags[PERM_FLAG_IDX_DISABLE])
+    ако (!pf.flags[PERM_FLAG_IDX_DISABLE])
         state |= TPM_STATE_ENABLED;
 
-    if (!pf.flags[PERM_FLAG_IDX_DEACTIVATED])
+    ако (!pf.flags[PERM_FLAG_IDX_DEACTIVATED])
         state |= TPM_STATE_ACTIVE;
 
-    if (has_owner) {
+    ако (has_owner) {
         state |= TPM_STATE_OWNED;
-    } else {
-        if (pf.flags[PERM_FLAG_IDX_OWNERSHIP])
+    } иначе {
+        ако (pf.flags[PERM_FLAG_IDX_OWNERSHIP])
             state |= TPM_STATE_OWNERINSTALL;
     }
 
-    return state;
+    върни state;
 }
 
 static void
-tpm12_show_tpm_menu(int state, int next_scancodes[7])
+tpm12_show_tpm_menu(цяло state, цяло next_scancodes[7])
 {
-    int i = 0;
+    цяло i = 0;
 
     printf("\nThe current state of the TPM is:\n");
 
-    if (state & TPM_STATE_ENABLED)
+    ако (state & TPM_STATE_ENABLED)
         printf("  Enabled");
-    else
+    иначе
         printf("  Disabled");
 
-    if (state & TPM_STATE_ACTIVE)
+    ако (state & TPM_STATE_ACTIVE)
         printf(" and active\n");
-    else
+    иначе
         printf(" and deactivated\n");
 
-    if (state & TPM_STATE_OWNED)
+    ако (state & TPM_STATE_OWNED)
         printf("  Ownership has been taken\n");
-    else {
+    иначе {
         printf("  Ownership has not been taken\n");
-        if (state & TPM_STATE_OWNERINSTALL)
+        ако (state & TPM_STATE_OWNERINSTALL)
             printf("  A user can take ownership of the TPM\n");
-        else
+        иначе
             printf("  Taking ownership of the TPM has been disabled\n");
     }
 
-    if ((state & (TPM_STATE_ENABLED | TPM_STATE_ACTIVE)) !=
+    ако ((state & (TPM_STATE_ENABLED | TPM_STATE_ACTIVE)) !=
         (TPM_STATE_ENABLED | TPM_STATE_ACTIVE)) {
         printf("\nNote: To make use of all functionality, the TPM must be "
                "enabled and active.\n");
     }
 
     printf("\nAvailable options are:\n");
-    if (state & TPM_STATE_ENABLED) {
+    ако (state & TPM_STATE_ENABLED) {
         printf(" d. Disable the TPM\n");
         next_scancodes[i++] = 32;
 
-        if (state & TPM_STATE_ACTIVE) {
+        ако (state & TPM_STATE_ACTIVE) {
             printf(" v. Deactivate the TPM\n");
             next_scancodes[i++] = 47;
 
-            if (state & TPM_STATE_OWNERINSTALL) {
+            ако (state & TPM_STATE_OWNERINSTALL) {
                 printf(" p. Prevent installation of an owner\n");
                 next_scancodes[i++] = 25;
-            } else {
+            } иначе {
                 printf(" s. Allow installation of an owner\n");
                 next_scancodes[i++] = 31;
             }
-        } else {
+        } иначе {
             printf(" a. Activate the TPM\n");
             next_scancodes[i++] = 30;
         }
 
-    } else {
+    } иначе {
         printf(" e. Enable the TPM\n");
         next_scancodes[i++] = 18;
     }
 
-    if (state & TPM_STATE_OWNED) {
+    ако (state & TPM_STATE_OWNED) {
         printf(" c. Clear ownership\n");
         next_scancodes[i++] = 46;
     }
@@ -2111,21 +2111,21 @@ tpm12_show_tpm_menu(int state, int next_scancodes[7])
 static void
 tpm12_menu(void)
 {
-    int scancode, next_scancodes[7];
+    цяло scancode, next_scancodes[7];
     tpm_ppi_code msgCode;
-    int state = 0, i;
-    int waitkey;
+    цяло state = 0, i;
+    цяло waitkey;
 
     printf("The Trusted Platform Module (TPM) is a hardware device in "
            "this machine.\n"
            "It can help verify the integrity of system software.\n\n");
 
-    for (;;) {
-        if ((state = tpm12_get_tpm_state()) != ~0) {
+    за (;;) {
+        ако ((state = tpm12_get_tpm_state()) != ~0) {
             tpm12_show_tpm_menu(state, next_scancodes);
-        } else {
+        } иначе {
             printf("TPM is not working correctly.\n");
-            return;
+            върни;
         }
 
         printf("\nIf no change is desired or if this menu was reached by "
@@ -2136,8 +2136,8 @@ tpm12_menu(void)
 
         waitkey = 1;
 
-        while (waitkey) {
-            while ((scancode = get_keystroke(1000)) == ~0)
+        докато (waitkey) {
+            докато ((scancode = get_keystroke(1000)) == ~0)
                 ;
 
             switch (scancode) {
@@ -2174,11 +2174,11 @@ tpm12_menu(void)
              * Using the next_scancodes array, check whether the
              * pressed key is currently a valid option.
              */
-            for (i = 0; i < sizeof(next_scancodes); i++) {
-                if (next_scancodes[i] == 0)
+            за (i = 0; i < sizeof(next_scancodes); i++) {
+                ако (next_scancodes[i] == 0)
                     break;
 
-                if (next_scancodes[i] == scancode) {
+                ако (next_scancodes[i] == scancode) {
                     tpm12_process_cfg(msgCode, 1);
                     waitkey = 0;
                     break;
@@ -2188,7 +2188,7 @@ tpm12_menu(void)
     }
 }
 
-static int
+static цяло
 tpm20_menu_change_active_pcrbanks(void)
 {
     u8 active_banks, suppt_banks;
@@ -2197,20 +2197,20 @@ tpm20_menu_change_active_pcrbanks(void)
 
     u8 activate_banks = active_banks;
 
-    while (1) {
+    докато (1) {
         u8 hashalg_flag = TPM2_ALG_SHA1_FLAG;
         u8 i = 0;
 
         printf("\nToggle active PCR banks by pressing number key\n\n");
 
-        while (hashalg_flag) {
+        докато (hashalg_flag) {
             u8 flag = hashalg_flag & suppt_banks;
             const char *hashname = tpm20_hashalg_flag_to_name(flag);
 
             i++;
-            if (hashname) {
+            ако (hashname) {
                 printf("  %d: %s", i, hashname);
-                if (activate_banks & hashalg_flag)
+                ако (activate_banks & hashalg_flag)
                     printf(" (enabled)");
                 printf("\n");
             }
@@ -2219,31 +2219,31 @@ tpm20_menu_change_active_pcrbanks(void)
         }
         printf("\n"
                "ESC: return to previous menu without changes\n");
-        if (activate_banks)
+        ако (activate_banks)
             printf("A  : activate selection\n");
 
         u8 flagnum;
-        int show = 0;
-        while (!show) {
-            int scancode = get_keystroke(1000);
+        цяло show = 0;
+        докато (!show) {
+            цяло scancode = get_keystroke(1000);
 
             switch (scancode) {
             case ~0:
                 continue;
             case 1: /* ESC */
                 printf("\n");
-                return -1;
+                върни -1;
             case 2 ... 6: /* keys 1 .. 5 */
                 flagnum = scancode - 1;
-                if (flagnum > i)
+                ако (flagnum > i)
                     continue;
-                if (suppt_banks & (1 << (flagnum - 1))) {
+                ако (suppt_banks & (1 << (flagnum - 1))) {
                     activate_banks ^= 1 << (flagnum - 1);
                     show = 1;
                 }
                 break;
             case 30: /* a */
-                if (activate_banks)
+                ако (activate_banks)
                     tpm20_activate_pcrbanks(activate_banks);
             }
         }
@@ -2253,10 +2253,10 @@ tpm20_menu_change_active_pcrbanks(void)
 static void
 tpm20_menu(void)
 {
-    int scan_code;
+    цяло scan_code;
     tpm_ppi_code msgCode;
 
-    for (;;) {
+    за (;;) {
         printf("1. Clear TPM\n");
         printf("2. Change active PCR banks\n");
 
@@ -2266,7 +2266,7 @@ tpm20_menu(void)
 
         msgCode = TPM_PPI_OP_NOOP;
 
-        while ((scan_code = get_keystroke(1000)) == ~0)
+        докато ((scan_code = get_keystroke(1000)) == ~0)
             ;
 
         switch (scan_code) {
@@ -2291,10 +2291,10 @@ tpm20_menu(void)
 void
 tpm_menu(void)
 {
-    if (!CONFIG_TCGBIOS)
-        return;
+    ако (!CONFIG_TCGBIOS)
+        върни;
 
-    while (get_keystroke(0) >= 0)
+    докато (get_keystroke(0) >= 0)
         ;
     wait_threads();
 
@@ -2308,14 +2308,14 @@ tpm_menu(void)
     }
 }
 
-int
+цяло
 tpm_can_show_menu(void)
 {
     switch (TPM_version) {
     case TPM_VERSION_1_2:
-        return tpm_is_working() && TPM_has_physical_presence;
+        върни tpm_is_working() && TPM_has_physical_presence;
     case TPM_VERSION_2:
-        return tpm_is_working();
+        върни tpm_is_working();
     }
-    return 0;
+    върни 0;
 }

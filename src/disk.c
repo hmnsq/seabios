@@ -25,13 +25,13 @@ static void
 __disk_ret(struct bregs *regs, u32 linecode, const char *fname)
 {
     u8 code = linecode;
-    if (regs->dl < EXTSTART_HD)
+    ако (regs->dl < EXTSTART_HD)
         SET_BDA(floppy_last_status, code);
-    else
+    иначе
         SET_BDA(disk_last_status, code);
-    if (code)
+    ако (code)
         __set_code_invalid(regs, linecode, fname);
-    else
+    иначе
         set_code_success(regs);
 }
 
@@ -39,15 +39,15 @@ static void
 __disk_ret_unimplemented(struct bregs *regs, u32 linecode, const char *fname)
 {
     u8 code = linecode;
-    if (regs->dl < EXTSTART_HD)
+    ако (regs->dl < EXTSTART_HD)
         SET_BDA(floppy_last_status, code);
-    else
+    иначе
         SET_BDA(disk_last_status, code);
     __set_code_unimplemented(regs, linecode, fname);
 }
 
 static void
-__disk_stub(struct bregs *regs, int lineno, const char *fname)
+__disk_stub(struct bregs *regs, цяло lineno, const char *fname)
 {
     __warn_unimplemented(regs, lineno, fname);
     __disk_ret(regs, DISK_RET_SUCCESS | (lineno << 8), fname);
@@ -70,7 +70,7 @@ static struct chs_s
 getLCHS(struct drive_s *drive_fl)
 {
     struct chs_s res = { };
-    if (CONFIG_CDROM_EMU && drive_fl == GET_GLOBAL(cdemu_drive_gf)) {
+    ако (CONFIG_CDROM_EMU && drive_fl == GET_GLOBAL(cdemu_drive_gf)) {
         // Emulated drive - get info from CDEmu.  (It's not possible to
         // populate the geometry directly in the driveid because the
         // geometry is only known after the bios segment is made
@@ -79,40 +79,40 @@ getLCHS(struct drive_s *drive_fl)
         res.cylinder = GET_LOW(CDEmu.chs.cyllow) + ((sptcyl << 2) & 0x300) + 1;
         res.head = GET_LOW(CDEmu.chs.heads) + 1;
         res.sector = sptcyl & 0x3f;
-        return res;
+        върни res;
     }
     res.cylinder = GET_FLATPTR(drive_fl->lchs.cylinder);
     res.head = GET_FLATPTR(drive_fl->lchs.head);
     res.sector = GET_FLATPTR(drive_fl->lchs.sector);
-    return res;
+    върни res;
 }
 
 // Execute a "disk_op_s" request after jumping to the extra stack.
-static int
+static цяло
 __send_disk_op(struct disk_op_s *op_far, u16 op_seg)
 {
     struct disk_op_s dop;
     memcpy_far(GET_SEG(SS), &dop, op_seg, op_far, sizeof(dop));
 
-    int status = process_op(&dop);
+    цяло status = process_op(&dop);
 
     // Update count with total sectors transferred.
     SET_FARVAR(op_seg, op_far->count, dop.count);
 
-    return status;
+    върни status;
 }
 
 // Execute a "disk_op_s" request (using the extra 16bit stack).
-static int
+static цяло
 send_disk_op(struct disk_op_s *op)
 {
     ASSERT16();
-    if (! CONFIG_DRIVES)
-        return -1;
-    if (!CONFIG_ENTRY_EXTRASTACK)
+    ако (! CONFIG_DRIVES)
+        върни -1;
+    ако (!CONFIG_ENTRY_EXTRASTACK)
         // Jump on to extra stack
-        return stack_hop(__send_disk_op, op, GET_SEG(SS));
-    return process_op(op);
+        върни stack_hop(__send_disk_op, op, GET_SEG(SS));
+    върни process_op(op);
 }
 
 // Perform read/write/verify using old-style chs accesses
@@ -128,10 +128,10 @@ basic_access(struct bregs *regs, struct drive_s *drive_fl, u16 command)
     u16 sector = regs->cl & 0x3f;
     u16 head = regs->dh;
 
-    if (count > 128 || count == 0 || sector == 0) {
+    ако (count > 128 || count == 0 || sector == 0) {
         warn_invalid(regs);
         disk_ret(regs, DISK_RET_EPARAM);
-        return;
+        върни;
     }
     dop.count = count;
 
@@ -139,10 +139,10 @@ basic_access(struct bregs *regs, struct drive_s *drive_fl, u16 command)
     u16 nlc=chs.cylinder, nlh=chs.head, nls=chs.sector;
 
     // sanity check on cyl heads, sec
-    if (cylinder >= nlc || head >= nlh || sector > nls) {
+    ако (cylinder >= nlc || head >= nlh || sector > nls) {
         warn_invalid(regs);
         disk_ret(regs, DISK_RET_EPARAM);
-        return;
+        върни;
     }
 
     // translate lchs to lba
@@ -151,7 +151,7 @@ basic_access(struct bregs *regs, struct drive_s *drive_fl, u16 command)
 
     dop.buf_fl = MAKE_FLATPTR(regs->es, regs->bx);
 
-    int status = send_disk_op(&dop);
+    цяло status = send_disk_op(&dop);
 
     regs->al = dop.count;
 
@@ -168,21 +168,21 @@ extended_access(struct bregs *regs, struct drive_s *drive_fl, u16 command)
     dop.lba = GET_FARVAR(regs->ds, param_far->lba);
     dop.command = command;
     dop.drive_fl = drive_fl;
-    if (dop.lba >= GET_FLATPTR(drive_fl->sectors)) {
+    ако (dop.lba >= GET_FLATPTR(drive_fl->sectors)) {
         warn_invalid(regs);
         disk_ret(regs, DISK_RET_EPARAM);
-        return;
+        върни;
     }
 
     dop.buf_fl = SEGOFF_TO_FLATPTR(GET_FARVAR(regs->ds, param_far->data));
     dop.count = GET_FARVAR(regs->ds, param_far->count);
-    if (! dop.count) {
+    ако (! dop.count) {
         // Nothing to do.
         disk_ret(regs, DISK_RET_SUCCESS);
-        return;
+        върни;
     }
 
-    int status = send_disk_op(&dop);
+    цяло status = send_disk_op(&dop);
 
     SET_FARVAR(regs->ds, param_far->count, dop.count);
 
@@ -202,7 +202,7 @@ disk_1300(struct bregs *regs, struct drive_s *drive_fl)
     dop.drive_fl = drive_fl;
     dop.command = CMD_RESET;
     dop.count = 0;
-    int status = send_disk_op(&dop);
+    цяло status = send_disk_op(&dop);
     disk_ret(regs, status);
 }
 
@@ -211,10 +211,10 @@ static void
 disk_1301(struct bregs *regs, struct drive_s *drive_fl)
 {
     u8 v;
-    if (regs->dl < EXTSTART_HD)
+    ако (regs->dl < EXTSTART_HD)
         // Floppy
         v = GET_BDA(floppy_last_status);
-    else
+    иначе
         v = GET_BDA(disk_last_status);
     regs->ah = v;
     set_cf(regs, v);
@@ -255,9 +255,9 @@ disk_1305(struct bregs *regs, struct drive_s *drive_fl)
     u8 cylinder = regs->ch;
     u8 head = regs->dh;
 
-    if (cylinder >= nlc || head >= nlh || count == 0 || count > nls) {
+    ако (cylinder >= nlc || head >= nlh || count == 0 || count > nls) {
         disk_ret(regs, DISK_RET_EPARAM);
-        return;
+        върни;
     }
 
     struct disk_op_s dop;
@@ -266,7 +266,7 @@ disk_1305(struct bregs *regs, struct drive_s *drive_fl)
     dop.lba = (((u32)cylinder * (u32)nlh) + (u32)head) * (u32)nls;
     dop.count = count;
     dop.buf_fl = MAKE_FLATPTR(regs->es, regs->bx);
-    int status = send_disk_op(&dop);
+    цяло status = send_disk_op(&dop);
     disk_ret(regs, status);
 }
 
@@ -280,34 +280,34 @@ disk_1308(struct bregs *regs, struct drive_s *drive_fl)
     nlc--;
     nlh--;
     u8 count;
-    if (regs->dl < EXTSTART_HD) {
+    ако (regs->dl < EXTSTART_HD) {
         // Floppy
         count = GET_GLOBAL(FloppyCount);
 
-        if (CONFIG_CDROM_EMU && drive_fl == GET_GLOBAL(cdemu_drive_gf))
+        ако (CONFIG_CDROM_EMU && drive_fl == GET_GLOBAL(cdemu_drive_gf))
             regs->bx = GET_LOW(CDEmu.media) * 2;
-        else
+        иначе
             regs->bx = GET_FLATPTR(drive_fl->floppy_type);
 
         // set es & di to point to 11 byte diskette param table in ROM
         regs->es = SEG_BIOS;
         regs->di = (u32)&diskette_param_table2;
-    } else if (regs->dl < EXTSTART_CD) {
+    } иначе ако (regs->dl < EXTSTART_CD) {
         // Hard drive
         count = GET_BDA(hdcount);
         nlc--;  // last sector reserved
-    } else {
+    } иначе {
         // Not supported on CDROM
         disk_ret(regs, DISK_RET_EPARAM);
-        return;
+        върни;
     }
 
-    if (CONFIG_CDROM_EMU && GET_LOW(CDEmu.media)) {
+    ако (CONFIG_CDROM_EMU && GET_LOW(CDEmu.media)) {
         u8 emudrive = GET_LOW(CDEmu.emulated_drive);
-        if (((emudrive ^ regs->dl) & 0x80) == 0)
+        ако (((emudrive ^ regs->dl) & 0x80) == 0)
             // Note extra drive due to emulation.
             count++;
-        if (regs->dl < EXTSTART_HD && count > 2)
+        ако (regs->dl < EXTSTART_HD && count > 2)
             // Max of two floppy drives.
             count = 2;
     }
@@ -352,7 +352,7 @@ disk_1310(struct bregs *regs, struct drive_s *drive_fl)
     dop.drive_fl = drive_fl;
     dop.command = CMD_ISREADY;
     dop.count = 0;
-    int status = send_disk_op(&dop);
+    цяло status = send_disk_op(&dop);
     disk_ret(regs, status);
 }
 
@@ -375,10 +375,10 @@ static void noinline
 disk_1315(struct bregs *regs, struct drive_s *drive_fl)
 {
     disk_ret(regs, DISK_RET_SUCCESS);
-    if (regs->dl < EXTSTART_HD || regs->dl >= EXTSTART_CD) {
+    ако (regs->dl < EXTSTART_HD || regs->dl >= EXTSTART_CD) {
         // Floppy or cdrom
         regs->ah = 1;
-        return;
+        върни;
     }
     // Hard drive
 
@@ -396,10 +396,10 @@ disk_1315(struct bregs *regs, struct drive_s *drive_fl)
 static void
 disk_1316(struct bregs *regs, struct drive_s *drive_fl)
 {
-    if (regs->dl >= EXTSTART_HD) {
+    ако (regs->dl >= EXTSTART_HD) {
         // Hard drive
         disk_ret(regs, DISK_RET_EPARAM);
-        return;
+        върни;
     }
     disk_ret(regs, DISK_RET_ECHANGED);
 }
@@ -442,12 +442,12 @@ u8 CDRom_locks[BUILD_MAX_EXTDRIVE] VARLOW;
 static void
 disk_134500(struct bregs *regs, struct drive_s *drive_fl)
 {
-    int cdid = regs->dl - EXTSTART_CD;
+    цяло cdid = regs->dl - EXTSTART_CD;
     u8 locks = GET_LOW(CDRom_locks[cdid]);
-    if (locks == 0xff) {
+    ако (locks == 0xff) {
         regs->al = 1;
         disk_ret(regs, DISK_RET_ETOOMANYLOCKS);
-        return;
+        върни;
     }
     SET_LOW(CDRom_locks[cdid], locks + 1);
     regs->al = 1;
@@ -458,12 +458,12 @@ disk_134500(struct bregs *regs, struct drive_s *drive_fl)
 static void
 disk_134501(struct bregs *regs, struct drive_s *drive_fl)
 {
-    int cdid = regs->dl - EXTSTART_CD;
+    цяло cdid = regs->dl - EXTSTART_CD;
     u8 locks = GET_LOW(CDRom_locks[cdid]);
-    if (locks == 0x00) {
+    ако (locks == 0x00) {
         regs->al = 0;
         disk_ret(regs, DISK_RET_ENOTLOCKED);
-        return;
+        върни;
     }
     locks--;
     SET_LOW(CDRom_locks[cdid], locks);
@@ -475,7 +475,7 @@ disk_134501(struct bregs *regs, struct drive_s *drive_fl)
 static void
 disk_134502(struct bregs *regs, struct drive_s *drive_fl)
 {
-    int cdid = regs->dl - EXTSTART_CD;
+    цяло cdid = regs->dl - EXTSTART_CD;
     u8 locks = GET_LOW(CDRom_locks[cdid]);
     regs->al = (locks ? 1 : 0);
     disk_ret(regs, DISK_RET_SUCCESS);
@@ -491,10 +491,10 @@ disk_1345XX(struct bregs *regs, struct drive_s *drive_fl)
 static void
 disk_1345(struct bregs *regs, struct drive_s *drive_fl)
 {
-    if (regs->dl < EXTSTART_CD) {
+    ако (regs->dl < EXTSTART_CD) {
         // Always success for HD
         disk_ret(regs, DISK_RET_SUCCESS);
-        return;
+        върни;
     }
 
     switch (regs->al) {
@@ -509,17 +509,17 @@ disk_1345(struct bregs *regs, struct drive_s *drive_fl)
 static void noinline
 disk_1346(struct bregs *regs, struct drive_s *drive_fl)
 {
-    if (regs->dl < EXTSTART_CD) {
+    ако (regs->dl < EXTSTART_CD) {
         // Volume Not Removable
         disk_ret(regs, DISK_RET_ENOTREMOVABLE);
-        return;
+        върни;
     }
 
-    int cdid = regs->dl - EXTSTART_CD;
+    цяло cdid = regs->dl - EXTSTART_CD;
     u8 locks = GET_LOW(CDRom_locks[cdid]);
-    if (locks != 0) {
+    ако (locks != 0) {
         disk_ret(regs, DISK_RET_ELOCKED);
-        return;
+        върни;
     }
 
     // FIXME should handle 0x31 no media in device
@@ -532,9 +532,9 @@ disk_1346(struct bregs *regs, struct drive_s *drive_fl)
     br.dl = regs->dl;
     call16_int(0x15, &br);
 
-    if (br.ah || br.flags & F_CF) {
+    ако (br.ah || br.flags & F_CF) {
         disk_ret(regs, DISK_RET_ELOCKED);
-        return;
+        върни;
     }
     disk_ret(regs, DISK_RET_SUCCESS);
 }
@@ -550,7 +550,7 @@ disk_1347(struct bregs *regs, struct drive_s *drive_fl)
 static void
 disk_1348(struct bregs *regs, struct drive_s *drive_fl)
 {
-    int ret = fill_edd(SEGOFF(regs->ds, regs->si), drive_fl);
+    цяло ret = fill_edd(SEGOFF(regs->ds, regs->si), drive_fl);
     disk_ret(regs, ret);
 }
 
@@ -558,10 +558,10 @@ disk_1348(struct bregs *regs, struct drive_s *drive_fl)
 static void
 disk_1349(struct bregs *regs, struct drive_s *drive_fl)
 {
-    if (regs->dl < EXTSTART_CD) {
+    ако (regs->dl < EXTSTART_CD) {
         // Always success for HD
         disk_ret(regs, DISK_RET_SUCCESS);
-        return;
+        върни;
     }
     set_invalid(regs);
     // always send changed ??
@@ -682,7 +682,7 @@ cdemu_134b(struct bregs *regs)
     memcpy_far(regs->ds, (void*)(regs->si+0), SEG_LOW, &CDEmu, sizeof(CDEmu));
 
     // If we have to terminate emulation
-    if (regs->al == 0x00) {
+    ако (regs->al == 0x00) {
         // FIXME ElTorito Various. Should be handled accordingly to spec
         SET_LOW(CDEmu.media, 0x00); // bye bye
 
@@ -700,29 +700,29 @@ cdemu_134b(struct bregs *regs)
 static void
 handle_legacy_disk(struct bregs *regs, u8 extdrive)
 {
-    if (! CONFIG_DRIVES) {
+    ако (! CONFIG_DRIVES) {
         // XXX - support handle_1301 anyway?
         disk_ret(regs, DISK_RET_EPARAM);
-        return;
+        върни;
     }
 
-    if (extdrive < EXTSTART_HD) {
+    ако (extdrive < EXTSTART_HD) {
         struct drive_s *drive_fl = getDrive(EXTTYPE_FLOPPY, extdrive);
-        if (!drive_fl)
+        ако (!drive_fl)
             goto fail;
         floppy_13(regs, drive_fl);
-        return;
+        върни;
     }
 
     struct drive_s *drive_fl;
-    if (extdrive >= EXTSTART_CD)
+    ако (extdrive >= EXTSTART_CD)
         drive_fl = getDrive(EXTTYPE_CD, extdrive - EXTSTART_CD);
-    else
+    иначе
         drive_fl = getDrive(EXTTYPE_HD, extdrive - EXTSTART_HD);
-    if (!drive_fl)
+    ако (!drive_fl)
         goto fail;
     disk_13(regs, drive_fl);
-    return;
+    върни;
 
 fail:
     // XXX - support 1301/1308/1315 anyway?
@@ -743,25 +743,25 @@ handle_13(struct bregs *regs)
     debug_enter(regs, DEBUG_HDL_13);
     u8 extdrive = regs->dl;
 
-    if (CONFIG_CDROM_EMU) {
-        if (regs->ah == 0x4b) {
+    ако (CONFIG_CDROM_EMU) {
+        ако (regs->ah == 0x4b) {
             cdemu_134b(regs);
-            return;
+            върни;
         }
-        if (GET_LOW(CDEmu.media)) {
+        ако (GET_LOW(CDEmu.media)) {
             u8 emudrive = GET_LOW(CDEmu.emulated_drive);
-            if (extdrive == emudrive) {
+            ако (extdrive == emudrive) {
                 // Access to an emulated drive.
                 struct drive_s *cdemu_gf = GET_GLOBAL(cdemu_drive_gf);
-                if (regs->ah > 0x16) {
+                ако (regs->ah > 0x16) {
                     // Only old-style commands supported.
                     disk_13XX(regs, cdemu_gf);
-                    return;
+                    върни;
                 }
                 disk_13(regs, cdemu_gf);
-                return;
+                върни;
             }
-            if (extdrive < EXTSTART_CD && ((emudrive ^ extdrive) & 0x80) == 0)
+            ако (extdrive < EXTSTART_CD && ((emudrive ^ extdrive) & 0x80) == 0)
                 // Adjust id to make room for emulated drive.
                 extdrive--;
         }

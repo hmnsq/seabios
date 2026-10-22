@@ -110,17 +110,17 @@ struct floppyinfo_s FloppyInfo[] VARFSEG = {
 };
 
 struct drive_s *
-init_floppy(int floppyid, int ftype)
+init_floppy(цяло floppyid, цяло ftype)
 {
-    if (ftype <= 0 || ftype >= ARRAY_SIZE(FloppyInfo)) {
+    ако (ftype <= 0 || ftype >= ARRAY_SIZE(FloppyInfo)) {
         dprintf(1, "Bad floppy type %d\n", ftype);
-        return NULL;
+        върни NULL;
     }
 
     struct drive_s *drive = malloc_fseg(sizeof(*drive));
-    if (!drive) {
+    ако (!drive) {
         warn_noalloc();
-        return NULL;
+        върни NULL;
     }
     memset(drive, 0, sizeof(*drive));
     drive->cntl_id = floppyid;
@@ -131,18 +131,18 @@ init_floppy(int floppyid, int ftype)
 
     memcpy(&drive->lchs, &FloppyInfo[ftype].chs
            , sizeof(FloppyInfo[ftype].chs));
-    return drive;
+    върни drive;
 }
 
 static void
-addFloppy(int floppyid, int ftype)
+addFloppy(цяло floppyid, цяло ftype)
 {
     struct drive_s *drive = init_floppy(floppyid, ftype);
-    if (!drive)
-        return;
+    ако (!drive)
+        върни;
     char *desc = znprintf(MAXDESCSIZE, "Floppy [drive %c]", 'A' + floppyid);
     struct pci_device *pci = pci_find_class(PCI_CLASS_BRIDGE_ISA); /* isa-to-pci bridge */
-    int prio = bootprio_find_fdc_device(pci, PORT_FD_BASE, floppyid);
+    цяло prio = bootprio_find_fdc_device(pci, PORT_FD_BASE, floppyid);
     boot_add_floppy(drive, desc, prio);
 }
 
@@ -154,22 +154,22 @@ floppy_setup(void)
     SET_IVT(0x1E, SEGOFF(SEG_BIOS
                          , (u32)&diskette_param_table2 - BUILD_BIOS_ADDR));
 
-    if (! CONFIG_FLOPPY)
-        return;
+    ако (! CONFIG_FLOPPY)
+        върни;
     dprintf(3, "init floppy drives\n");
 
-    if (CONFIG_QEMU) {
+    ако (CONFIG_QEMU) {
         u8 type = rtc_read(CMOS_FLOPPY_DRIVE_TYPE);
-        if (type & 0xf0)
+        ако (type & 0xf0)
             addFloppy(0, type >> 4);
-        if (type & 0x0f)
+        ако (type & 0x0f)
             addFloppy(1, type & 0x0f);
-    } else {
+    } иначе {
         u8 type = romfile_loadint("etc/floppy0", 0);
-        if (type)
+        ако (type)
             addFloppy(0, type);
         type = romfile_loadint("etc/floppy1", 0);
-        if (type)
+        ако (type)
             addFloppy(1, type);
     }
 
@@ -177,16 +177,16 @@ floppy_setup(void)
 }
 
 // Find a floppy type that matches a given image size.
-int
+цяло
 find_floppy_type(u32 size)
 {
-    int i;
-    for (i=1; i<ARRAY_SIZE(FloppyInfo); i++) {
+    цяло i;
+    за (i=1; i<ARRAY_SIZE(FloppyInfo); i++) {
         struct chs_s *c = &FloppyInfo[i].chs;
-        if (c->cylinder * c->head * c->sector * DISK_SECTOR_SIZE == size)
-            return i;
+        ако (c->cylinder * c->head * c->sector * DISK_SECTOR_SIZE == size)
+            върни i;
     }
-    return -1;
+    върни -1;
 }
 
 
@@ -199,7 +199,7 @@ u8 FloppyDOR VARLOW;
 static inline u8
 floppy_dor_read(void)
 {
-    return GET_LOW(FloppyDOR);
+    върни GET_LOW(FloppyDOR);
 }
 
 static inline void
@@ -223,20 +223,20 @@ floppy_disable_controller(void)
     floppy_dor_mask(FLOPPY_DOR_IRQ | FLOPPY_DOR_RESET, 0);
 }
 
-static int
+static цяло
 floppy_wait_irq(void)
 {
     u8 frs = GET_BDA(floppy_recalibration_status);
     SET_BDA(floppy_recalibration_status, frs & ~FRS_IRQ);
     u32 end = timer_calc(FLOPPY_IRQ_TIMEOUT);
-    for (;;) {
-        if (timer_check(end)) {
+    за (;;) {
+        ако (timer_check(end)) {
             warn_timeout();
             floppy_disable_controller();
-            return DISK_RET_ETIMEOUT;
+            върни DISK_RET_ETIMEOUT;
         }
         frs = GET_BDA(floppy_recalibration_status);
-        if (frs & FRS_IRQ)
+        ако (frs & FRS_IRQ)
             break;
         // Could use yield_toirq() here, but that causes issues on
         // bochs, so use yield() instead.
@@ -244,7 +244,7 @@ floppy_wait_irq(void)
     }
 
     SET_BDA(floppy_recalibration_status, frs & ~FRS_IRQ);
-    return DISK_RET_SUCCESS;
+    върни DISK_RET_SUCCESS;
 }
 
 // Floppy commands
@@ -259,77 +259,77 @@ floppy_wait_irq(void)
 #define FC_SPECIFY     (0x03 | (2<<8) | (0<<12))
 
 // Send the specified command and it's parameters to the floppy controller.
-static int
-floppy_pio(int command, u8 *param)
+static цяло
+floppy_pio(цяло command, u8 *param)
 {
     dprintf(9, "Floppy pio command %x\n", command);
     // Send command and parameters to controller.
     u32 end = timer_calc(FLOPPY_PIO_TIMEOUT);
-    int send = (command >> 8) & 0xf;
-    int i = 0;
-    for (;;) {
+    цяло send = (command >> 8) & 0xf;
+    цяло i = 0;
+    за (;;) {
         u8 sts = inb(PORT_FD_STATUS);
-        if (!(sts & 0x80)) {
-            if (timer_check(end)) {
+        ако (!(sts & 0x80)) {
+            ако (timer_check(end)) {
                 warn_timeout();
                 floppy_disable_controller();
-                return DISK_RET_ETIMEOUT;
+                върни DISK_RET_ETIMEOUT;
             }
             yield();
             continue;
         }
-        if (sts & 0x40) {
+        ако (sts & 0x40) {
             floppy_disable_controller();
-            return DISK_RET_ECONTROLLER;
+            върни DISK_RET_ECONTROLLER;
         }
-        if (i == 0)
+        ако (i == 0)
             outb(command & 0xff, PORT_FD_DATA);
-        else
+        иначе
             outb(param[i-1], PORT_FD_DATA);
-        if (i++ >= send)
+        ако (i++ >= send)
             break;
     }
 
     // Wait for command to complete.
-    if (command & FCF_WAITIRQ) {
-        int ret = floppy_wait_irq();
-        if (ret)
-            return ret;
+    ако (command & FCF_WAITIRQ) {
+        цяло ret = floppy_wait_irq();
+        ако (ret)
+            върни ret;
     }
 
     // Read response from controller.
     end = timer_calc(FLOPPY_PIO_TIMEOUT);
-    int receive = (command >> 12) & 0xf;
+    цяло receive = (command >> 12) & 0xf;
     i = 0;
-    for (;;) {
+    за (;;) {
         u8 sts = inb(PORT_FD_STATUS);
-        if (!(sts & 0x80)) {
-            if (timer_check(end)) {
+        ако (!(sts & 0x80)) {
+            ако (timer_check(end)) {
                 warn_timeout();
                 floppy_disable_controller();
-                return DISK_RET_ETIMEOUT;
+                върни DISK_RET_ETIMEOUT;
             }
             yield();
             continue;
         }
-        if (i >= receive) {
-            if (sts & 0x40) {
+        ако (i >= receive) {
+            ако (sts & 0x40) {
                 floppy_disable_controller();
-                return DISK_RET_ECONTROLLER;
+                върни DISK_RET_ECONTROLLER;
             }
             break;
         }
-        if (!(sts & 0x40)) {
+        ако (!(sts & 0x40)) {
             floppy_disable_controller();
-            return DISK_RET_ECONTROLLER;
+            върни DISK_RET_ECONTROLLER;
         }
         param[i++] = inb(PORT_FD_DATA);
     }
 
-    return DISK_RET_SUCCESS;
+    върни DISK_RET_SUCCESS;
 }
 
-static int
+static цяло
 floppy_enable_controller(void)
 {
     dprintf(2, "Floppy_enable_controller\n");
@@ -339,9 +339,9 @@ floppy_enable_controller(void)
     usleep(4);
     // Set the reset bit (normal operation) and keep 'enable IRQ and DMA' on
     floppy_dor_mask(0, FLOPPY_DOR_IRQ | FLOPPY_DOR_RESET);
-    int ret = floppy_wait_irq();
-    if (ret)
-        return ret;
+    цяло ret = floppy_wait_irq();
+    ако (ret)
+        върни ret;
 
     // After the interrupt is received, send 4 SENSE INTERRUPT commands to
     // clear the interrupt status for each of the four logical drives,
@@ -351,24 +351,24 @@ floppy_enable_controller(void)
     // Without this, initialization fails on real controllers (but still works
     // in QEMU)
     u8 param[2];
-    int i;
-    for (i=0; i<4; i++) {
+    цяло i;
+    за (i=0; i<4; i++) {
         ret = floppy_pio(FC_CHECKIRQ, param);
-        if (ret)
-            return ret;
+        ако (ret)
+            върни ret;
     }
-    return DISK_RET_SUCCESS;
+    върни DISK_RET_SUCCESS;
 }
 
 // Activate a drive and send a command to it.
-static int
-floppy_drive_pio(u8 floppyid, int command, u8 *param)
+static цяло
+floppy_drive_pio(u8 floppyid, цяло command, u8 *param)
 {
     // Enable controller if it isn't running.
-    if (!(floppy_dor_read() & FLOPPY_DOR_RESET)) {
-        int ret = floppy_enable_controller();
-        if (ret)
-            return ret;
+    ако (!(floppy_dor_read() & FLOPPY_DOR_RESET)) {
+        цяло ret = floppy_enable_controller();
+        ако (ret)
+            върни ret;
     }
 
     // set the disk motor timeout value of INT 08 to the highest value
@@ -376,25 +376,25 @@ floppy_drive_pio(u8 floppyid, int command, u8 *param)
 
     // Check if the motor is already running
     u8 motor_mask = FLOPPY_DOR_MOTOR_A << floppyid;
-    int motor_already_running = floppy_dor_read() & motor_mask;
+    цяло motor_already_running = floppy_dor_read() & motor_mask;
 
     // Turn on motor of selected drive, DMA & int enabled, normal operation
     floppy_dor_write(motor_mask | FLOPPY_DOR_IRQ | FLOPPY_DOR_RESET | floppyid);
 
     // If the motor was just started, wait for it to get up to speed
-    if (!motor_already_running && !CONFIG_QEMU)
+    ако (!motor_already_running && !CONFIG_QEMU)
         msleep(FLOPPY_STARTUP_TIME * 125);
 
     // Send command.
-    int ret = floppy_pio(command, param);
+    цяло ret = floppy_pio(command, param);
     SET_BDA(floppy_motor_counter, FLOPPY_MOTOR_TICKS); // reset motor timeout
-    if (ret)
-        return ret;
+    ако (ret)
+        върни ret;
 
     // Check IRQ command is needed after irq commands with no results
-    if ((command & FCF_WAITIRQ) && ((command >> 12) & 0xf) == 0)
-        return floppy_pio(FC_CHECKIRQ, param);
-    return DISK_RET_SUCCESS;
+    ако ((command & FCF_WAITIRQ) && ((command >> 12) & 0xf) == 0)
+        върни floppy_pio(FC_CHECKIRQ, param);
+    върни DISK_RET_SUCCESS;
 }
 
 
@@ -402,48 +402,48 @@ floppy_drive_pio(u8 floppyid, int command, u8 *param)
  * Floppy media sense and seeking
  ****************************************************************/
 
-static int
+static цяло
 floppy_drive_recal(u8 floppyid)
 {
     dprintf(2, "Floppy_drive_recal %d\n", floppyid);
     // send Recalibrate command to controller
     u8 param[2];
     param[0] = floppyid;
-    int ret = floppy_drive_pio(floppyid, FC_RECALIBRATE, param);
-    if (ret)
-        return ret;
+    цяло ret = floppy_drive_pio(floppyid, FC_RECALIBRATE, param);
+    ако (ret)
+        върни ret;
 
     u8 frs = GET_BDA(floppy_recalibration_status);
     SET_BDA(floppy_recalibration_status, frs | (1<<floppyid));
     SET_BDA(floppy_track[floppyid], 0);
-    return DISK_RET_SUCCESS;
+    върни DISK_RET_SUCCESS;
 }
 
-static int
+static цяло
 floppy_drive_seek(u8 floppyid, u8 cylinder)
 {
     dprintf(2, "Floppy_drive_seek %d to %d\n", floppyid, cylinder);
     u8 param[2];
     param[0] = floppyid;
     param[1] = cylinder;
-    int ret = floppy_drive_pio(floppyid, FC_SEEK, param);
-    if (ret)
-        return ret;
+    цяло ret = floppy_drive_pio(floppyid, FC_SEEK, param);
+    ако (ret)
+        върни ret;
 
     SET_BDA(floppy_track[floppyid], cylinder);
-    return DISK_RET_SUCCESS;
+    върни DISK_RET_SUCCESS;
 }
 
-static int
+static цяло
 floppy_drive_specify(void)
 {
     u8 param[2];
     param[0] = FLOPPY_SPECIFY1;
     param[1] = FLOPPY_SPECIFY2;
-    return floppy_pio(FC_SPECIFY, param);
+    върни floppy_pio(FC_SPECIFY, param);
 }
 
-static int
+static цяло
 floppy_drive_readid(u8 floppyid, u8 data_rate, u8 head)
 {
     // Set data rate.
@@ -452,21 +452,21 @@ floppy_drive_readid(u8 floppyid, u8 data_rate, u8 head)
     // send Read Sector Id command
     u8 param[7];
     param[0] = (head << 2) | floppyid; // HD DR1 DR2
-    int ret = floppy_drive_pio(floppyid, FC_READID, param);
-    if (ret)
-        return ret;
-    if (param[0] & 0xc0)
-        return -1;
-    return 0;
+    цяло ret = floppy_drive_pio(floppyid, FC_READID, param);
+    ако (ret)
+        върни ret;
+    ако (param[0] & 0xc0)
+        върни -1;
+    върни 0;
 }
 
 // Only the 1.2MB 5.25" drive and the 3.5" drives have a disk change line.  On
 // the older 5.25" types the pin is not driven and reads back as a permanent
 // "changed".
-static int
+static цяло
 floppy_has_changeline(u8 ftype)
 {
-    return ftype >= 2 && ftype <= 5;
+    върни ftype >= 2 && ftype <= 5;
 }
 
 // Determine whether a diskette is present, without waiting for a command to
@@ -478,45 +478,45 @@ floppy_has_changeline(u8 ftype)
 // Report a missing medium only when the drive is known to be empty -- an older
 // drive without a change line is reported as present, so this can only ever
 // fall back to the previous behaviour.
-static int
+static цяло
 floppy_check_media(struct drive_s *drive_gf, u8 floppyid)
 {
-    if (!floppy_has_changeline(GET_GLOBALFLAT(drive_gf->floppy_type)))
-        return DISK_RET_SUCCESS;
+    ако (!floppy_has_changeline(GET_GLOBALFLAT(drive_gf->floppy_type)))
+        върни DISK_RET_SUCCESS;
 
     // The caller has just recalibrated this drive, so it is selected in the
     // DOR and the DIR reflects its change line.
-    if (!(inb(PORT_FD_DIR) & FLOPPY_DIR_DSKCHG))
-        return DISK_RET_SUCCESS;
+    ако (!(inb(PORT_FD_DIR) & FLOPPY_DIR_DSKCHG))
+        върни DISK_RET_SUCCESS;
 
-    int ret = floppy_drive_seek(floppyid, 1);
-    if (ret)
-        return ret;
+    цяло ret = floppy_drive_seek(floppyid, 1);
+    ако (ret)
+        върни ret;
 
-    if (inb(PORT_FD_DIR) & FLOPPY_DIR_DSKCHG) {
+    ако (inb(PORT_FD_DIR) & FLOPPY_DIR_DSKCHG) {
         dprintf(2, "Floppy_check_media %d: no medium\n", floppyid);
-        return DISK_RET_ETIMEOUT;
+        върни DISK_RET_ETIMEOUT;
     }
 
     // A medium is present.  Put the head back on cylinder 0, where the caller
     // left it, so that media sensing reads the track it always did.
-    return floppy_drive_seek(floppyid, 0);
+    върни floppy_drive_seek(floppyid, 0);
 }
 
-static int
+static цяло
 floppy_media_sense(struct drive_s *drive_gf)
 {
     u8 ftype = GET_GLOBALFLAT(drive_gf->floppy_type), stype = ftype;
     u8 floppyid = GET_GLOBALFLAT(drive_gf->cntl_id);
 
     u8 data_rate = GET_GLOBAL(FloppyInfo[stype].data_rate);
-    int ret = floppy_drive_readid(floppyid, data_rate, 0);
-    if (ret) {
+    цяло ret = floppy_drive_readid(floppyid, data_rate, 0);
+    ако (ret) {
         // Attempt media sense.
-        for (stype=1; ; stype++) {
-            if (stype >= ARRAY_SIZE(FloppyInfo))
-                return DISK_RET_EBADTRACK;
-            if (stype==ftype
+        за (stype=1; ; stype++) {
+            ако (stype >= ARRAY_SIZE(FloppyInfo))
+                върни DISK_RET_EBADTRACK;
+            ако (stype==ftype
                 || (GET_GLOBAL(FloppyInfo[stype].floppy_size)
                     != GET_GLOBAL(FloppyInfo[ftype].floppy_size))
                 || (GET_GLOBAL(FloppyInfo[stype].chs.head)
@@ -528,7 +528,7 @@ floppy_media_sense(struct drive_s *drive_gf)
                 continue;
             data_rate = GET_GLOBAL(FloppyInfo[stype].data_rate);
             ret = floppy_drive_readid(floppyid, data_rate, 0);
-            if (!ret)
+            ако (!ret)
                 break;
         }
     }
@@ -539,53 +539,53 @@ floppy_media_sense(struct drive_s *drive_gf)
     SET_BDA(floppy_last_data_rate, (old_data_rate<<2) | (data_rate<<6));
     u8 media = (stype == 1 ? 0x04 : (stype == 2 ? 0x05 : 0x07));
     u8 fms = (data_rate<<6) | FMS_MEDIA_DRIVE_ESTABLISHED | media;
-    if (GET_GLOBAL(FloppyInfo[stype].chs.cylinder)
+    ако (GET_GLOBAL(FloppyInfo[stype].chs.cylinder)
         < GET_GLOBAL(FloppyInfo[ftype].chs.cylinder))
         fms |= FMS_DOUBLE_STEPPING;
     SET_BDA(floppy_media_state[floppyid], fms);
 
-    return DISK_RET_SUCCESS;
+    върни DISK_RET_SUCCESS;
 }
 
 // Prepare a floppy for a data transfer.
-static int
+static цяло
 floppy_prep(struct drive_s *drive_gf, u8 cylinder)
 {
     u8 floppyid = GET_GLOBALFLAT(drive_gf->cntl_id);
-    if (!(GET_BDA(floppy_recalibration_status) & (1<<floppyid)) ||
+    ако (!(GET_BDA(floppy_recalibration_status) & (1<<floppyid)) ||
         !(GET_BDA(floppy_media_state[floppyid]) & FMS_MEDIA_DRIVE_ESTABLISHED)) {
         // Recalibrate drive.
-        int ret = floppy_drive_recal(floppyid);
-        if (ret)
-            return ret;
+        цяло ret = floppy_drive_recal(floppyid);
+        ако (ret)
+            върни ret;
 
         // An empty drive gives no index pulses, so the READ ID that
         // floppy_media_sense() issues would never complete and would wait out
         // its timeout once per data rate.  Ask the disk change line instead.
         ret = floppy_check_media(drive_gf, floppyid);
-        if (ret)
-            return ret;
+        ако (ret)
+            върни ret;
 
         // Sense media.
         ret = floppy_media_sense(drive_gf);
-        if (ret)
-            return ret;
+        ако (ret)
+            върни ret;
 
         // Execute a SPECIFY command (sets the Step Rate Time,
         // Head Load Time, Head Unload Time and the DMA enable/disable bit).
         ret = floppy_drive_specify();
-        if (ret)
-            return ret;
+        ако (ret)
+            върни ret;
     }
 
     // Seek to cylinder if needed.
-    if (cylinder != GET_BDA(floppy_track[floppyid])) {
-        int ret = floppy_drive_seek(floppyid, cylinder);
-        if (ret)
-            return ret;
+    ако (cylinder != GET_BDA(floppy_track[floppyid])) {
+        цяло ret = floppy_drive_seek(floppyid, cylinder);
+        ако (ret)
+            върни ret;
     }
 
-    return DISK_RET_SUCCESS;
+    върни DISK_RET_SUCCESS;
 }
 
 
@@ -594,36 +594,36 @@ floppy_prep(struct drive_s *drive_gf, u8 cylinder)
  ****************************************************************/
 
 // Perform a floppy transfer command (setup DMA and issue PIO).
-static int
-floppy_dma_cmd(struct disk_op_s *op, int count, int command, u8 *param)
+static цяло
+floppy_dma_cmd(struct disk_op_s *op, цяло count, цяло command, u8 *param)
 {
     // Setup DMA controller
-    int isWrite = command != FC_READ;
-    int ret = dma_floppy((u32)op->buf_fl, count, isWrite);
-    if (ret)
-        return DISK_RET_EBOUNDARY;
+    цяло isWrite = command != FC_READ;
+    цяло ret = dma_floppy((u32)op->buf_fl, count, isWrite);
+    ако (ret)
+        върни DISK_RET_EBOUNDARY;
 
     // Invoke floppy controller
     u8 floppyid = GET_GLOBALFLAT(op->drive_fl->cntl_id);
     ret = floppy_drive_pio(floppyid, command, param);
-    if (ret)
-        return ret;
+    ако (ret)
+        върни ret;
 
     // Populate floppy_return_status in BDA
-    int i;
-    for (i=0; i<7; i++)
+    цяло i;
+    за (i=0; i<7; i++)
         SET_BDA(floppy_return_status[i], param[i]);
 
-    if (param[0] & 0xc0) {
-        if (param[1] & 0x02)
-            return DISK_RET_EWRITEPROTECT;
+    ако (param[0] & 0xc0) {
+        ако (param[1] & 0x02)
+            върни DISK_RET_EWRITEPROTECT;
         dprintf(1, "floppy error: %02x %02x %02x %02x %02x %02x %02x\n"
                 , param[0], param[1], param[2], param[3]
                 , param[4], param[5], param[6]);
-        return DISK_RET_ECONTROLLER;
+        върни DISK_RET_ECONTROLLER;
     }
 
-    return DISK_RET_SUCCESS;
+    върни DISK_RET_SUCCESS;
 }
 
 
@@ -647,11 +647,11 @@ lba2chs(struct disk_op_s *op)
     tmp /= nlh;
     res.cylinder = tmp;
 
-    return res;
+    върни res;
 }
 
 // diskette controller reset
-static int
+static цяло
 floppy_reset(struct disk_op_s *op)
 {
     SET_BDA(floppy_recalibration_status, 0);
@@ -661,17 +661,17 @@ floppy_reset(struct disk_op_s *op)
     SET_BDA(floppy_track[1], 0);
     SET_BDA(floppy_last_data_rate, 0);
     floppy_disable_controller();
-    return floppy_enable_controller();
+    върни floppy_enable_controller();
 }
 
 // Read Diskette Sectors
-static int
+static цяло
 floppy_read(struct disk_op_s *op)
 {
     struct chs_s chs = lba2chs(op);
-    int ret = floppy_prep(op->drive_fl, chs.cylinder);
-    if (ret)
-        return ret;
+    цяло ret = floppy_prep(op->drive_fl, chs.cylinder);
+    ако (ret)
+        върни ret;
 
     // send read-normal-data command to controller
     u8 floppyid = GET_GLOBALFLAT(op->drive_fl->cntl_id);
@@ -684,17 +684,17 @@ floppy_read(struct disk_op_s *op)
     param[5] = chs.sector + op->count - 1; // last sector to read on track
     param[6] = FLOPPY_GAPLEN;
     param[7] = FLOPPY_DATALEN;
-    return floppy_dma_cmd(op, op->count * DISK_SECTOR_SIZE, FC_READ, param);
+    върни floppy_dma_cmd(op, op->count * DISK_SECTOR_SIZE, FC_READ, param);
 }
 
 // Write Diskette Sectors
-static int
+static цяло
 floppy_write(struct disk_op_s *op)
 {
     struct chs_s chs = lba2chs(op);
-    int ret = floppy_prep(op->drive_fl, chs.cylinder);
-    if (ret)
-        return ret;
+    цяло ret = floppy_prep(op->drive_fl, chs.cylinder);
+    ако (ret)
+        върни ret;
 
     // send write-normal-data command to controller
     u8 floppyid = GET_GLOBALFLAT(op->drive_fl->cntl_id);
@@ -707,30 +707,30 @@ floppy_write(struct disk_op_s *op)
     param[5] = chs.sector + op->count - 1; // last sector to write on track
     param[6] = FLOPPY_GAPLEN;
     param[7] = FLOPPY_DATALEN;
-    return floppy_dma_cmd(op, op->count * DISK_SECTOR_SIZE, FC_WRITE, param);
+    върни floppy_dma_cmd(op, op->count * DISK_SECTOR_SIZE, FC_WRITE, param);
 }
 
 // Verify Diskette Sectors
-static int
+static цяло
 floppy_verify(struct disk_op_s *op)
 {
     struct chs_s chs = lba2chs(op);
-    int ret = floppy_prep(op->drive_fl, chs.cylinder);
-    if (ret)
-        return ret;
+    цяло ret = floppy_prep(op->drive_fl, chs.cylinder);
+    ако (ret)
+        върни ret;
 
     // This command isn't implemented - just return success.
-    return DISK_RET_SUCCESS;
+    върни DISK_RET_SUCCESS;
 }
 
 // format diskette track
-static int
+static цяло
 floppy_format(struct disk_op_s *op)
 {
     struct chs_s chs = lba2chs(op);
-    int ret = floppy_prep(op->drive_fl, chs.cylinder);
-    if (ret)
-        return ret;
+    цяло ret = floppy_prep(op->drive_fl, chs.cylinder);
+    ако (ret)
+        върни ret;
 
     // send format-track command to controller
     u8 floppyid = GET_GLOBALFLAT(op->drive_fl->cntl_id);
@@ -740,28 +740,28 @@ floppy_format(struct disk_op_s *op)
     param[2] = op->count; // number of sectors per track
     param[3] = FLOPPY_FORMAT_GAPLEN;
     param[4] = FLOPPY_FILLBYTE;
-    return floppy_dma_cmd(op, op->count * 4, FC_FORMAT, param);
+    върни floppy_dma_cmd(op, op->count * 4, FC_FORMAT, param);
 }
 
-int
+цяло
 floppy_process_op(struct disk_op_s *op)
 {
-    if (!CONFIG_FLOPPY)
-        return 0;
+    ако (!CONFIG_FLOPPY)
+        върни 0;
 
     switch (op->command) {
     case CMD_RESET:
-        return floppy_reset(op);
+        върни floppy_reset(op);
     case CMD_READ:
-        return floppy_read(op);
+        върни floppy_read(op);
     case CMD_WRITE:
-        return floppy_write(op);
+        върни floppy_write(op);
     case CMD_VERIFY:
-        return floppy_verify(op);
+        върни floppy_verify(op);
     case CMD_FORMAT:
-        return floppy_format(op);
+        върни floppy_format(op);
     default:
-        return DISK_RET_EPARAM;
+        върни DISK_RET_EPARAM;
     }
 }
 
@@ -774,8 +774,8 @@ floppy_process_op(struct disk_op_s *op)
 void VISIBLE16
 handle_0e(void)
 {
-    if (! CONFIG_FLOPPY)
-        return;
+    ако (! CONFIG_FLOPPY)
+        върни;
     debug_isr(DEBUG_ISR_0e);
 
     // diskette interrupt has occurred
@@ -789,15 +789,15 @@ handle_0e(void)
 void
 floppy_tick(void)
 {
-    if (! CONFIG_FLOPPY)
-        return;
+    ако (! CONFIG_FLOPPY)
+        върни;
 
     // time to turn off drive(s)?
     u8 fcount = GET_BDA(floppy_motor_counter);
-    if (fcount) {
+    ако (fcount) {
         fcount--;
         SET_BDA(floppy_motor_counter, fcount);
-        if (fcount == 0)
+        ако (fcount == 0)
             // turn motor(s) off
             floppy_dor_mask(FLOPPY_DOR_MOTOR_MASK, 0);
     }

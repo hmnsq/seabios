@@ -17,9 +17,9 @@ typedef u8 TPMVersion;
 #define TPM_VERSION_2    2
 
 TPMVersion tpmhw_probe(void);
-int tpmhw_is_present(void);
+цяло tpmhw_is_present(void);
 struct tpm_req_header;
-int tpmhw_transmit(u8 locty, struct tpm_req_header *req,
+цяло tpmhw_transmit(u8 locty, struct tpm_req_header *req,
                    void *respbuffer, u32 *respbufferlen,
                    enum tpmDurationType to_t);
 void tpmhw_set_timeouts(u32 timeouts[4], u32 durations[3]);

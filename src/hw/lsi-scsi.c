@@ -51,19 +51,19 @@ struct lsi_lun_s {
     u8 lun;
 };
 
-int
+цяло
 lsi_scsi_process_op(struct disk_op_s *op)
 {
-    if (!CONFIG_LSI_SCSI)
-        return DISK_RET_EBADTRACK;
+    ако (!CONFIG_LSI_SCSI)
+        върни DISK_RET_EBADTRACK;
     struct lsi_lun_s *llun_gf =
         container_of(op->drive_fl, struct lsi_lun_s, drive);
     u16 target = GET_GLOBALFLAT(llun_gf->target);
     u16 lun = GET_GLOBALFLAT(llun_gf->lun);
     u8 cdbcmd[16];
-    int blocksize = scsi_fill_cmd(op, cdbcmd, sizeof(cdbcmd));
-    if (blocksize < 0)
-        return default_process_op(op);
+    цяло blocksize = scsi_fill_cmd(op, cdbcmd, sizeof(cdbcmd));
+    ако (blocksize < 0)
+        върни default_process_op(op);
     u32 iobase = GET_GLOBALFLAT(llun_gf->iobase);
     u32 dma = ((scsi_is_read(op) ? 0x01000000 : 0x00000000) |
                (op->count * blocksize));
@@ -111,25 +111,25 @@ lsi_scsi_process_op(struct disk_op_s *op)
     outb((dsp >> 16) & 0xff, iobase + LSI_REG_DSP2);
     outb((dsp >> 24) & 0xff, iobase + LSI_REG_DSP3);
 
-    for (;;) {
+    за (;;) {
         u8 dstat = inb(iobase + LSI_REG_DSTAT);
         u8 sist0 = inb(iobase + LSI_REG_SIST0);
         u8 sist1 = inb(iobase + LSI_REG_SIST1);
-        if (sist0 || sist1) {
+        ако (sist0 || sist1) {
             goto fail;
         }
-        if (dstat & 0x04) {
+        ако (dstat & 0x04) {
             break;
         }
         usleep(5);
     }
 
-    if (msgin == 0 && status == 0) {
-        return DISK_RET_SUCCESS;
+    ако (msgin == 0 && status == 0) {
+        върни DISK_RET_SUCCESS;
     }
 
 fail:
-    return DISK_RET_EBADTRACK;
+    върни DISK_RET_EBADTRACK;
 }
 
 static void
@@ -145,15 +145,15 @@ lsi_scsi_init_lun(struct lsi_lun_s *llun, struct pci_device *pci, u32 iobase,
     llun->iobase = iobase;
 }
 
-static int
+static цяло
 lsi_scsi_add_lun(u32 lun, struct drive_s *tmpl_drv)
 {
     struct lsi_lun_s *tmpl_llun =
         container_of(tmpl_drv, struct lsi_lun_s, drive);
     struct lsi_lun_s *llun = malloc_fseg(sizeof(*llun));
-    if (!llun) {
+    ако (!llun) {
         warn_noalloc();
-        return -1;
+        върни -1;
     }
     lsi_scsi_init_lun(llun, tmpl_llun->pci, tmpl_llun->iobase,
                       tmpl_llun->target, lun);
@@ -162,16 +162,16 @@ lsi_scsi_add_lun(u32 lun, struct drive_s *tmpl_drv)
                                &(llun->drive.lchs));
     char *name = znprintf(MAXDESCSIZE, "lsi %pP %d:%d",
                           llun->pci, llun->target, llun->lun);
-    int prio = bootprio_find_scsi_device(llun->pci, llun->target, llun->lun);
-    int ret = scsi_drive_setup(&llun->drive, name, prio);
+    цяло prio = bootprio_find_scsi_device(llun->pci, llun->target, llun->lun);
+    цяло ret = scsi_drive_setup(&llun->drive, name, prio);
     free(name);
-    if (ret)
+    ако (ret)
         goto fail;
-    return 0;
+    върни 0;
 
 fail:
     free(llun);
-    return -1;
+    върни -1;
 }
 
 static void
@@ -181,7 +181,7 @@ lsi_scsi_scan_target(struct pci_device *pci, u32 iobase, u8 target)
 
     lsi_scsi_init_lun(&llun0, pci, iobase, target, 0);
 
-    if (scsi_rep_luns_scan(&llun0.drive, lsi_scsi_add_lun) < 0)
+    ако (scsi_rep_luns_scan(&llun0.drive, lsi_scsi_add_lun) < 0)
         scsi_sequential_scan(&llun0.drive, 8, lsi_scsi_add_lun);
 }
 
@@ -190,8 +190,8 @@ init_lsi_scsi(void *data)
 {
     struct pci_device *pci = data;
     u32 iobase = pci_enable_iobar(pci, PCI_BASE_ADDRESS_0);
-    if (!iobase)
-        return;
+    ако (!iobase)
+        върни;
     pci_enable_busmaster(pci);
 
     dprintf(1, "found lsi53c895a at %pP, io @ %x\n", pci, iobase);
@@ -199,8 +199,8 @@ init_lsi_scsi(void *data)
     // reset
     outb(LSI_ISTAT0_SRST, iobase + LSI_REG_ISTAT0);
 
-    int i;
-    for (i = 0; i < 7; i++)
+    цяло i;
+    за (i = 0; i < 7; i++)
         lsi_scsi_scan_target(pci, iobase, i);
 }
 
@@ -208,14 +208,14 @@ void
 lsi_scsi_setup(void)
 {
     ASSERT32FLAT();
-    if (!CONFIG_LSI_SCSI || !runningOnQEMU())
-        return;
+    ако (!CONFIG_LSI_SCSI || !runningOnQEMU())
+        върни;
 
     dprintf(3, "init lsi53c895a\n");
 
     struct pci_device *pci;
     foreachpci(pci) {
-        if (pci->vendor != PCI_VENDOR_ID_LSI_LOGIC
+        ако (pci->vendor != PCI_VENDOR_ID_LSI_LOGIC
             || pci->device != PCI_DEVICE_ID_LSI_53C895A)
             continue;
         run_thread(init_lsi_scsi, pci);
