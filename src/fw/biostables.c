@@ -25,27 +25,27 @@ static void *
 copy_fseg_table(const char *name, void *pos, u32 size)
 {
     void *newpos = malloc_fseg(size);
-    if (!newpos) {
+    만약 (!newpos) {
         warn_noalloc();
-        return NULL;
+        반환 NULL;
     }
     dprintf(1, "Copying %s from %p to %p\n", name, pos, newpos);
     memcpy(newpos, pos, size);
-    return newpos;
+    반환 newpos;
 }
 
 void
 copy_pir(void *pos)
 {
     struct pir_header *p = pos;
-    if (p->signature != PIR_SIGNATURE)
-        return;
-    if (PirAddr)
-        return;
-    if (p->size < sizeof(*p))
-        return;
-    if (checksum(pos, p->size) != 0)
-        return;
+    만약 (p->signature != PIR_SIGNATURE)
+        반환;
+    만약 (PirAddr)
+        반환;
+    만약 (p->size < sizeof(*p))
+        반환;
+    만약 (checksum(pos, p->size) != 0)
+        반환;
     PirAddr = copy_fseg_table("PIR", pos, p->size);
 }
 
@@ -53,26 +53,26 @@ void
 copy_mptable(void *pos)
 {
     struct mptable_floating_s *p = pos;
-    if (p->signature != MPTABLE_SIGNATURE)
-        return;
-    if (!p->physaddr)
-        return;
-    if (checksum(pos, sizeof(*p)) != 0)
-        return;
+    만약 (p->signature != MPTABLE_SIGNATURE)
+        반환;
+    만약 (!p->physaddr)
+        반환;
+    만약 (checksum(pos, sizeof(*p)) != 0)
+        반환;
     u32 length = p->length * 16;
     u16 mpclength = ((struct mptable_config_s *)p->physaddr)->length;
-    if (length + mpclength > BUILD_MAX_MPTABLE_FSEG) {
+    만약 (length + mpclength > BUILD_MAX_MPTABLE_FSEG) {
         dprintf(1, "Skipping MPTABLE copy due to large size (%d bytes)\n"
                 , length + mpclength);
-        return;
+        반환;
     }
     // Allocate final memory location.  (In theory the config
     // structure can go in high memory, but Linux kernels before
     // v2.6.30 crash with that.)
     struct mptable_floating_s *newpos = malloc_fseg(length + mpclength);
-    if (!newpos) {
+    만약 (!newpos) {
         warn_noalloc();
-        return;
+        반환;
     }
     dprintf(1, "Copying MPTABLE from %p/%x to %p\n", pos, p->physaddr, newpos);
     memcpy(newpos, pos, length);
@@ -86,25 +86,25 @@ copy_mptable(void *pos)
  * ACPI
  ****************************************************************/
 
-static int
+static 정수
 get_acpi_rsdp_length(void *pos, unsigned size)
 {
     struct rsdp_descriptor *p = pos;
-    if (p->signature != RSDP_SIGNATURE)
-        return -1;
+    만약 (p->signature != RSDP_SIGNATURE)
+        반환 -1;
     u32 length = 20;
-    if (length > size)
-        return -1;
-    if (checksum(pos, length) != 0)
-        return -1;
-    if (p->revision > 1) {
+    만약 (length > size)
+        반환 -1;
+    만약 (checksum(pos, length) != 0)
+        반환 -1;
+    만약 (p->revision > 1) {
         length = p->length;
-        if (length > size)
-            return -1;
-        if (checksum(pos, length) != 0)
-            return -1;
+        만약 (length > size)
+            반환 -1;
+        만약 (checksum(pos, length) != 0)
+            반환 -1;
     }
-    return length;
+    반환 length;
 }
 
 struct rsdp_descriptor *RsdpAddr;
@@ -112,11 +112,11 @@ struct rsdp_descriptor *RsdpAddr;
 void
 copy_acpi_rsdp(void *pos)
 {
-    if (RsdpAddr)
-        return;
-    int length = get_acpi_rsdp_length(pos, -1);
-    if (length < 0)
-        return;
+    만약 (RsdpAddr)
+        반환;
+    정수 length = get_acpi_rsdp_length(pos, -1);
+    만약 (length < 0)
+        반환;
     RsdpAddr = copy_fseg_table("ACPI RSDP", pos, length);
 }
 
@@ -126,19 +126,19 @@ void *find_acpi_rsdp(void)
     unsigned long end = SYMBOL(zonefseg_end);
     unsigned long pos;
 
-    for (pos = ALIGN(start, 0x10); pos <= ALIGN_DOWN(end, 0x10); pos += 0x10)
-        if (get_acpi_rsdp_length((void *)pos, end - pos) >= 0)
-            return (void *)pos;
+    위해 (pos = ALIGN(start, 0x10); pos <= ALIGN_DOWN(end, 0x10); pos += 0x10)
+        만약 (get_acpi_rsdp_length((void *)pos, end - pos) >= 0)
+            반환 (void *)pos;
 
-    return NULL;
+    반환 NULL;
 }
 
 void *
 find_acpi_table(u32 signature)
 {
     dprintf(4, "rsdp=%p\n", RsdpAddr);
-    if (!RsdpAddr || RsdpAddr->signature != RSDP_SIGNATURE)
-        return NULL;
+    만약 (!RsdpAddr || RsdpAddr->signature != RSDP_SIGNATURE)
+        반환 NULL;
     struct rsdt_descriptor_rev1 *rsdt = (void*)RsdpAddr->rsdt_physical_address;
     struct xsdt_descriptor_rev2 *xsdt =
         RsdpAddr->xsdt_physical_address >= 0x100000000
@@ -146,49 +146,49 @@ find_acpi_table(u32 signature)
     dprintf(4, "rsdt=%p\n", rsdt);
     dprintf(4, "xsdt=%p\n", xsdt);
 
-    if (xsdt && xsdt->signature == XSDT_SIGNATURE) {
+    만약 (xsdt && xsdt->signature == XSDT_SIGNATURE) {
         void *end = (void*)xsdt + xsdt->length;
-        int i;
-        for (i=0; (void*)&xsdt->table_offset_entry[i] < end; i++) {
-            if (xsdt->table_offset_entry[i] >= 0x100000000)
+        정수 i;
+        위해 (i=0; (void*)&xsdt->table_offset_entry[i] < end; i++) {
+            만약 (xsdt->table_offset_entry[i] >= 0x100000000)
                 continue; /* above 4G */
             struct acpi_table_header *tbl = (void*)(u32)xsdt->table_offset_entry[i];
-            if (!tbl || tbl->signature != signature)
+            만약 (!tbl || tbl->signature != signature)
                 continue;
             dprintf(1, "table(%x)=%p (via xsdt)\n", signature, tbl);
-            return tbl;
+            반환 tbl;
         }
     }
 
-    if (rsdt && rsdt->signature == RSDT_SIGNATURE) {
+    만약 (rsdt && rsdt->signature == RSDT_SIGNATURE) {
         void *end = (void*)rsdt + rsdt->length;
-        int i;
-        for (i=0; (void*)&rsdt->table_offset_entry[i] < end; i++) {
+        정수 i;
+        위해 (i=0; (void*)&rsdt->table_offset_entry[i] < end; i++) {
             struct acpi_table_header *tbl = (void*)rsdt->table_offset_entry[i];
-            if (!tbl || tbl->signature != signature)
+            만약 (!tbl || tbl->signature != signature)
                 continue;
             dprintf(1, "table(%x)=%p (via rsdt)\n", signature, tbl);
-            return tbl;
+            반환 tbl;
         }
     }
 
     dprintf(4, "no table %x found\n", signature);
-    return NULL;
+    반환 NULL;
 }
 
 u32
 find_resume_vector(void)
 {
     struct fadt_descriptor_rev1 *fadt = find_acpi_table(FACP_SIGNATURE);
-    if (!fadt)
-        return 0;
+    만약 (!fadt)
+        반환 0;
     struct facs_descriptor_rev1 *facs = (void*)fadt->firmware_ctrl;
     dprintf(4, "facs=%p\n", facs);
-    if (! facs || facs->signature != FACS_SIGNATURE)
-        return 0;
+    만약 (! facs || facs->signature != FACS_SIGNATURE)
+        반환 0;
     // Found it.
     dprintf(4, "resume addr=%d\n", facs->firmware_waking_vector);
-    return facs->firmware_waking_vector;
+    반환 facs->firmware_waking_vector;
 }
 
 static struct acpi_20_generic_address acpi_reset_reg;
@@ -202,8 +202,8 @@ void
 acpi_reboot(void)
 {
     // Check it passed the sanity checks in acpi_set_reset_reg() and was set
-    if (acpi_reset_reg.register_bit_width != 8)
-        return;
+    만약 (acpi_reset_reg.register_bit_width != 8)
+        반환;
 
     u64 addr = le64_to_cpu(acpi_reset_reg.address);
 
@@ -226,9 +226,9 @@ acpi_reboot(void)
 static void
 acpi_set_reset_reg(struct acpi_20_generic_address *reg, u8 val)
 {
-    if (!reg || reg->address_space_id > 2 ||
+    만약 (!reg || reg->address_space_id > 2 ||
         reg->register_bit_width != 8 || reg->register_bit_offset)
-        return;
+        반환;
 
     acpi_reset_reg = *reg;
     acpi_reset_val = val;
@@ -238,20 +238,20 @@ void
 find_acpi_features(void)
 {
     struct fadt_descriptor_rev1 *fadt = find_acpi_table(FACP_SIGNATURE);
-    if (!fadt)
-        return;
+    만약 (!fadt)
+        반환;
     u32 pm_tmr = le32_to_cpu(fadt->pm_tmr_blk);
     u32 pm1a_cnt = le32_to_cpu(fadt->pm1a_cnt_blk);
     dprintf(4, "pm_tmr_blk=%x\n", pm_tmr);
-    if (pm_tmr)
+    만약 (pm_tmr)
         pmtimer_setup(pm_tmr);
-    if (pm1a_cnt)
+    만약 (pm1a_cnt)
         acpi_pm1a_cnt = pm1a_cnt;
 
     // Theoretically we should check the 'reset_reg_sup' flag, but Windows
     // doesn't and thus nobody seems to *set* it. If the table is large enough
     // to include it, let the sanity checks in acpi_set_reset_reg() suffice.
-    if (fadt->length >= 129) {
+    만약 (fadt->length >= 129) {
         void *p = fadt;
         acpi_set_reset_reg(p + 116, *(u8 *)(p + 128));
     }
@@ -267,32 +267,32 @@ find_acpi_features(void)
 void *
 smbios_next(void *start, u32 length, void *prev)
 {
-    if (!start)
-        return NULL;
+    만약 (!start)
+        반환 NULL;
     void *end = start + length;
 
-    if (!prev) {
+    만약 (!prev) {
         prev = start;
-    } else {
+    } 아니면 {
         struct smbios_structure_header *hdr = prev;
-        if (prev + sizeof(*hdr) > end)
-            return NULL;
+        만약 (prev + sizeof(*hdr) > end)
+            반환 NULL;
         prev += hdr->length + 2;
-        while (prev < end && (*(u8*)(prev-1) != '\0' || *(u8*)(prev-2) != '\0'))
+        동안 (prev < end && (*(u8*)(prev-1) != '\0' || *(u8*)(prev-2) != '\0'))
             prev++;
     }
     struct smbios_structure_header *hdr = prev;
-    if (prev >= end || prev + sizeof(*hdr) >= end || prev + hdr->length >= end)
-        return NULL;
-    return prev;
+    만약 (prev >= end || prev + sizeof(*hdr) >= end || prev + hdr->length >= end)
+        반환 NULL;
+    반환 prev;
 }
 
 void *
 smbios_21_next(struct smbios_21_entry_point *smbios, void *prev)
 {
-    if (!smbios)
-        return NULL;
-    return smbios_next((void*)smbios->structure_table_address,
+    만약 (!smbios)
+        반환 NULL;
+    반환 smbios_next((void*)smbios->structure_table_address,
                        smbios->structure_table_length, prev);
 }
 
@@ -301,77 +301,77 @@ static struct smbios_21_entry_point *SMBios21Addr;
 void
 copy_smbios_21(void *pos)
 {
-    if (SMBios21Addr)
-        return;
+    만약 (SMBios21Addr)
+        반환;
     struct smbios_21_entry_point *p = pos;
-    if (p->signature != SMBIOS_21_SIGNATURE)
-        return;
-    if (checksum(pos, 0x10) != 0)
-        return;
-    if (memcmp(p->intermediate_anchor_string, "_DMI_", 5))
-        return;
-    if (checksum(pos+0x10, p->length-0x10) != 0)
-        return;
+    만약 (p->signature != SMBIOS_21_SIGNATURE)
+        반환;
+    만약 (checksum(pos, 0x10) != 0)
+        반환;
+    만약 (memcmp(p->intermediate_anchor_string, "_DMI_", 5))
+        반환;
+    만약 (checksum(pos+0x10, p->length-0x10) != 0)
+        반환;
     SMBios21Addr = copy_fseg_table("SMBIOS", pos, p->length);
 }
 
 static struct smbios_30_entry_point *SMBios30Addr;
 
-static int
+static 정수
 valid_smbios_30_signature(struct smbios_30_entry_point *p)
 {
-    return !memcmp(p->signature, "_SM3_", 5);
+    반환 !memcmp(p->signature, "_SM3_", 5);
 }
 
 void
 copy_smbios_30(void *pos)
 {
-    if (SMBios30Addr)
-        return;
+    만약 (SMBios30Addr)
+        반환;
     struct smbios_30_entry_point *p = pos;
-    if (!valid_smbios_30_signature(p))
-        return;
-    if (checksum(pos, p->length) != 0)
-        return;
+    만약 (!valid_smbios_30_signature(p))
+        반환;
+    만약 (checksum(pos, p->length) != 0)
+        반환;
     SMBios30Addr = copy_fseg_table("SMBIOS 3.0", pos, p->length);
 }
 
 void *smbios_get_tables(u32 *length)
 {
-    if (SMBios30Addr) {
+    만약 (SMBios30Addr) {
         u32 addr32 = SMBios30Addr->structure_table_address;
-        if (addr32 == SMBios30Addr->structure_table_address) {
+        만약 (addr32 == SMBios30Addr->structure_table_address) {
             *length = SMBios30Addr->structure_table_max_size;
-            return (void *)addr32;
+            반환 (void *)addr32;
         }
     }
-    if (SMBios21Addr) {
+    만약 (SMBios21Addr) {
         *length = SMBios21Addr->structure_table_length;
-        return (void *)SMBios21Addr->structure_table_address;
+        반환 (void *)SMBios21Addr->structure_table_address;
     }
-    return NULL;
+    반환 NULL;
 }
 
-static int
+static 정수
 smbios_major_version(void)
 {
-    if (SMBios30Addr)
-        return SMBios30Addr->smbios_major_version;
-    else if (SMBios21Addr)
-        return SMBios21Addr->smbios_major_version;
-    else
-        return 0;
+    만약 (SMBios30Addr)
+        반환 SMBios30Addr->smbios_major_version;
+    아니면 만약 (SMBios21Addr)
+        반환 SMBios21Addr->smbios_major_version;
+    아니면
+        반환 0;
 }
 
-static int
+static 정수
 smbios_minor_version(void)
 {
-    if (SMBios30Addr)
-        return SMBios30Addr->smbios_minor_version;
-    else if (SMBios21Addr)
-        return SMBios21Addr->smbios_minor_version;
-    else
-        return 0;
+    만약 (SMBios30Addr)
+        반환 SMBios30Addr->smbios_minor_version;
+    아니면 만약 (SMBios21Addr)
+        반환 SMBios21Addr->smbios_minor_version;
+    아니면
+        반환 0;
 }
 
 void
@@ -380,13 +380,13 @@ display_uuid(void)
     u32 smbios_len = 0;
     void *smbios_tables = smbios_get_tables(&smbios_len);
     struct smbios_type_1 *tbl = smbios_next(smbios_tables, smbios_len, NULL);
-    int minlen = offsetof(struct smbios_type_1, uuid) + sizeof(tbl->uuid);
-    for (; tbl; tbl = smbios_next(smbios_tables, smbios_len, tbl))
-        if (tbl->header.type == 1 && tbl->header.length >= minlen) {
+    정수 minlen = offsetof(struct smbios_type_1, uuid) + sizeof(tbl->uuid);
+    위해 (; tbl; tbl = smbios_next(smbios_tables, smbios_len, tbl))
+        만약 (tbl->header.type == 1 && tbl->header.length >= minlen) {
             u8 *uuid = tbl->uuid;
             u8 empty_uuid[sizeof(tbl->uuid)] = { 0 };
-            if (memcmp(uuid, empty_uuid, sizeof(empty_uuid)) == 0)
-                return;
+            만약 (memcmp(uuid, empty_uuid, sizeof(empty_uuid)) == 0)
+                반환;
 
             /*
              * According to SMBIOS v2.6 the first three fields are encoded in
@@ -394,7 +394,7 @@ display_uuid(void)
              * the encoding, but we follow dmidecode and assume big-endian
              * encoding.
              */
-            if (smbios_major_version() > 2 ||
+            만약 (smbios_major_version() > 2 ||
                 (smbios_major_version() == 2 &&
                  smbios_minor_version() >= 6)) {
                 printf("Machine UUID"
@@ -409,7 +409,7 @@ display_uuid(void)
                        , uuid[ 8], uuid[ 9]
                        , uuid[10], uuid[11], uuid[12]
                        , uuid[13], uuid[14], uuid[15]);
-            } else {
+            } 아니면 {
                 printf("Machine UUID"
                        " %02x%02x%02x%02x"
                        "-%02x%02x"
@@ -424,21 +424,21 @@ display_uuid(void)
                        , uuid[13], uuid[14], uuid[15]);
             }
 
-            return;
+            반환;
         }
 }
 
 #define set_str_field_or_skip(type, field, value)                       \
     do {                                                                \
-        int size = (value != NULL) ? strlen(value) + 1 : 0;             \
-        if (size > 1) {                                                 \
+        정수 size = (value != NULL) ? strlen(value) + 1 : 0;             \
+        만약 (size > 1) {                                                 \
             memcpy(end, value, size);                                   \
             end += size;                                                \
             p->field = ++str_index;                                     \
-        } else {                                                        \
+        } 아니면 {                                                        \
             p->field = 0;                                               \
         }                                                               \
-    } while (0)
+    } 동안 (0)
 
 static void *
 smbios_new_type_0(void *start,
@@ -446,7 +446,7 @@ smbios_new_type_0(void *start,
 {
     struct smbios_type_0 *p = (struct smbios_type_0 *)start;
     char *end = (char *)start + sizeof(struct smbios_type_0);
-    int str_index = 0;
+    정수 str_index = 0;
 
     p->header.type = 0;
     p->header.length = sizeof(struct smbios_type_0);
@@ -474,12 +474,12 @@ smbios_new_type_0(void *start,
 
     *end = 0;
     end++;
-    if (!str_index) {
+    만약 (!str_index) {
         *end = 0;
         end++;
     }
 
-    return end;
+    반환 end;
 }
 
 #define BIOS_NAME "SeaBIOS"
@@ -492,7 +492,7 @@ smbios_new_type_0(void *start,
  * @address and @length can't be NULL.  @max_structure_size and
  * @number_of_structures are optional and can be NULL.
  */
-static int
+static 정수
 smbios_build_tables(struct romfile_s *f_tables,
                     u64 *address, u32 *length,
                     u16 *max_structure_size,
@@ -502,80 +502,80 @@ smbios_build_tables(struct romfile_s *f_tables,
     u32 qtables_len, need_t0 = 1;
     u8 *qtables, *tables;
 
-    if (f_tables->size != *length)
-        return 0;
+    만약 (f_tables->size != *length)
+        반환 0;
 
     qtables = malloc_tmphigh(f_tables->size);
-    if (!qtables) {
+    만약 (!qtables) {
         warn_noalloc();
-        return 0;
+        반환 0;
     }
     f_tables->copy(f_tables, qtables, f_tables->size);
     qtables_len = f_tables->size;
 
     /* did we get a type 0 structure ? */
-    for (t0 = smbios_next(qtables, qtables_len, NULL); t0;
+    위해 (t0 = smbios_next(qtables, qtables_len, NULL); t0;
          t0 = smbios_next(qtables, qtables_len, t0)) {
-        if (t0->header.type == 0) {
+        만약 (t0->header.type == 0) {
             need_t0 = 0;
             break;
         }
     }
 
-    if (need_t0) {
+    만약 (need_t0) {
         /* common case: add our own type 0, with 3 strings and 4 '\0's */
         u16 t0_len = sizeof(struct smbios_type_0) + strlen(BIOS_NAME) +
                      strlen(VERSION) + strlen(BIOS_DATE) + 4;
-        if (t0_len > (0xffff - *length)) {
+        만약 (t0_len > (0xffff - *length)) {
             dprintf(1, "Insufficient space (%d bytes) to add SMBIOS type 0 table (%d bytes)\n",
                     0xffff - *length, t0_len);
             need_t0 = 0;
-        } else {
+        } 아니면 {
             *length += t0_len;
-            if (max_structure_size && t0_len > *max_structure_size)
+            만약 (max_structure_size && t0_len > *max_structure_size)
                 *max_structure_size = t0_len;
-            if (number_of_structures)
+            만약 (number_of_structures)
                 (*number_of_structures)++;
         }
     }
 
     /* allocate final blob and record its address in the entry point */
-    if (*length > BUILD_MAX_SMBIOS_FSEG)
+    만약 (*length > BUILD_MAX_SMBIOS_FSEG)
         tables = malloc_high(*length);
-    else
+    아니면
         tables = malloc_fseg(*length);
-    if (!tables) {
+    만약 (!tables) {
         warn_noalloc();
         free(qtables);
-        return 0;
+        반환 0;
     }
     *address = (u32)tables;
 
     /* populate final blob */
-    if (need_t0)
+    만약 (need_t0)
         tables = smbios_new_type_0(tables, BIOS_NAME, VERSION, BIOS_DATE);
     memcpy(tables, qtables, qtables_len);
     free(qtables);
-    return 1;
+    반환 1;
 }
 
-static int
+static 정수
 smbios_21_setup_entry_point(struct romfile_s *f_tables,
                             struct smbios_21_entry_point *ep)
 {
     u64 address = ep->structure_table_address;
     u32 length = ep->structure_table_length;
 
-    if (!smbios_build_tables(f_tables,
+    만약 (!smbios_build_tables(f_tables,
                              &address,
                              &length,
                              &ep->max_structure_size,
                              &ep->number_of_structures))
-        return 0;
+        반환 0;
 
-    if ((u32)address != address || (u16)length != length) {
+    만약 ((u32)address != address || (u16)length != length) {
         warn_internalerror();
-        return 0;
+        반환 0;
     }
 
     /* finalize entry point */
@@ -585,25 +585,25 @@ smbios_21_setup_entry_point(struct romfile_s *f_tables,
     ep->intermediate_checksum -= checksum((void *)ep + 0x10, ep->length - 0x10);
 
     copy_smbios_21(ep);
-    return 1;
+    반환 1;
 }
 
-static int
+static 정수
 smbios_30_setup_entry_point(struct romfile_s *f_tables,
                             struct smbios_30_entry_point *ep)
 {
-    if (!smbios_build_tables(f_tables,
+    만약 (!smbios_build_tables(f_tables,
                              &ep->structure_table_address,
                              &ep->structure_table_max_size,
                              NULL, NULL))
-        return 0;
+        반환 0;
 
     ep->checksum -= checksum(ep, sizeof(*ep));
     copy_smbios_30(ep);
-    return 1;
+    반환 1;
 }
 
-static int
+static 정수
 smbios_romfile_setup(void)
 {
     struct romfile_s *f_anchor = romfile_find("etc/smbios/smbios-anchor");
@@ -613,28 +613,28 @@ smbios_romfile_setup(void)
         struct smbios_30_entry_point ep30;
     } ep;
 
-    if (!f_anchor || !f_tables || f_anchor->size > sizeof(ep))
-        return 0;
+    만약 (!f_anchor || !f_tables || f_anchor->size > sizeof(ep))
+        반환 0;
 
     f_anchor->copy(f_anchor, &ep, f_anchor->size);
 
-    if (f_anchor->size == sizeof(ep.ep21) &&
+    만약 (f_anchor->size == sizeof(ep.ep21) &&
         ep.ep21.signature == SMBIOS_21_SIGNATURE) {
-        return smbios_21_setup_entry_point(f_tables, &ep.ep21);
-    } else if (f_anchor->size == sizeof(ep.ep30) &&
+        반환 smbios_21_setup_entry_point(f_tables, &ep.ep21);
+    } 아니면 만약 (f_anchor->size == sizeof(ep.ep30) &&
                valid_smbios_30_signature(&ep.ep30)) {
-        return smbios_30_setup_entry_point(f_tables, &ep.ep30);
-    } else {
+        반환 smbios_30_setup_entry_point(f_tables, &ep.ep30);
+    } 아니면 {
         dprintf(1, "Invalid SMBIOS signature at etc/smbios/smbios-anchor\n");
-        return 0;
+        반환 0;
     }
 }
 
 void
 smbios_setup(void)
 {
-    if (smbios_romfile_setup())
-        return;
+    만약 (smbios_romfile_setup())
+        반환;
     smbios_legacy_setup();
 }
 

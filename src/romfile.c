@@ -22,60 +22,60 @@ romfile_add(struct romfile_s *file)
 
 // Search for the specified file.
 static struct romfile_s *
-__romfile_findprefix(const char *prefix, int prefixlen, struct romfile_s *prev)
+__romfile_findprefix(const char *prefix, 정수 prefixlen, struct romfile_s *prev)
 {
     struct romfile_s *cur = RomfileRoot;
-    if (prev)
+    만약 (prev)
         cur = prev->next;
-    while (cur) {
-        if (memcmp(prefix, cur->name, prefixlen) == 0)
-            return cur;
+    동안 (cur) {
+        만약 (memcmp(prefix, cur->name, prefixlen) == 0)
+            반환 cur;
         cur = cur->next;
     }
-    return NULL;
+    반환 NULL;
 }
 
 struct romfile_s *
 romfile_findprefix(const char *prefix, struct romfile_s *prev)
 {
-    return __romfile_findprefix(prefix, strlen(prefix), prev);
+    반환 __romfile_findprefix(prefix, strlen(prefix), prev);
 }
 
 struct romfile_s *
 romfile_find(const char *name)
 {
-    return __romfile_findprefix(name, strlen(name) + 1, NULL);
+    반환 __romfile_findprefix(name, strlen(name) + 1, NULL);
 }
 
 // Helper function to find, malloc_tmphigh, and copy a romfile.  This
 // function adds a trailing zero to the malloc'd copy.
 void *
-romfile_loadfile(const char *name, int *psize)
+romfile_loadfile(const char *name, 정수 *psize)
 {
     struct romfile_s *file = romfile_find(name);
-    if (!file)
-        return NULL;
+    만약 (!file)
+        반환 NULL;
 
-    int filesize = file->size;
-    if (!filesize)
-        return NULL;
+    정수 filesize = file->size;
+    만약 (!filesize)
+        반환 NULL;
 
     char *data = malloc_tmphigh(filesize+1);
-    if (!data) {
+    만약 (!data) {
         warn_noalloc();
-        return NULL;
+        반환 NULL;
     }
 
     dprintf(5, "Copying romfile '%s' (len %d)\n", name, filesize);
-    int ret = file->copy(file, data, filesize);
-    if (ret < 0) {
+    정수 ret = file->copy(file, data, filesize);
+    만약 (ret < 0) {
         free(data);
-        return NULL;
+        반환 NULL;
     }
-    if (psize)
+    만약 (psize)
         *psize = filesize;
     data[filesize] = '\0';
-    return data;
+    반환 data;
 }
 
 // Attempt to load an integer from the given file - return 'defval'
@@ -84,19 +84,19 @@ u64
 romfile_loadint(const char *name, u64 defval)
 {
     struct romfile_s *file = romfile_find(name);
-    if (!file)
-        return defval;
+    만약 (!file)
+        반환 defval;
 
-    int filesize = file->size;
-    if (!filesize || filesize > sizeof(u64) || (filesize & (filesize-1)))
+    정수 filesize = file->size;
+    만약 (!filesize || filesize > sizeof(u64) || (filesize & (filesize-1)))
         // Doesn't look like a valid integer.
-        return defval;
+        반환 defval;
 
     u64 val = 0;
-    int ret = file->copy(file, &val, sizeof(val));
-    if (ret < 0)
-        return defval;
-    return val;
+    정수 ret = file->copy(file, &val, sizeof(val));
+    만약 (ret < 0)
+        반환 defval;
+    반환 val;
 }
 
 u32
@@ -105,21 +105,21 @@ romfile_loadbool(const char *name, u32 defval)
     static const char *true_strings[] = { "1", "on", "yes" };
     static const char *false_strings[] = { "0", "off", "no" };
     char *str = romfile_loadfile(name, NULL);
-    int i;
+    정수 i;
 
-    if (!str)
-        return defval;
+    만약 (!str)
+        반환 defval;
 
-    for (i = 0; i < ARRAY_SIZE(true_strings); i++)
-        if (0 == strcmp(str, true_strings[i]))
-            return 1;
+    위해 (i = 0; i < ARRAY_SIZE(true_strings); i++)
+        만약 (0 == strcmp(str, true_strings[i]))
+            반환 1;
 
-    for (i = 0; i < ARRAY_SIZE(false_strings); i++)
-        if (0 == strcmp(str, false_strings[i]))
-            return 0;
+    위해 (i = 0; i < ARRAY_SIZE(false_strings); i++)
+        만약 (0 == strcmp(str, false_strings[i]))
+            반환 0;
 
     dprintf(1, "%s: unknown bool string: %s\n", __func__, str);
-    return defval;
+    반환 defval;
 }
 
 struct const_romfile_s {
@@ -127,26 +127,26 @@ struct const_romfile_s {
     void *data;
 };
 
-static int
+static 정수
 const_read_file(struct romfile_s *file, void *dst, u32 maxlen)
 {
-    if (file->size > maxlen)
-        return -1;
+    만약 (file->size > maxlen)
+        반환 -1;
     struct const_romfile_s *cfile;
     cfile = container_of(file, struct const_romfile_s, file);
-    if (maxlen > file->size)
+    만약 (maxlen > file->size)
         maxlen = file->size;
     memcpy(dst, cfile->data, maxlen);
-    return file->size;
+    반환 file->size;
 }
 
 static void
-const_romfile_add(char *name, void *data, int size)
+const_romfile_add(char *name, void *data, 정수 size)
 {
     struct const_romfile_s *cfile = malloc_tmp(sizeof(*cfile));
-    if (!cfile) {
+    만약 (!cfile) {
         warn_noalloc();
-        return;
+        반환;
     }
     memset(cfile, 0, sizeof(*cfile));
     strtcpy(cfile->file.name, name, sizeof(cfile->file.name));
@@ -160,9 +160,9 @@ void
 const_romfile_add_int(char *name, u32 value)
 {
     u32 *data = malloc_tmp(sizeof(*data));
-    if (!data) {
+    만약 (!data) {
         warn_noalloc();
-        return;
+        반환;
     }
     *data = value;
     const_romfile_add(name, data, sizeof(*data));

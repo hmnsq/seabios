@@ -19,7 +19,7 @@
 #define VH_INTEL 2
 #define VH_SMI 3
 
-int VGAHookHandlerType VARFSEG;
+정수 VGAHookHandlerType VARFSEG;
 
 static void
 handle_155fXX(struct bregs *regs)
@@ -37,7 +37,7 @@ handle_157fXX(struct bregs *regs)
  * Via hooks
  ****************************************************************/
 
-int ViaFBsize VARFSEG, ViaRamSpeed VARFSEG;
+정수 ViaFBsize VARFSEG, ViaRamSpeed VARFSEG;
 
 static void
 via_155f01(struct bregs *regs)
@@ -62,10 +62,10 @@ via_155f02(struct bregs *regs)
 static void
 via_155f18(struct bregs *regs)
 {
-    int fbsize = GET_GLOBAL(ViaFBsize), ramspeed = GET_GLOBAL(ViaRamSpeed);
-    if (fbsize < 0 || ramspeed < 0) {
+    정수 fbsize = GET_GLOBAL(ViaFBsize), ramspeed = GET_GLOBAL(ViaRamSpeed);
+    만약 (fbsize < 0 || ramspeed < 0) {
         set_code_invalid(regs, RET_EUNSUPPORTED);
-        return;
+        반환;
     }
     regs->eax = 0x5f;
     regs->ebx = 0x500 | (ramspeed << 4) | fbsize;
@@ -91,36 +91,36 @@ via_155f(struct bregs *regs)
     }
 }
 
-static int
+static 정수
 getFBSize(struct pci_device *pci)
 {
     /* FB config */
     u8 reg = pci_config_readb(pci->bdf, 0xa1);
 
     /* GFX disabled ? */
-    if (!(reg & 0x80))
-        return -1;
+    만약 (!(reg & 0x80))
+        반환 -1;
 
     static u8 mem_power[] = {0, 3, 4, 5, 6, 7, 8, 9};
-    return mem_power[(reg >> 4) & 0x7];
+    반환 mem_power[(reg >> 4) & 0x7];
 }
 
-static int
+static 정수
 getViaRamSpeed(struct pci_device *pci)
 {
-    return (pci_config_readb(pci->bdf, 0x90) & 0x07) + 3;
+    반환 (pci_config_readb(pci->bdf, 0x90) & 0x07) + 3;
 }
 
-static int
+static 정수
 getAMDRamSpeed(void)
 {
     struct pci_device *pci = pci_find_device(PCI_VENDOR_ID_AMD
                                              , PCI_DEVICE_ID_AMD_K8_NB_MEMCTL);
-    if (!pci)
-        return -1;
+    만약 (!pci)
+        반환 -1;
 
     /* mem clk 0 = DDR2 400 */
-    return (pci_config_readb(pci->bdf, 0x94) & 0x7) + 6;
+    반환 (pci_config_readb(pci->bdf, 0x94) & 0x7) + 6;
 }
 
 /* int 0x15 - 5f18
@@ -154,16 +154,16 @@ via_setup(struct pci_device *pci)
 
     struct pci_device *d = pci_find_device(PCI_VENDOR_ID_VIA
                                            , PCI_DEVICE_ID_VIA_K8M890CE_3);
-    if (d) {
+    만약 (d) {
         ViaFBsize = getFBSize(d);
         ViaRamSpeed = getAMDRamSpeed();
-        return;
+        반환;
     }
     d = pci_find_device(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_VX855_MEMCTRL);
-    if (d) {
+    만약 (d) {
         ViaFBsize = getFBSize(d);
         ViaRamSpeed = getViaRamSpeed(d);
-        return;
+        반환;
     }
 
     dprintf(1, "Warning: VGA memory size and speed is hardcoded\n");
@@ -304,12 +304,12 @@ winent_mb6047_setup(struct pci_device *pci)
 void
 handle_155f(struct bregs *regs)
 {
-    if (!CONFIG_VGAHOOKS) {
+    만약 (!CONFIG_VGAHOOKS) {
         handle_155fXX(regs);
-        return;
+        반환;
     }
 
-    int htype = GET_GLOBAL(VGAHookHandlerType);
+    정수 htype = GET_GLOBAL(VGAHookHandlerType);
     switch (htype) {
     case VH_VIA:   via_155f(regs); break;
     case VH_INTEL: intel_155f(regs); break;
@@ -321,12 +321,12 @@ handle_155f(struct bregs *regs)
 void
 handle_157f(struct bregs *regs)
 {
-    if (!CONFIG_VGAHOOKS) {
+    만약 (!CONFIG_VGAHOOKS) {
         handle_157fXX(regs);
-        return;
+        반환;
     }
 
-    int htype = GET_GLOBAL(VGAHookHandlerType);
+    정수 htype = GET_GLOBAL(VGAHookHandlerType);
     switch (htype) {
     case VH_SMI:   smi_157f(regs); break;
     default:       handle_157fXX(regs); break;
@@ -337,19 +337,19 @@ handle_157f(struct bregs *regs)
 void
 vgahook_setup(struct pci_device *pci)
 {
-    if (!CONFIG_VGAHOOKS)
-        return;
+    만약 (!CONFIG_VGAHOOKS)
+        반환;
 
-    if (strcmp(CBvendor, "KONTRON") == 0 && strcmp(CBpart, "986LCD-M") == 0)
+    만약 (strcmp(CBvendor, "KONTRON") == 0 && strcmp(CBpart, "986LCD-M") == 0)
         kontron_setup(pci);
-    else if (strcmp(CBvendor, "GETAC") == 0 && strcmp(CBpart, "P470") == 0)
+    아니면 만약 (strcmp(CBvendor, "GETAC") == 0 && strcmp(CBpart, "P470") == 0)
         getac_setup(pci);
-    else if (strcmp(CBvendor, "RODA") == 0 && strcmp(CBpart, "RK886EX") == 0)
+    아니면 만약 (strcmp(CBvendor, "RODA") == 0 && strcmp(CBpart, "RK886EX") == 0)
         roda_setup(pci);
-    else if (strcmp(CBvendor, "Win Enterprise") == 0 && strcmp(CBpart, "MB6047") == 0)
+    아니면 만약 (strcmp(CBvendor, "Win Enterprise") == 0 && strcmp(CBpart, "MB6047") == 0)
         winent_mb6047_setup(pci);
-    else if (pci->vendor == PCI_VENDOR_ID_VIA)
+    아니면 만약 (pci->vendor == PCI_VENDOR_ID_VIA)
         via_setup(pci);
-    else if (pci->vendor == PCI_VENDOR_ID_INTEL)
+    아니면 만약 (pci->vendor == PCI_VENDOR_ID_INTEL)
         intel_setup(pci);
 }

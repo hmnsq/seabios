@@ -91,11 +91,11 @@ struct uasdrive_s {
     u32 lun;
 };
 
-int
+정수
 uas_process_op(struct disk_op_s *op)
 {
-    if (!CONFIG_USB_UAS)
-        return DISK_RET_EBADTRACK;
+    만약 (!CONFIG_USB_UAS)
+        반환 DISK_RET_EBADTRACK;
 
     struct uasdrive_s *drive_gf = container_of(
         op->drive_fl, struct uasdrive_s, drive);
@@ -105,13 +105,13 @@ uas_process_op(struct disk_op_s *op)
     ui.hdr.id = UAS_UI_COMMAND;
     ui.hdr.tag = 0xdead;
     ui.command.lun[1] = GET_GLOBALFLAT(drive_gf->lun);
-    int blocksize = scsi_fill_cmd(op, ui.command.cdb, sizeof(ui.command.cdb));
-    if (blocksize < 0)
-        return default_process_op(op);
-    int ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->command),
+    정수 blocksize = scsi_fill_cmd(op, ui.command.cdb, sizeof(ui.command.cdb));
+    만약 (blocksize < 0)
+        반환 default_process_op(op);
+    정수 ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->command),
                             USB_DIR_OUT, MAKE_FLATPTR(GET_SEG(SS), &ui),
                             sizeof(ui.hdr) + sizeof(ui.command));
-    if (ret) {
+    만약 (ret) {
         dprintf(1, "uas: command send fail");
         goto fail;
     }
@@ -119,7 +119,7 @@ uas_process_op(struct disk_op_s *op)
     memset(&ui, 0xff, sizeof(ui));
     ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->status),
                         USB_DIR_IN, MAKE_FLATPTR(GET_SEG(SS), &ui), sizeof(ui));
-    if (ret) {
+    만약 (ret) {
         dprintf(1, "uas: status recv fail");
         goto fail;
     }
@@ -130,7 +130,7 @@ uas_process_op(struct disk_op_s *op)
     case UAS_UI_READ_READY:
         ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->data_in),
                             USB_DIR_IN, op->buf_fl, op->count * blocksize);
-        if (ret) {
+        만약 (ret) {
             dprintf(1, "uas: data read fail");
             goto fail;
         }
@@ -138,7 +138,7 @@ uas_process_op(struct disk_op_s *op)
     case UAS_UI_WRITE_READY:
         ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->data_out),
                             USB_DIR_OUT, op->buf_fl, op->count * blocksize);
-        if (ret) {
+        만약 (ret) {
             dprintf(1, "uas: data write fail");
             goto fail;
         }
@@ -151,22 +151,22 @@ uas_process_op(struct disk_op_s *op)
     memset(&ui, 0xff, sizeof(ui));
     ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->status),
                         USB_DIR_IN, MAKE_FLATPTR(GET_SEG(SS), &ui), sizeof(ui));
-    if (ret) {
+    만약 (ret) {
         dprintf(1, "uas: status recv fail");
         goto fail;
     }
-    if (ui.hdr.id != UAS_UI_SENSE) {
+    만약 (ui.hdr.id != UAS_UI_SENSE) {
         dprintf(1, "uas: expected sense ui, got ui id %d", ui.hdr.id);
         goto fail;
     }
 
 have_sense:
-    if (ui.sense.status == 0) {
-        return DISK_RET_SUCCESS;
+    만약 (ui.sense.status == 0) {
+        반환 DISK_RET_SUCCESS;
     }
 
 fail:
-    return DISK_RET_EBADTRACK;
+    반환 DISK_RET_EBADTRACK;
 }
 
 static void
@@ -176,9 +176,9 @@ uas_init_lun(struct uasdrive_s *drive, struct usbdevice_s *usbdev,
              u32 lun)
 {
     memset(drive, 0, sizeof(*drive));
-    if (usb_32bit_pipe(data_in))
+    만약 (usb_32bit_pipe(data_in))
         drive->drive.type = DTYPE_UAS_32;
-    else
+    아니면
         drive->drive.type = DTYPE_UAS;
     drive->usbdev = usbdev;
     drive->command = command;
@@ -188,43 +188,43 @@ uas_init_lun(struct uasdrive_s *drive, struct usbdevice_s *usbdev,
     drive->lun = lun;
 }
 
-static int
+static 정수
 uas_add_lun(u32 lun, struct drive_s *tmpl_drv)
 {
     struct uasdrive_s *tmpl_lun =
         container_of(tmpl_drv, struct uasdrive_s, drive);
     struct uasdrive_s *drive = malloc_fseg(sizeof(*drive));
-    if (!drive) {
+    만약 (!drive) {
         warn_noalloc();
-        return -1;
+        반환 -1;
     }
     uas_init_lun(drive, tmpl_lun->usbdev,
                  tmpl_lun->command, tmpl_lun->status,
                  tmpl_lun->data_in, tmpl_lun->data_out,
                  lun);
 
-    int prio = bootprio_find_usb(drive->usbdev, drive->lun);
-    int ret = scsi_drive_setup(&drive->drive, "USB UAS", prio);
-    if (ret) {
+    정수 prio = bootprio_find_usb(drive->usbdev, drive->lun);
+    정수 ret = scsi_drive_setup(&drive->drive, "USB UAS", prio);
+    만약 (ret) {
         free(drive);
-        return -1;
+        반환 -1;
     }
-    return 0;
+    반환 0;
 }
 
-int
+정수
 usb_uas_setup(struct usbdevice_s *usbdev)
 {
-    if (!CONFIG_USB_UAS)
-        return -1;
+    만약 (!CONFIG_USB_UAS)
+        반환 -1;
 
     // Verify right kind of device
     struct usb_interface_descriptor *iface = usbdev->iface;
-    if (iface->bInterfaceSubClass != US_SC_SCSI ||
+    만약 (iface->bInterfaceSubClass != US_SC_SCSI ||
         iface->bInterfaceProtocol != US_PR_UAS) {
         dprintf(1, "Unsupported UAS device (subclass=%02x proto=%02x)\n"
                 , iface->bInterfaceSubClass, iface->bInterfaceProtocol);
-        return -1;
+        반환 -1;
     }
 
     /* find & allocate pipes */
@@ -234,7 +234,7 @@ usb_uas_setup(struct usbdevice_s *usbdev)
     struct usb_pipe *data_in = NULL;
     struct usb_pipe *data_out = NULL;
     u8 *desc = (u8*)iface;
-    while (desc) {
+    동안 (desc) {
         desc += desc[0];
         switch (desc[1]) {
         case USB_DT_ENDPOINT:
@@ -267,23 +267,23 @@ usb_uas_setup(struct usbdevice_s *usbdev)
             break;
         }
     }
-    if (!command || !status || !data_in || !data_out)
+    만약 (!command || !status || !data_in || !data_out)
         goto fail;
 
     struct uasdrive_s lun0;
     uas_init_lun(&lun0, usbdev, command, status, data_in, data_out, 0);
-    int ret = scsi_rep_luns_scan(&lun0.drive, uas_add_lun);
-    if (ret <= 0) {
+    정수 ret = scsi_rep_luns_scan(&lun0.drive, uas_add_lun);
+    만약 (ret <= 0) {
         dprintf(1, "Unable to configure UAS drive.\n");
         goto fail;
     }
 
-    return 0;
+    반환 0;
 
 fail:
     usb_free_pipe(usbdev, command);
     usb_free_pipe(usbdev, status);
     usb_free_pipe(usbdev, data_in);
     usb_free_pipe(usbdev, data_out);
-    return -1;
+    반환 -1;
 }

@@ -16,12 +16,12 @@ void virtio_mmio_setup_acpi(void)
     struct acpi_device *dev;
     u64 mem, irq, unused;
 
-    for (dev = acpi_dsdt_find_string(NULL, virtio_hid);
+    위해 (dev = acpi_dsdt_find_string(NULL, virtio_hid);
          dev != NULL;
          dev = acpi_dsdt_find_string(dev, virtio_hid)) {
-        if (acpi_dsdt_find_mem(dev, &mem, &unused) < 0)
+        만약 (acpi_dsdt_find_mem(dev, &mem, &unused) < 0)
             continue;
-        if (acpi_dsdt_find_irq(dev, &irq) < 0)
+        만약 (acpi_dsdt_find_irq(dev, &irq) < 0)
             continue;
         dprintf(1, "ACPI: virtio-mmio device %s at 0x%llx, irq %lld\n",
                 acpi_dsdt_name(dev), mem, irq);
@@ -47,22 +47,22 @@ void virtio_mmio_setup_one(u64 addr)
     u32 magic, version, devid;
     void *mmio;
 
-    if (addr >= 0x100000000) {
+    만약 (addr >= 0x100000000) {
         dprintf(1, "virtio-mmio: %llx: above 4G\n", addr);
-        return;
+        반환;
     }
 
     mmio = (void*)(u32)(addr);
     magic = readl(mmio);
-    if (magic != 0x74726976) {
+    만약 (magic != 0x74726976) {
         dprintf(1, "virtio-mmio: %llx: magic mismatch\n", addr);
-        return;
+        반환;
     }
     version = readl(mmio+4);
-    if (version != 1 /* legacy */ &&
+    만약 (version != 1 /* legacy */ &&
         version != 2 /* 1.0 */) {
         dprintf(1, "virtio-mmio: %llx: unknown version %d\n", addr, version);
-        return;
+        반환;
     }
     devid = readl(mmio+8);
 

@@ -35,23 +35,23 @@
 
 void mtrr_setup(void)
 {
-    if (!CONFIG_MTRR_INIT)
-        return;
+    만약 (!CONFIG_MTRR_INIT)
+        반환;
 
     u32 eax, ebx, ecx, edx, cpuid_features;
     cpuid(1, &eax, &ebx, &ecx, &cpuid_features);
-    if (!(cpuid_features & CPUID_MTRR))
-        return;
-    if (!(cpuid_features & CPUID_MSR))
-        return;
+    만약 (!(cpuid_features & CPUID_MTRR))
+        반환;
+    만약 (!(cpuid_features & CPUID_MSR))
+        반환;
 
     dprintf(3, "init mtrr\n");
 
     u32 mtrr_cap = rdmsr(MSR_MTRRcap);
-    int vcnt = mtrr_cap & 0xff;
-    int fix = mtrr_cap & 0x100;
-    if (!vcnt || !fix)
-       return;
+    정수 vcnt = mtrr_cap & 0xff;
+    정수 fix = mtrr_cap & 0x100;
+    만약 (!vcnt || !fix)
+       반환;
 
     // Disable MTRRs
     wrmsr_smp(MSR_MTRRdefType, 0);
@@ -62,36 +62,36 @@ void mtrr_setup(void)
         u64 val;
     } u;
     u.val = 0;
-    int i;
-    for (i = 0; i < 8; i++)
-        if (RamSize >= 65536 * (i + 1))
+    정수 i;
+    위해 (i = 0; i < 8; i++)
+        만약 (RamSize >= 65536 * (i + 1))
             u.valb[i] = MTRR_MEMTYPE_WB;
     wrmsr_smp(MSR_MTRRfix64K_00000, u.val);
     u.val = 0;
-    for (i = 0; i < 8; i++)
-        if (RamSize >= 0x80000 + 16384 * (i + 1))
+    위해 (i = 0; i < 8; i++)
+        만약 (RamSize >= 0x80000 + 16384 * (i + 1))
             u.valb[i] = MTRR_MEMTYPE_WB;
     wrmsr_smp(MSR_MTRRfix16K_80000, u.val);
     wrmsr_smp(MSR_MTRRfix16K_A0000, 0);   // 0xA0000-0xC0000 is uncached
-    int j;
-    for (j = 0; j < 8; j++) {
+    정수 j;
+    위해 (j = 0; j < 8; j++) {
         u.val = 0;
-        for (i = 0; i < 8; i++)
-            if (RamSize >= 0xC0000 + j * 0x8000 + 4096 * (i + 1))
+        위해 (i = 0; i < 8; i++)
+            만약 (RamSize >= 0xC0000 + j * 0x8000 + 4096 * (i + 1))
                 u.valb[i] = MTRR_MEMTYPE_WP;
         wrmsr_smp(MSR_MTRRfix4K_C0000 + j, u.val);
     }
 
     // Set variable MTRRs
-    int phys_bits = 36;
+    정수 phys_bits = 36;
     cpuid(0x80000000u, &eax, &ebx, &ecx, &edx);
-    if (eax >= 0x80000008) {
+    만약 (eax >= 0x80000008) {
         /* Get physical bits from leaf 0x80000008 (if available) */
         cpuid(0x80000008u, &eax, &ebx, &ecx, &edx);
         phys_bits = eax & 0xff;
     }
     u64 phys_mask = ((1ull << phys_bits) - 1);
-    for (i=0; i<vcnt; i++) {
+    위해 (i=0; i<vcnt; i++) {
         wrmsr_smp(MTRRphysBase_MSR(i), 0);
         wrmsr_smp(MTRRphysMask_MSR(i), 0);
     }

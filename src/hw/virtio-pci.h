@@ -134,7 +134,7 @@ static inline void vp_get_legacy(struct vp_device *vp, unsigned offset,
     u8 *ptr = buf;
     unsigned i;
 
-    for (i = 0; i < len; i++)
+    위해 (i = 0; i < len; i++)
         ptr[i] = vp_read(&vp->legacy, virtio_pci_legacy, device[i]);
 }
 
@@ -147,6 +147,6 @@ struct pci_device;
 struct vring_virtqueue;
 void vp_init_simple(struct vp_device *vp, struct pci_device *pci);
 void vp_notify(struct vp_device *vp, struct vring_virtqueue *vq);
-int vp_find_vq(struct vp_device *vp, int queue_index,
+정수 vp_find_vq(struct vp_device *vp, 정수 queue_index,
                struct vring_virtqueue **p_vq);
 #endif /* _VIRTIO_PCI_H_ */

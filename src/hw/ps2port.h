@@ -59,8 +59,8 @@
 
 // ps2port.c
 void i8042_reboot(void);
-int ps2_kbd_command(int command, u8 *param);
-int ps2_mouse_command(int command, u8 *param);
+정수 ps2_kbd_command(정수 command, u8 *param);
+정수 ps2_mouse_command(정수 command, u8 *param);
 void ps2_check_event(void);
 void ps2port_setup(void);
 

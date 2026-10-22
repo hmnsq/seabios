@@ -31,52 +31,52 @@
  ****************************************************************/
 
 // Wait for the specified ide state
-static inline int
+static inline 정수
 await_ide(u8 mask, u8 flags, u16 base, u16 timeout)
 {
     u32 end = timer_calc(timeout);
-    for (;;) {
+    위해 (;;) {
         u8 status = inb(base+ATA_CB_STAT);
-        if ((status & mask) == flags)
-            return status;
-        if (timer_check(end)) {
+        만약 ((status & mask) == flags)
+            반환 status;
+        만약 (timer_check(end)) {
             warn_timeout();
-            return -1;
+            반환 -1;
         }
         yield();
     }
 }
 
 // Wait for the device to be not-busy.
-static int
+static 정수
 await_not_bsy(u16 base)
 {
-    return await_ide(ATA_CB_STAT_BSY, 0, base, IDE_TIMEOUT);
+    반환 await_ide(ATA_CB_STAT_BSY, 0, base, IDE_TIMEOUT);
 }
 
 // Wait for the device to be ready.
-static int
+static 정수
 await_rdy(u16 base)
 {
-    return await_ide(ATA_CB_STAT_RDY, ATA_CB_STAT_RDY, base, IDE_TIMEOUT);
+    반환 await_ide(ATA_CB_STAT_RDY, ATA_CB_STAT_RDY, base, IDE_TIMEOUT);
 }
 
 // Wait for ide state - pauses for one ata cycle first.
-static inline int
+static inline 정수
 pause_await_not_bsy(u16 iobase1, u16 iobase2)
 {
     // Wait one PIO transfer cycle.
     inb(iobase2 + ATA_CB_ASTAT);
 
-    return await_not_bsy(iobase1);
+    반환 await_not_bsy(iobase1);
 }
 
 // Wait for ide state - pause for 400ns first.
-static inline int
+static inline 정수
 ndelay_await_not_bsy(u16 iobase1)
 {
     ndelay(400);
-    return await_not_bsy(iobase1);
+    반환 await_not_bsy(iobase1);
 }
 
 // Reset a drive
@@ -96,33 +96,33 @@ ata_reset(struct atadrive_s *adrive_gf)
     msleep(2);
 
     // wait for device to become not busy.
-    int status = await_not_bsy(iobase1);
-    if (status < 0)
+    정수 status = await_not_bsy(iobase1);
+    만약 (status < 0)
         goto done;
-    if (slave) {
+    만약 (slave) {
         // Change device.
         u32 end = timer_calc(IDE_TIMEOUT);
-        for (;;) {
+        위해 (;;) {
             outb(ATA_CB_DH_DEV1, iobase1 + ATA_CB_DH);
             status = ndelay_await_not_bsy(iobase1);
-            if (status < 0)
+            만약 (status < 0)
                 goto done;
-            if (inb(iobase1 + ATA_CB_DH) == ATA_CB_DH_DEV1)
+            만약 (inb(iobase1 + ATA_CB_DH) == ATA_CB_DH_DEV1)
                 break;
             // Change drive request failed to take effect - retry.
-            if (timer_check(end)) {
+            만약 (timer_check(end)) {
                 warn_timeout();
                 goto done;
             }
         }
-    } else {
+    } 아니면 {
         // QEMU doesn't reset dh on reset, so set it explicitly.
         outb(ATA_CB_DH_DEV0, iobase1 + ATA_CB_DH);
     }
 
     // On a user-reset request, wait for RDY if it is an ATA device.
     u8 type=GET_GLOBALFLAT(adrive_gf->drive.type);
-    if (type == DTYPE_ATA)
+    만약 (type == DTYPE_ATA)
         status = await_rdy(iobase1);
 
 done:
@@ -133,16 +133,16 @@ done:
 }
 
 // Check for drive RDY for 16bit interface command.
-static int
+static 정수
 isready(struct atadrive_s *adrive_gf)
 {
     // Read the status from controller
     struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
     u16 iobase1 = GET_GLOBALFLAT(chan_gf->iobase1);
     u8 status = inb(iobase1 + ATA_CB_STAT);
-    if ((status & (ATA_CB_STAT_BSY|ATA_CB_STAT_RDY)) == ATA_CB_STAT_RDY)
-        return DISK_RET_SUCCESS;
-    return DISK_RET_ENOTREADY;
+    만약 ((status & (ATA_CB_STAT_BSY|ATA_CB_STAT_RDY)) == ATA_CB_STAT_RDY)
+        반환 DISK_RET_SUCCESS;
+    반환 DISK_RET_ENOTREADY;
 }
 
 
@@ -167,7 +167,7 @@ struct ata_pio_command {
 };
 
 // Send an ata command to the drive.
-static int
+static 정수
 send_cmd(struct atadrive_s *adrive_gf, struct ata_pio_command *cmd)
 {
     struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
@@ -175,22 +175,22 @@ send_cmd(struct atadrive_s *adrive_gf, struct ata_pio_command *cmd)
     u16 iobase1 = GET_GLOBALFLAT(chan_gf->iobase1);
 
     // Select device
-    int status = await_not_bsy(iobase1);
-    if (status < 0)
-        return status;
+    정수 status = await_not_bsy(iobase1);
+    만약 (status < 0)
+        반환 status;
     u8 newdh = ((cmd->device & ~ATA_CB_DH_DEV1)
                 | (slave ? ATA_CB_DH_DEV1 : ATA_CB_DH_DEV0));
     u8 olddh = inb(iobase1 + ATA_CB_DH);
     outb(newdh, iobase1 + ATA_CB_DH);
-    if ((olddh ^ newdh) & (1<<4)) {
+    만약 ((olddh ^ newdh) & (1<<4)) {
         // Was a device change - wait for device to become not busy.
         status = ndelay_await_not_bsy(iobase1);
-        if (status < 0)
-            return status;
+        만약 (status < 0)
+            반환 status;
     }
 
     // Check for ATA_CMD_(READ|WRITE)_(SECTORS|DMA)_EXT commands.
-    if ((cmd->command & ~0x11) == ATA_CMD_READ_SECTORS_EXT) {
+    만약 ((cmd->command & ~0x11) == ATA_CMD_READ_SECTORS_EXT) {
         outb(cmd->feature2, iobase1 + ATA_CB_FR);
         outb(cmd->sector_count2, iobase1 + ATA_CB_SC);
         outb(cmd->lba_low2, iobase1 + ATA_CB_SN);
@@ -204,32 +204,32 @@ send_cmd(struct atadrive_s *adrive_gf, struct ata_pio_command *cmd)
     outb(cmd->lba_high, iobase1 + ATA_CB_CH);
     outb(cmd->command, iobase1 + ATA_CB_CMD);
 
-    return 0;
+    반환 0;
 }
 
 // Wait for data after calling 'send_cmd'.
-static int
+static 정수
 ata_wait_data(u16 iobase1)
 {
-    int status = ndelay_await_not_bsy(iobase1);
-    if (status < 0)
-        return status;
+    정수 status = ndelay_await_not_bsy(iobase1);
+    만약 (status < 0)
+        반환 status;
 
-    if (status & ATA_CB_STAT_ERR) {
+    만약 (status & ATA_CB_STAT_ERR) {
         dprintf(6, "send_cmd : read error (status=%02x err=%02x)\n"
                 , status, inb(iobase1 + ATA_CB_ERR));
-        return -4;
+        반환 -4;
     }
-    if (!(status & ATA_CB_STAT_DRQ)) {
+    만약 (!(status & ATA_CB_STAT_DRQ)) {
         dprintf(6, "send_cmd : DRQ not set (status %02x)\n", status);
-        return -5;
+        반환 -5;
     }
 
-    return 0;
+    반환 0;
 }
 
 // Send an ata command that does not transfer any further data.
-int
+정수
 ata_cmd_nondata(struct atadrive_s *adrive_gf, struct ata_pio_command *cmd)
 {
     struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
@@ -239,20 +239,20 @@ ata_cmd_nondata(struct atadrive_s *adrive_gf, struct ata_pio_command *cmd)
     // Disable interrupts
     outb(ATA_CB_DC_HD15 | ATA_CB_DC_NIEN, iobase2 + ATA_CB_DC);
 
-    int ret = send_cmd(adrive_gf, cmd);
-    if (ret)
+    정수 ret = send_cmd(adrive_gf, cmd);
+    만약 (ret)
         goto fail;
     ret = ndelay_await_not_bsy(iobase1);
-    if (ret < 0)
+    만약 (ret < 0)
         goto fail;
 
-    if (ret & ATA_CB_STAT_ERR) {
+    만약 (ret & ATA_CB_STAT_ERR) {
         dprintf(6, "nondata cmd : read error (status=%02x err=%02x)\n"
                 , ret, inb(iobase1 + ATA_CB_ERR));
         ret = -4;
         goto fail;
     }
-    if (ret & ATA_CB_STAT_DRQ) {
+    만약 (ret & ATA_CB_STAT_DRQ) {
         dprintf(6, "nondata cmd : DRQ set (status %02x)\n", ret);
         ret = -5;
         goto fail;
@@ -262,7 +262,7 @@ fail:
     // Enable interrupts
     outb(ATA_CB_DC_HD15, iobase2+ATA_CB_DC);
 
-    return ret;
+    반환 ret;
 }
 
 
@@ -272,8 +272,8 @@ fail:
 
 // Transfer 'op->count' blocks (of 'blocksize' bytes) to/from drive
 // 'op->drive_fl'.
-static int
-ata_pio_transfer(struct disk_op_s *op, int iswrite, int blocksize)
+static 정수
+ata_pio_transfer(struct disk_op_s *op, 정수 iswrite, 정수 blocksize)
 {
     dprintf(16, "ata_pio_transfer id=%p write=%d count=%d bs=%d buf=%p\n"
             , op->drive_fl, iswrite, op->count, blocksize, op->buf_fl);
@@ -283,56 +283,56 @@ ata_pio_transfer(struct disk_op_s *op, int iswrite, int blocksize)
     struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
     u16 iobase1 = GET_GLOBALFLAT(chan_gf->iobase1);
     u16 iobase2 = GET_GLOBALFLAT(chan_gf->iobase2);
-    int count = op->count;
+    정수 count = op->count;
     void *buf_fl = op->buf_fl;
-    int status;
-    for (;;) {
-        if (iswrite) {
+    정수 status;
+    위해 (;;) {
+        만약 (iswrite) {
             // Write data to controller
             dprintf(16, "Write sector id=%p dest=%p\n", op->drive_fl, buf_fl);
-            if (CONFIG_ATA_PIO32)
+            만약 (CONFIG_ATA_PIO32)
                 outsl_fl(iobase1, buf_fl, blocksize / 4);
-            else
+            아니면
                 outsw_fl(iobase1, buf_fl, blocksize / 2);
-        } else {
+        } 아니면 {
             // Read data from controller
             dprintf(16, "Read sector id=%p dest=%p\n", op->drive_fl, buf_fl);
-            if (CONFIG_ATA_PIO32)
+            만약 (CONFIG_ATA_PIO32)
                 insl_fl(iobase1, buf_fl, blocksize / 4);
-            else
+            아니면
                 insw_fl(iobase1, buf_fl, blocksize / 2);
         }
         buf_fl += blocksize;
 
         status = pause_await_not_bsy(iobase1, iobase2);
-        if (status < 0) {
+        만약 (status < 0) {
             // Error
             op->count -= count;
-            return status;
+            반환 status;
         }
 
         count--;
-        if (!count)
+        만약 (!count)
             break;
         status &= (ATA_CB_STAT_BSY | ATA_CB_STAT_DRQ | ATA_CB_STAT_ERR);
-        if (status != ATA_CB_STAT_DRQ) {
+        만약 (status != ATA_CB_STAT_DRQ) {
             dprintf(6, "ata_pio_transfer : more sectors left (status %02x)\n"
                     , status);
             op->count -= count;
-            return -6;
+            반환 -6;
         }
     }
 
     status &= (ATA_CB_STAT_BSY | ATA_CB_STAT_DF | ATA_CB_STAT_DRQ
                | ATA_CB_STAT_ERR);
-    if (!iswrite)
+    만약 (!iswrite)
         status &= ~ATA_CB_STAT_DF;
-    if (status != 0) {
+    만약 (status != 0) {
         dprintf(6, "ata_pio_transfer : no sectors left (status %02x)\n", status);
-        return -7;
+        반환 -7;
     }
 
-    return 0;
+    반환 0;
 }
 
 
@@ -355,41 +355,41 @@ struct sff_dma_prd {
 };
 
 // Check if DMA available and setup transfer if so.
-static int
-ata_try_dma(struct disk_op_s *op, int iswrite, int blocksize)
+static 정수
+ata_try_dma(struct disk_op_s *op, 정수 iswrite, 정수 blocksize)
 {
     ASSERT16();
-    if (! CONFIG_ATA_DMA)
-        return -1;
+    만약 (! CONFIG_ATA_DMA)
+        반환 -1;
     u32 dest = (u32)op->buf_fl;
-    if (dest & 1)
+    만약 (dest & 1)
         // Need minimum alignment of 1.
-        return -1;
+        반환 -1;
     struct atadrive_s *adrive_gf = container_of(
         op->drive_fl, struct atadrive_s, drive);
     struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
     u16 iomaster = GET_GLOBALFLAT(chan_gf->iomaster);
-    if (! iomaster)
-        return -1;
+    만약 (! iomaster)
+        반환 -1;
     u32 bytes = op->count * blocksize;
-    if (! bytes)
-        return -1;
+    만약 (! bytes)
+        반환 -1;
 
     // Build PRD dma structure.
     struct sff_dma_prd *dma = MAKE_FLATPTR(SEG_LOW, ExtraStack);
     struct sff_dma_prd *origdma = dma;
-    while (bytes) {
-        if (dma >= &origdma[16])
+    동안 (bytes) {
+        만약 (dma >= &origdma[16])
             // Too many descriptors..
-            return -1;
+            반환 -1;
         u32 count = bytes;
         u32 max = 0x10000 - (dest & 0xffff);
-        if (count > max)
+        만약 (count > max)
             count = max;
 
         SET_LOWFLAT(dma->buf_fl, dest);
         bytes -= count;
-        if (!bytes)
+        만약 (!bytes)
             // Last descriptor.
             count |= 1<<31;
         dprintf(16, "dma@%p: %08x %08x\n", dma, dest, count);
@@ -404,15 +404,15 @@ ata_try_dma(struct disk_op_s *op, int iswrite, int blocksize)
     outb(oldcmd | (iswrite ? 0x00 : BM_CMD_MEMWRITE), iomaster + BM_CMD);
     outb(BM_STATUS_ERROR|BM_STATUS_IRQ, iomaster + BM_STATUS);
 
-    return 0;
+    반환 0;
 }
 
 // Transfer data using DMA.
-static int
+static 정수
 ata_dma_transfer(struct disk_op_s *op)
 {
-    if (! CONFIG_ATA_DMA)
-        return -1;
+    만약 (! CONFIG_ATA_DMA)
+        반환 -1;
     dprintf(16, "ata_dma_transfer id=%p buf=%p\n", op->drive_fl, op->buf_fl);
 
     struct atadrive_s *adrive_gf = container_of(
@@ -426,12 +426,12 @@ ata_dma_transfer(struct disk_op_s *op)
 
     u32 end = timer_calc(IDE_TIMEOUT);
     u8 status;
-    for (;;) {
+    위해 (;;) {
         status = inb(iomaster + BM_STATUS);
-        if (status & BM_STATUS_IRQ)
+        만약 (status & BM_STATUS_IRQ)
             break;
         // Transfer in progress
-        if (timer_check(end)) {
+        만약 (timer_check(end)) {
             // Timeout.
             warn_timeout();
             break;
@@ -442,18 +442,18 @@ ata_dma_transfer(struct disk_op_s *op)
 
     u16 iobase1 = GET_GLOBALFLAT(chan_gf->iobase1);
     u16 iobase2 = GET_GLOBALFLAT(chan_gf->iobase2);
-    int idestatus = pause_await_not_bsy(iobase1, iobase2);
+    정수 idestatus = pause_await_not_bsy(iobase1, iobase2);
 
-    if ((status & (BM_STATUS_IRQ|BM_STATUS_ACTIVE)) == BM_STATUS_IRQ
+    만약 ((status & (BM_STATUS_IRQ|BM_STATUS_ACTIVE)) == BM_STATUS_IRQ
         && idestatus >= 0x00
         && (idestatus & (ATA_CB_STAT_BSY | ATA_CB_STAT_DF | ATA_CB_STAT_DRQ
                          | ATA_CB_STAT_ERR)) == 0x00)
         // Success.
-        return 0;
+        반환 0;
 
     dprintf(6, "IDE DMA error (dma=%x ide=%x/%x/%x)\n", status, idestatus
             , inb(iobase2 + ATA_CB_ASTAT), inb(iobase1 + ATA_CB_ERR));
-    return -1;
+    반환 -1;
 }
 
 
@@ -462,8 +462,8 @@ ata_dma_transfer(struct disk_op_s *op)
  ****************************************************************/
 
 // Transfer data to harddrive using PIO protocol.
-static int
-ata_pio_cmd_data(struct disk_op_s *op, int iswrite, struct ata_pio_command *cmd)
+static 정수
+ata_pio_cmd_data(struct disk_op_s *op, 정수 iswrite, struct ata_pio_command *cmd)
 {
     struct atadrive_s *adrive_gf = container_of(
         op->drive_fl, struct atadrive_s, drive);
@@ -474,63 +474,63 @@ ata_pio_cmd_data(struct disk_op_s *op, int iswrite, struct ata_pio_command *cmd)
     // Disable interrupts
     outb(ATA_CB_DC_HD15 | ATA_CB_DC_NIEN, iobase2 + ATA_CB_DC);
 
-    int ret = send_cmd(adrive_gf, cmd);
-    if (ret)
+    정수 ret = send_cmd(adrive_gf, cmd);
+    만약 (ret)
         goto fail;
     ret = ata_wait_data(iobase1);
-    if (ret)
+    만약 (ret)
         goto fail;
     ret = ata_pio_transfer(op, iswrite, DISK_SECTOR_SIZE);
 
 fail:
     // Enable interrupts
     outb(ATA_CB_DC_HD15, iobase2+ATA_CB_DC);
-    return ret;
+    반환 ret;
 }
 
 // Transfer data to harddrive using DMA protocol.
-static int
+static 정수
 ata_dma_cmd_data(struct disk_op_s *op, struct ata_pio_command *cmd)
 {
-    if (! CONFIG_ATA_DMA)
-        return -1;
+    만약 (! CONFIG_ATA_DMA)
+        반환 -1;
     struct atadrive_s *adrive_gf = container_of(
         op->drive_fl, struct atadrive_s, drive);
-    int ret = send_cmd(adrive_gf, cmd);
-    if (ret)
-        return ret;
-    return ata_dma_transfer(op);
+    정수 ret = send_cmd(adrive_gf, cmd);
+    만약 (ret)
+        반환 ret;
+    반환 ata_dma_transfer(op);
 }
 
 // Read/write count blocks from a harddrive.
-static int
-ata_readwrite(struct disk_op_s *op, int iswrite)
+static 정수
+ata_readwrite(struct disk_op_s *op, 정수 iswrite)
 {
     u64 lba = op->lba;
 
-    int usepio = ata_try_dma(op, iswrite, DISK_SECTOR_SIZE);
+    정수 usepio = ata_try_dma(op, iswrite, DISK_SECTOR_SIZE);
 
     struct ata_pio_command cmd;
     memset(&cmd, 0, sizeof(cmd));
 
-    if (op->count >= (1<<8) || lba + op->count >= (1<<28)) {
+    만약 (op->count >= (1<<8) || lba + op->count >= (1<<28)) {
         cmd.sector_count2 = op->count >> 8;
         cmd.lba_low2 = lba >> 24;
         cmd.lba_mid2 = lba >> 32;
         cmd.lba_high2 = lba >> 40;
         lba &= 0xffffff;
 
-        if (usepio)
+        만약 (usepio)
             cmd.command = (iswrite ? ATA_CMD_WRITE_SECTORS_EXT
                            : ATA_CMD_READ_SECTORS_EXT);
-        else
+        아니면
             cmd.command = (iswrite ? ATA_CMD_WRITE_DMA_EXT
                            : ATA_CMD_READ_DMA_EXT);
-    } else {
-        if (usepio)
+    } 아니면 {
+        만약 (usepio)
             cmd.command = (iswrite ? ATA_CMD_WRITE_SECTORS
                            : ATA_CMD_READ_SECTORS);
-        else
+        아니면
             cmd.command = (iswrite ? ATA_CMD_WRITE_DMA
                            : ATA_CMD_READ_DMA);
     }
@@ -541,37 +541,37 @@ ata_readwrite(struct disk_op_s *op, int iswrite)
     cmd.lba_high = lba >> 16;
     cmd.device = ((lba >> 24) & 0xf) | ATA_CB_DH_LBA;
 
-    int ret;
-    if (usepio)
+    정수 ret;
+    만약 (usepio)
         ret = ata_pio_cmd_data(op, iswrite, &cmd);
-    else
+    아니면
         ret = ata_dma_cmd_data(op, &cmd);
-    if (ret)
-        return DISK_RET_EBADTRACK;
-    return DISK_RET_SUCCESS;
+    만약 (ret)
+        반환 DISK_RET_EBADTRACK;
+    반환 DISK_RET_SUCCESS;
 }
 
 // 16bit command demuxer for ATA harddrives.
-int
+정수
 ata_process_op(struct disk_op_s *op)
 {
-    if (!CONFIG_ATA)
-        return 0;
+    만약 (!CONFIG_ATA)
+        반환 0;
 
     struct atadrive_s *adrive_gf = container_of(
         op->drive_fl, struct atadrive_s, drive);
     switch (op->command) {
     case CMD_READ:
-        return ata_readwrite(op, 0);
+        반환 ata_readwrite(op, 0);
     case CMD_WRITE:
-        return ata_readwrite(op, 1);
+        반환 ata_readwrite(op, 1);
     case CMD_RESET:
         ata_reset(adrive_gf);
-        return DISK_RET_SUCCESS;
+        반환 DISK_RET_SUCCESS;
     case CMD_ISREADY:
-        return isready(adrive_gf);
+        반환 isready(adrive_gf);
     default:
-        return default_process_op(op);
+        반환 default_process_op(op);
     }
 }
 
@@ -583,18 +583,18 @@ ata_process_op(struct disk_op_s *op)
 #define CDROM_CDB_SIZE 12
 
 // Low-level atapi command transmit function.
-int
+정수
 ata_atapi_process_op(struct disk_op_s *op)
 {
-    if (! CONFIG_ATA)
-        return 0;
+    만약 (! CONFIG_ATA)
+        반환 0;
 
-    if (op->command == CMD_WRITE || op->command == CMD_FORMAT)
-        return DISK_RET_EWRITEPROTECT;
+    만약 (op->command == CMD_WRITE || op->command == CMD_FORMAT)
+        반환 DISK_RET_EWRITEPROTECT;
     u8 cdbcmd[CDROM_CDB_SIZE];
-    int blocksize = scsi_fill_cmd(op, cdbcmd, sizeof(cdbcmd));
-    if (blocksize < 0)
-        return default_process_op(op);
+    정수 blocksize = scsi_fill_cmd(op, cdbcmd, sizeof(cdbcmd));
+    만약 (blocksize < 0)
+        반환 default_process_op(op);
 
     struct atadrive_s *adrive_gf = container_of(
         op->drive_fl, struct atadrive_s, drive);
@@ -611,33 +611,33 @@ ata_atapi_process_op(struct disk_op_s *op)
     // Disable interrupts
     outb(ATA_CB_DC_HD15 | ATA_CB_DC_NIEN, iobase2 + ATA_CB_DC);
 
-    int ret = send_cmd(adrive_gf, &cmd);
-    if (ret)
+    정수 ret = send_cmd(adrive_gf, &cmd);
+    만약 (ret)
         goto fail;
     ret = ata_wait_data(iobase1);
-    if (ret)
+    만약 (ret)
         goto fail;
 
     // Send command to device
     outsw_fl(iobase1, MAKE_FLATPTR(GET_SEG(SS), cdbcmd), CDROM_CDB_SIZE / 2);
 
-    int status = pause_await_not_bsy(iobase1, iobase2);
-    if (status < 0) {
+    정수 status = pause_await_not_bsy(iobase1, iobase2);
+    만약 (status < 0) {
         ret = status;
         goto fail;
     }
 
-    if (status & ATA_CB_STAT_ERR) {
+    만약 (status & ATA_CB_STAT_ERR) {
         u8 err = inb(iobase1 + ATA_CB_ERR);
         // skip "Not Ready"
-        if (err != 0x20)
+        만약 (err != 0x20)
             dprintf(6, "send_atapi_cmd : read error (status=%02x err=%02x)\n"
                     , status, err);
         ret = -2;
         goto fail;
     }
-    if (blocksize) {
-        if (!(status & ATA_CB_STAT_DRQ)) {
+    만약 (blocksize) {
+        만약 (!(status & ATA_CB_STAT_DRQ)) {
             dprintf(6, "send_atapi_cmd : DRQ not set (status %02x)\n", status);
             ret = -3;
             goto fail;
@@ -649,9 +649,9 @@ ata_atapi_process_op(struct disk_op_s *op)
 fail:
     // Enable interrupts
     outb(ATA_CB_DC_HD15, iobase2+ATA_CB_DC);
-    if (ret)
-        return DISK_RET_EBADTRACK;
-    return DISK_RET_SUCCESS;
+    만약 (ret)
+        반환 DISK_RET_EBADTRACK;
+    반환 DISK_RET_SUCCESS;
 }
 
 
@@ -660,8 +660,8 @@ fail:
  ****************************************************************/
 
 // Send an identify device or identify device packet command.
-static int
-send_ata_identity(struct atadrive_s *adrive, u16 *buffer, int command)
+static 정수
+send_ata_identity(struct atadrive_s *adrive, u16 *buffer, 정수 command)
 {
     memset(buffer, 0, DISK_SECTOR_SIZE);
 
@@ -676,20 +676,20 @@ send_ata_identity(struct atadrive_s *adrive, u16 *buffer, int command)
     memset(&cmd, 0, sizeof(cmd));
     cmd.command = command;
 
-    return ata_pio_cmd_data(&dop, 0, &cmd);
+    반환 ata_pio_cmd_data(&dop, 0, &cmd);
 }
 
 // Extract the ATA/ATAPI version info.
-int
+정수
 ata_extract_version(u16 *buffer)
 {
     // Extract ATA/ATAPI version.
     u16 ataversion = buffer[80];
     u8 version;
-    for (version=15; version>0; version--)
-        if (ataversion & (1<<version))
+    위해 (version=15; version>0; version--)
+        만약 (ataversion & (1<<version))
             break;
-    return version;
+    반환 version;
 }
 
 #define MAXMODEL 40
@@ -699,12 +699,12 @@ char *
 ata_extract_model(char *model, u32 size, u16 *buffer)
 {
     // Read model name
-    int i;
-    for (i=0; i<size/2; i++)
+    정수 i;
+    위해 (i=0; i<size/2; i++)
         *(u16*)&model[i*2] = be16_to_cpu(buffer[27+i]);
     model[size] = 0x00;
     nullTrailingSpace(model);
-    return model;
+    반환 model;
 }
 
 // Common init code between ata and atapi
@@ -712,16 +712,16 @@ static struct atadrive_s *
 init_atadrive(struct atadrive_s *dummy, u16 *buffer)
 {
     struct atadrive_s *adrive = malloc_fseg(sizeof(*adrive));
-    if (!adrive) {
+    만약 (!adrive) {
         warn_noalloc();
-        return NULL;
+        반환 NULL;
     }
     memset(adrive, 0, sizeof(*adrive));
     adrive->chan_gf = dummy->chan_gf;
     adrive->slave = dummy->slave;
     adrive->drive.cntl_id = adrive->chan_gf->ataid * 2 + dummy->slave;
     adrive->drive.removable = (buffer[0] & 0x80) ? 1 : 0;
-    return adrive;
+    반환 adrive;
 }
 
 // Detect if the given drive is an atapi - initialize it if so.
@@ -729,14 +729,14 @@ static struct atadrive_s *
 init_drive_atapi(struct atadrive_s *dummy, u16 *buffer)
 {
     // Send an IDENTIFY_DEVICE_PACKET command to device
-    int ret = send_ata_identity(dummy, buffer, ATA_CMD_IDENTIFY_PACKET_DEVICE);
-    if (ret)
-        return NULL;
+    정수 ret = send_ata_identity(dummy, buffer, ATA_CMD_IDENTIFY_PACKET_DEVICE);
+    만약 (ret)
+        반환 NULL;
 
     // Success - setup as ATAPI.
     struct atadrive_s *adrive = init_atadrive(dummy, buffer);
-    if (!adrive)
-        return NULL;
+    만약 (!adrive)
+        반환 NULL;
     adrive->drive.type = DTYPE_ATA_ATAPI;
     adrive->drive.blksize = CDROM_SECTOR_SIZE;
     adrive->drive.sectors = (u64)-1;
@@ -751,8 +751,8 @@ init_drive_atapi(struct atadrive_s *dummy, u16 *buffer)
     dprintf(1, "%s\n", desc);
 
     // fill cdidmap
-    if (iscd) {
-        int prio = bootprio_find_ata_device(adrive->chan_gf->pci_tmp,
+    만약 (iscd) {
+        정수 prio = bootprio_find_ata_device(adrive->chan_gf->pci_tmp,
                                             adrive->chan_gf->chanid,
                                             adrive->slave);
         boot_lchs_find_ata_device(adrive->chan_gf->pci_tmp,
@@ -762,7 +762,7 @@ init_drive_atapi(struct atadrive_s *dummy, u16 *buffer)
         boot_add_cd(&adrive->drive, desc, prio);
     }
 
-    return adrive;
+    반환 adrive;
 }
 
 // Detect if the given drive is a regular ata drive - initialize it if so.
@@ -770,14 +770,14 @@ static struct atadrive_s *
 init_drive_ata(struct atadrive_s *dummy, u16 *buffer)
 {
     // Send an IDENTIFY_DEVICE command to device
-    int ret = send_ata_identity(dummy, buffer, ATA_CMD_IDENTIFY_DEVICE);
-    if (ret)
-        return NULL;
+    정수 ret = send_ata_identity(dummy, buffer, ATA_CMD_IDENTIFY_DEVICE);
+    만약 (ret)
+        반환 NULL;
 
     // Success - setup as ATA.
     struct atadrive_s *adrive = init_atadrive(dummy, buffer);
-    if (!adrive)
-        return NULL;
+    만약 (!adrive)
+        반환 NULL;
     adrive->drive.type = DTYPE_ATA;
     adrive->drive.blksize = DISK_SECTOR_SIZE;
 
@@ -786,14 +786,14 @@ init_drive_ata(struct atadrive_s *dummy, u16 *buffer)
     adrive->drive.pchs.sector = buffer[6];
 
     u64 sectors;
-    if (buffer[83] & (1 << 10)) // word 83 - lba48 support
+    만약 (buffer[83] & (1 << 10)) // word 83 - lba48 support
         sectors = *(u64*)&buffer[100]; // word 100-103
-    else
+    아니면
         sectors = *(u32*)&buffer[60]; // word 60 and word 61
     adrive->drive.sectors = sectors;
     u64 adjsize = sectors >> 11;
     char adjprefix = 'M';
-    if (adjsize >= (1 << 16)) {
+    만약 (adjsize >= (1 << 16)) {
         adjsize >>= 10;
         adjprefix = 'G';
     }
@@ -806,7 +806,7 @@ init_drive_ata(struct atadrive_s *dummy, u16 *buffer)
                           , (u32)adjsize, adjprefix);
     dprintf(1, "%s\n", desc);
 
-    int prio = bootprio_find_ata_device(adrive->chan_gf->pci_tmp,
+    정수 prio = bootprio_find_ata_device(adrive->chan_gf->pci_tmp,
                                         adrive->chan_gf->chanid,
                                         adrive->slave);
     boot_lchs_find_ata_device(adrive->chan_gf->pci_tmp,
@@ -816,34 +816,34 @@ init_drive_ata(struct atadrive_s *dummy, u16 *buffer)
     // Register with bcv system.
     boot_add_hd(&adrive->drive, desc, prio);
 
-    return adrive;
+    반환 adrive;
 }
 
 static u32 SpinupEnd;
 
 // Wait for non-busy status and check for "floating bus" condition.
-static int
+static 정수
 powerup_await_non_bsy(u16 base)
 {
     u8 orstatus = 0;
     u8 status;
-    for (;;) {
+    위해 (;;) {
         status = inb(base+ATA_CB_STAT);
-        if (!(status & ATA_CB_STAT_BSY))
+        만약 (!(status & ATA_CB_STAT_BSY))
             break;
         orstatus |= status;
-        if (orstatus == 0xff) {
+        만약 (orstatus == 0xff) {
             dprintf(4, "powerup IDE floating\n");
-            return orstatus;
+            반환 orstatus;
         }
-        if (timer_check(SpinupEnd)) {
+        만약 (timer_check(SpinupEnd)) {
             warn_timeout();
-            return -1;
+            반환 -1;
         }
         yield();
     }
     dprintf(6, "powerup iobase=%x st=%x\n", base, status);
-    return status;
+    반환 status;
 }
 
 // Detect any drives attached to a given controller.
@@ -855,19 +855,19 @@ ata_detect(void *data)
     memset(&dummy, 0, sizeof(dummy));
     dummy.chan_gf = chan_gf;
     // Device detection
-    int didreset = 0;
+    정수 didreset = 0;
     u8 slave;
-    for (slave=0; slave<=1; slave++) {
+    위해 (slave=0; slave<=1; slave++) {
         // Wait for not-bsy.
         u16 iobase1 = chan_gf->iobase1;
-        int status = powerup_await_non_bsy(iobase1);
-        if (status < 0)
+        정수 status = powerup_await_non_bsy(iobase1);
+        만약 (status < 0)
             continue;
         u8 newdh = slave ? ATA_CB_DH_DEV1 : ATA_CB_DH_DEV0;
         outb(newdh, iobase1+ATA_CB_DH);
         ndelay(400);
         status = powerup_await_non_bsy(iobase1);
-        if (status < 0)
+        만약 (status < 0)
             continue;
 
         // Check if ioport registers look valid.
@@ -879,14 +879,14 @@ ata_detect(void *data)
         u8 sn = inb(iobase1+ATA_CB_SN);
         dprintf(6, "ata_detect ata%d-%d: sc=%x sn=%x dh=%x\n"
                 , chan_gf->ataid, slave, sc, sn, dh);
-        if (sc != 0x55 || sn != 0xaa || dh != newdh)
+        만약 (sc != 0x55 || sn != 0xaa || dh != newdh)
             continue;
 
         // Prepare new drive.
         dummy.slave = slave;
 
         // reset the channel
-        if (!didreset) {
+        만약 (!didreset) {
             ata_reset(&dummy);
             didreset = 1;
         }
@@ -894,28 +894,28 @@ ata_detect(void *data)
         // check for ATAPI
         u16 buffer[256];
         struct atadrive_s *adrive = init_drive_atapi(&dummy, buffer);
-        if (!adrive) {
+        만약 (!adrive) {
             // Didn't find an ATAPI drive - look for ATA drive.
             u8 st = inb(iobase1+ATA_CB_STAT);
-            if (!st)
+            만약 (!st)
                 // Status not set - can't be a valid drive.
                 continue;
 
             // Wait for RDY.
-            int ret = await_rdy(iobase1);
-            if (ret < 0)
+            정수 ret = await_rdy(iobase1);
+            만약 (ret < 0)
                 continue;
 
             // check for ATA.
             adrive = init_drive_ata(&dummy, buffer);
-            if (!adrive)
+            만약 (!adrive)
                 // No ATA drive found
                 continue;
         }
 
         u16 resetresult = buffer[93];
         dprintf(6, "ata_detect resetresult=%04x\n", resetresult);
-        if (!slave && (resetresult & 0xdf61) == 0x4041)
+        만약 (!slave && (resetresult & 0xdf61) == 0x4041)
             // resetresult looks valid and device 0 is responding to
             // device 1 requests - device 1 must not be present - skip
             // detection.
@@ -925,14 +925,14 @@ ata_detect(void *data)
 
 // Initialize an ata controller and detect its drives.
 static void
-init_controller(struct pci_device *pci, int chanid, int irq
+init_controller(struct pci_device *pci, 정수 chanid, 정수 irq
                 , u32 port1, u32 port2, u32 master)
 {
-    static int ataid = 0;
+    static 정수 ataid = 0;
     struct ata_channel_s *chan_gf = malloc_fseg(sizeof(*chan_gf));
-    if (!chan_gf) {
+    만약 (!chan_gf) {
         warn_noalloc();
-        return;
+        반환;
     }
     chan_gf->ataid = ataid++;
     chan_gf->chanid = chanid;
@@ -955,37 +955,37 @@ static void
 init_pciata(struct pci_device *pci, u8 prog_if)
 {
     u8 pciirq = pci_config_readb(pci->bdf, PCI_INTERRUPT_LINE);
-    int master = 0;
-    if (CONFIG_ATA_DMA && prog_if & 0x80) {
+    정수 master = 0;
+    만약 (CONFIG_ATA_DMA && prog_if & 0x80) {
         // Check for bus-mastering.
         u32 bar = pci_config_readl(pci->bdf, PCI_BASE_ADDRESS_4);
-        if (bar & PCI_BASE_ADDRESS_SPACE_IO) {
+        만약 (bar & PCI_BASE_ADDRESS_SPACE_IO) {
             master = pci_enable_iobar(pci, PCI_BASE_ADDRESS_4);
             pci_enable_busmaster(pci);
         }
     }
 
     u32 port1, port2, irq;
-    if (prog_if & 1) {
+    만약 (prog_if & 1) {
         port1 = pci_enable_iobar(pci, PCI_BASE_ADDRESS_0);
         port2 = pci_enable_iobar(pci, PCI_BASE_ADDRESS_1);
-        if (!port1 || !port2)
-            return;
+        만약 (!port1 || !port2)
+            반환;
         irq = pciirq;
-    } else {
+    } 아니면 {
         port1 = PORT_ATA1_CMD_BASE;
         port2 = PORT_ATA1_CTRL_BASE;
         irq = IRQ_ATA1;
     }
     init_controller(pci, 0, irq, port1, port2, master);
 
-    if (prog_if & 4) {
+    만약 (prog_if & 4) {
         port1 = pci_enable_iobar(pci, PCI_BASE_ADDRESS_2);
         port2 = pci_enable_iobar(pci, PCI_BASE_ADDRESS_3);
-        if (!port1 || !port2)
-            return;
+        만약 (!port1 || !port2)
+            반환;
         irq = pciirq;
-    } else {
+    } 아니면 {
         port1 = PORT_ATA2_CMD_BASE;
         port2 = PORT_ATA2_CTRL_BASE;
         irq = IRQ_ATA2;
@@ -1002,9 +1002,9 @@ found_genericata(struct pci_device *pci, void *arg)
 static void
 found_compatibleahci(struct pci_device *pci, void *arg)
 {
-    if (CONFIG_AHCI)
+    만약 (CONFIG_AHCI)
         // Already handled directly via native ahci interface.
-        return;
+        반환;
     init_pciata(pci, 0x8f);
 }
 
@@ -1019,14 +1019,14 @@ static const struct pci_device_id pci_ata_tbl[] = {
 static void
 ata_scan(void)
 {
-    if (CONFIG_QEMU && hlist_empty(&PCIDevices)) {
+    만약 (CONFIG_QEMU && hlist_empty(&PCIDevices)) {
         // No PCI devices found - probably a QEMU "-M isapc" machine.
         // Try using ISA ports for ATA controllers.
         init_controller(NULL, 0, IRQ_ATA1
                         , PORT_ATA1_CMD_BASE, PORT_ATA1_CTRL_BASE, 0);
         init_controller(NULL, 1, IRQ_ATA2
                         , PORT_ATA2_CMD_BASE, PORT_ATA2_CTRL_BASE, 0);
-        return;
+        반환;
     }
 
     // Scan PCI bus for ATA adapters
@@ -1040,8 +1040,8 @@ void
 ata_setup(void)
 {
     ASSERT32FLAT();
-    if (!CONFIG_ATA)
-        return;
+    만약 (!CONFIG_ATA)
+        반환;
 
     dprintf(3, "init hard drives\n");
 

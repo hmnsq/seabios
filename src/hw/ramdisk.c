@@ -20,47 +20,47 @@
 void
 ramdisk_setup(void)
 {
-    if (!CONFIG_FLASH_FLOPPY)
-        return;
+    만약 (!CONFIG_FLASH_FLOPPY)
+        반환;
 
     // Find image.
     struct romfile_s *file = romfile_findprefix("floppyimg/", NULL);
-    if (!file)
-        return;
+    만약 (!file)
+        반환;
     const char *filename = file->name;
     u32 size = file->size;
     dprintf(3, "Found floppy file %s of size %d\n", filename, size);
-    int ftype = find_floppy_type(size);
-    if (ftype < 0) {
+    정수 ftype = find_floppy_type(size);
+    만약 (ftype < 0) {
         dprintf(3, "No floppy type found for ramdisk size\n");
-        return;
+        반환;
     }
 
     // Allocate ram for image.
     void *pos = memalign_tmphigh(PAGE_SIZE, size);
-    if (!pos) {
+    만약 (!pos) {
         warn_noalloc();
-        return;
+        반환;
     }
     e820_add((u32)pos, size, E820_RESERVED);
 
     // Copy image into ram.
-    int ret = file->copy(file, pos, size);
-    if (ret < 0)
-        return;
+    정수 ret = file->copy(file, pos, size);
+    만약 (ret < 0)
+        반환;
 
     // Setup driver.
     struct drive_s *drive = init_floppy((u32)pos, ftype);
-    if (!drive)
-        return;
+    만약 (!drive)
+        반환;
     drive->type = DTYPE_RAMDISK;
     dprintf(1, "Mapping floppy %s to addr %p\n", filename, pos);
     char *desc = znprintf(MAXDESCSIZE, "Ramdisk [%s]", &filename[10]);
     boot_add_floppy(drive, desc, bootprio_find_named_rom(filename, 0));
 }
 
-static int
-ramdisk_copy(struct disk_op_s *op, int iswrite)
+static 정수
+ramdisk_copy(struct disk_op_s *op, 정수 iswrite)
 {
     u32 offset = GET_GLOBALFLAT(op->drive_fl->cntl_id);
     offset += (u32)op->lba * DISK_SECTOR_SIZE;
@@ -68,10 +68,10 @@ ramdisk_copy(struct disk_op_s *op, int iswrite)
     u64 ramd = GDT_DATA | GDT_LIMIT(0xfffff) | GDT_BASE(offset);
 
     u64 gdt[6];
-    if (iswrite) {
+    만약 (iswrite) {
         gdt[2] = opd;
         gdt[3] = ramd;
-    } else {
+    } 아니면 {
         gdt[2] = ramd;
         gdt[3] = opd;
     }
@@ -86,23 +86,23 @@ ramdisk_copy(struct disk_op_s *op, int iswrite)
     br.cx = op->count * DISK_SECTOR_SIZE / 2;
     call16_int(0x15, &br);
 
-    if (br.flags & F_CF)
-        return DISK_RET_EBADTRACK;
-    return DISK_RET_SUCCESS;
+    만약 (br.flags & F_CF)
+        반환 DISK_RET_EBADTRACK;
+    반환 DISK_RET_SUCCESS;
 }
 
-int
+정수
 ramdisk_process_op(struct disk_op_s *op)
 {
-    if (!CONFIG_FLASH_FLOPPY)
-        return 0;
+    만약 (!CONFIG_FLASH_FLOPPY)
+        반환 0;
 
     switch (op->command) {
     case CMD_READ:
-        return ramdisk_copy(op, 0);
+        반환 ramdisk_copy(op, 0);
     case CMD_WRITE:
-        return ramdisk_copy(op, 1);
+        반환 ramdisk_copy(op, 1);
     default:
-        return default_process_op(op);
+        반환 default_process_op(op);
     }
 }

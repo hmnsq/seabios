@@ -144,7 +144,7 @@ pvscsi_write_cmd_desc(void *iobase, u32 cmd, const void *desc, size_t len)
 
     len /= sizeof(*ptr);
     writel(iobase + PVSCSI_REG_OFFSET_COMMAND, cmd);
-    for (i = 0; i < len; i++)
+    위해 (i = 0; i < len; i++)
         writel(iobase + PVSCSI_REG_OFFSET_COMMAND_DATA, ptr[i]);
 }
 
@@ -157,7 +157,7 @@ pvscsi_kick_rw_io(void *iobase)
 static void
 pvscsi_wait_intr_cmpl(void *iobase)
 {
-    while (!(readl(iobase + PVSCSI_REG_OFFSET_INTR_STATUS) & PVSCSI_INTR_CMPL_MASK))
+    동안 (!(readl(iobase + PVSCSI_REG_OFFSET_INTR_STATUS) & PVSCSI_INTR_CMPL_MASK))
         usleep(5);
     writel(iobase + PVSCSI_REG_OFFSET_INTR_STATUS, PVSCSI_INTR_CMPL_MASK);
 }
@@ -168,9 +168,9 @@ pvscsi_init_rings(void *iobase, struct pvscsi_ring_dsc_s **ring_dsc)
     struct PVSCSICmdDescSetupRings cmd = {0,};
 
     struct pvscsi_ring_dsc_s *dsc = malloc_high(sizeof(*dsc));
-    if (!dsc) {
+    만약 (!dsc) {
         warn_noalloc();
-        return;
+        반환;
     }
 
     dsc->ring_state =
@@ -179,9 +179,9 @@ pvscsi_init_rings(void *iobase, struct pvscsi_ring_dsc_s **ring_dsc)
         (struct PVSCSIRingReqDesc *)memalign_high(PAGE_SIZE, PAGE_SIZE);
     dsc->ring_cmps =
         (struct PVSCSIRingCmpDesc *)memalign_high(PAGE_SIZE, PAGE_SIZE);
-    if (!dsc->ring_state || !dsc->ring_reqs || !dsc->ring_cmps) {
+    만약 (!dsc->ring_state || !dsc->ring_reqs || !dsc->ring_cmps) {
         warn_noalloc();
-        return;
+        반환;
     }
     memset(dsc->ring_state, 0, PAGE_SIZE);
     memset(dsc->ring_reqs, 0, PAGE_SIZE);
@@ -204,14 +204,14 @@ pvscsi_get_rsp(struct PVSCSIRingsState *s,
 {
     u32 status = rsp->hostStatus;
     s->cmpConsIdx = s->cmpConsIdx + 1;
-    return status;
+    반환 status;
 }
 
-int
+정수
 pvscsi_process_op(struct disk_op_s *op)
 {
-    if (!CONFIG_PVSCSI)
-        return DISK_RET_EBADTRACK;
+    만약 (!CONFIG_PVSCSI)
+        반환 DISK_RET_EBADTRACK;
     struct pvscsi_lun_s *plun =
         container_of(op->drive_fl, struct pvscsi_lun_s, drive);
     struct pvscsi_ring_dsc_s *ring_dsc = plun->ring_dsc;
@@ -222,16 +222,16 @@ pvscsi_process_op(struct disk_op_s *op)
     struct PVSCSIRingCmpDesc *rsp;
     u32 status;
 
-    if (s->reqProdIdx - s->cmpConsIdx >= 1 << req_entries) {
+    만약 (s->reqProdIdx - s->cmpConsIdx >= 1 << req_entries) {
         dprintf(1, "pvscsi: ring full: reqProdIdx=%d cmpConsIdx=%d\n",
                 s->reqProdIdx, s->cmpConsIdx);
-        return DISK_RET_EBADTRACK;
+        반환 DISK_RET_EBADTRACK;
     }
 
     req = ring_dsc->ring_reqs + (s->reqProdIdx & MASK(req_entries));
-    int blocksize = scsi_fill_cmd(op, req->cdb, 16);
-    if (blocksize < 0)
-        return default_process_op(op);
+    정수 blocksize = scsi_fill_cmd(op, req->cdb, 16);
+    만약 (blocksize < 0)
+        반환 default_process_op(op);
     req->bus = 0;
     req->target = plun->target;
     memset(req->lun, 0, sizeof(req->lun));
@@ -253,17 +253,17 @@ pvscsi_process_op(struct disk_op_s *op)
     rsp = ring_dsc->ring_cmps + (s->cmpConsIdx & MASK(cmp_entries));
     status = pvscsi_get_rsp(s, rsp);
 
-    return status == 0 ? DISK_RET_SUCCESS : DISK_RET_EBADTRACK;
+    반환 status == 0 ? DISK_RET_SUCCESS : DISK_RET_EBADTRACK;
 }
 
-static int
+static 정수
 pvscsi_add_lun(struct pci_device *pci, void *iobase,
                struct pvscsi_ring_dsc_s *ring_dsc, u8 target, u8 lun)
 {
     struct pvscsi_lun_s *plun = malloc_fseg(sizeof(*plun));
-    if (!plun) {
+    만약 (!plun) {
         warn_noalloc();
-        return -1;
+        반환 -1;
     }
     memset(plun, 0, sizeof(*plun));
     plun->drive.type = DTYPE_PVSCSI;
@@ -275,16 +275,16 @@ pvscsi_add_lun(struct pci_device *pci, void *iobase,
 
     boot_lchs_find_scsi_device(pci, target, lun, &(plun->drive.lchs));
     char *name = znprintf(MAXDESCSIZE, "pvscsi %pP %d:%d", pci, target, lun);
-    int prio = bootprio_find_scsi_device(pci, target, lun);
-    int ret = scsi_drive_setup(&plun->drive, name, prio);
+    정수 prio = bootprio_find_scsi_device(pci, target, lun);
+    정수 ret = scsi_drive_setup(&plun->drive, name, prio);
     free(name);
-    if (ret)
+    만약 (ret)
         goto fail;
-    return 0;
+    반환 0;
 
 fail:
     free(plun);
-    return -1;
+    반환 -1;
 }
 
 static void
@@ -300,8 +300,8 @@ init_pvscsi(void *data)
 {
     struct pci_device *pci = data;
     void *iobase = pci_enable_membar(pci, PCI_BASE_ADDRESS_0);
-    if (!iobase)
-        return;
+    만약 (!iobase)
+        반환;
     pci_enable_busmaster(pci);
 
     dprintf(1, "found pvscsi at %pP, io @ %p\n", pci, iobase);
@@ -310,8 +310,8 @@ init_pvscsi(void *data)
 
     struct pvscsi_ring_dsc_s *ring_dsc = NULL;
     pvscsi_init_rings(iobase, &ring_dsc);
-    int i;
-    for (i = 0; i < 64; i++)
+    정수 i;
+    위해 (i = 0; i < 64; i++)
         pvscsi_scan_target(pci, iobase, ring_dsc, i);
 }
 
@@ -319,14 +319,14 @@ void
 pvscsi_setup(void)
 {
     ASSERT32FLAT();
-    if (! CONFIG_PVSCSI)
-        return;
+    만약 (! CONFIG_PVSCSI)
+        반환;
 
     dprintf(3, "init pvscsi\n");
 
     struct pci_device *pci;
     foreachpci(pci) {
-        if (pci->vendor != PCI_VENDOR_ID_VMWARE
+        만약 (pci->vendor != PCI_VENDOR_ID_VMWARE
             || pci->device != PCI_DEVICE_ID_VMWARE_PVSCSI)
             continue;
         run_thread(init_pvscsi, pci);

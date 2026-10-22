@@ -9,9 +9,9 @@ struct usb_pipe;
 struct usb_pipe *ohci_realloc_pipe(struct usbdevice_s *usbdev
                                    , struct usb_pipe *upipe
                                    , struct usb_endpoint_descriptor *epdesc);
-int ohci_send_pipe(struct usb_pipe *p, int dir, const void *cmd
-                   , void *data, int datasize);
-int ohci_poll_intr(struct usb_pipe *p, void *data);
+정수 ohci_send_pipe(struct usb_pipe *p, 정수 dir, const void *cmd
+                   , void *data, 정수 datasize);
+정수 ohci_poll_intr(struct usb_pipe *p, void *data);
 
 
 /****************************************************************

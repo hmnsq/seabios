@@ -16,19 +16,19 @@
 void
 mouse_init(void)
 {
-    if (! CONFIG_MOUSE)
-        return;
+    만약 (! CONFIG_MOUSE)
+        반환;
     dprintf(3, "init mouse\n");
     // pointing device installed
     set_equipment_flags(0x04, 0x04);
 }
 
-static int
-mouse_command(int command, u8 *param)
+static 정수
+mouse_command(정수 command, u8 *param)
 {
-    if (usb_mouse_active())
-        return usb_mouse_command(command, param);
-    return ps2_mouse_command(command, param);
+    만약 (usb_mouse_active())
+        반환 usb_mouse_command(command, param);
+    반환 ps2_mouse_command(command, param);
 }
 
 #define RET_SUCCESS      0x00
@@ -42,10 +42,10 @@ mouse_command(int command, u8 *param)
 static void
 mouse_15c20000(struct bregs *regs)
 {
-    int ret = mouse_command(PSMOUSE_CMD_DISABLE, NULL);
-    if (ret)
+    정수 ret = mouse_command(PSMOUSE_CMD_DISABLE, NULL);
+    만약 (ret)
         set_code_invalid(regs, RET_ENEEDRESEND);
-    else
+    아니면
         set_code_success(regs);
 }
 
@@ -55,15 +55,15 @@ mouse_15c20001(struct bregs *regs)
 {
     u16 ebda_seg = get_ebda_seg();
     u8 mouse_flags_2 = GET_EBDA(ebda_seg, mouse_flag2);
-    if ((mouse_flags_2 & 0x80) == 0) {
+    만약 ((mouse_flags_2 & 0x80) == 0) {
         set_code_invalid(regs, RET_ENOHANDLER);
-        return;
+        반환;
     }
 
-    int ret = mouse_command(PSMOUSE_CMD_ENABLE, NULL);
-    if (ret)
+    정수 ret = mouse_command(PSMOUSE_CMD_ENABLE, NULL);
+    만약 (ret)
         set_code_invalid(regs, RET_ENEEDRESEND);
-    else
+    아니면
         set_code_success(regs);
 }
 
@@ -89,10 +89,10 @@ static void
 mouse_15c201(struct bregs *regs)
 {
     u8 param[2];
-    int ret = mouse_command(PSMOUSE_CMD_RESET_BAT, param);
-    if (ret) {
+    정수 ret = mouse_command(PSMOUSE_CMD_RESET_BAT, param);
+    만약 (ret) {
         set_code_invalid(regs, RET_ENEEDRESEND);
-        return;
+        반환;
     }
     regs->bl = param[0];
     regs->bh = param[1];
@@ -104,15 +104,15 @@ static void
 mouse_15c202(struct bregs *regs)
 {
     static u8 VAR16 sample_rates[7] = {10, 20, 40, 60, 80, 100, 200};
-    if (regs->bh >= ARRAY_SIZE(sample_rates)) {
+    만약 (regs->bh >= ARRAY_SIZE(sample_rates)) {
         set_code_invalid(regs, RET_EINVINPUT);
-        return;
+        반환;
     }
     u8 mouse_data1 = GET_GLOBAL(sample_rates[regs->bh]);
-    int ret = mouse_command(PSMOUSE_CMD_SETRATE, &mouse_data1);
-    if (ret)
+    정수 ret = mouse_command(PSMOUSE_CMD_SETRATE, &mouse_data1);
+    만약 (ret)
         set_code_invalid(regs, RET_ENEEDRESEND);
-    else
+    아니면
         set_code_success(regs);
 }
 
@@ -125,15 +125,15 @@ mouse_15c203(struct bregs *regs)
     //      1 =  50 dpi, 2 counts per millimeter
     //      2 = 100 dpi, 4 counts per millimeter
     //      3 = 200 dpi, 8 counts per millimeter
-    if (regs->bh >= 4) {
+    만약 (regs->bh >= 4) {
         set_code_invalid(regs, RET_EINVINPUT);
-        return;
+        반환;
     }
     u8 param = regs->bh;
-    int ret = mouse_command(PSMOUSE_CMD_SETRES, &param);
-    if (ret)
+    정수 ret = mouse_command(PSMOUSE_CMD_SETRES, &param);
+    만약 (ret)
         set_code_invalid(regs, RET_ENEEDRESEND);
-    else
+    아니면
         set_code_success(regs);
 }
 
@@ -142,10 +142,10 @@ static void
 mouse_15c204(struct bregs *regs)
 {
     u8 param[2];
-    int ret = mouse_command(PSMOUSE_CMD_GETID, param);
-    if (ret) {
+    정수 ret = mouse_command(PSMOUSE_CMD_GETID, param);
+    만약 (ret) {
         set_code_invalid(regs, RET_ENEEDRESEND);
-        return;
+        반환;
     }
     regs->bh = param[0];
     set_code_success(regs);
@@ -155,9 +155,9 @@ mouse_15c204(struct bregs *regs)
 static void
 mouse_15c205(struct bregs *regs)
 {
-    if (regs->bh != 3) {
+    만약 (regs->bh != 3) {
         set_code_invalid(regs, RET_EINTERFACE);
-        return;
+        반환;
     }
     u16 ebda_seg = get_ebda_seg();
     SET_EBDA(ebda_seg, mouse_flag1, 0x00);
@@ -172,10 +172,10 @@ static void
 mouse_15c20600(struct bregs *regs)
 {
     u8 param[3];
-    int ret = mouse_command(PSMOUSE_CMD_GETINFO, param);
-    if (ret) {
+    정수 ret = mouse_command(PSMOUSE_CMD_GETINFO, param);
+    만약 (ret) {
         set_code_invalid(regs, RET_ENEEDRESEND);
-        return;
+        반환;
     }
     regs->bl = param[0];
     regs->cl = param[1];
@@ -187,10 +187,10 @@ mouse_15c20600(struct bregs *regs)
 static void
 mouse_15c20601(struct bregs *regs)
 {
-    int ret = mouse_command(PSMOUSE_CMD_SETSCALE11, NULL);
-    if (ret)
+    정수 ret = mouse_command(PSMOUSE_CMD_SETSCALE11, NULL);
+    만약 (ret)
         set_code_invalid(regs, RET_ENEEDRESEND);
-    else
+    아니면
         set_code_success(regs);
 }
 
@@ -198,10 +198,10 @@ mouse_15c20601(struct bregs *regs)
 static void
 mouse_15c20602(struct bregs *regs)
 {
-    int ret = mouse_command(PSMOUSE_CMD_SETSCALE21, NULL);
-    if (ret)
+    정수 ret = mouse_command(PSMOUSE_CMD_SETSCALE21, NULL);
+    만약 (ret)
         set_code_invalid(regs, RET_ENEEDRESEND);
-    else
+    아니면
         set_code_success(regs);
 }
 
@@ -230,13 +230,13 @@ mouse_15c207(struct bregs *regs)
     struct segoff_s farptr = SEGOFF(regs->es, regs->bx);
     u16 ebda_seg = get_ebda_seg();
     u8 mouse_flags_2 = GET_EBDA(ebda_seg, mouse_flag2);
-    if (! farptr.segoff) {
+    만약 (! farptr.segoff) {
         /* remove handler */
-        if ((mouse_flags_2 & 0x80) != 0) {
+        만약 ((mouse_flags_2 & 0x80) != 0) {
             mouse_flags_2 &= ~0x80;
             mouse_command(PSMOUSE_CMD_DISABLE, NULL);
         }
-    } else {
+    } 아니면 {
         /* install handler */
         mouse_flags_2 |= 0x80;
     }
@@ -256,9 +256,9 @@ handle_15c2(struct bregs *regs)
 {
     //debug_stub(regs);
 
-    if (! CONFIG_MOUSE) {
+    만약 (! CONFIG_MOUSE) {
         set_code_invalid(regs, RET_EUNSUPPORTED);
-        return;
+        반환;
     }
 
     switch (regs->al) {
@@ -277,11 +277,11 @@ handle_15c2(struct bregs *regs)
 void VISIBLE16
 invoke_mouse_handler(void)
 {
-    if (!CONFIG_MOUSE)
-        return;
-    if (need_hop_back()) {
+    만약 (!CONFIG_MOUSE)
+        반환;
+    만약 (need_hop_back()) {
         stack_hop_back(invoke_mouse_handler, 0, 0);
-        return;
+        반환;
     }
     ASSERT16();
     u16 ebda_seg = get_ebda_seg();
@@ -316,25 +316,25 @@ invoke_mouse_handler(void)
 void
 process_mouse(u8 data)
 {
-    if (!CONFIG_MOUSE)
-        return;
+    만약 (!CONFIG_MOUSE)
+        반환;
 
     u16 ebda_seg = get_ebda_seg();
     u8 mouse_flags_1 = GET_EBDA(ebda_seg, mouse_flag1);
     u8 mouse_flags_2 = GET_EBDA(ebda_seg, mouse_flag2);
 
-    if (! (mouse_flags_2 & 0x80))
+    만약 (! (mouse_flags_2 & 0x80))
         // far call handler not installed
-        return;
+        반환;
 
     u8 package_count = mouse_flags_2 & 0x07;
     u8 index = mouse_flags_1 & 0x07;
     SET_EBDA(ebda_seg, mouse_data[index], data);
 
-    if ((index+1) < package_count) {
+    만약 ((index+1) < package_count) {
         mouse_flags_1++;
         SET_EBDA(ebda_seg, mouse_flag1, mouse_flags_1);
-        return;
+        반환;
     }
 
     SET_EBDA(ebda_seg, mouse_flag1, 0);

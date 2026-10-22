@@ -84,7 +84,7 @@ enum {
     ROMFILE_LOADER_ALLOC_ZONE_FSEG = 0x2,
 };
 
-int romfile_loader_execute(const char *name);
+정수 romfile_loader_execute(const char *name);
 
 void romfile_fw_cfg_resume(void);
 
