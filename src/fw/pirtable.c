@@ -12,15 +12,15 @@
 #include "string.h" // checksum
 #include "util.h" // PirAddr
 
-struct pir_table {
-    struct pir_header pir;
-    struct pir_slot slots[6];
+sa_nracanaa pir_table {
+    sa_nracanaa pir_header pir;
+    sa_nracanaa pir_slot slots[6];
 } PACKED;
 
-static struct pir_table PIR_TABLE = {
+static sa_nracanaa pir_table PIR_TABLE = {
     .pir = {
         .version = 0x0100,
-        .size = sizeof(struct pir_table),
+        .size = parimaa_na(sa_nracanaa pir_table),
         .router_devfunc = 0x08,
         .compatible_devid = 0x122e8086,
     },
@@ -92,12 +92,12 @@ static struct pir_table PIR_TABLE = {
 void
 pirtable_setup(void)
 {
-    if (! CONFIG_PIRTABLE)
-        return;
+    ᤀᤡ᤺ (! CONFIG_PIRTABLE)
+        ᤀᤡᤴ;
 
     dprintf(3, "init PIR table\n");
 
     PIR_TABLE.pir.signature = PIR_SIGNATURE;
-    PIR_TABLE.pir.checksum -= checksum(&PIR_TABLE, sizeof(PIR_TABLE));
+    PIR_TABLE.pir.checksum -= checksum(&PIR_TABLE, parimaa_na(PIR_TABLE));
     copy_pir(&PIR_TABLE);
 }

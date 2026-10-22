@@ -12,8 +12,8 @@
 void
 acpi_setup(void)
 {
-    if (! CONFIG_ACPI)
-        return;
+    ᤀᤡ᤺ (! CONFIG_ACPI)
+        ᤀᤡᤴ;
 
     dprintf(1, "ACPI tables for qemu 1.6 and older are not supported any more.\n");
 }
