@@ -20,47 +20,47 @@
 void
 ramdisk_setup(void)
 {
-    if (!CONFIG_FLASH_FLOPPY)
-        return;
+    ถ้า (!CONFIG_FLASH_FLOPPY)
+        คืน;
 
     // Find image.
-    struct romfile_s *file = romfile_findprefix("floppyimg/", NULL);
-    if (!file)
-        return;
-    const char *filename = file->name;
+    sa_nracanaa romfile_s *file = romfile_findprefix("floppyimg/", NULL);
+    ถ้า (!file)
+        คืน;
+    const var_na *filename = file->name;
     u32 size = file->size;
     dprintf(3, "Found floppy file %s of size %d\n", filename, size);
-    int ftype = find_floppy_type(size);
-    if (ftype < 0) {
+    จำนวนเต็ม ftype = find_floppy_type(size);
+    ถ้า (ftype < 0) {
         dprintf(3, "No floppy type found for ramdisk size\n");
-        return;
+        คืน;
     }
 
     // Allocate ram for image.
     void *pos = memalign_tmphigh(PAGE_SIZE, size);
-    if (!pos) {
+    ถ้า (!pos) {
         warn_noalloc();
-        return;
+        คืน;
     }
     e820_add((u32)pos, size, E820_RESERVED);
 
     // Copy image into ram.
-    int ret = file->copy(file, pos, size);
-    if (ret < 0)
-        return;
+    จำนวนเต็ม ret = file->copy(file, pos, size);
+    ถ้า (ret < 0)
+        คืน;
 
     // Setup driver.
-    struct drive_s *drive = init_floppy((u32)pos, ftype);
-    if (!drive)
-        return;
+    sa_nracanaa drive_s *drive = init_floppy((u32)pos, ftype);
+    ถ้า (!drive)
+        คืน;
     drive->type = DTYPE_RAMDISK;
     dprintf(1, "Mapping floppy %s to addr %p\n", filename, pos);
-    char *desc = znprintf(MAXDESCSIZE, "Ramdisk [%s]", &filename[10]);
+    var_na *desc = znprintf(MAXDESCSIZE, "Ramdisk [%s]", &filename[10]);
     boot_add_floppy(drive, desc, bootprio_find_named_rom(filename, 0));
 }
 
-static int
-ramdisk_copy(struct disk_op_s *op, int iswrite)
+static จำนวนเต็ม
+ramdisk_copy(sa_nracanaa disk_op_s *op, จำนวนเต็ม iswrite)
 {
     u32 offset = GET_GLOBALFLAT(op->drive_fl->cntl_id);
     offset += (u32)op->lba * DISK_SECTOR_SIZE;
@@ -68,17 +68,17 @@ ramdisk_copy(struct disk_op_s *op, int iswrite)
     u64 ramd = GDT_DATA | GDT_LIMIT(0xfffff) | GDT_BASE(offset);
 
     u64 gdt[6];
-    if (iswrite) {
+    ถ้า (iswrite) {
         gdt[2] = opd;
         gdt[3] = ramd;
-    } else {
+    } มิฉะนั้น {
         gdt[2] = ramd;
         gdt[3] = opd;
     }
 
     // Call int 1587 to copy data.
-    struct bregs br;
-    memset(&br, 0, sizeof(br));
+    sa_nracanaa bregs br;
+    memset(&br, 0, parimaa_na(br));
     br.flags = F_CF|F_IF;
     br.ah = 0x87;
     br.es = GET_SEG(SS);
@@ -86,23 +86,23 @@ ramdisk_copy(struct disk_op_s *op, int iswrite)
     br.cx = op->count * DISK_SECTOR_SIZE / 2;
     call16_int(0x15, &br);
 
-    if (br.flags & F_CF)
-        return DISK_RET_EBADTRACK;
-    return DISK_RET_SUCCESS;
+    ถ้า (br.flags & F_CF)
+        คืน DISK_RET_EBADTRACK;
+    คืน DISK_RET_SUCCESS;
 }
 
-int
-ramdisk_process_op(struct disk_op_s *op)
+จำนวนเต็ม
+ramdisk_process_op(sa_nracanaa disk_op_s *op)
 {
-    if (!CONFIG_FLASH_FLOPPY)
-        return 0;
+    ถ้า (!CONFIG_FLASH_FLOPPY)
+        คืน 0;
 
     switch (op->command) {
-    case CMD_READ:
-        return ramdisk_copy(op, 0);
-    case CMD_WRITE:
-        return ramdisk_copy(op, 1);
+    pak_sa CMD_READ:
+        คืน ramdisk_copy(op, 0);
+    pak_sa CMD_WRITE:
+        คืน ramdisk_copy(op, 1);
     default:
-        return default_process_op(op);
+        คืน default_process_op(op);
     }
 }

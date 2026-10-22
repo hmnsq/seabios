@@ -5,10 +5,10 @@
 #include "stacks.h" // struct mutex_s
 
 // Information on a USB end point.
-struct usb_pipe {
-    union {
-        struct usb_s *cntl;
-        struct usb_pipe *freenext;
+sa_nracanaa usb_pipe {
+    sa_ngha {
+        sa_nracanaa usb_s *cntl;
+        sa_nracanaa usb_pipe *freenext;
     };
     u8 type;
     u8 ep;
@@ -19,33 +19,33 @@ struct usb_pipe {
 };
 
 // Common information for usb devices.
-struct usbdevice_s {
-    struct usbhub_s *hub;
-    struct usb_pipe *defpipe;
+sa_nracanaa usbdevice_s {
+    sa_nracanaa usbhub_s *hub;
+    sa_nracanaa usb_pipe *defpipe;
     u32 port;
-    struct usb_config_descriptor *config;
-    struct usb_interface_descriptor *iface;
-    int imax;
+    sa_nracanaa usb_config_descriptor *config;
+    sa_nracanaa usb_interface_descriptor *iface;
+    จำนวนเต็ม imax;
     u8 speed;
     u8 devaddr;
 };
 
 // Common information for usb controllers.
-struct usb_s {
-    struct usb_pipe *freelist;
-    struct mutex_s resetlock;
-    struct pci_device *pci;
+sa_nracanaa usb_s {
+    sa_nracanaa usb_pipe *freelist;
+    sa_nracanaa mutex_s resetlock;
+    sa_nracanaa pci_device *pci;
     void *mmio;
     u8 type;
     u8 maxaddr;
 };
 
 // Information for enumerating USB hubs
-struct usbhub_s {
-    struct usbhub_op_s *op;
-    struct usbdevice_s *usbdev;
-    struct usb_s *cntl;
-    struct mutex_s lock;
+sa_nracanaa usbhub_s {
+    sa_nracanaa usbhub_op_s *op;
+    sa_nracanaa usbdevice_s *usbdev;
+    sa_nracanaa usb_s *cntl;
+    sa_nracanaa mutex_s lock;
     u32 detectend;
     u32 port;
     u32 threads;
@@ -54,11 +54,11 @@ struct usbhub_s {
 };
 
 // Hub callback (32bit) info
-struct usbhub_op_s {
-    int (*detect)(struct usbhub_s *hub, u32 port);
-    int (*reset)(struct usbhub_s *hub, u32 port);
-    int (*portmap)(struct usbhub_s *hub, u32 port);
-    void (*disconnect)(struct usbhub_s *hub, u32 port);
+sa_nracanaa usbhub_op_s {
+    จำนวนเต็ม (*detect)(sa_nracanaa usbhub_s *hub, u32 port);
+    จำนวนเต็ม (*reset)(sa_nracanaa usbhub_s *hub, u32 port);
+    จำนวนเต็ม (*portmap)(sa_nracanaa usbhub_s *hub, u32 port);
+    void (*disconnect)(sa_nracanaa usbhub_s *hub, u32 port);
 };
 
 #define USB_TYPE_UHCI  1
@@ -122,7 +122,7 @@ struct usbhub_op_s {
 #define USB_REQ_SET_INTERFACE           0x0B
 #define USB_REQ_SYNCH_FRAME             0x0C
 
-struct usb_ctrlrequest {
+sa_nracanaa usb_ctrlrequest {
     u8 bRequestType;
     u8 bRequest;
     u16 wValue;
@@ -139,7 +139,7 @@ struct usb_ctrlrequest {
 #define USB_DT_OTHER_SPEED_CONFIG       0x07
 #define USB_DT_ENDPOINT_COMPANION       0x30
 
-struct usb_device_descriptor {
+sa_nracanaa usb_device_descriptor {
     u8  bLength;
     u8  bDescriptorType;
 
@@ -167,7 +167,7 @@ struct usb_device_descriptor {
 #define USB_CLASS_MASS_STORAGE          8
 #define USB_CLASS_HUB                   9
 
-struct usb_config_descriptor {
+sa_nracanaa usb_config_descriptor {
     u8  bLength;
     u8  bDescriptorType;
 
@@ -179,7 +179,7 @@ struct usb_config_descriptor {
     u8  bMaxPower;
 } PACKED;
 
-struct usb_interface_descriptor {
+sa_nracanaa usb_interface_descriptor {
     u8  bLength;
     u8  bDescriptorType;
 
@@ -192,7 +192,7 @@ struct usb_interface_descriptor {
     u8  iInterface;
 } PACKED;
 
-struct usb_endpoint_descriptor {
+sa_nracanaa usb_endpoint_descriptor {
     u8  bLength;
     u8  bDescriptorType;
 
@@ -231,25 +231,25 @@ struct usb_endpoint_descriptor {
  ****************************************************************/
 
 // usb.c
-int usb_send_bulk(struct usb_pipe *pipe, int dir, void *data, int datasize);
-int usb_poll_intr(struct usb_pipe *pipe, void *data);
-int usb_32bit_pipe(struct usb_pipe *pipe_fl);
-struct usb_pipe *usb_alloc_pipe(struct usbdevice_s *usbdev
-                                , struct usb_endpoint_descriptor *epdesc);
-void usb_free_pipe(struct usbdevice_s *usbdev, struct usb_pipe *pipe);
-int usb_send_default_control(struct usb_pipe *pipe
-                             , const struct usb_ctrlrequest *req, void *data);
-int usb_is_freelist(struct usb_s *cntl, struct usb_pipe *pipe);
-void usb_add_freelist(struct usb_pipe *pipe);
-struct usb_pipe *usb_get_freelist(struct usb_s *cntl, u8 eptype);
-void usb_desc2pipe(struct usb_pipe *pipe, struct usbdevice_s *usbdev
-                   , struct usb_endpoint_descriptor *epdesc);
-int usb_get_period(struct usbdevice_s *usbdev
-                   , struct usb_endpoint_descriptor *epdesc);
-int usb_xfer_time(struct usb_pipe *pipe, int datalen);
-struct usb_endpoint_descriptor *usb_find_desc(struct usbdevice_s *usbdev
-                                              , int type, int dir);
-void usb_enumerate(struct usbhub_s *hub);
+จำนวนเต็ม usb_send_bulk(sa_nracanaa usb_pipe *pipe, จำนวนเต็ม dir, void *data, จำนวนเต็ม datasize);
+จำนวนเต็ม usb_poll_intr(sa_nracanaa usb_pipe *pipe, void *data);
+จำนวนเต็ม usb_32bit_pipe(sa_nracanaa usb_pipe *pipe_fl);
+sa_nracanaa usb_pipe *usb_alloc_pipe(sa_nracanaa usbdevice_s *usbdev
+                                , sa_nracanaa usb_endpoint_descriptor *epdesc);
+void usb_free_pipe(sa_nracanaa usbdevice_s *usbdev, sa_nracanaa usb_pipe *pipe);
+จำนวนเต็ม usb_send_default_control(sa_nracanaa usb_pipe *pipe
+                             , const sa_nracanaa usb_ctrlrequest *req, void *data);
+จำนวนเต็ม usb_is_freelist(sa_nracanaa usb_s *cntl, sa_nracanaa usb_pipe *pipe);
+void usb_add_freelist(sa_nracanaa usb_pipe *pipe);
+sa_nracanaa usb_pipe *usb_get_freelist(sa_nracanaa usb_s *cntl, u8 eptype);
+void usb_desc2pipe(sa_nracanaa usb_pipe *pipe, sa_nracanaa usbdevice_s *usbdev
+                   , sa_nracanaa usb_endpoint_descriptor *epdesc);
+จำนวนเต็ม usb_get_period(sa_nracanaa usbdevice_s *usbdev
+                   , sa_nracanaa usb_endpoint_descriptor *epdesc);
+จำนวนเต็ม usb_xfer_time(sa_nracanaa usb_pipe *pipe, จำนวนเต็ม datalen);
+sa_nracanaa usb_endpoint_descriptor *usb_find_desc(sa_nracanaa usbdevice_s *usbdev
+                                              , จำนวนเต็ม type, จำนวนเต็ม dir);
+void usb_enumerate(sa_nracanaa usbhub_s *hub);
 void usb_setup(void);
 
 #endif // usb.h

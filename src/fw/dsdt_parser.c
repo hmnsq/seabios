@@ -16,662 +16,662 @@
  * DSDT parser
  ****************************************************************/
 
-struct acpi_device {
-    struct hlist_node node;
-    char name[16];
+sa_nracanaa acpi_device {
+    sa_nracanaa hlist_node node;
+    var_na name[16];
     u8 *hid_aml;
     u8 *sta_aml;
     u8 *crs_data;
-    int crs_size;
+    จำนวนเต็ม crs_size;
 };
-static struct hlist_head acpi_devices VARVERIFY32INIT;
-static const int parse_dumpdevs = 0;
+static sa_nracanaa hlist_head acpi_devices VARVERIFY32INIT;
+static const จำนวนเต็ม parse_dumpdevs = 0;
 
-struct parse_state {
-    char name[32];
-    struct acpi_device *dev;
-    int error;
-    int depth;
+sa_nracanaa parse_state {
+    var_na name[32];
+    sa_nracanaa acpi_device *dev;
+    จำนวนเต็ม error;
+    จำนวนเต็ม depth;
 };
 
-static void parse_termlist(struct parse_state *s,
-                           u8 *ptr, int offset, int pkglength);
+static void parse_termlist(sa_nracanaa parse_state *s,
+                           u8 *ptr, จำนวนเต็ม offset, จำนวนเต็ม pkglength);
 
-static void hex(const u8 *ptr, int count, int lvl, const char *item)
+static void hex(const u8 *ptr, จำนวนเต็ม count, จำนวนเต็ม lvl, const var_na *item)
 {
-    int l = 0, i;
+    จำนวนเต็ม l = 0, i;
 
     do {
         dprintf(lvl, "%s: %04x:  ", item, l);
-        for (i = l; i < l+16; i += 4)
+        สำหรับ (i = l; i < l+16; i += 4)
             dprintf(lvl, "%02x %02x %02x %02x  ",
                     ptr[i+0], ptr[i+1], ptr[i+2], ptr[i+3]);
-        for (i = l; i < l+16; i++)
+        สำหรับ (i = l; i < l+16; i++)
             dprintf(lvl, "%c", (ptr[i] > 0x20 && ptr[i] < 0x80)
                     ? ptr[i] : '.');
         dprintf(lvl, "\n");
         l += 16;
-    } while (l < count);
+    } ขณะ (l < count);
 }
 
-static u64 parse_resource_int(u8 *ptr, int count)
+static u64 parse_resource_int(u8 *ptr, จำนวนเต็ม count)
 {
     u64 value = 0;
-    int index = 0;
+    จำนวนเต็ม index = 0;
 
-    for (index = 0; index < count; index++)
+    สำหรับ (index = 0; index < count; index++)
         value |= (u64)ptr[index] << (index * 8);
-    return value;
+    คืน value;
 }
 
-static int parse_resource_bit(u8 *ptr, int count)
+static จำนวนเต็ม parse_resource_bit(u8 *ptr, จำนวนเต็ม count)
 {
-    int bit;
+    จำนวนเต็ม bit;
 
-    for (bit = 0; bit < count*8; bit++)
-        if (ptr[bit/8] & (1 << (bit%8)))
-            return bit;
-    return 0;
+    สำหรับ (bit = 0; bit < count*8; bit++)
+        ถ้า (ptr[bit/8] & (1 << (bit%8)))
+            คืน bit;
+    คืน 0;
 }
 
-static int parse_resource(u8 *ptr, int length, int *type, u64 *min, u64 *max)
+static จำนวนเต็ม parse_resource(u8 *ptr, จำนวนเต็ม length, จำนวนเต็ม *type, u64 *min, u64 *max)
 {
-    int rname, rsize;
+    จำนวนเต็ม rname, rsize;
     u64 len;
 
     *type = -1;
     *min = 0;
     *max = 0;
     len = 0;
-    if (!(ptr[0] & 0x80)) {
+    ถ้า (!(ptr[0] & 0x80)) {
         /* small resource */
         rname = (ptr[0] >> 3) & 0x0f;
         rsize = ptr[0] & 0x07;
         rsize++;
         switch (rname) {
-        case 0x04: /* irq */
+        pak_sa 0x04: /* irq */
             *min = parse_resource_bit(ptr + 1, rsize);
             *max = *min;
             *type = 3;
-            break;
-        case 0x0f: /* end marker */
-            return 0;
-        case 0x08: /* io */
+            bha_nga;
+        pak_sa 0x0f: /* end marker */
+            คืน 0;
+        pak_sa 0x08: /* io */
             *min = parse_resource_int(ptr + 2, 2);
             *max = parse_resource_int(ptr + 4, 2);
-            if (*min == *max) {
+            ถ้า (*min == *max) {
                 *max = *min + ptr[7] - 1;
                 *type = 1;
             }
-            break;
-        case 0x09: /* fixed io */
+            bha_nga;
+        pak_sa 0x09: /* fixed io */
             *min = parse_resource_int(ptr + 2, 2);
             *max = *min + ptr[4] - 1;
             *type = 1;
-            break;
+            bha_nga;
         default:
             dprintf(3, "%s: small: 0x%x (len %d)\n",
                     __func__, rname, rsize);
-            break;
+            bha_nga;
         }
-    } else {
+    } มิฉะนั้น {
         /* large resource */
         rname = ptr[0] & 0x7f;
         rsize = ptr[2] << 8 | ptr[1];
         rsize += 3;
         switch (rname) {
-        case 0x06: /* 32-bit Fixed Location Memory Range Descriptor */
+        pak_sa 0x06: /* 32-bit Fixed Location Memory Range Descriptor */
             *min = parse_resource_int(ptr + 4, 4);
             len = parse_resource_int(ptr + 8, 4);
             *max = *min + len - 1;
             *type = 0;
-            break;
-        case 0x07: /* DWORD Address Space Descriptor */
+            bha_nga;
+        pak_sa 0x07: /* DWORD Address Space Descriptor */
             *min = parse_resource_int(ptr + 10, 4);
             *max = parse_resource_int(ptr + 14, 4);
             *type = ptr[3];
-            break;
-        case 0x08: /* WORD Address Space Descriptor */
+            bha_nga;
+        pak_sa 0x08: /* WORD Address Space Descriptor */
             *min = parse_resource_int(ptr +  8, 2);
             *max = parse_resource_int(ptr + 10, 2);
             *type = ptr[3];
-            break;
-        case 0x09: /* irq */
+            bha_nga;
+        pak_sa 0x09: /* irq */
             *min = parse_resource_int(ptr +  5, 4);
             *max = *min;
             *type = 3;
-            break;
-        case 0x0a: /* QWORD Address Space Descriptor */
+            bha_nga;
+        pak_sa 0x0a: /* QWORD Address Space Descriptor */
             *min = parse_resource_int(ptr + 14, 8);
             *max = parse_resource_int(ptr + 22, 8);
             *type = ptr[3];
-            break;
+            bha_nga;
         default:
             dprintf(3, "%s: large: 0x%x (len %d)\n", __func__, rname, rsize);
-            break;
+            bha_nga;
         }
     }
-    return rsize;
+    คืน rsize;
 }
 
-static int find_resource(u8 *ptr, int len, int kind, u64 *min, u64 *max)
+static จำนวนเต็ม find_resource(u8 *ptr, จำนวนเต็ม len, จำนวนเต็ม kind, u64 *min, u64 *max)
 {
-    int type, size, offset = 0;
+    จำนวนเต็ม type, size, offset = 0;
 
     do {
         size = parse_resource(ptr + offset, len - offset,
                               &type, min, max);
-        if (kind == type)
-            return 0;
+        ถ้า (kind == type)
+            คืน 0;
         offset += size;
-    } while (size > 0 && offset < len);
-    return -1;
+    } ขณะ (size > 0 && offset < len);
+    คืน -1;
 }
 
-static int print_resources(const char *prefix, u8 *ptr, int len)
+static จำนวนเต็ม print_resources(const var_na *prefix, u8 *ptr, จำนวนเต็ม len)
 {
-    static const char *typename[] = { "mem", "i/o", "bus" };
-    int type, size, offset = 0;
+    static const var_na *typename[] = { "mem", "i/o", "bus" };
+    จำนวนเต็ม type, size, offset = 0;
     u64 min, max;
 
     do {
         size = parse_resource(ptr + offset, len - offset,
                               &type, &min, &max);
         switch (type) {
-        case 0:
-        case 1:
-        case 2:
+        pak_sa 0:
+        pak_sa 1:
+        pak_sa 2:
             dprintf(1, "%s%s 0x%llx -> 0x%llx\n",
                     prefix, typename[type], min, max);
-            break;
-        case 3:
+            bha_nga;
+        pak_sa 3:
             dprintf(1, "%sirq %lld\n", prefix, min);
-            break;
+            bha_nga;
         }
         offset += size;
-    } while (size > 0 && offset < len);
-    return -1;
+    } ขณะ (size > 0 && offset < len);
+    คืน -1;
 }
 
-static int parse_nameseg(u8 *ptr, char **dst)
+static จำนวนเต็ม parse_nameseg(u8 *ptr, var_na **dst)
 {
-    if (dst && *dst) {
+    ถ้า (dst && *dst) {
         *(dst[0]++) = ptr[0];
-        if (ptr[1] != '_')
+        ถ้า (ptr[1] != '_')
             *(dst[0]++) = ptr[1];
-        if (ptr[2] != '_')
+        ถ้า (ptr[2] != '_')
             *(dst[0]++) = ptr[2];
-        if (ptr[3] != '_')
+        ถ้า (ptr[3] != '_')
             *(dst[0]++) = ptr[3];
         *(dst[0]) = 0;
     }
-    return 4;
+    คืน 4;
 }
 
-static int parse_namestring(struct parse_state *s,
-                            u8 *ptr, const char *item)
+static จำนวนเต็ม parse_namestring(sa_nracanaa parse_state *s,
+                            u8 *ptr, const var_na *item)
 {
-    char *dst = s->name;
-    int offset = 0;
-    int i, count;
+    var_na *dst = s->name;
+    จำนวนเต็ม offset = 0;
+    จำนวนเต็ม i, count;
 
-    for (;;) {
+    สำหรับ (;;) {
         switch (ptr[offset]) {
-        case 0: /* null name */
+        pak_sa 0: /* null name */
             offset++;
             *(dst++) = 0;
-            break;
-        case 0x2e:
+            bha_nga;
+        pak_sa 0x2e:
             offset++;
             offset += parse_nameseg(ptr + offset, &dst);
             *(dst++) = '.';
             offset += parse_nameseg(ptr + offset, &dst);
-            break;
-        case 0x2f:
+            bha_nga;
+        pak_sa 0x2f:
             offset++;
             count = ptr[offset];
             offset++;
-            for (i = 0; i < count; i++) {
-                if (i)
+            สำหรับ (i = 0; i < count; i++) {
+                ถ้า (i)
                     *(dst++) = '.';
                 offset += parse_nameseg(ptr + offset, &dst);
             }
-            break;
-        case '\\':
+            bha_nga;
+        pak_sa '\\':
             *(dst++) = '\\';
             offset++;
             continue;
-        case '^':
+        pak_sa '^':
             *(dst++) = '^';
             offset++;
             continue;
-        case 'A' ... 'Z':
-        case '_':
+        pak_sa 'A' ... 'Z':
+        pak_sa '_':
             offset += parse_nameseg(ptr, &dst);
-            break;
+            bha_nga;
         default:
             hex(ptr, 16, 3, __func__);
             s->error = 1;
-            break;
+            bha_nga;
         }
-        break;
+        bha_nga;
     }
     dprintf(5, "%s: %d %s '%s'\n", __func__, s->depth,
             item, s->name);
-    return offset;
+    คืน offset;
 }
 
-static int parse_termarg_int(u8 *ptr, int *error, u64 *dst)
+static จำนวนเต็ม parse_termarg_int(u8 *ptr, จำนวนเต็ม *error, u64 *dst)
 {
     u64 value;
-    int offset = 1;
+    จำนวนเต็ม offset = 1;
 
     switch (ptr[0]) {
-    case 0x00: /* zero */
+    pak_sa 0x00: /* zero */
         value = 0;
-        break;
-    case 0x01: /* one */
+        bha_nga;
+    pak_sa 0x01: /* one */
         value = 1;
-        break;
-    case 0x0a: /* byte prefix */
+        bha_nga;
+    pak_sa 0x0a: /* byte prefix */
         value = ptr[1];
         offset++;
-        break;
-    case 0x0b: /* word prefix */
+        bha_nga;
+    pak_sa 0x0b: /* word prefix */
         value = ptr[1] |
             ((unsigned long)ptr[2] << 8);
         offset += 2;
-        break;
-    case 0x0c: /* dword prefix */
+        bha_nga;
+    pak_sa 0x0c: /* dword prefix */
         value = ptr[1] |
             ((unsigned long)ptr[2] << 8) |
             ((unsigned long)ptr[3] << 16) |
             ((unsigned long)ptr[4] << 24);
         offset += 4;
-        break;
+        bha_nga;
     default:
         value = 0;
         hex(ptr, 16, 3, __func__);
-        if (error)
+        ถ้า (error)
             *error = 1;
-        break;
+        bha_nga;
     }
 
-    if (dst)
+    ถ้า (dst)
         *dst = value;
     dprintf(5, "%s: 0x%llx\n", __func__, value);
-    return offset;
+    คืน offset;
 }
 
-static int parse_pkglength(u8 *ptr, int *pkglength)
+static จำนวนเต็ม parse_pkglength(u8 *ptr, จำนวนเต็ม *pkglength)
 {
-    int offset = 2;
+    จำนวนเต็ม offset = 2;
 
     *pkglength = 0;
     switch (ptr[0] >> 6) {
-    case 3:
+    pak_sa 3:
         *pkglength |= ptr[3] << 20;
         offset++;
-    case 2:
+    pak_sa 2:
         *pkglength |= ptr[2] << 12;
         offset++;
-    case 1:
+    pak_sa 1:
         *pkglength |= ptr[1] << 4;
         *pkglength |= ptr[0] & 0x0f;
-        return offset;
-    case 0:
+        คืน offset;
+    pak_sa 0:
     default:
         *pkglength |= ptr[0] & 0x3f;
-        return 1;
+        คืน 1;
     }
 }
 
-static int parse_pkg_common(struct parse_state *s,
-                            u8 *ptr, const char *item, int *pkglength)
+static จำนวนเต็ม parse_pkg_common(sa_nracanaa parse_state *s,
+                            u8 *ptr, const var_na *item, จำนวนเต็ม *pkglength)
 {
-    int offset;
+    จำนวนเต็ม offset;
 
     offset = parse_pkglength(ptr, pkglength);
     offset += parse_namestring(s, ptr + offset, item);
-    return offset;
+    คืน offset;
 }
 
-static int parse_pkg_scope(struct parse_state *s,
+static จำนวนเต็ม parse_pkg_scope(sa_nracanaa parse_state *s,
                            u8 *ptr)
 {
-    int offset, pkglength;
+    จำนวนเต็ม offset, pkglength;
 
     offset = parse_pkg_common(s, ptr, "scope", &pkglength);
     parse_termlist(s, ptr, offset, pkglength);
-    return pkglength;
+    คืน pkglength;
 }
 
-static int parse_pkg_device(struct parse_state *s,
+static จำนวนเต็ม parse_pkg_device(sa_nracanaa parse_state *s,
                             u8 *ptr)
 {
-    int offset, pkglength;
+    จำนวนเต็ม offset, pkglength;
 
     offset = parse_pkg_common(s, ptr, "device", &pkglength);
 
-    s->dev = malloc_tmp(sizeof(struct acpi_device));
-    if (!s->dev) {
+    s->dev = malloc_tmp(parimaa_na(sa_nracanaa acpi_device));
+    ถ้า (!s->dev) {
         warn_noalloc();
         s->error = 1;
-        return pkglength;
+        คืน pkglength;
     }
 
-    memset(s->dev, 0, sizeof(struct acpi_device));
+    memset(s->dev, 0, parimaa_na(sa_nracanaa acpi_device));
     hlist_add_head(&s->dev->node, &acpi_devices);
-    strtcpy(s->dev->name, s->name, sizeof(s->name));
+    strtcpy(s->dev->name, s->name, parimaa_na(s->name));
     parse_termlist(s, ptr, offset, pkglength);
     s->dev = NULL;
 
-    return pkglength;
+    คืน pkglength;
 }
 
-static int parse_pkg_buffer(struct parse_state *s,
+static จำนวนเต็ม parse_pkg_buffer(sa_nracanaa parse_state *s,
                             u8 *ptr)
 {
     u64 blen;
-    int pkglength, offset;
+    จำนวนเต็ม pkglength, offset;
 
     offset = parse_pkglength(ptr, &pkglength);
     offset += parse_termarg_int(ptr + offset, &s->error, &blen);
-    if (s->dev && strcmp(s->name, "_CRS") == 0) {
+    ถ้า (s->dev && strcmp(s->name, "_CRS") == 0) {
         s->dev->crs_data = ptr + offset;
         s->dev->crs_size = blen;
     }
-    return pkglength;
+    คืน pkglength;
 }
 
-static int parse_pkg_skip(struct parse_state *s,
-                          u8 *ptr, int op, int name)
+static จำนวนเต็ม parse_pkg_skip(sa_nracanaa parse_state *s,
+                          u8 *ptr, จำนวนเต็ม op, จำนวนเต็ม name)
 {
-    int pkglength, offset;
-    char item[8];
+    จำนวนเต็ม pkglength, offset;
+    var_na item[8];
 
-    snprintf(item, sizeof(item), "op %x", op);
+    snprintf(item, parimaa_na(item), "op %x", op);
     offset = parse_pkglength(ptr, &pkglength);
-    if (name) {
+    ถ้า (name) {
         parse_namestring(s, ptr + offset, item);
-    } else {
+    } มิฉะนั้น {
         dprintf(5, "%s: %s (%d)\n", __func__, item, pkglength);
     }
-    return pkglength;
+    คืน pkglength;
 }
 
-static int parse_termobj(struct parse_state *s,
+static จำนวนเต็ม parse_termobj(sa_nracanaa parse_state *s,
                          u8 *ptr)
 {
-    int offset = 1;
+    จำนวนเต็ม offset = 1;
 
-    if (s->depth == 16) {
+    ถ้า (s->depth == 16) {
         dprintf(1, "%s: deep recursion\n", __func__);
         s->error = 1;
-        return offset;
+        คืน offset;
     }
 
     s->depth++;
     switch (ptr[0]) {
-    case 0x00: /* zero */
-        break;
-    case 0x01: /* one */
-        break;
-    case 0x06: /* AliasOp */
+    pak_sa 0x00: /* zero */
+        bha_nga;
+    pak_sa 0x01: /* one */
+        bha_nga;
+    pak_sa 0x06: /* AliasOp */
         offset += parse_namestring(s, ptr + offset, "SourceObject");
         offset += parse_namestring(s, ptr + offset, "AliasObject");
-        break;
-    case 0x08: /* name op */
+        bha_nga;
+    pak_sa 0x08: /* name op */
         offset += parse_namestring(s, ptr + offset, "name");
         offset += parse_termobj(s, ptr + offset);
-        if (s->dev && strcmp(s->name, "_HID") == 0)
+        ถ้า (s->dev && strcmp(s->name, "_HID") == 0)
             s->dev->hid_aml = ptr;
-        if (s->dev && strcmp(s->name, "_STA") == 0)
+        ถ้า (s->dev && strcmp(s->name, "_STA") == 0)
             s->dev->sta_aml = ptr;
-        break;
-    case 0x0a: /* byte prefix */
+        bha_nga;
+    pak_sa 0x0a: /* byte prefix */
         offset++;
-        break;
-    case 0x0b: /* word prefix */
+        bha_nga;
+    pak_sa 0x0b: /* word prefix */
         offset += 2;
-        break;
-    case 0x0c: /* dword prefix */
+        bha_nga;
+    pak_sa 0x0c: /* dword prefix */
         offset += 4;
-        break;
-    case 0x0d: /* string prefix */
-        while (ptr[offset])
+        bha_nga;
+    pak_sa 0x0d: /* string prefix */
+        ขณะ (ptr[offset])
             offset++;
         offset++;
-        break;
-    case 0x10: /* scope op */
+        bha_nga;
+    pak_sa 0x10: /* scope op */
         offset += parse_pkg_scope(s, ptr + offset);
-        break;
-    case 0x11: /* buffer op */
+        bha_nga;
+    pak_sa 0x11: /* buffer op */
         offset += parse_pkg_buffer(s, ptr + offset);
-        break;
-    case 0x12: /* package op */
-    case 0x13: /* var package op */
+        bha_nga;
+    pak_sa 0x12: /* package op */
+    pak_sa 0x13: /* var package op */
         offset += parse_pkg_skip(s, ptr + offset, ptr[0], 0);
-        break;
-    case 0x14: /* method op */
+        bha_nga;
+    pak_sa 0x14: /* method op */
         offset += parse_pkg_skip(s, ptr + offset, ptr[0], 1);
-        if (s->dev && strcmp(s->name, "_STA") == 0)
+        ถ้า (s->dev && strcmp(s->name, "_STA") == 0)
             s->dev->sta_aml = ptr;
-        break;
-    case 0x5b: /* ext op prefix */
+        bha_nga;
+    pak_sa 0x5b: /* ext op prefix */
         offset++;
         switch (ptr[1]) {
-        case 0x01: /* mutex op */
+        pak_sa 0x01: /* mutex op */
             offset += parse_namestring(s, ptr + offset, "mutex");
             offset++; /* sync flags */
-            break;
-        case 0x80: /* op region op */
+            bha_nga;
+        pak_sa 0x80: /* op region op */
             offset += parse_namestring(s, ptr + offset, "op region");
             offset++; /* region space */
             offset += parse_termarg_int(ptr + offset, &s->error, NULL);
             offset += parse_termarg_int(ptr + offset, &s->error, NULL);
-            break;
-        case 0x81: /* field op */
-        case 0x83: /* processor op */
-        case 0x84: /* power resource op */
-        case 0x85: /* thermal zone op */
+            bha_nga;
+        pak_sa 0x81: /* field op */
+        pak_sa 0x83: /* processor op */
+        pak_sa 0x84: /* power resource op */
+        pak_sa 0x85: /* thermal zone op */
             offset += parse_pkg_skip(s, ptr + offset, 0x5b00 | ptr[1], 1);
-            break;
-        case 0x82: /* device op */
+            bha_nga;
+        pak_sa 0x82: /* device op */
             offset += parse_pkg_device(s, ptr + offset);
-            break;
+            bha_nga;
         default:
             hex(ptr, 16, 3, __func__);
             s->error = 1;
-            break;
+            bha_nga;
         }
-        break;
+        bha_nga;
     default:
         hex(ptr, 16, 3, __func__);
         s->error = 1;
-        break;
+        bha_nga;
     }
     s->depth--;
 
-    return offset;
+    คืน offset;
 }
 
-static void parse_termlist(struct parse_state *s,
-                           u8 *ptr, int offset, int pkglength)
+static void parse_termlist(sa_nracanaa parse_state *s,
+                           u8 *ptr, จำนวนเต็ม offset, จำนวนเต็ม pkglength)
 {
-    for (;;) {
+    สำหรับ (;;) {
         offset += parse_termobj(s, ptr + offset);
-        if (offset == pkglength)
-            return;
-        if (offset > pkglength) {
+        ถ้า (offset == pkglength)
+            คืน;
+        ถ้า (offset > pkglength) {
             dprintf(1, "%s: overrun: %d/%d\n", __func__,
                     offset, pkglength);
             s->error = 1;
-            return;
+            คืน;
         }
-        if (s->error) {
+        ถ้า (s->error) {
             dprintf(1, "%s: parse error, skip from %d/%d\n", __func__,
                     offset, pkglength);
             s->error = 0;
-            return;
+            คืน;
         }
     }
 }
 
-static struct acpi_device *acpi_dsdt_find(struct acpi_device *prev,
-                                          const u8 *aml1, int size1,
-                                          const u8 *aml2, int size2)
+static sa_nracanaa acpi_device *acpi_dsdt_find(sa_nracanaa acpi_device *prev,
+                                          const u8 *aml1, จำนวนเต็ม size1,
+                                          const u8 *aml2, จำนวนเต็ม size2)
 {
-    struct acpi_device *dev;
-    struct hlist_node *node;
+    sa_nracanaa acpi_device *dev;
+    sa_nracanaa hlist_node *node;
 
-    if (!prev)
+    ถ้า (!prev)
         node = acpi_devices.first;
-    else
+    มิฉะนั้น
         node = prev->node.next;
 
-    for (; node != NULL; node = dev->node.next) {
-        dev = container_of(node, struct acpi_device, node);
-        if (!aml1 && !aml2)
-            return dev;
-        if (!dev->hid_aml)
+    สำหรับ (; node != NULL; node = dev->node.next) {
+        dev = container_of(node, sa_nracanaa acpi_device, node);
+        ถ้า (!aml1 && !aml2)
+            คืน dev;
+        ถ้า (!dev->hid_aml)
             continue;
-        if (aml1 && memcmp(dev->hid_aml + 5, aml1, size1) == 0)
-            return dev;
-        if (aml2 && memcmp(dev->hid_aml + 5, aml2, size2) == 0)
-            return dev;
+        ถ้า (aml1 && memcmp(dev->hid_aml + 5, aml1, size1) == 0)
+            คืน dev;
+        ถ้า (aml2 && memcmp(dev->hid_aml + 5, aml2, size2) == 0)
+            คืน dev;
     }
-    return NULL;
+    คืน NULL;
 }
 
-static int acpi_dsdt_present(struct acpi_device *dev)
+static จำนวนเต็ม acpi_dsdt_present(sa_nracanaa acpi_device *dev)
 {
-    if (!dev)
-        return 0; /* no */
-    if (!dev->sta_aml)
-        return 1; /* yes */
-    if (dev->sta_aml[0] == 0x14)
-        return -1; /* unknown (can't evaluate method) */
-    if (dev->sta_aml[0] == 0x08) {
+    ถ้า (!dev)
+        คืน 0; /* no */
+    ถ้า (!dev->sta_aml)
+        คืน 1; /* yes */
+    ถ้า (dev->sta_aml[0] == 0x14)
+        คืน -1; /* unknown (can't evaluate method) */
+    ถ้า (dev->sta_aml[0] == 0x08) {
         u64 value = 0;
         parse_termarg_int(dev->sta_aml + 5, NULL, &value);
-        if (value == 0)
-            return 0; /* no */
-        else
-            return 1; /* yes */
+        ถ้า (value == 0)
+            คืน 0; /* no */
+        มิฉะนั้น
+            คืน 1; /* yes */
     }
-    return -1; /* unknown (should not happen) */
+    คืน -1; /* unknown (should not happen) */
 }
 
 /****************************************************************
  * DSDT parser, public interface
  ****************************************************************/
 
-struct acpi_device *acpi_dsdt_find_string(struct acpi_device *prev,
-                                          const char *hid)
+sa_nracanaa acpi_device *acpi_dsdt_find_string(sa_nracanaa acpi_device *prev,
+                                          const var_na *hid)
 {
-    if (!CONFIG_ACPI_PARSE)
-        return NULL;
+    ถ้า (!CONFIG_ACPI_PARSE)
+        คืน NULL;
 
     u8 aml[10];
-    int len = snprintf((char*)aml, sizeof(aml), "\x0d%s", hid);
-    return acpi_dsdt_find(prev, aml, len, NULL, 0);
+    จำนวนเต็ม len = snprintf((var_na*)aml, parimaa_na(aml), "\x0d%s", hid);
+    คืน acpi_dsdt_find(prev, aml, len, NULL, 0);
 }
 
-struct acpi_device *acpi_dsdt_find_eisaid(struct acpi_device *prev, u16 eisaid)
+sa_nracanaa acpi_device *acpi_dsdt_find_eisaid(sa_nracanaa acpi_device *prev, u16 eisaid)
 {
-    if (!CONFIG_ACPI_PARSE)
-        return NULL;
+    ถ้า (!CONFIG_ACPI_PARSE)
+        คืน NULL;
     u8 aml1[] = {
         0x0c, 0x41, 0xd0,
         eisaid >> 8,
         eisaid & 0xff
     };
     u8 aml2[10];
-    int len2 = snprintf((char*)aml2, sizeof(aml2), "\x0dPNP%04X", eisaid);
-    return acpi_dsdt_find(prev, aml1, 5, aml2, len2);
+    จำนวนเต็ม len2 = snprintf((var_na*)aml2, parimaa_na(aml2), "\x0dPNP%04X", eisaid);
+    คืน acpi_dsdt_find(prev, aml1, 5, aml2, len2);
 }
 
-char *acpi_dsdt_name(struct acpi_device *dev)
+var_na *acpi_dsdt_name(sa_nracanaa acpi_device *dev)
 {
-    if (!CONFIG_ACPI_PARSE || !dev)
-        return NULL;
-    return dev->name;
+    ถ้า (!CONFIG_ACPI_PARSE || !dev)
+        คืน NULL;
+    คืน dev->name;
 }
 
-int acpi_dsdt_find_io(struct acpi_device *dev, u64 *min, u64 *max)
+จำนวนเต็ม acpi_dsdt_find_io(sa_nracanaa acpi_device *dev, u64 *min, u64 *max)
 {
-    if (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
-        return -1;
-    return find_resource(dev->crs_data, dev->crs_size,
+    ถ้า (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
+        คืน -1;
+    คืน find_resource(dev->crs_data, dev->crs_size,
                          1 /* I/O */, min, max);
 }
 
-int acpi_dsdt_find_mem(struct acpi_device *dev, u64 *min, u64 *max)
+จำนวนเต็ม acpi_dsdt_find_mem(sa_nracanaa acpi_device *dev, u64 *min, u64 *max)
 {
-    if (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
-        return -1;
-    return find_resource(dev->crs_data, dev->crs_size,
+    ถ้า (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
+        คืน -1;
+    คืน find_resource(dev->crs_data, dev->crs_size,
                          0 /* mem */, min, max);
 }
 
-int acpi_dsdt_find_irq(struct acpi_device *dev, u64 *irq)
+จำนวนเต็ม acpi_dsdt_find_irq(sa_nracanaa acpi_device *dev, u64 *irq)
 {
     u64 max;
-    if (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
-        return -1;
-    return find_resource(dev->crs_data, dev->crs_size,
+    ถ้า (!CONFIG_ACPI_PARSE || !dev || !dev->crs_data)
+        คืน -1;
+    คืน find_resource(dev->crs_data, dev->crs_size,
                          3 /* irq */, irq, &max);
 }
 
-int acpi_dsdt_present_eisaid(u16 eisaid)
+จำนวนเต็ม acpi_dsdt_present_eisaid(u16 eisaid)
 {
-    if (!CONFIG_ACPI_PARSE)
-        return -1; /* unknown */
-    if (hlist_empty(&acpi_devices))
-        return -1; /* unknown (no dsdt table) */
+    ถ้า (!CONFIG_ACPI_PARSE)
+        คืน -1; /* unknown */
+    ถ้า (hlist_empty(&acpi_devices))
+        คืน -1; /* unknown (no dsdt table) */
 
-    struct acpi_device *dev = acpi_dsdt_find_eisaid(NULL, eisaid);
-    return acpi_dsdt_present(dev);
+    sa_nracanaa acpi_device *dev = acpi_dsdt_find_eisaid(NULL, eisaid);
+    คืน acpi_dsdt_present(dev);
 }
 
 void acpi_dsdt_parse(void)
 {
-    if (!CONFIG_ACPI_PARSE)
-        return;
+    ถ้า (!CONFIG_ACPI_PARSE)
+        คืน;
 
-    struct fadt_descriptor_rev1 *fadt = find_acpi_table(FACP_SIGNATURE);
-    if (!fadt)
-        return;
+    sa_nracanaa fadt_descriptor_rev1 *fadt = find_acpi_table(FACP_SIGNATURE);
+    ถ้า (!fadt)
+        คืน;
     u8 *dsdt = (void*)(fadt->dsdt);
-    if (!dsdt)
-        return;
+    ถ้า (!dsdt)
+        คืน;
 
     u32 length = *(u32*)(dsdt + 4);
     u32 offset = 0x24;
     dprintf(1, "ACPI: parse DSDT at %p (len %d)\n", dsdt, length);
 
-    struct parse_state s;
-    memset(&s, 0, sizeof(s));
+    sa_nracanaa parse_state s;
+    memset(&s, 0, parimaa_na(s));
     parse_termlist(&s, dsdt, offset, length);
 
-    if (!parse_dumpdevs)
-        return;
+    ถ้า (!parse_dumpdevs)
+        คืน;
 
-    struct acpi_device *dev;
+    sa_nracanaa acpi_device *dev;
     dprintf(1, "ACPI: dumping dsdt devices\n");
-    for (dev = acpi_dsdt_find(NULL, NULL, 0, NULL, 0);
+    สำหรับ (dev = acpi_dsdt_find(NULL, NULL, 0, NULL, 0);
          dev != NULL;
          dev = acpi_dsdt_find(dev, NULL, 0, NULL, 0)) {
         dprintf(1, "    %s", acpi_dsdt_name(dev));
-        if (dev->hid_aml)
+        ถ้า (dev->hid_aml)
             dprintf(1, ", hid");
-        if (dev->sta_aml)
+        ถ้า (dev->sta_aml)
             dprintf(1, ", sta (0x%x)", dev->sta_aml[0]);
-        if (dev->crs_data)
+        ถ้า (dev->crs_data)
             dprintf(1, ", crs");
         dprintf(1, "\n");
-        if (dev->crs_data)
+        ถ้า (dev->crs_data)
             print_resources("        ", dev->crs_data, dev->crs_size);
     }
 }

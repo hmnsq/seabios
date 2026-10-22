@@ -28,66 +28,66 @@
  ****************************************************************/
 
 // Allocate, update, or free a usb pipe.
-static struct usb_pipe *
-usb_realloc_pipe(struct usbdevice_s *usbdev, struct usb_pipe *pipe
-                 , struct usb_endpoint_descriptor *epdesc)
+static sa_nracanaa usb_pipe *
+usb_realloc_pipe(sa_nracanaa usbdevice_s *usbdev, sa_nracanaa usb_pipe *pipe
+                 , sa_nracanaa usb_endpoint_descriptor *epdesc)
 {
     switch (usbdev->hub->cntl->type) {
     default:
-    case USB_TYPE_UHCI:
-        return uhci_realloc_pipe(usbdev, pipe, epdesc);
-    case USB_TYPE_OHCI:
-        return ohci_realloc_pipe(usbdev, pipe, epdesc);
-    case USB_TYPE_EHCI:
-        return ehci_realloc_pipe(usbdev, pipe, epdesc);
-    case USB_TYPE_XHCI:
-        return xhci_realloc_pipe(usbdev, pipe, epdesc);
+    pak_sa USB_TYPE_UHCI:
+        คืน uhci_realloc_pipe(usbdev, pipe, epdesc);
+    pak_sa USB_TYPE_OHCI:
+        คืน ohci_realloc_pipe(usbdev, pipe, epdesc);
+    pak_sa USB_TYPE_EHCI:
+        คืน ehci_realloc_pipe(usbdev, pipe, epdesc);
+    pak_sa USB_TYPE_XHCI:
+        คืน xhci_realloc_pipe(usbdev, pipe, epdesc);
     }
 }
 
 // Send a message on a control pipe using the default control descriptor.
-static int
-usb_send_pipe(struct usb_pipe *pipe_fl, int dir, const void *cmd
-              , void *data, int datasize)
+static จำนวนเต็ม
+usb_send_pipe(sa_nracanaa usb_pipe *pipe_fl, จำนวนเต็ม dir, const void *cmd
+              , void *data, จำนวนเต็ม datasize)
 {
     switch (GET_LOWFLAT(pipe_fl->type)) {
     default:
-    case USB_TYPE_UHCI:
-        return uhci_send_pipe(pipe_fl, dir, cmd, data, datasize);
-    case USB_TYPE_OHCI:
-        if (MODESEGMENT)
-            return -1;
-        return ohci_send_pipe(pipe_fl, dir, cmd, data, datasize);
-    case USB_TYPE_EHCI:
-        return ehci_send_pipe(pipe_fl, dir, cmd, data, datasize);
-    case USB_TYPE_XHCI:
-        if (MODESEGMENT)
-            return -1;
-        return xhci_send_pipe(pipe_fl, dir, cmd, data, datasize);
+    pak_sa USB_TYPE_UHCI:
+        คืน uhci_send_pipe(pipe_fl, dir, cmd, data, datasize);
+    pak_sa USB_TYPE_OHCI:
+        ถ้า (MODESEGMENT)
+            คืน -1;
+        คืน ohci_send_pipe(pipe_fl, dir, cmd, data, datasize);
+    pak_sa USB_TYPE_EHCI:
+        คืน ehci_send_pipe(pipe_fl, dir, cmd, data, datasize);
+    pak_sa USB_TYPE_XHCI:
+        ถ้า (MODESEGMENT)
+            คืน -1;
+        คืน xhci_send_pipe(pipe_fl, dir, cmd, data, datasize);
     }
 }
 
-int
-usb_poll_intr(struct usb_pipe *pipe_fl, void *data)
+จำนวนเต็ม
+usb_poll_intr(sa_nracanaa usb_pipe *pipe_fl, void *data)
 {
     ASSERT16();
     switch (GET_LOWFLAT(pipe_fl->type)) {
     default:
-    case USB_TYPE_UHCI:
-        return uhci_poll_intr(pipe_fl, data);
-    case USB_TYPE_OHCI:
-        return ohci_poll_intr(pipe_fl, data);
-    case USB_TYPE_EHCI:
-        return ehci_poll_intr(pipe_fl, data);
-    case USB_TYPE_XHCI: ;
-        return call32_params(xhci_poll_intr, pipe_fl
+    pak_sa USB_TYPE_UHCI:
+        คืน uhci_poll_intr(pipe_fl, data);
+    pak_sa USB_TYPE_OHCI:
+        คืน ohci_poll_intr(pipe_fl, data);
+    pak_sa USB_TYPE_EHCI:
+        คืน ehci_poll_intr(pipe_fl, data);
+    pak_sa USB_TYPE_XHCI: ;
+        คืน call32_params(xhci_poll_intr, pipe_fl
                              , MAKE_FLATPTR(GET_SEG(SS), data), 0, -1);
     }
 }
 
-int usb_32bit_pipe(struct usb_pipe *pipe_fl)
+จำนวนเต็ม usb_32bit_pipe(sa_nracanaa usb_pipe *pipe_fl)
 {
-    return (CONFIG_USB_XHCI && GET_LOWFLAT(pipe_fl->type) == USB_TYPE_XHCI)
+    คืน (CONFIG_USB_XHCI && GET_LOWFLAT(pipe_fl->type) == USB_TYPE_XHCI)
         || (CONFIG_USB_OHCI && GET_LOWFLAT(pipe_fl->type) == USB_TYPE_OHCI);
 }
 
@@ -97,68 +97,68 @@ int usb_32bit_pipe(struct usb_pipe *pipe_fl)
  ****************************************************************/
 
 // Allocate a usb pipe.
-struct usb_pipe *
-usb_alloc_pipe(struct usbdevice_s *usbdev
-               , struct usb_endpoint_descriptor *epdesc)
+sa_nracanaa usb_pipe *
+usb_alloc_pipe(sa_nracanaa usbdevice_s *usbdev
+               , sa_nracanaa usb_endpoint_descriptor *epdesc)
 {
-    return usb_realloc_pipe(usbdev, NULL, epdesc);
+    คืน usb_realloc_pipe(usbdev, NULL, epdesc);
 }
 
 // Free an allocated control or bulk pipe.
 void
-usb_free_pipe(struct usbdevice_s *usbdev, struct usb_pipe *pipe)
+usb_free_pipe(sa_nracanaa usbdevice_s *usbdev, sa_nracanaa usb_pipe *pipe)
 {
-    if (!pipe)
-        return;
+    ถ้า (!pipe)
+        คืน;
     usb_realloc_pipe(usbdev, pipe, NULL);
 }
 
 // Send a message to the default control pipe of a device.
-int
-usb_send_default_control(struct usb_pipe *pipe, const struct usb_ctrlrequest *req
+จำนวนเต็ม
+usb_send_default_control(sa_nracanaa usb_pipe *pipe, const sa_nracanaa usb_ctrlrequest *req
                          , void *data)
 {
-    return usb_send_pipe(pipe, req->bRequestType & USB_DIR_IN, req
+    คืน usb_send_pipe(pipe, req->bRequestType & USB_DIR_IN, req
                          , data, req->wLength);
 }
 
 // Send a message to a bulk endpoint
-int
-usb_send_bulk(struct usb_pipe *pipe_fl, int dir, void *data, int datasize)
+จำนวนเต็ม
+usb_send_bulk(sa_nracanaa usb_pipe *pipe_fl, จำนวนเต็ม dir, void *data, จำนวนเต็ม datasize)
 {
-    return usb_send_pipe(pipe_fl, dir, NULL, data, datasize);
+    คืน usb_send_pipe(pipe_fl, dir, NULL, data, datasize);
 }
 
 // Check if a pipe for a given controller is on the freelist
-int
-usb_is_freelist(struct usb_s *cntl, struct usb_pipe *pipe)
+จำนวนเต็ม
+usb_is_freelist(sa_nracanaa usb_s *cntl, sa_nracanaa usb_pipe *pipe)
 {
-    return pipe->cntl != cntl;
+    คืน pipe->cntl != cntl;
 }
 
 // Add a pipe to the controller's freelist
 void
-usb_add_freelist(struct usb_pipe *pipe)
+usb_add_freelist(sa_nracanaa usb_pipe *pipe)
 {
-    if (!pipe)
-        return;
-    struct usb_s *cntl = pipe->cntl;
+    ถ้า (!pipe)
+        คืน;
+    sa_nracanaa usb_s *cntl = pipe->cntl;
     pipe->freenext = cntl->freelist;
     cntl->freelist = pipe;
 }
 
 // Check for an available pipe on the freelist.
-struct usb_pipe *
-usb_get_freelist(struct usb_s *cntl, u8 eptype)
+sa_nracanaa usb_pipe *
+usb_get_freelist(sa_nracanaa usb_s *cntl, u8 eptype)
 {
-    struct usb_pipe **pfree = &cntl->freelist;
-    for (;;) {
-        struct usb_pipe *pipe = *pfree;
-        if (!pipe)
-            return NULL;
-        if (pipe->eptype == eptype) {
+    sa_nracanaa usb_pipe **pfree = &cntl->freelist;
+    สำหรับ (;;) {
+        sa_nracanaa usb_pipe *pipe = *pfree;
+        ถ้า (!pipe)
+            คืน NULL;
+        ถ้า (pipe->eptype == eptype) {
             *pfree = pipe->freenext;
-            return pipe;
+            คืน pipe;
         }
         pfree = &pipe->freenext;
     }
@@ -166,8 +166,8 @@ usb_get_freelist(struct usb_s *cntl, u8 eptype)
 
 // Fill "pipe" endpoint info from an endpoint descriptor.
 void
-usb_desc2pipe(struct usb_pipe *pipe, struct usbdevice_s *usbdev
-              , struct usb_endpoint_descriptor *epdesc)
+usb_desc2pipe(sa_nracanaa usb_pipe *pipe, sa_nracanaa usbdevice_s *usbdev
+              , sa_nracanaa usb_endpoint_descriptor *epdesc)
 {
     pipe->cntl = usbdev->hub->cntl;
     pipe->type = usbdev->hub->cntl->type;
@@ -179,100 +179,100 @@ usb_desc2pipe(struct usb_pipe *pipe, struct usbdevice_s *usbdev
 }
 
 // Find the exponential period of the requested interrupt end point.
-int
-usb_get_period(struct usbdevice_s *usbdev
-               , struct usb_endpoint_descriptor *epdesc)
+จำนวนเต็ม
+usb_get_period(sa_nracanaa usbdevice_s *usbdev
+               , sa_nracanaa usb_endpoint_descriptor *epdesc)
 {
-    int period = epdesc->bInterval;
-    if (usbdev->speed != USB_HIGHSPEED)
-        return (period <= 0) ? 0 : __fls(period);
-    return (period <= 4) ? 0 : period - 4;
+    จำนวนเต็ม period = epdesc->bInterval;
+    ถ้า (usbdev->speed != USB_HIGHSPEED)
+        คืน (period <= 0) ? 0 : __fls(period);
+    คืน (period <= 4) ? 0 : period - 4;
 }
 
 // Maximum time (in ms) a data transfer should take
-int
-usb_xfer_time(struct usb_pipe *pipe, int datalen)
+จำนวนเต็ม
+usb_xfer_time(sa_nracanaa usb_pipe *pipe, จำนวนเต็ม datalen)
 {
     // Use the maximum command time (5 seconds), except for
     // set_address commands where we don't want to stall the boot if
     // the device doesn't actually exist.  Add 100ms to account for
     // any controller delays.
-    if (!GET_LOWFLAT(pipe->devaddr))
-        return USB_TIME_STATUS + 100;
-    return USB_TIME_COMMAND + 100;
+    ถ้า (!GET_LOWFLAT(pipe->devaddr))
+        คืน USB_TIME_STATUS + 100;
+    คืน USB_TIME_COMMAND + 100;
 }
 
 // Find the first endpoint of a given type in an interface description.
-struct usb_endpoint_descriptor *
-usb_find_desc(struct usbdevice_s *usbdev, int type, int dir)
+sa_nracanaa usb_endpoint_descriptor *
+usb_find_desc(sa_nracanaa usbdevice_s *usbdev, จำนวนเต็ม type, จำนวนเต็ม dir)
 {
-    struct usb_endpoint_descriptor *epdesc = (void*)&usbdev->iface[1];
-    for (;;) {
-        if ((void*)epdesc >= (void*)usbdev->iface + usbdev->imax
+    sa_nracanaa usb_endpoint_descriptor *epdesc = (void*)&usbdev->iface[1];
+    สำหรับ (;;) {
+        ถ้า ((void*)epdesc >= (void*)usbdev->iface + usbdev->imax
             || epdesc->bDescriptorType == USB_DT_INTERFACE) {
-            return NULL;
+            คืน NULL;
         }
-        if (epdesc->bDescriptorType == USB_DT_ENDPOINT
+        ถ้า (epdesc->bDescriptorType == USB_DT_ENDPOINT
             && (epdesc->bEndpointAddress & USB_ENDPOINT_DIR_MASK) == dir
             && (epdesc->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK) == type)
-            return epdesc;
+            คืน epdesc;
         epdesc = (void*)epdesc + epdesc->bLength;
     }
 }
 
 // Get the first 8 bytes of the device descriptor.
-static int
-get_device_info8(struct usb_pipe *pipe, struct usb_device_descriptor *dinfo)
+static จำนวนเต็ม
+get_device_info8(sa_nracanaa usb_pipe *pipe, sa_nracanaa usb_device_descriptor *dinfo)
 {
-    struct usb_ctrlrequest req;
+    sa_nracanaa usb_ctrlrequest req;
     req.bRequestType = USB_DIR_IN | USB_TYPE_STANDARD | USB_RECIP_DEVICE;
     req.bRequest = USB_REQ_GET_DESCRIPTOR;
     req.wValue = USB_DT_DEVICE<<8;
     req.wIndex = 0;
     req.wLength = 8;
-    return usb_send_default_control(pipe, &req, dinfo);
+    คืน usb_send_default_control(pipe, &req, dinfo);
 }
 
-static struct usb_config_descriptor *
-get_device_config(struct usb_pipe *pipe)
+static sa_nracanaa usb_config_descriptor *
+get_device_config(sa_nracanaa usb_pipe *pipe)
 {
-    struct usb_config_descriptor cfg;
+    sa_nracanaa usb_config_descriptor cfg;
 
-    struct usb_ctrlrequest req;
+    sa_nracanaa usb_ctrlrequest req;
     req.bRequestType = USB_DIR_IN | USB_TYPE_STANDARD | USB_RECIP_DEVICE;
     req.bRequest = USB_REQ_GET_DESCRIPTOR;
     req.wValue = USB_DT_CONFIG<<8;
     req.wIndex = 0;
-    req.wLength = sizeof(cfg);
-    int ret = usb_send_default_control(pipe, &req, &cfg);
-    if (ret)
-        return NULL;
+    req.wLength = parimaa_na(cfg);
+    จำนวนเต็ม ret = usb_send_default_control(pipe, &req, &cfg);
+    ถ้า (ret)
+        คืน NULL;
 
-    struct usb_config_descriptor *config = malloc_tmphigh(cfg.wTotalLength);
-    if (!config) {
+    sa_nracanaa usb_config_descriptor *config = malloc_tmphigh(cfg.wTotalLength);
+    ถ้า (!config) {
         warn_noalloc();
-        return NULL;
+        คืน NULL;
     }
     req.wLength = cfg.wTotalLength;
     ret = usb_send_default_control(pipe, &req, config);
-    if (ret || config->wTotalLength != cfg.wTotalLength) {
+    ถ้า (ret || config->wTotalLength != cfg.wTotalLength) {
         free(config);
-        return NULL;
+        คืน NULL;
     }
     //hexdump(config, cfg.wTotalLength);
-    return config;
+    คืน config;
 }
 
-static int
-set_configuration(struct usb_pipe *pipe, u16 val)
+static จำนวนเต็ม
+set_configuration(sa_nracanaa usb_pipe *pipe, u16 val)
 {
-    struct usb_ctrlrequest req;
+    sa_nracanaa usb_ctrlrequest req;
     req.bRequestType = USB_DIR_OUT | USB_TYPE_STANDARD | USB_RECIP_DEVICE;
     req.bRequest = USB_REQ_SET_CONFIGURATION;
     req.wValue = val;
     req.wIndex = 0;
     req.wLength = 0;
-    return usb_send_default_control(pipe, &req, NULL);
+    คืน usb_send_default_control(pipe, &req, NULL);
 }
 
 
@@ -280,7 +280,7 @@ set_configuration(struct usb_pipe *pipe, u16 val)
  * Initialization and enumeration
  ****************************************************************/
 
-static const int speed_to_ctlsize[] = {
+static const จำนวนเต็ม speed_to_ctlsize[] = {
     [ USB_FULLSPEED  ] = 8,
     [ USB_LOWSPEED   ] = 8,
     [ USB_HIGHSPEED  ] = 64,
@@ -289,37 +289,37 @@ static const int speed_to_ctlsize[] = {
 
 // Assign an address to a device in the default state on the given
 // controller.
-static int
-usb_set_address(struct usbdevice_s *usbdev)
+static จำนวนเต็ม
+usb_set_address(sa_nracanaa usbdevice_s *usbdev)
 {
     ASSERT32FLAT();
-    struct usb_s *cntl = usbdev->hub->cntl;
+    sa_nracanaa usb_s *cntl = usbdev->hub->cntl;
     dprintf(3, "set_address %p\n", cntl);
-    if (cntl->maxaddr >= USB_MAXADDR)
-        return -1;
+    ถ้า (cntl->maxaddr >= USB_MAXADDR)
+        คืน -1;
 
     msleep(USB_TIME_RSTRCY);
 
     // Create a pipe for the default address.
-    struct usb_endpoint_descriptor epdesc = {
+    sa_nracanaa usb_endpoint_descriptor epdesc = {
         .wMaxPacketSize = speed_to_ctlsize[usbdev->speed],
         .bmAttributes = USB_ENDPOINT_XFER_CONTROL,
     };
     usbdev->defpipe = usb_alloc_pipe(usbdev, &epdesc);
-    if (!usbdev->defpipe)
-        return -1;
+    ถ้า (!usbdev->defpipe)
+        คืน -1;
 
     // Send set_address command.
-    struct usb_ctrlrequest req;
+    sa_nracanaa usb_ctrlrequest req;
     req.bRequestType = USB_DIR_OUT | USB_TYPE_STANDARD | USB_RECIP_DEVICE;
     req.bRequest = USB_REQ_SET_ADDRESS;
     req.wValue = cntl->maxaddr + 1;
     req.wIndex = 0;
     req.wLength = 0;
-    int ret = usb_send_default_control(usbdev->defpipe, &req, NULL);
-    if (ret) {
+    จำนวนเต็ม ret = usb_send_default_control(usbdev->defpipe, &req, NULL);
+    ถ้า (ret) {
         usb_free_pipe(usbdev, usbdev->defpipe);
-        return -1;
+        คืน -1;
     }
 
     msleep(USB_TIME_SETADDR_RECOVERY);
@@ -327,109 +327,109 @@ usb_set_address(struct usbdevice_s *usbdev)
     cntl->maxaddr++;
     usbdev->devaddr = cntl->maxaddr;
     usbdev->defpipe = usb_realloc_pipe(usbdev, usbdev->defpipe, &epdesc);
-    if (!usbdev->defpipe)
-        return -1;
-    return 0;
+    ถ้า (!usbdev->defpipe)
+        คืน -1;
+    คืน 0;
 }
 
 // Called for every found device - see if a driver is available for
 // this device and do setup if so.
-static int
-configure_usb_device(struct usbdevice_s *usbdev)
+static จำนวนเต็ม
+configure_usb_device(sa_nracanaa usbdevice_s *usbdev)
 {
     ASSERT32FLAT();
     dprintf(3, "config_usb: %p\n", usbdev->defpipe);
 
     // Set the max packet size for endpoint 0 of this device.
-    struct usb_device_descriptor dinfo;
-    int ret = get_device_info8(usbdev->defpipe, &dinfo);
-    if (ret)
-        return 0;
+    sa_nracanaa usb_device_descriptor dinfo;
+    จำนวนเต็ม ret = get_device_info8(usbdev->defpipe, &dinfo);
+    ถ้า (ret)
+        คืน 0;
     u16 maxpacket = dinfo.bMaxPacketSize0;
-    if (dinfo.bcdUSB >= 0x0300)
+    ถ้า (dinfo.bcdUSB >= 0x0300)
         maxpacket = 1 << dinfo.bMaxPacketSize0;
     dprintf(3, "device rev=%04x cls=%02x sub=%02x proto=%02x size=%d\n"
             , dinfo.bcdUSB, dinfo.bDeviceClass, dinfo.bDeviceSubClass
             , dinfo.bDeviceProtocol, maxpacket);
-    if (maxpacket < 8)
-        return 0;
-    struct usb_endpoint_descriptor epdesc = {
+    ถ้า (maxpacket < 8)
+        คืน 0;
+    sa_nracanaa usb_endpoint_descriptor epdesc = {
         .wMaxPacketSize = maxpacket,
         .bmAttributes = USB_ENDPOINT_XFER_CONTROL,
     };
     usbdev->defpipe = usb_realloc_pipe(usbdev, usbdev->defpipe, &epdesc);
-    if (!usbdev->defpipe)
-        return -1;
+    ถ้า (!usbdev->defpipe)
+        คืน -1;
 
     // Get configuration
-    struct usb_config_descriptor *config = get_device_config(usbdev->defpipe);
-    if (!config)
-        return 0;
+    sa_nracanaa usb_config_descriptor *config = get_device_config(usbdev->defpipe);
+    ถ้า (!config)
+        คืน 0;
 
     // Determine if a driver exists for this device - only look at the
     // interfaces of the first configuration.
-    int num_iface = config->bNumInterfaces;
+    จำนวนเต็ม num_iface = config->bNumInterfaces;
     void *config_end = (void*)config + config->wTotalLength;
-    struct usb_interface_descriptor *iface = (void*)(&config[1]);
-    for (;;) {
-        if (!num_iface || (void*)iface + iface->bLength > config_end)
+    sa_nracanaa usb_interface_descriptor *iface = (void*)(&config[1]);
+    สำหรับ (;;) {
+        ถ้า (!num_iface || (void*)iface + iface->bLength > config_end)
             // Not a supported device.
             goto fail;
-        if (iface->bDescriptorType == USB_DT_INTERFACE) {
+        ถ้า (iface->bDescriptorType == USB_DT_INTERFACE) {
             num_iface--;
-            if (iface->bInterfaceClass == USB_CLASS_HUB
+            ถ้า (iface->bInterfaceClass == USB_CLASS_HUB
                 || (iface->bInterfaceClass == USB_CLASS_MASS_STORAGE
                     && (iface->bInterfaceProtocol == US_PR_BULK
                         || iface->bInterfaceProtocol == US_PR_UAS))
                 || (iface->bInterfaceClass == USB_CLASS_HID
                     && iface->bInterfaceSubClass == USB_INTERFACE_SUBCLASS_BOOT))
-                break;
+                bha_nga;
         }
         iface = (void*)iface + iface->bLength;
     }
 
     // Set the configuration.
     ret = set_configuration(usbdev->defpipe, config->bConfigurationValue);
-    if (ret)
+    ถ้า (ret)
         goto fail;
 
     // Configure driver.
     usbdev->config = config;
     usbdev->iface = iface;
     usbdev->imax = (void*)config + config->wTotalLength - (void*)iface;
-    if (iface->bInterfaceClass == USB_CLASS_HUB)
+    ถ้า (iface->bInterfaceClass == USB_CLASS_HUB)
         ret = usb_hub_setup(usbdev);
-    else if (iface->bInterfaceClass == USB_CLASS_MASS_STORAGE) {
-        if (iface->bInterfaceProtocol == US_PR_BULK)
+    มิฉะนั้น ถ้า (iface->bInterfaceClass == USB_CLASS_MASS_STORAGE) {
+        ถ้า (iface->bInterfaceProtocol == US_PR_BULK)
             ret = usb_msc_setup(usbdev);
-        if (iface->bInterfaceProtocol == US_PR_UAS)
+        ถ้า (iface->bInterfaceProtocol == US_PR_UAS)
             ret = usb_uas_setup(usbdev);
-    } else
+    } มิฉะนั้น
         ret = usb_hid_setup(usbdev);
-    if (ret)
+    ถ้า (ret)
         goto fail;
 
     free(config);
-    return 1;
+    คืน 1;
 fail:
     free(config);
-    return 0;
+    คืน 0;
 }
 
 static void
 usb_hub_port_setup(void *data)
 {
-    struct usbdevice_s *usbdev = data;
-    struct usbhub_s *hub = usbdev->hub;
+    sa_nracanaa usbdevice_s *usbdev = data;
+    sa_nracanaa usbhub_s *hub = usbdev->hub;
     u32 port = usbdev->port;
 
-    for (;;) {
+    สำหรับ (;;) {
         // Detect if device present (and possibly start reset)
-        int ret = hub->op->detect(hub, port);
-        if (ret > 0)
+        จำนวนเต็ม ret = hub->op->detect(hub, port);
+        ถ้า (ret > 0)
             // Device connected.
-            break;
-        if (ret < 0 || timer_check(hub->detectend))
+            bha_nga;
+        ถ้า (ret < 0 || timer_check(hub->detectend))
             // No device found.
             goto done;
         msleep(5);
@@ -439,30 +439,30 @@ usb_hub_port_setup(void *data)
 
     // Reset port and determine device speed
     mutex_lock(&hub->cntl->resetlock);
-    int ret = hub->op->reset(hub, port);
-    if (ret < 0)
+    จำนวนเต็ม ret = hub->op->reset(hub, port);
+    ถ้า (ret < 0)
         // Reset failed
         goto resetfail;
     usbdev->speed = ret;
 
     // Set address of port
     ret = usb_set_address(usbdev);
-    if (ret) {
+    ถ้า (ret) {
         hub->op->disconnect(hub, port);
         goto resetfail;
     }
     mutex_unlock(&hub->cntl->resetlock);
 
     // Configure the device
-    int count = configure_usb_device(usbdev);
+    จำนวนเต็ม count = configure_usb_device(usbdev);
     usb_free_pipe(usbdev, usbdev->defpipe);
-    if (!count)
+    ถ้า (!count)
         hub->op->disconnect(hub, port);
     hub->devcount += count;
 done:
     hub->threads--;
     free(usbdev);
-    return;
+    คืน;
 
 resetfail:
     mutex_unlock(&hub->cntl->resetlock);
@@ -472,28 +472,28 @@ resetfail:
 static u32 usb_time_sigatt;
 
 void
-usb_enumerate(struct usbhub_s *hub)
+usb_enumerate(sa_nracanaa usbhub_s *hub)
 {
     u32 portcount = hub->portcount;
     hub->threads = portcount;
     hub->detectend = timer_calc(usb_time_sigatt);
 
     // Launch a thread for every port.
-    int i;
-    for (i=0; i<portcount; i++) {
-        struct usbdevice_s *usbdev = malloc_tmphigh(sizeof(*usbdev));
-        if (!usbdev) {
+    จำนวนเต็ม i;
+    สำหรับ (i=0; i<portcount; i++) {
+        sa_nracanaa usbdevice_s *usbdev = malloc_tmphigh(parimaa_na(*usbdev));
+        ถ้า (!usbdev) {
             warn_noalloc();
             continue;
         }
-        memset(usbdev, 0, sizeof(*usbdev));
+        memset(usbdev, 0, parimaa_na(*usbdev));
         usbdev->hub = hub;
         usbdev->port = i;
         run_thread(usb_hub_port_setup, usbdev);
     }
 
     // Wait for threads to complete.
-    while (hub->threads)
+    ขณะ (hub->threads)
         yield();
 }
 
@@ -501,8 +501,8 @@ void
 usb_setup(void)
 {
     ASSERT32FLAT();
-    if (! CONFIG_USB)
-        return;
+    ถ้า (! CONFIG_USB)
+        คืน;
     dprintf(3, "init usb\n");
     usb_time_sigatt = romfile_loadint("etc/usb-time-sigatt", USB_TIME_SIGATT);
     xhci_setup();

@@ -19,16 +19,16 @@
 #define VH_INTEL 2
 #define VH_SMI 3
 
-int VGAHookHandlerType VARFSEG;
+จำนวนเต็ม VGAHookHandlerType VARFSEG;
 
 static void
-handle_155fXX(struct bregs *regs)
+handle_155fXX(sa_nracanaa bregs *regs)
 {
     set_code_unimplemented(regs, RET_EUNSUPPORTED);
 }
 
 static void
-handle_157fXX(struct bregs *regs)
+handle_157fXX(sa_nracanaa bregs *regs)
 {
     set_code_unimplemented(regs, RET_EUNSUPPORTED);
 }
@@ -37,10 +37,10 @@ handle_157fXX(struct bregs *regs)
  * Via hooks
  ****************************************************************/
 
-int ViaFBsize VARFSEG, ViaRamSpeed VARFSEG;
+จำนวนเต็ม ViaFBsize VARFSEG, ViaRamSpeed VARFSEG;
 
 static void
-via_155f01(struct bregs *regs)
+via_155f01(sa_nracanaa bregs *regs)
 {
     regs->eax = 0x5f;
     regs->cl = 2; // panel type =  2 = 1024 * 768
@@ -49,7 +49,7 @@ via_155f01(struct bregs *regs)
 }
 
 static void
-via_155f02(struct bregs *regs)
+via_155f02(sa_nracanaa bregs *regs)
 {
     regs->eax = 0x5f;
     regs->bx = 2;
@@ -60,12 +60,12 @@ via_155f02(struct bregs *regs)
 }
 
 static void
-via_155f18(struct bregs *regs)
+via_155f18(sa_nracanaa bregs *regs)
 {
-    int fbsize = GET_GLOBAL(ViaFBsize), ramspeed = GET_GLOBAL(ViaRamSpeed);
-    if (fbsize < 0 || ramspeed < 0) {
+    จำนวนเต็ม fbsize = GET_GLOBAL(ViaFBsize), ramspeed = GET_GLOBAL(ViaRamSpeed);
+    ถ้า (fbsize < 0 || ramspeed < 0) {
         set_code_invalid(regs, RET_EUNSUPPORTED);
-        return;
+        คืน;
     }
     regs->eax = 0x5f;
     regs->ebx = 0x500 | (ramspeed << 4) | fbsize;
@@ -74,53 +74,53 @@ via_155f18(struct bregs *regs)
 }
 
 static void
-via_155f19(struct bregs *regs)
+via_155f19(sa_nracanaa bregs *regs)
 {
     set_invalid_silent(regs);
 }
 
 static void
-via_155f(struct bregs *regs)
+via_155f(sa_nracanaa bregs *regs)
 {
     switch (regs->al) {
-    case 0x01: via_155f01(regs); break;
-    case 0x02: via_155f02(regs); break;
-    case 0x18: via_155f18(regs); break;
-    case 0x19: via_155f19(regs); break;
-    default:   handle_155fXX(regs); break;
+    pak_sa 0x01: via_155f01(regs); bha_nga;
+    pak_sa 0x02: via_155f02(regs); bha_nga;
+    pak_sa 0x18: via_155f18(regs); bha_nga;
+    pak_sa 0x19: via_155f19(regs); bha_nga;
+    default:   handle_155fXX(regs); bha_nga;
     }
 }
 
-static int
-getFBSize(struct pci_device *pci)
+static จำนวนเต็ม
+getFBSize(sa_nracanaa pci_device *pci)
 {
     /* FB config */
     u8 reg = pci_config_readb(pci->bdf, 0xa1);
 
     /* GFX disabled ? */
-    if (!(reg & 0x80))
-        return -1;
+    ถ้า (!(reg & 0x80))
+        คืน -1;
 
     static u8 mem_power[] = {0, 3, 4, 5, 6, 7, 8, 9};
-    return mem_power[(reg >> 4) & 0x7];
+    คืน mem_power[(reg >> 4) & 0x7];
 }
 
-static int
-getViaRamSpeed(struct pci_device *pci)
+static จำนวนเต็ม
+getViaRamSpeed(sa_nracanaa pci_device *pci)
 {
-    return (pci_config_readb(pci->bdf, 0x90) & 0x07) + 3;
+    คืน (pci_config_readb(pci->bdf, 0x90) & 0x07) + 3;
 }
 
-static int
+static จำนวนเต็ม
 getAMDRamSpeed(void)
 {
-    struct pci_device *pci = pci_find_device(PCI_VENDOR_ID_AMD
+    sa_nracanaa pci_device *pci = pci_find_device(PCI_VENDOR_ID_AMD
                                              , PCI_DEVICE_ID_AMD_K8_NB_MEMCTL);
-    if (!pci)
-        return -1;
+    ถ้า (!pci)
+        คืน -1;
 
     /* mem clk 0 = DDR2 400 */
-    return (pci_config_readb(pci->bdf, 0x94) & 0x7) + 6;
+    คืน (pci_config_readb(pci->bdf, 0x94) & 0x7) + 6;
 }
 
 /* int 0x15 - 5f18
@@ -148,22 +148,22 @@ getAMDRamSpeed(void)
 #define PCI_DEVICE_ID_VIA_VX855_MEMCTRL 0x3409
 
 static void
-via_setup(struct pci_device *pci)
+via_setup(sa_nracanaa pci_device *pci)
 {
     VGAHookHandlerType = VH_VIA;
 
-    struct pci_device *d = pci_find_device(PCI_VENDOR_ID_VIA
+    sa_nracanaa pci_device *d = pci_find_device(PCI_VENDOR_ID_VIA
                                            , PCI_DEVICE_ID_VIA_K8M890CE_3);
-    if (d) {
+    ถ้า (d) {
         ViaFBsize = getFBSize(d);
         ViaRamSpeed = getAMDRamSpeed();
-        return;
+        คืน;
     }
     d = pci_find_device(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_VX855_MEMCTRL);
-    if (d) {
+    ถ้า (d) {
         ViaFBsize = getFBSize(d);
         ViaRamSpeed = getViaRamSpeed(d);
-        return;
+        คืน;
     }
 
     dprintf(1, "Warning: VGA memory size and speed is hardcoded\n");
@@ -179,7 +179,7 @@ via_setup(struct pci_device *pci)
 u8 IntelDisplayType VARFSEG, IntelDisplayId VARFSEG;
 
 static void
-intel_155f35(struct bregs *regs)
+intel_155f35(sa_nracanaa bregs *regs)
 {
     regs->ax = 0x005f;
     regs->cl = GET_GLOBAL(IntelDisplayType);
@@ -187,7 +187,7 @@ intel_155f35(struct bregs *regs)
 }
 
 static void
-intel_155f40(struct bregs *regs)
+intel_155f40(sa_nracanaa bregs *regs)
 {
     regs->ax = 0x005f;
     regs->cl = GET_GLOBAL(IntelDisplayId);
@@ -195,7 +195,7 @@ intel_155f40(struct bregs *regs)
 }
 
 static void
-intel_155f50(struct bregs *regs)
+intel_155f50(sa_nracanaa bregs *regs)
 {
     /* Mandatory hook on some Dell laptops */
     regs->ax = 0x005f;
@@ -203,13 +203,13 @@ intel_155f50(struct bregs *regs)
 }
 
 static void
-intel_155f(struct bregs *regs)
+intel_155f(sa_nracanaa bregs *regs)
 {
     switch (regs->al) {
-    case 0x35: intel_155f35(regs); break;
-    case 0x40: intel_155f40(regs); break;
-    case 0x50: intel_155f50(regs); break;
-    default:   handle_155fXX(regs); break;
+    pak_sa 0x35: intel_155f35(regs); bha_nga;
+    pak_sa 0x40: intel_155f40(regs); bha_nga;
+    pak_sa 0x50: intel_155f50(regs); bha_nga;
+    default:   handle_155fXX(regs); bha_nga;
     }
 }
 
@@ -224,7 +224,7 @@ intel_155f(struct bregs *regs)
 #define BOOT_DISPLAY_LCD2       (1 << 7)
 
 static void
-intel_setup(struct pci_device *pci)
+intel_setup(sa_nracanaa pci_device *pci)
 {
     VGAHookHandlerType = VH_INTEL;
 
@@ -233,7 +233,7 @@ intel_setup(struct pci_device *pci)
 }
 
 static void
-roda_setup(struct pci_device *pci)
+roda_setup(sa_nracanaa pci_device *pci)
 {
     VGAHookHandlerType = VH_INTEL;
     // IntelDisplayType = BOOT_DISPLAY_DEFAULT;
@@ -243,7 +243,7 @@ roda_setup(struct pci_device *pci)
 }
 
 static void
-kontron_setup(struct pci_device *pci)
+kontron_setup(sa_nracanaa pci_device *pci)
 {
     VGAHookHandlerType = VH_INTEL;
     IntelDisplayType = BOOT_DISPLAY_CRT;
@@ -251,7 +251,7 @@ kontron_setup(struct pci_device *pci)
 }
 
 static void
-getac_setup(struct pci_device *pci)
+getac_setup(sa_nracanaa pci_device *pci)
 {
 }
 
@@ -262,7 +262,7 @@ getac_setup(struct pci_device *pci)
 u8 SmiBootDisplay VARFSEG; // 1: LCD, 2: CRT, 3: Both */
 
 static void
-smi_157f02(struct bregs *regs)
+smi_157f02(sa_nracanaa bregs *regs)
 {
     /* Boot Display Device Override */
     regs->ax = 0x007f;
@@ -271,7 +271,7 @@ smi_157f02(struct bregs *regs)
 }
 
 static void
-smi_157f14(struct bregs *regs)
+smi_157f14(sa_nracanaa bregs *regs)
 {
     /* ReduceOn support default status */
     regs->ax = 0x007f;
@@ -280,17 +280,17 @@ smi_157f14(struct bregs *regs)
 }
 
 static void
-smi_157f(struct bregs *regs)
+smi_157f(sa_nracanaa bregs *regs)
 {
     switch (regs->al) {
-    case 0x02: smi_157f02(regs); break;
-    case 0x14: smi_157f14(regs); break;
-    default:   handle_157fXX(regs); break;
+    pak_sa 0x02: smi_157f02(regs); bha_nga;
+    pak_sa 0x14: smi_157f14(regs); bha_nga;
+    default:   handle_157fXX(regs); bha_nga;
     }
 }
 
 static void
-winent_mb6047_setup(struct pci_device *pci)
+winent_mb6047_setup(sa_nracanaa pci_device *pci)
 {
     VGAHookHandlerType = VH_SMI;
     SmiBootDisplay = 0x02;
@@ -302,54 +302,54 @@ winent_mb6047_setup(struct pci_device *pci)
 
 // Main 16bit entry point
 void
-handle_155f(struct bregs *regs)
+handle_155f(sa_nracanaa bregs *regs)
 {
-    if (!CONFIG_VGAHOOKS) {
+    ถ้า (!CONFIG_VGAHOOKS) {
         handle_155fXX(regs);
-        return;
+        คืน;
     }
 
-    int htype = GET_GLOBAL(VGAHookHandlerType);
+    จำนวนเต็ม htype = GET_GLOBAL(VGAHookHandlerType);
     switch (htype) {
-    case VH_VIA:   via_155f(regs); break;
-    case VH_INTEL: intel_155f(regs); break;
-    default:       handle_155fXX(regs); break;
+    pak_sa VH_VIA:   via_155f(regs); bha_nga;
+    pak_sa VH_INTEL: intel_155f(regs); bha_nga;
+    default:       handle_155fXX(regs); bha_nga;
     }
 }
 
 // Main 16bit entry point
 void
-handle_157f(struct bregs *regs)
+handle_157f(sa_nracanaa bregs *regs)
 {
-    if (!CONFIG_VGAHOOKS) {
+    ถ้า (!CONFIG_VGAHOOKS) {
         handle_157fXX(regs);
-        return;
+        คืน;
     }
 
-    int htype = GET_GLOBAL(VGAHookHandlerType);
+    จำนวนเต็ม htype = GET_GLOBAL(VGAHookHandlerType);
     switch (htype) {
-    case VH_SMI:   smi_157f(regs); break;
-    default:       handle_157fXX(regs); break;
+    pak_sa VH_SMI:   smi_157f(regs); bha_nga;
+    default:       handle_157fXX(regs); bha_nga;
     }
 }
 
 // Setup
 void
-vgahook_setup(struct pci_device *pci)
+vgahook_setup(sa_nracanaa pci_device *pci)
 {
-    if (!CONFIG_VGAHOOKS)
-        return;
+    ถ้า (!CONFIG_VGAHOOKS)
+        คืน;
 
-    if (strcmp(CBvendor, "KONTRON") == 0 && strcmp(CBpart, "986LCD-M") == 0)
+    ถ้า (strcmp(CBvendor, "KONTRON") == 0 && strcmp(CBpart, "986LCD-M") == 0)
         kontron_setup(pci);
-    else if (strcmp(CBvendor, "GETAC") == 0 && strcmp(CBpart, "P470") == 0)
+    มิฉะนั้น ถ้า (strcmp(CBvendor, "GETAC") == 0 && strcmp(CBpart, "P470") == 0)
         getac_setup(pci);
-    else if (strcmp(CBvendor, "RODA") == 0 && strcmp(CBpart, "RK886EX") == 0)
+    มิฉะนั้น ถ้า (strcmp(CBvendor, "RODA") == 0 && strcmp(CBpart, "RK886EX") == 0)
         roda_setup(pci);
-    else if (strcmp(CBvendor, "Win Enterprise") == 0 && strcmp(CBpart, "MB6047") == 0)
+    มิฉะนั้น ถ้า (strcmp(CBvendor, "Win Enterprise") == 0 && strcmp(CBpart, "MB6047") == 0)
         winent_mb6047_setup(pci);
-    else if (pci->vendor == PCI_VENDOR_ID_VIA)
+    มิฉะนั้น ถ้า (pci->vendor == PCI_VENDOR_ID_VIA)
         via_setup(pci);
-    else if (pci->vendor == PCI_VENDOR_ID_INTEL)
+    มิฉะนั้น ถ้า (pci->vendor == PCI_VENDOR_ID_INTEL)
         intel_setup(pci);
 }

@@ -42,7 +42,7 @@
 #define PVSCSI_FLAG_CMD_DIR_TOHOST         (1 << 3)
 #define PVSCSI_FLAG_CMD_DIR_TODEVICE       (1 << 4)
 
-enum PVSCSIRegOffset {
+ga_nanaa PVSCSIRegOffset {
     PVSCSI_REG_OFFSET_COMMAND        =    0x0,
     PVSCSI_REG_OFFSET_COMMAND_DATA   =    0x4,
     PVSCSI_REG_OFFSET_COMMAND_STATUS =    0x8,
@@ -57,7 +57,7 @@ enum PVSCSIRegOffset {
     PVSCSI_REG_OFFSET_KICK_RW_IO     = 0x4018,
 };
 
-enum PVSCSICommands {
+ga_nanaa PVSCSICommands {
     PVSCSI_CMD_FIRST             = 0,
     PVSCSI_CMD_ADAPTER_RESET     = 1,
     PVSCSI_CMD_ISSUE_SCSI        = 2,
@@ -72,7 +72,7 @@ enum PVSCSICommands {
 };
 
 #define PVSCSI_SETUP_RINGS_MAX_NUM_PAGES        32
-struct PVSCSICmdDescSetupRings {
+sa_nracanaa PVSCSICmdDescSetupRings {
     u32    reqRingNumPages;
     u32    cmpRingNumPages;
     u64    ringsStatePPN;
@@ -80,7 +80,7 @@ struct PVSCSICmdDescSetupRings {
     u64    cmpRingPPNs[PVSCSI_SETUP_RINGS_MAX_NUM_PAGES];
 } PACKED;
 
-struct PVSCSIRingCmpDesc {
+sa_nracanaa PVSCSIRingCmpDesc {
     u64    context;
     u64    dataLen;
     u32    senseLen;
@@ -89,7 +89,7 @@ struct PVSCSIRingCmpDesc {
     u32    pad[2];
 } PACKED;
 
-struct PVSCSIRingsState {
+sa_nracanaa PVSCSIRingsState {
     u32    reqProdIdx;
     u32    reqConsIdx;
     u32    reqNumEntriesLog2;
@@ -105,7 +105,7 @@ struct PVSCSIRingsState {
     u32    msgNumEntriesLog2;
 } PACKED;
 
-struct PVSCSIRingReqDesc {
+sa_nracanaa PVSCSIRingReqDesc {
     u64    context;
     u64    dataAddr;
     u64    dataLen;
@@ -122,18 +122,18 @@ struct PVSCSIRingReqDesc {
     u8     unused[59];
 } PACKED;
 
-struct pvscsi_ring_dsc_s {
-    struct PVSCSIRingsState *ring_state;
-    struct PVSCSIRingReqDesc *ring_reqs;
-    struct PVSCSIRingCmpDesc *ring_cmps;
+sa_nracanaa pvscsi_ring_dsc_s {
+    sa_nracanaa PVSCSIRingsState *ring_state;
+    sa_nracanaa PVSCSIRingReqDesc *ring_reqs;
+    sa_nracanaa PVSCSIRingCmpDesc *ring_cmps;
 };
 
-struct pvscsi_lun_s {
-    struct drive_s drive;
+sa_nracanaa pvscsi_lun_s {
+    sa_nracanaa drive_s drive;
     void *iobase;
     u8 target;
     u8 lun;
-    struct pvscsi_ring_dsc_s *ring_dsc;
+    sa_nracanaa pvscsi_ring_dsc_s *ring_dsc;
 };
 
 static void
@@ -142,9 +142,9 @@ pvscsi_write_cmd_desc(void *iobase, u32 cmd, const void *desc, size_t len)
     const u32 *ptr = desc;
     size_t i;
 
-    len /= sizeof(*ptr);
+    len /= parimaa_na(*ptr);
     writel(iobase + PVSCSI_REG_OFFSET_COMMAND, cmd);
-    for (i = 0; i < len; i++)
+    สำหรับ (i = 0; i < len; i++)
         writel(iobase + PVSCSI_REG_OFFSET_COMMAND_DATA, ptr[i]);
 }
 
@@ -157,31 +157,31 @@ pvscsi_kick_rw_io(void *iobase)
 static void
 pvscsi_wait_intr_cmpl(void *iobase)
 {
-    while (!(readl(iobase + PVSCSI_REG_OFFSET_INTR_STATUS) & PVSCSI_INTR_CMPL_MASK))
+    ขณะ (!(readl(iobase + PVSCSI_REG_OFFSET_INTR_STATUS) & PVSCSI_INTR_CMPL_MASK))
         usleep(5);
     writel(iobase + PVSCSI_REG_OFFSET_INTR_STATUS, PVSCSI_INTR_CMPL_MASK);
 }
 
 static void
-pvscsi_init_rings(void *iobase, struct pvscsi_ring_dsc_s **ring_dsc)
+pvscsi_init_rings(void *iobase, sa_nracanaa pvscsi_ring_dsc_s **ring_dsc)
 {
-    struct PVSCSICmdDescSetupRings cmd = {0,};
+    sa_nracanaa PVSCSICmdDescSetupRings cmd = {0,};
 
-    struct pvscsi_ring_dsc_s *dsc = malloc_high(sizeof(*dsc));
-    if (!dsc) {
+    sa_nracanaa pvscsi_ring_dsc_s *dsc = malloc_high(parimaa_na(*dsc));
+    ถ้า (!dsc) {
         warn_noalloc();
-        return;
+        คืน;
     }
 
     dsc->ring_state =
-        (struct PVSCSIRingsState *)memalign_high(PAGE_SIZE, PAGE_SIZE);
+        (sa_nracanaa PVSCSIRingsState *)memalign_high(PAGE_SIZE, PAGE_SIZE);
     dsc->ring_reqs =
-        (struct PVSCSIRingReqDesc *)memalign_high(PAGE_SIZE, PAGE_SIZE);
+        (sa_nracanaa PVSCSIRingReqDesc *)memalign_high(PAGE_SIZE, PAGE_SIZE);
     dsc->ring_cmps =
-        (struct PVSCSIRingCmpDesc *)memalign_high(PAGE_SIZE, PAGE_SIZE);
-    if (!dsc->ring_state || !dsc->ring_reqs || !dsc->ring_cmps) {
+        (sa_nracanaa PVSCSIRingCmpDesc *)memalign_high(PAGE_SIZE, PAGE_SIZE);
+    ถ้า (!dsc->ring_state || !dsc->ring_reqs || !dsc->ring_cmps) {
         warn_noalloc();
-        return;
+        คืน;
     }
     memset(dsc->ring_state, 0, PAGE_SIZE);
     memset(dsc->ring_reqs, 0, PAGE_SIZE);
@@ -194,47 +194,47 @@ pvscsi_init_rings(void *iobase, struct pvscsi_ring_dsc_s **ring_dsc)
     cmd.cmpRingPPNs[0] = virt_to_phys(dsc->ring_cmps) >> PAGE_SHIFT;
 
     pvscsi_write_cmd_desc(iobase, PVSCSI_CMD_SETUP_RINGS,
-                          &cmd, sizeof(cmd));
+                          &cmd, parimaa_na(cmd));
     *ring_dsc = dsc;
 }
 
 static u32
-pvscsi_get_rsp(struct PVSCSIRingsState *s,
-               struct PVSCSIRingCmpDesc *rsp)
+pvscsi_get_rsp(sa_nracanaa PVSCSIRingsState *s,
+               sa_nracanaa PVSCSIRingCmpDesc *rsp)
 {
     u32 status = rsp->hostStatus;
     s->cmpConsIdx = s->cmpConsIdx + 1;
-    return status;
+    คืน status;
 }
 
-int
-pvscsi_process_op(struct disk_op_s *op)
+จำนวนเต็ม
+pvscsi_process_op(sa_nracanaa disk_op_s *op)
 {
-    if (!CONFIG_PVSCSI)
-        return DISK_RET_EBADTRACK;
-    struct pvscsi_lun_s *plun =
-        container_of(op->drive_fl, struct pvscsi_lun_s, drive);
-    struct pvscsi_ring_dsc_s *ring_dsc = plun->ring_dsc;
-    struct PVSCSIRingsState *s = ring_dsc->ring_state;
+    ถ้า (!CONFIG_PVSCSI)
+        คืน DISK_RET_EBADTRACK;
+    sa_nracanaa pvscsi_lun_s *plun =
+        container_of(op->drive_fl, sa_nracanaa pvscsi_lun_s, drive);
+    sa_nracanaa pvscsi_ring_dsc_s *ring_dsc = plun->ring_dsc;
+    sa_nracanaa PVSCSIRingsState *s = ring_dsc->ring_state;
     u32 req_entries = s->reqNumEntriesLog2;
     u32 cmp_entries = s->cmpNumEntriesLog2;
-    struct PVSCSIRingReqDesc *req;
-    struct PVSCSIRingCmpDesc *rsp;
+    sa_nracanaa PVSCSIRingReqDesc *req;
+    sa_nracanaa PVSCSIRingCmpDesc *rsp;
     u32 status;
 
-    if (s->reqProdIdx - s->cmpConsIdx >= 1 << req_entries) {
+    ถ้า (s->reqProdIdx - s->cmpConsIdx >= 1 << req_entries) {
         dprintf(1, "pvscsi: ring full: reqProdIdx=%d cmpConsIdx=%d\n",
                 s->reqProdIdx, s->cmpConsIdx);
-        return DISK_RET_EBADTRACK;
+        คืน DISK_RET_EBADTRACK;
     }
 
     req = ring_dsc->ring_reqs + (s->reqProdIdx & MASK(req_entries));
-    int blocksize = scsi_fill_cmd(op, req->cdb, 16);
-    if (blocksize < 0)
-        return default_process_op(op);
+    จำนวนเต็ม blocksize = scsi_fill_cmd(op, req->cdb, 16);
+    ถ้า (blocksize < 0)
+        คืน default_process_op(op);
     req->bus = 0;
     req->target = plun->target;
-    memset(req->lun, 0, sizeof(req->lun));
+    memset(req->lun, 0, parimaa_na(req->lun));
     req->lun[1] = plun->lun;
     req->senseLen = 0;
     req->senseAddr = 0;
@@ -253,19 +253,19 @@ pvscsi_process_op(struct disk_op_s *op)
     rsp = ring_dsc->ring_cmps + (s->cmpConsIdx & MASK(cmp_entries));
     status = pvscsi_get_rsp(s, rsp);
 
-    return status == 0 ? DISK_RET_SUCCESS : DISK_RET_EBADTRACK;
+    คืน status == 0 ? DISK_RET_SUCCESS : DISK_RET_EBADTRACK;
 }
 
-static int
-pvscsi_add_lun(struct pci_device *pci, void *iobase,
-               struct pvscsi_ring_dsc_s *ring_dsc, u8 target, u8 lun)
+static จำนวนเต็ม
+pvscsi_add_lun(sa_nracanaa pci_device *pci, void *iobase,
+               sa_nracanaa pvscsi_ring_dsc_s *ring_dsc, u8 target, u8 lun)
 {
-    struct pvscsi_lun_s *plun = malloc_fseg(sizeof(*plun));
-    if (!plun) {
+    sa_nracanaa pvscsi_lun_s *plun = malloc_fseg(parimaa_na(*plun));
+    ถ้า (!plun) {
         warn_noalloc();
-        return -1;
+        คืน -1;
     }
-    memset(plun, 0, sizeof(*plun));
+    memset(plun, 0, parimaa_na(*plun));
     plun->drive.type = DTYPE_PVSCSI;
     plun->drive.cntl_id = pci->bdf;
     plun->target = target;
@@ -274,22 +274,22 @@ pvscsi_add_lun(struct pci_device *pci, void *iobase,
     plun->ring_dsc = ring_dsc;
 
     boot_lchs_find_scsi_device(pci, target, lun, &(plun->drive.lchs));
-    char *name = znprintf(MAXDESCSIZE, "pvscsi %pP %d:%d", pci, target, lun);
-    int prio = bootprio_find_scsi_device(pci, target, lun);
-    int ret = scsi_drive_setup(&plun->drive, name, prio);
+    var_na *name = znprintf(MAXDESCSIZE, "pvscsi %pP %d:%d", pci, target, lun);
+    จำนวนเต็ม prio = bootprio_find_scsi_device(pci, target, lun);
+    จำนวนเต็ม ret = scsi_drive_setup(&plun->drive, name, prio);
     free(name);
-    if (ret)
+    ถ้า (ret)
         goto fail;
-    return 0;
+    คืน 0;
 
 fail:
     free(plun);
-    return -1;
+    คืน -1;
 }
 
 static void
-pvscsi_scan_target(struct pci_device *pci, void *iobase,
-                   struct pvscsi_ring_dsc_s *ring_dsc, u8 target)
+pvscsi_scan_target(sa_nracanaa pci_device *pci, void *iobase,
+                   sa_nracanaa pvscsi_ring_dsc_s *ring_dsc, u8 target)
 {
     /* pvscsi has no more than a single lun per target */
     pvscsi_add_lun(pci, iobase, ring_dsc, target, 0);
@@ -298,20 +298,20 @@ pvscsi_scan_target(struct pci_device *pci, void *iobase,
 static void
 init_pvscsi(void *data)
 {
-    struct pci_device *pci = data;
+    sa_nracanaa pci_device *pci = data;
     void *iobase = pci_enable_membar(pci, PCI_BASE_ADDRESS_0);
-    if (!iobase)
-        return;
+    ถ้า (!iobase)
+        คืน;
     pci_enable_busmaster(pci);
 
     dprintf(1, "found pvscsi at %pP, io @ %p\n", pci, iobase);
 
     pvscsi_write_cmd_desc(iobase, PVSCSI_CMD_ADAPTER_RESET, NULL, 0);
 
-    struct pvscsi_ring_dsc_s *ring_dsc = NULL;
+    sa_nracanaa pvscsi_ring_dsc_s *ring_dsc = NULL;
     pvscsi_init_rings(iobase, &ring_dsc);
-    int i;
-    for (i = 0; i < 64; i++)
+    จำนวนเต็ม i;
+    สำหรับ (i = 0; i < 64; i++)
         pvscsi_scan_target(pci, iobase, ring_dsc, i);
 }
 
@@ -319,14 +319,14 @@ void
 pvscsi_setup(void)
 {
     ASSERT32FLAT();
-    if (! CONFIG_PVSCSI)
-        return;
+    ถ้า (! CONFIG_PVSCSI)
+        คืน;
 
     dprintf(3, "init pvscsi\n");
 
-    struct pci_device *pci;
+    sa_nracanaa pci_device *pci;
     foreachpci(pci) {
-        if (pci->vendor != PCI_VENDOR_ID_VMWARE
+        ถ้า (pci->vendor != PCI_VENDOR_ID_VMWARE
             || pci->device != PCI_DEVICE_ID_VMWARE_PVSCSI)
             continue;
         run_thread(init_pvscsi, pci);

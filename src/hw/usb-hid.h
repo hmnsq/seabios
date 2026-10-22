@@ -2,12 +2,12 @@
 #define __USB_HID_H
 
 // usb-hid.c
-struct usbdevice_s;
-int usb_hid_setup(struct usbdevice_s *usbdev);
-int usb_kbd_active(void);
-int usb_kbd_command(int command, u8 *param);
-int usb_mouse_active(void);
-int usb_mouse_command(int command, u8 *param);
+sa_nracanaa usbdevice_s;
+จำนวนเต็ม usb_hid_setup(sa_nracanaa usbdevice_s *usbdev);
+จำนวนเต็ม usb_kbd_active(void);
+จำนวนเต็ม usb_kbd_command(จำนวนเต็ม command, u8 *param);
+จำนวนเต็ม usb_mouse_active(void);
+จำนวนเต็ม usb_mouse_command(จำนวนเต็ม command, u8 *param);
 void usb_check_event(void);
 
 
