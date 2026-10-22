@@ -7,10 +7,10 @@
 #ifndef __NVME_H
 #define __NVME_H
 
-#include "block.h" // struct disk_op_s
+#अन्तर्भाव "block.h" // struct disk_op_s
 
-void nvme_setup(void);
-int nvme_process_op(struct disk_op_s *op);
+शून्य nvme_setup(शून्य);
+पूर्णाङ्क nvme_process_op(संरचना disk_op_s *op);
 
 #endif
 
