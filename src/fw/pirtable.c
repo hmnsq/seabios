@@ -6,21 +6,21 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "config.h" // CONFIG_*
-#include "output.h" // dprintf
-#include "std/pirtable.h" // struct pir_header
-#include "string.h" // checksum
-#include "util.h" // PirAddr
+#अन्तर्भाव "config.h" // CONFIG_*
+#अन्तर्भाव "output.h" // dprintf
+#अन्तर्भाव "std/pirtable.h" // struct pir_header
+#अन्तर्भाव "string.h" // checksum
+#अन्तर्भाव "util.h" // PirAddr
 
-struct pir_table {
-    struct pir_header pir;
-    struct pir_slot slots[6];
+संरचना pir_table {
+    संरचना pir_header pir;
+    संरचना pir_slot slots[6];
 } PACKED;
 
-static struct pir_table PIR_TABLE = {
+स्थिर संरचना pir_table PIR_TABLE = {
     .pir = {
         .version = 0x0100,
-        .size = sizeof(struct pir_table),
+        .size = परिमाण(संरचना pir_table),
         .router_devfunc = 0x08,
         .compatible_devid = 0x122e8086,
     },
@@ -89,15 +89,15 @@ static struct pir_table PIR_TABLE = {
     }
 };
 
-void
-pirtable_setup(void)
+शून्य
+pirtable_setup(शून्य)
 {
-    if (! CONFIG_PIRTABLE)
-        return;
+    यदि (! CONFIG_PIRTABLE)
+        प्रत्यागम;
 
     dprintf(3, "init PIR table\n");
 
     PIR_TABLE.pir.signature = PIR_SIGNATURE;
-    PIR_TABLE.pir.checksum -= checksum(&PIR_TABLE, sizeof(PIR_TABLE));
+    PIR_TABLE.pir.checksum -= checksum(&PIR_TABLE, परिमाण(PIR_TABLE));
     copy_pir(&PIR_TABLE);
 }
