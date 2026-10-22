@@ -5,120 +5,120 @@
 //
 // This file may be distributed under the terms of the GNU LGPLv3 license.
 
-#include "biosvar.h" // GET_GLOBAL
-#include "block.h" // struct drive_s
-#include "bregs.h" // struct bregs
-#include "hw/ata.h" // ATA_CMD_REQUEST_SENSE
-#include "hw/blockcmd.h" // CDB_CMD_REQUEST_SENSE
-#include "malloc.h" // free
-#include "output.h" // dprintf
-#include "std/disk.h" // DISK_RET_SUCCESS
-#include "string.h" // memset
-#include "util.h" // cdrom_prepboot
-#include "tcgbios.h" // tpm_*
+#ضمن "biosvar.h" // GET_GLOBAL
+#ضمن "block.h" // struct drive_s
+#ضمن "bregs.h" // struct bregs
+#ضمن "hw/ata.h" // ATA_CMD_REQUEST_SENSE
+#ضمن "hw/blockcmd.h" // CDB_CMD_REQUEST_SENSE
+#ضمن "malloc.h" // free
+#ضمن "output.h" // dprintf
+#ضمن "std/disk.h" // DISK_RET_SUCCESS
+#ضمن "string.h" // memset
+#ضمن "util.h" // cdrom_prepboot
+#ضمن "tcgbios.h" // tpm_*
 
 
 /****************************************************************
  * CD emulation
  ****************************************************************/
 
-struct eltorito_s CDEmu VARLOW = { .size=sizeof(CDEmu) };
-struct drive_s *emulated_drive_gf VARLOW;
-struct drive_s *cdemu_drive_gf VARFSEG;
+بنية eltorito_s CDEmu VARLOW = { .size=حجم(CDEmu) };
+بنية drive_s *emulated_drive_gf VARLOW;
+بنية drive_s *cdemu_drive_gf VARFSEG;
 
-static int
-cdemu_read(struct disk_op_s *op)
+ساكن صحيح
+cdemu_read(بنية disk_op_s *op)
 {
-    struct drive_s *drive_gf = GET_LOW(emulated_drive_gf);
-    struct disk_op_s dop;
+    بنية drive_s *drive_gf = GET_نزم(emulated_drive_gf);
+    بنية disk_op_s dop;
     dop.drive_fl = drive_gf;
     dop.command = op->command;
-    dop.lba = GET_LOW(CDEmu.ilba) + op->lba / 4;
+    dop.lba = GET_نزم(CDEmu.ilba) + op->lba / 4;
 
-    int count = op->count;
-    op->count = 0;
+    صحيح ژماردن = op->ژماردن;
+    op->ژماردن = 0;
     u8 *cdbuf_fl = GET_GLOBAL(bounce_buf_fl);
 
-    if (op->lba & 3) {
+    إذا (op->lba & 3) {
         // Partial read of first block.
-        dop.count = 1;
+        dop.ژماردن = 1;
         dop.buf_fl = cdbuf_fl;
-        int ret = process_op(&dop);
-        if (ret)
-            return ret;
+        صحيح ret = process_op(&dop);
+        إذا (ret)
+            أرجع ret;
         u8 thiscount = 4 - (op->lba & 3);
-        if (thiscount > count)
-            thiscount = count;
-        count -= thiscount;
+        إذا (thiscount > ژماردن)
+            thiscount = ژماردن;
+        ژماردن -= thiscount;
         memcpy_fl(op->buf_fl, cdbuf_fl + (op->lba & 3) * 512, thiscount * 512);
         op->buf_fl += thiscount * 512;
-        op->count += thiscount;
+        op->ژماردن += thiscount;
         dop.lba++;
     }
 
-    if (count > 3) {
+    إذا (ژماردن > 3) {
         // Read n number of regular blocks.
-        dop.count = count / 4;
+        dop.ژماردن = ژماردن / 4;
         dop.buf_fl = op->buf_fl;
-        int ret = process_op(&dop);
-        op->count += dop.count * 4;
-        if (ret)
-            return ret;
-        u8 thiscount = count & ~3;
-        count &= 3;
+        صحيح ret = process_op(&dop);
+        op->ژماردن += dop.ژماردن * 4;
+        إذا (ret)
+            أرجع ret;
+        u8 thiscount = ژماردن & ~3;
+        ژماردن &= 3;
         op->buf_fl += thiscount * 512;
         dop.lba += thiscount / 4;
     }
 
-    if (count) {
+    إذا (ژماردن) {
         // Partial read on last block.
-        dop.count = 1;
+        dop.ژماردن = 1;
         dop.buf_fl = cdbuf_fl;
-        int ret = process_op(&dop);
-        if (ret)
-            return ret;
-        u8 thiscount = count;
+        صحيح ret = process_op(&dop);
+        إذا (ret)
+            أرجع ret;
+        u8 thiscount = ژماردن;
         memcpy_fl(op->buf_fl, cdbuf_fl, thiscount * 512);
-        op->count += thiscount;
+        op->ژماردن += thiscount;
     }
 
-    return DISK_RET_SUCCESS;
+    أرجع DISK_RET_SUCCESS;
 }
 
-int
-cdemu_process_op(struct disk_op_s *op)
+صحيح
+cdemu_process_op(بنية disk_op_s *op)
 {
-    if (!CONFIG_CDROM_EMU)
-        return 0;
+    إذا (!CONFIG_CDROM_EMU)
+        أرجع 0;
 
-    switch (op->command) {
-    case CMD_READ:
-        return cdemu_read(op);
-    case CMD_WRITE:
-    case CMD_FORMAT:
-        return DISK_RET_EWRITEPROTECT;
-    default:
-        return default_process_op(op);
+    بدل (op->command) {
+    حالة CMD_READ:
+        أرجع cdemu_read(op);
+    حالة CMD_WRITE:
+    حالة CMD_FORMAT:
+        أرجع DISK_RET_EWRITEPROTECT;
+    افتراضي:
+        أرجع default_process_op(op);
     }
 }
 
-void
-cdrom_prepboot(void)
+فراغ
+cdrom_prepboot(فراغ)
 {
-    if (!CONFIG_CDROM_EMU)
-        return;
-    if (!CDCount)
-        return;
-    if (create_bounce_buf() < 0)
-        return;
+    إذا (!CONFIG_CDROM_EMU)
+        أرجع;
+    إذا (!CDCount)
+        أرجع;
+    إذا (create_bounce_buf() < 0)
+        أرجع;
 
-    struct drive_s *drive = malloc_fseg(sizeof(*drive));
-    if (!drive) {
+    بنية drive_s *drive = malloc_fseg(حجم(*drive));
+    إذا (!drive) {
         warn_noalloc();
-        return;
+        أرجع;
     }
     cdemu_drive_gf = drive;
-    memset(drive, 0, sizeof(*drive));
+    memset(drive, 0, حجم(*drive));
     drive->type = DTYPE_CDEMU;
     drive->blksize = DISK_SECTOR_SIZE;
     drive->sectors = (u64)-1;
@@ -129,76 +129,76 @@ cdrom_prepboot(void)
  * CD booting
  ****************************************************************/
 
-int
-cdrom_boot(struct drive_s *drive)
+صحيح
+cdrom_boot(بنية drive_s *drive)
 {
     ASSERT32FLAT();
-    struct disk_op_s dop;
-    int cdid = getDriveId(EXTTYPE_CD, drive);
-    memset(&dop, 0, sizeof(dop));
+    بنية disk_op_s dop;
+    صحيح cdid = getDriveId(EXTTYPE_CD, drive);
+    memset(&dop, 0, حجم(dop));
     dop.drive_fl = drive;
-    if (!dop.drive_fl || cdid < 0)
-        return 1;
+    إذا (!dop.drive_fl || cdid < 0)
+        أرجع 1;
 
-    int ret = scsi_is_ready(&dop);
-    if (ret)
+    صحيح ret = scsi_is_ready(&dop);
+    إذا (ret)
         dprintf(5, "scsi_is_ready returned %d\n", ret);
 
     // Read the Boot Record Volume Descriptor
     u8 buffer[CDROM_SECTOR_SIZE];
     dop.command = CMD_READ;
     dop.lba = 0x11;
-    dop.count = 1;
+    dop.ژماردن = 1;
     dop.buf_fl = buffer;
     ret = process_op(&dop);
-    if (ret)
-        return 3;
+    إذا (ret)
+        أرجع 3;
 
     // Validity checks
-    if (buffer[0])
-        return 4;
-    if (strcmp((char*)&buffer[1], "CD001\001EL TORITO SPECIFICATION") != 0)
-        return 5;
+    إذا (buffer[0])
+        أرجع 4;
+    إذا (strcmp((حرف*)&buffer[1], "CD001\001EL TORITO SPECIFICATION") != 0)
+        أرجع 5;
 
     // ok, now we calculate the Boot catalog address
     u32 lba = *(u32*)&buffer[0x47];
 
     // And we read the Boot Catalog
     dop.lba = lba;
-    dop.count = 1;
+    dop.ژماردن = 1;
     ret = process_op(&dop);
-    if (ret)
-        return 7;
+    إذا (ret)
+        أرجع 7;
 
     // Validation entry
-    if (buffer[0x00] != 0x01)
-        return 8;   // Header
-    if (buffer[0x01] != 0x00)
-        return 9;   // Platform
-    if (buffer[0x1E] != 0x55)
-        return 10;  // key 1
-    if (buffer[0x1F] != 0xAA)
-        return 10;  // key 2
+    إذا (buffer[0x00] != 0x01)
+        أرجع 8;   // Header
+    إذا (buffer[0x01] != 0x00)
+        أرجع 9;   // Platform
+    إذا (buffer[0x1E] != 0x55)
+        أرجع 10;  // key 1
+    إذا (buffer[0x1F] != 0xAA)
+        أرجع 10;  // key 2
 
     // Initial/Default Entry
-    if (buffer[0x20] != 0x88)
-        return 11; // Bootable
+    إذا (buffer[0x20] != 0x88)
+        أرجع 11; // Bootable
 
     /* measure 2048 bytes (one sector) */
-    tpm_add_cdrom_catalog(MAKE_FLATPTR(GET_SEG(SS), buffer), sizeof(buffer));
+    tpm_add_cdrom_catalog(MAKE_FLATPTR(GET_SEG(SS), buffer), حجم(buffer));
 
     // Fill in el-torito cdrom emulation fields.
     emulated_drive_gf = drive;
     u8 media = buffer[0x21];
 
     u16 boot_segment = *(u16*)&buffer[0x22];
-    if (!boot_segment)
+    إذا (!boot_segment)
         boot_segment = 0x07C0;
     CDEmu.load_segment = boot_segment;
     CDEmu.buffer_segment = 0x0000;
 
     u16 nbsectors = *(u16*)&buffer[0x26];
-    CDEmu.sector_count = nbsectors;
+    CDEmu.sector_ژماردن = nbsectors;
 
     lba = *(u32*)&buffer[0x28];
     CDEmu.ilba = lba;
@@ -210,61 +210,61 @@ cdrom_boot(struct drive_s *drive)
     nbsectors = DIV_ROUND_UP(nbsectors, 4);
     dop.lba = lba;
     dop.buf_fl = MAKE_FLATPTR(boot_segment, 0);
-    while (nbsectors) {
-        int count = nbsectors;
-        if (count > 64*1024/CDROM_SECTOR_SIZE)
-            count = 64*1024/CDROM_SECTOR_SIZE;
-        dop.count = count;
+    طالما (nbsectors) {
+        صحيح ژماردن = nbsectors;
+        إذا (ژماردن > 64*1024/CDROM_SECTOR_SIZE)
+            ژماردن = 64*1024/CDROM_SECTOR_SIZE;
+        dop.ژماردن = ژماردن;
         ret = process_op(&dop);
-        if (ret)
-            return 12;
-        nbsectors -= count;
-        dop.lba += count;
-        dop.buf_fl += count*CDROM_SECTOR_SIZE;
+        إذا (ret)
+            أرجع 12;
+        nbsectors -= ژماردن;
+        dop.lba += ژماردن;
+        dop.buf_fl += ژماردن*CDROM_SECTOR_SIZE;
     }
 
-    if (media == 0) {
+    إذا (media == 0) {
         // No emulation requested - return success.
         CDEmu.emulated_drive = EXTSTART_CD + cdid;
-        return 0;
+        أرجع 0;
     }
 
     // Emulation of a floppy/harddisk requested
-    if (! CONFIG_CDROM_EMU || !cdemu_drive_gf)
-        return 13;
+    إذا (! CONFIG_CDROM_EMU || !cdemu_drive_gf)
+        أرجع 13;
 
     // Set emulated drive id and increase bios installed hardware
     // number of devices
-    if (media < 4) {
+    إذا (media < 4) {
         // Floppy emulation
         CDEmu.emulated_drive = 0x00;
         // XXX - get and set actual floppy count.
         set_equipment_flags(0x41, 0x41);
 
-        switch (media) {
-        case 0x01:  // 1.2M floppy
+        بدل (media) {
+        حالة 0x01:  // 1.2M floppy
             CDEmu.chs.sptcyl = 15;
             CDEmu.chs.cyllow = 79;
             CDEmu.chs.heads = 1;
-            break;
-        case 0x02:  // 1.44M floppy
+            اكسر;
+        حالة 0x02:  // 1.44M floppy
             CDEmu.chs.sptcyl = 18;
             CDEmu.chs.cyllow = 79;
             CDEmu.chs.heads = 1;
-            break;
-        case 0x03:  // 2.88M floppy
+            اكسر;
+        حالة 0x03:  // 2.88M floppy
             CDEmu.chs.sptcyl = 36;
             CDEmu.chs.cyllow = 79;
             CDEmu.chs.heads = 1;
-            break;
+            اكسر;
         }
-    } else {
+    } وإلا {
         // Harddrive emulation
         CDEmu.emulated_drive = 0x80;
         SET_BDA(hdcount, GET_BDA(hdcount) + 1);
 
         // Peak at partition table to get chs.
-        struct mbr_s *mbr = MAKE_FLATPTR(boot_segment, 0);
+        بنية mbr_s *mbr = MAKE_FLATPTR(boot_segment, 0);
         CDEmu.chs = mbr->partitions[0].last;
     }
 
@@ -272,51 +272,51 @@ cdrom_boot(struct drive_s *drive)
     CDEmu.media = media;
     dprintf(6, "cdemu media=%d\n", media);
 
-    return 0;
+    أرجع 0;
 }
 
 // check if media is present and the drive is bootable.
 // in case it is return the volume label.
-char*
-cdrom_media_info(struct drive_s *drive)
+حرف*
+cdrom_media_info(بنية drive_s *drive)
 {
     ASSERT32FLAT();
 
-    struct disk_op_s dop;
-    memset(&dop, 0, sizeof(dop));
+    بنية disk_op_s dop;
+    memset(&dop, 0, حجم(dop));
     dop.drive_fl = drive;
 
-    int ret = scsi_is_ready(&dop);
-    if (ret)
-        return NULL;
+    صحيح ret = scsi_is_ready(&dop);
+    إذا (ret)
+        أرجع عدم;
 
     // Read the Boot Record Volume Descriptor
     u8 buffer[CDROM_SECTOR_SIZE];
     dop.command = CMD_READ;
     dop.lba = 0x11;
-    dop.count = 1;
+    dop.ژماردن = 1;
     dop.buf_fl = buffer;
     ret = process_op(&dop);
-    if (ret)
-        return NULL;
+    إذا (ret)
+        أرجع عدم;
 
     // Is it bootable?
-    if (buffer[0])
-        return NULL;
-    if (strcmp((char*)&buffer[1], "CD001\001EL TORITO SPECIFICATION") != 0)
-        return NULL;
+    إذا (buffer[0])
+        أرجع عدم;
+    إذا (strcmp((حرف*)&buffer[1], "CD001\001EL TORITO SPECIFICATION") != 0)
+        أرجع عدم;
 
     // Read the Primary Volume Descriptor
     dop.command = CMD_READ;
     dop.lba = 0x10;
-    dop.count = 1;
+    dop.ژماردن = 1;
     dop.buf_fl = buffer;
     ret = process_op(&dop);
-    if (ret)
-        return NULL;
+    إذا (ret)
+        أرجع عدم;
 
     // Read volume id, trim trailing spaces
-    char *volume = znprintf(30, "%s", buffer + 40);
+    حرف *volume = znprintf(30, "%s", buffer + 40);
     nullTrailingSpace(volume);
-    return volume;
+    أرجع volume;
 }

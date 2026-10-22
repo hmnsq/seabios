@@ -2,13 +2,13 @@
 #define __USB_HID_H
 
 // usb-hid.c
-struct usbdevice_s;
-int usb_hid_setup(struct usbdevice_s *usbdev);
-int usb_kbd_active(void);
-int usb_kbd_command(int command, u8 *param);
-int usb_mouse_active(void);
-int usb_mouse_command(int command, u8 *param);
-void usb_check_event(void);
+بنية usbdevice_s;
+صحيح usb_hid_setup(بنية usbdevice_s *usbdev);
+صحيح usb_kbd_active(فراغ);
+صحيح usb_kbd_command(صحيح command, u8 *param);
+صحيح usb_mouse_active(فراغ);
+صحيح usb_mouse_command(صحيح command, u8 *param);
+فراغ usb_check_event(فراغ);
 
 
 /****************************************************************
