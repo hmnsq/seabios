@@ -8,12 +8,12 @@
  * hlist - Double linked lists with a single pointer list head
  ****************************************************************/
 
-struct hlist_node {
-    struct hlist_node *next, **pprev;
+struct hlist_बुहोल {
+    struct hlist_बुहोल *next, **pprev;
 };
 
 struct hlist_head {
-    struct hlist_node *first;
+    struct hlist_बुहोल *first;
 };
 
 static inline int
@@ -23,19 +23,19 @@ hlist_empty(const struct hlist_head *h)
 }
 
 static inline void
-hlist_del(struct hlist_node *n)
+hlist_del(struct hlist_बुहोल *n)
 {
-    struct hlist_node *next = n->next;
-    struct hlist_node **pprev = n->pprev;
+    struct hlist_बुहोल *next = n->next;
+    struct hlist_बुहोल **pprev = n->pprev;
     *pprev = next;
     if (next)
         next->pprev = pprev;
 }
 
 static inline void
-hlist_add(struct hlist_node *n, struct hlist_node **pprev)
+hlist_add(struct hlist_बुहोल *n, struct hlist_बुहोल **pprev)
 {
-    struct hlist_node *next = *pprev;
+    struct hlist_बुहोल *next = *pprev;
     n->pprev = pprev;
     n->next = next;
     if (next)
@@ -44,25 +44,25 @@ hlist_add(struct hlist_node *n, struct hlist_node **pprev)
 }
 
 static inline void
-hlist_add_head(struct hlist_node *n, struct hlist_head *h)
+hlist_add_head(struct hlist_बुहोल *n, struct hlist_head *h)
 {
     hlist_add(n, &h->first);
 }
 
 static inline void
-hlist_add_before(struct hlist_node *n, struct hlist_node *next)
+hlist_add_before(struct hlist_बुहोल *n, struct hlist_बुहोल *next)
 {
     hlist_add(n, next->pprev);
 }
 
 static inline void
-hlist_add_after(struct hlist_node *n, struct hlist_node *prev)
+hlist_add_after(struct hlist_बुहोल *n, struct hlist_बुहोल *prev)
 {
     hlist_add(n, &prev->next);
 }
 
 static inline void
-hlist_replace(struct hlist_node *old, struct hlist_node *new)
+hlist_replace(struct hlist_बुहोल *old, struct hlist_बुहोल *new)
 {
     new->next = old->next;
     if (new->next)

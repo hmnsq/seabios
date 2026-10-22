@@ -20,8 +20,8 @@ typedef struct virtio_mmio_cfg {
     u32 res_2c;
 
     u32 queue_select;
-    u32 queue_num_max;
-    u32 queue_num;
+    u32 queue_नुमेरो_max;
+    u32 queue_नुमेरो;
     u32 legacy_queue_align;
 
     u32 legacy_queue_pfn;

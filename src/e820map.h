@@ -23,6 +23,6 @@ int e820_is_used(u64 start, u64 size);
 
 // e820 map storage
 extern struct e820entry e820_list[];
-extern int e820_count;
+extern int e820_बिलांग;
 
 #endif // e820map.h

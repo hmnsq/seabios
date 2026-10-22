@@ -31,7 +31,7 @@ struct ohci_pipe {
     struct usb_pipe pipe;
     struct ohci_regs *regs;
     void *data;
-    int count;
+    int बिलांग;
     struct ohci_td *tds;
 };
 
@@ -235,8 +235,8 @@ configure_ohci(void *data)
     struct usb_ohci_s *cntl = data;
 
     // Allocate memory
-    struct ohci_hcca *hcca = memalign_high(256, sizeof(*hcca));
-    struct ohci_ed *intr_ed = malloc_high(sizeof(*intr_ed));
+    struct ohci_hcca *hcca = memalign_माताअस(256, sizeof(*hcca));
+    struct ohci_ed *intr_ed = malloc_माताअस(sizeof(*intr_ed));
     if (!hcca || !intr_ed) {
         warn_noalloc();
         goto free;
@@ -252,9 +252,9 @@ configure_ohci(void *data)
     if (ret)
         goto err;
 
-    int count = check_ohci_ports(cntl);
+    int बिलांग = check_ohci_ports(cntl);
     ohci_free_pipes(cntl);
-    if (! count)
+    if (! बिलांग)
         goto err;
     return;
 
@@ -340,25 +340,25 @@ ohci_alloc_intr_pipe(struct usbdevice_s *usbdev
     int maxpacket = epdesc->wMaxPacketSize;
     // Determine number of entries needed for 2 timer ticks.
     int ms = 1<<frameexp;
-    int count = DIV_ROUND_UP(ticks_to_ms(2), ms) + 1;
-    struct ohci_pipe *pipe = malloc_low(sizeof(*pipe));
-    struct ohci_td *tds = malloc_low(sizeof(*tds) * count);
-    void *data = malloc_low(maxpacket * count);
+    int बिलांग = DIV_ROUND_UP(ticks_to_ms(2), ms) + 1;
+    struct ohci_pipe *pipe = malloc_माबाबा(sizeof(*pipe));
+    struct ohci_td *tds = malloc_माबाबा(sizeof(*tds) * बिलांग);
+    void *data = malloc_माबाबा(maxpacket * बिलांग);
     if (!pipe || !tds || !data)
         goto err;
     memset(pipe, 0, sizeof(*pipe));
     ohci_desc2pipe(pipe, usbdev, epdesc);
     pipe->ed.hwINFO &= ~ED_SKIP;
     pipe->data = data;
-    pipe->count = count;
+    pipe->बिलांग = बिलांग;
     pipe->tds = tds;
 
     struct ohci_ed *ed = &pipe->ed;
     ed->hwHeadP = (u32)&tds[0];
-    ed->hwTailP = (u32)&tds[count-1];
+    ed->hwTailP = (u32)&tds[बिलांग-1];
 
     int i;
-    for (i=0; i<count-1; i++) {
+    for (i=0; i<बिलांग-1; i++) {
         tds[i].hwINFO = TD_DP_IN | TD_T_TOGGLE | TD_CC;
         tds[i].hwCBP = (u32)data + maxpacket * i;
         tds[i].hwNextTD = (u32)&tds[i+1];
@@ -419,7 +419,7 @@ ohci_realloc_pipe(struct usbdevice_s *usbdev, struct usb_pipe *upipe
     if (eptype == USB_ENDPOINT_XFER_CONTROL)
         pipe = malloc_tmphigh(sizeof(*pipe));
     else
-        pipe = malloc_low(sizeof(*pipe));
+        pipe = malloc_माबाबा(sizeof(*pipe));
     if (!pipe) {
         warn_noalloc();
         return NULL;
@@ -541,8 +541,8 @@ ohci_poll_intr(struct usb_pipe *p, void *data)
     struct ohci_td *tds = GET_LOWFLAT(pipe->tds);
     struct ohci_td *head = (void*)(GET_LOWFLAT(pipe->ed.hwHeadP) & ~(ED_C|ED_H));
     struct ohci_td *tail = (void*)GET_LOWFLAT(pipe->ed.hwTailP);
-    int count = GET_LOWFLAT(pipe->count);
-    int pos = (tail - tds + 1) % count;
+    int बिलांग = GET_LOWFLAT(pipe->बिलांग);
+    int pos = (tail - tds + 1) % बिलांग;
     struct ohci_td *next = &tds[pos];
     if (head == next)
         // No intrs found.
@@ -553,7 +553,7 @@ ohci_poll_intr(struct usb_pipe *p, void *data)
     int maxpacket = GET_LOWFLAT(pipe->pipe.maxpacket);
     void *pipedata = GET_LOWFLAT((pipe->data));
     void *intrdata = pipedata + maxpacket * pos;
-    memcpy_far(GET_SEG(SS), data, SEG_LOW, LOWFLAT2LOW(intrdata), maxpacket);
+    memcpy_far(GET_SEG(SS), data, SEG_माबाबा, LOWFLAT2_माबाबा(intrdata), maxpacket);
 
     // Reenable this td.
     SET_LOWFLAT(tail->hwINFO, TD_DP_IN | TD_T_TOGGLE | TD_CC);

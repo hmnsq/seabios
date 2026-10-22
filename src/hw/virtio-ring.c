@@ -82,7 +82,7 @@ int vring_get_buf(struct vring_virtqueue *vq, unsigned int *len)
 
 //    BUG_ON(!vring_more_used(vq));
 
-    elem = &used->ring[vq->last_used_idx % vr->num];
+    elem = &used->ring[vq->last_used_idx % vr->नुमेरो];
     id = elem->id;
     if (len != NULL)
         *len = elem->len;
@@ -99,7 +99,7 @@ int vring_get_buf(struct vring_virtqueue *vq, unsigned int *len)
 void vring_add_buf(struct vring_virtqueue *vq,
                    struct vring_list list[],
                    unsigned int out, unsigned int in,
-                   int index, int num_added)
+                   int index, int नुमेरो_added)
 {
     struct vring *vr = &vq->vring;
     int i, av, head, prev;
@@ -130,18 +130,18 @@ void vring_add_buf(struct vring_virtqueue *vq,
 
     vq->vdata[head] = index;
 
-    av = (avail->idx + num_added) % vr->num;
+    av = (avail->idx + नुमेरो_added) % vr->नुमेरो;
     avail->ring[av] = head;
 }
 
-void vring_kick(struct vp_device *vp, struct vring_virtqueue *vq, int num_added)
+void vring_kick(struct vp_device *vp, struct vring_virtqueue *vq, int नुमेरो_added)
 {
     struct vring *vr = &vq->vring;
     struct vring_avail *avail = vr->avail;
 
     /* Make sure idx update is done after ring write. */
     smp_wmb();
-    avail->idx = avail->idx + num_added;
+    avail->idx = avail->idx + नुमेरो_added;
 
     vp_notify(vp, vq);
 }

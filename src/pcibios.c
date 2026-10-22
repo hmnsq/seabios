@@ -41,7 +41,7 @@ static void
 handle_1ab102(struct bregs *regs)
 {
     u32 id = (regs->cx << 16) | regs->dx;
-    int count = regs->si;
+    int बिलांग = regs->si;
     int bus = -1;
     while (bus < GET_GLOBAL(MaxPCIBus)) {
         bus++;
@@ -50,7 +50,7 @@ handle_1ab102(struct bregs *regs)
             u32 v = pci_config_readl(bdf, PCI_VENDOR_ID);
             if (v != id)
                 continue;
-            if (count--)
+            if (बिलांग--)
                 continue;
             regs->bx = bdf;
             set_code_success(regs);
@@ -64,7 +64,7 @@ handle_1ab102(struct bregs *regs)
 static void
 handle_1ab103(struct bregs *regs)
 {
-    int count = regs->si;
+    int बिलांग = regs->si;
     u32 classprog = regs->ecx;
     int bus = -1;
     while (bus < GET_GLOBAL(MaxPCIBus)) {
@@ -74,7 +74,7 @@ handle_1ab103(struct bregs *regs)
             u32 v = pci_config_readl(bdf, PCI_CLASS_REVISION);
             if ((v>>8) != classprog)
                 continue;
-            if (count--)
+            if (बिलांग--)
                 continue;
             regs->bx = bdf;
             set_code_success(regs);

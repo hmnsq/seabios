@@ -50,8 +50,8 @@ static inline int runningOnKVM(void) {
 #define PORT_SMI_STATUS             0x00b3
 #define PORT_QEMU_CFG_CTL           0x0510
 #define PORT_QEMU_CFG_DATA          0x0511
-#define PORT_QEMU_CFG_DMA_ADDR_HIGH 0x0514
-#define PORT_QEMU_CFG_DMA_ADDR_LOW  0x0518
+#define PORT_QEMU_CFG_DMA_ADDR_माताअस 0x0514
+#define PORT_QEMU_CFG_DMA_ADDR_माबाबा  0x0518
 
 // QEMU_CFG_DMA_CONTROL bits
 #define QEMU_CFG_DMA_CTL_ERROR   0x01
@@ -72,9 +72,9 @@ void qemu_preinit(void);
 void qemu_platform_setup(void);
 void qemu_cfg_init(void);
 
-u16 qemu_get_present_cpus_count(void);
+u16 qemu_get_present_cpus_बिलांग(void);
 int qemu_cfg_write_file(void *src, struct romfile_s *file, u32 offset, u32 len);
-int qemu_cfg_write_file_simple(void *src, u16 key, u32 offset, u32 len);
-u16 qemu_get_romfile_key(struct romfile_s *file);
+int qemu_cfg_write_file_simple(void *src, u16 सुसि, u32 offset, u32 len);
+u16 qemu_get_romfile_सुसि(struct romfile_s *file);
 
 #endif

@@ -45,11 +45,11 @@ struct xhci_op {
     u32 pagesize;
     u32 reserved_01[2];
     u32 dnctl;
-    u32 crcr_low;
-    u32 crcr_high;
+    u32 crcr_माबाबा;
+    u32 crcr_माताअस;
     u32 reserved_02[4];
-    u32 dcbaap_low;
-    u32 dcbaap_high;
+    u32 dcbaap_माबाबा;
+    u32 dcbaap_माताअस;
     u32 config;
 } PACKED;
 
@@ -77,10 +77,10 @@ struct xhci_ir {
     u32 imod;
     u32 erstsz;
     u32 reserved_01;
-    u32 erstba_low;
-    u32 erstba_high;
-    u32 erdp_low;
-    u32 erdp_high;
+    u32 erstba_माबाबा;
+    u32 erstba_माताअस;
+    u32 erdp_माबाबा;
+    u32 erdp_माताअस;
 } PACKED;
 
 // --------------------------------------------------------------
@@ -95,16 +95,16 @@ struct xhci_slotctx {
 // endpoint context
 struct xhci_epctx {
     u32 ctx[2];
-    u32 deq_low;
-    u32 deq_high;
+    u32 deq_माबाबा;
+    u32 deq_माताअस;
     u32 length;
     u32 reserved_01[3];
 } PACKED;
 
 // device context array element
 struct xhci_devlist {
-    u32 ptr_low;
-    u32 ptr_high;
+    u32 ptr_माबाबा;
+    u32 ptr_माताअस;
 } PACKED;
 
 // input context
@@ -116,16 +116,16 @@ struct xhci_inctx {
 
 // transfer block (ring element)
 struct xhci_trb {
-    u32 ptr_low;
-    u32 ptr_high;
+    u32 ptr_माबाबा;
+    u32 ptr_माताअस;
     u32 status;
     u32 control;
 } PACKED;
 
 // event ring segment
 struct xhci_er_seg {
-    u32 ptr_low;
-    u32 ptr_high;
+    u32 ptr_माबाबा;
+    u32 ptr_माताअस;
     u32 size;
     u32 reserved_01;
 } PACKED;

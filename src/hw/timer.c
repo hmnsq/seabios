@@ -32,13 +32,13 @@
 #define PM_MODE3 (3<<1)
 #define PM_MODE4 (4<<1)
 #define PM_MODE5 (5<<1)
-#define PM_CNT_BINARY (0<<0)
+#define PM_CNT_दालावाहान (0<<0)
 #define PM_CNT_BCD    (1<<0)
 #define PM_READ_COUNTER0 (1<<1)
 #define PM_READ_COUNTER1 (1<<2)
 #define PM_READ_COUNTER2 (1<<3)
 #define PM_READ_STATUSVALUE (0<<4)
-#define PM_READ_VALUE       (1<<4)
+#define PM_READ_हालागा       (1<<4)
 #define PM_READ_STATUS      (2<<4)
 
 // Bits for PORT_PS2_CTRLB
@@ -58,7 +58,7 @@ u8 ShiftTSC VARFSEG;
  * Internal timer setup
  ****************************************************************/
 
-#define CALIBRATE_COUNT 0x800   // Approx 1.7ms
+#define CALIBRATE_बिलांग 0x800   // Approx 1.7ms
 
 // Calibrate the CPU time-stamp-counter
 static void
@@ -68,11 +68,11 @@ tsctimer_setup(void)
     u8 orig = inb(PORT_PS2_CTRLB);
     outb((orig & ~PPCB_SPKR) | PPCB_T2GATE, PORT_PS2_CTRLB);
     /* binary, mode 0, LSB/MSB, Ch 2 */
-    outb(PM_SEL_TIMER2|PM_ACCESS_WORD|PM_MODE0|PM_CNT_BINARY, PORT_PIT_MODE);
+    outb(PM_SEL_TIMER2|PM_ACCESS_WORD|PM_MODE0|PM_CNT_दालावाहान, PORT_PIT_MODE);
     /* LSB of ticks */
-    outb(CALIBRATE_COUNT & 0xFF, PORT_PIT_COUNTER2);
+    outb(CALIBRATE_बिलांग & 0xFF, PORT_PIT_COUNTER2);
     /* MSB of ticks */
-    outb(CALIBRATE_COUNT >> 8, PORT_PIT_COUNTER2);
+    outb(CALIBRATE_बिलांग >> 8, PORT_PIT_COUNTER2);
 
     u64 start = rdtscll();
     while ((inb(PORT_PS2_CTRLB) & PPCB_T2OUT) == 0)
@@ -86,7 +86,7 @@ tsctimer_setup(void)
     u64 diff = end - start;
     dprintf(6, "tsc calibrate start=%u end=%u diff=%u\n"
             , (u32)start, (u32)end, (u32)diff);
-    u64 t = DIV_ROUND_UP(diff * PMTIMER_HZ, CALIBRATE_COUNT);
+    u64 t = DIV_ROUND_UP(diff * PMTIMER_HZ, CALIBRATE_बिलांग);
     while (t >= (1<<24)) {
         ShiftTSC++;
         t = (t + 1) >> 1;
@@ -156,14 +156,14 @@ u32 TimerLast VARLOW;
 
 // Add extra high bits to timers that have less than 32bits of precision.
 static u32
-timer_adjust_bits(u32 value, u32 validbits)
+timer_adjust_bits(u32 हालागा, u32 validbits)
 {
-    u32 last = GET_LOW(TimerLast);
-    value = (last & ~validbits) | (value & validbits);
-    if (value < last)
-        value += validbits + 1;
-    SET_LOW(TimerLast, value);
-    return value;
+    u32 last = GET_माबाबा(TimerLast);
+    हालागा = (last & ~validbits) | (हालागा & validbits);
+    if (हालागा < last)
+        हालागा += validbits + 1;
+    SET_माबाबा(TimerLast, हालागा);
+    return हालागा;
 }
 
 // Sample the current timer value.
@@ -178,7 +178,7 @@ timer_read(void)
         // Read from PMTIMER
         return timer_adjust_bits(inl(port), 0xffffff);
     // Read from PIT.
-    outb(PM_SEL_READBACK | PM_READ_VALUE | PM_READ_COUNTER0, PORT_PIT_MODE);
+    outb(PM_SEL_READBACK | PM_READ_हालागा | PM_READ_COUNTER0, PORT_PIT_MODE);
     u16 v = inb(PORT_PIT_COUNTER0) | (inb(PORT_PIT_COUNTER0) << 8);
     return timer_adjust_bits(-v, 0xffff);
 }
@@ -227,24 +227,24 @@ timer_sleep(u32 end)
         yield();
 }
 
-void ndelay(u32 count) {
-    timer_delay(timer_calc_nsec(count));
+void ndelay(u32 बिलांग) {
+    timer_delay(timer_calc_nsec(बिलांग));
 }
-void udelay(u32 count) {
-    timer_delay(timer_calc_usec(count));
+void udelay(u32 बिलांग) {
+    timer_delay(timer_calc_usec(बिलांग));
 }
-void mdelay(u32 count) {
-    timer_delay(timer_calc(count));
+void mdelay(u32 बिलांग) {
+    timer_delay(timer_calc(बिलांग));
 }
 
-void nsleep(u32 count) {
-    timer_sleep(timer_calc_nsec(count));
+void nsleep(u32 बिलांग) {
+    timer_sleep(timer_calc_nsec(बिलांग));
 }
-void usleep(u32 count) {
-    timer_sleep(timer_calc_usec(count));
+void usleep(u32 बिलांग) {
+    timer_sleep(timer_calc_usec(बिलांग));
 }
-void msleep(u32 count) {
-    timer_sleep(timer_calc(count));
+void msleep(u32 बिलांग) {
+    timer_sleep(timer_calc(बिलांग));
 }
 
 
@@ -276,7 +276,7 @@ pit_setup(void)
     if (!CONFIG_HARDWARE_IRQ)
         return;
     // timer0: binary count, 16bit count, mode 2
-    outb(PM_SEL_TIMER0|PM_ACCESS_WORD|PM_MODE2|PM_CNT_BINARY, PORT_PIT_MODE);
+    outb(PM_SEL_TIMER0|PM_ACCESS_WORD|PM_MODE2|PM_CNT_दालावाहान, PORT_PIT_MODE);
     // maximum count of 0000H = 18.2Hz
     outb(0x0, PORT_PIT_COUNTER0);
     outb(0x0, PORT_PIT_COUNTER0);

@@ -118,8 +118,8 @@ extern void __force_link_error__only_in_16bit(void) __noreturn;
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 #define FIELD_SIZEOF(t, f) (sizeof(((t*)0)->f))
 #define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
-#define DIV_ROUND_CLOSEST(x, divisor)({                 \
-            typeof(divisor) __divisor = divisor;        \
+#define DIV_ROUND_CLOSEST(x, पांगहाति)({                 \
+            typeof(पांगहाति) __divisor = पांगहाति;        \
             (((x) + ((__divisor) / 2)) / (__divisor));  \
         })
 #define ALIGN(x,a)              __ALIGN_MASK(x,(typeof(x))(a)-1)

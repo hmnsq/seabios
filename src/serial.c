@@ -19,7 +19,7 @@
  ****************************************************************/
 
 static u16
-detect_serial(u16 port, u8 timeout, u8 count)
+detect_serial(u16 port, u8 timeout, u8 बिलांग)
 {
     if (CONFIG_DEBUG_SERIAL && port == CONFIG_DEBUG_SERIAL_PORT
         && !romfile_loadint("etc/advertise-serial-debug-port", 1))
@@ -33,8 +33,8 @@ detect_serial(u16 port, u8 timeout, u8 count)
         return 0;
 
     outb(0x00, port+SEROFF_IER);
-    SET_BDA(port_com[count], port);
-    SET_BDA(com_timeout[count], timeout);
+    SET_BDA(port_com[बिलांग], port);
+    SET_BDA(com_timeout[बिलांग], timeout);
     return 1;
 }
 
@@ -45,15 +45,15 @@ serial_setup(void)
         return;
     dprintf(3, "init serial\n");
 
-    u16 count = 0;
-    count += detect_serial(PORT_SERIAL1, 0x0a, count);
-    count += detect_serial(PORT_SERIAL2, 0x0a, count);
-    count += detect_serial(PORT_SERIAL3, 0x0a, count);
-    count += detect_serial(PORT_SERIAL4, 0x0a, count);
-    dprintf(1, "Found %d serial ports\n", count);
+    u16 बिलांग = 0;
+    बिलांग += detect_serial(PORT_SERIAL1, 0x0a, बिलांग);
+    बिलांग += detect_serial(PORT_SERIAL2, 0x0a, बिलांग);
+    बिलांग += detect_serial(PORT_SERIAL3, 0x0a, बिलांग);
+    बिलांग += detect_serial(PORT_SERIAL4, 0x0a, बिलांग);
+    dprintf(1, "Found %d serial ports\n", बिलांग);
 
     // Equipment word bits 9..11 determing # serial ports
-    set_equipment_flags(0xe00, count << 9);
+    set_equipment_flags(0xe00, बिलांग << 9);
 }
 
 static u16
@@ -187,7 +187,7 @@ handle_14(struct bregs *regs)
  ****************************************************************/
 
 static u16
-detect_parport(u16 port, u8 timeout, u8 count)
+detect_parport(u16 port, u8 timeout, u8 बिलांग)
 {
     // clear input mode
     outb(inb(port+2) & 0xdf, port+2);
@@ -196,8 +196,8 @@ detect_parport(u16 port, u8 timeout, u8 count)
     if (inb(port) != 0xaa)
         // Not present
         return 0;
-    SET_BDA(port_lpt[count], port);
-    SET_BDA(lpt_timeout[count], timeout);
+    SET_BDA(port_lpt[बिलांग], port);
+    SET_BDA(lpt_timeout[बिलांग], timeout);
     return 1;
 }
 
@@ -208,13 +208,13 @@ lpt_setup(void)
         return;
     dprintf(3, "init lpt\n");
 
-    u16 count = 0;
-    count += detect_parport(PORT_LPT1, 0x14, count);
-    count += detect_parport(PORT_LPT2, 0x14, count);
-    dprintf(1, "Found %d lpt ports\n", count);
+    u16 बिलांग = 0;
+    बिलांग += detect_parport(PORT_LPT1, 0x14, बिलांग);
+    बिलांग += detect_parport(PORT_LPT2, 0x14, बिलांग);
+    dprintf(1, "Found %d lpt ports\n", बिलांग);
 
     // Equipment word bits 14..15 determing # parallel ports
-    set_equipment_flags(0xc000, count << 14);
+    set_equipment_flags(0xc000, बिलांग << 14);
 }
 
 static u16

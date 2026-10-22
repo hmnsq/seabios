@@ -59,7 +59,7 @@ mptable_setup(void)
     // CPU definitions.
     struct mpt_cpu *cpus = (void*)&config[1], *cpu = cpus;
     int i;
-    for (i = 0; i < MaxCountCPUs; i+=pkgcpus) {
+    for (i = 0; i < Max_बिलांग_CPUs; i+=pkgcpus) {
         memset(cpu, 0, sizeof(*cpu));
         cpu->type = MPT_TYPE_CPU;
         cpu->apicid = i;
@@ -114,7 +114,7 @@ mptable_setup(void)
         if (pci_bdf_to_bus(bdf) != 0)
             break;
         int pin = pci_config_readb(bdf, PCI_INTERRUPT_PIN);
-        int irq = pci_config_readb(bdf, PCI_INTERRUPT_LINE);
+        int irq = pci_config_readb(bdf, PCI_INTERRUPT_लिन्या);
         if (pin == 0)
             continue;
         if (dev != pci_bdf_to_busdev(bdf)) {

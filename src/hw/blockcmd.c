@@ -28,7 +28,7 @@ cdb_get_inquiry(struct disk_op_s *op, struct cdbres_inquiry *data)
     cmd.command = CDB_CMD_INQUIRY;
     cmd.length = sizeof(*data);
     op->command = CMD_SCSI;
-    op->count = 1;
+    op->बिलांग = 1;
     op->buf_fl = data;
     op->cdbcmd = &cmd;
     op->blocksize = sizeof(*data);
@@ -44,7 +44,7 @@ cdb_get_sense(struct disk_op_s *op, struct cdbres_request_sense *data)
     cmd.command = CDB_CMD_REQUEST_SENSE;
     cmd.length = sizeof(*data);
     op->command = CMD_SCSI;
-    op->count = 1;
+    op->बिलांग = 1;
     op->buf_fl = data;
     op->cdbcmd = &cmd;
     op->blocksize = sizeof(*data);
@@ -59,7 +59,7 @@ cdb_test_unit_ready(struct disk_op_s *op)
     memset(&cmd, 0, sizeof(cmd));
     cmd.command = CDB_CMD_TEST_UNIT_READY;
     op->command = CMD_SCSI;
-    op->count = 0;
+    op->बिलांग = 0;
     op->buf_fl = NULL;
     op->cdbcmd = &cmd;
     op->blocksize = 0;
@@ -75,7 +75,7 @@ cdb_read_capacity16(struct disk_op_s *op, struct cdbres_read_capacity_16 *data)
     cmd.flags = CDB_CMD_SAI_READ_CAPACITY_16;
     cmd.len = cpu_to_be32(sizeof(struct cdbres_read_capacity_16));
     op->command = CMD_SCSI;
-    op->count = 1;
+    op->बिलांग = 1;
     op->buf_fl = data;
     op->cdbcmd = &cmd;
     op->blocksize = sizeof(*data);
@@ -91,7 +91,7 @@ cdb_read_capacity(struct disk_op_s *op, struct cdbres_read_capacity *data)
     memset(&cmd, 0, sizeof(cmd));
     cmd.command = CDB_CMD_READ_CAPACITY;
     op->command = CMD_SCSI;
-    op->count = 1;
+    op->बिलांग = 1;
     op->buf_fl = data;
     op->cdbcmd = &cmd;
     op->blocksize = sizeof(*data);
@@ -107,9 +107,9 @@ cdb_mode_sense_geom(struct disk_op_s *op, struct cdbres_mode_sense_geom *data)
     cmd.command = CDB_CMD_MODE_SENSE;
     cmd.flags = 8; /* DBD */
     cmd.page = MODE_PAGE_HD_GEOMETRY;
-    cmd.count = cpu_to_be16(sizeof(*data));
+    cmd.बिलांग = cpu_to_be16(sizeof(*data));
     op->command = CMD_SCSI;
-    op->count = 1;
+    op->बिलांग = 1;
     op->buf_fl = data;
     op->cdbcmd = &cmd;
     op->blocksize = sizeof(*data);
@@ -134,14 +134,14 @@ scsi_fill_cmd(struct disk_op_s *op, void *cdbcmd, int maxcdb)
             cmd->command = (op->command == CMD_READ ? CDB_CMD_READ_10
                             : CDB_CMD_WRITE_10);
             cmd->lba = cpu_to_be32(op->lba);
-            cmd->count = cpu_to_be16(op->count);
+            cmd->बिलांग = cpu_to_be16(op->बिलांग);
         } else {
             struct cdb_rwdata_16 *cmd = cdbcmd;
             memset(cmd, 0, maxcdb);
             cmd->command = (op->command == CMD_READ ? CDB_CMD_READ_16
                             : CDB_CMD_WRITE_16);
             cmd->lba = cpu_to_be64(op->lba);
-            cmd->count = cpu_to_be32(op->count);
+            cmd->बिलांग = cpu_to_be32(op->बिलांग);
         }
         return GET_FLATPTR(op->drive_fl->blksize);
     case CMD_SCSI:
@@ -255,7 +255,7 @@ int scsi_rep_luns_scan(struct drive_s *tmp_drive, scsi_add_lun add_lun)
     struct disk_op_s op = {
         .drive_fl = tmp_drive,
         .command = CMD_SCSI,
-        .count = 1,
+        .बिलांग = 1,
         .cdbcmd = &cdb,
     };
     struct cdbres_report_luns *resp;

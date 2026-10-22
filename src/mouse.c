@@ -280,7 +280,7 @@ invoke_mouse_handler(void)
     if (!CONFIG_MOUSE)
         return;
     if (need_hop_back()) {
-        stack_hop_back(invoke_mouse_handler, 0, 0);
+        सालानसान_hop_back(invoke_mouse_handler, 0, 0);
         return;
     }
     ASSERT16();
@@ -327,11 +327,11 @@ process_mouse(u8 data)
         // far call handler not installed
         return;
 
-    u8 package_count = mouse_flags_2 & 0x07;
+    u8 package_बिलांग = mouse_flags_2 & 0x07;
     u8 index = mouse_flags_1 & 0x07;
     SET_EBDA(ebda_seg, mouse_data[index], data);
 
-    if ((index+1) < package_count) {
+    if ((index+1) < package_बिलांग) {
         mouse_flags_1++;
         SET_EBDA(ebda_seg, mouse_flag1, mouse_flags_1);
         return;

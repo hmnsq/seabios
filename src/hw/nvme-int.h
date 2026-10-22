@@ -100,7 +100,7 @@ struct nvme_ctrl {
     struct nvme_sq admin_sq;
     struct nvme_cq admin_cq;
 
-    u32 ns_count;
+    u32 ns_बिलांग;
 
     struct nvme_sq io_sq;
     struct nvme_cq io_cq;
@@ -112,7 +112,7 @@ struct nvme_namespace {
 
     u32 ns_id;
 
-    u64 lba_count;              /* The total amount of sectors. */
+    u64 lba_बिलांग;              /* The total amount of sectors. */
 
     u32 block_size;
     u32 metadata_size;

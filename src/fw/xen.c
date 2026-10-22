@@ -118,7 +118,7 @@ void xen_hypercall_setup(void)
 
     cpuid(xen_cpuid_base + 2, &eax, &ebx, &ecx, &edx);
 
-    xen_hypercall_page = (unsigned long)memalign_high(PAGE_SIZE, eax*PAGE_SIZE);
+    xen_hypercall_page = (unsigned long)memalign_माताअस(PAGE_SIZE, eax*PAGE_SIZE);
     if (!xen_hypercall_page)
         panic("unable to allocate Xen hypercall page\n");
 

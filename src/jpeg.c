@@ -60,7 +60,7 @@
 struct in {
     unsigned char *p;
     unsigned int bits;
-    int left;
+    int कालिवा;
     int marker;
 
     int (*func) __P((void *));
@@ -396,7 +396,7 @@ void jpeg_get_size(struct jpeg_decdata *jpeg, int *width, int *height)
 }
 
 int jpeg_show(struct jpeg_decdata *jpeg, unsigned char *pic, int width
-              , int height, int depth, int bytes_per_line_dest)
+              , int height, int depth, int bytes_per_लिन्या_dest)
 {
     int m, mcusx, mcusy, mx, my, mloffset, jpgbpl;
     int max[6];
@@ -407,7 +407,7 @@ int jpeg_show(struct jpeg_decdata *jpeg, unsigned char *pic, int width
         return ERR_WIDTH_MISMATCH;
 
     jpgbpl = width * depth / 8;
-    mloffset = bytes_per_line_dest > jpgbpl ? bytes_per_line_dest : jpgbpl;
+    mloffset = bytes_per_लिन्या_dest > jpgbpl ? bytes_per_लिन्या_dest : jpgbpl;
 
     mcusx = jpeg->width >> 4;
     mcusy = jpeg->height >> 4;
@@ -475,7 +475,7 @@ static int dec_rec2 __P((struct in *, struct dec_hufftbl *, int *, int, int));
 static void setinput(struct in *in, unsigned char *p)
 {
     in->p = p;
-    in->left = 0;
+    in->कालिवा = 0;
     in->bits = 0;
     in->marker = 0;
 }
@@ -512,17 +512,17 @@ static int dec_readmarker(struct in *in)
 {
     int m;
 
-    in->left = fillbits(in, in->left, in->bits);
+    in->कालिवा = fillbits(in, in->कालिवा, in->bits);
     if ((m = in->marker) == 0)
         return 0;
-    in->left = 0;
+    in->कालिवा = 0;
     in->marker = 0;
     return m;
 }
 
 #define LEBI_DCL       int le, bi
-#define LEBI_GET(in)   (le = in->left, bi = in->bits)
-#define LEBI_PUT(in)   (in->left = le, in->bits = bi)
+#define LEBI_GET(in)   (le = in->कालिवा, bi = in->bits)
+#define LEBI_PUT(in)   (in->कालिवा = le, in->bits = bi)
 
 #define GETBITS(in, n) (                                     \
   (le < (n) ? le = fillbits(in, le, bi), bi = in->bits : 0), \

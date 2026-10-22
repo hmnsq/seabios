@@ -83,7 +83,7 @@ ramdisk_copy(struct disk_op_s *op, int iswrite)
     br.ah = 0x87;
     br.es = GET_SEG(SS);
     br.si = (u32)gdt;
-    br.cx = op->count * DISK_SECTOR_SIZE / 2;
+    br.cx = op->बिलांग * DISK_SECTOR_SIZE / 2;
     call16_int(0x15, &br);
 
     if (br.flags & F_CF)

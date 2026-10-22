@@ -87,7 +87,7 @@ static void
 sha1_do(sha1_ctx *ctx, const u8 *data32, u32 length)
 {
     u32 offset;
-    u16 num;
+    u16 नुमेरो;
     u32 bits = 0;
     u32 w[80];
     u64 tmp;
@@ -100,15 +100,15 @@ sha1_do(sha1_ctx *ctx, const u8 *data32, u32 length)
     }
 
     /* last block with less than 64 bytes */
-    num = length - offset;
-    bits += (num << 3);
+    नुमेरो = length - offset;
+    bits += (नुमेरो << 3);
 
-    memcpy(w, data32 + offset, num);
-    ((u8 *)w)[num] = 0x80;
-    if (64 - (num + 1) > 0)
-        memset( &((u8 *)w)[num + 1], 0x0, 64 - (num + 1));
+    memcpy(w, data32 + offset, नुमेरो);
+    ((u8 *)w)[नुमेरो] = 0x80;
+    if (64 - (नुमेरो + 1) > 0)
+        memset( &((u8 *)w)[नुमेरो + 1], 0x0, 64 - (नुमेरो + 1));
 
-    if (num >= 56) {
+    if (नुमेरो >= 56) {
         /* cannot append number of bits here */
         sha1_block((u32 *)w, ctx);
         memset(w, 0x0, 60);
@@ -121,8 +121,8 @@ sha1_do(sha1_ctx *ctx, const u8 *data32, u32 length)
     sha1_block(w, ctx);
 
     /* need to switch result's endianness */
-    for (num = 0; num < 5; num++)
-        ctx->h[num] = cpu_to_be32(ctx->h[num]);
+    for (नुमेरो = 0; नुमेरो < 5; नुमेरो++)
+        ctx->h[नुमेरो] = cpu_to_be32(ctx->h[नुमेरो]);
 }
 
 

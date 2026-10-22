@@ -28,7 +28,7 @@
 #include "string.h" // checksum
 #include "util.h" // process_floppy_op
 
-u8 FloppyCount VARFSEG;
+u8 Floppy_बिलांग VARFSEG;
 u8 CDCount;
 struct drive_s *IDMap[3][BUILD_MAX_EXTDRIVE] VARFSEG;
 u8 *bounce_buf_fl VARFSEG;
@@ -56,7 +56,7 @@ int create_bounce_buf(void)
     if (bounce_buf_fl)
         return 0;
 
-    u8 *buf = malloc_low(CDROM_SECTOR_SIZE);
+    u8 *buf = malloc_माबाबा(CDROM_SECTOR_SIZE);
     if (!buf) {
         warn_noalloc();
         return -1;
@@ -242,14 +242,14 @@ fill_fdpt(struct drive_s *drive, int hdid)
 
 // Find spot to add a drive
 static void
-add_drive(struct drive_s **idmap, u8 *count, struct drive_s *drive)
+add_drive(struct drive_s **idmap, u8 *बिलांग, struct drive_s *drive)
 {
-    if (*count >= ARRAY_SIZE(IDMap[0])) {
+    if (*बिलांग >= ARRAY_SIZE(IDMap[0])) {
         warn_noalloc();
         return;
     }
-    idmap[*count] = drive;
-    *count = *count + 1;
+    idmap[*बिलांग] = drive;
+    *बिलांग = *बिलांग + 1;
 }
 
 // Map a hard drive
@@ -284,14 +284,14 @@ map_floppy_drive(struct drive_s *drive)
 {
     ASSERT32FLAT();
     dprintf(3, "Mapping floppy drive %p\n", drive);
-    add_drive(IDMap[EXTTYPE_FLOPPY], &FloppyCount, drive);
+    add_drive(IDMap[EXTTYPE_FLOPPY], &Floppy_बिलांग, drive);
 
     // Update equipment word bits for floppy
-    if (FloppyCount == 1) {
+    if (Floppy_बिलांग == 1) {
         // 1 drive, ready for boot
         set_equipment_flags(0x41, 0x01);
         SET_BDA(floppy_harddisk_info, 0x07);
-    } else if (FloppyCount >= 2) {
+    } else if (Floppy_बिलांग >= 2) {
         // 2 drives, ready for boot
         set_equipment_flags(0x41, 0x41);
         SET_BDA(floppy_harddisk_info, 0x77);
@@ -355,7 +355,7 @@ fill_generic_edd(struct segoff_s edd, struct drive_s *drive_fl
         SET_FARVAR(seg, param_far->heads, (u32)nph);
         SET_FARVAR(seg, param_far->spt, (u32)nps);
     }
-    SET_FARVAR(seg, param_far->sector_count, lba);
+    SET_FARVAR(seg, param_far->sector_बिलांग, lba);
     SET_FARVAR(seg, param_far->blksize, blksize);
 
     if (size < 30 || !dpte_so)
@@ -370,7 +370,7 @@ fill_generic_edd(struct segoff_s edd, struct drive_s *drive_fl
         return DISK_RET_SUCCESS;
 
     // EDD 3.x
-    SET_FARVAR(seg, param_far->key, 0xbedd);
+    SET_FARVAR(seg, param_far->सुसि, 0xbedd);
     SET_FARVAR(seg, param_far->dpi_length, t13 ? 44 : 36);
     SET_FARVAR(seg, param_far->reserved1, 0);
     SET_FARVAR(seg, param_far->reserved2, 0);
@@ -455,21 +455,21 @@ fill_ata_edd(struct segoff_s edd, struct drive_s *drive_gf)
     if (CONFIG_ATA_PIO32)
         options |= 1<<7;
 
-    SET_LOW(DefaultDPTE.iobase1, iobase1);
-    SET_LOW(DefaultDPTE.iobase2, iobase2 + ATA_CB_DC);
-    SET_LOW(DefaultDPTE.prefix, ((slave ? ATA_CB_DH_DEV1 : ATA_CB_DH_DEV0)
+    SET_माबाबा(DefaultDPTE.iobase1, iobase1);
+    SET_माबाबा(DefaultDPTE.iobase2, iobase2 + ATA_CB_DC);
+    SET_माबाबा(DefaultDPTE.prefix, ((slave ? ATA_CB_DH_DEV1 : ATA_CB_DH_DEV0)
                                  | ATA_CB_DH_LBA));
-    SET_LOW(DefaultDPTE.unused, 0xcb);
-    SET_LOW(DefaultDPTE.irq, irq);
-    SET_LOW(DefaultDPTE.blkcount, 1);
-    SET_LOW(DefaultDPTE.dma, 0);
-    SET_LOW(DefaultDPTE.pio, 0);
-    SET_LOW(DefaultDPTE.options, options);
-    SET_LOW(DefaultDPTE.reserved, 0);
-    SET_LOW(DefaultDPTE.revision, 0x11);
+    SET_माबाबा(DefaultDPTE.unused, 0xcb);
+    SET_माबाबा(DefaultDPTE.irq, irq);
+    SET_माबाबा(DefaultDPTE.blkcount, 1);
+    SET_माबाबा(DefaultDPTE.dma, 0);
+    SET_माबाबा(DefaultDPTE.pio, 0);
+    SET_माबाबा(DefaultDPTE.options, options);
+    SET_माबाबा(DefaultDPTE.reserved, 0);
+    SET_माबाबा(DefaultDPTE.revision, 0x11);
 
-    u8 sum = checksum_far(SEG_LOW, &DefaultDPTE, 15);
-    SET_LOW(DefaultDPTE.checksum, -sum);
+    u8 sum = checksum_far(SEG_माबाबा, &DefaultDPTE, 15);
+    SET_माबाबा(DefaultDPTE.checksum, -sum);
 
     u32 bustype = EDD_ISA, ifpath = iobase1;
     if (bdf >= 0) {
@@ -477,7 +477,7 @@ fill_ata_edd(struct segoff_s edd, struct drive_s *drive_gf)
         ifpath = edd_pci_path(bdf, channel);
     }
     return fill_generic_edd(
-        edd, drive_gf, SEGOFF(SEG_LOW, (u32)&DefaultDPTE).segoff
+        edd, drive_gf, SEGOFF(SEG_माबाबा, (u32)&DefaultDPTE).segoff
         , bustype | EDD_ATA, ifpath, slave);
 }
 
@@ -621,19 +621,19 @@ process_op(struct disk_op_s *op)
 {
     dprintf(DEBUG_HDL_13, "disk_op d=%p lba=%d buf=%p count=%d cmd=%d\n"
             , op->drive_fl, (u32)op->lba, op->buf_fl
-            , op->count, op->command);
+            , op->बिलांग, op->command);
 
-    int ret, origcount = op->count;
+    int ret, origcount = op->बिलांग;
     if (origcount * GET_FLATPTR(op->drive_fl->blksize) > 64*1024) {
-        op->count = 0;
+        op->बिलांग = 0;
         return DISK_RET_EBOUNDARY;
     }
     if (MODESEGMENT)
         ret = process_op_16(op);
     else
         ret = process_op_32(op);
-    if (ret && op->count == origcount)
+    if (ret && op->बिलांग == origcount)
         // If the count hasn't changed on error, assume no data transferred.
-        op->count = 0;
+        op->बिलांग = 0;
     return ret;
 }

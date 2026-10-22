@@ -218,9 +218,9 @@ configure_ehci(void *data)
     struct usb_ehci_s *cntl = data;
 
     // Allocate ram for schedule storage
-    struct ehci_framelist *fl = memalign_high(sizeof(*fl), sizeof(*fl));
-    struct ehci_qh *intr_qh = memalign_high(EHCI_QH_ALIGN, sizeof(*intr_qh));
-    struct ehci_qh *async_qh = memalign_high(EHCI_QH_ALIGN, sizeof(*async_qh));
+    struct ehci_framelist *fl = memalign_माताअस(sizeof(*fl), sizeof(*fl));
+    struct ehci_qh *intr_qh = memalign_माताअस(EHCI_QH_ALIGN, sizeof(*intr_qh));
+    struct ehci_qh *async_qh = memalign_माताअस(EHCI_QH_ALIGN, sizeof(*async_qh));
     if (!fl || !intr_qh || !async_qh) {
         warn_noalloc();
         PendingEHCI--;
@@ -276,9 +276,9 @@ configure_ehci(void *data)
     PendingEHCI--;
 
     // Find devices
-    int count = check_ehci_ports(cntl);
+    int बिलांग = check_ehci_ports(cntl);
     ehci_free_pipes(cntl);
-    if (count)
+    if (बिलांग)
         // Success
         return;
 
@@ -396,26 +396,26 @@ ehci_alloc_intr_pipe(struct usbdevice_s *usbdev
     int maxpacket = epdesc->wMaxPacketSize;
     // Determine number of entries needed for 2 timer ticks.
     int ms = 1<<frameexp;
-    int count = DIV_ROUND_UP(ticks_to_ms(2), ms);
-    struct ehci_pipe *pipe = memalign_low(EHCI_QH_ALIGN, sizeof(*pipe));
-    struct ehci_qtd *tds = memalign_low(EHCI_QTD_ALIGN, sizeof(*tds) * count);
-    void *data = malloc_low(maxpacket * count);
+    int बिलांग = DIV_ROUND_UP(ticks_to_ms(2), ms);
+    struct ehci_pipe *pipe = memalign_माबाबा(EHCI_QH_ALIGN, sizeof(*pipe));
+    struct ehci_qtd *tds = memalign_माबाबा(EHCI_QTD_ALIGN, sizeof(*tds) * बिलांग);
+    void *data = malloc_माबाबा(maxpacket * बिलांग);
     if (!pipe || !tds || !data) {
         warn_noalloc();
         goto fail;
     }
     memset(pipe, 0, sizeof(*pipe));
-    memset(tds, 0, sizeof(*tds) * count);
-    memset(data, 0, maxpacket * count);
+    memset(tds, 0, sizeof(*tds) * बिलांग);
+    memset(data, 0, maxpacket * बिलांग);
     ehci_desc2pipe(pipe, usbdev, epdesc);
     pipe->next_td = pipe->tds = tds;
     pipe->data = data;
     pipe->qh.qtd_next = (u32)tds;
 
     int i;
-    for (i=0; i<count; i++) {
+    for (i=0; i<बिलांग; i++) {
         struct ehci_qtd *td = &tds[i];
-        td->qtd_next = (i==count-1 ? (u32)tds : (u32)&td[1]);
+        td->qtd_next = (i==बिलांग-1 ? (u32)tds : (u32)&td[1]);
         td->alt_next = EHCI_PTR_TERM;
         td->token = (ehci_explen(maxpacket) | QTD_STS_ACTIVE
                      | QTD_PID_IN | ehci_maxerr(3));
@@ -476,7 +476,7 @@ ehci_realloc_pipe(struct usbdevice_s *usbdev, struct usb_pipe *upipe
     if (eptype == USB_ENDPOINT_XFER_CONTROL)
         pipe = memalign_tmphigh(EHCI_QH_ALIGN, sizeof(*pipe));
     else
-        pipe = memalign_low(EHCI_QH_ALIGN, sizeof(*pipe));
+        pipe = memalign_माबाबा(EHCI_QH_ALIGN, sizeof(*pipe));
     if (!pipe) {
         warn_noalloc();
         return NULL;
@@ -636,7 +636,7 @@ ehci_poll_intr(struct usb_pipe *p, void *data)
     int maxpacket = GET_LOWFLAT(pipe->pipe.maxpacket);
     int pos = td - GET_LOWFLAT(pipe->tds);
     void *tddata = GET_LOWFLAT(pipe->data) + maxpacket * pos;
-    memcpy_far(GET_SEG(SS), data, SEG_LOW, LOWFLAT2LOW(tddata), maxpacket);
+    memcpy_far(GET_SEG(SS), data, SEG_माबाबा, LOWFLAT2_माबाबा(tddata), maxpacket);
 
     // Reenable this td.
     struct ehci_qtd *next = (void*)(GET_LOWFLAT(td->qtd_next) & ~EHCI_PTR_BITS);

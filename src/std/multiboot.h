@@ -23,7 +23,7 @@
 #define MULTIBOOT_HEADER 1
 
 /* How many bytes from the start of the file we search for the header.  */
-#define MULTIBOOT_SEARCH			8192
+#define MULTIBOOT_हानाप			8192
 #define MULTIBOOT_HEADER_ALIGN			4
 
 /* The magic field should contain this.  */
@@ -122,19 +122,19 @@ struct multiboot_header
 };
 
 /* The symbol table for a.out.  */
-struct multiboot_aout_symbol_table
+struct multiboot_aout_सिम्बोलो_table
 {
   multiboot_uint32_t tabsize;
   multiboot_uint32_t strsize;
   multiboot_uint32_t addr;
   multiboot_uint32_t reserved;
 };
-typedef struct multiboot_aout_symbol_table multiboot_aout_symbol_table_t;
+typedef struct multiboot_aout_सिम्बोलो_table multiboot_aout_सिम्बोलो_table_t;
 
 /* The section header table for ELF.  */
 struct multiboot_elf_section_header_table
 {
-  multiboot_uint32_t num;
+  multiboot_uint32_t नुमेरो;
   multiboot_uint32_t size;
   multiboot_uint32_t addr;
   multiboot_uint32_t shndx;
@@ -157,12 +157,12 @@ struct multiboot_info
   multiboot_uint32_t cmdline;
 
   /* Boot-Module list */
-  multiboot_uint32_t mods_count;
+  multiboot_uint32_t mods_बिलांग;
   multiboot_uint32_t mods_addr;
 
   union
   {
-    multiboot_aout_symbol_table_t aout_sym;
+    multiboot_aout_सिम्बोलो_table_t aout_sym;
     multiboot_elf_section_header_table_t elf_sec;
   } u;
 
@@ -205,7 +205,7 @@ struct multiboot_info
     struct
     {
       multiboot_uint32_t framebuffer_palette_addr;
-      multiboot_uint16_t framebuffer_palette_num_colors;
+      multiboot_uint16_t framebuffer_palette_नुमेरो_colors;
     };
     struct
     {

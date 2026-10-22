@@ -33,32 +33,32 @@ char pnp_string[] __aligned(2) VARFSEG = " $PnP";
 
 // BBS - Get Version and Installation Check
 static u16
-handle_pnp60(u16 *args)
+handle_pnp60(u16 *मगा_कातविरान)
 {
-    u16 version_ptr = args[1];
-    u16 version_seg = args[2];
+    u16 version_ptr = मगा_कातविरान[1];
+    u16 version_seg = मगा_कातविरान[2];
     SET_FARVAR(version_seg, *(u16*)(version_ptr+0), 0x0101);
     return 0;
 }
 
 static u16
-handle_pnpXX(u16 *args)
+handle_pnpXX(u16 *मगा_कातविरान)
 {
     return FUNCTION_NOT_SUPPORTED;
 }
 
 u16 VISIBLE16
-handle_pnp(u16 *args)
+handle_pnp(u16 *मगा_कातविरान)
 {
     if (! CONFIG_PNPBIOS)
         return FUNCTION_NOT_SUPPORTED;
 
-    u16 arg1 = args[0];
+    u16 arg1 = मगा_कातविरान[0];
     dprintf(DEBUG_HDL_pnp, "pnp call arg1=%x\n", arg1);
 
     switch (arg1) {
-    case 0x60: return handle_pnp60(args);
-    default:   return handle_pnpXX(args);
+    case 0x60: return handle_pnp60(मगा_कातविरान);
+    default:   return handle_pnpXX(मगा_कातविरान);
     }
 }
 

@@ -80,7 +80,7 @@ enum {
 };
 
 enum {
-    ROMFILE_LOADER_ALLOC_ZONE_HIGH = 0x1,
+    ROMFILE_LOADER_ALLOC_ZONE_माताअस = 0x1,
     ROMFILE_LOADER_ALLOC_ZONE_FSEG = 0x2,
 };
 

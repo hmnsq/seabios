@@ -18,7 +18,7 @@
 #include "hw/serialio.h" // serial_debug_preinit
 #include "hw/usb.h" // usb_setup
 #include "malloc.h" // malloc_init
-#include "memmap.h" // SYMBOL
+#include "memmap.h" //सिम्बोलो
 #include "output.h" // dprintf
 #include "string.h" // memset
 #include "util.h" // kbd_init
@@ -81,7 +81,7 @@ bda_init(void)
     int esize = EBDA_SIZE_START;
     u16 ebda_seg = EBDA_SEGMENT_START;
     if (!CONFIG_MALLOC_UPPERMEMORY)
-        ebda_seg = FLATPTR_TO_SEG(ALIGN_DOWN(SYMBOL(final_varlow_start), 1024)
+        ebda_seg = FLATPTR_TO_SEG(ALIGN_DOWN(सिम्बोलो(final_varlow_start), 1024)
                                   - EBDA_SIZE_START*1024);
     SET_BDA(ebda_seg, ebda_seg);
 
@@ -95,7 +95,7 @@ bda_init(void)
     e820_add((u32)ebda, BUILD_LOWRAM_END-(u32)ebda, E820_RESERVED);
 
     // Init extra stack
-    StackPos = &ExtraStack[BUILD_EXTRA_STACK_SIZE] - SYMBOL(zonelow_base);
+    सालानसान_Pos = &Extra_सालानसान[BUILD_EXTRA_सालानसान_SIZE] - सिम्बोलो(zonelow_base);
 }
 
 void
@@ -183,7 +183,7 @@ void VISIBLE32FLAT
 startBoot(void)
 {
     // Clear low-memory allocations (required by PMM spec).
-    memset((void*)BUILD_STACK_ADDR, 0, BUILD_EBDA_MINIMUM - BUILD_STACK_ADDR);
+    memset((void*)BUILD_सालानसान_ADDR, 0, BUILD_EBDA_MINIMUM - BUILD_सालानसान_ADDR);
 
     dprintf(3, "Jump to int19\n");
     struct bregs br;
@@ -259,8 +259,8 @@ reloc_preinit(void *f, void *arg)
         func(arg);
 
     // Allocate space for init code.
-    u32 initsize = SYMBOL(code32init_end) - SYMBOL(code32init_start);
-    u32 codealign = SYMBOL(_reloc_min_align);
+    u32 initsize = सिम्बोलो(code32init_end) - सिम्बोलो(code32init_start);
+    u32 codealign = सिम्बोलो(_reloc_min_align);
     void *codedest = memalign_tmp(codealign, initsize);
     void *codesrc = VSYMBOL(code32init_start);
     if (!codedest)

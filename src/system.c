@@ -107,7 +107,7 @@ handle_1587(struct bregs *regs)
     SET_FARVAR(gdt_seg, gdt_far[5], GDT_DATA | lim | GDT_BASE(loc));
 
     SET_SEG(ES, gdt_seg);
-    u16 count = regs->cx, si = 0, di = 0;
+    u16 बिलांग = regs->cx, si = 0, di = 0;
     asm volatile(
         // Load new descriptor tables
         "  lgdtw %%es:(1<<3)(%%eax)\n"
@@ -156,7 +156,7 @@ handle_1587(struct bregs *regs)
         // Restore %ds (from %ss)
         "  movw %%ss, %%ax\n"
         "  movw %%ax, %%ds\n"
-        : "+a" (gdt_far), "+c"(count), "+m" (__segment_ES)
+        : "+a" (gdt_far), "+c"(बिलांग), "+m" (__segment_ES)
         : "S" (si), "D" (di)
         : "cc");
 
@@ -289,8 +289,8 @@ handle_15e801(struct bregs *regs)
 static void
 handle_15e820(struct bregs *regs)
 {
-    int count = GET_GLOBAL(e820_count);
-    if (regs->edx != 0x534D4150 || regs->bx >= count
+    int बिलांग = GET_GLOBAL(e820_बिलांग);
+    if (regs->edx != 0x534D4150 || regs->bx >= बिलांग
         || regs->ecx < sizeof(e820_list[0])) {
         set_code_invalid(regs, RET_EUNSUPPORTED);
         return;
@@ -299,7 +299,7 @@ handle_15e820(struct bregs *regs)
     memcpy_far(regs->es, (void*)(regs->di+0)
                , get_global_seg(), &e820_list[regs->bx]
                , sizeof(e820_list[0]));
-    if (regs->bx == count-1)
+    if (regs->bx == बिलांग-1)
         regs->ebx = 0;
     else
         regs->ebx++;

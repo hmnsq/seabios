@@ -147,55 +147,55 @@ static inline u32 ror(u32 val, u16 ror) {
     return res;
 }
 
-static inline void outb(u8 value, u16 port) {
-    __asm__ __volatile__("outb %b0, %w1" : : "a"(value), "Nd"(port));
+static inline void outb(u8 हालागा, u16 port) {
+    __asm__ __volatile__("outb %b0, %w1" : : "a"(हालागा), "Nd"(port));
 }
-static inline void outw(u16 value, u16 port) {
-    __asm__ __volatile__("outw %w0, %w1" : : "a"(value), "Nd"(port));
+static inline void outw(u16 हालागा, u16 port) {
+    __asm__ __volatile__("outw %w0, %w1" : : "a"(हालागा), "Nd"(port));
 }
-static inline void outl(u32 value, u16 port) {
-    __asm__ __volatile__("outl %0, %w1" : : "a"(value), "Nd"(port));
+static inline void outl(u32 हालागा, u16 port) {
+    __asm__ __volatile__("outl %0, %w1" : : "a"(हालागा), "Nd"(port));
 }
 static inline u8 inb(u16 port) {
-    u8 value;
-    __asm__ __volatile__("inb %w1, %b0" : "=a"(value) : "Nd"(port));
-    return value;
+    u8 हालागा;
+    __asm__ __volatile__("inb %w1, %b0" : "=a"(हालागा) : "Nd"(port));
+    return हालागा;
 }
 static inline u16 inw(u16 port) {
-    u16 value;
-    __asm__ __volatile__("inw %w1, %w0" : "=a"(value) : "Nd"(port));
-    return value;
+    u16 हालागा;
+    __asm__ __volatile__("inw %w1, %w0" : "=a"(हालागा) : "Nd"(port));
+    return हालागा;
 }
 static inline u32 inl(u16 port) {
-    u32 value;
-    __asm__ __volatile__("inl %w1, %0" : "=a"(value) : "Nd"(port));
-    return value;
+    u32 हालागा;
+    __asm__ __volatile__("inl %w1, %0" : "=a"(हालागा) : "Nd"(port));
+    return हालागा;
 }
 
-static inline void insb(u16 port, u8 *data, u32 count) {
+static inline void insb(u16 port, u8 *data, u32 बिलांग) {
     asm volatile("rep insb (%%dx), %%es:(%%edi)"
-                 : "+c"(count), "+D"(data) : "d"(port) : "memory");
+                 : "+c"(बिलांग), "+D"(data) : "d"(port) : "memory");
 }
-static inline void insw(u16 port, u16 *data, u32 count) {
+static inline void insw(u16 port, u16 *data, u32 बिलांग) {
     asm volatile("rep insw (%%dx), %%es:(%%edi)"
-                 : "+c"(count), "+D"(data) : "d"(port) : "memory");
+                 : "+c"(बिलांग), "+D"(data) : "d"(port) : "memory");
 }
-static inline void insl(u16 port, u32 *data, u32 count) {
+static inline void insl(u16 port, u32 *data, u32 बिलांग) {
     asm volatile("rep insl (%%dx), %%es:(%%edi)"
-                 : "+c"(count), "+D"(data) : "d"(port) : "memory");
+                 : "+c"(बिलांग), "+D"(data) : "d"(port) : "memory");
 }
 // XXX - outs not limited to es segment
-static inline void outsb(u16 port, u8 *data, u32 count) {
+static inline void outsb(u16 port, u8 *data, u32 बिलांग) {
     asm volatile("rep outsb %%es:(%%esi), (%%dx)"
-                 : "+c"(count), "+S"(data) : "d"(port) : "memory");
+                 : "+c"(बिलांग), "+S"(data) : "d"(port) : "memory");
 }
-static inline void outsw(u16 port, u16 *data, u32 count) {
+static inline void outsw(u16 port, u16 *data, u32 बिलांग) {
     asm volatile("rep outsw %%es:(%%esi), (%%dx)"
-                 : "+c"(count), "+S"(data) : "d"(port) : "memory");
+                 : "+c"(बिलांग), "+S"(data) : "d"(port) : "memory");
 }
-static inline void outsl(u16 port, u32 *data, u32 count) {
+static inline void outsl(u16 port, u32 *data, u32 बिलांग) {
     asm volatile("rep outsl %%es:(%%esi), (%%dx)"
-                 : "+c"(count), "+S"(data) : "d"(port) : "memory");
+                 : "+c"(बिलांग), "+S"(data) : "d"(port) : "memory");
 }
 
 /* Compiler barrier is enough as an x86 CPU does not reorder reads or writes */

@@ -4,12 +4,12 @@
 #include "types.h" // u32
 
 // malloc.c
-extern struct zone_s ZoneLow, ZoneHigh, ZoneFSeg, ZoneTmpLow, ZoneTmpHigh;
+extern struct zone_s Zone_माबाबा, Zone_माताअस, ZoneFSeg, Zone_Tmp_माबाबा, Zone_Tmp_माताअस;
 u32 rom_get_max(void);
 u32 rom_get_last(void);
 struct rom_header *rom_reserve(u32 size);
 int rom_confirm(u32 size);
-void malloc_csm_preinit(u32 low_pmm, u32 low_pmm_size, u32 hi_pmm,
+void malloc_csm_preinit(u32 माबाबा_pmm, u32 माबाबा_pmm_size, u32 hi_pmm,
                         u32 hi_pmm_size);
 void malloc_preinit(void);
 extern u32 LegacyRamSize;
@@ -27,20 +27,20 @@ u32 malloc_findhandle(u32 handle);
 // Minimum alignment of malloc'd memory
 #define MALLOC_MIN_ALIGN 16
 // Helper functions for memory allocation.
-static inline void *malloc_low(u32 size) {
-    return _malloc(&ZoneLow, size, MALLOC_MIN_ALIGN);
+static inline void *malloc_माबाबा(u32 size) {
+    return _malloc(&Zone_माबाबा, size, MALLOC_MIN_ALIGN);
 }
-static inline void *malloc_high(u32 size) {
-    return _malloc(&ZoneHigh, size, MALLOC_MIN_ALIGN);
+static inline void *malloc_माताअस(u32 size) {
+    return _malloc(&Zone_माताअस, size, MALLOC_MIN_ALIGN);
 }
 static inline void *malloc_fseg(u32 size) {
     return _malloc(&ZoneFSeg, size, MALLOC_MIN_ALIGN);
 }
 static inline void *malloc_tmplow(u32 size) {
-    return _malloc(&ZoneTmpLow, size, MALLOC_MIN_ALIGN);
+    return _malloc(&Zone_Tmp_माबाबा, size, MALLOC_MIN_ALIGN);
 }
 static inline void *malloc_tmphigh(u32 size) {
-    return _malloc(&ZoneTmpHigh, size, MALLOC_MIN_ALIGN);
+    return _malloc(&Zone_Tmp_माताअस, size, MALLOC_MIN_ALIGN);
 }
 static inline void *malloc_tmp(u32 size) {
     void *ret = malloc_tmphigh(size);
@@ -48,17 +48,17 @@ static inline void *malloc_tmp(u32 size) {
         return ret;
     return malloc_tmplow(size);
 }
-static inline void *memalign_low(u32 align, u32 size) {
-    return _malloc(&ZoneLow, size, align);
+static inline void *memalign_माबाबा(u32 align, u32 size) {
+    return _malloc(&Zone_माबाबा, size, align);
 }
-static inline void *memalign_high(u32 align, u32 size) {
-    return _malloc(&ZoneHigh, size, align);
+static inline void *memalign_माताअस(u32 align, u32 size) {
+    return _malloc(&Zone_माताअस, size, align);
 }
 static inline void *memalign_tmplow(u32 align, u32 size) {
-    return _malloc(&ZoneTmpLow, size, align);
+    return _malloc(&Zone_Tmp_माबाबा, size, align);
 }
 static inline void *memalign_tmphigh(u32 align, u32 size) {
-    return _malloc(&ZoneTmpHigh, size, align);
+    return _malloc(&Zone_Tmp_माताअस, size, align);
 }
 static inline void *memalign_tmp(u32 align, u32 size) {
     void *ret = memalign_tmphigh(align, size);

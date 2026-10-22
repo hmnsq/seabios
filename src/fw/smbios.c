@@ -20,7 +20,7 @@ static void
 smbios_21_entry_point_setup(u16 max_structure_size,
                          u16 structure_table_length,
                          void *structure_table_address,
-                         u16 number_of_structures)
+                         u16 नुमेरो_of_structures)
 {
     void *finaltable;
     if (structure_table_length <= BUILD_MAX_SMBIOS_FSEG)
@@ -28,7 +28,7 @@ smbios_21_entry_point_setup(u16 max_structure_size,
         // works around a bug in JunOS (at least for small SMBIOS tables).
         finaltable = malloc_fseg(structure_table_length);
     else
-        finaltable = malloc_high(structure_table_length);
+        finaltable = malloc_माताअस(structure_table_length);
     if (!finaltable) {
         warn_noalloc();
         return;
@@ -46,7 +46,7 @@ smbios_21_entry_point_setup(u16 max_structure_size,
 
     ep.structure_table_length = structure_table_length;
     ep.structure_table_address = (u32)finaltable;
-    ep.number_of_structures = number_of_structures;
+    ep.नुमेरो_of_structures = नुमेरो_of_structures;
     ep.smbios_bcd_revision = 0x24;
 
     ep.checksum -= checksum(&ep, 0x10);
@@ -229,14 +229,14 @@ smbios_init_type_1(void *start)
     load_str_field_with_default(1, manufacturer_str, BUILD_APPNAME);
     load_str_field_with_default(1, product_name_str, BUILD_APPNAME);
     load_str_field_or_skip(1, version_str);
-    load_str_field_or_skip(1, serial_number_str);
+    load_str_field_or_skip(1, serial_नुमेरो_str);
 
     if (!get_field(1, offsetof(struct smbios_type_1, uuid), &p->uuid))
         memset(p->uuid, 0, 16);
 
     set_field_with_default(1, wake_up_type, 0x06); /* power switch */
 
-    load_str_field_or_skip(1, sku_number_str);
+    load_str_field_or_skip(1, sku_नुमेरो_str);
     load_str_field_or_skip(1, family_str);
 
     *end = 0;
@@ -266,8 +266,8 @@ smbios_init_type_3(void *start)
     set_field_with_default(3, type, 0x01); /* other */
 
     load_str_field_or_skip(3, version_str);
-    load_str_field_or_skip(3, serial_number_str);
-    load_str_field_or_skip(3, asset_tag_number_str);
+    load_str_field_or_skip(3, serial_नुमेरो_str);
+    load_str_field_or_skip(3, asset_tag_नुमेरो_str);
 
     set_field_with_default(3, boot_up_state, 0x03); /* safe */
     set_field_with_default(3, power_supply_state, 0x03); /* safe */
@@ -276,8 +276,8 @@ smbios_init_type_3(void *start)
 
     set_field_with_default(3, oem_defined, 0);
     set_field_with_default(3, height, 0);
-    set_field_with_default(3, number_of_power_cords, 0);
-    set_field_with_default(3, contained_element_count, 0);
+    set_field_with_default(3, नुमेरो_of_power_cords, 0);
+    set_field_with_default(3, contained_element_बिलांग, 0);
 
     *end = 0;
     end++;
@@ -291,7 +291,7 @@ smbios_init_type_3(void *start)
 
 /* Type 4 -- Processor Information */
 static void *
-smbios_init_type_4(void *start, unsigned int cpu_number)
+smbios_init_type_4(void *start, unsigned int cpu_नुमेरो)
 {
     struct smbios_type_4 *p = (struct smbios_type_4 *)start;
     char *end = (char *)start + sizeof(struct smbios_type_4);
@@ -301,14 +301,14 @@ smbios_init_type_4(void *start, unsigned int cpu_number)
 
     p->header.type = 4;
     p->header.length = sizeof(struct smbios_type_4);
-    p->header.handle = 0x400 + cpu_number;
+    p->header.handle = 0x400 + cpu_नुमेरो;
 
     size = get_field(4, offsetof(struct smbios_type_4, socket_designation_str),
                      name);
     if (size)
-        snprintf(name + size - 1, sizeof(name) - size, "%2x", cpu_number);
+        snprintf(name + size - 1, sizeof(name) - size, "%2x", cpu_नुमेरो);
     else
-        snprintf(name, sizeof(name), "CPU%2x", cpu_number);
+        snprintf(name, sizeof(name), "CPU%2x", cpu_नुमेरो);
 
     memcpy(end, name, strlen(name) + 1);
     end += strlen(name) + 1;
@@ -370,7 +370,7 @@ smbios_init_type_16(void *start, u32 memory_size_mb, int nr_mem_devs)
     p->maximum_capacity = memory_size_mb < 2 << 20 ?
                           memory_size_mb << 10 : 0x80000000;
     p->memory_error_information_handle = 0xfffe; /* none provided */
-    p->number_of_memory_devices = nr_mem_devs;
+    p->नुमेरो_of_memory_devices = nr_mem_devs;
 
     start += sizeof(struct smbios_type_16);
     *((u16 *)start) = 0;
@@ -526,10 +526,10 @@ smbios_legacy_setup(void)
     char *q, *p = start;
     char *end = start + TEMPSMBIOSSIZE - sizeof(struct smbios_type_127);
 
-#define add_struct(type, args...)                                       \
+#define add_struct(type, मगा_कातविरान...)                                       \
     do {                                                                \
         if (!get_external(type, &p, &nr_structs, &max_struct_size, end)) { \
-            q = smbios_init_type_##type(args);                          \
+            q = smbios_init_type_##type(मगा_कातविरान);                          \
             nr_structs++;                                               \
             if ((q - p) > max_struct_size)                              \
                 max_struct_size = q - p;                                \
@@ -541,9 +541,9 @@ smbios_legacy_setup(void)
     add_struct(1, p);
     add_struct(3, p);
 
-    int cpu_num;
-    for (cpu_num = 1; cpu_num <= MaxCountCPUs; cpu_num++)
-        add_struct(4, p, cpu_num);
+    int cpu_नुमेरो_2;
+    for (cpu_नुमेरो_2 = 1; cpu_नुमेरो_2 <= Max_बिलांग_CPUs; cpu_नुमेरो_2++)
+        add_struct(4, p, cpu_नुमेरो_2);
 
     int ram_mb = (RamSize + RamSizeOver4G) >> 20;
     int nr_mem_devs = (ram_mb + 0x3fff) >> 14;

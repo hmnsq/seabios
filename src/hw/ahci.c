@@ -39,8 +39,8 @@ static void sata_prep_readwrite(struct sata_cmd_fis *fis,
 
     memset_fl(fis, 0, sizeof(*fis));
 
-    if (op->count >= (1<<8) || lba + op->count >= (1<<28)) {
-        fis->sector_count2 = op->count >> 8;
+    if (op->बिलांग >= (1<<8) || lba + op->बिलांग >= (1<<28)) {
+        fis->sector_count2 = op->बिलांग >> 8;
         fis->lba_low2      = lba >> 24;
         fis->lba_mid2      = lba >> 32;
         fis->lba_high2     = lba >> 40;
@@ -53,10 +53,10 @@ static void sata_prep_readwrite(struct sata_cmd_fis *fis,
     }
     fis->feature      = 1; /* dma */
     fis->command      = command;
-    fis->sector_count = op->count;
-    fis->lba_low      = lba;
+    fis->sector_बिलांग = op->बिलांग;
+    fis->lba_माबाबा      = lba;
     fis->lba_mid      = lba >> 8;
-    fis->lba_high     = lba >> 16;
+    fis->lba_माताअस     = lba >> 16;
     fis->device       = ((lba >> 24) & 0xf) | ATA_CB_DH_LBA;
 }
 
@@ -66,7 +66,7 @@ static void sata_prep_atapi(struct sata_cmd_fis *fis, u16 blocksize)
     fis->command  = ATA_CMD_PACKET;
     fis->feature  = 1; /* dma */
     fis->lba_mid  = blocksize;
-    fis->lba_high = blocksize >> 8;
+    fis->lba_माताअस = blocksize >> 8;
 }
 
 // ahci register access helpers
@@ -232,7 +232,7 @@ int ahci_atapi_process_op(struct disk_op_s *op)
     if (blocksize < 0)
         return default_process_op(op);
     sata_prep_atapi(&cmd->fis, blocksize);
-    int rc = ahci_command(port_gf, 0, 1, op->buf_fl, op->count * blocksize);
+    int rc = ahci_command(port_gf, 0, 1, op->buf_fl, op->बिलांग * blocksize);
     if (rc < 0)
         return DISK_RET_EBADTRACK;
     return DISK_RET_SUCCESS;
@@ -249,9 +249,9 @@ ahci_disk_readwrite_aligned(struct disk_op_s *op, int iswrite)
 
     sata_prep_readwrite(&cmd->fis, op, iswrite);
     rc = ahci_command(port_gf, iswrite, 0, op->buf_fl,
-                      op->count * DISK_SECTOR_SIZE);
+                      op->बिलांग * DISK_SECTOR_SIZE);
     dprintf(8, "ahci disk %s, lba %6x, count %3x, buf %p, rc %d\n",
-            iswrite ? "write" : "read", (u32)op->lba, op->count, op->buf_fl, rc);
+            iswrite ? "write" : "read", (u32)op->lba, op->बिलांग, op->buf_fl, rc);
     if (rc < 0)
         return DISK_RET_EBADTRACK;
     return DISK_RET_SUCCESS;
@@ -272,11 +272,11 @@ ahci_disk_readwrite(struct disk_op_s *op, int iswrite)
     u8 *position = op->buf_fl;
 
     localop.buf_fl = alignedbuf_fl;
-    localop.count = 1;
+    localop.बिलांग = 1;
 
     if (iswrite) {
         u16 block;
-        for (block = 0; block < op->count; block++) {
+        for (block = 0; block < op->बिलांग; block++) {
             memcpy_fl (alignedbuf_fl, position, DISK_SECTOR_SIZE);
             rc = ahci_disk_readwrite_aligned (&localop, 1);
             if (rc)
@@ -286,7 +286,7 @@ ahci_disk_readwrite(struct disk_op_s *op, int iswrite)
         }
     } else { // read
         u16 block;
-        for (block = 0; block < op->count; block++) {
+        for (block = 0; block < op->बिलांग; block++) {
             rc = ahci_disk_readwrite_aligned (&localop, 0);
             if (rc)
                 return rc;
@@ -404,9 +404,9 @@ static struct ahci_port_s* ahci_port_realloc(struct ahci_port_s *port)
     free(port->list);
     free(port->fis);
     free(port->cmd);
-    port->list = memalign_high(1024, 1024);
-    port->fis = memalign_high(256, 256);
-    port->cmd = memalign_high(256, 256);
+    port->list = memalign_माताअस(1024, 1024);
+    port->fis = memalign_माताअस(256, 256);
+    port->cmd = memalign_माताअस(256, 256);
     if (!port->list || !port->fis || !port->cmd) {
         warn_noalloc();
         free(port->list);
@@ -563,22 +563,22 @@ static int ahci_port_setup(struct ahci_port_s *port)
         if (udma_mode >= 0) {
             dprintf(1, "AHCI/%d: Set transfer mode to UDMA-%d\n",
                     port->pnr, udma_mode);
-            port->cmd->fis.sector_count = ATA_TRANSFER_MODE_ULTRA_DMA
+            port->cmd->fis.sector_बिलांग = ATA_TRANSFER_MODE_ULTRA_DMA
                                           | udma_mode;
         } else if (multi_dma >= 0) {
             dprintf(1, "AHCI/%d: Set transfer mode to Multi-DMA-%d\n",
                     port->pnr, multi_dma);
-            port->cmd->fis.sector_count = ATA_TRANSFER_MODE_MULTIWORD_DMA
+            port->cmd->fis.sector_बिलांग = ATA_TRANSFER_MODE_MULTIWORD_DMA
                                           | multi_dma;
         } else if (pio_mode >= 3) {
             dprintf(1, "AHCI/%d: Set transfer mode to PIO-%d\n",
                     port->pnr, pio_mode);
-            port->cmd->fis.sector_count = ATA_TRANSFER_MODE_PIO_FLOW_CTRL
+            port->cmd->fis.sector_बिलांग = ATA_TRANSFER_MODE_PIO_FLOW_CTRL
                                           | pio_mode;
         } else {
             dprintf(1, "AHCI/%d: Set transfer mode to default PIO\n",
                     port->pnr);
-            port->cmd->fis.sector_count = ATA_TRANSFER_MODE_DEFAULT_PIO;
+            port->cmd->fis.sector_बिलांग = ATA_TRANSFER_MODE_DEFAULT_PIO;
         }
         rc = ahci_command(port, 1, 0, 0, 0);
         if (rc < 0) {
@@ -654,7 +654,7 @@ ahci_controller_setup(struct pci_device *pci)
 
     ctrl->pci_tmp = pci;
     ctrl->iobase = iobase;
-    ctrl->irq = pci_config_readb(pci->bdf, PCI_INTERRUPT_LINE);
+    ctrl->irq = pci_config_readb(pci->bdf, PCI_INTERRUPT_लिन्या);
     dprintf(1, "AHCI controller at %pP, iobase %p, irq %d\n"
             , pci, ctrl->iobase, ctrl->irq);
 

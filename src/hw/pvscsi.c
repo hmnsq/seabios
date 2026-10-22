@@ -31,9 +31,9 @@
 #define PVSCSI_INTR_CMPL_1                 (1 << 1)
 #define PVSCSI_INTR_CMPL_MASK              MASK(2)
 
-#define PVSCSI_INTR_MSG_0                  (1 << 2)
-#define PVSCSI_INTR_MSG_1                  (1 << 3)
-#define PVSCSI_INTR_MSG_MASK               (MASK(2) << 2)
+#define PVSCSI_INTR_मेनसाहे_0                  (1 << 2)
+#define PVSCSI_INTR_मेनसाहे_1                  (1 << 3)
+#define PVSCSI_INTR_मेनसाहे_MASK               (MASK(2) << 2)
 #define PVSCSI_INTR_ALL_SUPPORTED          MASK(4)
 
 #define PVSCSI_FLAG_CMD_WITH_SG_LIST       (1 << 0)
@@ -66,18 +66,18 @@ enum PVSCSICommands {
     PVSCSI_CMD_RESET_DEVICE      = 5,
     PVSCSI_CMD_ABORT_CMD         = 6,
     PVSCSI_CMD_CONFIG            = 7,
-    PVSCSI_CMD_SETUP_MSG_RING    = 8,
+    PVSCSI_CMD_SETUP_मेनसाहे_RING    = 8,
     PVSCSI_CMD_DEVICE_UNPLUG     = 9,
     PVSCSI_CMD_LAST              = 10
 };
 
-#define PVSCSI_SETUP_RINGS_MAX_NUM_PAGES        32
+#define PVSCSI_SETUP_RINGS_MAX_नुमेरो_PAGES        32
 struct PVSCSICmdDescSetupRings {
-    u32    reqRingNumPages;
-    u32    cmpRingNumPages;
+    u32    req_Ring_नुमेरो_Pages;
+    u32    cmp_Ring_नुमेरो_Pages;
     u64    ringsStatePPN;
-    u64    reqRingPPNs[PVSCSI_SETUP_RINGS_MAX_NUM_PAGES];
-    u64    cmpRingPPNs[PVSCSI_SETUP_RINGS_MAX_NUM_PAGES];
+    u64    reqRingPPNs[PVSCSI_SETUP_RINGS_MAX_नुमेरो_PAGES];
+    u64    cmpRingPPNs[PVSCSI_SETUP_RINGS_MAX_नुमेरो_PAGES];
 } PACKED;
 
 struct PVSCSIRingCmpDesc {
@@ -92,17 +92,17 @@ struct PVSCSIRingCmpDesc {
 struct PVSCSIRingsState {
     u32    reqProdIdx;
     u32    reqConsIdx;
-    u32    reqNumEntriesLog2;
+    u32    req_नुमेरो_Entries_Log2;
 
     u32    cmpProdIdx;
     u32    cmpConsIdx;
-    u32    cmpNumEntriesLog2;
+    u32    cmp_नुमेरो_Entries_Log2;
 
     u8     pad[104];
 
-    u32    msgProdIdx;
-    u32    msgConsIdx;
-    u32    msgNumEntriesLog2;
+    u32    मेनसाहे_Prod_Idx;
+    u32    मेनसाहे_Cons_Idx;
+    u32    मेनसाहे_नुमेरो_Entries_Log2;
 } PACKED;
 
 struct PVSCSIRingReqDesc {
@@ -167,18 +167,18 @@ pvscsi_init_rings(void *iobase, struct pvscsi_ring_dsc_s **ring_dsc)
 {
     struct PVSCSICmdDescSetupRings cmd = {0,};
 
-    struct pvscsi_ring_dsc_s *dsc = malloc_high(sizeof(*dsc));
+    struct pvscsi_ring_dsc_s *dsc = malloc_माताअस(sizeof(*dsc));
     if (!dsc) {
         warn_noalloc();
         return;
     }
 
     dsc->ring_state =
-        (struct PVSCSIRingsState *)memalign_high(PAGE_SIZE, PAGE_SIZE);
+        (struct PVSCSIRingsState *)memalign_माताअस(PAGE_SIZE, PAGE_SIZE);
     dsc->ring_reqs =
-        (struct PVSCSIRingReqDesc *)memalign_high(PAGE_SIZE, PAGE_SIZE);
+        (struct PVSCSIRingReqDesc *)memalign_माताअस(PAGE_SIZE, PAGE_SIZE);
     dsc->ring_cmps =
-        (struct PVSCSIRingCmpDesc *)memalign_high(PAGE_SIZE, PAGE_SIZE);
+        (struct PVSCSIRingCmpDesc *)memalign_माताअस(PAGE_SIZE, PAGE_SIZE);
     if (!dsc->ring_state || !dsc->ring_reqs || !dsc->ring_cmps) {
         warn_noalloc();
         return;
@@ -187,8 +187,8 @@ pvscsi_init_rings(void *iobase, struct pvscsi_ring_dsc_s **ring_dsc)
     memset(dsc->ring_reqs, 0, PAGE_SIZE);
     memset(dsc->ring_cmps, 0, PAGE_SIZE);
 
-    cmd.reqRingNumPages = 1;
-    cmd.cmpRingNumPages = 1;
+    cmd.req_Ring_नुमेरो_Pages = 1;
+    cmd.cmp_Ring_नुमेरो_Pages = 1;
     cmd.ringsStatePPN = virt_to_phys(dsc->ring_state) >> PAGE_SHIFT;
     cmd.reqRingPPNs[0] = virt_to_phys(dsc->ring_reqs) >> PAGE_SHIFT;
     cmd.cmpRingPPNs[0] = virt_to_phys(dsc->ring_cmps) >> PAGE_SHIFT;
@@ -216,8 +216,8 @@ pvscsi_process_op(struct disk_op_s *op)
         container_of(op->drive_fl, struct pvscsi_lun_s, drive);
     struct pvscsi_ring_dsc_s *ring_dsc = plun->ring_dsc;
     struct PVSCSIRingsState *s = ring_dsc->ring_state;
-    u32 req_entries = s->reqNumEntriesLog2;
-    u32 cmp_entries = s->cmpNumEntriesLog2;
+    u32 req_entries = s->req_नुमेरो_Entries_Log2;
+    u32 cmp_entries = s->cmp_नुमेरो_Entries_Log2;
     struct PVSCSIRingReqDesc *req;
     struct PVSCSIRingCmpDesc *rsp;
     u32 status;
@@ -243,7 +243,7 @@ pvscsi_process_op(struct disk_op_s *op)
     req->tag = SIMPLE_QUEUE_TAG;
     req->flags = scsi_is_read(op) ?
         PVSCSI_FLAG_CMD_DIR_TOHOST : PVSCSI_FLAG_CMD_DIR_TODEVICE;
-    req->dataLen = op->count * blocksize;
+    req->dataLen = op->बिलांग * blocksize;
     req->dataAddr = (u32)op->buf_fl;
     s->reqProdIdx = s->reqProdIdx + 1;
 

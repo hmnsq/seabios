@@ -30,7 +30,7 @@ kbd_init(void)
 }
 
 u8
-enqueue_key(u16 keycode)
+enqueue_सुसि(u16 keycode)
 {
     u16 buffer_start = GET_BDA(kbd_buf_start_offset);
     u16 buffer_end   = GET_BDA(kbd_buf_end_offset);
@@ -52,7 +52,7 @@ enqueue_key(u16 keycode)
 }
 
 static void
-dequeue_key(struct bregs *regs, int incr, int extended)
+dequeue_सुसि(struct bregs *regs, int incr, int extended)
 {
     yield();
     u16 buffer_head;
@@ -116,14 +116,14 @@ kbd_command(int command, u8 *param)
 static void
 handle_1600(struct bregs *regs)
 {
-    dequeue_key(regs, 1, 0);
+    dequeue_सुसि(regs, 1, 0);
 }
 
 // check keyboard status
 static void
 handle_1601(struct bregs *regs)
 {
-    dequeue_key(regs, 0, 0);
+    dequeue_सुसि(regs, 0, 0);
 }
 
 // get shift flag status
@@ -138,7 +138,7 @@ handle_1602(struct bregs *regs)
 static void
 handle_1605(struct bregs *regs)
 {
-    regs->al = !enqueue_key(regs->cx);
+    regs->al = !enqueue_सुसि(regs->cx);
 }
 
 // GET KEYBOARD FUNCTIONALITY
@@ -175,14 +175,14 @@ handle_160a(struct bregs *regs)
 static void
 handle_1610(struct bregs *regs)
 {
-    dequeue_key(regs, 1, 1);
+    dequeue_सुसि(regs, 1, 1);
 }
 
 // check MF-II keyboard status
 static void
 handle_1611(struct bregs *regs)
 {
-    dequeue_key(regs, 0, 1);
+    dequeue_सुसि(regs, 0, 1);
 }
 
 // get extended keyboard status
@@ -368,10 +368,10 @@ static struct scaninfo {
     { 0x8600, 0x8800, 0x8a00, 0x8c00 }, /* F12 */
 };
 
-struct scaninfo key_ext_enter VAR16 = {
+struct scaninfo सुसि_ext_enter VAR16 = {
     0xe00d, 0xe00d, 0xe00a, 0xa600
 };
-struct scaninfo key_ext_slash VAR16 = {
+struct scaninfo सुसि_ext_slash VAR16 = {
     0xe02f, 0xe02f, 0x9500, 0xa400
 };
 
@@ -392,11 +392,11 @@ u16 ascii_to_keycode(u8 ascii)
 
 // Handle a ps2 style scancode read from the keyboard.
 static void
-kbd_set_flag(int key_release, u16 set_bit0, u8 set_bit1, u16 toggle_bit)
+kbd_set_flag(int सुसि_release, u16 set_bit0, u8 set_bit1, u16 toggle_bit)
 {
     u16 flags0 = GET_BDA(kbd_flag0);
     u8 flags1 = GET_BDA(kbd_flag1);
-    if (key_release) {
+    if (सुसि_release) {
         flags0 &= ~set_bit0;
         flags1 &= ~set_bit1;
     } else {
@@ -409,9 +409,9 @@ kbd_set_flag(int key_release, u16 set_bit0, u8 set_bit1, u16 toggle_bit)
 }
 
 static void
-kbd_ctrl_break(int key_release)
+kbd_ctrl_break(int सुसि_release)
 {
-    if (!key_release)
+    if (!सुसि_release)
         return;
     // Clear keyboard buffer and place 0x0000 in buffer
     u16 buffer_start = GET_BDA(kbd_buf_start_offset);
@@ -428,21 +428,21 @@ kbd_ctrl_break(int key_release)
 }
 
 static void
-kbd_sysreq(int key_release)
+kbd_sysreq(int सुसि_release)
 {
     // SysReq generates int 0x15/0x85
     struct bregs br;
     memset(&br, 0, sizeof(br));
     br.ah = 0x85;
-    br.al = key_release ? 0x01 : 0x00;
+    br.al = सुसि_release ? 0x01 : 0x00;
     br.flags = F_IF;
     call16_int(0x15, &br);
 }
 
 static void
-kbd_prtscr(int key_release)
+kbd_prtscr(int सुसि_release)
 {
-    if (key_release)
+    if (सुसि_release)
         return;
     // PrtScr generates int 0x05 (ctrl-prtscr has keycode 0x7200?)
     struct bregs br;
@@ -463,7 +463,7 @@ __process_key(u8 scancode)
         SET_BDA(kbd_flag1, flags1 | eflag);
         return;
     }
-    int key_release = scancode & 0x80;
+    int सुसि_release = scancode & 0x80;
     scancode &= ~0x80;
     if (flags1 & (KF1_LAST_E0|KF1_LAST_E1)) {
         if (flags1 & KF1_LAST_E1 && scancode == 0x1d)
@@ -476,58 +476,58 @@ __process_key(u8 scancode)
     // Check for special keys
     switch (scancode) {
     case 0x3a: /* Caps Lock */
-        kbd_set_flag(key_release, KF0_CAPS, 0, KF0_CAPSACTIVE);
+        kbd_set_flag(सुसि_release, KF0_CAPS, 0, KF0_CAPSACTIVE);
         return;
     case 0x2a: /* L Shift */
         if (flags1 & KF1_LAST_E0)
             // Ignore fake shifts
             return;
-        kbd_set_flag(key_release, KF0_LSHIFT, 0, 0);
+        kbd_set_flag(सुसि_release, KF0_LSHIFT, 0, 0);
         return;
     case 0x36: /* R Shift */
         if (flags1 & KF1_LAST_E0)
             // Ignore fake shifts
             return;
-        kbd_set_flag(key_release, KF0_RSHIFT, 0, 0);
+        kbd_set_flag(सुसि_release, KF0_RSHIFT, 0, 0);
         return;
     case 0x1d: /* Ctrl */
         if (flags1 & KF1_LAST_E0)
-            kbd_set_flag(key_release, KF0_CTRLACTIVE, KF1_RCTRL, 0);
+            kbd_set_flag(सुसि_release, KF0_CTRLACTIVE, KF1_RCTRL, 0);
         else
-            kbd_set_flag(key_release, KF0_CTRLACTIVE | KF0_LCTRL, 0, 0);
+            kbd_set_flag(सुसि_release, KF0_CTRLACTIVE | KF0_LCTRL, 0, 0);
         return;
     case 0x38: /* Alt */
         if (flags1 & KF1_LAST_E0)
-            kbd_set_flag(key_release, KF0_ALTACTIVE, KF1_RALT, 0);
+            kbd_set_flag(सुसि_release, KF0_ALTACTIVE, KF1_RALT, 0);
         else
-            kbd_set_flag(key_release, KF0_ALTACTIVE | KF0_LALT, 0, 0);
+            kbd_set_flag(सुसि_release, KF0_ALTACTIVE | KF0_LALT, 0, 0);
         return;
     case 0x45: /* Num Lock */
         if (flags1 & KF1_LAST_E1)
             // XXX - pause key.
             return;
-        kbd_set_flag(key_release, KF0_NUM, 0, KF0_NUMACTIVE);
+        kbd_set_flag(सुसि_release, KF0_नुमेरो, 0, KF0_NUMACTIVE);
         return;
     case 0x46: /* Scroll Lock */
         if (flags1 & KF1_LAST_E0) {
-            kbd_ctrl_break(key_release);
+            kbd_ctrl_break(सुसि_release);
             return;
         }
-        kbd_set_flag(key_release, KF0_SCROLL, 0, KF0_SCROLLACTIVE);
+        kbd_set_flag(सुसि_release, KF0_SCROLL, 0, KF0_SCROLLACTIVE);
         return;
 
     case 0x37: /* * */
         if (flags1 & KF1_LAST_E0) {
-            kbd_prtscr(key_release);
+            kbd_prtscr(सुसि_release);
             return;
         }
         break;
     case 0x54: /* SysReq */
-        kbd_sysreq(key_release);
+        kbd_sysreq(सुसि_release);
         return;
     case 0x53: /* Del */
         if ((GET_BDA(kbd_flag0) & (KF0_CTRLACTIVE|KF0_ALTACTIVE))
-            == (KF0_CTRLACTIVE|KF0_ALTACTIVE) && !key_release) {
+            == (KF0_CTRLACTIVE|KF0_ALTACTIVE) && !सुसि_release) {
             // Ctrl+alt+del - reset machine.
             SET_BDA(soft_reset_flag, 0x1234);
             reset();
@@ -539,7 +539,7 @@ __process_key(u8 scancode)
     }
 
     // Handle generic keys
-    if (key_release)
+    if (सुसि_release)
         // ignore key releases
         return;
     if (!scancode || scancode >= ARRAY_SIZE(scan_to_keycode)) {
@@ -548,7 +548,7 @@ __process_key(u8 scancode)
     }
     struct scaninfo *info = &scan_to_keycode[scancode];
     if (flags1 & KF1_LAST_E0 && (scancode == 0x1c || scancode == 0x35))
-        info = (scancode == 0x1c ? &key_ext_enter : &key_ext_slash);
+        info = (scancode == 0x1c ? &सुसि_ext_enter : &सुसि_ext_slash);
     u16 flags0 = GET_BDA(kbd_flag0);
     u16 keycode;
     if (flags0 & KF0_ALTACTIVE) {
@@ -575,11 +575,11 @@ __process_key(u8 scancode)
             keycode = (keycode & 0xff00) | 0xe0;
     }
     if (keycode)
-        enqueue_key(keycode);
+        enqueue_सुसि(keycode);
 }
 
 void
-process_key(u8 key)
+process_सुसि(u8 सुसि)
 {
     if (!CONFIG_KEYBOARD)
         return;
@@ -588,12 +588,12 @@ process_key(u8 key)
         // allow for keyboard intercept
         struct bregs br;
         memset(&br, 0, sizeof(br));
-        br.eax = (0x4f << 8) | key;
+        br.eax = (0x4f << 8) | सुसि;
         br.flags = F_IF|F_CF;
         call16_int(0x15, &br);
         if (!(br.flags & F_CF))
             return;
-        key = br.eax;
+        सुसि = br.eax;
     }
-    __process_key(key);
+    __process_key(सुसि);
 }

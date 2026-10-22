@@ -15,16 +15,16 @@ u32 __call32(void *func, u32 eax, u32 errret);
         extern void _cfunc32flat_ ##func (void);                \
         __call32( _cfunc32flat_ ##func , (u32)(eax), (errret)); \
     })
-extern u8 ExtraStack[], *StackPos;
+extern u8 Extra_सालानसान[], *सालानसान_Pos;
 u32 __stack_hop(u32 eax, u32 edx, void *func);
-#define stack_hop(func, eax, edx)               \
+#define सालानसान_hop(func, eax, edx)               \
     __stack_hop((u32)(eax), (u32)(edx), (func))
 u32 __stack_hop_back(u32 eax, u32 edx, void *func);
-#define stack_hop_back(func, eax, edx) ({                               \
+#define सालानसान_hop_back(func, eax, edx) ({                               \
         extern void _cfunc16_ ##func (void);                            \
         __stack_hop_back((u32)(eax), (u32)(edx), _cfunc16_ ##func );    \
     })
-int on_extra_stack(void);
+int on_extra_सालानसान(void);
 struct bregs;
 void farcall16(struct bregs *callregs);
 void farcall16big(struct bregs *callregs);
@@ -62,7 +62,7 @@ u32 __call32_params(void *func, u32 eax, u32 edx, u32 ecx, u32 errret);
 static inline int
 need_hop_back(void)
 {
-    return !MODESEGMENT || on_extra_stack();
+    return !MODESEGMENT || on_extra_सालानसान();
 }
 
 #endif // stacks.h

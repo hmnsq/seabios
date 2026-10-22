@@ -125,7 +125,7 @@ struct usbhub_op_s {
 struct usb_ctrlrequest {
     u8 bRequestType;
     u8 bRequest;
-    u16 wValue;
+    u16 w_हालागा;
     u16 wIndex;
     u16 wLength;
 } PACKED;
@@ -153,8 +153,8 @@ struct usb_device_descriptor {
     u16 bcdDevice;
     u8  iManufacturer;
     u8  iProduct;
-    u8  iSerialNumber;
-    u8  bNumConfigurations;
+    u8  i_Serial_नुमेरो;
+    u8  b_नुमेरो_Configurations;
 } PACKED;
 
 #define USB_CLASS_PER_INTERFACE         0       /* for DeviceClass */
@@ -172,8 +172,8 @@ struct usb_config_descriptor {
     u8  bDescriptorType;
 
     u16 wTotalLength;
-    u8  bNumInterfaces;
-    u8  bConfigurationValue;
+    u8  b_नुमेरो_Interfaces;
+    u8  b_Configuration_हालागा;
     u8  iConfiguration;
     u8  bmAttributes;
     u8  bMaxPower;
@@ -183,9 +183,9 @@ struct usb_interface_descriptor {
     u8  bLength;
     u8  bDescriptorType;
 
-    u8  bInterfaceNumber;
+    u8  b_Interface_नुमेरो;
     u8  bAlternateSetting;
-    u8  bNumEndpoints;
+    u8  b_नुमेरो_Endpoints;
     u8  bInterfaceClass;
     u8  bInterfaceSubClass;
     u8  bInterfaceProtocol;
@@ -202,7 +202,7 @@ struct usb_endpoint_descriptor {
     u8  bInterval;
 } PACKED;
 
-#define USB_ENDPOINT_NUMBER_MASK        0x0f    /* in bEndpointAddress */
+#define USB_ENDPOINT_नुमेरो_MASK        0x0f    /* in bEndpointAddress */
 #define USB_ENDPOINT_DIR_MASK           0x80
 
 #define USB_ENDPOINT_XFERTYPE_MASK      0x03    /* in bmAttributes */

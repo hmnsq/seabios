@@ -21,10 +21,10 @@
 
 // Setup the DMA controller for a floppy transfer.
 int
-dma_floppy(u32 addr, int count, int isWrite)
+dma_floppy(u32 addr, int बिलांग, int isWrite)
 {
     // check for 64K boundary overrun
-    u16 end = count - 1;
+    u16 end = बिलांग - 1;
     u32 last_addr = addr + end;
     if ((addr >> 16) != (last_addr >> 16))
         return -1;

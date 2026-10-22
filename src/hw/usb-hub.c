@@ -18,9 +18,9 @@ get_hub_desc(struct usb_pipe *pipe, struct usb_hub_descriptor *desc)
     req.bRequestType = USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_DEVICE;
     req.bRequest = USB_REQ_GET_DESCRIPTOR;
     if (pipe->speed == USB_SUPERSPEED)
-        req.wValue = USB_DT_HUB3<<8;
+        req.w_हालागा = USB_DT_HUB3<<8;
     else
-        req.wValue = USB_DT_HUB<<8;
+        req.w_हालागा = USB_DT_HUB<<8;
     req.wIndex = 0;
     req.wLength = sizeof(*desc);
     return usb_send_default_control(pipe, &req, desc);
@@ -32,7 +32,7 @@ set_hub_depth(struct usb_pipe *pipe, u16 depth)
     struct usb_ctrlrequest req;
     req.bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_DEVICE;
     req.bRequest = HUB_REQ_SET_HUB_DEPTH;
-    req.wValue = depth;
+    req.w_हालागा = depth;
     req.wIndex = 0;
     req.wLength = 0;
     return usb_send_default_control(pipe, &req, NULL);
@@ -44,7 +44,7 @@ set_port_feature(struct usbhub_s *hub, int port, int feature)
     struct usb_ctrlrequest req;
     req.bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_OTHER;
     req.bRequest = USB_REQ_SET_FEATURE;
-    req.wValue = feature;
+    req.w_हालागा = feature;
     req.wIndex = port + 1;
     req.wLength = 0;
     mutex_lock(&hub->lock);
@@ -59,7 +59,7 @@ clear_port_feature(struct usbhub_s *hub, int port, int feature)
     struct usb_ctrlrequest req;
     req.bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_OTHER;
     req.bRequest = USB_REQ_CLEAR_FEATURE;
-    req.wValue = feature;
+    req.w_हालागा = feature;
     req.wIndex = port + 1;
     req.wLength = 0;
     mutex_lock(&hub->lock);
@@ -74,7 +74,7 @@ get_port_status(struct usbhub_s *hub, int port, struct usb_port_status *sts)
     struct usb_ctrlrequest req;
     req.bRequestType = USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_OTHER;
     req.bRequest = USB_REQ_GET_STATUS;
-    req.wValue = 0;
+    req.w_हालागा = 0;
     req.wIndex = port + 1;
     req.wLength = sizeof(*sts);
     mutex_lock(&hub->lock);

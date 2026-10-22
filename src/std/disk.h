@@ -28,7 +28,7 @@
 struct int13ext_s {
     u8  size;
     u8  reserved;
-    u16 count;
+    u16 बिलांग;
     struct segoff_s data;
     u64 lba;
 } PACKED;
@@ -56,10 +56,10 @@ struct int13dpt_s {
     u32 cylinders;
     u32 heads;
     u32 spt;
-    u64 sector_count;
+    u64 sector_बिलांग;
     u16 blksize;
     struct segoff_s dpte;
-    u16 key;
+    u16 सुसि;
     u8  dpi_length;
     u8  reserved1;
     u16 reserved2;
@@ -136,7 +136,7 @@ struct partition_s {
     u8 type;
     struct packed_chs_s last;
     u32 lba;
-    u32 count;
+    u32 बिलांग;
 } PACKED;
 
 struct mbr_s {
@@ -167,7 +167,7 @@ struct eltorito_s {
     u16 device_spec;
     u16 buffer_segment;
     u16 load_segment;
-    u16 sector_count;
+    u16 sector_बिलांग;
     struct packed_chs_s chs;
 } PACKED;
 

@@ -53,7 +53,7 @@ struct smm_layout {
     struct smm_state backup1;
     struct smm_state backup2;
     u32 backup_a20;
-    u8 stack[0x8000 - sizeof(struct smm_state)*2 - sizeof(u32)];
+    u8 सालानसान[0x8000 - sizeof(struct smm_state)*2 - sizeof(u32)];
     u64 codeentry;
     u8 pad_8008[0x7df8];
     struct smm_state cpu;
@@ -189,8 +189,8 @@ smm_relocate_and_restore(void)
 static void piix4_apmc_smm_setup(int isabdf, int i440_bdf)
 {
     /* check if SMM init is already done */
-    u32 value = pci_config_readl(isabdf, PIIX_DEVACTB);
-    if (value & PIIX_DEVACTB_APMC_EN)
+    u32 हालागा = pci_config_readl(isabdf, PIIX_DEVACTB);
+    if (हालागा & PIIX_DEVACTB_APMC_EN)
         return;
 
     /* enable the SMM memory window */
@@ -199,11 +199,11 @@ static void piix4_apmc_smm_setup(int isabdf, int i440_bdf)
     smm_save_and_copy();
 
     /* enable SMI generation when writing to the APMC register */
-    pci_config_writel(isabdf, PIIX_DEVACTB, value | PIIX_DEVACTB_APMC_EN);
+    pci_config_writel(isabdf, PIIX_DEVACTB, हालागा | PIIX_DEVACTB_APMC_EN);
 
     /* enable SMI generation */
-    value = inl(acpi_pm_base + PIIX_PMIO_GLBCTL);
-    outl(value | PIIX_PMIO_GLBCTL_SMI_EN, acpi_pm_base + PIIX_PMIO_GLBCTL);
+    हालागा = inl(acpi_pm_base + PIIX_PMIO_GLBCTL);
+    outl(हालागा | PIIX_PMIO_GLBCTL_SMI_EN, acpi_pm_base + PIIX_PMIO_GLBCTL);
 
     smm_relocate_and_restore();
 
@@ -215,8 +215,8 @@ static void piix4_apmc_smm_setup(int isabdf, int i440_bdf)
 void ich9_lpc_apmc_smm_setup(int isabdf, int mch_bdf)
 {
     /* check if SMM init is already done */
-    u32 value = inl(acpi_pm_base + ICH9_PMIO_SMI_EN);
-    if (value & ICH9_PMIO_SMI_EN_APMC_EN)
+    u32 हालागा = inl(acpi_pm_base + ICH9_PMIO_SMI_EN);
+    if (हालागा & ICH9_PMIO_SMI_EN_APMC_EN)
         return;
 
     /* enable the SMM memory window */
@@ -225,13 +225,13 @@ void ich9_lpc_apmc_smm_setup(int isabdf, int mch_bdf)
     smm_save_and_copy();
 
     /* enable SMI generation when writing to the APMC register */
-    outl(value | ICH9_PMIO_SMI_EN_APMC_EN | ICH9_PMIO_SMI_EN_GLB_SMI_EN,
+    outl(हालागा | ICH9_PMIO_SMI_EN_APMC_EN | ICH9_PMIO_SMI_EN_GLB_SMI_EN,
          acpi_pm_base + ICH9_PMIO_SMI_EN);
 
     /* lock SMI generation */
-    value = pci_config_readw(isabdf, ICH9_LPC_GEN_PMCON_1);
+    हालागा = pci_config_readw(isabdf, ICH9_LPC_GEN_PMCON_1);
     pci_config_writel(isabdf, ICH9_LPC_GEN_PMCON_1,
-                      value | ICH9_LPC_GEN_PMCON_1_SMI_LOCK);
+                      हालागा | ICH9_LPC_GEN_PMCON_1_SMI_LOCK);
 
     smm_relocate_and_restore();
 

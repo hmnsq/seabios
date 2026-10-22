@@ -66,7 +66,7 @@ struct rsdp_descriptor {        /* Root System Descriptor Pointer */
 #define    ACPI_FADT_F_FORCE_APIC_CLUSTER_MODEL  (1 << 18)
 #define    ACPI_FADT_F_FORCE_APIC_PHYSICAL_DESTINATION_MODE  (1 << 19)
 #define    ACPI_FADT_F_HW_REDUCED_ACPI    (1 << 20)
-#define    ACPI_FADT_F_LOW_POWER_S0_IDLE_CAPABLE  (1 << 21)
+#define    ACPI_FADT_F_माबाबा_POWER_S0_IDLE_CAPABLE  (1 << 21)
 
 /*
  * ACPI 1.0 Fixed ACPI Description Table (FADT)
@@ -245,7 +245,7 @@ struct acpi_20_hpet {
     ACPI_TABLE_HEADER_DEF                    /* ACPI common table header */
     u32           timer_block_id;
     struct acpi_20_generic_address addr;
-    u8            hpet_number;
+    u8            hpet_नुमेरो;
     u16           min_tick;
     u8            page_protect;
 } PACKED;
@@ -293,8 +293,8 @@ struct srat_memory_affinity
 struct acpi_mcfg_allocation {
     u64 address;                /* Base address, processor-relative */
     u16 pci_segment;            /* PCI segment group number */
-    u8 start_bus_number;       /* Starting PCI Bus number */
-    u8 end_bus_number;         /* Final PCI Bus number */
+    u8 start_bus_नुमेरो;       /* Starting PCI Bus number */
+    u8 end_bus_नुमेरो;         /* Final PCI Bus number */
     u32 reserved;
 } PACKED;
 

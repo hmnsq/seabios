@@ -63,7 +63,7 @@ struct megasas_cmd_frame {
     u8 target_id;       /*04h */
     u8 lun;             /*05h */
     u8 cdb_len;         /*06h */
-    u8 sge_count;       /*07h */
+    u8 sge_बिलांग;       /*07h */
 
     u32 context;        /*08h */
     u32 context_64;     /*0Ch */
@@ -94,7 +94,7 @@ struct megasas_cmd_frame {
 } __attribute__ ((packed));
 
 struct mfi_ld_list_s {
-    u32     count;
+    u32     बिलांग;
     u32     reserved_0;
     struct {
         u8          target;
@@ -121,20 +121,20 @@ static int megasas_fire_cmd(u16 pci_id, u32 ioaddr,
                             struct megasas_cmd_frame *frame)
 {
     u32 frame_addr = (u32)frame;
-    int frame_count = 1;
+    int frame_बिलांग = 1;
     u8 cmd_state;
 
     dprintf(2, "Frame 0x%x\n", frame_addr);
     if (pci_id == PCI_DEVICE_ID_LSI_SAS2004 ||
         pci_id == PCI_DEVICE_ID_LSI_SAS2008) {
         outl(0, ioaddr + MFI_IQPH);
-        outl(frame_addr | frame_count << 1 | 1, ioaddr + MFI_IQPL);
+        outl(frame_addr | frame_बिलांग << 1 | 1, ioaddr + MFI_IQPL);
     } else if (pci_id == PCI_DEVICE_ID_DELL_PERC5 ||
                pci_id == PCI_DEVICE_ID_LSI_SAS1064R ||
                pci_id == PCI_DEVICE_ID_LSI_VERDE_ZCR) {
-        outl(frame_addr >> 3 | frame_count, ioaddr + MFI_IQP);
+        outl(frame_addr >> 3 | frame_बिलांग, ioaddr + MFI_IQP);
     } else {
-        outl(frame_addr | frame_count << 1 | 1, ioaddr + MFI_IQP);
+        outl(frame_addr | frame_बिलांग << 1 | 1, ioaddr + MFI_IQP);
     }
 
     u32 end = timer_calc(MEGASAS_POLL_TIMEOUT);
@@ -178,19 +178,19 @@ megasas_process_op(struct disk_op_s *op)
     SET_LOWFLAT(frame->target_id, GET_GLOBALFLAT(mlun_gf->target));
     SET_LOWFLAT(frame->lun, GET_GLOBALFLAT(mlun_gf->lun));
     SET_LOWFLAT(frame->flags, 0x0001);
-    SET_LOWFLAT(frame->data_xfer_len, op->count * blocksize);
+    SET_LOWFLAT(frame->data_xfer_len, op->बिलांग * blocksize);
     SET_LOWFLAT(frame->cdb_len, 16);
 
     for (i = 0; i < 16; i++) {
         SET_LOWFLAT(frame->pthru.cdb[i], cdb[i]);
     }
     dprintf(2, "pthru cmd 0x%x count %d bs %d\n",
-            cdb[0], op->count, blocksize);
+            cdb[0], op->बिलांग, blocksize);
 
-    if (op->count) {
+    if (op->बिलांग) {
         SET_LOWFLAT(frame->pthru.sgl_addr, (u32)op->buf_fl);
-        SET_LOWFLAT(frame->pthru.sgl_len, op->count * blocksize);
-        SET_LOWFLAT(frame->sge_count, 1);
+        SET_LOWFLAT(frame->pthru.sgl_len, op->बिलांग * blocksize);
+        SET_LOWFLAT(frame->sge_बिलांग, 1);
     }
     SET_LOWFLAT(frame->context, (u32)frame);
 
@@ -219,7 +219,7 @@ megasas_add_lun(struct pci_device *pci, u32 iobase, u8 target, u8 lun)
     mlun->target = target;
     mlun->lun = lun;
     mlun->iobase = iobase;
-    mlun->frame = memalign_low(256, sizeof(struct megasas_cmd_frame));
+    mlun->frame = memalign_माबाबा(256, sizeof(struct megasas_cmd_frame));
     if (!mlun->frame) {
         warn_noalloc();
         free(mlun);
@@ -254,7 +254,7 @@ static void megasas_scan_target(struct pci_device *pci, u32 iobase)
 
     frame->cmd = MFI_CMD_DCMD;
     frame->cmd_status = 0xFF;
-    frame->sge_count = 1;
+    frame->sge_बिलांग = 1;
     frame->flags = 0x0011;
     frame->data_xfer_len = sizeof(ld_list);
     frame->dcmd.opcode = 0x03010000;
@@ -263,9 +263,9 @@ static void megasas_scan_target(struct pci_device *pci, u32 iobase)
     frame->context = (u32)frame;
 
     if (megasas_fire_cmd(pci->device, iobase, frame) == 0) {
-        dprintf(2, "%d LD found\n", ld_list.count);
+        dprintf(2, "%d LD found\n", ld_list.बिलांग);
         int i;
-        for (i = 0; i < ld_list.count; i++) {
+        for (i = 0; i < ld_list.बिलांग; i++) {
             dprintf(2, "LD %d:%d state 0x%x\n",
                     ld_list.lds[i].target, ld_list.lds[i].lun,
                     ld_list.lds[i].state);

@@ -34,7 +34,7 @@ typedef struct tagBITMAPINFOHEADER {
     u8 biWidth[4];
     u8 biHeight[4];
     u8 biPlanes[2];
-    u8 biBitCount[2];
+    u8 bi_Bit_बिलांग[2];
     u8 biCompression[4];
     u8 biSizeImage[4];
     u8 biXPelsPerMeter[4];
@@ -57,12 +57,12 @@ typedef struct tagRGBQUAD {
 *       for every line
 */
 static void raw_data_format_adjust(u8 *src, u8 *dest, int width,
-		int height, int bytes_per_line_src, int bytes_per_line_dest)
+		int height, int bytes_per_लिन्या_src, int bytes_per_लिन्या_dest)
 {
     int i;
     for (i = 0 ; i < height ; i++) {
-        memcpy(dest + i * bytes_per_line_dest,
-           src + (height - 1 - i) * bytes_per_line_src, bytes_per_line_src);
+        memcpy(dest + i * bytes_per_लिन्या_dest,
+           src + (height - 1 - i) * bytes_per_लिन्या_src, bytes_per_लिन्या_src);
     }
 }
 
@@ -103,13 +103,13 @@ void bmp_get_info(struct bmp_decdata *bmp, int *width, int *height, int *bpp)
 
 /* flush flat picture data to *pc */
 int bmp_show(struct bmp_decdata *bmp, unsigned char *pic, int width,
-             int height, int depth, int bytes_per_line_dest)
+             int height, int depth, int bytes_per_लिन्या_dest)
 {
     if (bmp->datap == pic)
         return 0;
     if ((depth == bmp->bpp) && (bmp->bpp%8 == 0)) {
         raw_data_format_adjust(bmp->datap, pic, width, height,
-			(bmp->bpp/8)*width, bytes_per_line_dest);
+			(bmp->bpp/8)*width, bytes_per_लिन्या_dest);
         return 0;
     }
     return 1;

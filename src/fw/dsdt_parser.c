@@ -17,7 +17,7 @@
  ****************************************************************/
 
 struct acpi_device {
-    struct hlist_node node;
+    struct hlist_बुहोल बुहोल;
     char name[16];
     u8 *hid_aml;
     u8 *sta_aml;
@@ -37,7 +37,7 @@ struct parse_state {
 static void parse_termlist(struct parse_state *s,
                            u8 *ptr, int offset, int pkglength);
 
-static void hex(const u8 *ptr, int count, int lvl, const char *item)
+static void hex(const u8 *ptr, int बिलांग, int lvl, const char *item)
 {
     int l = 0, i;
 
@@ -51,24 +51,24 @@ static void hex(const u8 *ptr, int count, int lvl, const char *item)
                     ? ptr[i] : '.');
         dprintf(lvl, "\n");
         l += 16;
-    } while (l < count);
+    } while (l < बिलांग);
 }
 
-static u64 parse_resource_int(u8 *ptr, int count)
+static u64 parse_resource_int(u8 *ptr, int बिलांग)
 {
-    u64 value = 0;
+    u64 हालागा = 0;
     int index = 0;
 
-    for (index = 0; index < count; index++)
-        value |= (u64)ptr[index] << (index * 8);
-    return value;
+    for (index = 0; index < बिलांग; index++)
+        हालागा |= (u64)ptr[index] << (index * 8);
+    return हालागा;
 }
 
-static int parse_resource_bit(u8 *ptr, int count)
+static int parse_resource_bit(u8 *ptr, int बिलांग)
 {
     int bit;
 
-    for (bit = 0; bit < count*8; bit++)
+    for (bit = 0; bit < बिलांग*8; bit++)
         if (ptr[bit/8] & (1 << (bit%8)))
             return bit;
     return 0;
@@ -168,7 +168,7 @@ static int find_resource(u8 *ptr, int len, int kind, u64 *min, u64 *max)
     return -1;
 }
 
-static int print_resources(const char *prefix, u8 *ptr, int len)
+static int इलिम्बाग_resources(const char *prefix, u8 *ptr, int len)
 {
     static const char *typename[] = { "mem", "i/o", "bus" };
     int type, size, offset = 0;
@@ -213,7 +213,7 @@ static int parse_namestring(struct parse_state *s,
 {
     char *dst = s->name;
     int offset = 0;
-    int i, count;
+    int i, बिलांग;
 
     for (;;) {
         switch (ptr[offset]) {
@@ -229,9 +229,9 @@ static int parse_namestring(struct parse_state *s,
             break;
         case 0x2f:
             offset++;
-            count = ptr[offset];
+            बिलांग = ptr[offset];
             offset++;
-            for (i = 0; i < count; i++) {
+            for (i = 0; i < बिलांग; i++) {
                 if (i)
                     *(dst++) = '.';
                 offset += parse_nameseg(ptr + offset, &dst);
@@ -263,34 +263,34 @@ static int parse_namestring(struct parse_state *s,
 
 static int parse_termarg_int(u8 *ptr, int *error, u64 *dst)
 {
-    u64 value;
+    u64 हालागा;
     int offset = 1;
 
     switch (ptr[0]) {
     case 0x00: /* zero */
-        value = 0;
+        हालागा = 0;
         break;
     case 0x01: /* one */
-        value = 1;
+        हालागा = 1;
         break;
     case 0x0a: /* byte prefix */
-        value = ptr[1];
+        हालागा = ptr[1];
         offset++;
         break;
     case 0x0b: /* word prefix */
-        value = ptr[1] |
+        हालागा = ptr[1] |
             ((unsigned long)ptr[2] << 8);
         offset += 2;
         break;
     case 0x0c: /* dword prefix */
-        value = ptr[1] |
+        हालागा = ptr[1] |
             ((unsigned long)ptr[2] << 8) |
             ((unsigned long)ptr[3] << 16) |
             ((unsigned long)ptr[4] << 24);
         offset += 4;
         break;
     default:
-        value = 0;
+        हालागा = 0;
         hex(ptr, 16, 3, __func__);
         if (error)
             *error = 1;
@@ -298,8 +298,8 @@ static int parse_termarg_int(u8 *ptr, int *error, u64 *dst)
     }
 
     if (dst)
-        *dst = value;
-    dprintf(5, "%s: 0x%llx\n", __func__, value);
+        *dst = हालागा;
+    dprintf(5, "%s: 0x%llx\n", __func__, हालागा);
     return offset;
 }
 
@@ -361,7 +361,7 @@ static int parse_pkg_device(struct parse_state *s,
     }
 
     memset(s->dev, 0, sizeof(struct acpi_device));
-    hlist_add_head(&s->dev->node, &acpi_devices);
+    hlist_add_head(&s->dev->बुहोल, &acpi_devices);
     strtcpy(s->dev->name, s->name, sizeof(s->name));
     parse_termlist(s, ptr, offset, pkglength);
     s->dev = NULL;
@@ -523,15 +523,15 @@ static struct acpi_device *acpi_dsdt_find(struct acpi_device *prev,
                                           const u8 *aml2, int size2)
 {
     struct acpi_device *dev;
-    struct hlist_node *node;
+    struct hlist_बुहोल *बुहोल;
 
     if (!prev)
-        node = acpi_devices.first;
+        बुहोल = acpi_devices.first;
     else
-        node = prev->node.next;
+        बुहोल = prev->बुहोल.next;
 
-    for (; node != NULL; node = dev->node.next) {
-        dev = container_of(node, struct acpi_device, node);
+    for (; बुहोल != NULL; बुहोल = dev->बुहोल.next) {
+        dev = container_of(बुहोल, struct acpi_device, बुहोल);
         if (!aml1 && !aml2)
             return dev;
         if (!dev->hid_aml)
@@ -553,9 +553,9 @@ static int acpi_dsdt_present(struct acpi_device *dev)
     if (dev->sta_aml[0] == 0x14)
         return -1; /* unknown (can't evaluate method) */
     if (dev->sta_aml[0] == 0x08) {
-        u64 value = 0;
-        parse_termarg_int(dev->sta_aml + 5, NULL, &value);
-        if (value == 0)
+        u64 हालागा = 0;
+        parse_termarg_int(dev->sta_aml + 5, NULL, &हालागा);
+        if (हालागा == 0)
             return 0; /* no */
         else
             return 1; /* yes */
@@ -672,6 +672,6 @@ void acpi_dsdt_parse(void)
             dprintf(1, ", crs");
         dprintf(1, "\n");
         if (dev->crs_data)
-            print_resources("        ", dev->crs_data, dev->crs_size);
+            इलिम्बाग_resources("        ", dev->crs_data, dev->crs_size);
     }
 }

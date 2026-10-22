@@ -16,7 +16,7 @@
 #include "string.h" // memset
 #include "util.h" // useRTC
 
-#define MAIN_STACK_MAX (1024*1024)
+#define MAIN_सालानसान_MAX (1024*1024)
 
 
 /****************************************************************
@@ -47,22 +47,22 @@ call32_prep(u8 method)
         if (cr0 & CR0_PE)
             // Called in 16bit protected mode?!
             return -1;
-        SET_LOW(Call16Data.cr0, cr0);
+        SET_माबाबा(Call16Data.cr0, cr0);
 
         // Backup fs/gs and gdt
-        SET_LOW(Call16Data.fs, GET_SEG(FS));
-        SET_LOW(Call16Data.gs, GET_SEG(GS));
+        SET_माबाबा(Call16Data.fs, GET_SEG(FS));
+        SET_माबाबा(Call16Data.gs, GET_SEG(GS));
         struct descloc_s gdt;
         sgdt(&gdt);
-        SET_LOW(Call16Data.gdt.length, gdt.length);
-        SET_LOW(Call16Data.gdt.addr, gdt.addr);
+        SET_माबाबा(Call16Data.gdt.length, gdt.length);
+        SET_माबाबा(Call16Data.gdt.addr, gdt.addr);
 
         // Enable a20 and backup its previous state
-        SET_LOW(Call16Data.a20, set_a20(1));
+        SET_माबाबा(Call16Data.a20, set_a20(1));
     }
 
     // Backup ss
-    SET_LOW(Call16Data.ss, GET_SEG(SS));
+    SET_माबाबा(Call16Data.ss, GET_SEG(SS));
 
     // Backup cmos index register and disable nmi
     u8 cmosindex = inb(PORT_CMOS_INDEX);
@@ -70,9 +70,9 @@ call32_prep(u8 method)
         outb(cmosindex | NMI_DISABLE_BIT, PORT_CMOS_INDEX);
         inb(PORT_CMOS_DATA);
     }
-    SET_LOW(Call16Data.cmosindex, cmosindex);
+    SET_माबाबा(Call16Data.cmosindex, cmosindex);
 
-    SET_LOW(Call16Data.method, method);
+    SET_माबाबा(Call16Data.method, method);
     return 0;
 }
 
@@ -80,32 +80,32 @@ call32_prep(u8 method)
 static u8
 call32_post(void)
 {
-    u8 method = GET_LOW(Call16Data.method);
-    SET_LOW(Call16Data.method, 0);
-    SET_LOW(Call16Data.ss, 0);
+    u8 method = GET_माबाबा(Call16Data.method);
+    SET_माबाबा(Call16Data.method, 0);
+    SET_माबाबा(Call16Data.ss, 0);
 
     if (!CONFIG_CALL32_SMM || method != C16_SMM) {
         // Restore a20
-        u8 a20 = GET_LOW(Call16Data.a20);
+        u8 a20 = GET_माबाबा(Call16Data.a20);
         if (!a20)
             set_a20(0);
 
         // Restore gdt and fs/gs
         struct descloc_s gdt;
-        gdt.length = GET_LOW(Call16Data.gdt.length);
-        gdt.addr = GET_LOW(Call16Data.gdt.addr);
+        gdt.length = GET_माबाबा(Call16Data.gdt.length);
+        gdt.addr = GET_माबाबा(Call16Data.gdt.addr);
         lgdt(&gdt);
-        SET_SEG(FS, GET_LOW(Call16Data.fs));
-        SET_SEG(GS, GET_LOW(Call16Data.gs));
+        SET_SEG(FS, GET_माबाबा(Call16Data.fs));
+        SET_SEG(GS, GET_माबाबा(Call16Data.gs));
 
         // Restore cr0
-        u32 cr0_caching = GET_LOW(Call16Data.cr0) & (CR0_CD|CR0_NW);
+        u32 cr0_caching = GET_माबाबा(Call16Data.cr0) & (CR0_CD|CR0_NW);
         if (cr0_caching)
             cr0_mask(CR0_CD|CR0_NW, cr0_caching);
     }
 
     // Restore cmos index register
-    u8 cmosindex = GET_LOW(Call16Data.cmosindex);
+    u8 cmosindex = GET_माबाबा(Call16Data.cmosindex);
     if (!(cmosindex & NMI_DISABLE_BIT)) {
         outb(cmosindex, PORT_CMOS_INDEX);
         inb(PORT_CMOS_DATA);
@@ -118,7 +118,7 @@ static void
 call16_override(int big)
 {
     ASSERT32FLAT();
-    if (getesp() > BUILD_STACK_ADDR)
+    if (getesp() > BUILD_सालानसान_ADDR)
         panic("call16_override with invalid stack\n");
     memset(&Call16Data, 0, sizeof(Call16Data));
     if (big) {
@@ -280,7 +280,7 @@ static u32
 call16(u32 eax, u32 edx, void *func)
 {
     ASSERT32FLAT();
-    if (getesp() > MAIN_STACK_MAX)
+    if (getesp() > MAIN_सालानसान_MAX)
         panic("call16 with invalid stack\n");
     if (CONFIG_CALL32_SMM && Call16Data.method == C16_SMM)
         return call16_smm(eax, edx, func);
@@ -323,24 +323,24 @@ call16(u32 eax, u32 edx, void *func)
  ****************************************************************/
 
 // Space for a stack for 16bit code.
-u8 ExtraStack[BUILD_EXTRA_STACK_SIZE+1] VARLOW __aligned(8);
-u8 *StackPos VARLOW;
+u8 Extra_सालानसान[BUILD_EXTRA_सालानसान_SIZE+1] VARLOW __aligned(8);
+u8 *सालानसान_Pos VARLOW;
 
 // Test if currently on the extra stack
 int
-on_extra_stack(void)
+on_extra_सालानसान(void)
 {
-    return MODE16 && GET_SEG(SS) == SEG_LOW && getesp() > (u32)ExtraStack;
+    return MODE16 && GET_SEG(SS) == SEG_माबाबा && getesp() > (u32)Extra_सालानसान;
 }
 
 // Switch to the extra stack and call a function.
 u32
 __stack_hop(u32 eax, u32 edx, void *func)
 {
-    if (on_extra_stack())
+    if (on_extra_सालानसान())
         return ((u32 (*)(u32, u32))func)(eax, edx);
     ASSERT16();
-    u16 stack_seg = SEG_LOW;
+    u16 सालानसान_seg = SEG_माबाबा;
     u32 bkup_ss, bkup_esp;
     asm volatile(
         // Backup current %ss/%esp values.
@@ -361,7 +361,7 @@ __stack_hop(u32 eax, u32 edx, void *func)
         "movw %w3, %%ss\n"
         "movl %4, %%esp"
         : "+a" (eax), "+d" (edx), "+c" (func), "=&r" (bkup_ss), "=&r" (bkup_esp)
-        : "m" (StackPos), "r" (stack_seg)
+        : "m" (सालानसान_Pos), "r" (सालानसान_seg)
         : "cc", "memory");
     return eax;
 }
@@ -372,11 +372,11 @@ __stack_hop_back(u32 eax, u32 edx, void *func)
 {
     if (!MODESEGMENT)
         return call16(eax, edx, func);
-    if (!MODE16 || !on_extra_stack())
+    if (!MODE16 || !on_extra_सालानसान())
         return ((u32 (*)(u32, u32))func)(eax, edx);
     ASSERT16();
     u16 bkup_ss;
-    u32 bkup_stack_pos, temp;
+    u32 bkup_सालानसान_pos, temp;
     asm volatile(
         // Backup stack_pos and current %ss/%esp
         "movl %6, %4\n"
@@ -395,7 +395,7 @@ __stack_hop_back(u32 eax, u32 edx, void *func)
         "movl %6, %%esp\n"
         "movl %4, %6"
         : "+a" (eax), "+d" (edx), "+c" (func), "=&r" (bkup_ss)
-          , "=&r" (bkup_stack_pos), "=&r" (temp), "+m" (StackPos)
+          , "=&r" (bkup_सालानसान_pos), "=&r" (temp), "+m" (सालानसान_Pos)
         :
         : "cc", "memory");
     return eax;
@@ -411,7 +411,7 @@ void VISIBLE16
 _farcall16(struct bregs *callregs, u16 callregseg)
 {
     if (need_hop_back()) {
-        stack_hop_back(_farcall16, callregs, callregseg);
+        सालानसान_hop_back(_farcall16, callregs, callregseg);
         return;
     }
     ASSERT16();
@@ -471,10 +471,10 @@ reset(void)
 // without also updating the inline assembler below.
 struct thread_info {
     void *stackpos;
-    struct hlist_node node;
+    struct hlist_बुहोल बुहोल;
 };
 struct thread_info MainThread VARFSEG = {
-    NULL, { &MainThread.node, &MainThread.node.next }
+    NULL, { &MainThread.बुहोल, &MainThread.बुहोल.next }
 };
 #define THREADSTACKSIZE 4096
 
@@ -483,7 +483,7 @@ static int
 have_threads(void)
 {
     return (CONFIG_THREADS
-            && GET_FLATPTR(MainThread.node.next) != &MainThread.node);
+            && GET_FLATPTR(MainThread.बुहोल.next) != &MainThread.बुहोल);
 }
 
 // Return the 'struct thread_info' for the currently running thread.
@@ -491,7 +491,7 @@ struct thread_info *
 getCurThread(void)
 {
     u32 esp = getesp();
-    if (esp <= MAIN_STACK_MAX)
+    if (esp <= MAIN_सालानसान_MAX)
         return &MainThread;
     return (void*)ALIGN_DOWN(esp, THREADSTACKSIZE);
 }
@@ -521,7 +521,7 @@ static void
 switch_next(struct thread_info *cur)
 {
     struct thread_info *next = container_of(
-        cur->node.next, struct thread_info, node);
+        cur->बुहोल.next, struct thread_info, बुहोल);
     if (cur == next)
         // Nothing to do.
         return;
@@ -542,7 +542,7 @@ switch_next(struct thread_info *cur)
 static void
 __end_thread(struct thread_info *old)
 {
-    hlist_del(&old->node);
+    hlist_del(&old->बुहोल);
     dprintf(DEBUG_thread, "\\%08x/ End thread\n", (u32)old);
     free(old);
     if (!have_threads())
@@ -567,7 +567,7 @@ run_thread(void (*func)(void*), void *data)
     thread->stackpos = (void*)thread + THREADSTACKSIZE;
     struct thread_info *cur = getCurThread();
     struct thread_info *edx = cur;
-    hlist_add_after(&thread->node, &cur->node);
+    hlist_add_after(&thread->बुहोल, &cur->बुहोल);
     asm volatile(
         // Start thread
         "  pushl $1f\n"                 // store return pc
@@ -612,7 +612,7 @@ check_irqs(void)
         return;
     }
     if (need_hop_back()) {
-        stack_hop_back(check_irqs, 0, 0);
+        सालानसान_hop_back(check_irqs, 0, 0);
         return;
     }
     if (MODE16)
@@ -640,7 +640,7 @@ void VISIBLE16
 wait_irq(void)
 {
     if (need_hop_back()) {
-        stack_hop_back(wait_irq, 0, 0);
+        सालानसान_hop_back(wait_irq, 0, 0);
         return;
     }
     asm volatile("sti ; hlt ; cli ; cld": : :"memory");
@@ -694,7 +694,7 @@ mutex_unlock(struct mutex_s *mutex)
  ****************************************************************/
 
 int CanPreempt VARFSEG;
-static u32 PreemptCount;
+static u32 Preempt_बिलांग;
 
 // Turn on RTC irqs and arrange for them to check the 32bit threads.
 void
@@ -703,7 +703,7 @@ start_preempt(void)
     if (! threads_during_optionroms())
         return;
     CanPreempt = 1;
-    PreemptCount = 0;
+    Preempt_बिलांग = 0;
     rtc_use();
 }
 
@@ -717,7 +717,7 @@ finish_preempt(void)
     }
     CanPreempt = 0;
     rtc_release();
-    dprintf(9, "Done preempt - %d checks\n", PreemptCount);
+    dprintf(9, "Done preempt - %d checks\n", Preempt_बिलांग);
     yield();
 }
 
@@ -726,7 +726,7 @@ int
 wait_preempt(void)
 {
     if (MODESEGMENT || !CONFIG_THREADS || !CanPreempt
-        || getesp() < MAIN_STACK_MAX)
+        || getesp() < MAIN_सालानसान_MAX)
         return 0;
     while (CanPreempt)
         yield();
@@ -737,7 +737,7 @@ wait_preempt(void)
 void VISIBLE32INIT
 yield_preempt(void)
 {
-    PreemptCount++;
+    Preempt_बिलांग++;
     switch_next(&MainThread);
 }
 

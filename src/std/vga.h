@@ -48,7 +48,7 @@ struct video_func_info {
     u8 dcc_alt;
     u16 colors;
     u8 pages;
-    u8 scan_lines;
+    u8 scan_मगा_लिन्या;
     u8 primary_char;
     u8 secondar_char;
     u8 misc;

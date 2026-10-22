@@ -21,9 +21,9 @@ struct romfile_loader_files {
 struct romfile_wr_pointer_entry {
     u64 pointer;
     u32 offset;
-    u16 key;
+    u16 सुसि;
     u8 ptr_size;
-    struct hlist_node node;
+    struct hlist_बुहोल बुहोल;
 };
 static struct hlist_head romfile_pointer_list;
 
@@ -47,8 +47,8 @@ void romfile_fw_cfg_resume(void)
         return;
 
     struct romfile_wr_pointer_entry *entry;
-    hlist_for_each_entry(entry, &romfile_pointer_list, node) {
-        qemu_cfg_write_file_simple(&entry->pointer, entry->key,
+    hlist_for_each_entry(entry, &romfile_pointer_list, बुहोल) {
+        qemu_cfg_write_file_simple(&entry->pointer, entry->सुसि,
                                    entry->offset, entry->ptr_size);
     }
 }
@@ -66,8 +66,8 @@ static void romfile_loader_allocate(struct romfile_loader_entry_s *entry,
         goto err;
 
     switch (entry->alloc.zone) {
-        case ROMFILE_LOADER_ALLOC_ZONE_HIGH:
-            zone = &ZoneHigh;
+        case ROMFILE_LOADER_ALLOC_ZONE_माताअस:
+            zone = &Zone_माताअस;
             break;
         case ROMFILE_LOADER_ALLOC_ZONE_FSEG:
             zone = &ZoneFSeg;
@@ -189,16 +189,16 @@ static void romfile_loader_write_pointer(struct romfile_loader_entry_s *entry,
     }
 
     /* Store the info so it can replayed later if necessary */
-    struct romfile_wr_pointer_entry *store = malloc_high(sizeof(*store));
+    struct romfile_wr_pointer_entry *store = malloc_माताअस(sizeof(*store));
     if (!store) {
         warn_noalloc();
         return;
     }
     store->pointer = pointer;
-    store->key = qemu_get_romfile_key(dest_file);
+    store->सुसि = qemu_get_romfile_सुसि(dest_file);
     store->offset = dst_offset;
     store->ptr_size = entry->wr_pointer.size;
-    hlist_add_head(&store->node, &romfile_pointer_list);
+    hlist_add_head(&store->बुहोल, &romfile_pointer_list);
 
     return;
  err:

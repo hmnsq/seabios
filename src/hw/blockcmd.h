@@ -13,7 +13,7 @@ struct cdb_rwdata_10 {
     u8 flags;
     u32 lba;
     u8 resreved_06;
-    u16 count;
+    u16 बिलांग;
     u8 reserved_09;
     u8 pad[6];
 } PACKED;
@@ -24,7 +24,7 @@ struct cdb_rwdata_16 {
     u8 command;
     u8 flags;
     u64 lba;
-    u32 count;
+    u32 बिलांग;
     u16 reserved_14;
 } PACKED;
 
@@ -106,7 +106,7 @@ struct cdb_mode_sense {
     u8 flags;
     u8 page;
     u32 reserved_03;
-    u16 count;
+    u16 बिलांग;
     u8 reserved_09;
     u8 pad[6];
 } PACKED;

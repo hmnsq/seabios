@@ -108,7 +108,7 @@ typedef struct BootDeviceLCHS {
 } BootDeviceLCHS;
 
 static BootDeviceLCHS *BiosGeometry VARVERIFY32INIT;
-static int BiosGeometryCount;
+static int Bios_Geometry_बिलांग;
 
 static char *
 parse_u32(char *cur, u32 *n)
@@ -136,17 +136,17 @@ loadBiosGeometry(void)
         return;
 
     int i = 0;
-    BiosGeometryCount = 1;
+    Bios_Geometry_बिलांग = 1;
     while (f[i]) {
         if (f[i] == '\n')
-            BiosGeometryCount++;
+            Bios_Geometry_बिलांग++;
         i++;
     }
-    BiosGeometry = malloc_tmphigh(BiosGeometryCount * sizeof(BootDeviceLCHS));
+    BiosGeometry = malloc_tmphigh(Bios_Geometry_बिलांग * sizeof(BootDeviceLCHS));
     if (!BiosGeometry) {
         warn_noalloc();
         free(f);
-        BiosGeometryCount = 0;
+        Bios_Geometry_बिलांग = 0;
         return;
     }
 
@@ -158,12 +158,12 @@ loadBiosGeometry(void)
         f = strchr(f, '\n');
         if (f)
             *(f++) = '\0';
-        char *chs_values = strchr(d->name, ' ');
-        if (chs_values)
-            *(chs_values++) = '\0';
-        chs_values = parse_u32(chs_values, &d->lcyls);
-        chs_values = parse_u32(chs_values, &d->lheads);
-        chs_values = parse_u32(chs_values, &d->lsecs);
+        char *chs_मगा_हालागा = strchr(d->name, ' ');
+        if (chs_मगा_हालागा)
+            *(chs_मगा_हालागा++) = '\0';
+        chs_मगा_हालागा = parse_u32(chs_मगा_हालागा, &d->lcyls);
+        chs_मगा_हालागा = parse_u32(chs_मगा_हालागा, &d->lheads);
+        chs_मगा_हालागा = parse_u32(chs_मगा_हालागा, &d->lsecs);
         dprintf(1, "%s: (%u, %u, %u)\n",
                 d->name, d->lcyls, d->lheads, d->lsecs);
         i++;
@@ -176,7 +176,7 @@ boot_lchs_find(const char *glob)
 {
     dprintf(1, "Searching bios-geometry for: %s\n", glob);
     int i;
-    for (i = 0; i < BiosGeometryCount; i++)
+    for (i = 0; i < Bios_Geometry_बिलांग; i++)
         if (glob_prefix(glob, BiosGeometry[i].name))
             return &BiosGeometry[i];
     return NULL;
@@ -243,7 +243,7 @@ int boot_lchs_find_ata_device(struct pci_device *pci, int chanid, int slave,
  ****************************************************************/
 
 static char **Bootorder VARVERIFY32INIT;
-static int BootorderCount;
+static int Bootorder_बिलांग;
 
 static void
 loadBootOrder(void)
@@ -256,17 +256,17 @@ loadBootOrder(void)
         return;
 
     int i = 0;
-    BootorderCount = 1;
+    Bootorder_बिलांग = 1;
     while (f[i]) {
         if (f[i] == '\n')
-            BootorderCount++;
+            Bootorder_बिलांग++;
         i++;
     }
-    Bootorder = malloc_tmphigh(BootorderCount*sizeof(char*));
+    Bootorder = malloc_tmphigh(Bootorder_बिलांग*sizeof(char*));
     if (!Bootorder) {
         warn_noalloc();
         free(f);
-        BootorderCount = 0;
+        Bootorder_बिलांग = 0;
         return;
     }
 
@@ -289,7 +289,7 @@ find_prio(const char *glob)
 {
     dprintf(1, "Searching bootorder for: %s\n", glob);
     int i;
-    for (i = 0; i < BootorderCount; i++)
+    for (i = 0; i < Bootorder_बिलांग; i++)
         if (glob_prefix(glob, Bootorder[i]))
             return i+1;
     return -1;
@@ -509,7 +509,7 @@ struct bootentry_s {
     };
     int priority;
     const char *description;
-    struct hlist_node node;
+    struct hlist_बुहोल बुहोल;
 };
 static struct hlist_head BootList VARVERIFY32INIT;
 
@@ -539,9 +539,9 @@ bootentry_add(int type, int prio, u32 data, const char *desc)
             , be->description, type, prio, data);
 
     // Add entry in sorted order.
-    struct hlist_node **pprev;
+    struct hlist_बुहोल **pprev;
     struct bootentry_s *pos;
-    hlist_for_each_entry_pprev(pos, pprev, &BootList, node) {
+    hlist_for_each_entry_pprev(pos, pprev, &BootList, बुहोल) {
         if (be->priority < pos->priority)
             break;
         if (be->priority > pos->priority)
@@ -556,7 +556,7 @@ bootentry_add(int type, int prio, u32 data, const char *desc)
                     && be->drive->cntl_id < pos->drive->cntl_id)))
             break;
     }
-    hlist_add(&be->node, pprev);
+    hlist_add(&be->बुहोल, pprev);
 }
 
 // Return the given priority if it's set - defaultprio otherwise.
@@ -735,7 +735,7 @@ interactive_bootmenu(void)
     // Show menu items
     int maxmenu = 0;
     struct bootentry_s *pos, *boot = NULL;
-    hlist_for_each_entry(pos, &BootList, node) {
+    hlist_for_each_entry(pos, &BootList, बुहोल) {
         char desc[77];
         if (maxmenu >= ARRAY_SIZE(menuchars)) {
             break;
@@ -761,8 +761,8 @@ interactive_bootmenu(void)
             continue;
 
         scan_code = keystroke >> 8;
-        int key_ascii = keystroke & 0xff;
-        if (tpm_can_show_menu() && key_ascii == 't') {
+        int सुसि_ascii = keystroke & 0xff;
+        if (tpm_can_show_menu() && सुसि_ascii == 't') {
             printf("\n");
             tpm_menu();
         }
@@ -773,10 +773,10 @@ interactive_bootmenu(void)
         }
 
         maxmenu = 0;
-        hlist_for_each_entry(pos, &BootList, node) {
+        hlist_for_each_entry(pos, &BootList, बुहोल) {
             if (maxmenu >= ARRAY_SIZE(menuchars))
                 break;
-            if (key_ascii == menuchars[maxmenu]) {
+            if (सुसि_ascii == menuchars[maxmenu]) {
                 boot = pos;
                 break;
             }
@@ -788,9 +788,9 @@ interactive_bootmenu(void)
     printf("\n");
 
     // Find entry and make top priority.
-    hlist_del(&boot->node);
+    hlist_del(&boot->बुहोल);
     boot->priority = 0;
-    hlist_add_head(&boot->node, &BootList);
+    hlist_add_head(&boot->बुहोल, &BootList);
 }
 
 // BEV (Boot Execution Vector) list
@@ -829,7 +829,7 @@ bcv_prepboot(void)
 
     // Map drives and populate BEV list
     struct bootentry_s *pos;
-    hlist_for_each_entry(pos, &BootList, node) {
+    hlist_for_each_entry(pos, &BootList, बुहोल) {
         switch (pos->type) {
         case IPL_TYPE_BCV:
             call_bcv(pos->vector.seg, pos->vector.offset);

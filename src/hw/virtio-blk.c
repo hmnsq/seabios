@@ -80,7 +80,7 @@ virtio_blk_op(struct disk_op_s *op, int write)
         },
         {
             .addr       = op->buf_fl,
-            .length     = vdrive->drive.blksize * op->count,
+            .length     = vdrive->drive.blksize * op->बिलांग,
         },
         {
             .addr       = (void*)(&status),
@@ -89,29 +89,29 @@ virtio_blk_op(struct disk_op_s *op, int write)
     };
     u32 max_io_size =
         vdrive->drive.max_segment_size * vdrive->drive.max_segments;
-    u16 blk_num_max;
+    u16 blk_नुमेरो_max;
 
     if (vdrive->drive.blksize != 0 && max_io_size != 0)
-        blk_num_max = (u16) min(max_io_size / vdrive->drive.blksize, 0xffff);
+        blk_नुमेरो_max = (u16) min(max_io_size / vdrive->drive.blksize, 0xffff);
     else
         /* default blk_num_max if hardware doesnot advise a proper value */
-        blk_num_max = 64;
+        blk_नुमेरो_max = 64;
 
-    if (op->count <= blk_num_max) {
+    if (op->बिलांग <= blk_नुमेरो_max) {
         virtio_blk_op_one_segment(vdrive, write, sg);
     } else {
         void *p  = op->buf_fl;
-        u16 count = op->count;
+        u16 बिलांग = op->बिलांग;
 
-        while (count > 0) {
-            u16 blk_num = min(count, blk_num_max);
-            sg[1].length = vdrive->drive.blksize * blk_num;
+        while (बिलांग > 0) {
+            u16 blk_नुमेरो = min(बिलांग, blk_नुमेरो_max);
+            sg[1].length = vdrive->drive.blksize * blk_नुमेरो;
             sg[1].addr = p;
             virtio_blk_op_one_segment(vdrive, write, sg);
             if (status == VIRTIO_BLK_S_OK) {
-                hdr.sector += blk_num;
+                hdr.sector += blk_नुमेरो;
                 p += sg[1].length;
-                count -= blk_num;
+                बिलांग -= blk_नुमेरो;
             } else {
                 break;
             }
@@ -141,7 +141,7 @@ init_virtio_blk(void *data)
     struct pci_device *pci = data;
     u8 status = VIRTIO_CONFIG_S_ACKNOWLEDGE | VIRTIO_CONFIG_S_DRIVER;
     dprintf(1, "found virtio-blk at %pP\n", pci);
-    struct virtiodrive_s *vdrive = malloc_low(sizeof(*vdrive));
+    struct virtiodrive_s *vdrive = malloc_माबाबा(sizeof(*vdrive));
     if (!vdrive) {
         warn_noalloc();
         return;
@@ -265,7 +265,7 @@ init_virtio_blk_mmio(void *mmio)
 {
     u8 status = VIRTIO_CONFIG_S_ACKNOWLEDGE | VIRTIO_CONFIG_S_DRIVER;
     dprintf(1, "found virtio-blk-mmio at %p\n", mmio);
-    struct virtiodrive_s *vdrive = malloc_low(sizeof(*vdrive));
+    struct virtiodrive_s *vdrive = malloc_माबाबा(sizeof(*vdrive));
     if (!vdrive) {
         warn_noalloc();
         return;

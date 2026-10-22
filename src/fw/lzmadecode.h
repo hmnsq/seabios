@@ -47,7 +47,7 @@ typedef struct _CLzmaProperties
 
 int LzmaDecodeProperties(CLzmaProperties *propsRes, const unsigned char *propsData, int size);
 
-#define LzmaGetNumProbs(Properties) (LZMA_BASE_SIZE + (LZMA_LIT_SIZE << ((Properties)->lc + (Properties)->lp)))
+#define Lzma_Get_नुमेरो_Probs(Properties) (LZMA_BASE_SIZE + (LZMA_LIT_SIZE << ((Properties)->lc + (Properties)->lp)))
 
 #define kLzmaNeedInitId (-2)
 

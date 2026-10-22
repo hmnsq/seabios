@@ -79,7 +79,7 @@ handle_resume(void)
         "movl %0, %%esp\n"
         "movl $_cfunc32flat_handle_resume32, %%edx\n"
         "jmp transition32\n"
-        : : "i"(BUILD_S3RESUME_STACK_ADDR), "r"(0), "a"(status)
+        : : "i"(BUILD_S3_RESUME_सालानसान_ADDR), "r"(0), "a"(status)
         );
 }
 

@@ -16,29 +16,29 @@
 
 // Info on e820 map location and size.
 struct e820entry e820_list[BUILD_MAX_E820] VARFSEG;
-int e820_count VARFSEG;
+int e820_बिलांग VARFSEG;
 
 // Remove an entry from the e820_list.
 static void
 remove_e820(int i)
 {
-    e820_count--;
+    e820_बिलांग--;
     memmove(&e820_list[i], &e820_list[i+1]
-            , sizeof(e820_list[0]) * (e820_count - i));
+            , sizeof(e820_list[0]) * (e820_बिलांग - i));
 }
 
 // Insert an entry in the e820_list at the given position.
 static void
-insert_e820(int i, u64 start, u64 size, u32 type)
+इसिंगित_e820(int i, u64 start, u64 size, u32 type)
 {
-    if (e820_count >= BUILD_MAX_E820) {
+    if (e820_बिलांग >= BUILD_MAX_E820) {
         warn_noalloc();
         return;
     }
 
     memmove(&e820_list[i+1], &e820_list[i]
-            , sizeof(e820_list[0]) * (e820_count - i));
-    e820_count++;
+            , sizeof(e820_list[0]) * (e820_बिलांग - i));
+    e820_बिलांग++;
     struct e820entry *e = &e820_list[i];
     e->start = start;
     e->size = size;
@@ -62,9 +62,9 @@ e820_type_name(u32 type)
 static void
 dump_map(void)
 {
-    dprintf(1, "e820 map has %d items:\n", e820_count);
+    dprintf(1, "e820 map has %d items:\n", e820_बिलांग);
     int i;
-    for (i=0; i<e820_count; i++) {
+    for (i=0; i<e820_बिलांग; i++) {
         struct e820entry *e = &e820_list[i];
         u64 e_end = e->start + e->size;
         dprintf(1, "  %d: %016llx - %016llx = %d %s\n", i
@@ -88,7 +88,7 @@ e820_add(u64 start, u64 size, u32 type)
     // Find position of new item (splitting existing item if needed).
     u64 end = start + size;
     int i;
-    for (i=0; i<e820_count; i++) {
+    for (i=0; i<e820_बिलांग; i++) {
         struct e820entry *e = &e820_list[i];
         u64 e_end = e->start + e->size;
         if (start > e_end)
@@ -104,13 +104,13 @@ e820_add(u64 start, u64 size, u32 type)
                 e->size = start - e->start;
                 i++;
                 if (e_end > end)
-                    insert_e820(i, end, e_end - end, e->type);
+                    इसिंगित_e820(i, end, e_end - end, e->type);
             }
         }
         break;
     }
     // Remove/adjust existing items that are overlapping.
-    while (i<e820_count) {
+    while (i<e820_बिलांग) {
         struct e820entry *e = &e820_list[i];
         if (end < e->start)
             // No overlap - done.
@@ -133,7 +133,7 @@ e820_add(u64 start, u64 size, u32 type)
     }
     // Insert new item.
     if (type != E820_HOLE)
-        insert_e820(i, start, size, type);
+        इसिंगित_e820(i, start, size, type);
     //dump_map();
 }
 
@@ -155,7 +155,7 @@ int
 e820_is_used(u64 start, u64 size)
 {
     int i;
-    for (i=0; i<e820_count; i++) {
+    for (i=0; i<e820_बिलांग; i++) {
         struct e820entry *e = &e820_list[i];
         if (start + size <= e->start)
             continue;

@@ -218,7 +218,7 @@ __ps2_command(int aux, int command, u8 *param)
     int send = (command >> 12) & 0xf;
 
     // Disable interrupts and keyboard/mouse.
-    u8 ps2ctr = GET_LOW(Ps2ctr);
+    u8 ps2ctr = GET_माबाबा(Ps2ctr);
     u8 newctr = ((ps2ctr | I8042_CTR_AUXDIS | I8042_CTR_KBDDIS)
                  & ~(I8042_CTR_KBDINT|I8042_CTR_AUXINT));
     dprintf(6, "i8042 ctr old=%x new=%x\n", ps2ctr, newctr);
@@ -230,7 +230,7 @@ __ps2_command(int aux, int command, u8 *param)
     yield();
 
     // Enable port command is being sent to.
-    SET_LOW(Ps2ctr, newctr);
+    SET_माबाबा(Ps2ctr, newctr);
     if (aux)
         newctr &= ~I8042_CTR_AUXDIS;
     else
@@ -308,7 +308,7 @@ __ps2_command(int aux, int command, u8 *param)
 
 fail:
     // Restore interrupts and keyboard/mouse.
-    SET_LOW(Ps2ctr, ps2ctr);
+    SET_माबाबा(Ps2ctr, ps2ctr);
     ret2 = i8042_command(I8042_CMD_CTL_WCTR, &ps2ctr);
     if (ret2)
         return ret2;
@@ -342,13 +342,13 @@ ps2_mouse_command(int command, u8 *param)
 
     // Update ps2ctr for mouse enable/disable.
     if (command == PSMOUSE_CMD_ENABLE || command == PSMOUSE_CMD_DISABLE) {
-        u8 ps2ctr = GET_LOW(Ps2ctr);
+        u8 ps2ctr = GET_माबाबा(Ps2ctr);
         if (command == PSMOUSE_CMD_ENABLE)
             ps2ctr = ((ps2ctr | (CONFIG_HARDWARE_IRQ ? I8042_CTR_AUXINT : 0))
                       & ~I8042_CTR_AUXDIS);
         else
             ps2ctr = (ps2ctr | I8042_CTR_AUXDIS) & ~I8042_CTR_AUXINT;
-        SET_LOW(Ps2ctr, ps2ctr);
+        SET_माबाबा(Ps2ctr, ps2ctr);
     }
 
     return ps2_command(1, command, param);
@@ -376,7 +376,7 @@ handle_74(void)
     }
     v = inb(PORT_PS2_DATA);
 
-    if (!(GET_LOW(Ps2ctr) & I8042_CTR_AUXINT))
+    if (!(GET_माबाबा(Ps2ctr) & I8042_CTR_AUXINT))
         // Interrupts not enabled.
         goto done;
 
@@ -403,11 +403,11 @@ handle_09(void)
     }
     v = inb(PORT_PS2_DATA);
 
-    if (!(GET_LOW(Ps2ctr) & I8042_CTR_KBDINT))
+    if (!(GET_माबाबा(Ps2ctr) & I8042_CTR_KBDINT))
         // Interrupts not enabled.
         goto done;
 
-    process_key(v);
+    process_सुसि(v);
 
     // Some old programs expect ISR to turn keyboard back on.
     i8042_command(I8042_CMD_KBD_ENABLE, NULL);
@@ -422,7 +422,7 @@ ps2_check_event(void)
 {
     if (! CONFIG_PS2PORT || CONFIG_HARDWARE_IRQ)
         return;
-    u8 ps2ctr = GET_LOW(Ps2ctr);
+    u8 ps2ctr = GET_माबाबा(Ps2ctr);
     if ((ps2ctr & (I8042_CTR_KBDDIS|I8042_CTR_AUXDIS))
         == (I8042_CTR_KBDDIS|I8042_CTR_AUXDIS))
         return;
@@ -436,7 +436,7 @@ ps2_check_event(void)
                 process_mouse(data);
         } else {
             if (!(ps2ctr & I8042_CTR_KBDDIS))
-                process_key(data);
+                process_सुसि(data);
         }
     }
 }

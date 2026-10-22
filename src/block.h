@@ -12,7 +12,7 @@ struct disk_op_s {
     void *buf_fl;
     struct drive_s *drive_fl;
     u8 command;
-    u16 count;
+    u16 बिलांग;
     union {
         // Commands: READ, WRITE, VERIFY, SEEK, FORMAT
         u64 lba;
@@ -107,7 +107,7 @@ struct drive_s {
  ****************************************************************/
 
 // block.c
-extern u8 FloppyCount, CDCount;
+extern u8 Floppy_बिलांग, CDCount;
 extern u8 *bounce_buf_fl;
 struct drive_s *getDrive(u8 exttype, u8 extdriveoffset);
 int getDriveId(u8 exttype, struct drive_s *drive);

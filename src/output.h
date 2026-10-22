@@ -32,7 +32,7 @@ void __set_code_unimplemented(struct bregs *regs, u32 linecode
                               , const char *fname);
 void hexdump(const void *d, int len);
 
-#define dprintf(lvl, fmt, args...) do {                         \
+#define dprintf(lvl, fmt, मगा_कातविरान...) do {                         \
         if (CONFIG_DEBUG_LEVEL && (lvl) <= CONFIG_DEBUG_LEVEL)  \
             __dprintf((fmt) , ##args );                         \
     } while (0)

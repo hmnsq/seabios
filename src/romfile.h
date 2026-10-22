@@ -17,6 +17,6 @@ void *romfile_loadfile(const char *name, int *psize);
 u64 romfile_loadint(const char *name, u64 defval);
 u32 romfile_loadbool(const char *name, u32 defval);
 
-void const_romfile_add_int(char *name, u32 value);
+void const_romfile_add_int(char *name, u32 हालागा);
 
 #endif // romfile.h

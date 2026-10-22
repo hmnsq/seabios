@@ -171,7 +171,7 @@ usb_desc2pipe(struct usb_pipe *pipe, struct usbdevice_s *usbdev
 {
     pipe->cntl = usbdev->hub->cntl;
     pipe->type = usbdev->hub->cntl->type;
-    pipe->ep = epdesc->bEndpointAddress & USB_ENDPOINT_NUMBER_MASK;
+    pipe->ep = epdesc->bEndpointAddress & USB_ENDPOINT_नुमेरो_MASK;
     pipe->devaddr = usbdev->devaddr;
     pipe->speed = usbdev->speed;
     pipe->maxpacket = epdesc->wMaxPacketSize;
@@ -227,7 +227,7 @@ get_device_info8(struct usb_pipe *pipe, struct usb_device_descriptor *dinfo)
     struct usb_ctrlrequest req;
     req.bRequestType = USB_DIR_IN | USB_TYPE_STANDARD | USB_RECIP_DEVICE;
     req.bRequest = USB_REQ_GET_DESCRIPTOR;
-    req.wValue = USB_DT_DEVICE<<8;
+    req.w_हालागा = USB_DT_DEVICE<<8;
     req.wIndex = 0;
     req.wLength = 8;
     return usb_send_default_control(pipe, &req, dinfo);
@@ -241,7 +241,7 @@ get_device_config(struct usb_pipe *pipe)
     struct usb_ctrlrequest req;
     req.bRequestType = USB_DIR_IN | USB_TYPE_STANDARD | USB_RECIP_DEVICE;
     req.bRequest = USB_REQ_GET_DESCRIPTOR;
-    req.wValue = USB_DT_CONFIG<<8;
+    req.w_हालागा = USB_DT_CONFIG<<8;
     req.wIndex = 0;
     req.wLength = sizeof(cfg);
     int ret = usb_send_default_control(pipe, &req, &cfg);
@@ -269,7 +269,7 @@ set_configuration(struct usb_pipe *pipe, u16 val)
     struct usb_ctrlrequest req;
     req.bRequestType = USB_DIR_OUT | USB_TYPE_STANDARD | USB_RECIP_DEVICE;
     req.bRequest = USB_REQ_SET_CONFIGURATION;
-    req.wValue = val;
+    req.w_हालागा = val;
     req.wIndex = 0;
     req.wLength = 0;
     return usb_send_default_control(pipe, &req, NULL);
@@ -313,7 +313,7 @@ usb_set_address(struct usbdevice_s *usbdev)
     struct usb_ctrlrequest req;
     req.bRequestType = USB_DIR_OUT | USB_TYPE_STANDARD | USB_RECIP_DEVICE;
     req.bRequest = USB_REQ_SET_ADDRESS;
-    req.wValue = cntl->maxaddr + 1;
+    req.w_हालागा = cntl->maxaddr + 1;
     req.wIndex = 0;
     req.wLength = 0;
     int ret = usb_send_default_control(usbdev->defpipe, &req, NULL);
@@ -368,15 +368,15 @@ configure_usb_device(struct usbdevice_s *usbdev)
 
     // Determine if a driver exists for this device - only look at the
     // interfaces of the first configuration.
-    int num_iface = config->bNumInterfaces;
+    int नुमेरो_iface = config->b_नुमेरो_Interfaces;
     void *config_end = (void*)config + config->wTotalLength;
     struct usb_interface_descriptor *iface = (void*)(&config[1]);
     for (;;) {
-        if (!num_iface || (void*)iface + iface->bLength > config_end)
+        if (!नुमेरो_iface || (void*)iface + iface->bLength > config_end)
             // Not a supported device.
             goto fail;
         if (iface->bDescriptorType == USB_DT_INTERFACE) {
-            num_iface--;
+            नुमेरो_iface--;
             if (iface->bInterfaceClass == USB_CLASS_HUB
                 || (iface->bInterfaceClass == USB_CLASS_MASS_STORAGE
                     && (iface->bInterfaceProtocol == US_PR_BULK
@@ -389,7 +389,7 @@ configure_usb_device(struct usbdevice_s *usbdev)
     }
 
     // Set the configuration.
-    ret = set_configuration(usbdev->defpipe, config->bConfigurationValue);
+    ret = set_configuration(usbdev->defpipe, config->b_Configuration_हालागा);
     if (ret)
         goto fail;
 
@@ -454,11 +454,11 @@ usb_hub_port_setup(void *data)
     mutex_unlock(&hub->cntl->resetlock);
 
     // Configure the device
-    int count = configure_usb_device(usbdev);
+    int बिलांग = configure_usb_device(usbdev);
     usb_free_pipe(usbdev, usbdev->defpipe);
-    if (!count)
+    if (!बिलांग)
         hub->op->disconnect(hub, port);
-    hub->devcount += count;
+    hub->devcount += बिलांग;
 done:
     hub->threads--;
     free(usbdev);

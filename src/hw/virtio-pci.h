@@ -16,7 +16,7 @@ typedef struct virtio_pci_legacy {
     u32 host_features;
     u32 guest_features;
     u32 queue_pfn;
-    u16 queue_num;
+    u16 queue_नुमेरो;
     u16 queue_sel;
     u16 queue_notify;
     u8  status;
@@ -66,7 +66,7 @@ typedef struct virtio_pci_common_cfg {
     u32 guest_feature_select;    /* read-write */
     u32 guest_feature;           /* read-write */
     u16 msix_config;             /* read-write */
-    u16 num_queues;              /* read-only */
+    u16 नुमेरो_queues;              /* read-only */
     u8 device_status;            /* read-write */
     u8 config_generation;        /* read-only */
 

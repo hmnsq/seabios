@@ -14,35 +14,35 @@ extern u16 __segment_ES, __segment_CS, __segment_DS, __segment_SS;
 extern u16 __segment_FS, __segment_GS;
 
 // Low level macros for reading/writing memory via a segment selector.
-#define READ8_SEG(prefix, SEG, value, var)                      \
-    __asm__(prefix "movb %%" #SEG ":%1, %b0" : "=Qi"(value)     \
+#define READ8_SEG(prefix, SEG, हालागा, var)                      \
+    __asm__(prefix "movb %%" #SEG ":%1, %b0" : "=Qi"(हालागा)     \
             : "m"(var), "m"(__segment_ ## SEG))
-#define READ16_SEG(prefix, SEG, value, var)                     \
-    __asm__(prefix "movw %%" #SEG ":%1, %w0" : "=ri"(value)     \
+#define READ16_SEG(prefix, SEG, हालागा, var)                     \
+    __asm__(prefix "movw %%" #SEG ":%1, %w0" : "=ri"(हालागा)     \
             : "m"(var), "m"(__segment_ ## SEG))
-#define READ32_SEG(prefix, SEG, value, var)                     \
-    __asm__(prefix "movl %%" #SEG ":%1, %0" : "=ri"(value)      \
+#define READ32_SEG(prefix, SEG, हालागा, var)                     \
+    __asm__(prefix "movl %%" #SEG ":%1, %0" : "=ri"(हालागा)      \
             : "m"(var), "m"(__segment_ ## SEG))
-#define READ64_SEG(prefix, SEG, value, var) do {                \
+#define READ64_SEG(prefix, SEG, हालागा, var) do {                \
         union u64_u32_u __value;                                \
         union u64_u32_u *__r64_ptr = (union u64_u32_u *)&(var); \
         READ32_SEG(prefix, SEG, __value.lo, __r64_ptr->lo);     \
         READ32_SEG(prefix, SEG, __value.hi, __r64_ptr->hi);     \
-        *(u64*)&(value) = __value.val;                          \
+        *(u64*)&(हालागा) = __value.val;                          \
     } while (0)
-#define WRITE8_SEG(prefix, SEG, var, value)                     \
+#define WRITE8_SEG(prefix, SEG, var, हालागा)                     \
     __asm__(prefix "movb %b1, %%" #SEG ":%0" : "=m"(var)        \
-            : "Q"(value), "m"(__segment_ ## SEG))
-#define WRITE16_SEG(prefix, SEG, var, value)                    \
+            : "Q"(हालागा), "m"(__segment_ ## SEG))
+#define WRITE16_SEG(prefix, SEG, var, हालागा)                    \
     __asm__(prefix "movw %w1, %%" #SEG ":%0" : "=m"(var)        \
-            : "r"(value), "m"(__segment_ ## SEG))
-#define WRITE32_SEG(prefix, SEG, var, value)                    \
+            : "r"(हालागा), "m"(__segment_ ## SEG))
+#define WRITE32_SEG(prefix, SEG, var, हालागा)                    \
     __asm__(prefix "movl %1, %%" #SEG ":%0" : "=m"(var)         \
-            : "r"(value), "m"(__segment_ ## SEG))
-#define WRITE64_SEG(prefix, SEG, var, value) do {               \
+            : "r"(हालागा), "m"(__segment_ ## SEG))
+#define WRITE64_SEG(prefix, SEG, var, हालागा) do {               \
         union u64_u32_u __value;                                \
         union u64_u32_u *__w64_ptr = (union u64_u32_u *)&(var); \
-        typeof(var) __value_tmp = (value);                      \
+        typeof(var) __value_tmp = (हालागा);                      \
         __value.val = *(u64*)&__value_tmp;                      \
         WRITE32_SEG(prefix, SEG, __w64_ptr->lo, __value.lo);    \
         WRITE32_SEG(prefix, SEG, __w64_ptr->hi, __value.hi);    \
@@ -98,8 +98,8 @@ DECL_SEGFUNCS(GS)
 DECL_SEGFUNCS(SS)
 
 // Low level macros for getting/setting a segment register.
-#define __SET_SEG(SEG, value)                   \
-    __set_seg_##SEG(value)
+#define __SET_SEG(SEG, हालागा)                   \
+    __set_seg_##SEG(हालागा)
 #define __GET_SEG(SEG)                          \
     __get_seg_##SEG()
 
@@ -143,34 +143,34 @@ DECL_SEGFUNCS(SS)
 #define SET_FARVAR(seg, var, val) __SET_FARVAR((seg), (var), (val))
 #define GET_VAR(seg, var) __GET_VAR("", seg, (var))
 #define SET_VAR(seg, var, val) __SET_VAR("", seg, (var), (val))
-#define SET_SEG(SEG, value) __SET_SEG(SEG, (value))
+#define SET_SEG(SEG, हालागा) __SET_SEG(SEG, (हालागा))
 #define GET_SEG(SEG) __GET_SEG(SEG)
 #define GET_FLATPTR(ptr) __GET_FLATPTR(ptr)
 #define SET_FLATPTR(ptr, val) __SET_FLATPTR((ptr), (val))
 
-static inline void insb_fl(u16 port, void *ptr_fl, u16 count) {
+static inline void insb_fl(u16 port, void *ptr_fl, u16 बिलांग) {
     SET_SEG(ES, FLATPTR_TO_SEG(ptr_fl));
-    insb(port, (u8*)FLATPTR_TO_OFFSET(ptr_fl), count);
+    insb(port, (u8*)FLATPTR_TO_OFFSET(ptr_fl), बिलांग);
 }
-static inline void insw_fl(u16 port, void *ptr_fl, u16 count) {
+static inline void insw_fl(u16 port, void *ptr_fl, u16 बिलांग) {
     SET_SEG(ES, FLATPTR_TO_SEG(ptr_fl));
-    insw(port, (u16*)FLATPTR_TO_OFFSET(ptr_fl), count);
+    insw(port, (u16*)FLATPTR_TO_OFFSET(ptr_fl), बिलांग);
 }
-static inline void insl_fl(u16 port, void *ptr_fl, u16 count) {
+static inline void insl_fl(u16 port, void *ptr_fl, u16 बिलांग) {
     SET_SEG(ES, FLATPTR_TO_SEG(ptr_fl));
-    insl(port, (u32*)FLATPTR_TO_OFFSET(ptr_fl), count);
+    insl(port, (u32*)FLATPTR_TO_OFFSET(ptr_fl), बिलांग);
 }
-static inline void outsb_fl(u16 port, void *ptr_fl, u16 count) {
+static inline void outsb_fl(u16 port, void *ptr_fl, u16 बिलांग) {
     SET_SEG(ES, FLATPTR_TO_SEG(ptr_fl));
-    outsb(port, (u8*)FLATPTR_TO_OFFSET(ptr_fl), count);
+    outsb(port, (u8*)FLATPTR_TO_OFFSET(ptr_fl), बिलांग);
 }
-static inline void outsw_fl(u16 port, void *ptr_fl, u16 count) {
+static inline void outsw_fl(u16 port, void *ptr_fl, u16 बिलांग) {
     SET_SEG(ES, FLATPTR_TO_SEG(ptr_fl));
-    outsw(port, (u16*)FLATPTR_TO_OFFSET(ptr_fl), count);
+    outsw(port, (u16*)FLATPTR_TO_OFFSET(ptr_fl), बिलांग);
 }
-static inline void outsl_fl(u16 port, void *ptr_fl, u16 count) {
+static inline void outsl_fl(u16 port, void *ptr_fl, u16 बिलांग) {
     SET_SEG(ES, FLATPTR_TO_SEG(ptr_fl));
-    outsl(port, (u32*)FLATPTR_TO_OFFSET(ptr_fl), count);
+    outsl(port, (u32*)FLATPTR_TO_OFFSET(ptr_fl), बिलांग);
 }
 
 #else
@@ -182,17 +182,17 @@ static inline void outsl_fl(u16 port, void *ptr_fl, u16 count) {
     do { GET_FARVAR((seg), (var)) = (val); } while (0)
 #define GET_VAR(seg, var) (var)
 #define SET_VAR(seg, var, val) do { (var) = (val); } while (0)
-#define SET_SEG(SEG, value) ((void)(value))
+#define SET_SEG(SEG, हालागा) ((void)(हालागा))
 #define GET_SEG(SEG) 0
 #define GET_FLATPTR(ptr) (ptr)
 #define SET_FLATPTR(ptr, val) do { (ptr) = (val); } while (0)
 
-#define insb_fl(port, ptr_fl, count) insb(port, ptr_fl, count)
-#define insw_fl(port, ptr_fl, count) insw(port, ptr_fl, count)
-#define insl_fl(port, ptr_fl, count) insl(port, ptr_fl, count)
-#define outsb_fl(port, ptr_fl, count) outsb(port, ptr_fl, count)
-#define outsw_fl(port, ptr_fl, count) outsw(port, ptr_fl, count)
-#define outsl_fl(port, ptr_fl, count) outsl(port, ptr_fl, count)
+#define insb_fl(port, ptr_fl, बिलांग) insb(port, ptr_fl, बिलांग)
+#define insw_fl(port, ptr_fl, बिलांग) insw(port, ptr_fl, बिलांग)
+#define insl_fl(port, ptr_fl, बिलांग) insl(port, ptr_fl, बिलांग)
+#define outsb_fl(port, ptr_fl, बिलांग) outsb(port, ptr_fl, बिलांग)
+#define outsw_fl(port, ptr_fl, बिलांग) outsw(port, ptr_fl, बिलांग)
+#define outsl_fl(port, ptr_fl, बिलांग) outsl(port, ptr_fl, बिलांग)
 
 #endif
 

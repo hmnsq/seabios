@@ -21,7 +21,7 @@ struct smbios_21_entry_point {
     u8 intermediate_checksum;
     u16 structure_table_length;
     u32 structure_table_address;
-    u16 number_of_structures;
+    u16 नुमेरो_of_structures;
     u8 smbios_bcd_revision;
 } PACKED;
 
@@ -67,10 +67,10 @@ struct smbios_type_1 {
     u8 manufacturer_str;
     u8 product_name_str;
     u8 version_str;
-    u8 serial_number_str;
+    u8 serial_नुमेरो_str;
     u8 uuid[16];
     u8 wake_up_type;
-    u8 sku_number_str;
+    u8 sku_नुमेरो_str;
     u8 family_str;
 } PACKED;
 
@@ -80,16 +80,16 @@ struct smbios_type_3 {
     u8 manufacturer_str;
     u8 type;
     u8 version_str;
-    u8 serial_number_str;
-    u8 asset_tag_number_str;
+    u8 serial_नुमेरो_str;
+    u8 asset_tag_नुमेरो_str;
     u8 boot_up_state;
     u8 power_supply_state;
     u8 thermal_state;
     u8 security_status;
     u32 oem_defined;
     u8 height;
-    u8 number_of_power_cords;
-    u8 contained_element_count;
+    u8 नुमेरो_of_power_cords;
+    u8 contained_element_बिलांग;
     // contained elements follow
 } PACKED;
 
@@ -123,7 +123,7 @@ struct smbios_type_16 {
     u8 error_correction;
     u32 maximum_capacity;
     u16 memory_error_information_handle;
-    u16 number_of_memory_devices;
+    u16 नुमेरो_of_memory_devices;
 } PACKED;
 
 /* SMBIOS type 17 - Memory Device

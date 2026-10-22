@@ -53,7 +53,7 @@ __make_bios_writable_intel(u16 bdf, u32 pam0)
         // Copy bios.
         memcpy(VSYMBOL(code32flat_start)
                , VSYMBOL(code32flat_start) + BIOS_SRC_OFFSET
-               , SYMBOL(code32flat_end) - SYMBOL(code32flat_start));
+               , सिम्बोलो(code32flat_end) - सिम्बोलो(code32flat_start));
 }
 
 static void
@@ -187,7 +187,7 @@ qemu_reboot(void)
     } else {
         // Copy the BIOS making sure to only reset HaveRunPost at end
         make_bios_writable();
-        u32 cstart = SYMBOL(code32flat_start), cend = SYMBOL(code32flat_end);
+        u32 cstart = सिम्बोलो(code32flat_start), cend = सिम्बोलो(code32flat_end);
         memcpy((void*)cstart, flash + cstart, hrp - cstart);
         memcpy((void*)hrp + 4, flash + hrp + 4, cend - (hrp + 4));
         barrier();

@@ -374,7 +374,7 @@ typedef struct {
   UINT16  OpromSegment;                 ///< The segment where the OpROM was placed. Offset is assumed to be 3.
   UINT8   PciBus;                       ///< The PCI bus.
   UINT8   PciDeviceFunction;            ///< The PCI device * 0x08 | PCI function.
-  UINT8   NumberBbsEntries;             ///< The number of valid BBS table entries upon entry and exit. The IBV code may
+  UINT8   नुमेरो_Bbs_Entries;             ///< The number of valid BBS table entries upon entry and exit. The IBV code may
                                         ///< increase this number, if BBS-compliant devices also hook INTs in order to force the
                                         ///< OpROM BIOS Setup to be executed.
   UINT32  BbsTablePointer;              ///< A pointer to the BBS table.
@@ -418,7 +418,7 @@ typedef struct {
   ///
   /// The number of E820 entries copied to the Compatibility16 BIOS.
   ///
-  UINT32                            NumberE820Entries;
+  UINT32                            नुमेरो_E820_Entries;
   
   ///
   /// The amount of usable memory above 1 MB, e.g., E820 type 1 memory.
@@ -438,12 +438,12 @@ typedef struct {
   ///
   /// Starting address of memory under 1 MB.
   ///
-  UINT32                            LowPmmMemory;
+  UINT32                            माबाबा_Pmm_Memory;
   
   ///
   /// The length of low Memory block.
   ///
-  UINT32                            LowPmmMemorySizeInBytes;
+  UINT32                            माबाबा_Pmm_Memory_Size_In_Bytes;
 } EFI_TO_COMPATIBILITY16_INIT_TABLE;
 
 ///
@@ -491,7 +491,7 @@ typedef struct {
   UINT16                            Address;          ///< I/O address assigned to the floppy.
   UINT8                             Irq;              ///< IRQ assigned to the floppy.
   UINT8                             Dma;              ///< DMA assigned to the floppy.
-  UINT8                             NumberOfFloppy;   ///< Number of floppies in the system.
+  UINT8                             नुमेरो_Of_Floppy;   ///< Number of floppies in the system.
 } DEVICE_PRODUCER_FLOPPY;
 
 ///
@@ -711,7 +711,7 @@ typedef struct {
   /// BBS-compliant OpROMs also hook IRQ vectors in order to run their BIOS Setup
   ///  
   UINT32                            AdditionalIrq40Handler;
-  UINT8                             AssignedDriveNumber;
+  UINT8                             Assigned_Drive_नुमेरो;
   UINT32                            AdditionalIrq41Handler;
   UINT32                            AdditionalIrq46Handler;
   UINT32                            IBV1;
@@ -845,7 +845,7 @@ typedef struct {
 /// SMM_TABLE
 ///
 typedef struct {
-  UINT16                            NumSmmEntries;    ///< Number of entries represented by SmmEntry.
+  UINT16                            नुमेरो_Smm_Entries;    ///< Number of entries represented by SmmEntry.
   SMM_ENTRY                         SmmEntry;         ///< One entry per function. Type SMM_ENTRY is defined below.
 } SMM_TABLE;
 
@@ -889,24 +889,24 @@ typedef struct {
   /// This field contains the zero-based device on which the selected
   /// ServiceDataArea is present. It is 0 for master and 1 for the slave device.  
   ///
-  UINT8                             DeviceNumber;
+  UINT8                             Device_नुमेरो;
   
   ///
   /// This field contains the zero-based index into the BbsTable for the parent device.
   /// This index allows the user to reference the parent device information such as PCI
   /// bus, device function.
   ///
-  UINT8                             BbsTableEntryNumberForParentDevice;
+  UINT8                             Bbs_Table_Entry_नुमेरो_For_Parent_Device;
   
   ///
   /// This field contains the zero-based index into the BbsTable for the boot entry.
   ///
-  UINT8                             BbsTableEntryNumberForBoot;
+  UINT8                             Bbs_Table_Entry_नुमेरो_For_Boot;
   
   ///
   /// This field contains the zero-based index into the BbsTable for the HDD diagnostics entry.
   ///
-  UINT8                             BbsTableEntryNumberForHddDiag;
+  UINT8                             Bbs_Table_Entry_नुमेरो_For_Hdd_Diag;
   
   ///
   /// The raw Beer data.
@@ -938,13 +938,13 @@ typedef struct {
   DEVICE_PRODUCER_DATA_HEADER       SioData;                      ///< Standard traditional device information.
   UINT16                            DevicePathType;               ///< The default boot type.
   UINT16                            PciIrqMask;                   ///< Mask of which IRQs have been assigned to PCI.
-  UINT32                            NumberE820Entries;            ///< Number of E820 entries. The number can change from the
+  UINT32                            नुमेरो_E820_Entries;            ///< Number of E820 entries. The number can change from the
                                                                   ///< Compatibility16InitializeYourself() function.
   //
   // Controller & Drive Identify[2] per controller information
   //
   HDD_INFO                          HddInfo[MAX_IDE_CONTROLLER];  ///< Hard disk drive information, including raw Identify Drive data.
-  UINT32                            NumberBbsEntries;             ///< Number of entries in the BBS table
+  UINT32                            नुमेरो_Bbs_Entries;             ///< Number of entries in the BBS table
   UINT32                            BbsTable;                     ///< A pointer to the BBS table. Type BBS_TABLE is defined below.
   UINT32                            SmmTable;                     ///< A pointer to the SMM table. Type SMM_TABLE is defined below.
   UINT32                            OsMemoryAbove1Mb;             ///< The amount of usable memory above 1 MB, i.e. E820 type 1 memory. This value can

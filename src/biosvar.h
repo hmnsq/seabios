@@ -8,7 +8,7 @@
 
 #include "config.h" // SEG_BDA
 #include "farptr.h" // GET_FARVAR
-#include "memmap.h" // SYMBOL
+#include "memmap.h" //सिम्बोलो
 #include "std/bda.h" // struct bios_data_area_s
 
 
@@ -113,18 +113,18 @@ static inline u16 get_global_seg(void) {
  * "Low" memory variables
  ****************************************************************/
 
-#define SEG_LOW SYMBOL(_zonelow_seg)
+#define SEG_माबाबा सिम्बोलो(_zonelow_seg)
 
 #if MODESEGMENT
-#define GET_LOW(var)            GET_FARVAR(SEG_LOW, (var))
-#define SET_LOW(var, val)       SET_FARVAR(SEG_LOW, (var), (val))
-#define LOWFLAT2LOW(var) ((typeof(var))((void*)(var) - SYMBOL(zonelow_base)))
+#define GET_माबाबा(var)            GET_FARVAR(SEG_माबाबा, (var))
+#define SET_माबाबा(var, val)       SET_FARVAR(SEG_माबाबा, (var), (val))
+#define LOWFLAT2_माबाबा(var) ((typeof(var))((void*)(var) - सिम्बोलो(zonelow_base)))
 #else
-#define GET_LOW(var)            (var)
-#define SET_LOW(var, val)       do { (var) = (val); } while (0)
-#define LOWFLAT2LOW(var) (var)
+#define GET_माबाबा(var)            (var)
+#define SET_माबाबा(var, val)       do { (var) = (val); } while (0)
+#define LOWFLAT2_माबाबा(var) (var)
 #endif
-#define GET_LOWFLAT(var) GET_LOW(*LOWFLAT2LOW(&(var)))
-#define SET_LOWFLAT(var, val) SET_LOW(*LOWFLAT2LOW(&(var)), (val))
+#define GET_LOWFLAT(var) GET_माबाबा(*LOWFLAT2_माबाबा(&(var)))
+#define SET_LOWFLAT(var, val) SET_माबाबा(*LOWFLAT2_माबाबा(&(var)), (val))
 
 #endif // __BIOSVAR_H

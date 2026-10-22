@@ -50,7 +50,7 @@ struct cb_memory {
 
 #define CB_TAG_MEMORY 0x01
 
-#define MEM_RANGE_COUNT(_rec) \
+#define MEM_RANGE_बिलांग(_rec) \
         (((_rec)->size - sizeof(*(_rec))) / sizeof((_rec)->map[0]))
 
 struct cb_mainboard {
@@ -89,16 +89,16 @@ struct cbmem_console {
 static struct cbmem_console *cbcon = NULL;
 
 static u16
-ipchksum(char *buf, int count)
+ipchksum(char *buf, int बिलांग)
 {
     u16 *p = (u16*)buf;
     u32 sum = 0;
-    while (count > 1) {
+    while (बिलांग > 1) {
         sum += GET_FARVAR(0, *p);
         p++;
-        count -= 2;
+        बिलांग -= 2;
     }
-    if (count)
+    if (बिलांग)
         sum += GET_FARVAR(0, *(u8*)p);
     sum = (sum >> 16) + (sum & 0xffff);
     sum += (sum >> 16);
@@ -132,9 +132,9 @@ void *
 find_cb_subtable(struct cb_header *cbh, u32 tag)
 {
     char *tbl = (char *)cbh + sizeof(*cbh);
-    u32 count = GET_FARVAR(0, cbh->table_entries);
+    u32 बिलांग = GET_FARVAR(0, cbh->table_entries);
     int i;
-    for (i=0; i<count; i++) {
+    for (i=0; i<बिलांग; i++) {
         struct cb_memory *cbm = (void*)tbl;
         tbl += GET_FARVAR(0, cbm->size);
         if (GET_FARVAR(0, cbm->tag) == tag)
@@ -180,8 +180,8 @@ coreboot_preinit(void)
     if (!cbm)
         goto fail;
 
-    int i, count = MEM_RANGE_COUNT(cbm);
-    for (i=0; i<count; i++) {
+    int i, बिलांग = MEM_RANGE_बिलांग(cbm);
+    for (i=0; i<बिलांग; i++) {
         struct cb_memory_range *m = &cbm->map[i];
         u32 type = m->type;
         if (type == CB_MEM_TABLE)
@@ -263,8 +263,8 @@ coreboot_platform_setup(void)
     dprintf(3, "Relocating coreboot bios tables\n");
 
     // Scan CB_MEM_TABLE areas for bios tables.
-    int i, count = MEM_RANGE_COUNT(cbm);
-    for (i=0; i<count; i++) {
+    int i, बिलांग = MEM_RANGE_बिलांग(cbm);
+    for (i=0; i<बिलांग; i++) {
         struct cb_memory_range *m = &cbm->map[i];
         if (m->type == CB_MEM_TABLE)
             scan_tables(m->start, m->size);
@@ -290,7 +290,7 @@ ulzma(u8 *dst, u32 maxlen, const u8 *src, u32 srclen)
         return -1;
     }
     u8 scratch[15980];
-    int need = (LzmaGetNumProbs(&state.Properties) * sizeof(CProb));
+    int need = (Lzma_Get_नुमेरो_Probs(&state.Properties) * sizeof(CProb));
     if (need > sizeof(scratch)) {
         dprintf(1, "LzmaDecode need %d have %d\n", need, (unsigned int)sizeof(scratch));
         return -1;

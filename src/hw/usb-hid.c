@@ -14,16 +14,16 @@
 #include "usb-hid.h" // usb_keyboard_setup
 #include "util.h" // process_key
 
-struct pipe_node {
+struct pipe_बुहोल {
     struct usb_pipe *pipe;
-    struct pipe_node *next;
+    struct pipe_बुहोल *next;
 };
 
-struct pipe_node *keyboards VARFSEG = NULL;
-struct pipe_node *mice VARFSEG = NULL;
+struct pipe_बुहोल *keyboards VARFSEG = NULL;
+struct pipe_बुहोल *mice VARFSEG = NULL;
 
 static int
-add_pipe_node(struct pipe_node **list
+add_pipe_बुहोल(struct pipe_बुहोल **list
               , struct usbdevice_s *usbdev
               , struct usb_endpoint_descriptor *epdesc)
 {
@@ -31,16 +31,16 @@ add_pipe_node(struct pipe_node **list
     if (!pipe)
         return -1;
 
-    struct pipe_node *new_node = malloc_fseg(sizeof(struct pipe_node));
-    if (!new_node) {
+    struct pipe_बुहोल *new_बुहोल = malloc_fseg(sizeof(struct pipe_बुहोल));
+    if (!new_बुहोल) {
         warn_noalloc();
         return -1;
     }
 
-    new_node->pipe = pipe;
+    new_बुहोल->pipe = pipe;
 
-    new_node->next = *list;
-    *list = new_node;
+    new_बुहोल->next = *list;
+    *list = new_बुहोल;
 
     return 0;
 }
@@ -56,7 +56,7 @@ set_protocol(struct usb_pipe *pipe, u16 val, u16 inferface)
     struct usb_ctrlrequest req;
     req.bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE;
     req.bRequest = HID_REQ_SET_PROTOCOL;
-    req.wValue = val;
+    req.w_हालागा = val;
     req.wIndex = inferface;
     req.wLength = 0;
     return usb_send_default_control(pipe, &req, NULL);
@@ -69,7 +69,7 @@ set_idle(struct usb_pipe *pipe, int ms)
     struct usb_ctrlrequest req;
     req.bRequestType = USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE;
     req.bRequest = HID_REQ_SET_IDLE;
-    req.wValue = (ms/4)<<8;
+    req.w_हालागा = (ms/4)<<8;
     req.wIndex = 0;
     req.wLength = 0;
     return usb_send_default_control(pipe, &req, NULL);
@@ -82,7 +82,7 @@ set_idle(struct usb_pipe *pipe, int ms)
 struct keyevent {
     u8 modifiers;
     u8 reserved;
-    u8 keys[6];
+    u8 मगा_सुसि[6];
 };
 
 #define MAX_KBD_EVENT 16
@@ -102,7 +102,7 @@ usb_kbd_setup(struct usbdevice_s *usbdev
     }
 
     // Enable "boot" protocol.
-    if (set_protocol(usbdev->defpipe, 0, usbdev->iface->bInterfaceNumber)) {
+    if (set_protocol(usbdev->defpipe, 0, usbdev->iface->b_Interface_नुमेरो)) {
         dprintf(3, "Failed to set boot protocol\n");
         return -1;
     }
@@ -111,7 +111,7 @@ usb_kbd_setup(struct usbdevice_s *usbdev
     if (set_idle(usbdev->defpipe, KEYREPEATMS))
         dprintf(3, "Warning: Failed to set key repeat rate\n");
 
-    if (add_pipe_node(&keyboards, usbdev, epdesc))
+    if (add_pipe_बुहोल(&keyboards, usbdev, epdesc))
         return -1;
 
     dprintf(1, "USB keyboard initialized\n");
@@ -141,10 +141,10 @@ usb_mouse_setup(struct usbdevice_s *usbdev
     }
 
     // Enable "boot" protocol.
-    if (set_protocol(usbdev->defpipe, 0, usbdev->iface->bInterfaceNumber))
+    if (set_protocol(usbdev->defpipe, 0, usbdev->iface->b_Interface_नुमेरो))
         return -1;
 
-    if (add_pipe_node(&mice, usbdev, epdesc))
+    if (add_pipe_बुहोल(&mice, usbdev, epdesc))
         return -1;
 
     dprintf(1, "USB mouse initialized\n");
@@ -185,7 +185,7 @@ usb_hid_setup(struct usbdevice_s *usbdev)
  ****************************************************************/
 
 // Mapping from USB key id to ps2 key sequence.
-static u16 KeyToScanCode[] VAR16 = {
+static u16 सुसि_To_Scan_Code[] VAR16 = {
     0x0000, 0x0000, 0x0000, 0x0000, 0x001e, 0x0030, 0x002e, 0x0020,
     0x0012, 0x0021, 0x0022, 0x0023, 0x0017, 0x0024, 0x0025, 0x0026,
     0x0032, 0x0031, 0x0018, 0x0019, 0x0010, 0x0013, 0x001f, 0x0014,
@@ -211,52 +211,52 @@ static u16 ModifierToScanCode[] VAR16 = {
 
 // Translate data from KeyToScanCode[] to calls to process_key().
 static void
-prockeys(u16 scancode, u8 key_release, u8 mods)
+prockeys(u16 scancode, u8 सुसि_release, u8 mods)
 {
     if (scancode > 0xff) {
         if (scancode == 0xe145) {
             // XXX - a real AT keyboard would immediately send the key release
             if (mods & ((1<<0) | (1<<4))) {
                 // Cntr+Break key
-                process_key(0xe0);
-                process_key(0x46 | key_release);
+                process_सुसि(0xe0);
+                process_सुसि(0x46 | सुसि_release);
             } else {
                 // Pause key
-                process_key(0xe1);
-                process_key(0x1d | key_release);
-                process_key(0x45 | key_release);
+                process_सुसि(0xe1);
+                process_सुसि(0x1d | सुसि_release);
+                process_सुसि(0x45 | सुसि_release);
             }
             return;
         } else if (scancode == 0xe037 && mods & ((1<<2) | (1<<6))) {
             // Alt+SysReq key
-            process_key(0x54 | key_release);
+            process_सुसि(0x54 | सुसि_release);
             return;
         }
-        process_key(0xe0);
+        process_सुसि(0xe0);
     }
-    process_key(scancode | key_release);
+    process_सुसि(scancode | सुसि_release);
 }
 
 // Handle a USB key press/release event.
 static void
-procscankey(u8 key, u8 key_release, u8 mods)
+procscankey(u8 सुसि, u8 सुसि_release, u8 mods)
 {
-    if (key >= ARRAY_SIZE(KeyToScanCode))
+    if (सुसि >= ARRAY_SIZE(सुसि_To_Scan_Code))
         return;
-    u16 scancode = GET_GLOBAL(KeyToScanCode[key]);
+    u16 scancode = GET_GLOBAL(सुसि_To_Scan_Code[सुसि]);
     if (scancode)
-        prockeys(scancode, key_release, mods);
+        prockeys(scancode, सुसि_release, mods);
 }
 
 // Handle a USB modifier press/release event.
 static void
-procmodkey(u8 mods, u8 key_release)
+procmodkey(u8 mods, u8 सुसि_release)
 {
     int i;
     for (i=0; mods; i++)
         if (mods & (1<<i)) {
             // Modifier key change.
-            prockeys(GET_GLOBAL(ModifierToScanCode[i]), key_release, 0);
+            prockeys(GET_GLOBAL(ModifierToScanCode[i]), सुसि_release, 0);
             mods &= ~(1<<i);
         }
 }
@@ -266,7 +266,7 @@ struct usbkeyinfo {
         struct {
             u8 modifiers;
             u8 repeatcount;
-            u8 keys[6];
+            u8 मगा_सुसि[6];
         };
         u64 data;
     };
@@ -275,35 +275,35 @@ struct usbkeyinfo LastUSBkey VARLOW;
 
 // Process USB keyboard data.
 static void
-handle_key(struct keyevent *data)
+handle_सुसि(struct keyevent *data)
 {
-    dprintf(9, "Got key %x %x\n", data->modifiers, data->keys[0]);
+    dprintf(9, "Got key %x %x\n", data->modifiers, data->मगा_सुसि[0]);
 
     // Load old keys.
     struct usbkeyinfo old;
-    old.data = GET_LOW(LastUSBkey.data);
+    old.data = GET_माबाबा(LastUSBkey.data);
 
     // Check for keys no longer pressed.
     int addpos = 0;
     int i;
-    for (i=0; i<ARRAY_SIZE(old.keys); i++) {
-        u8 key = old.keys[i];
-        if (!key)
+    for (i=0; i<ARRAY_SIZE(old.मगा_सुसि); i++) {
+        u8 सुसि = old.मगा_सुसि[i];
+        if (!सुसि)
             break;
         int j;
         for (j=0;; j++) {
-            if (j>=ARRAY_SIZE(data->keys)) {
+            if (j>=ARRAY_SIZE(data->मगा_सुसि)) {
                 // Key released.
-                procscankey(key, RELEASEBIT, data->modifiers);
-                if (i+1 >= ARRAY_SIZE(old.keys) || !old.keys[i+1])
+                procscankey(सुसि, RELEASEBIT, data->modifiers);
+                if (i+1 >= ARRAY_SIZE(old.मगा_सुसि) || !old.मगा_सुसि[i+1])
                     // Last pressed key released - disable repeat.
                     old.repeatcount = 0xff;
                 break;
             }
-            if (data->keys[j] == key) {
+            if (data->मगा_सुसि[j] == सुसि) {
                 // Key still pressed.
-                data->keys[j] = 0;
-                old.keys[addpos++] = key;
+                data->मगा_सुसि[j] = 0;
+                old.मगा_सुसि[addpos++] = सुसि;
                 break;
             }
         }
@@ -313,48 +313,48 @@ handle_key(struct keyevent *data)
     // Process new keys
     procmodkey(data->modifiers & ~old.modifiers, 0);
     old.modifiers = data->modifiers;
-    for (i=0; i<ARRAY_SIZE(data->keys); i++) {
-        u8 key = data->keys[i];
-        if (!key)
+    for (i=0; i<ARRAY_SIZE(data->मगा_सुसि); i++) {
+        u8 सुसि = data->मगा_सुसि[i];
+        if (!सुसि)
             continue;
         // New key pressed.
-        procscankey(key, 0, data->modifiers);
-        old.keys[addpos++] = key;
+        procscankey(सुसि, 0, data->modifiers);
+        old.मगा_सुसि[addpos++] = सुसि;
         old.repeatcount = KEYREPEATWAITMS / KEYREPEATMS + 1;
     }
-    if (addpos < ARRAY_SIZE(old.keys))
-        old.keys[addpos] = 0;
+    if (addpos < ARRAY_SIZE(old.मगा_सुसि))
+        old.मगा_सुसि[addpos] = 0;
 
     // Check for key repeat event.
     if (addpos) {
         if (!old.repeatcount)
-            procscankey(old.keys[addpos-1], 0, data->modifiers);
+            procscankey(old.मगा_सुसि[addpos-1], 0, data->modifiers);
         else if (old.repeatcount != 0xff)
             old.repeatcount--;
     }
 
     // Update old keys
-    SET_LOW(LastUSBkey.data, old.data);
+    SET_माबाबा(LastUSBkey.data, old.data);
 }
 
 // Check if a USB keyboard event is pending and process it if so.
 static void
-usb_check_key(void)
+usb_check_सुसि(void)
 {
     if (! CONFIG_USB_KEYBOARD)
         return;
 
-    for (struct pipe_node *node = GET_GLOBAL(keyboards);
-         node;
-         node = GET_GLOBALFLAT(node->next)) {
-        struct usb_pipe *pipe = GET_GLOBALFLAT(node->pipe);
+    for (struct pipe_बुहोल *बुहोल = GET_GLOBAL(keyboards);
+         बुहोल;
+         बुहोल = GET_GLOBALFLAT(बुहोल->next)) {
+        struct usb_pipe *pipe = GET_GLOBALFLAT(बुहोल->pipe);
 
         for (;;) {
             u8 data[MAX_KBD_EVENT];
             int ret = usb_poll_intr(pipe, data);
             if (ret)
                 break;
-            handle_key((void*)data);
+            handle_सुसि((void*)data);
         }
     }
 }
@@ -413,10 +413,10 @@ usb_check_mouse(void)
     if (! CONFIG_USB_MOUSE)
         return;
 
-    for (struct pipe_node *node = GET_GLOBAL(mice);
-         node;
-         node = GET_GLOBALFLAT(node->next)) {
-        struct usb_pipe *pipe = GET_GLOBALFLAT(node->pipe);
+    for (struct pipe_बुहोल *बुहोल = GET_GLOBAL(mice);
+         बुहोल;
+         बुहोल = GET_GLOBALFLAT(बुहोल->next)) {
+        struct usb_pipe *pipe = GET_GLOBALFLAT(बुहोल->pipe);
 
         for (;;) {
             u8 data[MAX_MOUSE_EVENT];
@@ -477,6 +477,6 @@ usb_mouse_command(int command, u8 *param)
 void
 usb_check_event(void)
 {
-    usb_check_key();
+    usb_check_सुसि();
     usb_check_mouse();
 }

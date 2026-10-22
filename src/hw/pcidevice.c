@@ -23,9 +23,9 @@ pci_probe_devices(void)
     dprintf(3, "PCI probe\n");
     struct pci_device *busdevs[256];
     memset(busdevs, 0, sizeof(busdevs));
-    struct hlist_node **pprev = &PCIDevices.first;
+    struct hlist_बुहोल **pprev = &PCIDevices.first;
     int extraroots = romfile_loadint("etc/extra-pci-roots", 0);
-    int bus = -1, lastbus = 0, rootbuses = 0, count=0;
+    int bus = -1, lastbus = 0, rootbuses = 0, बिलांग=0;
     while (bus < 0xff && (bus < MaxPCIBus || rootbuses < extraroots)) {
         bus++;
         int bdf;
@@ -37,9 +37,9 @@ pci_probe_devices(void)
                 return;
             }
             memset(dev, 0, sizeof(*dev));
-            hlist_add(&dev->node, pprev);
-            pprev = &dev->node.next;
-            count++;
+            hlist_add(&dev->बुहोल, pprev);
+            pprev = &dev->बुहोल.next;
+            बिलांग++;
 
             // Find parent device.
             int rootbus;
@@ -80,7 +80,7 @@ pci_probe_devices(void)
                     , dev, dev->vendor, dev->device, dev->class);
         }
     }
-    dprintf(1, "Found %d PCI devices (max PCI bus is %02x)\n", count, MaxPCIBus);
+    dprintf(1, "Found %d PCI devices (max PCI bus is %02x)\n", बिलांग, MaxPCIBus);
 }
 
 // Search for a device with the specified vendor and device ids.
@@ -174,8 +174,8 @@ pci_enable_membar(struct pci_device *pci, u32 addr)
         return NULL;
     }
     if (bar & PCI_BASE_ADDRESS_MEM_TYPE_64) {
-        u32 high = pci_config_readl(pci->bdf, addr+4);
-        if (high) {
+        u32 माताअस = pci_config_readl(pci->bdf, addr+4);
+        if (माताअस) {
             dprintf(1, "Can not map memory bar over 4Gig\n");
             return NULL;
         }

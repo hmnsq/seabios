@@ -71,12 +71,12 @@ multiboot_init(void)
     mbi = (void *)entry_elf_ebx;
     dprintf(1, "mbptr=%p\n", mbi);
     dprintf(1, "flags=0x%x, mods=0x%x, mods_c=%d\n", mbi->flags, mbi->mods_addr,
-            mbi->mods_count);
+            mbi->mods_बिलांग);
     if (!(mbi->flags & MULTIBOOT_INFO_MODS))
         return;
     int i;
     struct multiboot_mod_list *mod = (void *)mbi->mods_addr;
-    for (i = 0; i < mbi->mods_count; i++) {
+    for (i = 0; i < mbi->mods_बिलांग; i++) {
         struct mbfs_romfile_s *cfile;
         u8 *copy;
         u32 len;

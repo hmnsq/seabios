@@ -192,13 +192,13 @@ static void
 putprettyhex(struct putcinfo *action, u32 val, int width, char padchar, int uc)
 {
     u32 tmp = val;
-    int count = 1;
+    int बिलांग = 1;
     while (tmp >>= 4)
-        count++;
-    width -= count;
+        बिलांग++;
+    width -= बिलांग;
     while (width-- > 0)
         putc(action, padchar);
-    puthex(action, val, count, uc);
+    puthex(action, val, बिलांग, uc);
 }
 
 // Output 'struct pci_device' BDF as %02x:%02x.%x
@@ -219,7 +219,7 @@ isdigit(u8 c)
 }
 
 static void
-bvprintf(struct putcinfo *action, const char *fmt, va_list args)
+bvprintf(struct putcinfo *action, const char *fmt, va_list मगा_कातविरान)
 {
     const char *s = fmt;
     int uc;
@@ -262,9 +262,9 @@ bvprintf(struct putcinfo *action, const char *fmt, va_list args)
             putc(action, '%');
             break;
         case 'd':
-            val = va_arg(args, s32);
+            val = va_arg(मगा_कातविरान, s32);
             if (is64)
-                va_arg(args, s32);
+                va_arg(मगा_कातविरान, s32);
             if (val < 0) {
                 putc(action, '-');
                 val = -val;
@@ -272,13 +272,13 @@ bvprintf(struct putcinfo *action, const char *fmt, va_list args)
             putuint(action, val);
             break;
         case 'u':
-            val = va_arg(args, s32);
+            val = va_arg(मगा_कातविरान, s32);
             if (is64)
-                va_arg(args, s32);
+                va_arg(मगा_कातविरान, s32);
             putuint(action, val);
             break;
         case 'p':
-            val = va_arg(args, s32);
+            val = va_arg(मगा_कातविरान, s32);
             if (!MODESEGMENT && GET_GLOBAL(*(u8*)(n+1)) == 'P') {
                 // %pP is 'struct pci_device' printer
                 put_pci_device(action, (void*)val);
@@ -292,9 +292,9 @@ bvprintf(struct putcinfo *action, const char *fmt, va_list args)
         case 'X':
         case 'x':
             uc = (c == 'X');
-            val = va_arg(args, s32);
+            val = va_arg(मगा_कातविरान, s32);
             if (is64) {
-                u32 upper = va_arg(args, s32);
+                u32 upper = va_arg(मगा_कातविरान, s32);
                 if (upper) {
                     putprettyhex(action, upper, field_width - 8, padchar, uc);
                     puthex(action, val, 8, uc);
@@ -304,7 +304,7 @@ bvprintf(struct putcinfo *action, const char *fmt, va_list args)
             putprettyhex(action, val, field_width, padchar, uc);
             break;
         case 'c':
-            val = va_arg(args, int);
+            val = va_arg(मगा_कातविरान, int);
             putc(action, val);
             break;
         case '.':
@@ -312,11 +312,11 @@ bvprintf(struct putcinfo *action, const char *fmt, va_list args)
             if (GET_GLOBAL(*(u8*)(n+1)) != 's')
                 break;
             n++;
-            sarg = va_arg(args, const char *);
+            sarg = va_arg(मगा_कातविरान, const char *);
             puts(action, sarg);
             break;
         case 's':
-            sarg = va_arg(args, const char *);
+            sarg = va_arg(मगा_कातविरान, const char *);
             puts_cs(action, sarg);
             break;
         default:
@@ -331,10 +331,10 @@ void
 panic(const char *fmt, ...)
 {
     if (CONFIG_DEBUG_LEVEL) {
-        va_list args;
-        va_start(args, fmt);
-        bvprintf(&debuginfo, fmt, args);
-        va_end(args);
+        va_list मगा_कातविरान;
+        va_start(मगा_कातविरान, fmt);
+        bvprintf(&debuginfo, fmt, मगा_कातविरान);
+        va_end(मगा_कातविरान);
         debug_flush();
     }
 
@@ -359,10 +359,10 @@ __dprintf(const char *fmt, ...)
         }
     }
 
-    va_list args;
-    va_start(args, fmt);
-    bvprintf(&debuginfo, fmt, args);
-    va_end(args);
+    va_list मगा_कातविरान;
+    va_start(मगा_कातविरान, fmt);
+    bvprintf(&debuginfo, fmt, मगा_कातविरान);
+    va_end(मगा_कातविरान);
     debug_flush();
 }
 
@@ -370,10 +370,10 @@ void
 printf(const char *fmt, ...)
 {
     ASSERT32FLAT();
-    va_list args;
-    va_start(args, fmt);
-    bvprintf(&screeninfo, fmt, args);
-    va_end(args);
+    va_list मगा_कातविरान;
+    va_start(मगा_कातविरान, fmt);
+    bvprintf(&screeninfo, fmt, मगा_कातविरान);
+    va_end(मगा_कातविरान);
     if (ScreenAndDebug)
         debug_flush();
 }
@@ -408,10 +408,10 @@ snprintf(char *str, size_t size, const char *fmt, ...)
     if (!size)
         return 0;
     struct snprintfinfo sinfo = { { putc_str }, str, str + size };
-    va_list args;
-    va_start(args, fmt);
-    bvprintf(&sinfo.info, fmt, args);
-    va_end(args);
+    va_list मगा_कातविरान;
+    va_start(मगा_कातविरान, fmt);
+    bvprintf(&sinfo.info, fmt, मगा_कातविरान);
+    va_end(मगा_कातविरान);
     char *end = sinfo.str;
     if (end >= sinfo.end)
         end = sinfo.end - 1;
@@ -432,10 +432,10 @@ znprintf(size_t size, const char *fmt, ...)
         return NULL;
     }
     struct snprintfinfo sinfo = { { putc_str }, str, str + size };
-    va_list args;
-    va_start(args, fmt);
-    bvprintf(&sinfo.info, fmt, args);
-    va_end(args);
+    va_list मगा_कातविरान;
+    va_start(मगा_कातविरान, fmt);
+    bvprintf(&sinfo.info, fmt, मगा_कातविरान);
+    va_end(मगा_कातविरान);
     char *end = sinfo.str;
     if (end >= sinfo.end)
         end = sinfo.end - 1;
@@ -451,17 +451,17 @@ znprintf(size_t size, const char *fmt, ...)
 void
 hexdump(const void *d, int len)
 {
-    int count=0;
+    int बिलांग=0;
     while (len > 0) {
-        if (count % 8 == 0) {
+        if (बिलांग % 8 == 0) {
             putc(&debuginfo, '\n');
-            puthex(&debuginfo, count*4, 8, 0);
+            puthex(&debuginfo, बिलांग*4, 8, 0);
             putc(&debuginfo, ':');
         } else {
             putc(&debuginfo, ' ');
         }
         puthex(&debuginfo, *(u32*)d, 8, 0);
-        count++;
+        बिलांग++;
         len-=4;
         d+=4;
     }

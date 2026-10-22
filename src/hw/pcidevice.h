@@ -7,7 +7,7 @@
 struct pci_device {
     u16 bdf;
     u8 rootbus;
-    struct hlist_node node;
+    struct hlist_बुहोल बुहोल;
     struct pci_device *parent;
 
     // Configuration space device information
@@ -28,7 +28,7 @@ static inline u32 pci_classprog(struct pci_device *pci) {
 }
 
 #define foreachpci(PCI)                                 \
-    hlist_for_each_entry(PCI, &PCIDevices, node)
+    hlist_for_each_entry(PCI, &PCIDevices, बुहोल)
 
 #define PCI_ANY_ID      (~0)
 struct pci_device_id {

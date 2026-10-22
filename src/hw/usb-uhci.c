@@ -182,10 +182,10 @@ configure_uhci(void *data)
     struct usb_uhci_s *cntl = data;
 
     // Allocate ram for schedule storage
-    struct uhci_td *term_td = malloc_high(sizeof(*term_td));
-    struct uhci_framelist *fl = memalign_high(sizeof(*fl), sizeof(*fl));
-    struct uhci_pipe *intr_pipe = malloc_high(sizeof(*intr_pipe));
-    struct uhci_pipe *term_pipe = malloc_high(sizeof(*term_pipe));
+    struct uhci_td *term_td = malloc_माताअस(sizeof(*term_td));
+    struct uhci_framelist *fl = memalign_माताअस(sizeof(*fl), sizeof(*fl));
+    struct uhci_pipe *intr_pipe = malloc_माताअस(sizeof(*intr_pipe));
+    struct uhci_pipe *term_pipe = malloc_माताअस(sizeof(*term_pipe));
     if (!term_td || !fl || !intr_pipe || !term_pipe) {
         warn_noalloc();
         goto fail;
@@ -226,9 +226,9 @@ configure_uhci(void *data)
     outw(USBCMD_RS | USBCMD_CF | USBCMD_MAXP, cntl->iobase + USBCMD);
 
     // Find devices
-    int count = check_uhci_ports(cntl);
+    int बिलांग = check_uhci_ports(cntl);
     uhci_free_pipes(cntl);
-    if (count)
+    if (बिलांग)
         // Success
         return;
 
@@ -299,11 +299,11 @@ uhci_alloc_intr_pipe(struct usbdevice_s *usbdev
     int maxpacket = epdesc->wMaxPacketSize;
     // Determine number of entries needed for 2 timer ticks.
     int ms = 1<<frameexp;
-    int count = DIV_ROUND_UP(ticks_to_ms(2), ms);
-    count = ALIGN(count, 2);
-    struct uhci_pipe *pipe = malloc_low(sizeof(*pipe));
-    struct uhci_td *tds = malloc_low(sizeof(*tds) * count);
-    void *data = malloc_low(maxpacket * count);
+    int बिलांग = DIV_ROUND_UP(ticks_to_ms(2), ms);
+    बिलांग = ALIGN(बिलांग, 2);
+    struct uhci_pipe *pipe = malloc_माबाबा(sizeof(*pipe));
+    struct uhci_td *tds = malloc_माबाबा(sizeof(*tds) * बिलांग);
+    void *data = malloc_माबाबा(maxpacket * बिलांग);
     if (!pipe || !tds || !data) {
         warn_noalloc();
         goto fail;
@@ -318,8 +318,8 @@ uhci_alloc_intr_pipe(struct usbdevice_s *usbdev
 
     int toggle = 0;
     int i;
-    for (i=0; i<count; i++) {
-        tds[i].link = (i==count-1 ? (u32)&tds[0] : (u32)&tds[i+1]);
+    for (i=0; i<बिलांग; i++) {
+        tds[i].link = (i==बिलांग-1 ? (u32)&tds[0] : (u32)&tds[i+1]);
         tds[i].status = (uhci_maxerr(3) | (lowspeed ? TD_CTRL_LS : 0)
                          | TD_CTRL_ACTIVE);
         tds[i].token = (uhci_explen(maxpacket) | toggle
@@ -383,7 +383,7 @@ uhci_realloc_pipe(struct usbdevice_s *usbdev, struct usb_pipe *upipe
     if (eptype == USB_ENDPOINT_XFER_CONTROL)
         pipe = malloc_tmphigh(sizeof(*pipe));
     else
-        pipe = malloc_low(sizeof(*pipe));
+        pipe = malloc_माबाबा(sizeof(*pipe));
     if (!pipe) {
         warn_noalloc();
         return NULL;
@@ -557,7 +557,7 @@ uhci_poll_intr(struct usb_pipe *p, void *data)
 
     // Copy data.
     void *tddata = GET_LOWFLAT(td->buffer);
-    memcpy_far(GET_SEG(SS), data, SEG_LOW, LOWFLAT2LOW(tddata)
+    memcpy_far(GET_SEG(SS), data, SEG_माबाबा, LOWFLAT2_माबाबा(tddata)
                , uhci_expected_length(token));
 
     // Reenable this td.

@@ -69,7 +69,7 @@ usb_process_op(struct disk_op_s *op)
         return 0;
 
     dprintf(16, "usb_cmd_data id=%p write=%d count=%d buf=%p\n"
-            , op->drive_fl, 0, op->count, op->buf_fl);
+            , op->drive_fl, 0, op->बिलांग, op->buf_fl);
     struct usbdrive_s *udrive_gf = container_of(
         op->drive_fl, struct usbdrive_s, drive);
 
@@ -79,7 +79,7 @@ usb_process_op(struct disk_op_s *op)
     int blocksize = scsi_fill_cmd(op, cbw.CBWCB, USB_CDB_SIZE);
     if (blocksize < 0)
         return default_process_op(op);
-    u32 bytes = blocksize * op->count;
+    u32 bytes = blocksize * op->बिलांग;
     cbw.dCBWSignature = CBW_SIGNATURE;
     cbw.dCBWTag = 999; // XXX
     cbw.dCBWDataTransferLength = bytes;
@@ -113,7 +113,7 @@ usb_process_op(struct disk_op_s *op)
         goto fail;
 
     if (blocksize)
-        op->count -= csw.dCSWDataResidue / blocksize;
+        op->बिलांग -= csw.dCSWDataResidue / blocksize;
     return DISK_RET_EBADTRACK;
 
 fail:
@@ -128,7 +128,7 @@ usb_msc_maxlun(struct usb_pipe *pipe)
     struct usb_ctrlrequest req;
     req.bRequestType = USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_INTERFACE;
     req.bRequest = 0xfe;
-    req.wValue = 0;
+    req.w_हालागा = 0;
     req.wIndex = 0;
     req.wLength = 1;
     unsigned char maxlun;

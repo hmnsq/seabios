@@ -26,17 +26,17 @@ struct pmmheader PMMHEADER __aligned(16) VARFSEG = {
 
 // PMM - allocate
 static u32
-handle_pmm00(u16 *args)
+handle_pmm00(u16 *मगा_कातविरान)
 {
-    u32 length = *(u32*)&args[1], handle = *(u32*)&args[3];
-    u16 flags = args[5];
+    u32 length = *(u32*)&मगा_कातविरान[1], handle = *(u32*)&मगा_कातविरान[3];
+    u16 flags = मगा_कातविरान[5];
     dprintf(3, "pmm00: length=%x handle=%x flags=%x\n"
             , length, handle, flags);
-    struct zone_s *lowzone = &ZoneTmpLow, *highzone = &ZoneTmpHigh;
+    struct zone_s *lowzone = &Zone_Tmp_माबाबा, *highzone = &Zone_Tmp_माताअस;
     if (flags & 8) {
         // Permanent memory request.
-        lowzone = &ZoneLow;
-        highzone = &ZoneHigh;
+        lowzone = &Zone_माबाबा;
+        highzone = &Zone_माताअस;
     }
     if (!length) {
         // Memory size request
@@ -84,7 +84,7 @@ handle_pmm00(u16 *args)
              * handle big permanent allocations without needing a big
              * ZoneHigh.
              */
-            data = malloc_palloc(&ZoneTmpHigh, size, align);
+            data = malloc_palloc(&Zone_Tmp_माताअस, size, align);
             if (data)
                 e820_add(data, size, E820_RESERVED);
         }
@@ -102,9 +102,9 @@ handle_pmm00(u16 *args)
 
 // PMM - find
 static u32
-handle_pmm01(u16 *args)
+handle_pmm01(u16 *मगा_कातविरान)
 {
-    u32 handle = *(u32*)&args[1];
+    u32 handle = *(u32*)&मगा_कातविरान[1];
     dprintf(3, "pmm01: handle=%x\n", handle);
     if (handle == MALLOC_DEFAULT_HANDLE)
         return 0;
@@ -113,9 +113,9 @@ handle_pmm01(u16 *args)
 
 // PMM - deallocate
 static u32
-handle_pmm02(u16 *args)
+handle_pmm02(u16 *मगा_कातविरान)
 {
-    u32 buffer = *(u32*)&args[1];
+    u32 buffer = *(u32*)&मगा_कातविरान[1];
     dprintf(3, "pmm02: buffer=%x\n", buffer);
     int ret = malloc_pfree(buffer);
     if (ret)
@@ -125,27 +125,27 @@ handle_pmm02(u16 *args)
 }
 
 static u32
-handle_pmmXX(u16 *args)
+handle_pmmXX(u16 *मगा_कातविरान)
 {
     return PMM_FUNCTION_NOT_SUPPORTED;
 }
 
 u32 VISIBLE32INIT
-handle_pmm(u16 *args)
+handle_pmm(u16 *मगा_कातविरान)
 {
     ASSERT32FLAT();
     if (! CONFIG_PMM)
         return PMM_FUNCTION_NOT_SUPPORTED;
 
-    u16 arg1 = args[0];
+    u16 arg1 = मगा_कातविरान[0];
     dprintf(DEBUG_HDL_pmm, "pmm call arg1=%x\n", arg1);
 
     u32 ret;
     switch (arg1) {
-    case 0x00: ret = handle_pmm00(args); break;
-    case 0x01: ret = handle_pmm01(args); break;
-    case 0x02: ret = handle_pmm02(args); break;
-    default:   ret = handle_pmmXX(args); break;
+    case 0x00: ret = handle_pmm00(मगा_कातविरान); break;
+    case 0x01: ret = handle_pmm01(मगा_कातविरान); break;
+    case 0x02: ret = handle_pmm02(मगा_कातविरान); break;
+    default:   ret = handle_pmmXX(मगा_कातविरान); break;
     }
 
     return ret;

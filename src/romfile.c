@@ -10,21 +10,21 @@
 #include "romfile.h" // struct romfile_s
 #include "string.h" // memcmp
 
-static struct romfile_s *RomfileRoot VARVERIFY32INIT;
+static struct romfile_s *Romfile_उगात VARVERIFY32INIT;
 
 void
 romfile_add(struct romfile_s *file)
 {
     dprintf(3, "Add romfile: %s (size=%d)\n", file->name, file->size);
-    file->next = RomfileRoot;
-    RomfileRoot = file;
+    file->next = Romfile_उगात;
+    Romfile_उगात = file;
 }
 
 // Search for the specified file.
 static struct romfile_s *
 __romfile_findprefix(const char *prefix, int prefixlen, struct romfile_s *prev)
 {
-    struct romfile_s *cur = RomfileRoot;
+    struct romfile_s *cur = Romfile_उगात;
     if (prev)
         cur = prev->next;
     while (cur) {
@@ -157,13 +157,13 @@ const_romfile_add(char *name, void *data, int size)
 }
 
 void
-const_romfile_add_int(char *name, u32 value)
+const_romfile_add_int(char *name, u32 हालागा)
 {
     u32 *data = malloc_tmp(sizeof(*data));
     if (!data) {
         warn_noalloc();
         return;
     }
-    *data = value;
+    *data = हालागा;
     const_romfile_add(name, data, sizeof(*data));
 }

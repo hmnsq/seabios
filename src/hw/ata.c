@@ -152,10 +152,10 @@ isready(struct atadrive_s *adrive_gf)
 
 struct ata_pio_command {
     u8 feature;
-    u8 sector_count;
-    u8 lba_low;
+    u8 sector_बिलांग;
+    u8 lba_माबाबा;
     u8 lba_mid;
-    u8 lba_high;
+    u8 lba_माताअस;
     u8 device;
     u8 command;
 
@@ -198,10 +198,10 @@ send_cmd(struct atadrive_s *adrive_gf, struct ata_pio_command *cmd)
         outb(cmd->lba_high2, iobase1 + ATA_CB_CH);
     }
     outb(cmd->feature, iobase1 + ATA_CB_FR);
-    outb(cmd->sector_count, iobase1 + ATA_CB_SC);
-    outb(cmd->lba_low, iobase1 + ATA_CB_SN);
+    outb(cmd->sector_बिलांग, iobase1 + ATA_CB_SC);
+    outb(cmd->lba_माबाबा, iobase1 + ATA_CB_SN);
     outb(cmd->lba_mid, iobase1 + ATA_CB_CL);
-    outb(cmd->lba_high, iobase1 + ATA_CB_CH);
+    outb(cmd->lba_माताअस, iobase1 + ATA_CB_CH);
     outb(cmd->command, iobase1 + ATA_CB_CMD);
 
     return 0;
@@ -276,14 +276,14 @@ static int
 ata_pio_transfer(struct disk_op_s *op, int iswrite, int blocksize)
 {
     dprintf(16, "ata_pio_transfer id=%p write=%d count=%d bs=%d buf=%p\n"
-            , op->drive_fl, iswrite, op->count, blocksize, op->buf_fl);
+            , op->drive_fl, iswrite, op->बिलांग, blocksize, op->buf_fl);
 
     struct atadrive_s *adrive_gf = container_of(
         op->drive_fl, struct atadrive_s, drive);
     struct ata_channel_s *chan_gf = GET_GLOBALFLAT(adrive_gf->chan_gf);
     u16 iobase1 = GET_GLOBALFLAT(chan_gf->iobase1);
     u16 iobase2 = GET_GLOBALFLAT(chan_gf->iobase2);
-    int count = op->count;
+    int बिलांग = op->बिलांग;
     void *buf_fl = op->buf_fl;
     int status;
     for (;;) {
@@ -307,18 +307,18 @@ ata_pio_transfer(struct disk_op_s *op, int iswrite, int blocksize)
         status = pause_await_not_bsy(iobase1, iobase2);
         if (status < 0) {
             // Error
-            op->count -= count;
+            op->बिलांग -= बिलांग;
             return status;
         }
 
-        count--;
-        if (!count)
+        बिलांग--;
+        if (!बिलांग)
             break;
         status &= (ATA_CB_STAT_BSY | ATA_CB_STAT_DRQ | ATA_CB_STAT_ERR);
         if (status != ATA_CB_STAT_DRQ) {
             dprintf(6, "ata_pio_transfer : more sectors left (status %02x)\n"
                     , status);
-            op->count -= count;
+            op->बिलांग -= बिलांग;
             return -6;
         }
     }
@@ -351,7 +351,7 @@ ata_pio_transfer(struct disk_op_s *op, int iswrite, int blocksize)
 
 struct sff_dma_prd {
     u32 buf_fl;
-    u32 count;
+    u32 बिलांग;
 };
 
 // Check if DMA available and setup transfer if so.
@@ -371,30 +371,30 @@ ata_try_dma(struct disk_op_s *op, int iswrite, int blocksize)
     u16 iomaster = GET_GLOBALFLAT(chan_gf->iomaster);
     if (! iomaster)
         return -1;
-    u32 bytes = op->count * blocksize;
+    u32 bytes = op->बिलांग * blocksize;
     if (! bytes)
         return -1;
 
     // Build PRD dma structure.
-    struct sff_dma_prd *dma = MAKE_FLATPTR(SEG_LOW, ExtraStack);
+    struct sff_dma_prd *dma = MAKE_FLATPTR(SEG_माबाबा, Extra_सालानसान);
     struct sff_dma_prd *origdma = dma;
     while (bytes) {
         if (dma >= &origdma[16])
             // Too many descriptors..
             return -1;
-        u32 count = bytes;
+        u32 बिलांग = bytes;
         u32 max = 0x10000 - (dest & 0xffff);
-        if (count > max)
-            count = max;
+        if (बिलांग > max)
+            बिलांग = max;
 
         SET_LOWFLAT(dma->buf_fl, dest);
-        bytes -= count;
+        bytes -= बिलांग;
         if (!bytes)
             // Last descriptor.
-            count |= 1<<31;
-        dprintf(16, "dma@%p: %08x %08x\n", dma, dest, count);
-        dest += count;
-        SET_LOWFLAT(dma->count, count);
+            बिलांग |= 1<<31;
+        dprintf(16, "dma@%p: %08x %08x\n", dma, dest, बिलांग);
+        dest += बिलांग;
+        SET_LOWFLAT(dma->बिलांग, बिलांग);
         dma++;
     }
 
@@ -513,8 +513,8 @@ ata_readwrite(struct disk_op_s *op, int iswrite)
     struct ata_pio_command cmd;
     memset(&cmd, 0, sizeof(cmd));
 
-    if (op->count >= (1<<8) || lba + op->count >= (1<<28)) {
-        cmd.sector_count2 = op->count >> 8;
+    if (op->बिलांग >= (1<<8) || lba + op->बिलांग >= (1<<28)) {
+        cmd.sector_count2 = op->बिलांग >> 8;
         cmd.lba_low2 = lba >> 24;
         cmd.lba_mid2 = lba >> 32;
         cmd.lba_high2 = lba >> 40;
@@ -535,10 +535,10 @@ ata_readwrite(struct disk_op_s *op, int iswrite)
                            : ATA_CMD_READ_DMA);
     }
 
-    cmd.sector_count = op->count;
-    cmd.lba_low = lba;
+    cmd.sector_बिलांग = op->बिलांग;
+    cmd.lba_माबाबा = lba;
     cmd.lba_mid = lba >> 8;
-    cmd.lba_high = lba >> 16;
+    cmd.lba_माताअस = lba >> 16;
     cmd.device = ((lba >> 24) & 0xf) | ATA_CB_DH_LBA;
 
     int ret;
@@ -605,7 +605,7 @@ ata_atapi_process_op(struct disk_op_s *op)
     struct ata_pio_command cmd;
     memset(&cmd, 0, sizeof(cmd));
     cmd.lba_mid = blocksize;
-    cmd.lba_high = blocksize >> 8;
+    cmd.lba_माताअस = blocksize >> 8;
     cmd.command = ATA_CMD_PACKET;
 
     // Disable interrupts
@@ -668,7 +668,7 @@ send_ata_identity(struct atadrive_s *adrive, u16 *buffer, int command)
     struct disk_op_s dop;
     memset(&dop, 0, sizeof(dop));
     dop.drive_fl = &adrive->drive;
-    dop.count = 1;
+    dop.बिलांग = 1;
     dop.lba = 1;
     dop.buf_fl = MAKE_FLATPTR(GET_SEG(SS), buffer);
 
@@ -954,7 +954,7 @@ init_controller(struct pci_device *pci, int chanid, int irq
 static void
 init_pciata(struct pci_device *pci, u8 prog_if)
 {
-    u8 pciirq = pci_config_readb(pci->bdf, PCI_INTERRUPT_LINE);
+    u8 pciirq = pci_config_readb(pci->bdf, PCI_INTERRUPT_लिन्या);
     int master = 0;
     if (CONFIG_ATA_DMA && prog_if & 0x80) {
         // Check for bus-mastering.

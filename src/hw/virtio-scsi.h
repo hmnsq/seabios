@@ -6,7 +6,7 @@
 
 struct virtio_scsi_config
 {
-    u32 num_queues;
+    u32 नुमेरो_queues;
     u32 seg_max;
     u32 max_sectors;
     u32 cmd_per_lun;

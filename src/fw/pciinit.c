@@ -30,14 +30,14 @@
 #define PCI_BRIDGE_IO_MIN      0x1000  // mandated by pci bridge spec
 
 #define PCI_ROM_SLOT 6
-#define PCI_NUM_REGIONS 7
-#define PCI_BRIDGE_NUM_REGIONS 2
+#define PCI_नुमेरो_REGIONS 7
+#define PCI_BRIDGE_नुमेरो_REGIONS 2
 
 enum pci_region_type {
     PCI_REGION_TYPE_IO,
     PCI_REGION_TYPE_MEM,
     PCI_REGION_TYPE_PREFMEM,
-    PCI_REGION_TYPE_COUNT,
+    PCI_REGION_TYPE_बिलांग,
 };
 
 static const char *region_type_name[] = {
@@ -53,8 +53,8 @@ u64 pcimem64_start = BUILD_PCIMEM64_START;
 u64 pcimem64_end   = BUILD_PCIMEM64_END;
 
 // Resource allocation limits
-static u64 pci_io_low_end = 0xa000;
-static u64 pci_mem64_top  = 0;
+static u64 pci_io_माबाबा_end = 0xa000;
+static u64 pci_mem64_इताअस  = 0;
 static u32 pci_pad_mem64  = -1;
 
 struct pci_region_entry {
@@ -64,7 +64,7 @@ struct pci_region_entry {
     u64 align;
     int is64;
     enum pci_region_type type;
-    struct hlist_node node;
+    struct hlist_बुहोल बुहोल;
 };
 
 struct pci_region {
@@ -74,14 +74,14 @@ struct pci_region {
 };
 
 struct pci_bus {
-    struct pci_region r[PCI_REGION_TYPE_COUNT];
+    struct pci_region r[PCI_REGION_TYPE_बिलांग];
     struct pci_device *bus_dev;
 };
 
-static u32 pci_bar(struct pci_device *pci, int region_num)
+static u32 pci_bar(struct pci_device *pci, int region_नुमेरो)
 {
-    if (region_num != PCI_ROM_SLOT) {
-        return PCI_BASE_ADDRESS_0 + region_num * 4;
+    if (region_नुमेरो != PCI_ROM_SLOT) {
+        return PCI_BASE_ADDRESS_0 + region_नुमेरो * 4;
     }
 
 #define PCI_HEADER_TYPE_MULTI_FUNCTION 0x80
@@ -252,7 +252,7 @@ static void apple_macio_setup(struct pci_device *pci, void *arg)
 static void piix4_pm_config_setup(u16 bdf)
 {
     // acpi sci is hardwired to 9
-    pci_config_writeb(bdf, PCI_INTERRUPT_LINE, 9);
+    pci_config_writeb(bdf, PCI_INTERRUPT_लिन्या, 9);
 
     pci_config_writel(bdf, PIIX_PMBASE, acpi_pm_base | 1);
     pci_config_writeb(bdf, PIIX_PMREGMISC, 0x01); /* enable PM io space */
@@ -300,7 +300,7 @@ static void intel_igd_setup(struct pci_device *dev, void *arg)
 
     /* Apply OpRegion to any Intel VGA device, more than one is undefined */
     if (opregion && opregion->size) {
-        void *addr = memalign_high(PAGE_SIZE, opregion->size);
+        void *addr = memalign_माताअस(PAGE_SIZE, opregion->size);
         if (!addr) {
             warn_noalloc();
             return;
@@ -409,7 +409,7 @@ static void pci_bios_init_device(struct pci_device *pci)
     u16 bdf = pci->bdf;
     int pin = pci_config_readb(bdf, PCI_INTERRUPT_PIN);
     if (pin != 0)
-        pci_config_writeb(bdf, PCI_INTERRUPT_LINE, pci_slot_get_irq(pci, pin));
+        pci_config_writeb(bdf, PCI_INTERRUPT_लिन्या, pci_slot_get_irq(pci, pin));
 
     pci_init_device(pci_device_tbl, pci, NULL);
 
@@ -505,9 +505,9 @@ static void mch_mem_addr_setup(struct pci_device *dev, void *arg)
 
     /* setup io address space */
     if (acpi_pm_base < 0x1000)
-        pci_io_low_end = 0x10000;
+        pci_io_माबाबा_end = 0x10000;
     else
-        pci_io_low_end = acpi_pm_base;
+        pci_io_माबाबा_end = acpi_pm_base;
 }
 
 static const struct pci_device_id pci_platform_tbl[] = {
@@ -537,7 +537,7 @@ static u8 pci_find_resource_reserve_capability(u16 bdf)
 
     device_id = pci_config_readw(bdf, PCI_DEVICE_ID);
 
-    if (device_id != PCI_DEVICE_ID_REDHAT_ROOT_PORT &&
+    if (device_id != PCI_DEVICE_ID_REDHAT_उगात_PORT &&
         device_id != PCI_DEVICE_ID_REDHAT_BRIDGE) {
         dprintf(1, "PCI: QEMU resource reserve cap device ID doesn't match.\n");
         return 0;
@@ -701,9 +701,9 @@ pci_bios_get_bar(struct pci_device *pci, int bar,
     if (is64) {
         u32 hold = pci_config_readl(bdf, ofs + 4);
         pci_config_writel(bdf, ofs + 4, ~0);
-        u32 high = pci_config_readl(bdf, ofs + 4);
+        u32 माताअस = pci_config_readl(bdf, ofs + 4);
         pci_config_writel(bdf, ofs + 4, hold);
-        val |= ((u64)high << 32);
+        val |= ((u64)माताअस << 32);
         mask |= ((u64)0xffffffff << 32);
         *psize = (~(val & mask)) + 1;
     } else {
@@ -727,7 +727,7 @@ static int pci_bios_bridge_region_is64(struct pci_region *r,
     if ((pmem & PCI_PREF_RANGE_TYPE_MASK) != PCI_PREF_RANGE_TYPE_64)
        return 0;
     struct pci_region_entry *entry;
-    hlist_for_each_entry(entry, &r->list, node) {
+    hlist_for_each_entry(entry, &r->list, बुहोल) {
         if (!entry->is64)
             return 0;
     }
@@ -737,7 +737,7 @@ static int pci_bios_bridge_region_is64(struct pci_region *r,
 static u64 pci_region_align(struct pci_region *r)
 {
     struct pci_region_entry *entry;
-    hlist_for_each_entry(entry, &r->list, node) {
+    hlist_for_each_entry(entry, &r->list, बुहोल) {
         // The first entry in the sorted list has the largest alignment
         return entry->align;
     }
@@ -748,7 +748,7 @@ static u64 pci_region_sum(struct pci_region *r)
 {
     u64 sum = 0;
     struct pci_region_entry *entry;
-    hlist_for_each_entry(entry, &r->list, node) {
+    hlist_for_each_entry(entry, &r->list, बुहोल) {
         sum += entry->size;
     }
     return sum;
@@ -757,9 +757,9 @@ static u64 pci_region_sum(struct pci_region *r)
 static void pci_region_migrate_64bit_entries(struct pci_region *from,
                                              struct pci_region *to)
 {
-    struct hlist_node *n, **last = &to->list.first;
+    struct hlist_बुहोल *n, **last = &to->list.first;
     struct pci_region_entry *entry;
-    hlist_for_each_entry_safe(entry, n, &from->list, node) {
+    hlist_for_each_entry_safe(entry, n, &from->list, बुहोल) {
         if (!entry->is64)
             continue;
         if (entry->dev->class == PCI_CLASS_SERIAL_USB)
@@ -767,9 +767,9 @@ static void pci_region_migrate_64bit_entries(struct pci_region *from,
         if (entry->dev->class == PCI_CLASS_STORAGE_NVME)
             continue;
         // Move from source list to destination list.
-        hlist_del(&entry->node);
-        hlist_add(&entry->node, last);
-        last = &entry->node.next;
+        hlist_del(&entry->बुहोल);
+        hlist_add(&entry->बुहोल, last);
+        last = &entry->बुहोल.next;
     }
 }
 
@@ -790,13 +790,13 @@ pci_region_create_entry(struct pci_bus *bus, struct pci_device *dev,
     entry->is64 = is64;
     entry->type = type;
     // Insert into list in sorted order.
-    struct hlist_node **pprev;
+    struct hlist_बुहोल **pprev;
     struct pci_region_entry *pos;
-    hlist_for_each_entry_pprev(pos, pprev, &bus->r[type].list, node) {
+    hlist_for_each_entry_pprev(pos, pprev, &bus->r[type].list, बुहोल) {
         if (pos->align < align || (pos->align == align && pos->size < size))
             break;
     }
-    hlist_add(&entry->node, pprev);
+    hlist_add(&entry->बुहोल, pprev);
     return entry;
 }
 
@@ -820,7 +820,7 @@ static hotplug_type_t pci_bus_hotplug_support(struct pci_bus *bus, u8 pcie_cap)
             goto check_shpc;
 
         u8 downstream_port = (port_type == PCI_EXP_TYPE_DOWNSTREAM) ||
-                             (port_type == PCI_EXP_TYPE_ROOT_PORT);
+                             (port_type == PCI_EXP_TYPE_उगात_PORT);
         /*
          * PCI Express SPEC, 7.8.2:
          *   Slot Implemented – When Set, this bit indicates that the Link
@@ -884,9 +884,9 @@ static int pci_bios_check_devices(struct pci_bus *busses)
              */
             bus = &busses[0];
         int i;
-        for (i = 0; i < PCI_NUM_REGIONS; i++) {
+        for (i = 0; i < PCI_नुमेरो_REGIONS; i++) {
             if ((pci->class == PCI_CLASS_BRIDGE_PCI) &&
-                (i >= PCI_BRIDGE_NUM_REGIONS && i < PCI_ROM_SLOT))
+                (i >= PCI_BRIDGE_नुमेरो_REGIONS && i < PCI_ROM_SLOT))
                 continue;
             int type, is64;
             u64 size;
@@ -924,7 +924,7 @@ static int pci_bios_check_devices(struct pci_bus *busses)
         u8 qemu_cap = pci_find_resource_reserve_capability(bdf);
 
         hotplug_type_t hotplug_support = pci_bus_hotplug_support(s, pcie_cap);
-        for (type = 0; type < PCI_REGION_TYPE_COUNT; type++) {
+        for (type = 0; type < PCI_REGION_TYPE_बिलांग; type++) {
             u64 align = (type == PCI_REGION_TYPE_IO) ?
                 PCI_BRIDGE_IO_MIN : PCI_BRIDGE_MEM_MIN;
             if (!pci_bridge_has_region(s->bus_dev, type))
@@ -973,10 +973,10 @@ static int pci_bios_check_devices(struct pci_bus *busses)
             if (hotplug_support == HOTPLUG_PCIE)
                 resource_optional = pcie_cap && (type == PCI_REGION_TYPE_IO);
 
-            u64 top_align = pci_mem64_top >> 11;
+            u64 इताअस_align = pci_mem64_इताअस >> 11;
             if (hotplug_support && pci_pad_mem64 && is64
-                && (type == PCI_REGION_TYPE_PREFMEM) && (top_align > align))
-                align = top_align;
+                && (type == PCI_REGION_TYPE_PREFMEM) && (इताअस_align > align))
+                align = इताअस_align;
             if (align > sum && hotplug_support && !resource_optional)
                 sum = align; /* reserve min size for hot-plug */
             if (size > sum) {
@@ -1008,7 +1008,7 @@ static int pci_bios_check_devices(struct pci_bus *busses)
  ****************************************************************/
 
 // Setup region bases (given the regions' size and alignment)
-static int pci_bios_init_root_regions_io(struct pci_bus *bus)
+static int pci_bios_init_उगात_regions_io(struct pci_bus *bus)
 {
     /*
      * QEMU I/O address space usage:
@@ -1026,7 +1026,7 @@ static int pci_bios_init_root_regions_io(struct pci_bus *bus)
     if (sum < 0x4000) {
         /* traditional region is big enougth, use it */
         r_io->base = 0xc000;
-    } else if (sum < pci_io_low_end - 0x1000) {
+    } else if (sum < pci_io_माबाबा_end - 0x1000) {
         /* use the larger region at 0x1000 */
         r_io->base = 0x1000;
     } else {
@@ -1037,7 +1037,7 @@ static int pci_bios_init_root_regions_io(struct pci_bus *bus)
     return 0;
 }
 
-static int pci_bios_init_root_regions_mem(struct pci_bus *bus)
+static int pci_bios_init_उगात_regions_mem(struct pci_bus *bus)
 {
     struct pci_region *r_end = &bus->r[PCI_REGION_TYPE_PREFMEM];
     struct pci_region *r_start = &bus->r[PCI_REGION_TYPE_MEM];
@@ -1100,27 +1100,27 @@ pci_region_map_one_entry(struct pci_region_entry *entry, u64 addr)
 
 static void pci_region_map_entries(struct pci_bus *busses, struct pci_region *r)
 {
-    struct hlist_node *n;
+    struct hlist_बुहोल *n;
     struct pci_region_entry *entry;
-    hlist_for_each_entry_safe(entry, n, &r->list, node) {
+    hlist_for_each_entry_safe(entry, n, &r->list, बुहोल) {
         u64 addr = r->base;
         r->base += entry->size;
         if (entry->bar == -1)
             // Update bus base address if entry is a bridge region
             busses[entry->dev->secondary_bus].r[entry->type].base = addr;
         pci_region_map_one_entry(entry, addr);
-        hlist_del(&entry->node);
+        hlist_del(&entry->बुहोल);
         free(entry);
     }
 }
 
 static void pci_bios_map_devices(struct pci_bus *busses)
 {
-    if (pci_bios_init_root_regions_io(busses))
+    if (pci_bios_init_उगात_regions_io(busses))
         panic("PCI: out of I/O address space\n");
 
     dprintf(1, "PCI: 32: %016llx - %016llx\n", pcimem_start, pcimem_end);
-    if (pci_pad_mem64 || pci_bios_init_root_regions_mem(busses)) {
+    if (pci_pad_mem64 || pci_bios_init_उगात_regions_mem(busses)) {
         struct pci_region r64_mem, r64_pref;
         r64_mem.list.first = NULL;
         r64_pref.list.first = NULL;
@@ -1129,7 +1129,7 @@ static void pci_bios_map_devices(struct pci_bus *busses)
         pci_region_migrate_64bit_entries(&busses[0].r[PCI_REGION_TYPE_PREFMEM],
                                          &r64_pref);
 
-        if (pci_bios_init_root_regions_mem(busses))
+        if (pci_bios_init_उगात_regions_mem(busses))
             panic("PCI: out of 32bit address space\n");
 
         u64 sum_mem = pci_region_sum(&r64_mem);
@@ -1140,13 +1140,13 @@ static void pci_bios_map_devices(struct pci_bus *busses)
         r64_mem.base = le64_to_cpu(romfile_loadint("etc/reserved-memory-end", 0));
         if (r64_mem.base < 0x100000000LL + RamSizeOver4G)
             r64_mem.base = 0x100000000LL + RamSizeOver4G;
-        if (pci_mem64_top) {
+        if (pci_mem64_इताअस) {
             u64 size = (ALIGN(sum_mem, (1LL<<30)) +
                         ALIGN(sum_pref, (1LL<<30)));
             if (pci_pad_mem64)
-                size = ALIGN(size, pci_mem64_top >> 3);
-            if (r64_mem.base < pci_mem64_top - size) {
-                r64_mem.base = pci_mem64_top - size;
+                size = ALIGN(size, pci_mem64_इताअस >> 3);
+            if (r64_mem.base < pci_mem64_इताअस - size) {
+                r64_mem.base = pci_mem64_इताअस - size;
             }
             if (e820_is_used(r64_mem.base, size))
                 r64_mem.base -= size;
@@ -1171,7 +1171,7 @@ static void pci_bios_map_devices(struct pci_bus *busses)
     int bus;
     for (bus = 0; bus<=MaxPCIBus; bus++) {
         int type;
-        for (type = 0; type < PCI_REGION_TYPE_COUNT; type++)
+        for (type = 0; type < PCI_REGION_TYPE_बिलांग; type++)
             pci_region_map_entries(busses, &busses[bus].r[type]);
     }
 }
@@ -1190,7 +1190,7 @@ pci_setup(void)
     dprintf(3, "pci setup\n");
 
     if (CPUPhysBits) {
-        pci_mem64_top = 1LL << CPUPhysBits;
+        pci_mem64_इताअस = 1LL << CPUPhysBits;
         if (CPUPhysBits > 44) {
             // Old linux kernels have trouble dealing with more than 44 (i386
             // kernels) or 46 (x86_64 kernels) phys-bits. Seems to be a bug in
@@ -1199,7 +1199,7 @@ pci_setup(void)
             // Limit the used address space to mitigate the bug, except we are
             // running in a huge guest with more than 1TB of memory installed.
             if (RamSizeOver4G < (1LL << 40)) {
-                pci_mem64_top = 1LL << 44;
+                pci_mem64_इताअस = 1LL << 44;
             }
         }
     }

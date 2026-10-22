@@ -55,7 +55,7 @@
 
 #define ESP_STAT_DI      0x01
 #define ESP_STAT_CD      0x02
-#define ESP_STAT_MSG     0x04
+#define ESP_STAT_मेनसाहे     0x04
 #define ESP_STAT_TC      0x10
 
 #define ESP_INTR_FC      0x08
@@ -132,10 +132,10 @@ esp_scsi_process_op(struct disk_op_s *op)
             /* HBA reads command, executes it, sets BS/FC -> do DMA if needed.  */
             if (intr & (ESP_INTR_BS | ESP_INTR_FC)) {
                 state++;
-                if (op->count && blocksize) {
+                if (op->बिलांग && blocksize) {
                     /* Data phase.  */
-                    u32 count = (u32)op->count * blocksize;
-                    esp_scsi_dma(iobase, (u32)op->buf_fl, count, scsi_is_read(op));
+                    u32 बिलांग = (u32)op->बिलांग * blocksize;
+                    esp_scsi_dma(iobase, (u32)op->buf_fl, बिलांग, scsi_is_read(op));
                     outb(ESP_CMD_TI | ESP_CMD_DMA, iobase + ESP_CMD);
                     continue;
                 } else {
@@ -161,7 +161,7 @@ esp_scsi_process_op(struct disk_op_s *op)
         }
 
         /* Finally read data from the message in phase and accept.  */
-        if (state == 3 && (stat & ESP_STAT_MSG)) {
+        if (state == 3 && (stat & ESP_STAT_मेनसाहे)) {
             state++;
             status = inb(iobase + ESP_FIFO);
             inb(iobase + ESP_FIFO);

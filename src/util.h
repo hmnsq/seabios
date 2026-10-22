@@ -14,7 +14,7 @@ struct bmp_decdata *bmp_alloc(void);
 int bmp_decode(struct bmp_decdata *bmp, unsigned char *data, int data_size);
 void bmp_get_info(struct bmp_decdata *bmp, int *width, int *height, int *bpp);
 int bmp_show(struct bmp_decdata *bmp, unsigned char *pic, int width
-             , int height, int depth, int bytes_per_line_dest);
+             , int height, int depth, int bytes_per_लिन्या_dest);
 
 // boot.c
 void boot_init(void);
@@ -66,7 +66,7 @@ char *cdrom_media_info(struct drive_s *drive_g);
 void clock_setup(void);
 void handle_1583(struct bregs *regs);
 void clock_poll_irq(void);
-u32 irqtimer_calc_ticks(u32 count);
+u32 irqtimer_calc_ticks(u32 बिलांग);
 u32 irqtimer_calc(u32 msecs);
 int irqtimer_check(u32 end);
 void handle_1586(struct bregs *regs);
@@ -154,14 +154,14 @@ void smm_device_setup(void);
 void smm_setup(void);
 
 // fw/smp.c
-extern u32 MaxCountCPUs;
+extern u32 Max_बिलांग_CPUs;
 void wrmsr_smp(u32 index, u64 val);
 void smp_setup(void);
 void smp_resume(void);
 int apic_id_is_present(u8 apic_id);
 
 // hw/dma.c
-int dma_floppy(u32 addr, int count, int isWrite);
+int dma_floppy(u32 addr, int बिलांग, int isWrite);
 void dma_setup(void);
 
 // hw/floppy.c
@@ -187,12 +187,12 @@ void tsctimer_setfreq(u32 khz, const char *src);
 u32 timer_calc(u32 msecs);
 u32 timer_calc_usec(u32 usecs);
 int timer_check(u32 end);
-void ndelay(u32 count);
-void udelay(u32 count);
-void mdelay(u32 count);
-void nsleep(u32 count);
-void usleep(u32 count);
-void msleep(u32 count);
+void ndelay(u32 बिलांग);
+void udelay(u32 बिलांग);
+void mdelay(u32 बिलांग);
+void nsleep(u32 बिलांग);
+void usleep(u32 बिलांग);
+void msleep(u32 बिलांग);
 u32 ticks_to_ms(u32 ticks);
 u32 ticks_from_ms(u32 ms);
 void pit_setup(void);
@@ -202,13 +202,13 @@ struct jpeg_decdata *jpeg_alloc(void);
 int jpeg_decode(struct jpeg_decdata *jpeg, unsigned char *buf);
 void jpeg_get_size(struct jpeg_decdata *jpeg, int *width, int *height);
 int jpeg_show(struct jpeg_decdata *jpeg, unsigned char *pic, int width
-              , int height, int depth, int bytes_per_line_dest);
+              , int height, int depth, int bytes_per_लिन्या_dest);
 
 // kbd.c
 void kbd_init(void);
 void handle_15c2(struct bregs *regs);
-void process_key(u8 key);
-u8 enqueue_key(u16 keycode);
+void process_सुसि(u8 सुसि);
+u8 enqueue_सुसि(u16 keycode);
 u16 ascii_to_keycode(u8 ascii);
 
 // misc.c

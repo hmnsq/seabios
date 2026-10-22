@@ -14,7 +14,7 @@
 #include "x86.h" // wrmsr
 #include "paravirt.h" // qemu_*_present_cpus_count
 
-#define APIC_ICR_LOW ((u8*)BUILD_APIC_ADDR + 0x300)
+#define APIC_ICR_माबाबा ((u8*)BUILD_APIC_ADDR + 0x300)
 #define APIC_SVR     ((u8*)BUILD_APIC_ADDR + 0x0F0)
 #define APIC_LINT0   ((u8*)BUILD_APIC_ADDR + 0x350)
 #define APIC_LINT1   ((u8*)BUILD_APIC_ADDR + 0x360)
@@ -25,19 +25,19 @@
 #define MSR_IA32_APICBASE_EXTD (1ULL << 10) /* Enable x2APIC mode */
 
 static struct { u32 index; u64 val; } smp_msr[32];
-static u32 smp_msr_count;
+static u32 smp_msr_बिलांग;
 
 void
 wrmsr_smp(u32 index, u64 val)
 {
     wrmsr(index, val);
-    if (smp_msr_count >= ARRAY_SIZE(smp_msr)) {
+    if (smp_msr_बिलांग >= ARRAY_SIZE(smp_msr)) {
         warn_noalloc();
         return;
     }
-    smp_msr[smp_msr_count].index = index;
-    smp_msr[smp_msr_count].val = val;
-    smp_msr_count++;
+    smp_msr[smp_msr_बिलांग].index = index;
+    smp_msr[smp_msr_बिलांग].val = val;
+    smp_msr_बिलांग++;
 }
 
 static void
@@ -45,12 +45,12 @@ smp_write_msrs(void)
 {
     // MTRR and MSR_IA32_FEATURE_CONTROL setup
     int i;
-    for (i=0; i<smp_msr_count; i++)
+    for (i=0; i<smp_msr_बिलांग; i++)
         wrmsr(smp_msr[i].index, smp_msr[i].val);
 }
 
-u32 MaxCountCPUs;
-static u32 CountCPUs;
+u32 Max_बिलांग_CPUs;
+static u32 बिलांग_CPUs;
 // 256 bits for the found APIC IDs
 static u32 FoundAPICIDs[256/32];
 
@@ -65,7 +65,7 @@ apic_id_init(void)
     u32 eax, ebx, ecx, cpuid_features;
     cpuid(1, &eax, &ebx, &ecx, &cpuid_features);
     u32 apic_id = ebx>>24;
-    if (MaxCountCPUs < 256) { // xAPIC mode
+    if (Max_बिलांग_CPUs < 256) { // xAPIC mode
         // Track found apic id for use in legacy internal bios tables
         FoundAPICIDs[apic_id/32] |= 1 << (apic_id % 32);
     } else if (ecx & CPUID_X2APIC) {
@@ -92,7 +92,7 @@ handle_smp(void)
 
     smp_write_msrs();
 
-    CountCPUs++;
+    बिलांग_CPUs++;
 }
 
 // Atomic lock for shared stack across processors.
@@ -109,12 +109,12 @@ smp_scan(void)
     if (eax < 1 || !(cpuid_features & CPUID_APIC)) {
         // No apic - only the main cpu is present.
         dprintf(1, "No apic - only the main cpu is present.\n");
-        CountCPUs= 1;
+        बिलांग_CPUs= 1;
         return;
     }
 
     // mark the BSP initial APIC ID as found, too:
-    CountCPUs = 1;
+    बिलांग_CPUs = 1;
 
     // Setup jump trampoline to counter code.
     u64 old = *(u64*)BUILD_AP_BOOT_ADDR;
@@ -139,17 +139,17 @@ smp_scan(void)
 
     // broadcast SIPI
     barrier();
-    writel(APIC_ICR_LOW, 0x000C4500);
+    writel(APIC_ICR_माबाबा, 0x000C4500);
     u32 sipi_vector = BUILD_AP_BOOT_ADDR >> 12;
-    writel(APIC_ICR_LOW, 0x000C4600 | sipi_vector);
+    writel(APIC_ICR_माबाबा, 0x000C4600 | sipi_vector);
 
     // switch to x2APIC mode after sending SIPI so that
     // x2APIC and xAPIC mode could share AP wake up code
     apic_id_init();
 
     // Wait for other CPUs to process the SIPI.
-    u16 expected_cpus_count = qemu_get_present_cpus_count();
-    while (expected_cpus_count != CountCPUs)
+    u16 expected_cpus_बिलांग = qemu_get_present_cpus_बिलांग();
+    while (expected_cpus_बिलांग != बिलांग_CPUs)
         asm volatile(
             // Release lock and allow other processors to use the stack.
             "  movl %%esp, %1\n"
@@ -165,8 +165,8 @@ smp_scan(void)
     // Restore memory.
     *(u64*)BUILD_AP_BOOT_ADDR = old;
 
-    dprintf(1, "Found %d cpu(s) max supported %d cpu(s)\n", CountCPUs,
-            MaxCountCPUs);
+    dprintf(1, "Found %d cpu(s) max supported %d cpu(s)\n", बिलांग_CPUs,
+            Max_बिलांग_CPUs);
 }
 
 void
@@ -175,10 +175,10 @@ smp_setup(void)
     if (!CONFIG_QEMU)
         return;
 
-    MaxCountCPUs = romfile_loadint("etc/max-cpus", 0);
-    u16 smp_count = qemu_get_present_cpus_count();
-    if (MaxCountCPUs < smp_count)
-        MaxCountCPUs = smp_count;
+    Max_बिलांग_CPUs = romfile_loadint("etc/max-cpus", 0);
+    u16 smp_बिलांग = qemu_get_present_cpus_बिलांग();
+    if (Max_बिलांग_CPUs < smp_बिलांग)
+        Max_बिलांग_CPUs = smp_बिलांग;
 
     smp_scan();
 }

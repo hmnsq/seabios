@@ -8,7 +8,7 @@
 #include "config.h" // CONFIG_*
 #include "hw/pci.h" // pci_config_writeb
 #include "malloc.h" // malloc_fseg
-#include "memmap.h" // SYMBOL
+#include "memmap.h" //सिम्बोलो
 #include "output.h" // dprintf
 #include "romfile.h" // romfile_find
 #include "std/acpi.h" // struct rsdp_descriptor
@@ -122,8 +122,8 @@ copy_acpi_rsdp(void *pos)
 
 void *find_acpi_rsdp(void)
 {
-    unsigned long start = SYMBOL(zonefseg_start);
-    unsigned long end = SYMBOL(zonefseg_end);
+    unsigned long start = सिम्बोलो(zonefseg_start);
+    unsigned long end = सिम्बोलो(zonefseg_end);
     unsigned long pos;
 
     for (pos = ALIGN(start, 0x10); pos <= ALIGN_DOWN(end, 0x10); pos += 0x10)
@@ -428,11 +428,11 @@ display_uuid(void)
         }
 }
 
-#define set_str_field_or_skip(type, field, value)                       \
+#define set_str_field_or_skip(type, field, हालागा)                       \
     do {                                                                \
-        int size = (value != NULL) ? strlen(value) + 1 : 0;             \
+        int size = (हालागा != NULL) ? strlen(हालागा) + 1 : 0;             \
         if (size > 1) {                                                 \
-            memcpy(end, value, size);                                   \
+            memcpy(end, हालागा, size);                                   \
             end += size;                                                \
             p->field = ++str_index;                                     \
         } else {                                                        \
@@ -496,7 +496,7 @@ static int
 smbios_build_tables(struct romfile_s *f_tables,
                     u64 *address, u32 *length,
                     u16 *max_structure_size,
-                    u16 *number_of_structures)
+                    u16 *नुमेरो_of_structures)
 {
     struct smbios_type_0 *t0;
     u32 qtables_len, need_t0 = 1;
@@ -534,14 +534,14 @@ smbios_build_tables(struct romfile_s *f_tables,
             *length += t0_len;
             if (max_structure_size && t0_len > *max_structure_size)
                 *max_structure_size = t0_len;
-            if (number_of_structures)
-                (*number_of_structures)++;
+            if (नुमेरो_of_structures)
+                (*नुमेरो_of_structures)++;
         }
     }
 
     /* allocate final blob and record its address in the entry point */
     if (*length > BUILD_MAX_SMBIOS_FSEG)
-        tables = malloc_high(*length);
+        tables = malloc_माताअस(*length);
     else
         tables = malloc_fseg(*length);
     if (!tables) {
@@ -570,7 +570,7 @@ smbios_21_setup_entry_point(struct romfile_s *f_tables,
                              &address,
                              &length,
                              &ep->max_structure_size,
-                             &ep->number_of_structures))
+                             &ep->नुमेरो_of_structures))
         return 0;
 
     if ((u32)address != address || (u16)length != length) {

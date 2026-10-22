@@ -46,7 +46,7 @@ nvme_init_sq(struct nvme_ctrl *ctrl, struct nvme_sq *sq, u16 q_idx, u16 length,
              struct nvme_cq *cq)
 {
     nvme_init_queue_common(ctrl, &sq->common, q_idx, length);
-    sq->sqe = zalloc_page_aligned(&ZoneHigh, sizeof(*sq->sqe) * length);
+    sq->sqe = zalloc_page_aligned(&Zone_माताअस, sizeof(*sq->sqe) * length);
 
     if (!sq->sqe) {
         warn_noalloc();
@@ -65,7 +65,7 @@ static int
 nvme_init_cq(struct nvme_ctrl *ctrl, struct nvme_cq *cq, u16 q_idx, u16 length)
 {
     nvme_init_queue_common(ctrl, &cq->common, q_idx, length);
-    cq->cqe = zalloc_page_aligned(&ZoneHigh, sizeof(*cq->cqe) * length);
+    cq->cqe = zalloc_page_aligned(&Zone_माताअस, sizeof(*cq->cqe) * length);
     if (!cq->cqe) {
         warn_noalloc();
         return -1;
@@ -189,7 +189,7 @@ nvme_commit_sqe(struct nvme_sq *sq)
 static union nvme_identify *
 nvme_admin_identify(struct nvme_ctrl *ctrl, u8 cns, u32 nsid)
 {
-    union nvme_identify *identify_buf = zalloc_page_aligned(&ZoneTmpHigh, 4096);
+    union nvme_identify *identify_buf = zalloc_page_aligned(&Zone_Tmp_माताअस, 4096);
     if (!identify_buf) {
         /* Could not allocate identify buffer. */
         warn_internalerror();
@@ -261,7 +261,7 @@ nvme_probe_ns(struct nvme_ctrl *ctrl, u32 ns_idx, u8 mdts)
     }
 
     if (!nvme_dma_buffer) {
-        nvme_dma_buffer = zalloc_page_aligned(&ZoneHigh, NVME_PAGE_SIZE);
+        nvme_dma_buffer = zalloc_page_aligned(&Zone_माताअस, NVME_PAGE_SIZE);
         if (!nvme_dma_buffer) {
             warn_noalloc();
             goto free_buffer;
@@ -276,7 +276,7 @@ nvme_probe_ns(struct nvme_ctrl *ctrl, u32 ns_idx, u8 mdts)
     memset(ns, 0, sizeof(*ns));
     ns->ctrl  = ctrl;
     ns->ns_id = ns_id;
-    ns->lba_count = id->nsze;
+    ns->lba_बिलांग = id->nsze;
 
     struct nvme_lba_format *fmt = &id->lbaf[current_lba_format];
 
@@ -295,7 +295,7 @@ nvme_probe_ns(struct nvme_ctrl *ctrl, u32 ns_idx, u8 mdts)
     ns->drive.removable = 0;
     ns->drive.type      = DTYPE_NVME;
     ns->drive.blksize   = ns->block_size;
-    ns->drive.sectors   = ns->lba_count;
+    ns->drive.sectors   = ns->lba_बिलांग;
 
     if (mdts) {
         ns->max_req_size = ((1U << mdts) * NVME_PAGE_SIZE) / ns->block_size;
@@ -307,8 +307,8 @@ nvme_probe_ns(struct nvme_ctrl *ctrl, u32 ns_idx, u8 mdts)
 
     char *desc = znprintf(MAXDESCSIZE, "NVMe NS %u: %llu MiB (%llu %u-byte "
                           "blocks + %u-byte metadata)",
-                          ns_id, (ns->lba_count * ns->block_size) >> 20,
-                          ns->lba_count, ns->block_size, ns->metadata_size);
+                          ns_id, (ns->lba_बिलांग * ns->block_size) >> 20,
+                          ns->lba_बिलांग, ns->block_size, ns->metadata_size);
 
     dprintf(3, "%s\n", desc);
     boot_add_hd(&ns->drive, desc, bootprio_find_pci_device(ctrl->pci));
@@ -426,7 +426,7 @@ err:
 /* Reads count sectors into buf. The buffer cannot cross page boundaries. */
 static int
 nvme_io_xfer(struct nvme_namespace *ns, u64 lba, void *prp1, void *prp2,
-             u16 count, int write)
+             u16 बिलांग, int write)
 {
     if (((u32)prp1 & 0x3) || ((u32)prp2 & 0x3)) {
         /* Buffer is misaligned */
@@ -441,7 +441,7 @@ nvme_io_xfer(struct nvme_namespace *ns, u64 lba, void *prp1, void *prp2,
     io_read->nsid = ns->ns_id;
     io_read->dword[10] = (u32)lba;
     io_read->dword[11] = (u32)(lba >> 32);
-    io_read->dword[12] = (1U << 31 /* limited retry */) | (count - 1);
+    io_read->dword[12] = (1U << 31 /* limited retry */) | (बिलांग - 1);
 
     nvme_commit_sqe(&ns->ctrl->io_sq);
 
@@ -455,17 +455,17 @@ nvme_io_xfer(struct nvme_namespace *ns, u64 lba, void *prp1, void *prp2,
     }
 
     dprintf(5, "ns %u %s lba %llu+%u\n", ns->ns_id, write ? "write" : "read",
-            lba, count);
-    return count;
+            lba, बिलांग);
+    return बिलांग;
 }
 
 // Transfer up to one page of data using the internal dma bounce buffer
 static int
-nvme_bounce_xfer(struct nvme_namespace *ns, u64 lba, void *buf, u16 count,
+nvme_bounce_xfer(struct nvme_namespace *ns, u64 lba, void *buf, u16 बिलांग,
                  int write)
 {
     u16 const max_blocks = NVME_PAGE_SIZE / ns->block_size;
-    u16 blocks = count < max_blocks ? count : max_blocks;
+    u16 blocks = बिलांग < max_blocks ? बिलांग : max_blocks;
 
     if (write)
         memcpy(nvme_dma_buffer, buf, blocks * ns->block_size);
@@ -482,16 +482,16 @@ nvme_bounce_xfer(struct nvme_namespace *ns, u64 lba, void *buf, u16 count,
 
 // Transfer data using page list (if applicable)
 static int
-nvme_prpl_xfer(struct nvme_namespace *ns, u64 lba, void *buf, u16 count,
+nvme_prpl_xfer(struct nvme_namespace *ns, u64 lba, void *buf, u16 बिलांग,
                int write)
 {
     u32 base = (long)buf;
     s32 size;
 
-    if (count > ns->max_req_size)
-        count = ns->max_req_size;
+    if (बिलांग > ns->max_req_size)
+        बिलांग = ns->max_req_size;
 
-    size = count * ns->block_size;
+    size = बिलांग * ns->block_size;
     /* Special case for transfers that fit into PRP1, but are unaligned */
     if (((size + (base & ~NVME_PAGE_MASK)) <= NVME_PAGE_SIZE))
         goto single;
@@ -505,7 +505,7 @@ nvme_prpl_xfer(struct nvme_namespace *ns, u64 lba, void *buf, u16 count,
         goto bounce;
 
     /* Build PRP list if we need to describe more than 2 pages */
-    if ((ns->block_size * count) > (NVME_PAGE_SIZE * 2)) {
+    if ((ns->block_size * बिलांग) > (NVME_PAGE_SIZE * 2)) {
         u32 prpl_len = 0;
         u64 *prpl = nvme_dma_buffer;
         int first_page = 1;
@@ -519,20 +519,20 @@ nvme_prpl_xfer(struct nvme_namespace *ns, u64 lba, void *buf, u16 count,
                 goto bounce;
             prpl[prpl_len++] = base;
         }
-        return nvme_io_xfer(ns, lba, buf, prpl, count, write);
+        return nvme_io_xfer(ns, lba, buf, prpl, बिलांग, write);
     }
 
     /* Directly embed the 2nd page if we only need 2 pages */
-    if ((ns->block_size * count) > NVME_PAGE_SIZE)
-        return nvme_io_xfer(ns, lba, buf, buf + NVME_PAGE_SIZE, count, write);
+    if ((ns->block_size * बिलांग) > NVME_PAGE_SIZE)
+        return nvme_io_xfer(ns, lba, buf, buf + NVME_PAGE_SIZE, बिलांग, write);
 
 single:
     /* One page is enough, don't expose anything else */
-    return nvme_io_xfer(ns, lba, buf, NULL, count, write);
+    return nvme_io_xfer(ns, lba, buf, NULL, बिलांग, write);
 
 bounce:
     /* Use bounce buffer to make transfer */
-    return nvme_bounce_xfer(ns, lba, buf, count, write);
+    return nvme_bounce_xfer(ns, lba, buf, बिलांग, write);
 }
 
 static int
@@ -636,11 +636,11 @@ nvme_controller_enable(struct nvme_ctrl *ctrl)
     dprintf(3, "NVMe has %u namespace%s.\n",
             identify->nn, (identify->nn == 1) ? "" : "s");
 
-    ctrl->ns_count = identify->nn;
+    ctrl->ns_बिलांग = identify->nn;
     u8 mdts = identify->mdts;
     free(identify);
 
-    if ((ctrl->ns_count == 0) || nvme_create_io_queues(ctrl)) {
+    if ((ctrl->ns_बिलांग == 0) || nvme_create_io_queues(ctrl)) {
         /* No point to continue, if the controller says it doesn't have
            namespaces or we couldn't create I/O queues. */
         goto err_destroy_admin_sq;
@@ -648,7 +648,7 @@ nvme_controller_enable(struct nvme_ctrl *ctrl)
 
     /* Populate namespace IDs */
     int ns_idx;
-    for (ns_idx = 0; ns_idx < ctrl->ns_count; ns_idx++) {
+    for (ns_idx = 0; ns_idx < ctrl->ns_बिलांग; ns_idx++) {
         nvme_probe_ns(ctrl, ns_idx, mdts);
     }
 
@@ -689,7 +689,7 @@ nvme_controller_setup(void *opaque)
         goto err;
     }
 
-    struct nvme_ctrl *ctrl = malloc_high(sizeof(*ctrl));
+    struct nvme_ctrl *ctrl = malloc_माताअस(sizeof(*ctrl));
     if (!ctrl) {
         warn_noalloc();
         goto err;
@@ -735,8 +735,8 @@ static int
 nvme_cmd_readwrite(struct nvme_namespace *ns, struct disk_op_s *op, int write)
 {
     int i;
-    for (i = 0; i < op->count;) {
-        u16 blocks_remaining = op->count - i;
+    for (i = 0; i < op->बिलांग;) {
+        u16 blocks_remaining = op->बिलांग - i;
         char *op_buf = op->buf_fl + i * ns->block_size;
         int blocks = nvme_prpl_xfer(ns, op->lba + i, op_buf,
                                     blocks_remaining, write);

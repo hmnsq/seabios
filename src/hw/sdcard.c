@@ -21,7 +21,7 @@
 struct sdhci_s {
     u32 sdma_addr;
     u16 block_size;
-    u16 block_count;
+    u16 block_बिलांग;
     u32 arg;
     u16 transfer_mode;
     u16 cmd;
@@ -222,13 +222,13 @@ sdcard_pio_app(struct sdhci_s *regs, int cmd, u32 *param)
 // Send a command to the card which transfers data.
 static int
 sdcard_pio_transfer(struct sddrive_s *drive, int cmd, u32 addr
-                    , void *data, int count)
+                    , void *data, int बिलांग)
 {
     // Send command
     writew(&drive->regs->block_size, DISK_SECTOR_SIZE);
-    writew(&drive->regs->block_count, count);
+    writew(&drive->regs->block_बिलांग, बिलांग);
     int isread = cmd != SC_WRITE_SINGLE && cmd != SC_WRITE_MULTIPLE;
-    u16 tmode = ((count > 1 ? ST_MULTIPLE|ST_AUTO_CMD12|ST_BLOCKCOUNT : 0)
+    u16 tmode = ((बिलांग > 1 ? ST_MULTIPLE|ST_AUTO_CMD12|ST_BLOCKCOUNT : 0)
                  | (isread ? ST_READ : 0));
     writew(&drive->regs->transfer_mode, tmode);
     if (!(drive->card_type & SF_HIGHCAPACITY))
@@ -239,7 +239,7 @@ sdcard_pio_transfer(struct sddrive_s *drive, int cmd, u32 addr
         return ret;
     // Read/write data
     u16 cbit = isread ? SI_READ_READY : SI_WRITE_READY;
-    while (count--) {
+    while (बिलांग--) {
         ret = sdcard_waitw(&drive->regs->irq_status, cbit);
         if (ret < 0)
             return ret;
@@ -268,9 +268,9 @@ sdcard_readwrite(struct disk_op_s *op, int iswrite)
     struct sddrive_s *drive = container_of(
         op->drive_fl, struct sddrive_s, drive);
     int cmd = iswrite ? SC_WRITE_SINGLE : SC_READ_SINGLE;
-    if (op->count > 1)
+    if (op->बिलांग > 1)
         cmd = iswrite ? SC_WRITE_MULTIPLE : SC_READ_MULTIPLE;
-    int ret = sdcard_pio_transfer(drive, cmd, op->lba, op->buf_fl, op->count);
+    int ret = sdcard_pio_transfer(drive, cmd, op->lba, op->buf_fl, op->बिलांग);
     if (ret)
         return DISK_RET_EBADTRACK;
     return DISK_RET_SUCCESS;
@@ -332,15 +332,15 @@ sdcard_set_frequency(struct sdhci_s *regs, u32 khz)
         return -1;
     }
     // Set new frequency
-    u32 divisor = DIV_ROUND_UP(base_freq * 1000, khz);
+    u32 पांगहाति = DIV_ROUND_UP(base_freq * 1000, khz);
     u16 creg;
     if ((ver & 0xff) <= 0x01) {
-        divisor = divisor > 1 ? 1 << __fls(divisor-1) : 0;
-        creg = (divisor & SCC_SDCLK_MASK) << SCC_SDCLK_SHIFT;
+        पांगहाति = पांगहाति > 1 ? 1 << __fls(पांगहाति-1) : 0;
+        creg = (पांगहाति & SCC_SDCLK_MASK) << SCC_SDCLK_SHIFT;
     } else {
-        divisor = DIV_ROUND_UP(divisor, 2);
-        creg = (divisor & SCC_SDCLK_MASK) << SCC_SDCLK_SHIFT;
-        creg |= (divisor & SCC_SDCLK_HI_MASK) >> SCC_SDCLK_HI_RSHIFT;
+        पांगहाति = DIV_ROUND_UP(पांगहाति, 2);
+        creg = (पांगहाति & SCC_SDCLK_MASK) << SCC_SDCLK_SHIFT;
+        creg |= (पांगहाति & SCC_SDCLK_HI_MASK) >> SCC_SDCLK_HI_RSHIFT;
     }
     dprintf(3, "sdcard_set_frequency %d %d %x\n", base_freq, khz, creg);
     writew(&regs->clock_control, 0);
@@ -362,7 +362,7 @@ sdcard_get_capacity(struct sddrive_s *drive, u8 *csd)
     u16 C_SIZE = (csd[6] >> 6) | (csd[7] << 2) | ((csd[8] & 0x03) << 10);
     u8 C_SIZE_MULT = (csd[4] >> 7) | ((csd[5] & 0x03) << 1);
     u8 READ_BL_LEN = csd[9] & 0x0f;
-    u32 count = (C_SIZE+1) << (C_SIZE_MULT + 2 + READ_BL_LEN - 9);
+    u32 बिलांग = (C_SIZE+1) << (C_SIZE_MULT + 2 + READ_BL_LEN - 9);
     // Check for newer encoding formats.
     u8 CSD_STRUCTURE = csd[14] >> 6;
     if ((drive->card_type & SF_MMC) && CSD_STRUCTURE >= 2) {
@@ -371,15 +371,15 @@ sdcard_get_capacity(struct sddrive_s *drive, u8 *csd)
         int ret = sdcard_pio_transfer(drive, SC_SEND_EXT_CSD, 0, ext_csd, 1);
         if (ret)
             return ret;
-        count = *(u32*)&ext_csd[212];
+        बिलांग = *(u32*)&ext_csd[212];
     } else if (!(drive->card_type & SF_MMC) && CSD_STRUCTURE >= 1) {
         // High capacity SD card
         u32 C_SIZE2 = csd[5] | (csd[6] << 8) | ((csd[7] & 0x3f) << 16);
-        count = (C_SIZE2+1) << (19-9);
+        बिलांग = (C_SIZE2+1) << (19-9);
     }
     // Fill drive struct and return
     drive->drive.blksize = DISK_SECTOR_SIZE;
-    drive->drive.sectors = count;
+    drive->drive.sectors = बिलांग;
     return 0;
 }
 
@@ -550,15 +550,15 @@ sdcard_setup(void)
         return;
 
     struct romfile_s *file = NULL;
-    int num_romfiles = 0;
+    int नुमेरो_romfiles = 0;
     for (;;) {
         file = romfile_findprefix("etc/sdcard", file);
         if (!file)
             break;
         run_thread(sdcard_romfile_setup, file);
-        num_romfiles++;
+        नुमेरो_romfiles++;
     }
-    if (num_romfiles)
+    if (नुमेरो_romfiles)
         // only scan for PCI controllers if etc/sdcard not used
         return;
 

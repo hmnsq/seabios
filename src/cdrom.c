@@ -29,57 +29,57 @@ struct drive_s *cdemu_drive_gf VARFSEG;
 static int
 cdemu_read(struct disk_op_s *op)
 {
-    struct drive_s *drive_gf = GET_LOW(emulated_drive_gf);
+    struct drive_s *drive_gf = GET_माबाबा(emulated_drive_gf);
     struct disk_op_s dop;
     dop.drive_fl = drive_gf;
     dop.command = op->command;
-    dop.lba = GET_LOW(CDEmu.ilba) + op->lba / 4;
+    dop.lba = GET_माबाबा(CDEmu.ilba) + op->lba / 4;
 
-    int count = op->count;
-    op->count = 0;
+    int बिलांग = op->बिलांग;
+    op->बिलांग = 0;
     u8 *cdbuf_fl = GET_GLOBAL(bounce_buf_fl);
 
     if (op->lba & 3) {
         // Partial read of first block.
-        dop.count = 1;
+        dop.बिलांग = 1;
         dop.buf_fl = cdbuf_fl;
         int ret = process_op(&dop);
         if (ret)
             return ret;
         u8 thiscount = 4 - (op->lba & 3);
-        if (thiscount > count)
-            thiscount = count;
-        count -= thiscount;
+        if (thiscount > बिलांग)
+            thiscount = बिलांग;
+        बिलांग -= thiscount;
         memcpy_fl(op->buf_fl, cdbuf_fl + (op->lba & 3) * 512, thiscount * 512);
         op->buf_fl += thiscount * 512;
-        op->count += thiscount;
+        op->बिलांग += thiscount;
         dop.lba++;
     }
 
-    if (count > 3) {
+    if (बिलांग > 3) {
         // Read n number of regular blocks.
-        dop.count = count / 4;
+        dop.बिलांग = बिलांग / 4;
         dop.buf_fl = op->buf_fl;
         int ret = process_op(&dop);
-        op->count += dop.count * 4;
+        op->बिलांग += dop.बिलांग * 4;
         if (ret)
             return ret;
-        u8 thiscount = count & ~3;
-        count &= 3;
+        u8 thiscount = बिलांग & ~3;
+        बिलांग &= 3;
         op->buf_fl += thiscount * 512;
         dop.lba += thiscount / 4;
     }
 
-    if (count) {
+    if (बिलांग) {
         // Partial read on last block.
-        dop.count = 1;
+        dop.बिलांग = 1;
         dop.buf_fl = cdbuf_fl;
         int ret = process_op(&dop);
         if (ret)
             return ret;
-        u8 thiscount = count;
+        u8 thiscount = बिलांग;
         memcpy_fl(op->buf_fl, cdbuf_fl, thiscount * 512);
-        op->count += thiscount;
+        op->बिलांग += thiscount;
     }
 
     return DISK_RET_SUCCESS;
@@ -148,7 +148,7 @@ cdrom_boot(struct drive_s *drive)
     u8 buffer[CDROM_SECTOR_SIZE];
     dop.command = CMD_READ;
     dop.lba = 0x11;
-    dop.count = 1;
+    dop.बिलांग = 1;
     dop.buf_fl = buffer;
     ret = process_op(&dop);
     if (ret)
@@ -165,7 +165,7 @@ cdrom_boot(struct drive_s *drive)
 
     // And we read the Boot Catalog
     dop.lba = lba;
-    dop.count = 1;
+    dop.बिलांग = 1;
     ret = process_op(&dop);
     if (ret)
         return 7;
@@ -198,7 +198,7 @@ cdrom_boot(struct drive_s *drive)
     CDEmu.buffer_segment = 0x0000;
 
     u16 nbsectors = *(u16*)&buffer[0x26];
-    CDEmu.sector_count = nbsectors;
+    CDEmu.sector_बिलांग = nbsectors;
 
     lba = *(u32*)&buffer[0x28];
     CDEmu.ilba = lba;
@@ -211,16 +211,16 @@ cdrom_boot(struct drive_s *drive)
     dop.lba = lba;
     dop.buf_fl = MAKE_FLATPTR(boot_segment, 0);
     while (nbsectors) {
-        int count = nbsectors;
-        if (count > 64*1024/CDROM_SECTOR_SIZE)
-            count = 64*1024/CDROM_SECTOR_SIZE;
-        dop.count = count;
+        int बिलांग = nbsectors;
+        if (बिलांग > 64*1024/CDROM_SECTOR_SIZE)
+            बिलांग = 64*1024/CDROM_SECTOR_SIZE;
+        dop.बिलांग = बिलांग;
         ret = process_op(&dop);
         if (ret)
             return 12;
-        nbsectors -= count;
-        dop.lba += count;
-        dop.buf_fl += count*CDROM_SECTOR_SIZE;
+        nbsectors -= बिलांग;
+        dop.lba += बिलांग;
+        dop.buf_fl += बिलांग*CDROM_SECTOR_SIZE;
     }
 
     if (media == 0) {
@@ -294,7 +294,7 @@ cdrom_media_info(struct drive_s *drive)
     u8 buffer[CDROM_SECTOR_SIZE];
     dop.command = CMD_READ;
     dop.lba = 0x11;
-    dop.count = 1;
+    dop.बिलांग = 1;
     dop.buf_fl = buffer;
     ret = process_op(&dop);
     if (ret)
@@ -309,7 +309,7 @@ cdrom_media_info(struct drive_s *drive)
     // Read the Primary Volume Descriptor
     dop.command = CMD_READ;
     dop.lba = 0x10;
-    dop.count = 1;
+    dop.बिलांग = 1;
     dop.buf_fl = buffer;
     ret = process_op(&dop);
     if (ret)

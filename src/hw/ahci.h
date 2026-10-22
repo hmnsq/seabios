@@ -10,9 +10,9 @@ struct sata_cmd_fis {
     u8 command;
     u8 feature;
 
-    u8 lba_low;
+    u8 lba_माबाबा;
     u8 lba_mid;
-    u8 lba_high;
+    u8 lba_माताअस;
     u8 device;
 
     u8 lba_low2;
@@ -20,7 +20,7 @@ struct sata_cmd_fis {
     u8 lba_high2;
     u8 feature2;
 
-    u8 sector_count;
+    u8 sector_बिलांग;
     u8 sector_count2;
     u8 res_1;
     u8 control;

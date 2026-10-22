@@ -20,7 +20,7 @@
 #define VIRTIO_F_VERSION_1              32
 #define VIRTIO_F_IOMMU_PLATFORM         33
 
-#define MAX_QUEUE_NUM      (256)
+#define MAX_QUEUE_नुमेरो      (256)
 
 #define VRING_DESC_F_NEXT  1
 #define VRING_DESC_F_WRITE 2
@@ -58,25 +58,25 @@ struct vring_used
 };
 
 struct vring {
-   unsigned int num;
+   unsigned int नुमेरो;
    struct vring_desc *desc;
    struct vring_avail *avail;
    struct vring_used *used;
 };
 
-#define vring_size(num) \
-    (ALIGN(sizeof(struct vring_desc) * num + sizeof(struct vring_avail) \
-           + sizeof(u16) * num, PAGE_SIZE)                              \
-     + sizeof(struct vring_used) + sizeof(struct vring_used_elem) * num)
+#define vring_size(नुमेरो) \
+    (ALIGN(sizeof(struct vring_desc) * नुमेरो + sizeof(struct vring_avail) \
+           + sizeof(u16) * नुमेरो, PAGE_SIZE)                              \
+     + sizeof(struct vring_used) + sizeof(struct vring_used_elem) * नुमेरो)
 
-typedef unsigned char virtio_queue_t[vring_size(MAX_QUEUE_NUM)];
+typedef unsigned char virtio_queue_t[vring_size(MAX_QUEUE_नुमेरो)];
 
 struct vring_virtqueue {
    virtio_queue_t queue;
    struct vring vring;
    u16 free_head;
    u16 last_used_idx;
-   u16 vdata[MAX_QUEUE_NUM];
+   u16 vdata[MAX_QUEUE_नुमेरो];
    /* PCI */
    int queue_index;
    int queue_notify_off;
@@ -88,23 +88,23 @@ struct vring_list {
 };
 
 static inline void
-vring_init(struct vring *vr, unsigned int num, unsigned char *queue)
+vring_init(struct vring *vr, unsigned int नुमेरो, unsigned char *queue)
 {
    ASSERT32FLAT();
-   vr->num = num;
+   vr->नुमेरो = नुमेरो;
 
    /* physical address of desc must be page aligned */
    vr->desc = (void*)ALIGN((u32)queue, PAGE_SIZE);
 
-   vr->avail = (struct vring_avail *)&vr->desc[num];
+   vr->avail = (struct vring_avail *)&vr->desc[नुमेरो];
    /* disable interrupts */
    vr->avail->flags |= VRING_AVAIL_F_NO_INTERRUPT;
 
    /* physical address of used must be page aligned */
-   vr->used = (void*)ALIGN((u32)&vr->avail->ring[num], PAGE_SIZE);
+   vr->used = (void*)ALIGN((u32)&vr->avail->ring[नुमेरो], PAGE_SIZE);
 
    int i;
-   for (i = 0; i < num - 1; i++)
+   for (i = 0; i < नुमेरो - 1; i++)
        vr->desc[i].next = i + 1;
    vr->desc[i].next = 0;
 }
@@ -115,7 +115,7 @@ void vring_detach(struct vring_virtqueue *vq, unsigned int head);
 int vring_get_buf(struct vring_virtqueue *vq, unsigned int *len);
 void vring_add_buf(struct vring_virtqueue *vq, struct vring_list list[],
                    unsigned int out, unsigned int in,
-                   int index, int num_added);
-void vring_kick(struct vp_device *vp, struct vring_virtqueue *vq, int num_added);
+                   int index, int नुमेरो_added);
+void vring_kick(struct vp_device *vp, struct vring_virtqueue *vq, int नुमेरो_added);
 
 #endif /* _VIRTIO_RING_H_ */

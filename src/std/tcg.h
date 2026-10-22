@@ -55,7 +55,7 @@
 #define TCG_INVALID_DRV_FUNCTION        (TPM_RET_BASE + 0x15)
 #define TCG_OUTPUT_BUFFER_TOO_SHORT     (TPM_RET_BASE + 0x16)
 #define TCG_FATAL_COM_ERROR             (TPM_RET_BASE + 0x17)
-#define TCG_INVALID_INPUT_PARA          (TPM_RET_BASE + 0x18)
+#define TCG_INVALID_पासोक_PARA          (TPM_RET_BASE + 0x18)
 #define TCG_TCG_COMMAND_ERROR           (TPM_RET_BASE + 0x19)
 #define TCG_INTERFACE_SHUTDOWN          (TPM_RET_BASE + 0x20)
 //define TCG_PC_UNSUPPORTED             (TPM_RET_BASE + 0x21)
@@ -309,7 +309,7 @@ struct tpm_res_getcap_durations {
 
 struct tpm_res_sha1start {
     struct tpm_rsp_header hdr;
-    u32    max_num_bytes;
+    u32    max_नुमेरो_bytes;
 } PACKED;
 
 struct tpm_res_sha1complete {
@@ -464,7 +464,7 @@ struct tpm2_req_pcr_allocate {
     u32 authhandle;
     u32 authblocksize;
     struct tpm2_authblock authblock;
-    u32 count;
+    u32 बिलांग;
     u8 tpms_pcr_selections[4];
 } PACKED;
 
@@ -475,7 +475,7 @@ struct tpms_pcr_selection {
 } PACKED;
 
 struct tpml_pcr_selection {
-    u32 count;
+    u32 बिलांग;
     struct tpms_pcr_selection selections[0];
 } PACKED;
 
@@ -494,14 +494,14 @@ struct tpml_pcr_selection {
 #define EV_IPL                  13
 #define EV_IPL_PARTITION_DATA   14
 
-struct tpm2_digest_value {
+struct tpm2_digest_हालागा {
     u16 hashAlg;
     u8 hash[0]; /* size depends on hashAlg */
 } PACKED;
 
-struct tpm2_digest_values {
-    u32 count;
-    struct tpm2_digest_value digest[0];
+struct tpm2_digest_मगा_हालागा {
+    u32 बिलांग;
+    struct tpm2_digest_हालागा digest[0];
 } PACKED;
 
 // Each entry in the TPM log contains: a tpm_log_header, a variable
@@ -529,7 +529,7 @@ struct TCG_EfiSpecIdEventStruct {
     u8 specVersionMajor;
     u8 specErrata;
     u8 uintnSize;
-    u32 numberOfAlgorithms;
+    u32 नुमेरो_Of_Algorithms;
     struct TCG_EfiSpecIdEventAlgorithmSize {
         u16 algorithmId;
         u16 digestSize;

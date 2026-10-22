@@ -199,14 +199,14 @@ u8 FloppyDOR VARLOW;
 static inline u8
 floppy_dor_read(void)
 {
-    return GET_LOW(FloppyDOR);
+    return GET_माबाबा(FloppyDOR);
 }
 
 static inline void
 floppy_dor_write(u8 val)
 {
     outb(val, PORT_FD_DOR);
-    SET_LOW(FloppyDOR, val);
+    SET_माबाबा(FloppyDOR, val);
 }
 
 static inline void
@@ -595,11 +595,11 @@ floppy_prep(struct drive_s *drive_gf, u8 cylinder)
 
 // Perform a floppy transfer command (setup DMA and issue PIO).
 static int
-floppy_dma_cmd(struct disk_op_s *op, int count, int command, u8 *param)
+floppy_dma_cmd(struct disk_op_s *op, int बिलांग, int command, u8 *param)
 {
     // Setup DMA controller
     int isWrite = command != FC_READ;
-    int ret = dma_floppy((u32)op->buf_fl, count, isWrite);
+    int ret = dma_floppy((u32)op->buf_fl, बिलांग, isWrite);
     if (ret)
         return DISK_RET_EBOUNDARY;
 
@@ -681,10 +681,10 @@ floppy_read(struct disk_op_s *op)
     param[2] = chs.head;
     param[3] = chs.sector;
     param[4] = FLOPPY_SIZE_CODE;
-    param[5] = chs.sector + op->count - 1; // last sector to read on track
+    param[5] = chs.sector + op->बिलांग - 1; // last sector to read on track
     param[6] = FLOPPY_GAPLEN;
     param[7] = FLOPPY_DATALEN;
-    return floppy_dma_cmd(op, op->count * DISK_SECTOR_SIZE, FC_READ, param);
+    return floppy_dma_cmd(op, op->बिलांग * DISK_SECTOR_SIZE, FC_READ, param);
 }
 
 // Write Diskette Sectors
@@ -704,10 +704,10 @@ floppy_write(struct disk_op_s *op)
     param[2] = chs.head;
     param[3] = chs.sector;
     param[4] = FLOPPY_SIZE_CODE;
-    param[5] = chs.sector + op->count - 1; // last sector to write on track
+    param[5] = chs.sector + op->बिलांग - 1; // last sector to write on track
     param[6] = FLOPPY_GAPLEN;
     param[7] = FLOPPY_DATALEN;
-    return floppy_dma_cmd(op, op->count * DISK_SECTOR_SIZE, FC_WRITE, param);
+    return floppy_dma_cmd(op, op->बिलांग * DISK_SECTOR_SIZE, FC_WRITE, param);
 }
 
 // Verify Diskette Sectors
@@ -737,10 +737,10 @@ floppy_format(struct disk_op_s *op)
     u8 param[7];
     param[0] = (chs.head << 2) | floppyid; // HD DR1 DR2
     param[1] = FLOPPY_SIZE_CODE;
-    param[2] = op->count; // number of sectors per track
+    param[2] = op->बिलांग; // number of sectors per track
     param[3] = FLOPPY_FORMAT_GAPLEN;
     param[4] = FLOPPY_FILLBYTE;
-    return floppy_dma_cmd(op, op->count * 4, FC_FORMAT, param);
+    return floppy_dma_cmd(op, op->बिलांग * 4, FC_FORMAT, param);
 }
 
 int

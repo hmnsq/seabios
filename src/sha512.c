@@ -154,7 +154,7 @@ static void sha512_block(u64 *w, sha512_ctx *ctx)
 static void sha512_do(sha512_ctx *ctx, const u8 *data32, u32 length)
 {
     u32 offset;
-    u16 num;
+    u16 नुमेरो;
     u64 bits = 0;
     u64 w[80];
     u64 tmp;
@@ -167,18 +167,18 @@ static void sha512_do(sha512_ctx *ctx, const u8 *data32, u32 length)
     }
 
     /* last block with less than 128 bytes */
-    num = length - offset;
-    bits += (num << 3);
+    नुमेरो = length - offset;
+    bits += (नुमेरो << 3);
 
-    memcpy(w, data32 + offset, num);
+    memcpy(w, data32 + offset, नुमेरो);
     /*
      * FIPS 180-4 5.1: Padding the Message
      */
-    ((u8 *)w)[num] = 0x80;
-    if (128 - (num + 1) > 0)
-        memset( &((u8 *)w)[num + 1], 0, 128 - (num + 1));
+    ((u8 *)w)[नुमेरो] = 0x80;
+    if (128 - (नुमेरो + 1) > 0)
+        memset( &((u8 *)w)[नुमेरो + 1], 0, 128 - (नुमेरो + 1));
 
-    if (num >= 112) {
+    if (नुमेरो >= 112) {
         /* cannot append number of bits here;
          * need space for 128 bits (16 bytes)
          */
@@ -193,8 +193,8 @@ static void sha512_do(sha512_ctx *ctx, const u8 *data32, u32 length)
     sha512_block(w, ctx);
 
     /* need to switch result's endianness */
-    for (num = 0; num < 8; num++)
-        ctx->h[num] = cpu_to_be64(ctx->h[num]);
+    for (नुमेरो = 0; नुमेरो < 8; नुमेरो++)
+        ctx->h[नुमेरो] = cpu_to_be64(ctx->h[नुमेरो]);
 }
 
 void sha384(const u8 *data, u32 length, u8 *hash)

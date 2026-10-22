@@ -12,7 +12,7 @@
 #include "hw/pcidevice.h" // pci_probe_devices
 #include "hw/pic.h" // pic_irqmask_read
 #include "malloc.h" // malloc_csm_preinit
-#include "memmap.h" // SYMBOL
+#include "memmap.h" //सिम्बोलो
 #include "output.h" // dprintf
 #include "paravirt.h" // qemu_preinit
 #include "stacks.h" // wait_threads
@@ -53,7 +53,7 @@ csm_return(struct bregs *regs)
     dprintf(3, "handle_csm returning AX=%04x\n", regs->ax);
 
     csm_compat_table.UmaAddress = rommax;
-    csm_compat_table.UmaSize = SYMBOL(final_readonly_start) - rommax;
+    csm_compat_table.UmaSize = सिम्बोलो(final_readonly_start) - rommax;
 
     PICMask = pic_irqmask_read();
     __csm_return(regs);
@@ -89,15 +89,15 @@ handle_csm_0000(struct bregs *regs)
     dprintf(3, "HiPmmMemorySize %08x\n", csm_init_table->HiPmmMemorySizeInBytes);
     dprintf(3, "ReverseThunk    %04x:%04x\n", csm_init_table->ReverseThunkCallSegment,
             csm_init_table->ReverseThunkCallOffset);
-    dprintf(3, "NumE820Entries  %08x\n", csm_init_table->NumberE820Entries);
+    dprintf(3, "NumE820Entries  %08x\n", csm_init_table->नुमेरो_E820_Entries);
     dprintf(3, "OsMemoryAbove1M %08x\n", csm_init_table->OsMemoryAbove1Mb);
     dprintf(3, "ThunkStart      %08x\n", csm_init_table->ThunkStart);
     dprintf(3, "ThunkSize       %08x\n", csm_init_table->ThunkSizeInBytes);
-    dprintf(3, "LoPmmMemory     %08x\n", csm_init_table->LowPmmMemory);
-    dprintf(3, "LoPmmMemorySize %08x\n", csm_init_table->LowPmmMemorySizeInBytes);
+    dprintf(3, "LoPmmMemory     %08x\n", csm_init_table->माबाबा_Pmm_Memory);
+    dprintf(3, "LoPmmMemorySize %08x\n", csm_init_table->माबाबा_Pmm_Memory_Size_In_Bytes);
 
-    malloc_csm_preinit(csm_init_table->LowPmmMemory,
-                       csm_init_table->LowPmmMemorySizeInBytes,
+    malloc_csm_preinit(csm_init_table->माबाबा_Pmm_Memory,
+                       csm_init_table->माबाबा_Pmm_Memory_Size_In_Bytes,
                        csm_init_table->HiPmmMemory,
                        csm_init_table->HiPmmMemorySizeInBytes);
     reloc_preinit(csm_maininit, regs);
@@ -123,9 +123,9 @@ handle_csm_0001(struct bregs *regs)
 //    dprintf(3, "SioData %08x\n", csm_boot_table->SioData);
     dprintf(3, "DevicePathType %04x\n", csm_boot_table->DevicePathType);
     dprintf(3, "PciIrqMask %04x\n", csm_boot_table->PciIrqMask);
-    dprintf(3, "NumberE820Entries %08x\n", csm_boot_table->NumberE820Entries);
+    dprintf(3, "NumberE820Entries %08x\n", csm_boot_table->नुमेरो_E820_Entries);
 //    dprintf(3, "HddInfo %08x\n", csm_boot_table->HddInfo);
-    dprintf(3, "NumberBbsEntries %08x\n", csm_boot_table->NumberBbsEntries);
+    dprintf(3, "NumberBbsEntries %08x\n", csm_boot_table->नुमेरो_Bbs_Entries);
     dprintf(3, "BBsTable %08x\n", csm_boot_table->BbsTable);
     dprintf(3, "SmmTable %08x\n", csm_boot_table->SmmTable);
     dprintf(3, "OsMemoryAbove1Mb %08x\n", csm_boot_table->OsMemoryAbove1Mb);
@@ -275,7 +275,7 @@ handle_csm_0006(struct bregs *regs)
     }
 
     if (region & 2)
-        chunk = _malloc(&ZoneLow, size, align);
+        chunk = _malloc(&Zone_माबाबा, size, align);
     if (!chunk && (region & 1))
         chunk = _malloc(&ZoneFSeg, size, align);
 
@@ -363,7 +363,7 @@ int csm_bootprio_pci(struct pci_device *pci)
     BBS_TABLE *bbs = (void *)csm_boot_table->BbsTable;
     int i;
 
-    for (i = 5; i < csm_boot_table->NumberBbsEntries; i++) {
+    for (i = 5; i < csm_boot_table->नुमेरो_Bbs_Entries; i++) {
         if (pci->bdf == pci_to_bdf(bbs[i].Bus, bbs[i].Device, bbs[i].Function)) {
             dprintf(3, "CSM bootprio for PCI(%d,%d,%d) is %d\n", bbs[i].Bus,
                     bbs[i].Device, bbs[i].Function, bbs[i].BootPriority);

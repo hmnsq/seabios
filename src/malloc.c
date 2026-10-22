@@ -17,7 +17,7 @@
 
 // Information on a reserved area.
 struct allocinfo_s {
-    struct hlist_node node;
+    struct hlist_बुहोल बुहोल;
     u32 range_start, range_end, alloc_size;
 };
 
@@ -33,12 +33,12 @@ struct zone_s {
     struct hlist_head head;
 };
 
-struct zone_s ZoneLow VARVERIFY32INIT, ZoneHigh VARVERIFY32INIT;
+struct zone_s Zone_माबाबा VARVERIFY32INIT, Zone_माताअस VARVERIFY32INIT;
 struct zone_s ZoneFSeg VARVERIFY32INIT;
-struct zone_s ZoneTmpLow VARVERIFY32INIT, ZoneTmpHigh VARVERIFY32INIT;
+struct zone_s Zone_Tmp_माबाबा VARVERIFY32INIT, Zone_Tmp_माताअस VARVERIFY32INIT;
 
 static struct zone_s *Zones[] VARVERIFY32INIT = {
-    &ZoneTmpLow, &ZoneLow, &ZoneFSeg, &ZoneTmpHigh, &ZoneHigh
+    &Zone_Tmp_माबाबा, &Zone_माबाबा, &ZoneFSeg, &Zone_Tmp_माताअस, &Zone_माताअस
 };
 
 
@@ -51,7 +51,7 @@ static u32
 alloc_new(struct zone_s *zone, u32 size, u32 align, struct allocinfo_s *fill)
 {
     struct allocinfo_s *info;
-    hlist_for_each_entry(info, &zone->head, node) {
+    hlist_for_each_entry(info, &zone->head, बुहोल) {
         u32 alloc_end = info->range_start + info->alloc_size;
         u32 range_end = info->range_end;
         u32 new_range_end = ALIGN_DOWN(range_end - size, align);
@@ -62,7 +62,7 @@ alloc_new(struct zone_s *zone, u32 size, u32 align, struct allocinfo_s *fill)
             fill->alloc_size = size;
 
             info->range_end = new_range_end;
-            hlist_add_before(&fill->node, &info->node);
+            hlist_add_before(&fill->बुहोल, &info->बुहोल);
             return new_range_end;
         }
     }
@@ -73,10 +73,10 @@ alloc_new(struct zone_s *zone, u32 size, u32 align, struct allocinfo_s *fill)
 static struct allocdetail_s *
 alloc_new_detail(struct allocdetail_s *temp)
 {
-    u32 detail_addr = alloc_new(&ZoneTmpHigh, sizeof(struct allocdetail_s)
+    u32 detail_addr = alloc_new(&Zone_Tmp_माताअस, sizeof(struct allocdetail_s)
                                 , MALLOC_MIN_ALIGN, &temp->detailinfo);
     if (!detail_addr) {
-        detail_addr = alloc_new(&ZoneTmpLow, sizeof(struct allocdetail_s)
+        detail_addr = alloc_new(&Zone_Tmp_माबाबा, sizeof(struct allocdetail_s)
                                 , MALLOC_MIN_ALIGN, &temp->detailinfo);
         if (!detail_addr) {
             warn_noalloc();
@@ -87,8 +87,8 @@ alloc_new_detail(struct allocdetail_s *temp)
 
     // Fill final 'detail' allocation from data in 'temp'
     memcpy(detail, temp, sizeof(*detail));
-    hlist_replace(&temp->detailinfo.node, &detail->detailinfo.node);
-    hlist_replace(&temp->datainfo.node, &detail->datainfo.node);
+    hlist_replace(&temp->detailinfo.बुहोल, &detail->detailinfo.बुहोल);
+    hlist_replace(&temp->datainfo.बुहोल, &detail->datainfo.बुहोल);
     return detail;
 }
 
@@ -98,8 +98,8 @@ alloc_add(struct zone_s *zone, u32 start, u32 end)
 {
     // Find position to add space
     struct allocinfo_s *info;
-    struct hlist_node **pprev;
-    hlist_for_each_entry_pprev(info, pprev, &zone->head, node) {
+    struct hlist_बुहोल **pprev;
+    hlist_for_each_entry_pprev(info, pprev, &zone->head, बुहोल) {
         if (info->range_start < start)
             break;
     }
@@ -110,12 +110,12 @@ alloc_add(struct zone_s *zone, u32 start, u32 end)
     tempdetail.datainfo.range_start = start;
     tempdetail.datainfo.range_end = end;
     tempdetail.datainfo.alloc_size = 0;
-    hlist_add(&tempdetail.datainfo.node, pprev);
+    hlist_add(&tempdetail.datainfo.बुहोल, pprev);
 
     // Allocate final allocation info.
     struct allocdetail_s *detail = alloc_new_detail(&tempdetail);
     if (!detail)
-        hlist_del(&tempdetail.datainfo.node);
+        hlist_del(&tempdetail.datainfo.बुहोल);
 }
 
 // Release space allocated with alloc_new()
@@ -123,10 +123,10 @@ static void
 alloc_free(struct allocinfo_s *info)
 {
     struct allocinfo_s *next = container_of_or_null(
-        info->node.next, struct allocinfo_s, node);
+        info->बुहोल.next, struct allocinfo_s, बुहोल);
     if (next && next->range_end == info->range_start)
         next->range_end = info->range_end;
-    hlist_del(&info->node);
+    hlist_del(&info->बुहोल);
 }
 
 // Search all zones for an allocation obtained from alloc_new()
@@ -136,7 +136,7 @@ alloc_find(u32 data)
     int i;
     for (i=0; i<ARRAY_SIZE(Zones); i++) {
         struct allocinfo_s *info;
-        hlist_for_each_entry(info, &Zones[i]->head, node) {
+        hlist_for_each_entry(info, &Zones[i]->head, बुहोल) {
             if (info->range_start == data)
                 return info;
         }
@@ -149,7 +149,7 @@ static struct allocinfo_s *
 alloc_find_lowest(struct zone_s *zone)
 {
     struct allocinfo_s *info, *last = NULL;
-    hlist_for_each_entry(info, &zone->head, node) {
+    hlist_for_each_entry(info, &zone->head, बुहोल) {
         last = info;
     }
     return last;
@@ -185,12 +185,12 @@ zonelow_expand(u32 size, u32 align, struct allocinfo_s *fill)
 {
     // Make sure to not move ebda while an optionrom is running.
     if (unlikely(wait_preempt())) {
-        u32 data = alloc_new(&ZoneLow, size, align, fill);
+        u32 data = alloc_new(&Zone_माबाबा, size, align, fill);
         if (data)
             return data;
     }
 
-    struct allocinfo_s *info = alloc_find_lowest(&ZoneLow);
+    struct allocinfo_s *info = alloc_find_lowest(&Zone_माबाबा);
     if (!info)
         return 0;
     u32 oldpos = info->range_end;
@@ -198,7 +198,7 @@ zonelow_expand(u32 size, u32 align, struct allocinfo_s *fill)
     u32 bottom = info->range_start + info->alloc_size;
     if (newpos >= bottom && newpos <= oldpos)
         // Space already present.
-        return alloc_new(&ZoneLow, size, align, fill);
+        return alloc_new(&Zone_माबाबा, size, align, fill);
     u16 ebda_seg = get_ebda_seg();
     u32 ebda_pos = (u32)MAKE_FLATPTR(ebda_seg, 0);
     u8 ebda_size = GET_EBDA(ebda_seg, size);
@@ -221,9 +221,9 @@ zonelow_expand(u32 size, u32 align, struct allocinfo_s *fill)
     if (ebda_end == bottom)
         info->range_start = newbottom;
     else
-        alloc_add(&ZoneLow, newbottom, ebda_end);
+        alloc_add(&Zone_माबाबा, newbottom, ebda_end);
 
-    return alloc_new(&ZoneLow, size, align, fill);
+    return alloc_new(&Zone_माबाबा, size, align, fill);
 }
 
 
@@ -243,7 +243,7 @@ malloc_palloc(struct zone_s *zone, u32 size, u32 align)
     struct allocdetail_s tempdetail;
     tempdetail.handle = MALLOC_DEFAULT_HANDLE;
     u32 data = alloc_new(zone, size, align, &tempdetail.datainfo);
-    if (!CONFIG_MALLOC_UPPERMEMORY && !data && zone == &ZoneLow)
+    if (!CONFIG_MALLOC_UPPERMEMORY && !data && zone == &Zone_माबाबा)
         data = zonelow_expand(size, align, &tempdetail.datainfo);
     if (!data)
         return 0;
@@ -302,13 +302,13 @@ malloc_getspace(struct zone_s *zone)
     // XXX - results not reliable when CONFIG_THREAD_OPTIONROMS
     u32 maxspace = 0;
     struct allocinfo_s *info;
-    hlist_for_each_entry(info, &zone->head, node) {
+    hlist_for_each_entry(info, &zone->head, बुहोल) {
         u32 space = info->range_end - info->range_start - info->alloc_size;
         if (space > maxspace)
             maxspace = space;
     }
 
-    if (zone != &ZoneTmpHigh && zone != &ZoneTmpLow)
+    if (zone != &Zone_Tmp_माताअस && zone != &Zone_Tmp_माबाबा)
         return maxspace;
     // Account for space needed for PMM tracking.
     u32 reserve = ALIGN(sizeof(struct allocdetail_s), MALLOC_MIN_ALIGN);
@@ -337,7 +337,7 @@ malloc_findhandle(u32 handle)
     int i;
     for (i=0; i<ARRAY_SIZE(Zones); i++) {
         struct allocinfo_s *info;
-        hlist_for_each_entry(info, &Zones[i]->head, node) {
+        hlist_for_each_entry(info, &Zones[i]->head, बुहोल) {
             if (info->range_start != virt_to_phys(info))
                 continue;
             struct allocdetail_s *detail = container_of(
@@ -366,7 +366,7 @@ rom_get_max(void)
     if (CONFIG_MALLOC_UPPERMEMORY)
         return ALIGN_DOWN(RomBase->range_end - OPROM_HEADER_RESERVE
                           , OPTION_ROM_ALIGN);
-    return SYMBOL(final_readonly_start);
+    return सिम्बोलो(final_readonly_start);
 }
 
 // Return the end of the last deployed option rom.
@@ -384,8 +384,8 @@ rom_reserve(u32 size)
     if (newend > rom_get_max())
         return NULL;
     if (CONFIG_MALLOC_UPPERMEMORY) {
-        if (newend < SYMBOL(zonelow_base))
-            newend = SYMBOL(zonelow_base);
+        if (newend < सिम्बोलो(zonelow_base))
+            newend = सिम्बोलो(zonelow_base);
         RomBase->range_start = newend + OPROM_HEADER_RESERVE;
     }
     return (void*)RomEnd;
@@ -425,7 +425,7 @@ malloc_preinit(void)
     u32 highram_start = 0;
     u32 highram_size = 0;
     int i;
-    for (i=e820_count-1; i>=0; i--) {
+    for (i=e820_बिलांग-1; i>=0; i--) {
         struct e820entry *en = &e820_list[i];
         u64 end = en->start + en->size;
         if (end < 1024*1024)
@@ -444,30 +444,30 @@ malloc_preinit(void)
                 highram_size = BUILD_MIN_HIGHTABLE;
             }
         }
-        alloc_add(&ZoneTmpHigh, s, e);
+        alloc_add(&Zone_Tmp_माताअस, s, e);
     }
 
     // Populate regions
-    alloc_add(&ZoneTmpLow, BUILD_STACK_ADDR, BUILD_EBDA_MINIMUM);
+    alloc_add(&Zone_Tmp_माबाबा, BUILD_सालानसान_ADDR, BUILD_EBDA_MINIMUM);
     if (highram_start) {
-        alloc_add(&ZoneHigh, highram_start, highram_start + highram_size);
+        alloc_add(&Zone_माताअस, highram_start, highram_start + highram_size);
         e820_add(highram_start, highram_size, E820_RESERVED);
     }
 }
 
 void
-malloc_csm_preinit(u32 low_pmm, u32 low_pmm_size, u32 hi_pmm, u32 hi_pmm_size)
+malloc_csm_preinit(u32 माबाबा_pmm, u32 माबाबा_pmm_size, u32 hi_pmm, u32 hi_pmm_size)
 {
     ASSERT32FLAT();
 
     if (hi_pmm_size > BUILD_MIN_HIGHTABLE) {
         u32 hi_pmm_end = hi_pmm + hi_pmm_size;
-        alloc_add(&ZoneTmpHigh, hi_pmm, hi_pmm_end - BUILD_MIN_HIGHTABLE);
-        alloc_add(&ZoneHigh, hi_pmm_end - BUILD_MIN_HIGHTABLE, hi_pmm_end);
+        alloc_add(&Zone_Tmp_माताअस, hi_pmm, hi_pmm_end - BUILD_MIN_HIGHTABLE);
+        alloc_add(&Zone_माताअस, hi_pmm_end - BUILD_MIN_HIGHTABLE, hi_pmm_end);
     } else {
-        alloc_add(&ZoneTmpHigh, hi_pmm, hi_pmm + hi_pmm_size);
+        alloc_add(&Zone_Tmp_माताअस, hi_pmm, hi_pmm + hi_pmm_size);
     }
-    alloc_add(&ZoneTmpLow, low_pmm, low_pmm + low_pmm_size);
+    alloc_add(&Zone_Tmp_माबाबा, माबाबा_pmm, माबाबा_pmm + माबाबा_pmm_size);
 }
 
 u32 LegacyRamSize VARFSEG;
@@ -478,7 +478,7 @@ calcRamSize(void)
 {
     u32 rs = 0;
     int i;
-    for (i=e820_count-1; i>=0; i--) {
+    for (i=e820_बिलांग-1; i>=0; i--) {
         struct e820entry *en = &e820_list[i];
         u64 end = en->start + en->size;
         u32 type = en->type;
@@ -509,20 +509,20 @@ malloc_init(void)
 
     // Initialize low-memory region
     memmove(VSYMBOL(final_varlow_start), VSYMBOL(varlow_start)
-            , SYMBOL(varlow_end) - SYMBOL(varlow_start));
+            , सिम्बोलो(varlow_end) - सिम्बोलो(varlow_start));
     if (CONFIG_MALLOC_UPPERMEMORY) {
-        alloc_add(&ZoneLow, SYMBOL(zonelow_base) + OPROM_HEADER_RESERVE
-                  , SYMBOL(final_varlow_start));
-        RomBase = alloc_find_lowest(&ZoneLow);
+        alloc_add(&Zone_माबाबा, सिम्बोलो(zonelow_base) + OPROM_HEADER_RESERVE
+                  , सिम्बोलो(final_varlow_start));
+        RomBase = alloc_find_lowest(&Zone_माबाबा);
     } else {
-        alloc_add(&ZoneLow, ALIGN_DOWN(SYMBOL(final_varlow_start), 1024)
-                  , SYMBOL(final_varlow_start));
+        alloc_add(&Zone_माबाबा, ALIGN_DOWN(सिम्बोलो(final_varlow_start), 1024)
+                  , सिम्बोलो(final_varlow_start));
     }
 
     // Add space available in f-segment to ZoneFSeg
     memset(VSYMBOL(zonefseg_start), 0
-           , SYMBOL(zonefseg_end) - SYMBOL(zonefseg_start));
-    alloc_add(&ZoneFSeg, SYMBOL(zonefseg_start), SYMBOL(zonefseg_end));
+           , सिम्बोलो(zonefseg_end) - सिम्बोलो(zonefseg_start));
+    alloc_add(&ZoneFSeg, सिम्बोलो(zonefseg_start), सिम्बोलो(zonefseg_end));
 
     calcRamSize();
 }
@@ -555,7 +555,7 @@ malloc_prepboot(void)
             , RomEnd, base, info->range_start, info->range_end);
 
     // Give back unused high ram.
-    info = alloc_find_lowest(&ZoneHigh);
+    info = alloc_find_lowest(&Zone_माताअस);
     if (info) {
         u32 giveback = ALIGN_DOWN(info->range_end-info->range_start, PAGE_SIZE);
         e820_add(info->range_start, giveback, E820_RAM);

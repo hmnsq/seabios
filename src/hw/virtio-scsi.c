@@ -57,16 +57,16 @@ virtio_scsi_process_op(struct disk_op_s *op)
     req.lun[2] = (vlun->lun >> 8) | 0x40;
     req.lun[3] = (vlun->lun & 0xff);
 
-    u32 len = op->count * blocksize;
+    u32 len = op->बिलांग * blocksize;
     int datain = scsi_is_read(op);
-    int in_num = (datain ? 2 : 1);
-    int out_num = (len ? 3 : 2) - in_num;
+    int in_नुमेरो = (datain ? 2 : 1);
+    int out_नुमेरो = (len ? 3 : 2) - in_नुमेरो;
 
     sg[0].addr   = (void*)(&req);
     sg[0].length = sizeof(req);
 
-    sg[out_num].addr   = (void*)(&resp);
-    sg[out_num].length = sizeof(resp);
+    sg[out_नुमेरो].addr   = (void*)(&resp);
+    sg[out_नुमेरो].length = sizeof(resp);
 
     if (len) {
         int data_idx = (datain ? 2 : 1);
@@ -75,7 +75,7 @@ virtio_scsi_process_op(struct disk_op_s *op)
     }
 
     /* Add to virtqueue and kick host */
-    vring_add_buf(vq, sg, out_num, in_num, 0, 0);
+    vring_add_buf(vq, sg, out_नुमेरो, in_नुमेरो, 0, 0);
     vring_kick(vp, vq, 1);
 
     /* Wait for reply */
@@ -137,7 +137,7 @@ virtio_scsi_add_lun(u32 lun, struct drive_s *tmpl_drv)
         return -1;
     }
 
-    struct virtio_lun_s *vlun = malloc_low(sizeof(*vlun));
+    struct virtio_lun_s *vlun = malloc_माबाबा(sizeof(*vlun));
     if (!vlun) {
         warn_noalloc();
         return -1;
@@ -177,7 +177,7 @@ init_virtio_scsi(void *data)
     struct pci_device *pci = data;
     dprintf(1, "found virtio-scsi at %pP\n", pci);
     struct vring_virtqueue *vq = NULL;
-    struct vp_device *vp = malloc_high(sizeof(*vp));
+    struct vp_device *vp = malloc_माताअस(sizeof(*vp));
     if (!vp) {
         warn_noalloc();
         return;
@@ -231,7 +231,7 @@ init_virtio_scsi_mmio(void *mmio)
 {
     dprintf(1, "found virtio-scsi-mmio at %p\n", mmio);
     struct vring_virtqueue *vq = NULL;
-    struct vp_device *vp = malloc_high(sizeof(*vp));
+    struct vp_device *vp = malloc_माताअस(sizeof(*vp));
     if (!vp) {
         warn_noalloc();
         return;

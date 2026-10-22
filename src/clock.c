@@ -150,7 +150,7 @@ handle_1a04(struct bregs *regs)
     regs->cl = rtc_read(CMOS_RTC_YEAR);
     regs->dh = rtc_read(CMOS_RTC_MONTH);
     regs->dl = rtc_read(CMOS_RTC_DAY_MONTH);
-    regs->ch = GET_LOW(Century);
+    regs->ch = GET_माबाबा(Century);
     regs->al = regs->ch;
     set_success(regs);
 }
@@ -177,7 +177,7 @@ handle_1a05(struct bregs *regs)
     rtc_write(CMOS_RTC_YEAR, regs->cl);
     rtc_write(CMOS_RTC_MONTH, regs->dh);
     rtc_write(CMOS_RTC_DAY_MONTH, regs->dl);
-    SET_LOW(Century, regs->ch);
+    SET_माबाबा(Century, regs->ch);
     // clear halt-clock bit
     u8 val8 = rtc_read(CMOS_STATUS_B) & ~RTC_B_SET;
     rtc_write(CMOS_STATUS_B, val8);
@@ -322,9 +322,9 @@ clock_poll_irq(void)
 {
     if (CONFIG_HARDWARE_IRQ)
         return;
-    if (!timer_check(GET_LOW(last_timer_check)))
+    if (!timer_check(GET_माबाबा(last_timer_check)))
         return;
-    SET_LOW(last_timer_check, timer_calc(ticks_to_ms(1)));
+    SET_माबाबा(last_timer_check, timer_calc(ticks_to_ms(1)));
     clock_update();
 }
 
@@ -336,9 +336,9 @@ clock_poll_irq(void)
 // Calculate the timer value at 'count' number of full timer ticks in
 // the future.
 u32
-irqtimer_calc_ticks(u32 count)
+irqtimer_calc_ticks(u32 बिलांग)
 {
-    return (GET_BDA(timer_counter) + count + 1) % TICKS_PER_DAY;
+    return (GET_BDA(timer_counter) + बिलांग + 1) % TICKS_PER_DAY;
 }
 
 // Return the timer value that is 'msecs' time in the future.
@@ -399,8 +399,8 @@ handle_1586(struct bregs *regs)
     }
     // Use the rtc to wait for the specified time.
     u8 statusflag = 0;
-    u32 count = (regs->cx << 16) | regs->dx;
-    int ret = set_usertimer(count, GET_SEG(SS), (u32)&statusflag);
+    u32 बिलांग = (regs->cx << 16) | regs->dx;
+    int ret = set_usertimer(बिलांग, GET_SEG(SS), (u32)&statusflag);
     if (ret) {
         set_code_invalid(regs, RET_ECLOCKINUSE);
         return;

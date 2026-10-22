@@ -122,7 +122,7 @@ struct bios_data_area_s {
 #define KF0_LALT         (1<<9)
 #define KF0_PAUSEACTIVE  (1<<11)
 #define KF0_SCROLL       (1<<12)
-#define KF0_NUM          (1<<13)
+#define KF0_नुमेरो          (1<<13)
 #define KF0_CAPS         (1<<14)
 
 #define KF1_LAST_E1    (1<<0)

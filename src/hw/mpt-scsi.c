@@ -31,7 +31,7 @@
 #define MPT_REG_REQ_Q     0x40
 #define MPT_REG_REP_Q     0x44
 
-#define MPT_DOORBELL_MSG_RESET 0x40
+#define MPT_DOORBELL_मेनसाहे_RESET 0x40
 #define MPT_DOORBELL_HANDSHAKE 0x42
 
 #define MPT_IMASK_DOORBELL 0x01
@@ -45,7 +45,7 @@ struct mpt_lun_s {
     u8 lun;
 };
 
-u8 reply_msg[4] __attribute((aligned(4))) VARLOW;
+u8 reply_मेनसाहे[4] __attribute((aligned(4))) VARLOW;
 
 #define MPT_MESSAGE_HDR_FUNCTION_SCSI_IO_REQUEST        (0x00)
 #define MPT_MESSAGE_HDR_FUNCTION_IOC_INIT               (0x02)
@@ -63,16 +63,16 @@ static struct MptIOCInitRequest
     u32    MessageContext;      /* Message context ID. */
     u16    ReplyFrameSize;      /* Reply frame size. */
     u16    Reserved2;           /* Reserved */
-    u32    HostMfaHighAddr;     /* Upper 32bit of the message frames. */
-    u32    SenseBufferHighAddr; /* Upper 32bit of the sense buffer. */
+    u32    Host_Mfa_माताअस_Addr;     /* Upper 32bit of the message frames. */
+    u32    Sense_Buffer_माताअस_Addr; /* Upper 32bit of the sense buffer. */
 } MptIOCInitRequest = {
     .WhoInit = 2,
     .Function = MPT_MESSAGE_HDR_FUNCTION_IOC_INIT,
     .MaxDevices = 8,
     .MaxBuses = 1,
-    .ReplyFrameSize = sizeof(reply_msg),
-    .HostMfaHighAddr = 0,
-    .SenseBufferHighAddr = 0
+    .ReplyFrameSize = sizeof(reply_मेनसाहे),
+    .Host_Mfa_माताअस_Addr = 0,
+    .Sense_Buffer_माताअस_Addr = 0
 };
 
 struct MptIOCInitReply {
@@ -104,14 +104,14 @@ typedef struct MptSCSIIORequest {
     u32    Control;             /* Control values. */
     u8     CDB[16];             /* The CDB. */
     u32    DataLength;          /* Data length. */
-    u32    SenseBufferLowAddr;  /* Sense buffer low 32bit address. */
+    u32    Sense_Buffer_माबाबा_Addr;  /* Sense buffer low 32bit address. */
 } __attribute__((packed)) MptSCSIIORequest_t;
 
 #define MPT_POLL_TIMEOUT  60000
 
 typedef struct MptSGEntrySimple32 {
     u32 FlagsLength;
-    u32 DataBufferAddressLow;
+    u32 Data_Buffer_Address_माबाबा;
 } __attribute__((packed)) MptSGEntrySimple32_t;
 
 static int
@@ -132,13 +132,13 @@ mpt_scsi_cmd(u32 iobase, struct disk_op_s *op,
             .CDBLength = 16,
             .SenseBufferLength = 18,
             .MessageContext = end & 0x7fffffff,
-            .DataLength = op->count * blocksize,
-            .SenseBufferLowAddr = (u32)MAKE_FLATPTR(GET_SEG(SS), &sense_buf[0]),
+            .DataLength = op->बिलांग * blocksize,
+            .Sense_Buffer_माबाबा_Addr = (u32)MAKE_FLATPTR(GET_SEG(SS), &sense_buf[0]),
         },
         .sge = {
             /* end of list, simple entry, end of buffer, last element */
-            .FlagsLength = (op->count * blocksize) | 0xD1000000,
-            .DataBufferAddressLow = (u32)op->buf_fl,
+            .FlagsLength = (op->बिलांग * blocksize) | 0xD1000000,
+            .Data_Buffer_Address_माबाबा = (u32)op->buf_fl,
         }
     };
 
@@ -168,7 +168,7 @@ mpt_scsi_cmd(u32 iobase, struct disk_op_s *op,
             if (resp == req.scsi_io.MessageContext) {
                 return DISK_RET_SUCCESS;
             } else if (resp & 0x80000000) {
-                outl((u32)&reply_msg[0], iobase + MPT_REG_REP_Q);
+                outl((u32)&reply_मेनसाहे[0], iobase + MPT_REG_REP_Q);
                 return DISK_RET_EBADTRACK;
             }
         }
@@ -259,7 +259,7 @@ static void
 init_mpt_scsi(void *data)
 {
     struct pci_device *pci = data;
-    u16 *msg_in_p;
+    u16 *मेनसाहे_in_p;
     u32 iobase = pci_enable_iobar(pci, PCI_BASE_ADDRESS_0);
     if (!iobase)
         return;
@@ -270,7 +270,7 @@ init_mpt_scsi(void *data)
             , pci->device, pci, iobase);
 
     // reset
-    mpt_out_doorbell(MPT_DOORBELL_MSG_RESET, 0, iobase);
+    mpt_out_doorbell(MPT_DOORBELL_मेनसाहे_RESET, 0, iobase);
     outl(MPT_IMASK_DOORBELL|MPT_IMASK_REPLY , iobase + MPT_REG_IMASK);
     outl(0, iobase + MPT_REG_ISTATUS);
 
@@ -285,15 +285,15 @@ init_mpt_scsi(void *data)
 
     // Read the reply 16 bits at a time.  Cannot use insl
     // because the port is 32 bits wide.
-    msg_in_p = (u16 *)&MptIOCInitReply;
-    while(msg_in_p != (u16 *)(&MptIOCInitReply + 1))
-        *msg_in_p++ = (u16)inl(iobase + MPT_REG_DOORBELL);
+    मेनसाहे_in_p = (u16 *)&MptIOCInitReply;
+    while(मेनसाहे_in_p != (u16 *)(&MptIOCInitReply + 1))
+        *मेनसाहे_in_p++ = (u16)inl(iobase + MPT_REG_DOORBELL);
 
     // Eat doorbell interrupt
     outl(0, iobase + MPT_REG_ISTATUS);
 
     // Post reply message used for SCSI errors
-    outl((u32)&reply_msg[0], iobase + MPT_REG_REP_Q);
+    outl((u32)&reply_मेनसाहे[0], iobase + MPT_REG_REP_Q);
 
     int i;
     for (i = 0; i < 7; i++)

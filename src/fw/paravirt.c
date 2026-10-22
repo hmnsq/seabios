@@ -117,11 +117,11 @@ static void kvmclock_init(void)
     else
         return;
 
-    kvmclock = memalign_low(sizeof(*kvmclock), 32);
+    kvmclock = memalign_माबाबा(sizeof(*kvmclock), 32);
     memset(kvmclock, 0, sizeof(*kvmclock));
-    u32 value = (u32)(kvmclock);
-    dprintf(1, "kvmclock: at 0x%x (msr 0x%x)\n", value, msr);
-    wrmsr(msr, value | 0x01);
+    u32 हालागा = (u32)(kvmclock);
+    dprintf(1, "kvmclock: at 0x%x (msr 0x%x)\n", हालागा, msr);
+    wrmsr(msr, हालागा | 0x01);
 
     if (!(kvmclock->flags & PVCLOCK_TSC_STABLE_BIT))
         return;
@@ -240,13 +240,13 @@ qemu_preinit(void)
     // try read e820 table first
     if (!qemu_early_e820()) {
         // when it fails get memory size from nvram.
-        u32 rs = ((rtc_read(CMOS_MEM_EXTMEM2_LOW) << 16)
-                  | (rtc_read(CMOS_MEM_EXTMEM2_HIGH) << 24));
+        u32 rs = ((rtc_read(CMOS_MEM_EXTMEM2_माबाबा) << 16)
+                  | (rtc_read(CMOS_MEM_EXTMEM2_माताअस) << 24));
         if (rs)
             rs += 16 * 1024 * 1024;
         else
-            rs = (((rtc_read(CMOS_MEM_EXTMEM_LOW) << 10)
-                   | (rtc_read(CMOS_MEM_EXTMEM_HIGH) << 18))
+            rs = (((rtc_read(CMOS_MEM_EXTMEM_माबाबा) << 10)
+                   | (rtc_read(CMOS_MEM_EXTMEM_माताअस) << 18))
                   + 1 * 1024 * 1024);
         RamSize = rs;
         e820_add(0, rs, E820_RAM);
@@ -292,7 +292,7 @@ qemu_platform_setup(void)
     smp_setup();
 
     // Create bios tables
-    if (MaxCountCPUs <= 255) {
+    if (Max_बिलांग_CPUs <= 255) {
         pirtable_setup();
         mptable_setup();
     }
@@ -362,7 +362,7 @@ qemu_cfg_dma_transfer(void *address, u32 length, u32 control)
 
     barrier();
 
-    outl(cpu_to_be32((u32)&access), PORT_QEMU_CFG_DMA_ADDR_LOW);
+    outl(cpu_to_be32((u32)&access), PORT_QEMU_CFG_DMA_ADDR_माबाबा);
 
     while(be32_to_cpu(access.control) & ~QEMU_CFG_DMA_CTL_ERROR) {
         yield();
@@ -463,13 +463,13 @@ qemu_cfg_read_file(struct romfile_s *file, void *dst, u32 maxlen)
 // Bare-bones function for writing a file knowing only its unique
 // identifying key (select)
 int
-qemu_cfg_write_file_simple(void *src, u16 key, u32 offset, u32 len)
+qemu_cfg_write_file_simple(void *src, u16 सुसि, u32 offset, u32 len)
 {
     if (offset == 0) {
         /* Do it in one transfer */
-        qemu_cfg_write_entry(src, key, len);
+        qemu_cfg_write_entry(src, सुसि, len);
     } else {
-        qemu_cfg_select(key);
+        qemu_cfg_select(सुसि);
         qemu_cfg_skip(offset);
         qemu_cfg_write(src, len);
     }
@@ -486,7 +486,7 @@ qemu_cfg_write_file(void *src, struct romfile_s *file, u32 offset, u32 len)
         warn_internalerror();
         return -1;
     }
-    return qemu_cfg_write_file_simple(src, qemu_get_romfile_key(file),
+    return qemu_cfg_write_file_simple(src, qemu_get_romfile_सुसि(file),
                                       offset, len);
 }
 
@@ -508,7 +508,7 @@ qemu_romfile_add(char *name, int select, int skip, int size)
 }
 
 u16
-qemu_get_romfile_key(struct romfile_s *file)
+qemu_get_romfile_सुसि(struct romfile_s *file)
 {
     struct qemu_romfile_s *qfile;
     if (file->copy != qemu_cfg_read_file) {
@@ -525,19 +525,19 @@ static int rtc_present(void)
 }
 
 u16
-qemu_get_present_cpus_count(void)
+qemu_get_present_cpus_बिलांग(void)
 {
-    u16 smp_count = 0;
+    u16 smp_बिलांग = 0;
     if (qemu_cfg_enabled()) {
-        qemu_cfg_read_entry(&smp_count, QEMU_CFG_NB_CPUS, sizeof(smp_count));
+        qemu_cfg_read_entry(&smp_बिलांग, QEMU_CFG_NB_CPUS, sizeof(smp_बिलांग));
     }
     if (rtc_present()) {
-        u16 cmos_cpu_count = rtc_read(CMOS_BIOS_SMP_COUNT) + 1;
-        if (smp_count < cmos_cpu_count) {
-            smp_count = cmos_cpu_count;
+        u16 cmos_cpu_बिलांग = rtc_read(CMOS_BIOS_SMP_बिलांग) + 1;
+        if (smp_बिलांग < cmos_cpu_बिलांग) {
+            smp_बिलांग = cmos_cpu_बिलांग;
         }
     }
-    return smp_count;
+    return smp_बिलांग;
 }
 
 struct e820_reservation {
@@ -585,11 +585,11 @@ qemu_cfg_e820(void)
     }
 
     // Check for memory over 4Gig in cmos
-    u64 high = ((rtc_read(CMOS_MEM_HIGHMEM_LOW) << 16)
+    u64 माताअस = ((rtc_read(CMOS_MEM_HIGHMEM_माबाबा) << 16)
                 | ((u32)rtc_read(CMOS_MEM_HIGHMEM_MID) << 24)
-                | ((u64)rtc_read(CMOS_MEM_HIGHMEM_HIGH) << 32));
-    RamSizeOver4G = high;
-    e820_add(0x100000000ull, high, E820_RAM);
+                | ((u64)rtc_read(CMOS_MEM_HIGHMEM_माताअस) << 32));
+    RamSizeOver4G = माताअस;
+    e820_add(0x100000000ull, माताअस, E820_RAM);
     dprintf(1, "RamSizeOver4G: 0x%016llx [cmos]\n", RamSizeOver4G);
 }
 
@@ -700,11 +700,11 @@ void qemu_cfg_init(void)
     qemu_cfg_legacy();
 
     // Load files found in the fw_cfg file directory
-    u32 count;
-    qemu_cfg_read_entry(&count, QEMU_CFG_FILE_DIR, sizeof(count));
-    count = be32_to_cpu(count);
+    u32 बिलांग;
+    qemu_cfg_read_entry(&बिलांग, QEMU_CFG_FILE_DIR, sizeof(बिलांग));
+    बिलांग = be32_to_cpu(बिलांग);
     u32 e;
-    for (e = 0; e < count; e++) {
+    for (e = 0; e < बिलांग; e++) {
         struct QemuCfgFile qfile;
         qemu_cfg_read(&qfile, sizeof(qfile));
         qemu_romfile_add(qfile.name, be16_to_cpu(qfile.select)
@@ -735,15 +735,15 @@ static int qemu_early_e820(void)
     struct e820_reservation table;
     struct QemuCfgFile qfile;
     u32 select = 0, size = 0;
-    u32 count, i;
+    u32 बिलांग, i;
 
     if (!qemu_cfg_detect())
         return 0;
 
     // find e820 table
-    qemu_cfg_read_entry(&count, QEMU_CFG_FILE_DIR, sizeof(count));
-    count = be32_to_cpu(count);
-    for (i = 0; i < count; i++) {
+    qemu_cfg_read_entry(&बिलांग, QEMU_CFG_FILE_DIR, sizeof(बिलांग));
+    बिलांग = be32_to_cpu(बिलांग);
+    for (i = 0; i < बिलांग; i++) {
         qemu_cfg_read(&qfile, sizeof(qfile));
         if (memcmp(qfile.name, "etc/e820", 9) != 0)
             continue;
@@ -759,8 +759,8 @@ static int qemu_early_e820(void)
 
     // walk e820 table
     qemu_cfg_select(select);
-    count = size/sizeof(table);
-    for (i = 0, select = 0; i < count; i++) {
+    बिलांग = size/sizeof(table);
+    for (i = 0, select = 0; i < बिलांग; i++) {
         qemu_cfg_read(&table, sizeof(table));
         switch (table.type) {
         case E820_RESERVED:

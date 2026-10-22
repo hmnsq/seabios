@@ -37,7 +37,7 @@ extern struct tpm_driver tpm_drivers[];
 
 #define TIS_DRIVER_IDX       0
 #define CRB_DRIVER_IDX       1
-#define TPM_NUM_DRIVERS      2
+#define TPM_नुमेरो_DRIVERS      2
 
 #define TPM_INVALID_DRIVER   0xf
 
@@ -72,8 +72,8 @@ static u32 wait_reg8(u8* reg, u32 time, u8 mask, u8 expect)
     u32 end = timer_calc_usec(time);
 
     for (;;) {
-        u8 value = readl(reg);
-        if ((value & mask) == expect) {
+        u8 हालागा = readl(reg);
+        if ((हालागा & mask) == expect) {
             rc = 0;
             break;
         }
@@ -535,7 +535,7 @@ static u32 crb_waitrespready(enum tpmDurationType to_t)
     return rc;
 }
 
-struct tpm_driver tpm_drivers[TPM_NUM_DRIVERS] = {
+struct tpm_driver tpm_drivers[TPM_नुमेरो_DRIVERS] = {
     [TIS_DRIVER_IDX] =
         {
             .timeouts      = NULL,
@@ -574,7 +574,7 @@ TPMVersion
 tpmhw_probe(void)
 {
     unsigned int i;
-    for (i = 0; i < TPM_NUM_DRIVERS; i++) {
+    for (i = 0; i < TPM_नुमेरो_DRIVERS; i++) {
         struct tpm_driver *td = &tpm_drivers[i];
         if (td->probe() != 0) {
             td->init();

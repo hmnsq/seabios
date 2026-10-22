@@ -56,8 +56,8 @@ struct usb_port_status {
 #define USB_PORT_STAT_POWER             0x0100
 #define USB_PORT_STAT_SPEED_SHIFT       9
 #define USB_PORT_STAT_SPEED_MASK        (0x3 << USB_PORT_STAT_SPEED_SHIFT)
-#define USB_PORT_STAT_LOW_SPEED         0x0200
-#define USB_PORT_STAT_HIGH_SPEED        0x0400
+#define USB_PORT_STAT_माबाबा_SPEED         0x0200
+#define USB_PORT_STAT_माताअस_SPEED        0x0400
 #define USB_PORT_STAT_TEST              0x0800
 #define USB_PORT_STAT_INDICATOR         0x1000
 

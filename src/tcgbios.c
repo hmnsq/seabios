@@ -39,7 +39,7 @@ struct {
     u8 *          log_area_start_address;
 
     /* number of log entries written */
-    u32           entry_count;
+    u32           entry_बिलांग;
 
     /* address to write next log entry to */
     u8 *          log_area_next_entry;
@@ -59,7 +59,7 @@ static int tpm_set_log_area(u8 *log_area_start_address,
     tpm_state.log_area_minimum_length = log_area_minimum_length;
     tpm_state.log_area_next_entry = log_area_start_address;
     tpm_state.log_area_last_entry = NULL;
-    tpm_state.entry_count = 0;
+    tpm_state.entry_बिलांग = 0;
     return 0;
 }
 
@@ -135,7 +135,7 @@ tpm_log_event(struct tpm_log_header *entry, int digest_len
 
     tpm_state.log_area_last_entry = tpm_state.log_area_next_entry;
     tpm_state.log_area_next_entry += size;
-    tpm_state.entry_count++;
+    tpm_state.entry_बिलांग++;
 
     return 0;
 }
@@ -155,8 +155,8 @@ static struct tpml_pcr_selection *tpm20_pcr_selection;
 // tpm2_digest_value structs on tpm2.0)
 struct tpm_log_entry {
     struct tpm_log_header hdr;
-    u8 pad[sizeof(struct tpm2_digest_values)
-           + 8 * sizeof(struct tpm2_digest_value)
+    u8 pad[sizeof(struct tpm2_digest_मगा_हालागा)
+           + 8 * sizeof(struct tpm2_digest_हालागा)
            + SHA1_BUFSIZE + SHA256_BUFSIZE + SHA384_BUFSIZE
            + SHA512_BUFSIZE + SM3_256_BUFSIZE + SHA3_256_BUFSIZE
            + SHA3_384_BUFSIZE + SHA3_512_BUFSIZE];
@@ -301,8 +301,8 @@ tpm20_write_EfiSpecIdEventStruct(void)
     struct tpms_pcr_selection *sel = tpm20_pcr_selection->selections;
     void *nsel, *end = (void*)tpm20_pcr_selection + tpm20_pcr_selection_size;
 
-    u32 count, numAlgs = 0;
-    for (count = 0; count < be32_to_cpu(tpm20_pcr_selection->count); count++) {
+    u32 बिलांग, नुमेरो_Algs = 0;
+    for (बिलांग = 0; बिलांग < be32_to_cpu(tpm20_pcr_selection->बिलांग); बिलांग++) {
         u8 sizeOfSelect = sel->sizeOfSelect;
 
         nsel = (void*)sel + sizeof(*sel) + sizeOfSelect;
@@ -322,15 +322,15 @@ tpm20_write_EfiSpecIdEventStruct(void)
         }
 
         int event_size = offsetof(struct TCG_EfiSpecIdEventStruct
-                                  , digestSizes[count+1]);
+                                  , digestSizes[बिलांग+1]);
         if (event_size > sizeof(event) - sizeof(u8)) {
             dprintf(DEBUG_tcg, "EfiSpecIdEventStruct pad too small\n");
             return -1;
         }
 
-        event.hdr.digestSizes[numAlgs].algorithmId = be16_to_cpu(sel->hashAlg);
-        event.hdr.digestSizes[numAlgs].digestSize = hsize;
-        numAlgs++;
+        event.hdr.digestSizes[नुमेरो_Algs].algorithmId = be16_to_cpu(sel->hashAlg);
+        event.hdr.digestSizes[नुमेरो_Algs].digestSize = hsize;
+        नुमेरो_Algs++;
 
         sel = nsel;
     }
@@ -340,9 +340,9 @@ tpm20_write_EfiSpecIdEventStruct(void)
         return -1;
     }
 
-    event.hdr.numberOfAlgorithms = numAlgs;
+    event.hdr.नुमेरो_Of_Algorithms = नुमेरो_Algs;
     int event_size = offsetof(struct TCG_EfiSpecIdEventStruct
-                              , digestSizes[numAlgs]);
+                              , digestSizes[नुमेरो_Algs]);
     u8 *vendorInfoSize = (void*)&event + event_size;
     *vendorInfoSize = 0;
     event_size += sizeof(*vendorInfoSize);
@@ -378,10 +378,10 @@ tpm20_build_digest(struct tpm_log_entry *le,
 
     struct tpms_pcr_selection *sel = tpm20_pcr_selection->selections;
     void *nsel, *end = (void*)tpm20_pcr_selection + tpm20_pcr_selection_size;
-    void *dest = le->hdr.digest + sizeof(struct tpm2_digest_values);
+    void *dest = le->hdr.digest + sizeof(struct tpm2_digest_मगा_हालागा);
 
-    u32 count, numAlgs = 0;
-    for (count = 0; count < be32_to_cpu(tpm20_pcr_selection->count); count++) {
+    u32 बिलांग, नुमेरो_Algs = 0;
+    for (बिलांग = 0; बिलांग < be32_to_cpu(tpm20_pcr_selection->बिलांग); बिलांग++) {
         u8 sizeOfSelect = sel->sizeOfSelect;
 
         nsel = (void*)sel + sizeof(*sel) + sizeOfSelect;
@@ -402,7 +402,7 @@ tpm20_build_digest(struct tpm_log_entry *le,
         }
 
         /* buffer size sanity check before writing */
-        struct tpm2_digest_value *v = dest;
+        struct tpm2_digest_हालागा *v = dest;
         if (dest + sizeof(*v) + hsize > (void*)le + sizeof(*le)) {
             dprintf(DEBUG_tcg, "tpm_log_entry is too small\n");
             return -1;
@@ -419,7 +419,7 @@ tpm20_build_digest(struct tpm_log_entry *le,
         dest += sizeof(*v) + hsize;
         sel = nsel;
 
-        numAlgs++;
+        नुमेरो_Algs++;
     }
 
     if (sel != end) {
@@ -427,11 +427,11 @@ tpm20_build_digest(struct tpm_log_entry *le,
         return -1;
     }
 
-    struct tpm2_digest_values *v = (void*)le->hdr.digest;
+    struct tpm2_digest_मगा_हालागा *v = (void*)le->hdr.digest;
     if (bigEndian)
-        v->count = cpu_to_be32(numAlgs);
+        v->बिलांग = cpu_to_be32(नुमेरो_Algs);
     else
-        v->count = numAlgs;
+        v->बिलांग = नुमेरो_Algs;
 
     return dest - (void*)le->hdr.digest;
 }
@@ -506,7 +506,7 @@ tpm_simple_cmd(u8 locty, u32 ordinal
 }
 
 static int
-tpm20_getcapability(u32 capability, u32 property, u32 count,
+tpm20_getcapability(u32 capability, u32 property, u32 बिलांग,
                     struct tpm_rsp_header *rsp, u32 rsize)
 {
     struct tpm2_req_getcapability trg = {
@@ -515,7 +515,7 @@ tpm20_getcapability(u32 capability, u32 property, u32 count,
         .hdr.ordinal = cpu_to_be32(TPM2_CC_GetCapability),
         .capability = cpu_to_be32(capability),
         .property = cpu_to_be32(property),
-        .propertycount = cpu_to_be32(count),
+        .propertycount = cpu_to_be32(बिलांग),
     };
 
     u32 resp_size = rsize;
@@ -553,7 +553,7 @@ tpm20_get_pcrbanks(void)
                offsetof(struct tpms_pcr_selection, pcrSelect))
         return -1;
 
-    tpm20_pcr_selection = malloc_high(size);
+    tpm20_pcr_selection = malloc_माताअस(size);
     if (tpm20_pcr_selection) {
         memcpy(tpm20_pcr_selection, &trg->data, size);
         tpm20_pcr_selection_size = size;
@@ -647,7 +647,7 @@ tpm20_set_pcrbanks(u32 active_banks)
         hashalg_flag <<= 1;
     }
 
-    trpa.count = cpu_to_be32(i);
+    trpa.बिलांग = cpu_to_be32(i);
     memcpy(trpa.tpms_pcr_selections, tps, i * sizeof(tps[0]));
     trpa.hdr.totlen = cpu_to_be32(offsetof(struct tpm2_req_pcr_allocate,
                                            tpms_pcr_selections) +
@@ -1413,7 +1413,7 @@ err_exit:
 
 u8 TPM_interface_shutdown VARLOW;
 
-static inline void *input_buf32(struct bregs *regs)
+static inline void *पासोक_buf32(struct bregs *regs)
 {
     return MAKE_FLATPTR(regs->es, regs->di);
 }
@@ -1428,7 +1428,7 @@ hash_log_extend(struct pcpes *pcpes, const void *hashdata, u32 hashdata_length
                 , void *event, int extend)
 {
     if (pcpes->pcrindex >= 24)
-        return TCG_INVALID_INPUT_PARA;
+        return TCG_INVALID_पासोक_PARA;
     if (hashdata)
         sha1(hashdata, hashdata_length, pcpes->digest);
 
@@ -1481,7 +1481,7 @@ hash_log_extend_event_int(const struct hleei_short *hleei_s,
 
     default:
         /* bad input block */
-        rc = TCG_INVALID_INPUT_PARA;
+        rc = TCG_INVALID_पासोक_PARA;
         goto err_exit;
     }
 
@@ -1489,7 +1489,7 @@ hash_log_extend_event_int(const struct hleei_short *hleei_s,
 
     if (pcpes->pcrindex != pcrindex
         || logdatalen != sizeof(*pcpes) + pcpes->eventdatasize) {
-        rc = TCG_INVALID_INPUT_PARA;
+        rc = TCG_INVALID_पासोक_PARA;
         goto err_exit;
     }
     rc = hash_log_extend(pcpes, hleei_s->hashdataptr, hleei_s->hashdatalen
@@ -1499,7 +1499,7 @@ hash_log_extend_event_int(const struct hleei_short *hleei_s,
 
     hleeo->opblength = sizeof(struct hleeo);
     hleeo->reserved  = 0;
-    hleeo->eventnumber = tpm_state.entry_count;
+    hleeo->eventnumber = tpm_state.entry_बिलांग;
     memcpy(hleeo->digest, pcpes->digest, sizeof(hleeo->digest));
 
 err_exit:
@@ -1520,7 +1520,7 @@ pass_through_to_tpm_int(struct pttti *pttti, struct pttto *pttto)
     if (pttti->ipblength < sizeof(struct pttti) + sizeof(*trh)
         || pttti->ipblength != sizeof(struct pttti) + be32_to_cpu(trh->totlen)
         || pttti->opblength < sizeof(struct pttto)) {
-        rc = TCG_INVALID_INPUT_PARA;
+        rc = TCG_INVALID_पासोक_PARA;
         goto err_exit;
     }
 
@@ -1530,13 +1530,13 @@ pass_through_to_tpm_int(struct pttti *pttti, struct pttto *pttto)
     case TPM_VERSION_1_2:
         if (tag != TPM_TAG_RQU_CMD && tag != TPM_TAG_RQU_AUTH1_CMD
             && tag != TPM_TAG_RQU_AUTH2_CMD) {
-            rc = TCG_INVALID_INPUT_PARA;
+            rc = TCG_INVALID_पासोक_PARA;
             goto err_exit;
         }
         break;
     case TPM_VERSION_2:
         if (tag != TPM2_ST_NO_SESSIONS && tag != TPM2_ST_SESSIONS) {
-            rc = TCG_INVALID_INPUT_PARA;
+            rc = TCG_INVALID_पासोक_PARA;
             goto err_exit;
         }
     }
@@ -1577,7 +1577,7 @@ hash_log_event_int(const struct hlei *hlei, struct hleo *hleo)
 
     size = hlei->ipblength;
     if (size != sizeof(*hlei)) {
-        rc = TCG_INVALID_INPUT_PARA;
+        rc = TCG_INVALID_पासोक_PARA;
         goto err_exit;
     }
 
@@ -1586,7 +1586,7 @@ hash_log_event_int(const struct hlei *hlei, struct hleo *hleo)
     if (pcpes->pcrindex != hlei->pcrindex
         || pcpes->eventtype != hlei->logeventtype
         || hlei->logdatalen != sizeof(*pcpes) + pcpes->eventdatasize) {
-        rc = TCG_INVALID_INPUT_PARA;
+        rc = TCG_INVALID_पासोक_PARA;
         goto err_exit;
     }
     rc = hash_log_extend(pcpes, hlei->hashdataptr, hlei->hashdatalen
@@ -1597,7 +1597,7 @@ hash_log_event_int(const struct hlei *hlei, struct hleo *hleo)
     /* updating the log was fine */
     hleo->opblength = sizeof(struct hleo);
     hleo->reserved  = 0;
-    hleo->eventnumber = tpm_state.entry_count;
+    hleo->eventnumber = tpm_state.entry_बिलांग;
 
 err_exit:
     if (rc != 0) {
@@ -1615,7 +1615,7 @@ hash_all_int(const struct hai *hai, u8 *hash)
         hai->hashdataptr == 0 ||
         hai->hashdatalen == 0 ||
         hai->algorithmid != TPM_ALG_SHA)
-        return TCG_INVALID_INPUT_PARA;
+        return TCG_INVALID_पासोक_PARA;
 
     sha1((const u8 *)hai->hashdataptr, hai->hashdatalen, hash);
     return 0;
@@ -1646,7 +1646,7 @@ compact_hash_log_extend_event_int(u8 *buffer,
     if (rc)
         return rc;
 
-    *edx_ptr = tpm_state.entry_count;
+    *edx_ptr = tpm_state.entry_बिलांग;
     return 0;
 }
 
@@ -1682,13 +1682,13 @@ tpm_interrupt_handler32(struct bregs *regs)
     case TCG_HashLogExtendEvent:
         regs->eax =
             hash_log_extend_event_int(
-                  (struct hleei_short *)input_buf32(regs),
+                  (struct hleei_short *)पासोक_buf32(regs),
                   (struct hleeo *)output_buf32(regs));
         break;
 
     case TCG_PassThroughToTPM:
         regs->eax =
-            pass_through_to_tpm_int((struct pttti *)input_buf32(regs),
+            pass_through_to_tpm_int((struct pttti *)पासोक_buf32(regs),
                                     (struct pttto *)output_buf32(regs));
         break;
 
@@ -1697,24 +1697,24 @@ tpm_interrupt_handler32(struct bregs *regs)
         break;
 
     case TCG_HashLogEvent:
-        regs->eax = hash_log_event_int((struct hlei*)input_buf32(regs),
+        regs->eax = hash_log_event_int((struct hlei*)पासोक_buf32(regs),
                                        (struct hleo*)output_buf32(regs));
         break;
 
     case TCG_HashAll:
         regs->eax =
-            hash_all_int((struct hai*)input_buf32(regs),
+            hash_all_int((struct hai*)पासोक_buf32(regs),
                           (u8 *)output_buf32(regs));
         break;
 
     case TCG_TSS:
-        regs->eax = tss_int((struct ti*)input_buf32(regs),
+        regs->eax = tss_int((struct ti*)पासोक_buf32(regs),
                             (struct to*)output_buf32(regs));
         break;
 
     case TCG_CompactHashLogExtendEvent:
         regs->eax =
-          compact_hash_log_extend_event_int((u8 *)input_buf32(regs),
+          compact_hash_log_extend_event_int((u8 *)पासोक_buf32(regs),
                                             regs->esi,
                                             regs->ecx,
                                             regs->edx,
@@ -1887,11 +1887,11 @@ tpm12_set_owner_install(int allow, int verbose)
 }
 
 static int
-tpm12_process_cfg(tpm_ppi_code msgCode, int verbose)
+tpm12_process_cfg(tpm_ppi_code मेनसाहे_Code, int verbose)
 {
     int ret = 0;
 
-    switch (msgCode) {
+    switch (मेनसाहे_Code) {
         case TPM_PPI_OP_NOOP: /* no-op */
             break;
 
@@ -1928,7 +1928,7 @@ tpm12_process_cfg(tpm_ppi_code msgCode, int verbose)
     }
 
     if (ret)
-        printf("Op %d: An error occurred: 0x%x\n", msgCode, ret);
+        printf("Op %d: An error occurred: 0x%x\n", मेनसाहे_Code, ret);
 
     return ret;
 }
@@ -1993,11 +1993,11 @@ tpm20_clear(void)
 }
 
 static int
-tpm20_process_cfg(tpm_ppi_code msgCode, int verbose)
+tpm20_process_cfg(tpm_ppi_code मेनसाहे_Code, int verbose)
 {
     int ret = 0;
 
-    switch (msgCode) {
+    switch (मेनसाहे_Code) {
         case TPM_PPI_OP_NOOP: /* no-op */
             break;
 
@@ -2009,7 +2009,7 @@ tpm20_process_cfg(tpm_ppi_code msgCode, int verbose)
     }
 
     if (ret)
-        printf("Op %d: An error occurred: 0x%x\n", msgCode, ret);
+        printf("Op %d: An error occurred: 0x%x\n", मेनसाहे_Code, ret);
 
     return ret;
 }
@@ -2112,7 +2112,7 @@ static void
 tpm12_menu(void)
 {
     int scancode, next_scancodes[7];
-    tpm_ppi_code msgCode;
+    tpm_ppi_code मेनसाहे_Code;
     int state = 0, i;
     int waitkey;
 
@@ -2132,7 +2132,7 @@ tpm12_menu(void)
                "mistake, press ESC to\n"
                "reboot the machine.\n");
 
-        msgCode = TPM_PPI_OP_NOOP;
+        मेनसाहे_Code = TPM_PPI_OP_NOOP;
 
         waitkey = 1;
 
@@ -2146,25 +2146,25 @@ tpm12_menu(void)
                 reset();
                 break;
             case 18: /* e. enable */
-                msgCode = TPM_PPI_OP_ENABLE;
+                मेनसाहे_Code = TPM_PPI_OP_ENABLE;
                 break;
             case 32: /* d. disable */
-                msgCode = TPM_PPI_OP_DISABLE;
+                मेनसाहे_Code = TPM_PPI_OP_DISABLE;
                 break;
             case 30: /* a. activate */
-                msgCode = TPM_PPI_OP_ACTIVATE;
+                मेनसाहे_Code = TPM_PPI_OP_ACTIVATE;
                 break;
             case 47: /* v. deactivate */
-                msgCode = TPM_PPI_OP_DEACTIVATE;
+                मेनसाहे_Code = TPM_PPI_OP_DEACTIVATE;
                 break;
             case 46: /* c. clear owner */
-                msgCode = TPM_PPI_OP_CLEAR;
+                मेनसाहे_Code = TPM_PPI_OP_CLEAR;
                 break;
             case 25: /* p. prevent ownerinstall */
-                msgCode = TPM_PPI_OP_SET_OWNERINSTALL_FALSE;
+                मेनसाहे_Code = TPM_PPI_OP_SET_OWNERINSTALL_FALSE;
                 break;
             case 31: /* s. allow ownerinstall */
-                msgCode = TPM_PPI_OP_SET_OWNERINSTALL_TRUE;
+                मेनसाहे_Code = TPM_PPI_OP_SET_OWNERINSTALL_TRUE;
                 break;
             default:
                 continue;
@@ -2179,7 +2179,7 @@ tpm12_menu(void)
                     break;
 
                 if (next_scancodes[i] == scancode) {
-                    tpm12_process_cfg(msgCode, 1);
+                    tpm12_process_cfg(मेनसाहे_Code, 1);
                     waitkey = 0;
                     break;
                 }
@@ -2254,7 +2254,7 @@ static void
 tpm20_menu(void)
 {
     int scan_code;
-    tpm_ppi_code msgCode;
+    tpm_ppi_code मेनसाहे_Code;
 
     for (;;) {
         printf("1. Clear TPM\n");
@@ -2264,7 +2264,7 @@ tpm20_menu(void)
                "mistake, press ESC to\n"
                "reboot the machine.\n");
 
-        msgCode = TPM_PPI_OP_NOOP;
+        मेनसाहे_Code = TPM_PPI_OP_NOOP;
 
         while ((scan_code = get_keystroke(1000)) == ~0)
             ;
@@ -2275,7 +2275,7 @@ tpm20_menu(void)
             reset();
             break;
         case 2:
-            msgCode = TPM_PPI_OP_CLEAR;
+            मेनसाहे_Code = TPM_PPI_OP_CLEAR;
             break;
         case 3:
             tpm20_menu_change_active_pcrbanks();
@@ -2284,7 +2284,7 @@ tpm20_menu(void)
             continue;
         }
 
-        tpm20_process_cfg(msgCode, 0);
+        tpm20_process_cfg(मेनसाहे_Code, 0);
     }
 }
 

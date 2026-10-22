@@ -75,9 +75,9 @@ getLCHS(struct drive_s *drive_fl)
         // populate the geometry directly in the driveid because the
         // geometry is only known after the bios segment is made
         // read-only).
-        u8 sptcyl = GET_LOW(CDEmu.chs.sptcyl);
-        res.cylinder = GET_LOW(CDEmu.chs.cyllow) + ((sptcyl << 2) & 0x300) + 1;
-        res.head = GET_LOW(CDEmu.chs.heads) + 1;
+        u8 sptcyl = GET_माबाबा(CDEmu.chs.sptcyl);
+        res.cylinder = GET_माबाबा(CDEmu.chs.cyllow) + ((sptcyl << 2) & 0x300) + 1;
+        res.head = GET_माबाबा(CDEmu.chs.heads) + 1;
         res.sector = sptcyl & 0x3f;
         return res;
     }
@@ -97,7 +97,7 @@ __send_disk_op(struct disk_op_s *op_far, u16 op_seg)
     int status = process_op(&dop);
 
     // Update count with total sectors transferred.
-    SET_FARVAR(op_seg, op_far->count, dop.count);
+    SET_FARVAR(op_seg, op_far->बिलांग, dop.बिलांग);
 
     return status;
 }
@@ -111,7 +111,7 @@ send_disk_op(struct disk_op_s *op)
         return -1;
     if (!CONFIG_ENTRY_EXTRASTACK)
         // Jump on to extra stack
-        return stack_hop(__send_disk_op, op, GET_SEG(SS));
+        return सालानसान_hop(__send_disk_op, op, GET_SEG(SS));
     return process_op(op);
 }
 
@@ -123,17 +123,17 @@ basic_access(struct bregs *regs, struct drive_s *drive_fl, u16 command)
     dop.drive_fl = drive_fl;
     dop.command = command;
 
-    u8 count = regs->al;
+    u8 बिलांग = regs->al;
     u16 cylinder = regs->ch | ((((u16)regs->cl) << 2) & 0x300);
     u16 sector = regs->cl & 0x3f;
     u16 head = regs->dh;
 
-    if (count > 128 || count == 0 || sector == 0) {
+    if (बिलांग > 128 || बिलांग == 0 || sector == 0) {
         warn_invalid(regs);
         disk_ret(regs, DISK_RET_EPARAM);
         return;
     }
-    dop.count = count;
+    dop.बिलांग = बिलांग;
 
     struct chs_s chs = getLCHS(drive_fl);
     u16 nlc=chs.cylinder, nlh=chs.head, nls=chs.sector;
@@ -153,7 +153,7 @@ basic_access(struct bregs *regs, struct drive_s *drive_fl, u16 command)
 
     int status = send_disk_op(&dop);
 
-    regs->al = dop.count;
+    regs->al = dop.बिलांग;
 
     disk_ret(regs, status);
 }
@@ -175,8 +175,8 @@ extended_access(struct bregs *regs, struct drive_s *drive_fl, u16 command)
     }
 
     dop.buf_fl = SEGOFF_TO_FLATPTR(GET_FARVAR(regs->ds, param_far->data));
-    dop.count = GET_FARVAR(regs->ds, param_far->count);
-    if (! dop.count) {
+    dop.बिलांग = GET_FARVAR(regs->ds, param_far->बिलांग);
+    if (! dop.बिलांग) {
         // Nothing to do.
         disk_ret(regs, DISK_RET_SUCCESS);
         return;
@@ -184,7 +184,7 @@ extended_access(struct bregs *regs, struct drive_s *drive_fl, u16 command)
 
     int status = send_disk_op(&dop);
 
-    SET_FARVAR(regs->ds, param_far->count, dop.count);
+    SET_FARVAR(regs->ds, param_far->बिलांग, dop.बिलांग);
 
     disk_ret(regs, status);
 }
@@ -201,7 +201,7 @@ disk_1300(struct bregs *regs, struct drive_s *drive_fl)
     struct disk_op_s dop;
     dop.drive_fl = drive_fl;
     dop.command = CMD_RESET;
-    dop.count = 0;
+    dop.बिलांग = 0;
     int status = send_disk_op(&dop);
     disk_ret(regs, status);
 }
@@ -251,11 +251,11 @@ disk_1305(struct bregs *regs, struct drive_s *drive_fl)
     struct chs_s chs = getLCHS(drive_fl);
     u16 nlc=chs.cylinder, nlh=chs.head, nls=chs.sector;
 
-    u8 count = regs->al;
+    u8 बिलांग = regs->al;
     u8 cylinder = regs->ch;
     u8 head = regs->dh;
 
-    if (cylinder >= nlc || head >= nlh || count == 0 || count > nls) {
+    if (cylinder >= nlc || head >= nlh || बिलांग == 0 || बिलांग > nls) {
         disk_ret(regs, DISK_RET_EPARAM);
         return;
     }
@@ -264,7 +264,7 @@ disk_1305(struct bregs *regs, struct drive_s *drive_fl)
     dop.drive_fl = drive_fl;
     dop.command = CMD_FORMAT;
     dop.lba = (((u32)cylinder * (u32)nlh) + (u32)head) * (u32)nls;
-    dop.count = count;
+    dop.बिलांग = बिलांग;
     dop.buf_fl = MAKE_FLATPTR(regs->es, regs->bx);
     int status = send_disk_op(&dop);
     disk_ret(regs, status);
@@ -279,13 +279,13 @@ disk_1308(struct bregs *regs, struct drive_s *drive_fl)
     u16 nlc=chs.cylinder, nlh=chs.head, nls=chs.sector;
     nlc--;
     nlh--;
-    u8 count;
+    u8 बिलांग;
     if (regs->dl < EXTSTART_HD) {
         // Floppy
-        count = GET_GLOBAL(FloppyCount);
+        बिलांग = GET_GLOBAL(Floppy_बिलांग);
 
         if (CONFIG_CDROM_EMU && drive_fl == GET_GLOBAL(cdemu_drive_gf))
-            regs->bx = GET_LOW(CDEmu.media) * 2;
+            regs->bx = GET_माबाबा(CDEmu.media) * 2;
         else
             regs->bx = GET_FLATPTR(drive_fl->floppy_type);
 
@@ -294,7 +294,7 @@ disk_1308(struct bregs *regs, struct drive_s *drive_fl)
         regs->di = (u32)&diskette_param_table2;
     } else if (regs->dl < EXTSTART_CD) {
         // Hard drive
-        count = GET_BDA(hdcount);
+        बिलांग = GET_BDA(hdcount);
         nlc--;  // last sector reserved
     } else {
         // Not supported on CDROM
@@ -302,14 +302,14 @@ disk_1308(struct bregs *regs, struct drive_s *drive_fl)
         return;
     }
 
-    if (CONFIG_CDROM_EMU && GET_LOW(CDEmu.media)) {
-        u8 emudrive = GET_LOW(CDEmu.emulated_drive);
+    if (CONFIG_CDROM_EMU && GET_माबाबा(CDEmu.media)) {
+        u8 emudrive = GET_माबाबा(CDEmu.emulated_drive);
         if (((emudrive ^ regs->dl) & 0x80) == 0)
             // Note extra drive due to emulation.
-            count++;
-        if (regs->dl < EXTSTART_HD && count > 2)
+            बिलांग++;
+        if (regs->dl < EXTSTART_HD && बिलांग > 2)
             // Max of two floppy drives.
-            count = 2;
+            बिलांग = 2;
     }
 
     regs->al = 0;
@@ -318,7 +318,7 @@ disk_1308(struct bregs *regs, struct drive_s *drive_fl)
     regs->dh = nlh;
 
     disk_ret(regs, DISK_RET_SUCCESS);
-    regs->dl = count;
+    regs->dl = बिलांग;
 }
 
 // initialize drive parameters
@@ -351,7 +351,7 @@ disk_1310(struct bregs *regs, struct drive_s *drive_fl)
     struct disk_op_s dop;
     dop.drive_fl = drive_fl;
     dop.command = CMD_ISREADY;
-    dop.count = 0;
+    dop.बिलांग = 0;
     int status = send_disk_op(&dop);
     disk_ret(regs, status);
 }
@@ -443,13 +443,13 @@ static void
 disk_134500(struct bregs *regs, struct drive_s *drive_fl)
 {
     int cdid = regs->dl - EXTSTART_CD;
-    u8 locks = GET_LOW(CDRom_locks[cdid]);
+    u8 locks = GET_माबाबा(CDRom_locks[cdid]);
     if (locks == 0xff) {
         regs->al = 1;
         disk_ret(regs, DISK_RET_ETOOMANYLOCKS);
         return;
     }
-    SET_LOW(CDRom_locks[cdid], locks + 1);
+    SET_माबाबा(CDRom_locks[cdid], locks + 1);
     regs->al = 1;
     disk_ret(regs, DISK_RET_SUCCESS);
 }
@@ -459,14 +459,14 @@ static void
 disk_134501(struct bregs *regs, struct drive_s *drive_fl)
 {
     int cdid = regs->dl - EXTSTART_CD;
-    u8 locks = GET_LOW(CDRom_locks[cdid]);
+    u8 locks = GET_माबाबा(CDRom_locks[cdid]);
     if (locks == 0x00) {
         regs->al = 0;
         disk_ret(regs, DISK_RET_ENOTLOCKED);
         return;
     }
     locks--;
-    SET_LOW(CDRom_locks[cdid], locks);
+    SET_माबाबा(CDRom_locks[cdid], locks);
     regs->al = (locks ? 1 : 0);
     disk_ret(regs, DISK_RET_SUCCESS);
 }
@@ -476,7 +476,7 @@ static void
 disk_134502(struct bregs *regs, struct drive_s *drive_fl)
 {
     int cdid = regs->dl - EXTSTART_CD;
-    u8 locks = GET_LOW(CDRom_locks[cdid]);
+    u8 locks = GET_माबाबा(CDRom_locks[cdid]);
     regs->al = (locks ? 1 : 0);
     disk_ret(regs, DISK_RET_SUCCESS);
 }
@@ -516,7 +516,7 @@ disk_1346(struct bregs *regs, struct drive_s *drive_fl)
     }
 
     int cdid = regs->dl - EXTSTART_CD;
-    u8 locks = GET_LOW(CDRom_locks[cdid]);
+    u8 locks = GET_माबाबा(CDRom_locks[cdid]);
     if (locks != 0) {
         disk_ret(regs, DISK_RET_ELOCKED);
         return;
@@ -679,12 +679,12 @@ floppy_13(struct bregs *regs, struct drive_s *drive_fl)
 static void
 cdemu_134b(struct bregs *regs)
 {
-    memcpy_far(regs->ds, (void*)(regs->si+0), SEG_LOW, &CDEmu, sizeof(CDEmu));
+    memcpy_far(regs->ds, (void*)(regs->si+0), SEG_माबाबा, &CDEmu, sizeof(CDEmu));
 
     // If we have to terminate emulation
     if (regs->al == 0x00) {
         // FIXME ElTorito Various. Should be handled accordingly to spec
-        SET_LOW(CDEmu.media, 0x00); // bye bye
+        SET_माबाबा(CDEmu.media, 0x00); // bye bye
 
         // XXX - update floppy/hd count.
     }
@@ -748,8 +748,8 @@ handle_13(struct bregs *regs)
             cdemu_134b(regs);
             return;
         }
-        if (GET_LOW(CDEmu.media)) {
-            u8 emudrive = GET_LOW(CDEmu.emulated_drive);
+        if (GET_माबाबा(CDEmu.media)) {
+            u8 emudrive = GET_माबाबा(CDEmu.emulated_drive);
             if (extdrive == emudrive) {
                 // Access to an emulated drive.
                 struct drive_s *cdemu_gf = GET_GLOBAL(cdemu_drive_gf);

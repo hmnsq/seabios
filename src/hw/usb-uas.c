@@ -129,7 +129,7 @@ uas_process_op(struct disk_op_s *op)
         goto have_sense;
     case UAS_UI_READ_READY:
         ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->data_in),
-                            USB_DIR_IN, op->buf_fl, op->count * blocksize);
+                            USB_DIR_IN, op->buf_fl, op->बिलांग * blocksize);
         if (ret) {
             dprintf(1, "uas: data read fail");
             goto fail;
@@ -137,7 +137,7 @@ uas_process_op(struct disk_op_s *op)
         break;
     case UAS_UI_WRITE_READY:
         ret = usb_send_bulk(GET_GLOBALFLAT(drive_gf->data_out),
-                            USB_DIR_OUT, op->buf_fl, op->count * blocksize);
+                            USB_DIR_OUT, op->buf_fl, op->बिलांग * blocksize);
         if (ret) {
             dprintf(1, "uas: data write fail");
             goto fail;

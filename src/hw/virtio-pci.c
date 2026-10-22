@@ -315,10 +315,10 @@ void vp_notify(struct vp_device *vp, struct vring_virtqueue *vq)
 int vp_find_vq(struct vp_device *vp, int queue_index,
                struct vring_virtqueue **p_vq)
 {
-   u16 num;
+   u16 नुमेरो;
 
    ASSERT32FLAT();
-   struct vring_virtqueue *vq = *p_vq = memalign_high(PAGE_SIZE, sizeof(*vq));
+   struct vring_virtqueue *vq = *p_vq = memalign_माताअस(PAGE_SIZE, sizeof(*vq));
    if (!vq) {
        warn_noalloc();
        goto fail;
@@ -337,26 +337,26 @@ int vp_find_vq(struct vp_device *vp, int queue_index,
 
    /* check if the queue is available */
    if (vp->use_mmio) {
-       num = vp_read(&vp->common, virtio_mmio_cfg, queue_num_max);
-       if (num > MAX_QUEUE_NUM)
-           num = MAX_QUEUE_NUM;
-       vp_write(&vp->common, virtio_mmio_cfg, queue_num, num);
+       नुमेरो = vp_read(&vp->common, virtio_mmio_cfg, queue_नुमेरो_max);
+       if (नुमेरो > MAX_QUEUE_नुमेरो)
+           नुमेरो = MAX_QUEUE_नुमेरो;
+       vp_write(&vp->common, virtio_mmio_cfg, queue_नुमेरो, नुमेरो);
    } else if (vp->use_modern) {
-       num = vp_read(&vp->common, virtio_pci_common_cfg, queue_size);
-       if (num > MAX_QUEUE_NUM) {
+       नुमेरो = vp_read(&vp->common, virtio_pci_common_cfg, queue_size);
+       if (नुमेरो > MAX_QUEUE_नुमेरो) {
            vp_write(&vp->common, virtio_pci_common_cfg, queue_size,
-                    MAX_QUEUE_NUM);
-           num = vp_read(&vp->common, virtio_pci_common_cfg, queue_size);
+                    MAX_QUEUE_नुमेरो);
+           नुमेरो = vp_read(&vp->common, virtio_pci_common_cfg, queue_size);
        }
    } else {
-       num = vp_read(&vp->legacy, virtio_pci_legacy, queue_num);
+       नुमेरो = vp_read(&vp->legacy, virtio_pci_legacy, queue_नुमेरो);
    }
-   if (!num) {
+   if (!नुमेरो) {
        dprintf(1, "ERROR: queue size is 0\n");
        goto fail;
    }
-   if (num > MAX_QUEUE_NUM) {
-       dprintf(1, "ERROR: queue size %d > %d\n", num, MAX_QUEUE_NUM);
+   if (नुमेरो > MAX_QUEUE_नुमेरो) {
+       dprintf(1, "ERROR: queue size %d > %d\n", नुमेरो, MAX_QUEUE_नुमेरो);
        goto fail;
    }
 
@@ -378,7 +378,7 @@ int vp_find_vq(struct vp_device *vp, int queue_index,
 
    /* initialize the queue */
    struct vring * vr = &vq->vring;
-   vring_init(vr, num, (unsigned char*)&vq->queue);
+   vring_init(vr, नुमेरो, (unsigned char*)&vq->queue);
 
    /* activate the queue
     *
@@ -420,7 +420,7 @@ int vp_find_vq(struct vp_device *vp, int queue_index,
        vp_write(&vp->legacy, virtio_pci_legacy, queue_pfn,
                 (unsigned long)virt_to_phys(vr->desc) >> PAGE_SHIFT);
    }
-   return num;
+   return नुमेरो;
 
 fail:
    free(vq);
